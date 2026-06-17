@@ -44,7 +44,7 @@
     "@eslint/js": "^9.39.2",
     "@playwright/test": "^1.61.0",
     "@sonar/scan": "^4.3.6",
-    "@types/node": "^24.10.1",
+    "@types/node": "^25.9.3",
     "@vitest/coverage-v8": "^4.0.14",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
