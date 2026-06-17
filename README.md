@@ -1,13 +1,11 @@
 # UykulukSciFi Producer
 
 ```text
- _   _       _        _       _       _     ____       _ _____ _
-| | | |_   _| | ___  | |_   _| | __  | |   / ___|  ___(_)  ___(_)
-| | | | | | | |/ / | | | | | | |/ /  | |   \___ \ / __| | |_  | |
-| |_| | |_| |   <| |_| | |_| |   <   | |___ ___) | (__| |  _| | |
- \___/ \__,_|_|\_\\__,_|\__,_|_|\_\  |_____|____/ \___|_|_|   |_|
-
-Local-first, approval-gated production desk for Turkish sci-fi YouTube episodes.
++------------------------------------------------------------------+
+| UYKULUK SCI-FI                                                   |
+| PRODUCER // LOCAL-FIRST // APPROVAL-GATED                        |
++------------------------------------------------------------------+
+Production desk for Turkish sci-fi YouTube episodes.
 ```
 
 [![CI](https://github.com/ogiboy/uykuluk-scifi/actions/workflows/ci.yml/badge.svg)](https://github.com/ogiboy/uykuluk-scifi/actions/workflows/ci.yml)
@@ -82,7 +80,7 @@ pnpm producer init
 ```
 
 If your shell cannot find `pnpm` or `node`, restore Node 22/Corepack first. The repository declares
-`pnpm@11.0.9` and `node >=22`.
+`pnpm@11.5.2` and `node >=22`.
 
 ## CLI MVP Workflow
 
