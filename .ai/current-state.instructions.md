@@ -20,6 +20,8 @@
   release hygiene gates.
 - Studio has Tailwind CSS v4, shadcn-style config/primitives, Radix Tabs, lucide icons, GSAP, and
   `next/font` wired for the initial shell.
+- Studio has a type-safe `next-intl` request/provider foundation with English and Turkish locale
+  selection through a local cookie. Existing operator copy has not been migrated yet.
 - Roadmap and `.ai` guidance now include future Next.js Producer Studio, prompt editing, revision
   tracking, design direction, development preferences, versioning expectations, and Computer Use QA
   boundaries.
@@ -72,6 +74,8 @@ Corepack/PATH before treating failures as product failures.
 - Real Ollama mode has an adapter but no live model availability QA yet.
 - Current Next.js Studio is a basic shell only; read-only run detail routes and service contracts
   are not implemented yet.
+- Locale infrastructure is ready, but full translation catalogs and a language selector are
+  intentionally deferred.
 - Prompt editing UI is planned but not implemented.
 - TTS, render, upload, and publish are intentionally disabled scaffolds.
 - Brand, overlay, thumbnail, background, transition, icon, waveform, intro-frame, and outro-frame

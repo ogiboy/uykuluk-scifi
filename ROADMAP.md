@@ -55,7 +55,8 @@ Exit criteria:
 
 ## Phase 2 - Local Next.js Producer Studio
 
-Status: planned. Do not implement until the CLI/core contracts are stable.
+Status: foundation in progress. The shell and i18n foundation exist; read-only run routes remain
+planned until the CLI/core contracts are stable.
 
 Use Next.js App Router for a local operator dashboard. The dashboard should be a thin web studio
 over the existing local file/state contracts and should not become a second workflow engine.
@@ -89,7 +90,8 @@ Frontend constraints:
 - App Router, TypeScript, Tailwind, shadcn-style primitives, Radix UI, lucide icons, GSAP, and
   `next/font` are acceptable when introduced deliberately.
 - Operator copy should flow through a small translation accessor instead of scattered string
-  constants.
+  constants. The `next-intl` request/provider foundation is in place; copy migration is deferred
+  until operator surfaces are implemented.
 - Design should feel like a quiet production desk: dense, readable, restrained, scan-friendly, and
   built for repeated review.
 - Prompt editing is a first-class operator workflow, but prompt changes must be saved as versioned

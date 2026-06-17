@@ -11,10 +11,10 @@ export default defineConfig({
     trace: "on-first-retry",
   },
   webServer: {
-    command: "pnpm --filter @uykulukscifi/studio dev",
+    command: "pnpm studio:build && pnpm studio:start",
     url: "http://127.0.0.1:3000",
     reuseExistingServer: true,
-    timeout: 30_000,
+    timeout: 60_000,
   },
   projects: [
     {

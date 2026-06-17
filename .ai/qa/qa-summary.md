@@ -2,8 +2,8 @@
 
 Latest usage smoke report:
 
-- `.ai/qa/artifacts/usage-smoke-20260617-120115/qa-report.md`
-- `.ai/qa/artifacts/usage-smoke-20260617-120115/usage-smoke-summary.json`
+- `.ai/qa/artifacts/usage-smoke-20260617-224044/qa-report.md`
+- `.ai/qa/artifacts/usage-smoke-20260617-224044/usage-smoke-summary.json`
 
 Validated gates:
 
@@ -28,7 +28,9 @@ Usage smoke coverage:
 - Evidence current state matches `state.json`.
 - Readiness passes with committed brand assets.
 - Voice, render, upload, and publish are blocked by default.
-- Playwright browser smoke verifies the initial Studio shell and module tabs.
+- Playwright browser smoke verifies the initial Studio shell, module tabs, and cookie-based document
+  locale through a production build/server.
+- VS Code Problems reported zero workspace errors and zero warnings after the i18n setup.
 
 Remaining known MVP limits:
 

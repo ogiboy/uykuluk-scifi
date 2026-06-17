@@ -5,11 +5,20 @@
   "type": "module",
   "description": "Approval-gated local-first producer CLI and Studio shell for the UykulukSciFi YouTube workflow.",
   "license": "LGPL-3.0-only",
+  "author": {
+    "name": "Ogiboy",
+    "email": "oguzcantoptas@gmail.com"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "producer": "tsx src/cli.ts",
     "studio": "pnpm --filter @uykulukscifi/studio dev",
     "studio:build": "pnpm --filter @uykulukscifi/studio build",
     "studio:lint": "pnpm --filter @uykulukscifi/studio lint",
+    "studio:start": "pnpm --filter @uykulukscifi/studio start",
     "studio:test:e2e": "playwright test",
     "studio:typecheck": "pnpm --filter @uykulukscifi/studio typecheck",
     "test": "vitest run",
@@ -23,8 +32,8 @@
     "version:plan": "node scripts/release/version-plan.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm studio:typecheck && pnpm studio:build && pnpm qa:modularity && pnpm security:check && pnpm changelog:check && pnpm format:check",
-    "lint": "node --max-old-space-size=4096 ./node_modules/eslint/bin/eslint.js src tests scripts apps/studio eslint.config.js vitest.config.ts playwright.config.ts",
+    "check": "pnpm lint && pnpm studio:lint && pnpm typecheck && pnpm test && pnpm studio:typecheck && pnpm studio:build && pnpm qa:modularity && pnpm security:check && pnpm changelog:check && pnpm format:check",
+    "lint": "node --max-old-space-size=4096 ./node_modules/eslint/bin/eslint.js src tests scripts eslint.config.js vitest.config.ts playwright.config.ts",
     "typecheck": "tsc --noEmit",
     "build": "tsc -p tsconfig.json",
     "test:coverage": "vitest run --coverage --coverage.reporter=lcov --coverage.reportsDirectory=.ai/qa/artifacts/sonar/coverage",
@@ -36,26 +45,28 @@
     "sonar:status": "scripts/sonarqube/status-local.sh"
   },
   "dependencies": {
-    "commander": "^14.0.2",
+    "commander": "^15.0.0",
     "ink": "^7.0.6",
-    "zod": "^4.2.1"
+    "react": "^19.2.7",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.2",
+    "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.61.0",
     "@sonar/scan": "^4.3.6",
-    "@types/node": "^24.10.1",
-    "@vitest/coverage-v8": "^4.0.14",
-    "eslint": "^9.39.2",
+    "@types/node": "^25.9.3",
+    "@types/react": "^19.2.17",
+    "@vitest/coverage-v8": "^4.1.9",
+    "eslint": "^10.5.0",
     "eslint-config-prettier": "^10.1.8",
-    "prettier": "^3.6.2",
-    "tsx": "^4.20.6",
-    "typescript": "^5.9.3",
-    "typescript-eslint": "^8.50.0",
-    "vitest": "^4.0.14"
+    "prettier": "^3.8.4",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.61.1",
+    "vitest": "^4.1.9"
   },
   "engines": {
     "node": ">=22"
   },
-  "packageManager": "pnpm@11.0.9"
+  "packageManager": "pnpm@11.5.2+sha512.71c631e382066efc25625d5cf029075de07b61b37f6e27350fbd84b1bda5864c8c1967adc280776b45c30a715c0359a3be08fef42d5bb09e2b99029979692916"
 }

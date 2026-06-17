@@ -129,6 +129,7 @@ Current Studio scope:
 - run/workflow command overview;
 - current asset inventory summary;
 - Radix module tabs for planned run, prompt, asset, and safety surfaces;
+- type-safe `next-intl` request/provider foundation for English and Turkish locales;
 - visible reminder that CLI/core remains the workflow source of truth.
 
 Next Studio work should add read-only run views before any mutating route handlers.
