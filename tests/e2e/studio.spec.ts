@@ -16,3 +16,17 @@ test("studio module tabs are keyboard reachable", async ({ page }) => {
   await page.getByRole("tab", { name: /prompts/i }).click();
   await expect(page.getByRole("tabpanel")).toContainText("Prompt edits will need diff");
 });
+
+test("studio locale cookie configures the document language", async ({ context, page }) => {
+  await context.addCookies([
+    {
+      name: "uykuluk_studio_locale",
+      value: "tr",
+      url: "http://127.0.0.1:3000",
+    },
+  ]);
+
+  await page.goto("/");
+
+  await expect(page.locator("html")).toHaveAttribute("lang", "tr");
+});

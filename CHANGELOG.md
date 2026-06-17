@@ -7,6 +7,18 @@ future generated release notes can be inserted predictably.
 
 <!-- version list -->
 
+## Unreleased
+
+### Added
+
+- Basic type-safe `next-intl` foundation for English and Turkish Studio locales.
+- Unit and browser coverage for locale normalization and cookie-based document language.
+
+### Changed
+
+- Browser QA now builds and serves the production Studio instead of running a file-watching dev
+  server.
+
 ## 0.1.0 - 2026-06-17
 
 ### Added
