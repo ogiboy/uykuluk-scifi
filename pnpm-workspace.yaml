@@ -1,5 +1,8 @@
 allowBuilds:
   esbuild: true
   sharp: true
+overrides:
+  axios: ^1.16.0
+  postcss: ^8.5.15
 packages:
   - apps/*
