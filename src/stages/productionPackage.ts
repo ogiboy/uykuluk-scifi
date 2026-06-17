@@ -1,12 +1,14 @@
 import { readFile } from "node:fs/promises";
 import { loadConfig } from "../config/config";
 import { artifactPath, writeRunJson, writeRunText } from "../core/artifacts";
+import { SafeExitError } from "../core/errors";
 import { appendLedgerEvent } from "../core/ledger";
 import { loadRun, setRunState } from "../core/runStore";
 import { assertTransition } from "../core/transitions";
 import { checkBudget } from "../safeguards/budgetGuard";
 import { requireApproval, requireState } from "../safeguards/approvalGuard";
 import { createLlmProvider } from "../providers";
+import { sha256 } from "../utils/hash";
 import { ProductionScene } from "./types";
 
 type PackageProviderPayload = {
@@ -27,6 +29,20 @@ export async function generateProductionPackage(runId: string): Promise<void> {
   assertTransition(run.state, "PRODUCTION_PACKAGE_GENERATED");
   try {
     const script = await readFile(artifactPath(run.runId, "script.md"), "utf8");
+    const approval = run.approvals.find(
+      (item) => item.runId === run.runId && item.target === "script",
+    );
+    const scriptHash = sha256(script);
+    if (!approval?.approvedRef || approval.approvedRef !== scriptHash) {
+      await appendLedgerEvent({
+        runId: run.runId,
+        type: "GUARD_BLOCKED",
+        stage: "package",
+        message: "Script content hash does not match the approved script.",
+        data: { approvedHash: approval?.approvedRef ?? null, currentHash: scriptHash },
+      });
+      throw new SafeExitError("Blocked: script changed after approval.");
+    }
     const provider = createLlmProvider(config);
     const result = await provider.generateText({
       model: config.providers.llm.model,

@@ -18,6 +18,11 @@ future generated release notes can be inserted predictably.
 
 - Browser QA now builds and serves the production Studio instead of running a file-watching dev
   server.
+- Script review, approval, and production packaging now require the same SHA-256 content digest.
+
+### Fixed
+
+- Production packaging now fails closed when `script.md` changes after review or approval.
 
 ## 0.1.0 - 2026-06-17
 

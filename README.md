@@ -68,7 +68,8 @@ to YouTube in the MVP.
 
 - Mock mode is the default.
 - Script generation requires explicit idea approval.
-- Production packaging requires explicit script approval.
+- Script review and approval are bound to the exact `script.md` SHA-256 digest.
+- Production packaging requires explicit script approval for the unchanged reviewed content.
 - Every run persists state, ledger events, costs, warnings, artifacts, and evidence under
   `runs/<run_id>/`.
 - TTS, render, upload, and publish are intentionally blocked scaffolds.
@@ -206,12 +207,14 @@ Use `ollama` only when a local Ollama server and model are available.
 
 Each run can write:
 
+- `state.json`;
 - `ideas.json` and `ideas.md`;
 - `script.md` and `script.meta.json`;
 - `reviews/script_review.json` and `reviews/script_review.md`;
 - `production/voiceover.txt`, `production/subtitles.srt`, `production/scenes.json`,
-  `production/youtube_metadata.json`;
+  `production/youtube_metadata.json`, `production/production_package.md`;
 - `costs/estimate.json` and `costs/estimate.md`;
+- `costs/ledger.jsonl`;
 - `evidence_bundle.json` and `evidence_bundle.md`;
 - `diagnostics/readiness.json` and `diagnostics/readiness.md`;
 - `ledger.jsonl`.

@@ -2,8 +2,8 @@
 
 Latest usage smoke report:
 
-- `.ai/qa/artifacts/usage-smoke-20260617-224044/qa-report.md`
-- `.ai/qa/artifacts/usage-smoke-20260617-224044/usage-smoke-summary.json`
+- `.ai/qa/artifacts/usage-smoke-20260617-230921/qa-report.md`
+- `.ai/qa/artifacts/usage-smoke-20260617-230921/usage-smoke-summary.json`
 
 Validated gates:
 
@@ -23,6 +23,8 @@ Usage smoke coverage:
 - Mock default config keeps YouTube upload and public publish disabled.
 - Script is blocked before idea approval.
 - Package is blocked before script approval.
+- Script approval is blocked if `script.md` changes after review.
+- Production packaging is blocked if `script.md` changes after approval.
 - Full safe workflow reaches `READY_FOR_MANUAL_PRODUCTION`.
 - Required artifacts, ledgers, cost files, readiness diagnostics, and evidence bundle exist.
 - Evidence current state matches `state.json`.

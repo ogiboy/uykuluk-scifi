@@ -6,6 +6,7 @@
 - Mock-first provider layer with Ollama adapter scaffold.
 - Strict run state machine.
 - Approval ledger.
+- Content-addressed script review and approval; packaging rejects changed script content.
 - Cost ledger and budget guard.
 - Script content review heuristics.
 - Production package generation.
@@ -72,6 +73,10 @@ Corepack/PATH before treating failures as product failures.
 ## Known Limits
 
 - Real Ollama mode has an adapter but no live model availability QA yet.
+- Readiness currently checks for the cost estimate artifact but does not yet evaluate its
+  `nextStepAllowed` and `blockedReasons` contents.
+- Generated artifacts do not yet persist prompt key/hash provenance.
+- Persisted run state is typed in source but is not yet schema-validated or written atomically.
 - Current Next.js Studio is a basic shell only; read-only run detail routes and service contracts
   are not implemented yet.
 - Locale infrastructure is ready, but full translation catalogs and a language selector are

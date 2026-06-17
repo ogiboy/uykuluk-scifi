@@ -86,6 +86,12 @@ Imported from:
 - `source-docs/addon-visual-pack/README.md` - original addon pack notes.
 - `source-docs/addon-visual-pack/manifest.json` - original addon pack manifest.
 
+## Production Evidence Contract
+
+These files are tracked production inputs. Script review and approval are content-addressed today;
+future render work must likewise record the exact asset paths and revisions used in each evidence
+bundle rather than inferring them from directory presence.
+
 ## Still Useful To Create Later
 
 - Editable Figma, PSD, SVG, or layered source files for thumbnail and overlay text changes.

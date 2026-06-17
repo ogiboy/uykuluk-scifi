@@ -18,6 +18,7 @@ Status: implemented and under QA.
 - Approve one idea explicitly.
 - Generate and review a Turkish narration script.
 - Approve the reviewed script explicitly.
+- Bind script review, approval, and packaging to the same content digest.
 - Generate voiceover text, subtitles, scene prompts, popup cards, and YouTube metadata drafts.
 - Estimate costs.
 - Generate evidence bundle and readiness diagnostics.
@@ -32,6 +33,12 @@ Exit criteria:
 - `pnpm qa:usage`
 - Readiness passes with committed brand assets.
 - Upload and public/scheduled publish remain blocked by default.
+
+Hardening still required:
+
+- Make readiness evaluate budget estimate contents instead of artifact existence alone.
+- Persist prompt key/hash provenance for generated artifacts.
+- Validate persisted state and use crash-safe state writes.
 
 ## Phase 1.5 - Project Policy And Tooling
 

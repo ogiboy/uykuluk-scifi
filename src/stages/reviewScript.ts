@@ -5,6 +5,7 @@ import { loadRun, setRunState } from "../core/runStore";
 import { assertTransition } from "../core/transitions";
 import { requireState } from "../safeguards/approvalGuard";
 import { reviewScriptContent } from "../safeguards/contentGuard";
+import { sha256 } from "../utils/hash";
 import { bulletList } from "../utils/markdown";
 
 export async function reviewScript(
@@ -18,6 +19,7 @@ export async function reviewScript(
     const warnings = reviewScriptContent(script);
     const review = {
       runId: run.runId,
+      scriptHash: sha256(script),
       warningCount: warnings.length,
       blockerCount: warnings.filter((warning) => warning.severity === "blocker").length,
       warnings,
