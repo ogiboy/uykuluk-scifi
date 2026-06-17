@@ -41,16 +41,16 @@
     "zod": "^4.2.1"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.2",
+    "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.61.0",
     "@sonar/scan": "^4.3.6",
     "@types/node": "^24.10.1",
     "@vitest/coverage-v8": "^4.0.14",
-    "eslint": "^9.39.2",
+    "eslint": "^10.5.0",
     "eslint-config-prettier": "^10.1.8",
     "prettier": "^3.6.2",
     "tsx": "^4.20.6",
-    "typescript": "^5.9.3",
+    "typescript": "^6.0.3",
     "typescript-eslint": "^8.50.0",
     "vitest": "^4.0.14"
   },
