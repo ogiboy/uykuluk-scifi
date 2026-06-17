@@ -1,0 +1,61 @@
+{
+  "name": "uykuluk-scifi",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Approval-gated local-first producer CLI and Studio shell for the UykulukSciFi YouTube workflow.",
+  "license": "LGPL-3.0-only",
+  "scripts": {
+    "producer": "tsx src/cli.ts",
+    "studio": "pnpm --filter @uykulukscifi/studio dev",
+    "studio:build": "pnpm --filter @uykulukscifi/studio build",
+    "studio:lint": "pnpm --filter @uykulukscifi/studio lint",
+    "studio:test:e2e": "playwright test",
+    "studio:typecheck": "pnpm --filter @uykulukscifi/studio typecheck",
+    "test": "vitest run",
+    "qa:usage": "node scripts/usage-smoke.mjs",
+    "qa:browser": "pnpm studio:test:e2e",
+    "qa:modularity": "node scripts/qa/modularity-gate.mjs --fail-on-findings",
+    "security:secrets": "node scripts/security/secret-scan.mjs",
+    "security:check": "pnpm security:secrets",
+    "changelog:check": "node scripts/release/check-changelog-marker.mjs",
+    "release:check": "node scripts/release/check-conventional-commits.mjs",
+    "version:plan": "node scripts/release/version-plan.mjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm studio:typecheck && pnpm studio:build && pnpm qa:modularity && pnpm security:check && pnpm changelog:check && pnpm format:check",
+    "lint": "node --max-old-space-size=4096 ./node_modules/eslint/bin/eslint.js src tests scripts apps/studio eslint.config.js vitest.config.ts playwright.config.ts",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc -p tsconfig.json",
+    "test:coverage": "vitest run --coverage --coverage.reporter=lcov --coverage.reportsDirectory=.ai/qa/artifacts/sonar/coverage",
+    "sonar": "scripts/qa/run_sonar_scan.sh",
+    "sonar:local": "scripts/qa/run_sonar_scan.sh",
+    "sonar:cloud": "SONAR_HOST_URL=https://sonarcloud.io SONAR_PROJECT_KEY=ogiboy_uykuluk-scifi SONAR_ORGANIZATION=ogiboy SONAR_TOKEN_KEYCHAIN_SERVICE=codex-sonarcloud-token scripts/qa/run_sonar_scan.sh",
+    "sonar:start": "scripts/sonarqube/start-local.sh",
+    "sonar:stop": "scripts/sonarqube/stop-local.sh",
+    "sonar:status": "scripts/sonarqube/status-local.sh"
+  },
+  "dependencies": {
+    "commander": "^14.0.2",
+    "ink": "^7.0.6",
+    "zod": "^4.2.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "@playwright/test": "^1.61.0",
+    "@sonar/scan": "^4.3.6",
+    "@types/node": "^24.10.1",
+    "@vitest/coverage-v8": "^4.0.14",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.6.2",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.50.0",
+    "vitest": "^4.0.14"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "packageManager": "pnpm@11.0.9"
+}

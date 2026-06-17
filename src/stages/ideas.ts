@@ -1,0 +1,73 @@
+import { loadConfig } from "../config/config";
+import { writeRunJson, writeRunText } from "../core/artifacts";
+import { createRun, setRunState } from "../core/runStore";
+import { assertTransition } from "../core/transitions";
+import { appendLedgerEvent } from "../core/ledger";
+import { checkBudget } from "../safeguards/budgetGuard";
+import { createLlmProvider } from "../providers";
+import { VideoIdea } from "./types";
+
+type IdeasPayload = { ideas: VideoIdea[] };
+
+export async function runIdeas(): Promise<{ runId: string; ideas: VideoIdea[] }> {
+  const config = await loadConfig();
+  let run = await createRun();
+  assertTransition(run.state, "IDEAS_GENERATED");
+  const provider = createLlmProvider(config);
+  try {
+    const result = await provider.generateText({
+      model: config.providers.llm.model,
+      temperature: 0.7,
+      prompt: [
+        "IDEAS_JSON",
+        "Generate 5-10 Turkish UykulukSciFi video ideas.",
+        "Return JSON only with an ideas array. Avoid overclaiming.",
+      ].join("\n"),
+    });
+    const parsed = JSON.parse(result.text) as IdeasPayload;
+    const ideas = parsed.ideas.slice(0, 10);
+    await checkBudget({
+      run,
+      config,
+      stage: "ideas",
+      provider: result.provider,
+      model: result.model,
+      estimatedUsd: 0,
+      inputTokens: result.inputTokensApprox,
+      outputTokens: result.outputTokensApprox,
+      durationMs: result.durationMs,
+    });
+    run = await writeRunJson(run, "ideas", "ideas.json", { ideas });
+    run = await writeRunText(run, "ideas", "ideas.md", renderIdeasMarkdown(ideas));
+    run = await setRunState(run, "IDEAS_GENERATED", "ideas");
+    return { runId: run.runId, ideas };
+  } catch (error) {
+    await appendLedgerEvent({
+      runId: run.runId,
+      type: "ERROR",
+      stage: "ideas",
+      message: (error as Error).message,
+    });
+    throw error;
+  }
+}
+
+function renderIdeasMarkdown(ideas: VideoIdea[]): string {
+  return [
+    "# UykulukSciFi Ideas",
+    "",
+    ...ideas.map((idea) =>
+      [
+        `## ${idea.id}: ${idea.title}`,
+        "",
+        `- Premise: ${idea.premise}`,
+        `- Target duration: ${idea.targetDuration}`,
+        `- Style: ${idea.style}`,
+        `- Estimated difficulty: ${idea.estimatedDifficulty}`,
+        `- Risk level: ${idea.riskLevel}`,
+        `- Why it fits: ${idea.fit}`,
+        "",
+      ].join("\n"),
+    ),
+  ].join("\n");
+}

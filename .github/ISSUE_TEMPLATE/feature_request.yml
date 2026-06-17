@@ -1,0 +1,42 @@
+name: Feature request
+description: Propose a scoped product, CLI, Studio, QA, asset, or tooling improvement.
+title: "feat: "
+labels: ["feature"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What operator or developer problem does this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: Describe the smallest useful version.
+    validations:
+      required: true
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Primary surface
+      options:
+        - CLI/core
+        - Producer Studio
+        - Assets/render
+        - Prompts
+        - QA/tooling
+        - Documentation
+        - Security
+    validations:
+      required: true
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: Constraints
+      options:
+        - label: Must preserve manual approval gates.
+        - label: Must keep upload/public publish disabled by default.
+        - label: Must update README/ROADMAP/`.ai` if workflow assumptions change.
+        - label: Needs browser or visual QA evidence.

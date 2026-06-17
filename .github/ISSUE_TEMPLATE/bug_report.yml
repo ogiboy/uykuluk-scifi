@@ -1,0 +1,49 @@
+name: Bug report
+description: Report a reproducible product, workflow, or tooling issue.
+title: "fix: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What broke or behaved incorrectly?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Include commands, route, run id, or artifact path when relevant.
+      placeholder: |
+        1. Run ...
+        2. Open ...
+        3. Observe ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Link logs, screenshots, QA artifacts, or Sonar findings without secrets.
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety impact
+      options:
+        - label: Approval gates may be affected.
+        - label: Upload/publish defaults may be affected.
+        - label: Secrets or local artifacts may be exposed.
+        - label: Studio route behavior may be affected.

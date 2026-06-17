@@ -1,0 +1,274 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+  --bg: #0d1117;
+  --panel: #161b22;
+  --panel-strong: #1f2937;
+  --text: #f4f7fb;
+  --muted: #9aa7b5;
+  --line: #2f3a46;
+  --accent: #3dd6c6;
+  --accent-strong: #f7b955;
+  --danger: #ff6b6b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family:
+    var(--font-inter),
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  letter-spacing: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.studio-shell {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.studio-rail {
+  border-right: 1px solid var(--line);
+  background: #10161d;
+  padding: 24px 18px;
+}
+
+.brand-lockup {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 28px;
+}
+
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--accent);
+  font-weight: 800;
+}
+
+.brand-lockup p,
+.eyebrow {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.brand-lockup strong {
+  display: block;
+  margin-top: 2px;
+  font-size: 15px;
+}
+
+.studio-rail nav {
+  display: grid;
+  gap: 4px;
+}
+
+.studio-rail a {
+  border-radius: 6px;
+  color: var(--muted);
+  padding: 10px 12px;
+}
+
+.studio-rail a:hover {
+  background: var(--panel);
+  color: var(--text);
+}
+
+.studio-main {
+  display: grid;
+  gap: 24px;
+  align-content: start;
+  padding: 28px;
+}
+
+.studio-header {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 20px;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  max-width: 760px;
+  margin-bottom: 0;
+  font-size: 32px;
+  line-height: 1.15;
+}
+
+h2 {
+  margin-bottom: 14px;
+  font-size: 20px;
+}
+
+h3 {
+  margin-bottom: 8px;
+  font-size: 15px;
+}
+
+.status-pill {
+  flex: 0 0 auto;
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, var(--line));
+  border-radius: 999px;
+  color: var(--accent);
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+.status-grid,
+.asset-grid,
+.command-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.status-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.asset-grid,
+.command-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.panel,
+.status-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  padding: 16px;
+}
+
+.status-card strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 18px;
+}
+
+.panel p,
+.status-card p {
+  margin-bottom: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.command {
+  display: block;
+  overflow-wrap: anywhere;
+  border-radius: 6px;
+  background: #0b0f14;
+  color: var(--accent-strong);
+  padding: 10px;
+  font-family: var(--font-mono), "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+}
+
+.blocked {
+  color: var(--danger);
+}
+
+.tabs-root {
+  display: grid;
+  gap: 12px;
+}
+
+.tabs-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tabs-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--muted);
+  padding: 9px 12px;
+  font: inherit;
+  font-size: 13px;
+}
+
+.tabs-trigger[data-state="active"] {
+  border-color: color-mix(in srgb, var(--accent) 60%, var(--line));
+  color: var(--text);
+}
+
+.tabs-content {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  padding: 16px;
+}
+
+.tabs-content p {
+  max-width: 720px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+@media (max-width: 900px) {
+  .studio-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .studio-rail {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .studio-rail nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .studio-main {
+    padding: 20px;
+  }
+
+  .studio-header {
+    display: grid;
+  }
+
+  .status-grid,
+  .asset-grid,
+  .command-grid {
+    grid-template-columns: 1fr;
+  }
+}

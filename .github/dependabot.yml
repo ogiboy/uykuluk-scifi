@@ -1,0 +1,48 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      tooling:
+        patterns:
+          - "@playwright/*"
+          - "@eslint/*"
+          - "eslint"
+          - "eslint-config-prettier"
+          - "prettier"
+          - "typescript"
+          - "typescript-eslint"
+          - "vitest"
+          - "@vitest/*"
+          - "tsx"
+      studio:
+        patterns:
+          - "@radix-ui/*"
+          - "@tailwindcss/*"
+          - "class-variance-authority"
+          - "clsx"
+          - "gsap"
+          - "lucide-react"
+          - "next"
+          - "react"
+          - "react-dom"
+          - "tailwind-merge"
+          - "tailwindcss"
+          - "@types/react"
+          - "@types/react-dom"
+      cli:
+        patterns:
+          - "ink"

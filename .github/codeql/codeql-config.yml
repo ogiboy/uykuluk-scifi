@@ -1,0 +1,17 @@
+name: UykulukSciFi Producer CodeQL
+
+paths:
+  - src
+  - apps/studio/src
+  - scripts
+  - .github/workflows
+
+paths-ignore:
+  - ".ai/qa/artifacts/**"
+  - "assets/**"
+  - "runs/**"
+  - "**/node_modules/**"
+  - "**/.next/**"
+  - "**/dist/**"
+  - "**/build/**"
+  - "**/coverage/**"

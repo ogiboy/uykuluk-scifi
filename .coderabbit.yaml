@@ -1,0 +1,239 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: en-US
+tone_instructions:
+  "Be concise, direct, security-aware, and actionable. Prioritize approval gates, cost controls,
+  artifact evidence, operator UX, and local-first behavior over style-only comments."
+early_access: false
+enable_free_tier: true
+inheritance: true
+
+reviews:
+  profile: assertive
+  request_changes_workflow: false
+  high_level_summary: true
+  high_level_summary_instructions: |
+    Write a concise release-note style summary. Separate CLI/runtime, future dashboard/frontend, safeguards, tests/QA, docs/.ai, and asset/tooling changes. Call out any approval-gate, cost-estimate, upload/publish, or evidence-bundle impact.
+  auto_title_placeholder: "@coderabbitai"
+  auto_title_instructions: |
+    Generate PR titles that are valid Conventional Commit subjects.
+    Use exactly one type from: feat, fix, perf, docs, build, ci, chore, refactor, test, style.
+    Format every title as "<type>(optional-scope): <imperative summary>".
+    Prefer "feat:" for user-visible workflow/UI capability, "fix:" for incorrect behavior, "docs:" for README/.ai/roadmap changes, "test:" for validation work, and "build:" for dependency/tooling changes.
+  review_status: true
+  review_details: true
+  commit_status: true
+  fail_commit_status: true
+  changed_files_summary: true
+  sequence_diagrams: true
+  estimate_code_review_effort: true
+  suggested_labels: true
+  auto_apply_labels: true
+  suggested_reviewers: true
+  auto_assign_reviewers: true
+  suggested_reviewers_instructions:
+    - reviewers:
+        - handle: "ogiboy"
+          type: user
+      instructions: "Assign ogiboy for all PRs."
+  labeling_instructions:
+    - label: feature
+      instructions:
+        "Apply when the PR adds operator-visible CLI, workflow, dashboard, provider, or production
+        capability."
+    - label: safety
+      instructions:
+        "Apply when approval gates, budget guards, upload/publish controls, content review, or
+        evidence semantics change."
+    - label: webgui
+      instructions:
+        "Apply when a future Next.js dashboard, route, styling, component, or frontend build config
+        changes."
+    - label: docs
+      instructions:
+        "Apply when README, ROADMAP, .ai guidance, prompts, runbooks, or operator docs change."
+    - label: tests
+      instructions: "Apply when tests, QA scripts, fixtures, mocks, or evidence reports change."
+    - label: dependencies
+      instructions:
+        "Apply when package versions, lockfiles, build metadata, or dependency security posture
+        changes."
+    - label: assets
+      instructions: "Apply when brand, overlay, intro/outro, thumbnail, or render assets change."
+
+  path_filters:
+    - "!**/.DS_Store"
+    - "!**/node_modules/**"
+    - "!**/.next/**"
+    - "!**/out/**"
+    - "!**/dist/**"
+    - "!**/build/**"
+    - "!runs/run_*/**"
+    - "!**/*.lock"
+    - "!pnpm-lock.yaml"
+    - "!**/*.png"
+    - "!**/*.jpg"
+    - "!**/*.jpeg"
+    - "!**/*.gif"
+    - "!**/*.webp"
+    - "!**/*.mp4"
+    - "!**/*.mov"
+    - "src/**"
+    - "apps/studio/**"
+    - "tests/**"
+    - "scripts/**"
+    - ".github/**"
+    - ".ai/**"
+    - "assets/README.md"
+    - "AGENTS.md"
+    - "CHANGELOG.md"
+    - "CODE_OF_CONDUCT.md"
+    - "CONTRIBUTING.md"
+    - "SECURITY.md"
+    - "ROADMAP.md"
+    - "README.md"
+    - "package.json"
+    - "producer.config.example.json"
+    - "sonar-project.properties"
+    - ".coderabbit.yaml"
+    - "*.config.*"
+    - "*.json"
+    - "*.md"
+    - "*.yaml"
+    - "*.yml"
+
+  path_instructions:
+    - path: "src/core/**"
+      instructions:
+        "Check strict state-machine behavior, append-only evidence, atomic artifact/state writes,
+        and clear failure modes. Treat skipped approvals or inferred approvals as high severity."
+    - path: "src/stages/**"
+      instructions:
+        "Check stage guards, persisted artifacts, operator-visible errors, resumability, and no
+        expensive or irreversible action without explicit approval."
+    - path: "src/safeguards/**"
+      instructions:
+        "Prioritize approval, budget, content, publish, and asset-guard correctness. Warn on weak
+        guard evidence or missing negative tests."
+    - path: "src/youtube/**"
+      instructions:
+        "Upload and public/scheduled publish must remain disabled by default and approval-gated.
+        Flag any executable upload/publish path that lacks explicit config plus approval."
+    - path: "apps/studio/**"
+      instructions:
+        "The Studio must stay a thin local operator surface over CLI/core contracts. Check route
+        safety, readable dense production-desk UX, no duplicated state machine, no hidden approvals,
+        and no public upload/publish controls."
+    - path: ".github/**"
+      instructions:
+        "Check CI, CodeQL, Dependabot, Sonar, and release gates for deterministic local parity,
+        minimal permissions, secret-safe behavior, and branch patterns that match the contribution
+        policy."
+    - path: "tests/**"
+      instructions:
+        "Prefer meaningful gate, transition, evidence, and operator workflow tests over brittle
+        snapshots."
+    - path: "scripts/**"
+      instructions:
+        "Check QA scripts for deterministic temp directories, clean cleanup, no secret leaks, and
+        useful machine-readable evidence."
+    - path: ".ai/**"
+      instructions:
+        "Review as durable project policy. Check ambiguity, missing success criteria, missing
+        QA/security guidance, and any instruction that could weaken approval gates."
+    - path: "assets/**"
+      instructions:
+        "Check manifest accuracy, render usefulness, naming clarity, and whether readiness
+        assumptions match actual asset files."
+    - path: "ROADMAP.md"
+      instructions:
+        "Check that roadmap sequencing preserves CLI/core as source of truth, keeps Next.js
+        dashboard thin, and keeps publish/paid generation locked behind approvals."
+    - path: "CHANGELOG.md"
+      instructions:
+        "Check that the version-list marker remains present exactly once and release notes stay
+        aligned with Conventional Commit release identity."
+
+  pre_merge_checks:
+    title:
+      mode: error
+      requirements:
+        "The PR title must be a valid Conventional Commit subject: one of feat, fix, perf, docs,
+        build, ci, chore, refactor, test, style; optional scope; imperative summary; no untyped
+        titles."
+    custom_checks:
+      - mode: error
+        name: "No approval-gate bypass"
+        instructions:
+          "Fail if the PR enables script/package/render/upload/publish progression without the
+          required explicit approval and persisted evidence."
+      - mode: error
+        name: "No public publish by default"
+        instructions:
+          "Fail if public or scheduled YouTube publishing can run by default, or if config
+          enablement alone authorizes publishing."
+      - mode: warning
+        name: "Evidence remains reviewable"
+        instructions:
+          "Warn if run state, cost ledger, approvals, warnings, artifacts, readiness, or QA evidence
+          become less visible to operators."
+      - mode: warning
+        name: "Dashboard does not become runtime"
+        instructions:
+          "For future frontend work, warn if Next.js routes duplicate workflow logic instead of
+          calling typed local core contracts."
+      - mode: error
+        name: "No secrets or tokens"
+        instructions:
+          "Fail if changed files include API keys, auth tokens, private keys, session cookies,
+          realistic secret-looking placeholders, or provider credentials."
+
+  tools:
+    eslint:
+      enabled: true
+    markdownlint:
+      enabled: true
+    shellcheck:
+      enabled: true
+    actionlint:
+      enabled: true
+    yamllint:
+      enabled: true
+    gitleaks:
+      enabled: true
+    trufflehog:
+      enabled: true
+    dotenvLint:
+      enabled: true
+    semgrep:
+      enabled: true
+    osvScanner:
+      enabled: true
+
+chat:
+  art: false
+  allow_non_org_members: false
+  auto_reply: true
+
+knowledge_base:
+  opt_out: false
+  web_search:
+    enabled: true
+  code_guidelines:
+    enabled: true
+    filePatterns:
+      - ".ai/**/*.md"
+      - "README.md"
+      - "ROADMAP.md"
+      - ".coderabbit.yaml"
+  learnings:
+    scope: auto
+    approval_delay: 0
+
+code_generation:
+  unit_tests:
+    path_instructions:
+      - path: "src/**/*.ts"
+        instructions:
+          "Prefer deterministic Vitest tests with mock providers, no live network calls by default,
+          and explicit assertions for approval gates, cost ledgers, evidence bundles, and disabled
+          publish behavior."
