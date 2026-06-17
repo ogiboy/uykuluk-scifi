@@ -28,6 +28,7 @@ runs/*
 
 *.log
 *.tsbuildinfo
+next-env.d.ts
 .DS_Store
 .gh-cache/
 .pnpm-store/
