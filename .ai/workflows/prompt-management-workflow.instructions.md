@@ -15,7 +15,7 @@ production packages, and readiness behavior.
 - Provide preview with sample variables.
 - Show diff before saving.
 - Require an operator note for local override saves.
-- Record prompt hash in the run metadata for generated artifacts.
+- Preserve the existing runtime prompt key/hash metadata when prompt templates become editable.
 - Provide rollback to tracked default or previous local version.
 
 ## Safety Rules
@@ -23,4 +23,4 @@ production packages, and readiness behavior.
 - Saving a prompt does not run generation.
 - Editing a prompt does not approve any stage.
 - Active run artifacts are not rewritten by prompt edits.
-- Evidence bundle reports the prompt hash used for each generated artifact.
+- Evidence bundle reports the prompt key/hash used for each generated artifact.

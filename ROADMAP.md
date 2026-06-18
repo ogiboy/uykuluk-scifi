@@ -25,6 +25,7 @@ Status: implemented and under QA.
 - Block readiness when the persisted cost estimate reports blocked reasons or disallows the next
   step.
 - Validate run state on read/write and atomically replace persisted JSON files.
+- Record runtime prompt key/hash provenance for generated ideas, scripts, and production packages.
 - Keep voice, render, upload, and publish disabled by default.
 - Persist state, artifacts, approvals, warnings, costs, and QA evidence.
 
@@ -39,7 +40,7 @@ Exit criteria:
 
 Hardening still required:
 
-- Persist prompt key/hash provenance for generated artifacts.
+- Replace hard-coded generation prompts with typed tracked runtime templates.
 
 ## Phase 1.5 - Project Policy And Tooling
 

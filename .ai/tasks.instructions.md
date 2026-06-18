@@ -19,7 +19,7 @@
 - Define revision events for script, subtitles, scene prompts, popup cards, and YouTube metadata
   edits.
 - Add a `producer doctor` command for provider and asset readiness.
-- Record prompt keys and hashes in generation metadata and evidence.
+- Move tracked prompt defaults into typed runtime templates before adding prompt editing.
 - Add route security requirements before any web action routes exist.
 
 ## Later

@@ -89,8 +89,8 @@ Imported from:
 ## Production Evidence Contract
 
 These files are tracked production inputs. Script review and approval are content-addressed today;
-future render work must likewise record the exact asset paths and revisions used in each evidence
-bundle rather than inferring them from directory presence.
+evidence also records runtime prompt hashes. Future render work must likewise record the exact asset
+paths and revisions used in each evidence bundle rather than inferring them from directory presence.
 
 ## Still Useful To Create Later
 

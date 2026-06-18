@@ -24,5 +24,6 @@ Canonical inspection files include `state.json`, `ledger.jsonl`, `costs/ledger.j
 `diagnostics/readiness.json`.
 
 Current readiness validates the persisted cost-estimate allow/block decision. Run state is
-schema-validated and JSON writes use atomic replacement. Prompt provenance is still an open
-hardening gap, not a proven guarantee.
+schema-validated and JSON writes use atomic replacement. Evidence records the actual runtime prompt
+key and SHA-256 hash for ideas, scripts, and production packages. Tracked `.ai/prompts/` files are
+still operator guidance rather than typed runtime templates.

@@ -73,6 +73,7 @@ to YouTube in the MVP.
 - Every run persists state, ledger events, costs, warnings, artifacts, and evidence under
   `runs/<run_id>/`.
 - Persisted run records are schema-validated and JSON artifacts use atomic file replacement.
+- Generated ideas, scripts, and production packages record runtime prompt key/hash provenance.
 - Readiness reads the persisted cost estimate decision and blocks if the next step is not allowed.
 - TTS, render, upload, and publish are intentionally blocked scaffolds.
 - Upload and public/scheduled publish require future explicit config and separate approval gates.
@@ -214,7 +215,8 @@ Each run can write:
 - `script.md` and `script.meta.json`;
 - `reviews/script_review.json` and `reviews/script_review.md`;
 - `production/voiceover.txt`, `production/subtitles.srt`, `production/scenes.json`,
-  `production/youtube_metadata.json`, `production/production_package.md`;
+  `production/youtube_metadata.json`, `production/production_package.md`,
+  `production/production_package.meta.json`;
 - `costs/estimate.json` and `costs/estimate.md`;
 - `costs/ledger.jsonl`;
 - `evidence_bundle.json` and `evidence_bundle.md`;

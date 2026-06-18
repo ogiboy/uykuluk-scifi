@@ -4,6 +4,7 @@ import { artifactPath, writeRunJson, writeRunText } from "../core/artifacts";
 import { readLedger } from "../core/ledger";
 import { loadRun, saveRun } from "../core/runStore";
 import { readCostEvents } from "../costs/costLedger";
+import { PromptProvenance } from "../prompts/provenance";
 import { pathExists } from "../utils/fs";
 import { readJsonFile } from "../utils/json";
 import { bulletList } from "../utils/markdown";
@@ -13,6 +14,7 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
   let run = await loadRun(runId);
   const ledger = await readLedger(run.runId);
   const costs = await readCostEvents(run.runId);
+  const promptProvenance = await readPromptProvenance(run.runId);
   const approvedIdea =
     run.approvedIdeaId && (await pathExists(artifactPath(run.runId, "ideas.json")))
       ? ((
@@ -46,6 +48,7 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
       : null,
     generatedArtifacts: run.artifacts,
     warnings: run.warnings,
+    promptProvenance,
     blockedActions,
     nextRecommendedCommand: nextCommand(run.state),
     ledgerEventCount: ledger.length,
@@ -80,6 +83,7 @@ function renderEvidenceMarkdown(bundle: unknown): string {
     costs: unknown[];
     generatedArtifacts: string[];
     warnings: string[];
+    promptProvenance: PromptProvenance[];
     blockedActions: string[];
     nextRecommendedCommand: string;
   };
@@ -102,6 +106,14 @@ function renderEvidenceMarkdown(bundle: unknown): string {
     "",
     bulletList(data.warnings),
     "",
+    "## Prompt Provenance",
+    "",
+    bulletList(
+      data.promptProvenance.map(
+        (prompt) => `${prompt.key}: ${prompt.hash} -> ${path.posix.normalize(prompt.artifact)}`,
+      ),
+    ),
+    "",
     "## Artifacts",
     "",
     bulletList(data.generatedArtifacts.map((artifact) => path.posix.normalize(artifact))),
@@ -114,4 +126,20 @@ function renderEvidenceMarkdown(bundle: unknown): string {
     "",
     data.nextRecommendedCommand,
   ].join("\n");
+}
+
+async function readPromptProvenance(runId: string): Promise<PromptProvenance[]> {
+  const sources = ["ideas.json", "script.meta.json", "production/production_package.meta.json"];
+  const records: PromptProvenance[] = [];
+  for (const relativePath of sources) {
+    const target = artifactPath(runId, relativePath);
+    if (!(await pathExists(target))) {
+      continue;
+    }
+    const value = await readJsonFile<{ prompt?: PromptProvenance }>(target);
+    if (value.prompt) {
+      records.push(value.prompt);
+    }
+  }
+  return records;
 }

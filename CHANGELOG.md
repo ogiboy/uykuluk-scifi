@@ -27,6 +27,8 @@ future generated release notes can be inserted predictably.
   reasons.
 - Run loading now rejects malformed or schema-invalid state, and JSON persistence uses atomic
   replacement.
+- Evidence bundles now include runtime prompt key/hash provenance for ideas, scripts, and production
+  packages.
 
 ## 0.1.0 - 2026-06-17
 

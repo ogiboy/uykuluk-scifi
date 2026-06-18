@@ -7,6 +7,7 @@ import { assertTransition } from "../core/transitions";
 import { checkBudget } from "../safeguards/budgetGuard";
 import { requireApproval, requireState } from "../safeguards/approvalGuard";
 import { createLlmProvider } from "../providers";
+import { createPromptProvenance } from "../prompts/provenance";
 import { ScriptMeta, VideoIdea } from "./types";
 
 export async function generateScript(runId: string): Promise<ScriptMeta> {
@@ -24,14 +25,15 @@ export async function generateScript(runId: string): Promise<ScriptMeta> {
       throw new Error(`Approved idea missing from ideas artifact: ${run.approvedIdeaId}`);
     }
     const provider = createLlmProvider(config);
+    const prompt = [
+      "SCRIPT_MARKDOWN",
+      `Idea: ${JSON.stringify(idea)}`,
+      "Write Turkish narration with a clear hook, careful scientific speculation, and visual beat hints.",
+    ].join("\n");
     const result = await provider.generateText({
       model: config.providers.llm.model,
       temperature: 0.6,
-      prompt: [
-        "SCRIPT_MARKDOWN",
-        `Idea: ${JSON.stringify(idea)}`,
-        "Write Turkish narration with a clear hook, careful scientific speculation, and visual beat hints.",
-      ].join("\n"),
+      prompt,
     });
     const script = result.text;
     const wordCount = script.trim().split(/\s+/).filter(Boolean).length;
@@ -46,6 +48,7 @@ export async function generateScript(runId: string): Promise<ScriptMeta> {
       inputTokensApprox: result.inputTokensApprox,
       outputTokensApprox: result.outputTokensApprox,
       durationMs: result.durationMs,
+      prompt: createPromptProvenance("script", prompt, "script.md"),
     };
     await checkBudget({
       run,

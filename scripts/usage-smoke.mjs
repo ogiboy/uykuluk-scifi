@@ -24,6 +24,7 @@ const requiredArtifacts = [
   "production/scenes.json",
   "production/youtube_metadata.json",
   "production/production_package.md",
+  "production/production_package.meta.json",
   "costs/estimate.json",
   "costs/estimate.md",
   "costs/ledger.jsonl",
@@ -136,11 +137,25 @@ try {
     "costs",
     "warnings",
     "generatedArtifacts",
+    "promptProvenance",
     "blockedActions",
     "nextRecommendedCommand",
   ]) {
     assert(Object.hasOwn(evidence, key), `evidence includes ${key}`);
   }
+  assert(
+    evidence.promptProvenance.length === 3,
+    "evidence includes three prompt provenance records",
+  );
+  assert(
+    evidence.promptProvenance.every(
+      (prompt) =>
+        typeof prompt.key === "string" &&
+        typeof prompt.artifact === "string" &&
+        /^[a-f0-9]{64}$/.test(prompt.hash),
+    ),
+    "prompt provenance records contain stable SHA-256 hashes",
+  );
   assert(readiness.passed === true, "readiness JSON passed=true");
   assert(
     readiness.checks.some(

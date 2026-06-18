@@ -8,6 +8,7 @@ import { assertTransition } from "../core/transitions";
 import { checkBudget } from "../safeguards/budgetGuard";
 import { requireApproval, requireState } from "../safeguards/approvalGuard";
 import { createLlmProvider } from "../providers";
+import { createPromptProvenance } from "../prompts/provenance";
 import { sha256 } from "../utils/hash";
 import { ProductionScene } from "./types";
 
@@ -44,13 +45,14 @@ export async function generateProductionPackage(runId: string): Promise<void> {
       throw new SafeExitError("Blocked: script changed after approval.");
     }
     const provider = createLlmProvider(config);
+    const prompt = [
+      "PRODUCTION_PACKAGE_JSON",
+      "Create popup cards, lower thirds, and YouTube metadata.",
+      script,
+    ].join("\n");
     const result = await provider.generateText({
       model: config.providers.llm.model,
-      prompt: [
-        "PRODUCTION_PACKAGE_JSON",
-        "Create popup cards, lower thirds, and YouTube metadata.",
-        script,
-      ].join("\n"),
+      prompt,
     });
     const providerPayload = JSON.parse(result.text) as PackageProviderPayload;
     const voiceover = cleanVoiceover(script);
@@ -78,6 +80,18 @@ export async function generateProductionPackage(runId: string): Promise<void> {
       providerPayload.youtube,
     );
     run = await writeRunText(run, "package", "production/production_package.md", packageMarkdown);
+    run = await writeRunJson(run, "package", "production/production_package.meta.json", {
+      provider: result.provider,
+      model: result.model,
+      inputTokensApprox: result.inputTokensApprox,
+      outputTokensApprox: result.outputTokensApprox,
+      durationMs: result.durationMs,
+      prompt: createPromptProvenance(
+        "production-package",
+        prompt,
+        "production/production_package.md",
+      ),
+    });
     await setRunState(run, "PRODUCTION_PACKAGE_GENERATED", "package");
   } catch (error) {
     await appendLedgerEvent({

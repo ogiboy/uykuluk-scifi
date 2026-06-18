@@ -4,6 +4,7 @@
 
 - TypeScript CLI project.
 - Mock-first provider layer with Ollama adapter scaffold.
+- Runtime prompt key/hash provenance for ideas, scripts, and production packages.
 - Strict run state machine.
 - Schema-validated run records with atomic JSON replacement.
 - Approval ledger.
@@ -74,7 +75,6 @@ Corepack/PATH before treating failures as product failures.
 ## Known Limits
 
 - Real Ollama mode has an adapter but no live model availability QA yet.
-- Generated artifacts do not yet persist prompt key/hash provenance.
 - Current Next.js Studio is a basic shell only; read-only run detail routes and service contracts
   are not implemented yet.
 - Locale infrastructure is ready, but full translation catalogs and a language selector are

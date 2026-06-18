@@ -5,6 +5,7 @@ import { assertTransition } from "../core/transitions";
 import { appendLedgerEvent } from "../core/ledger";
 import { checkBudget } from "../safeguards/budgetGuard";
 import { createLlmProvider } from "../providers";
+import { createPromptProvenance } from "../prompts/provenance";
 import { VideoIdea } from "./types";
 
 type IdeasPayload = { ideas: VideoIdea[] };
@@ -15,14 +16,15 @@ export async function runIdeas(): Promise<{ runId: string; ideas: VideoIdea[] }>
   assertTransition(run.state, "IDEAS_GENERATED");
   const provider = createLlmProvider(config);
   try {
+    const prompt = [
+      "IDEAS_JSON",
+      "Generate 5-10 Turkish UykulukSciFi video ideas.",
+      "Return JSON only with an ideas array. Avoid overclaiming.",
+    ].join("\n");
     const result = await provider.generateText({
       model: config.providers.llm.model,
       temperature: 0.7,
-      prompt: [
-        "IDEAS_JSON",
-        "Generate 5-10 Turkish UykulukSciFi video ideas.",
-        "Return JSON only with an ideas array. Avoid overclaiming.",
-      ].join("\n"),
+      prompt,
     });
     const parsed = JSON.parse(result.text) as IdeasPayload;
     const ideas = parsed.ideas.slice(0, 10);
@@ -37,7 +39,10 @@ export async function runIdeas(): Promise<{ runId: string; ideas: VideoIdea[] }>
       outputTokens: result.outputTokensApprox,
       durationMs: result.durationMs,
     });
-    run = await writeRunJson(run, "ideas", "ideas.json", { ideas });
+    run = await writeRunJson(run, "ideas", "ideas.json", {
+      ideas,
+      prompt: createPromptProvenance("ideas", prompt, "ideas.json"),
+    });
     run = await writeRunText(run, "ideas", "ideas.md", renderIdeasMarkdown(ideas));
     run = await setRunState(run, "IDEAS_GENERATED", "ideas");
     return { runId: run.runId, ideas };
