@@ -4,7 +4,8 @@ import { artifactPath, writeRunJson, writeRunText } from "../core/artifacts";
 import { appendLedgerEvent } from "../core/ledger";
 import { loadRun, setRunState } from "../core/runStore";
 import { assertTransition } from "../core/transitions";
-import { checkBudget } from "../safeguards/budgetGuard";
+import { defaultStagePricing } from "../costs/pricing";
+import { enforceBudget } from "../safeguards/budgetGuard";
 import { requireApproval, requireState } from "../safeguards/approvalGuard";
 import { createLlmProvider } from "../providers";
 import { createPromptProvenance } from "../prompts/provenance";
@@ -24,6 +25,15 @@ export async function generateScript(runId: string): Promise<ScriptMeta> {
     if (!idea) {
       throw new Error(`Approved idea missing from ideas artifact: ${run.approvedIdeaId}`);
     }
+    const estimatedUsd = defaultStagePricing.script.estimatedUsd;
+    await enforceBudget({
+      run,
+      config,
+      stage: "script",
+      provider: defaultStagePricing.script.provider,
+      estimatedUsd,
+      recordCostEvent: false,
+    });
     const provider = createLlmProvider(config);
     const prompt = [
       "SCRIPT_MARKDOWN",
@@ -50,13 +60,13 @@ export async function generateScript(runId: string): Promise<ScriptMeta> {
       durationMs: result.durationMs,
       prompt: createPromptProvenance("script", prompt, "script.md"),
     };
-    await checkBudget({
+    await enforceBudget({
       run,
       config,
       stage: "script",
       provider: result.provider,
       model: result.model,
-      estimatedUsd: 0,
+      estimatedUsd,
       inputTokens: result.inputTokensApprox,
       outputTokens: result.outputTokensApprox,
       durationMs: result.durationMs,

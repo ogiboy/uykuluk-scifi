@@ -26,6 +26,9 @@ Status: implemented and under QA.
   step.
 - Validate run state on read/write and atomically replace persisted JSON files.
 - Record runtime prompt key/hash provenance for generated ideas, scripts, and production packages.
+- Run budget preflight before provider-backed generation so an already-exceeded ledger cannot cause
+  another provider call or generated artifact; use the stage pricing estimate for the reservation
+  decision.
 - Keep readiness diagnostics and evidence synchronized with the final run state.
 - Keep voice, render, upload, and publish disabled by default.
 - Persist state, artifacts, approvals, warnings, costs, and QA evidence.
@@ -43,6 +46,8 @@ Exit criteria:
 Hardening still required:
 
 - Replace hard-coded generation prompts with typed tracked runtime templates.
+- Define a dedicated paid-generation cost approval contract before any nonzero-cost provider is
+  enabled; until then, approval-threshold estimates remain blocked.
 
 ## Phase 1.5 - Project Policy And Tooling
 

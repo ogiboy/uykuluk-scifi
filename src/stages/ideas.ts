@@ -3,7 +3,8 @@ import { writeRunJson, writeRunText } from "../core/artifacts";
 import { createRun, setRunState } from "../core/runStore";
 import { assertTransition } from "../core/transitions";
 import { appendLedgerEvent } from "../core/ledger";
-import { checkBudget } from "../safeguards/budgetGuard";
+import { defaultStagePricing } from "../costs/pricing";
+import { enforceBudget } from "../safeguards/budgetGuard";
 import { createLlmProvider } from "../providers";
 import { createPromptProvenance } from "../prompts/provenance";
 import { VideoIdea } from "./types";
@@ -16,6 +17,15 @@ export async function runIdeas(): Promise<{ runId: string; ideas: VideoIdea[] }>
   assertTransition(run.state, "IDEAS_GENERATED");
   const provider = createLlmProvider(config);
   try {
+    const estimatedUsd = defaultStagePricing.ideas.estimatedUsd;
+    await enforceBudget({
+      run,
+      config,
+      stage: "ideas",
+      provider: defaultStagePricing.ideas.provider,
+      estimatedUsd,
+      recordCostEvent: false,
+    });
     const prompt = [
       "IDEAS_JSON",
       "Generate 5-10 Turkish UykulukSciFi video ideas.",
@@ -28,13 +38,13 @@ export async function runIdeas(): Promise<{ runId: string; ideas: VideoIdea[] }>
     });
     const parsed = JSON.parse(result.text) as IdeasPayload;
     const ideas = parsed.ideas.slice(0, 10);
-    await checkBudget({
+    await enforceBudget({
       run,
       config,
       stage: "ideas",
       provider: result.provider,
       model: result.model,
-      estimatedUsd: 0,
+      estimatedUsd,
       inputTokens: result.inputTokensApprox,
       outputTokens: result.outputTokensApprox,
       durationMs: result.durationMs,

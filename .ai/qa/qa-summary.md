@@ -2,8 +2,8 @@
 
 Latest usage smoke report:
 
-- `.ai/qa/artifacts/usage-smoke-20260618-152058/qa-report.md`
-- `.ai/qa/artifacts/usage-smoke-20260618-152058/usage-smoke-summary.json`
+- `.ai/qa/artifacts/usage-smoke-20260618-154022/qa-report.md`
+- `.ai/qa/artifacts/usage-smoke-20260618-154022/usage-smoke-summary.json`
 
 Validated gates:
 
@@ -36,6 +36,10 @@ Usage smoke coverage:
 - Direct Vitest coverage verifies deterministic mock output, Ollama diagnostics/usage metadata, and
   publish configuration plus approval boundaries.
 - Content/asset guard tests verify clickbait title warnings and brand/overlay/intro/outro inventory.
+- Budget preflight tests separately verify per-video, daily, and weekly blocks; ideas, scripts, and
+  production packages do not call the configured provider or write generated artifacts after those
+  blocks. A direct pricing-reservation test also proves the stage estimate is evaluated before the
+  provider call.
 - `pnpm security:dependencies` reports no known high-severity dependency vulnerabilities.
 - Readiness passes with committed brand assets.
 - Unit coverage confirms readiness blocks when `costs/estimate.json` disallows the next step or

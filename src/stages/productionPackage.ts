@@ -5,7 +5,8 @@ import { SafeExitError } from "../core/errors";
 import { appendLedgerEvent } from "../core/ledger";
 import { loadRun, setRunState } from "../core/runStore";
 import { assertTransition } from "../core/transitions";
-import { checkBudget } from "../safeguards/budgetGuard";
+import { defaultStagePricing } from "../costs/pricing";
+import { enforceBudget } from "../safeguards/budgetGuard";
 import { requireApproval, requireState } from "../safeguards/approvalGuard";
 import { createLlmProvider } from "../providers";
 import { createPromptProvenance } from "../prompts/provenance";
@@ -44,6 +45,15 @@ export async function generateProductionPackage(runId: string): Promise<void> {
       });
       throw new SafeExitError("Blocked: script changed after approval.");
     }
+    const estimatedUsd = defaultStagePricing.package.estimatedUsd;
+    await enforceBudget({
+      run,
+      config,
+      stage: "package",
+      provider: defaultStagePricing.package.provider,
+      estimatedUsd,
+      recordCostEvent: false,
+    });
     const provider = createLlmProvider(config);
     const prompt = [
       "PRODUCTION_PACKAGE_JSON",
@@ -59,13 +69,13 @@ export async function generateProductionPackage(runId: string): Promise<void> {
     const scenes = buildScenes(voiceover);
     const subtitles = buildSrt(scenes);
     const packageMarkdown = renderPackageMarkdown(providerPayload, scenes);
-    await checkBudget({
+    await enforceBudget({
       run,
       config,
       stage: "package",
       provider: result.provider,
       model: result.model,
-      estimatedUsd: 0,
+      estimatedUsd,
       inputTokens: result.inputTokensApprox,
       outputTokens: result.outputTokensApprox,
       durationMs: result.durationMs,

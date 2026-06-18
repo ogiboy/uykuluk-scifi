@@ -19,9 +19,13 @@ future generated release notes can be inserted predictably.
 - Browser QA now builds and serves the production Studio instead of running a file-watching dev
   server.
 - Script review, approval, and production packaging now require the same SHA-256 content digest.
+- Explicit public publish config now passes the configuration guard only when the run also contains
+  explicit publish approval; execution remains an intentionally disabled MVP scaffold.
 
 ### Fixed
 
+- Provider-backed idea, script, and production-package generation now blocks before provider calls
+  and artifact writes when stage pricing would exceed existing per-video, daily, or weekly budgets.
 - Production packaging now fails closed when `script.md` changes after review or approval.
 - Readiness now blocks when the persisted cost estimate disallows the next step or reports blocked
   reasons.
@@ -36,11 +40,6 @@ future generated release notes can be inserted predictably.
   pre-transition state.
 - Content review now warns on excessive clickbait title framing.
 - Asset readiness now inventories intro and outro inputs in addition to brand and overlay files.
-
-### Changed
-
-- Explicit public publish config now passes the configuration guard only when the run also contains
-  explicit publish approval; execution remains an intentionally disabled MVP scaffold.
 
 ## 0.1.0 - 2026-06-17
 

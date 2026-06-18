@@ -9,7 +9,8 @@
 - Schema-validated run records with atomic JSON replacement.
 - Approval ledger.
 - Content-addressed script review and approval; packaging rejects changed script content.
-- Cost ledger and budget guard.
+- Cost ledger and budget guard, including provider-call preflight for ideas, scripts, and production
+  packages using stage pricing estimates.
 - Script content review heuristics, including clickbait title warnings.
 - Brand, overlay, intro, and outro asset inventory checks.
 - Production package generation.
@@ -79,6 +80,8 @@ Corepack/PATH before treating failures as product failures.
 ## Known Limits
 
 - Real Ollama mode has an adapter but no live model availability QA yet.
+- Paid generation and its explicit cost-approval contract are not implemented; nonzero estimates
+  above the approval threshold fail closed.
 - Current Next.js Studio is a basic shell only; read-only run detail routes and service contracts
   are not implemented yet.
 - Locale infrastructure is ready, but full translation catalogs and a language selector are

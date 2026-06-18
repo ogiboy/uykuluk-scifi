@@ -75,11 +75,18 @@ to YouTube in the MVP.
   `runs/<run_id>/`.
 - Persisted run records are schema-validated and JSON artifacts use atomic file replacement.
 - Generated ideas, scripts, and production packages record runtime prompt key/hash provenance.
+- Idea, script, and production-package generation re-check existing per-video, daily, and weekly
+  budgets, using the stage pricing estimate, before calling a provider or writing generated
+  artifacts.
 - Readiness reads the persisted cost estimate decision and blocks if the next step is not allowed.
 - Successful readiness diagnostics and evidence reflect the final transitioned run state.
 - TTS, render, upload, and publish are intentionally blocked scaffolds.
 - Upload and public/scheduled publish require future explicit config and separate approval gates.
 - Studio must call typed local service contracts; it must not duplicate workflow state.
+
+Paid generation providers are not implemented. If a future stage estimate exceeds the configured
+approval threshold, the current core fails closed because no paid-generation approval command exists
+yet.
 
 ## Install
 

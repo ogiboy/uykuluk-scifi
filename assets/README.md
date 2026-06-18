@@ -100,6 +100,9 @@ The current asset guard inventories brand, overlay, intro, and outro directories
 subtitle/lower-third, intro, and outro availability all contribute operator-visible readiness
 warnings.
 
+Generation budget preflight does not infer asset readiness or mutate this inventory. It only blocks
+provider-backed artifact creation before these production inputs could be referenced downstream.
+
 ## Still Useful To Create Later
 
 - Editable Figma, PSD, SVG, or layered source files for thumbnail and overlay text changes.

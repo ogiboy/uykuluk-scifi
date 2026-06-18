@@ -2,6 +2,10 @@
 
 - `ApprovalGuard` blocks stage execution unless required prior approval exists.
 - `BudgetGuard` records local cost evidence and blocks budget overflow.
+- Provider-backed generation runs a stage-pricing ledger preflight before invoking the provider,
+  then enforces the recorded usage decision again before writing generated artifacts.
+- Estimates above the approval threshold remain blocked until a dedicated paid-generation approval
+  contract is designed and implemented.
 - `Readiness` consumes the persisted cost estimate decision; a blocked estimate prevents manual
   production readiness.
 - `RunStore` rejects malformed or schema-invalid state and replaces JSON files atomically.
