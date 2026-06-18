@@ -9,3 +9,4 @@ Requirements:
 - Use scientific caution.
 - Avoid overclaiming, clickbait, and unsupported certainty.
 - Prefer calm cinematic science-fiction premises.
+- The story should target at least 20 minutes of estimated narration time.
