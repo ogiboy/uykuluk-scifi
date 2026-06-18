@@ -75,6 +75,7 @@ to YouTube in the MVP.
 - Persisted run records are schema-validated and JSON artifacts use atomic file replacement.
 - Generated ideas, scripts, and production packages record runtime prompt key/hash provenance.
 - Readiness reads the persisted cost estimate decision and blocks if the next step is not allowed.
+- Successful readiness diagnostics and evidence reflect the final transitioned run state.
 - TTS, render, upload, and publish are intentionally blocked scaffolds.
 - Upload and public/scheduled publish require future explicit config and separate approval gates.
 - Studio must call typed local service contracts; it must not duplicate workflow state.

@@ -26,6 +26,7 @@ Status: implemented and under QA.
   step.
 - Validate run state on read/write and atomically replace persisted JSON files.
 - Record runtime prompt key/hash provenance for generated ideas, scripts, and production packages.
+- Keep readiness diagnostics and evidence synchronized with the final run state.
 - Keep voice, render, upload, and publish disabled by default.
 - Persist state, artifacts, approvals, warnings, costs, and QA evidence.
 

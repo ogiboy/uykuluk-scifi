@@ -2,6 +2,7 @@ import { writeFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { artifactPath } from "../src/core/artifacts";
 import { loadRun } from "../src/core/runStore";
+import { readJsonFile } from "../src/utils/json";
 import { uploadPrivatePlaceholder, publishSchedulePlaceholder } from "../src/stages/disabled";
 import { approveIdea } from "../src/stages/approveIdea";
 import { approveScript } from "../src/stages/approveScript";
@@ -36,6 +37,11 @@ describe("readiness and disabled public actions", () => {
         (check) => check.name === "public upload disabled without explicit config",
       )?.status,
     ).toBe("pass");
+    const state = await loadRun(runId);
+    const diagnostics = await readJsonFile<{ currentState: string }>(
+      artifactPath(runId, "diagnostics/readiness.json"),
+    );
+    expect(diagnostics.currentState).toBe(state.state);
   });
 
   it("blocks upload and publish by default", async () => {

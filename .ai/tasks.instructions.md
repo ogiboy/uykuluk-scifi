@@ -10,6 +10,7 @@
 - Keep first-push repo hygiene files and GitHub workflows passing.
 - Keep direct provider/publish guard coverage and CI dependency audit passing.
 - Keep script review, approval, and packaging bound to one exact content digest.
+- Keep readiness diagnostics and evidence synchronized with persisted run state.
 
 ## Next
 

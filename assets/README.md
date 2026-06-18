@@ -92,7 +92,9 @@ These files are tracked production inputs. Script review and approval are conten
 evidence also records runtime prompt hashes. Future render work must likewise record the exact asset
 paths and revisions used in each evidence bundle rather than inferring them from directory presence.
 Security dependency auditing covers executable packages; asset provenance remains governed by this
-tracked inventory and future per-run evidence.
+tracked inventory and future per-run evidence. Readiness/evidence state synchronization does not
+imply that optional asset gaps are resolved; the asset check status remains independently
+reviewable.
 
 ## Still Useful To Create Later
 

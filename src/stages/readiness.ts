@@ -107,7 +107,13 @@ export async function runReadiness(
     run.state === "COST_ESTIMATED" &&
     canTransition(run.state, "READY_FOR_MANUAL_PRODUCTION")
   ) {
-    await setRunState(run, "READY_FOR_MANUAL_PRODUCTION", "readiness");
+    run = await setRunState(run, "READY_FOR_MANUAL_PRODUCTION", "readiness");
+    await writeRunJson(run, "readiness", "diagnostics/readiness.json", {
+      runId: run.runId,
+      currentState: run.state,
+      passed,
+      checks,
+    });
     await generateEvidenceBundle(run.runId);
   }
   return { passed, checks };

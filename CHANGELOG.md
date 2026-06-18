@@ -32,6 +32,8 @@ future generated release notes can be inserted predictably.
 - Provider diagnostics and publish configuration/approval boundaries now have direct Vitest
   coverage.
 - CI now audits dependencies for high-severity known vulnerabilities.
+- Successful readiness diagnostics now record the final transitioned run state instead of the
+  pre-transition state.
 
 ### Changed
 

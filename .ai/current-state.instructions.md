@@ -14,6 +14,7 @@
 - Production package generation.
 - Evidence bundle generation.
 - Readiness diagnostics that evaluate persisted cost-estimate allow/block decisions.
+- Final readiness diagnostics agree with the post-transition run state.
 - Disabled voice, render, upload, and publish placeholders.
 - Basic Next.js Producer Studio shell under `apps/studio`.
 - Visual asset pack imported under `assets/`.

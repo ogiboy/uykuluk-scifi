@@ -132,6 +132,7 @@ try {
     "final state is READY_FOR_MANUAL_PRODUCTION",
   );
   assert(evidence.currentState === state.state, "evidence currentState matches state.json");
+  assert(readiness.currentState === state.state, "readiness currentState matches state.json");
   for (const key of [
     "approvals",
     "costs",

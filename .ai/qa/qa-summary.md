@@ -2,8 +2,8 @@
 
 Latest usage smoke report:
 
-- `.ai/qa/artifacts/usage-smoke-20260618-025748/qa-report.md`
-- `.ai/qa/artifacts/usage-smoke-20260618-025748/usage-smoke-summary.json`
+- `.ai/qa/artifacts/usage-smoke-20260618-030057/qa-report.md`
+- `.ai/qa/artifacts/usage-smoke-20260618-030057/usage-smoke-summary.json`
 
 Validated gates:
 
@@ -28,6 +28,7 @@ Usage smoke coverage:
 - Full safe workflow reaches `READY_FOR_MANUAL_PRODUCTION`.
 - Required artifacts, ledgers, cost files, readiness diagnostics, and evidence bundle exist.
 - Evidence current state matches `state.json`.
+- Readiness diagnostics current state matches `state.json` after a successful transition.
 - Run-store tests reject malformed/schema-invalid state and preserve the last valid record when an
   invalid save is attempted.
 - Evidence and clean-copy usage QA verify three runtime prompt provenance records with SHA-256
