@@ -23,6 +23,8 @@
 - Visual asset pack imported under `assets/`.
 - Clean-copy usage smoke script.
 - Direct mock/Ollama provider diagnostics and upload/publish safeguard tests.
+- `producer doctor` project diagnostics with durable local JSON/Markdown evidence for config,
+  provider/model availability, assets, and publish defaults.
 - CI high-severity dependency audit.
 - CodeRabbit, GitHub Actions, CodeQL, Dependabot, SonarQube, Prettier, ESLint,
   eslint-config-prettier, Vitest, Playwright, TypeScript, modularity, secret-scan, changelog, and
@@ -44,6 +46,7 @@
 
 ```bash
 pnpm producer init
+pnpm producer doctor
 pnpm producer ideas
 pnpm producer approve idea --run <run_id> --idea <idea_id>
 pnpm producer script --run <run_id>
@@ -80,7 +83,8 @@ Corepack/PATH before treating failures as product failures.
 
 ## Known Limits
 
-- Real Ollama mode has an adapter but no live model availability QA yet.
+- Ollama doctor checks server reachability and configured model inventory, but live local-model QA
+  is environment-dependent and not part of CI.
 - Paid generation and its explicit cost-approval contract are not implemented; nonzero estimates
   above the approval threshold fail closed.
 - Current Next.js Studio is a basic shell only; read-only run detail routes and service contracts

@@ -2,8 +2,8 @@
 
 Latest usage smoke report:
 
-- `.ai/qa/artifacts/usage-smoke-20260618-154558/qa-report.md`
-- `.ai/qa/artifacts/usage-smoke-20260618-154558/usage-smoke-summary.json`
+- `.ai/qa/artifacts/usage-smoke-20260618-155825/qa-report.md`
+- `.ai/qa/artifacts/usage-smoke-20260618-155825/usage-smoke-summary.json`
 
 Validated gates:
 
@@ -20,6 +20,11 @@ Usage smoke coverage:
 - Clean temporary project copy.
 - Fresh `pnpm install`.
 - `pnpm producer init` creates local config and directories.
+- `pnpm producer doctor` passes in the clean mock setup and writes project-level JSON/Markdown
+  diagnostics without creating a run.
+- Direct doctor tests cover unavailable Ollama, missing configured model, invalid config, risky
+  YouTube enablement, missing-asset warnings, bounded HTTP error evidence, duration, and durable
+  reports.
 - Mock default config keeps YouTube upload and public publish disabled.
 - Script is blocked before idea approval.
 - Package is blocked before script approval.
@@ -53,7 +58,8 @@ Usage smoke coverage:
 
 Remaining known MVP limits:
 
-- Real Ollama mode is implemented but not exercised in QA because mock mode is the MVP default.
+- Ollama reachability/model-inventory diagnostics are covered with deterministic HTTP fixtures; live
+  local Ollama generation remains environment-dependent because mock mode is the CI default.
 - Asset packs now include thumbnails, background plates, transitions, popup icons, waveform
   overlays, and intro/outro frames. Editable source files, rendered intro/outro clips, and font
   licensing notes remain useful before render work.

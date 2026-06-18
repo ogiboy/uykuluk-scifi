@@ -22,12 +22,12 @@
   keys, tracked runtime defaults, source paths, and prompt hashes are implemented.
 - Define revision events for script, subtitles, scene prompts, popup cards, and YouTube metadata
   edits.
-- Add a `producer doctor` command for provider and asset readiness.
+- Keep `producer doctor` config/provider/model/asset/publish diagnostics and evidence passing.
 - Add route security requirements before any web action routes exist.
 
 ## Later
 
-- Real Ollama readiness checks.
+- Live Ollama generation QA on an operator machine with the configured model installed.
 - Local TTS behind script approval and cost estimate.
 - FFmpeg render behind render approval.
 - Private YouTube upload behind upload approval and explicit config.

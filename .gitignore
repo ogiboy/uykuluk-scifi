@@ -26,6 +26,8 @@ producer.config.json
 runs/*
 !runs/.gitkeep
 
+/diagnostics/
+
 *.log
 *.tsbuildinfo
 next-env.d.ts

@@ -14,11 +14,88 @@ type OllamaGenerateResponse = {
   error?: string;
 };
 
+type OllamaTagsResponse = {
+  models?: Array<{
+    name?: string;
+    model?: string;
+  }>;
+};
+
+export type OllamaDiagnostic = {
+  available: boolean;
+  baseUrl: string;
+  model: string;
+  installedModels: string[];
+  message: string;
+};
+
 export class OllamaProvider implements LlmProvider {
   constructor(
     private readonly baseUrl: string,
     private readonly defaultModel: string,
   ) {}
+
+  async diagnose(timeoutMs = 3_000): Promise<OllamaDiagnostic> {
+    const baseUrl = this.baseUrl.replace(/\/$/, "");
+    let response: Response;
+    try {
+      response = await fetch(`${baseUrl}/api/tags`, {
+        signal: AbortSignal.timeout(timeoutMs),
+      });
+    } catch (error) {
+      return {
+        available: false,
+        baseUrl,
+        model: this.defaultModel,
+        installedModels: [],
+        message: `Ollama unavailable at ${baseUrl}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      };
+    }
+    if (!response.ok) {
+      return {
+        available: false,
+        baseUrl,
+        model: this.defaultModel,
+        installedModels: [],
+        message: `Ollama diagnostics failed (${response.status} ${response.statusText || "HTTP error"}).`,
+      };
+    }
+    try {
+      const payload = (await response.json()) as OllamaTagsResponse;
+      const installedModels = Array.from(
+        new Set(
+          (payload.models ?? [])
+            .flatMap((model) => [model.name, model.model])
+            .filter((model): model is string => Boolean(model)),
+        ),
+      );
+      const available = installedModels.includes(this.defaultModel);
+      const visibleModels = installedModels.slice(0, 20);
+      return {
+        available,
+        baseUrl,
+        model: this.defaultModel,
+        installedModels,
+        message: available
+          ? `Ollama model ${this.defaultModel} is available at ${baseUrl}.`
+          : `Configured Ollama model ${this.defaultModel} is not installed. Installed models: ${
+              visibleModels.join(", ") || "none"
+            }${installedModels.length > visibleModels.length ? ", …" : ""}.`,
+      };
+    } catch (error) {
+      return {
+        available: false,
+        baseUrl,
+        model: this.defaultModel,
+        installedModels: [],
+        message: `Ollama diagnostics returned invalid JSON: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      };
+    }
+  }
 
   async generateText(input: GenerateTextInput): Promise<GenerateTextResult> {
     const started = Date.now();

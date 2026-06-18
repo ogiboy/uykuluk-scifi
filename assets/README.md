@@ -100,6 +100,9 @@ The current asset guard inventories brand, overlay, intro, and outro directories
 subtitle/lower-third, intro, and outro availability all contribute operator-visible readiness
 warnings.
 
+`pnpm producer doctor` runs the same inventory before a run and records the result in ignored local
+project diagnostics. Asset warnings do not create a run or imply production approval.
+
 Generation budget preflight does not infer asset readiness or mutate this inventory. It only blocks
 provider-backed artifact creation before these production inputs could be referenced downstream.
 Tracked runtime prompt changes likewise affect future text artifacts only; they do not rewrite,

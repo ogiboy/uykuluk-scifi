@@ -59,6 +59,27 @@ try {
   run([pnpm, "install"], { label: "clean install" });
   run([pnpm, "producer", "init"], { label: "init creates config and dirs" });
   await assertFile("producer.config.json");
+  run([pnpm, "producer", "doctor"], {
+    label: "doctor validates local setup",
+    expectOutput: "Doctor passed",
+  });
+  await assertFile("diagnostics/doctor.json");
+  await assertFile("diagnostics/doctor.md");
+  const doctor = JSON.parse(
+    await readFile(path.join(workdir, "diagnostics", "doctor.json"), "utf8"),
+  );
+  assert(doctor.passed === true, "doctor JSON passed=true");
+  for (const checkName of [
+    "project config",
+    "LLM provider",
+    "production assets",
+    "publish defaults",
+  ]) {
+    assert(
+      doctor.checks.some((check) => check.name === checkName && check.status === "pass"),
+      `doctor passes ${checkName}`,
+    );
+  }
 
   const defaults = JSON.parse(await readFile(path.join(workdir, "producer.config.json"), "utf8"));
   assert(defaults.providers.llm.mode === "mock", "default LLM mode is mock");

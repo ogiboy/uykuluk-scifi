@@ -29,6 +29,8 @@ to YouTube in the MVP.
 - Studio foundation with Tailwind CSS v4, shadcn-style primitives, Radix UI, lucide icons, GSAP, and
   `next/font`.
 - Mock-first provider layer with Ollama adapter scaffold.
+- Project-level `producer doctor` diagnostics for config, mock/Ollama readiness, assets, and publish
+  defaults.
 - Strict run state machine and explicit approval ledger.
 - Cost ledger, budget guard, content/clickbait review, full asset readiness, and evidence bundle
   generation.
@@ -94,6 +96,7 @@ yet.
 ```bash
 pnpm install
 pnpm producer init
+pnpm producer doctor
 ```
 
 If your shell cannot find `pnpm` or `node`, restore Node 22/Corepack first. The repository declares
@@ -102,6 +105,7 @@ If your shell cannot find `pnpm` or `node`, restore Node 22/Corepack first. The 
 ## CLI MVP Workflow
 
 ```bash
+pnpm producer doctor
 pnpm producer ideas
 pnpm producer approve idea --run <run_id> --idea <idea_id>
 pnpm producer script --run <run_id>
@@ -217,6 +221,11 @@ pnpm producer init
 Keep `producer.config.json` ignored. Keep `providers.llm.mode` as `mock` for normal local testing.
 Use `ollama` only when a local Ollama server and model are available.
 
+Run `pnpm producer doctor` before starting production work. Mock mode passes without network access.
+Ollama mode checks `/api/tags` with a bounded timeout and blocks when the server is unavailable or
+the configured model is not installed. The command writes ignored local evidence to
+`diagnostics/doctor.json` and `diagnostics/doctor.md`; it does not create a run or grant approval.
+
 Tracked runtime prompt defaults:
 
 - `.ai/prompts/planner-task.md`
@@ -243,7 +252,8 @@ Each run can write:
 - `diagnostics/readiness.json` and `diagnostics/readiness.md`;
 - `ledger.jsonl`.
 
-Generated run directories are ignored except `runs/.gitkeep`.
+Generated run directories are ignored except `runs/.gitkeep`. Generated project diagnostics under
+`diagnostics/` are also ignored.
 
 ## Branch And Release Policy
 

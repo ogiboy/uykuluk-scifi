@@ -14,6 +14,8 @@ future generated release notes can be inserted predictably.
 - Basic type-safe `next-intl` foundation for English and Turkish Studio locales.
 - Unit and browser coverage for locale normalization and cookie-based document language.
 - Typed runtime loading for tracked idea, scriptwriter, and production-package prompt defaults.
+- `producer doctor` diagnostics for project config, mock/Ollama readiness, asset inventory, and safe
+  publish defaults, with local JSON/Markdown evidence.
 
 ### Changed
 

@@ -34,6 +34,8 @@ Status: implemented and under QA.
 - Keep voice, render, upload, and publish disabled by default.
 - Persist state, artifacts, approvals, warnings, costs, and QA evidence.
 - Warn on clickbait title framing and inventory brand, overlay, intro, and outro assets.
+- Diagnose project config, mock/Ollama availability, required assets, and publish-default safety
+  before a run through `producer doctor`.
 
 Exit criteria:
 
@@ -174,9 +176,10 @@ Rules:
 
 ## Phase 3 - Real Local Providers
 
-Status: planned.
+Status: foundation in progress.
 
-- Add `producer doctor` for local provider readiness.
+- `producer doctor` provides local config, provider, asset, and publish-default diagnostics with
+  durable ignored JSON/Markdown evidence.
 - Improve Ollama model availability checks.
 - Record provider duration and token estimates consistently.
 - Keep provider failures explicit in readiness and evidence.
