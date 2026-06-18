@@ -22,6 +22,8 @@ Status: implemented and under QA.
 - Generate voiceover text, subtitles, scene prompts, popup cards, and YouTube metadata drafts.
 - Estimate costs.
 - Generate evidence bundle and readiness diagnostics.
+- Block readiness when the persisted cost estimate reports blocked reasons or disallows the next
+  step.
 - Keep voice, render, upload, and publish disabled by default.
 - Persist state, artifacts, approvals, warnings, costs, and QA evidence.
 
@@ -36,7 +38,6 @@ Exit criteria:
 
 Hardening still required:
 
-- Make readiness evaluate budget estimate contents instead of artifact existence alone.
 - Persist prompt key/hash provenance for generated artifacts.
 - Validate persisted state and use crash-safe state writes.
 

@@ -19,8 +19,6 @@
 - Define revision events for script, subtitles, scene prompts, popup cards, and YouTube metadata
   edits.
 - Add a `producer doctor` command for provider and asset readiness.
-- Make readiness fail closed when the persisted estimate reports a budget block or required
-  approval.
 - Record prompt keys and hashes in generation metadata and evidence.
 - Add schema validation and atomic replacement for persisted run state.
 - Add route security requirements before any web action routes exist.

@@ -1,4 +1,7 @@
+import { writeFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
+import { artifactPath } from "../src/core/artifacts";
+import { loadRun } from "../src/core/runStore";
 import { uploadPrivatePlaceholder, publishSchedulePlaceholder } from "../src/stages/disabled";
 import { approveIdea } from "../src/stages/approveIdea";
 import { approveScript } from "../src/stages/approveScript";
@@ -52,5 +55,37 @@ describe("readiness and disabled public actions", () => {
     await expect(publishSchedulePlaceholder(runId)).rejects.toThrow(
       /requires explicit publish approval|Publish is disabled/,
     );
+  });
+
+  it("blocks readiness when the persisted cost estimate is not allowed", async () => {
+    const { runId, ideas } = await runIdeas();
+    await approveIdea(runId, ideas[0].id);
+    await generateScript(runId);
+    await reviewScript(runId);
+    await approveScript(runId);
+    await generateProductionPackage(runId);
+    await estimateCost(runId);
+    await generateEvidenceBundle(runId);
+    await writeFile(
+      artifactPath(runId, "costs/estimate.json"),
+      `${JSON.stringify(
+        {
+          nextStepAllowed: false,
+          blockedReasons: ["Per-video budget exceeded: 2 > 1."],
+        },
+        null,
+        2,
+      )}\n`,
+      "utf8",
+    );
+
+    const readiness = await runReadiness(runId);
+
+    expect(readiness.passed).toBe(false);
+    expect(readiness.checks.find((check) => check.name === "budget not exceeded")).toMatchObject({
+      status: "block",
+      message: expect.stringContaining("Per-video budget exceeded"),
+    });
+    expect((await loadRun(runId)).state).toBe("COST_ESTIMATED");
   });
 });

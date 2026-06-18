@@ -2,8 +2,8 @@
 
 Latest usage smoke report:
 
-- `.ai/qa/artifacts/usage-smoke-20260617-230921/qa-report.md`
-- `.ai/qa/artifacts/usage-smoke-20260617-230921/usage-smoke-summary.json`
+- `.ai/qa/artifacts/usage-smoke-20260617-233133/qa-report.md`
+- `.ai/qa/artifacts/usage-smoke-20260617-233133/usage-smoke-summary.json`
 
 Validated gates:
 
@@ -29,6 +29,8 @@ Usage smoke coverage:
 - Required artifacts, ledgers, cost files, readiness diagnostics, and evidence bundle exist.
 - Evidence current state matches `state.json`.
 - Readiness passes with committed brand assets.
+- Unit coverage confirms readiness blocks when `costs/estimate.json` disallows the next step or
+  reports blocked reasons.
 - Voice, render, upload, and publish are blocked by default.
 - Playwright browser smoke verifies the initial Studio shell, module tabs, and cookie-based document
   locale through a production build/server.

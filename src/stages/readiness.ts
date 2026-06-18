@@ -4,6 +4,7 @@ import { loadRun, setRunState } from "../core/runStore";
 import { canTransition } from "../core/transitions";
 import { checkAssets } from "../safeguards/assetGuard";
 import { pathExists } from "../utils/fs";
+import { readJsonFile } from "../utils/json";
 import { bulletList, table } from "../utils/markdown";
 import { generateEvidenceBundle } from "./evidence";
 
@@ -55,7 +56,7 @@ export async function runReadiness(
       "production package generated",
       "production/production_package.md",
     ),
-    await artifactCheck(run.runId, "budget not exceeded", "costs/estimate.json"),
+    await budgetEstimateCheck(run.runId),
     {
       name: "no blocked publish action",
       status: "pass",
@@ -123,6 +124,48 @@ async function artifactCheck(
     `${relativePath} exists.`,
     `${relativePath} is missing.`,
   );
+}
+
+async function budgetEstimateCheck(runId: string): Promise<ReadinessCheck> {
+  const relativePath = "costs/estimate.json";
+  const target = artifactPath(runId, relativePath);
+  if (!(await pathExists(target))) {
+    return {
+      name: "budget not exceeded",
+      status: "block",
+      message: `${relativePath} is missing.`,
+    };
+  }
+  try {
+    const estimate = await readJsonFile<{
+      nextStepAllowed?: boolean;
+      blockedReasons?: unknown;
+    }>(target);
+    const blockedReasons = Array.isArray(estimate.blockedReasons)
+      ? estimate.blockedReasons.filter((reason): reason is string => typeof reason === "string")
+      : [];
+    if (estimate.nextStepAllowed !== true || blockedReasons.length > 0) {
+      return {
+        name: "budget not exceeded",
+        status: "block",
+        message:
+          blockedReasons.length > 0
+            ? blockedReasons.join(" ")
+            : "Cost estimate does not allow the next step.",
+      };
+    }
+    return {
+      name: "budget not exceeded",
+      status: "pass",
+      message: "Cost estimate allows the next step.",
+    };
+  } catch (error) {
+    return {
+      name: "budget not exceeded",
+      status: "block",
+      message: `Cost estimate could not be read: ${(error as Error).message}`,
+    };
+  }
 }
 
 async function fileCheck(

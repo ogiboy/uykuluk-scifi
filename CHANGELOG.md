@@ -23,6 +23,8 @@ future generated release notes can be inserted predictably.
 ### Fixed
 
 - Production packaging now fails closed when `script.md` changes after review or approval.
+- Readiness now blocks when the persisted cost estimate disallows the next step or reports blocked
+  reasons.
 
 ## 0.1.0 - 2026-06-17
 
