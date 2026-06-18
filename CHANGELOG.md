@@ -29,6 +29,14 @@ future generated release notes can be inserted predictably.
   replacement.
 - Evidence bundles now include runtime prompt key/hash provenance for ideas, scripts, and production
   packages.
+- Provider diagnostics and publish configuration/approval boundaries now have direct Vitest
+  coverage.
+- CI now audits dependencies for high-severity known vulnerabilities.
+
+### Changed
+
+- Explicit public publish config now passes the configuration guard only when the run also contains
+  explicit publish approval; execution remains an intentionally disabled MVP scaffold.
 
 ## 0.1.0 - 2026-06-17
 

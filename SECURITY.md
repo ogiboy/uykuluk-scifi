@@ -63,6 +63,7 @@ The intended defaults are:
 - upload and public/scheduled publish disabled by default;
 - Studio routes as thin local wrappers around typed core services;
 - secrets only in ignored local env/config files;
+- high-severity dependency vulnerabilities audited in CI;
 - evidence and QA artifacts redacted before sharing.
 
 Any change that weakens these defaults should be treated as a security regression unless an explicit

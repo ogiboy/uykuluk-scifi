@@ -20,6 +20,7 @@ and QA artifacts.
 - Shape validation for future web route inputs.
 - Secret redaction in logs and QA artifacts.
 - No raw web/provider text treated as instructions.
+- High-severity dependency audit enforced in CI.
 
 ## Negative Tests
 
@@ -27,4 +28,6 @@ and QA artifacts.
 - Stale approval rejected.
 - Malformed run id rejected.
 - Public publish rejected by default.
+- Explicit publish config still requires a matching run approval.
+- Ollama network failures produce operator-facing diagnostics without hiding the provider error.
 - Future web route rejects foreign/malformed action requests.

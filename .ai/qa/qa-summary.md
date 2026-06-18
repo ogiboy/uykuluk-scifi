@@ -2,8 +2,8 @@
 
 Latest usage smoke report:
 
-- `.ai/qa/artifacts/usage-smoke-20260618-025357/qa-report.md`
-- `.ai/qa/artifacts/usage-smoke-20260618-025357/usage-smoke-summary.json`
+- `.ai/qa/artifacts/usage-smoke-20260618-025748/qa-report.md`
+- `.ai/qa/artifacts/usage-smoke-20260618-025748/usage-smoke-summary.json`
 
 Validated gates:
 
@@ -32,6 +32,9 @@ Usage smoke coverage:
   invalid save is attempted.
 - Evidence and clean-copy usage QA verify three runtime prompt provenance records with SHA-256
   hashes.
+- Direct Vitest coverage verifies deterministic mock output, Ollama diagnostics/usage metadata, and
+  publish configuration plus approval boundaries.
+- `pnpm security:dependencies` reports no known high-severity dependency vulnerabilities.
 - Readiness passes with committed brand assets.
 - Unit coverage confirms readiness blocks when `costs/estimate.json` disallows the next step or
   reports blocked reasons.

@@ -50,6 +50,7 @@ Status: in progress.
 - Keep CodeRabbit focused on approval gates, cost controls, evidence, assets, frontend route safety,
   and no public publish by default.
 - Add Prettier as the shared formatting contract.
+- Keep direct provider/publish safeguard tests and high-severity dependency audit in CI.
 - Keep QA evidence under `.ai/qa/artifacts/`.
 - Document visual asset inventory and gaps.
 

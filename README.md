@@ -176,6 +176,7 @@ pnpm studio:build
 pnpm qa:browser
 pnpm qa:modularity
 pnpm security:check
+pnpm security:dependencies
 pnpm changelog:check
 pnpm format:check
 ```

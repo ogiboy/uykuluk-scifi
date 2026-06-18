@@ -91,6 +91,8 @@ Imported from:
 These files are tracked production inputs. Script review and approval are content-addressed today;
 evidence also records runtime prompt hashes. Future render work must likewise record the exact asset
 paths and revisions used in each evidence bundle rather than inferring them from directory presence.
+Security dependency auditing covers executable packages; asset provenance remains governed by this
+tracked inventory and future per-run evidence.
 
 ## Still Useful To Create Later
 

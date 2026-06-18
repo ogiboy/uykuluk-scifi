@@ -18,6 +18,8 @@
 - Basic Next.js Producer Studio shell under `apps/studio`.
 - Visual asset pack imported under `assets/`.
 - Clean-copy usage smoke script.
+- Direct mock/Ollama provider diagnostics and upload/publish safeguard tests.
+- CI high-severity dependency audit.
 - CodeRabbit, GitHub Actions, CodeQL, Dependabot, SonarQube, Prettier, ESLint,
   eslint-config-prettier, Vitest, Playwright, TypeScript, modularity, secret-scan, changelog, and
   release hygiene gates.
