@@ -23,6 +23,6 @@ Canonical inspection files include `state.json`, `ledger.jsonl`, `costs/ledger.j
 `reviews/script_review.json`, `costs/estimate.json`, `evidence_bundle.json`, and
 `diagnostics/readiness.json`.
 
-Current readiness validates the persisted cost-estimate allow/block decision, but does not yet
-validate prompt provenance or schema/atomic-write integrity. Treat those as open hardening gaps, not
-as proven guarantees.
+Current readiness validates the persisted cost-estimate allow/block decision. Run state is
+schema-validated and JSON writes use atomic replacement. Prompt provenance is still an open
+hardening gap, not a proven guarantee.

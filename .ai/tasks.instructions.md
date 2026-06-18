@@ -20,7 +20,6 @@
   edits.
 - Add a `producer doctor` command for provider and asset readiness.
 - Record prompt keys and hashes in generation metadata and evidence.
-- Add schema validation and atomic replacement for persisted run state.
 - Add route security requirements before any web action routes exist.
 
 ## Later

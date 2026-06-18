@@ -1,7 +1,7 @@
 import path from "node:path";
 import { readdir } from "node:fs/promises";
 import { appendLedgerEvent } from "./ledger";
-import { RunRecord, RunState } from "./state";
+import { RunRecord, RunState, runRecordSchema } from "./state";
 import { invariant, SafeExitError } from "./errors";
 import { ensureDir, pathExists } from "../utils/fs";
 import { readJsonFile, writeJsonFile } from "../utils/json";
@@ -45,14 +45,21 @@ export async function createRun(): Promise<RunRecord> {
 export async function loadRun(runId: string): Promise<RunRecord> {
   const target = statePath(runId);
   invariant(await pathExists(target), `Run not found: ${runId}`);
-  return readJsonFile<RunRecord>(target);
+  try {
+    return runRecordSchema.parse(await readJsonFile<unknown>(target));
+  } catch (error) {
+    throw new SafeExitError(
+      `Run state is invalid for ${runId}: ${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
 }
 
 export async function saveRun(record: RunRecord): Promise<void> {
-  await writeJsonFile(statePath(record.runId), {
+  const updated = runRecordSchema.parse({
     ...record,
     updatedAt: nowIso(),
   });
+  await writeJsonFile(statePath(record.runId), updated);
 }
 
 export async function setRunState(

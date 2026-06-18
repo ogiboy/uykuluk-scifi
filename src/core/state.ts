@@ -1,45 +1,61 @@
-export type RunState =
-  | "NEW"
-  | "IDEAS_GENERATED"
-  | "IDEA_APPROVED"
-  | "SCRIPT_GENERATED"
-  | "SCRIPT_REVIEWED"
-  | "SCRIPT_APPROVED"
-  | "PRODUCTION_PACKAGE_GENERATED"
-  | "COST_ESTIMATED"
-  | "READY_FOR_MANUAL_PRODUCTION"
-  | "RENDER_APPROVED"
-  | "RENDERED"
-  | "UPLOAD_APPROVED"
-  | "UPLOADED_PRIVATE"
-  | "PUBLISH_APPROVED"
-  | "SCHEDULED_OR_PUBLIC"
-  | "ARCHIVED"
-  | "FAILED";
+import { z } from "zod";
 
-export type ApprovalTarget = "idea" | "script" | "render" | "upload" | "publish";
+const runStates = [
+  "NEW",
+  "IDEAS_GENERATED",
+  "IDEA_APPROVED",
+  "SCRIPT_GENERATED",
+  "SCRIPT_REVIEWED",
+  "SCRIPT_APPROVED",
+  "PRODUCTION_PACKAGE_GENERATED",
+  "COST_ESTIMATED",
+  "READY_FOR_MANUAL_PRODUCTION",
+  "RENDER_APPROVED",
+  "RENDERED",
+  "UPLOAD_APPROVED",
+  "UPLOADED_PRIVATE",
+  "PUBLISH_APPROVED",
+  "SCHEDULED_OR_PUBLIC",
+  "ARCHIVED",
+  "FAILED",
+] as const;
 
-export type ApprovalRecord = {
-  approvalId: string;
-  runId: string;
-  target: ApprovalTarget;
-  approvedRef?: string;
-  previousState: RunState;
-  nextState: RunState;
-  approvingCommand: string;
-  createdAt: string;
-};
+const approvalTargets = ["idea", "script", "render", "upload", "publish"] as const;
 
-export type RunRecord = {
-  runId: string;
-  state: RunState;
-  createdAt: string;
-  updatedAt: string;
-  approvedIdeaId?: string;
-  approvals: ApprovalRecord[];
-  artifacts: string[];
-  warnings: string[];
-};
+export const runStateSchema = z.enum(runStates);
+export const approvalTargetSchema = z.enum(approvalTargets);
+
+export type RunState = z.infer<typeof runStateSchema>;
+export type ApprovalTarget = z.infer<typeof approvalTargetSchema>;
+
+export const approvalRecordSchema = z
+  .object({
+    approvalId: z.string().min(1),
+    runId: z.string().min(1),
+    target: approvalTargetSchema,
+    approvedRef: z.string().min(1).optional(),
+    previousState: runStateSchema,
+    nextState: runStateSchema,
+    approvingCommand: z.string().min(1),
+    createdAt: z.string().min(1),
+  })
+  .strict();
+
+export const runRecordSchema = z
+  .object({
+    runId: z.string().min(1),
+    state: runStateSchema,
+    createdAt: z.string().min(1),
+    updatedAt: z.string().min(1),
+    approvedIdeaId: z.string().min(1).optional(),
+    approvals: z.array(approvalRecordSchema),
+    artifacts: z.array(z.string()),
+    warnings: z.array(z.string()),
+  })
+  .strict();
+
+export type ApprovalRecord = z.infer<typeof approvalRecordSchema>;
+export type RunRecord = z.infer<typeof runRecordSchema>;
 
 export type LedgerEventType =
   | "RUN_CREATED"
@@ -75,22 +91,4 @@ export type CostEvent = {
   createdAt: string;
 };
 
-export const orderedStates: RunState[] = [
-  "NEW",
-  "IDEAS_GENERATED",
-  "IDEA_APPROVED",
-  "SCRIPT_GENERATED",
-  "SCRIPT_REVIEWED",
-  "SCRIPT_APPROVED",
-  "PRODUCTION_PACKAGE_GENERATED",
-  "COST_ESTIMATED",
-  "READY_FOR_MANUAL_PRODUCTION",
-  "RENDER_APPROVED",
-  "RENDERED",
-  "UPLOAD_APPROVED",
-  "UPLOADED_PRIVATE",
-  "PUBLISH_APPROVED",
-  "SCHEDULED_OR_PUBLIC",
-  "ARCHIVED",
-  "FAILED",
-];
+export const orderedStates: RunState[] = [...runStates];

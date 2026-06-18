@@ -25,6 +25,8 @@ future generated release notes can be inserted predictably.
 - Production packaging now fails closed when `script.md` changes after review or approval.
 - Readiness now blocks when the persisted cost estimate disallows the next step or reports blocked
   reasons.
+- Run loading now rejects malformed or schema-invalid state, and JSON persistence uses atomic
+  replacement.
 
 ## 0.1.0 - 2026-06-17
 

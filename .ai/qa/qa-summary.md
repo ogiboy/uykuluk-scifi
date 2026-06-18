@@ -2,8 +2,8 @@
 
 Latest usage smoke report:
 
-- `.ai/qa/artifacts/usage-smoke-20260617-233133/qa-report.md`
-- `.ai/qa/artifacts/usage-smoke-20260617-233133/usage-smoke-summary.json`
+- `.ai/qa/artifacts/usage-smoke-20260618-024953/qa-report.md`
+- `.ai/qa/artifacts/usage-smoke-20260618-024953/usage-smoke-summary.json`
 
 Validated gates:
 
@@ -28,6 +28,8 @@ Usage smoke coverage:
 - Full safe workflow reaches `READY_FOR_MANUAL_PRODUCTION`.
 - Required artifacts, ledgers, cost files, readiness diagnostics, and evidence bundle exist.
 - Evidence current state matches `state.json`.
+- Run-store tests reject malformed/schema-invalid state and preserve the last valid record when an
+  invalid save is attempted.
 - Readiness passes with committed brand assets.
 - Unit coverage confirms readiness blocks when `costs/estimate.json` disallows the next step or
   reports blocked reasons.

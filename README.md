@@ -72,6 +72,7 @@ to YouTube in the MVP.
 - Production packaging requires explicit script approval for the unchanged reviewed content.
 - Every run persists state, ledger events, costs, warnings, artifacts, and evidence under
   `runs/<run_id>/`.
+- Persisted run records are schema-validated and JSON artifacts use atomic file replacement.
 - Readiness reads the persisted cost estimate decision and blocks if the next step is not allowed.
 - TTS, render, upload, and publish are intentionally blocked scaffolds.
 - Upload and public/scheduled publish require future explicit config and separate approval gates.
