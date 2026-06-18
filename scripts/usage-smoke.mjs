@@ -3,6 +3,7 @@ import { existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
+import { runDoctorSmoke, runScriptRevisionSmoke } from "./qa/usage-smoke-flows.mjs";
 
 const repoRoot = process.cwd();
 const pnpm = process.env.PNPM_EXECUTABLE ?? "pnpm";
@@ -59,27 +60,7 @@ try {
   run([pnpm, "install"], { label: "clean install" });
   run([pnpm, "producer", "init"], { label: "init creates config and dirs" });
   await assertFile("producer.config.json");
-  run([pnpm, "producer", "doctor"], {
-    label: "doctor validates local setup",
-    expectOutput: "Doctor passed",
-  });
-  await assertFile("diagnostics/doctor.json");
-  await assertFile("diagnostics/doctor.md");
-  const doctor = JSON.parse(
-    await readFile(path.join(workdir, "diagnostics", "doctor.json"), "utf8"),
-  );
-  assert(doctor.passed === true, "doctor JSON passed=true");
-  for (const checkName of [
-    "project config",
-    "LLM provider",
-    "production assets",
-    "publish defaults",
-  ]) {
-    assert(
-      doctor.checks.some((check) => check.name === checkName && check.status === "pass"),
-      `doctor passes ${checkName}`,
-    );
-  }
+  await runDoctorSmoke({ run, pnpm, workdir, assertFile, assert });
 
   const defaults = JSON.parse(await readFile(path.join(workdir, "producer.config.json"), "utf8"));
   assert(defaults.providers.llm.mode === "mock", "default LLM mode is mock");
@@ -119,6 +100,7 @@ try {
     label: "approve idea",
   });
   run([pnpm, "producer", "script", "--run", runId], { label: "script" });
+  await runScriptRevisionSmoke({ run, pnpm, workdir, runId, assertFile, assert });
   run([pnpm, "producer", "review", "script", "--run", runId], { label: "review script" });
   run([pnpm, "producer", "approve", "script", "--run", runId], { label: "approve script" });
   run([pnpm, "producer", "package", "--run", runId], { label: "package" });
@@ -160,6 +142,7 @@ try {
     "warnings",
     "generatedArtifacts",
     "promptProvenance",
+    "revisions",
     "blockedActions",
     "nextRecommendedCommand",
   ]) {
@@ -180,6 +163,7 @@ try {
     ),
     "prompt provenance records contain tracked sources and stable SHA-256 hashes",
   );
+  assert(evidence.revisions.length === 1, "evidence includes one script revision");
   assert(readiness.passed === true, "readiness JSON passed=true");
   assert(
     readiness.checks.some(
@@ -203,6 +187,7 @@ try {
     "RUN_CREATED",
     "STATE_CHANGED",
     "ARTIFACT_WRITTEN",
+    "ARTIFACT_REVISED",
     "APPROVAL_RECORDED",
     "COST_ESTIMATED",
     "GUARD_PASSED",

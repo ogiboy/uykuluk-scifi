@@ -61,6 +61,7 @@ export type LedgerEventType =
   | "RUN_CREATED"
   | "STATE_CHANGED"
   | "ARTIFACT_WRITTEN"
+  | "ARTIFACT_REVISED"
   | "APPROVAL_RECORDED"
   | "COST_ESTIMATED"
   | "GUARD_PASSED"

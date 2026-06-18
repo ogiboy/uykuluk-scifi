@@ -49,6 +49,9 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
     generatedArtifacts: run.artifacts,
     warnings: run.warnings,
     promptProvenance,
+    revisions: run.artifacts.filter(
+      (item) => item.startsWith("revisions/") && item.endsWith("/revision.json"),
+    ),
     blockedActions,
     nextRecommendedCommand: nextCommand(run.state),
     ledgerEventCount: ledger.length,
@@ -84,6 +87,7 @@ function renderEvidenceMarkdown(bundle: unknown): string {
     generatedArtifacts: string[];
     warnings: string[];
     promptProvenance: PromptProvenance[];
+    revisions: string[];
     blockedActions: string[];
     nextRecommendedCommand: string;
   };
@@ -114,6 +118,10 @@ function renderEvidenceMarkdown(bundle: unknown): string {
           `${prompt.key}: ${prompt.hash} from ${prompt.source ?? "legacy-inline"} -> ${path.posix.normalize(prompt.artifact)}`,
       ),
     ),
+    "",
+    "## Revisions",
+    "",
+    bulletList(data.revisions.map((revision) => path.posix.normalize(revision))),
     "",
     "## Artifacts",
     "",

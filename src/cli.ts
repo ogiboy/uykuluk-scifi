@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { Command } from "commander";
+import { registerRevisionCommands } from "./cli/revisionCommands";
 import { initProject } from "./config/config";
 import { SafeExitError } from "./core/errors";
 import { listRuns, loadRun } from "./core/runStore";
@@ -111,6 +112,8 @@ review
       console.log(`Script reviewed. Warnings: ${result.warnings.length}`);
     }),
   );
+
+registerRevisionCommands(program, wrap);
 
 program
   .command("package")
