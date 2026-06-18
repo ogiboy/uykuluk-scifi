@@ -10,6 +10,8 @@
 - Schema-validated run records with atomic JSON replacement.
 - Approval ledger.
 - Content-addressed script review and approval; packaging rejects changed script content.
+- Attributable script revisions with before/after snapshots, stale review/approval invalidation, and
+  evidence-bundle visibility.
 - Cost ledger and budget guard, including provider-call preflight for ideas, scripts, and production
   packages using stage pricing estimates.
 - Script content review heuristics, including clickbait title warnings.
@@ -25,6 +27,13 @@
 - Direct mock/Ollama provider diagnostics and upload/publish safeguard tests.
 - `producer doctor` project diagnostics with durable local JSON/Markdown evidence for config,
   provider/model availability, assets, and publish defaults.
+- Project-local capability inventory and routing for engineering, product, design, marketing, data,
+  security, testing, research, release, browser QA, and swarm orchestration.
+- Explicit frontend taste routing for public pages, cinematic landing pages, Google Stitch design
+  generation, and legacy compatibility, while keeping Producer Studio on its operator-focused design
+  system.
+- Durable long-task checkpoints and context-budget rules that avoid reloading the full host
+  capability catalog or forking oversized threads.
 - CI high-severity dependency audit.
 - CodeRabbit, GitHub Actions, CodeQL, Dependabot, SonarQube, Prettier, ESLint,
   eslint-config-prettier, Vitest, Playwright, TypeScript, modularity, secret-scan, changelog, and
@@ -50,6 +59,7 @@ pnpm producer doctor
 pnpm producer ideas
 pnpm producer approve idea --run <run_id> --idea <idea_id>
 pnpm producer script --run <run_id>
+pnpm producer revise script --run <run_id> --file <path> --reason "<reason>" --editor <name>
 pnpm producer review script --run <run_id>
 pnpm producer approve script --run <run_id>
 pnpm producer package --run <run_id>
@@ -94,6 +104,7 @@ Corepack/PATH before treating failures as product failures.
 - Prompt editing UI is planned but not implemented.
 - Local prompt overrides and revision history are not implemented; tracked defaults are read-only
   runtime inputs.
+- Revision contracts for subtitles, scenes, popup cards, and YouTube metadata are not implemented.
 - TTS, render, upload, and publish are intentionally disabled scaffolds.
 - Brand, overlay, thumbnail, background, transition, icon, waveform, intro-frame, and outro-frame
   assets are present. Editable source files, rendered intro/outro clips, and font licensing notes

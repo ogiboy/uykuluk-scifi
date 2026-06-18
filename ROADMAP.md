@@ -19,6 +19,8 @@ Status: implemented and under QA.
 - Generate and review a Turkish narration script.
 - Approve the reviewed script explicitly.
 - Bind script review, approval, and packaging to the same content digest.
+- Record attributable script revisions with before/after snapshots, invalidate stale review and
+  approval evidence, and require review/approval again.
 - Generate voiceover text, subtitles, scene prompts, popup cards, and YouTube metadata drafts.
 - Estimate costs.
 - Generate evidence bundle and readiness diagnostics.
@@ -56,6 +58,10 @@ Hardening still required:
 Status: in progress.
 
 - Strengthen `.ai/` as the durable project operating contract.
+- Keep a project-local capability inventory and routing matrix for engineering, product, design,
+  marketing, analytics, security, QA, research, release, and swarm work.
+- Keep long-running goals resumable through repository checkpoints without depending on oversized
+  forked chat history.
 - Keep CodeRabbit focused on approval gates, cost controls, evidence, assets, frontend route safety,
   and no public publish by default.
 - Add Prettier as the shared formatting contract.
@@ -69,6 +75,8 @@ Exit criteria:
   `.ai/current-state.instructions.md`, and `.ai/tasks.instructions.md` exist and match the current
   repo.
 - `.ai/workflows/` covers feature, QA, security, and frontend work.
+- `.ai/capabilities.instructions.md` and `.ai/capabilities/` route tasks without loading the full
+  host tool catalog.
 - `.ai/agents/` defines development-only role guidance.
 - `.coderabbit.yaml`, `.prettierrc`, `.prettierignore`, and package scripts are present.
 
@@ -87,8 +95,8 @@ Planned surfaces:
   evidence, and ledger.
 - Editable idea board: compare generated ideas, add manual idea notes, reject or approve one idea
   with explicit ledger evidence.
-- Script workspace: edit narration draft locally before review, keep revision history, and require
-  review after edits.
+- Script workspace: use the implemented core revision contract to edit narration, browse revision
+  history, and require review after edits.
 - Prompt studio: edit planner, scriptwriter, review, production package, and readiness prompts from
   a guarded UI with preview/diff and rollback.
 - Production package editor: adjust subtitle segments, scene prompts, popup cards, lower-third
@@ -151,6 +159,9 @@ Prompt editing must not:
 - approve a stage;
 - mutate previous run artifacts;
 - hide changed prompt hashes from evidence.
+
+Script revision history is implemented in the CLI/core. Prompt overrides and production-package
+field revisions remain planned.
 
 ## Phase 2.2 - Modular Core/Web Service Boundary
 

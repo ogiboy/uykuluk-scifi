@@ -16,6 +16,10 @@ future generated release notes can be inserted predictably.
 - Typed runtime loading for tracked idea, scriptwriter, and production-package prompt defaults.
 - `producer doctor` diagnostics for project config, mock/Ollama readiness, asset inventory, and safe
   publish defaults, with local JSON/Markdown evidence.
+- Attributable script revisions with before/after snapshots, review/approval invalidation, ledger
+  events, and evidence-bundle visibility.
+- Project-local capability inventory, task routing, frontend taste selection, swarm/context rules,
+  and long-goal checkpoints.
 
 ### Changed
 

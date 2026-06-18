@@ -37,6 +37,8 @@ to YouTube in the MVP.
 - Disabled voice, render, private upload, and public/scheduled publish placeholders.
 - UykulukSciFi visual assets under `assets/`.
 - `.ai/` operating contract for agents, workflows, design, QA, security, and roadmap state.
+- Project-local capability routing so technical, product, design, marketing, data, security, QA, and
+  multi-agent work loads only the tools relevant to the current task.
 - CI, CodeQL, Dependabot, SonarQube, Prettier, ESLint, Vitest, Playwright, modularity, secret-scan,
   and changelog gates.
 - Future Ink dependency is present for a richer CLI/TUI surface after the current commander CLI
@@ -72,6 +74,8 @@ to YouTube in the MVP.
 - Mock mode is the default.
 - Script generation requires explicit idea approval.
 - Script review and approval are bound to the exact `script.md` SHA-256 digest.
+- Script edits use an attributable revision command with before/after snapshots; reviewed or
+  approved scripts return to `SCRIPT_GENERATED` and require review/approval again.
 - Production packaging requires explicit script approval for the unchanged reviewed content.
 - Every run persists state, ledger events, costs, warnings, artifacts, and evidence under
   `runs/<run_id>/`.
@@ -109,6 +113,7 @@ pnpm producer doctor
 pnpm producer ideas
 pnpm producer approve idea --run <run_id> --idea <idea_id>
 pnpm producer script --run <run_id>
+pnpm producer revise script --run <run_id> --file <path> --reason "<reason>" --editor <name>
 pnpm producer review script --run <run_id>
 pnpm producer approve script --run <run_id>
 pnpm producer package --run <run_id>
@@ -123,6 +128,11 @@ Inspection:
 pnpm producer status --run <run_id>
 pnpm producer list-runs
 ```
+
+Do not edit `runs/<run_id>/script.md` directly. Use `producer revise script` before production
+packaging. Revisions are blocked after the production package exists. Each revision stores the old
+and new script, attribution, reason, hashes, invalidated review/approval references, and a ledger
+event under `revisions/script/<revision_id>/`.
 
 Blocked future actions:
 
@@ -195,6 +205,12 @@ pnpm changelog:check
 pnpm format:check
 ```
 
+## Agent Capability Routing
+
+Agents start with `.ai/capabilities.instructions.md`. It routes tasks to a small selected set of
+skills, plugins, MCPs, connectors, browser tools, or subagents and records long-goal state under
+`.ai/checkpoints/`. The complete host catalog is not loaded into each thread.
+
 SonarQube:
 
 ```bash
@@ -242,6 +258,8 @@ Each run can write:
 - `state.json`;
 - `ideas.json` and `ideas.md`;
 - `script.md` and `script.meta.json`;
+- `revisions/script/<revision_id>/before.md`, `after.md`, invalidated review snapshots, and
+  `revision.json`;
 - `reviews/script_review.json` and `reviews/script_review.md`;
 - `production/voiceover.txt`, `production/subtitles.srt`, `production/scenes.json`,
   `production/youtube_metadata.json`, `production/production_package.md`,

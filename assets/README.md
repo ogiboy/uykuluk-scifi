@@ -86,6 +86,10 @@ Imported from:
 - `source-docs/addon-visual-pack/README.md` - original addon pack notes.
 - `source-docs/addon-visual-pack/manifest.json` - original addon pack manifest.
 
+Creative, design, and marketing agents must route through `.ai/capabilities.instructions.md` before
+creating or changing production assets. Generated assets still require source, licensing, and
+inventory documentation here.
+
 ## Production Evidence Contract
 
 These files are tracked production inputs. Script review and approval are content-addressed today;
@@ -107,6 +111,9 @@ Generation budget preflight does not infer asset readiness or mutate this invent
 provider-backed artifact creation before these production inputs could be referenced downstream.
 Tracked runtime prompt changes likewise affect future text artifacts only; they do not rewrite,
 approve, or change the provenance of committed production assets.
+
+Script revisions snapshot text artifacts and invalidate script review/approval only. They do not
+modify or reclassify files in the tracked asset inventory.
 
 ## Still Useful To Create Later
 

@@ -27,6 +27,21 @@ Reason: This project is safety-sensitive even though it produces media rather th
 runbooks, workflows, QA checklists, and role guidance should be reviewable project artifacts so
 future agent work does not silently weaken approval gates or evidence quality.
 
+### Project-local capability routing is the agent tool authority
+
+Reason: The host has far more skills, plugins, connectors, and MCP tools than any one task needs.
+Repeatedly loading the full catalog wastes context and can make automatic compaction fail. Agents
+must route through `.ai/capabilities.instructions.md`, load only the selected capabilities, and use
+tracked checkpoints for long goals.
+
+Constraints:
+
+- Capability presence does not grant authority for external writes, spend, deployment, upload, or
+  publish.
+- One orchestration framework and one browser-control surface should own a task unless a plan proves
+  otherwise.
+- Large-thread forks are not the default continuation mechanism.
+
 ### Tracked operator prompts are runtime defaults
 
 Reason: Provider stages and operator review must use one prompt authority. Ideas, scripts, and

@@ -24,6 +24,10 @@ Durable project guidance:
 - `development-preferences.instructions.md` - codebase, commit, push, and check preferences.
 - `versioning.instructions.md` - version intent and release note buckets.
 - `memory.instructions.md` - durable memory and future creative-memory rules.
+- `capabilities.instructions.md` - mandatory low-context capability selection entry point.
+- `capabilities/` - installed capability inventory, task routing, and orchestration rules.
+- `checkpoints/` - durable continuation state for long-running goals.
+- `templates/` - bounded agent brief and handoff contracts.
 - `workflows/` - feature, frontend, QA, security, and tooling workflows.
 - `agents/` - development-only review lenses.
 - `security/` - threat model.

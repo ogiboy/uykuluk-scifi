@@ -11,8 +11,12 @@
 - Keep first-push repo hygiene files and GitHub workflows passing.
 - Keep direct provider/publish guard coverage and CI dependency audit passing.
 - Keep script review, approval, and packaging bound to one exact content digest.
+- Keep script revision snapshots, attribution, state rollback, and approval invalidation passing.
 - Keep provider-backed generation behind per-video, daily, and weekly budget preflight.
 - Keep readiness diagnostics and evidence synchronized with persisted run state.
+- Keep the capability inventory current when plugin/MCP versions or project phases materially
+  change.
+- Keep long-running goals resumable from Git state and `.ai/checkpoints/`, not chat history alone.
 
 ## Next
 
@@ -20,8 +24,8 @@
 - Define typed read/write service contracts that both CLI and web can use.
 - Define local prompt override storage and revision events before adding a prompt editor; typed
   keys, tracked runtime defaults, source paths, and prompt hashes are implemented.
-- Define revision events for script, subtitles, scene prompts, popup cards, and YouTube metadata
-  edits.
+- Define revision events for subtitles, scene prompts, popup cards, and YouTube metadata edits;
+  script revision evidence is implemented.
 - Keep `producer doctor` config/provider/model/asset/publish diagnostics and evidence passing.
 - Add route security requirements before any web action routes exist.
 

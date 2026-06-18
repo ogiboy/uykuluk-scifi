@@ -2,8 +2,8 @@
 
 Latest usage smoke report:
 
-- `.ai/qa/artifacts/usage-smoke-20260618-155825/qa-report.md`
-- `.ai/qa/artifacts/usage-smoke-20260618-155825/usage-smoke-summary.json`
+- `.ai/qa/artifacts/usage-smoke-20260618-234309/qa-report.md`
+- `.ai/qa/artifacts/usage-smoke-20260618-234309/usage-smoke-summary.json`
 
 Validated gates:
 
@@ -12,6 +12,11 @@ Validated gates:
 - `pnpm test`
 - `pnpm qa:usage`
 - `pnpm qa:browser`
+- `pnpm check`
+- `pnpm qa:modularity`
+- `pnpm changelog:check`
+- `pnpm format:check`
+- `pnpm version:plan`
 - SonarQube config/scripts are present; scanner upload requires a local token.
 - `pnpm sonar` uploaded a local analysis to `http://localhost:9000/dashboard?id=uykuluk-scifi`.
 
@@ -30,6 +35,10 @@ Usage smoke coverage:
 - Package is blocked before script approval.
 - Script approval is blocked if `script.md` changes after review.
 - Production packaging is blocked if `script.md` changes after approval.
+- Clean-copy QA revises a generated script through the CLI, verifies durable snapshots, and confirms
+  the ledger/evidence bundle include the revision.
+- Direct revision tests verify reviewed/approved scripts return to `SCRIPT_GENERATED`, stale script
+  approvals and review artifacts become inactive, post-package revisions block, and re-review works.
 - Full safe workflow reaches `READY_FOR_MANUAL_PRODUCTION`.
 - Required artifacts, ledgers, cost files, readiness diagnostics, and evidence bundle exist.
 - Evidence current state matches `state.json`.
@@ -48,6 +57,8 @@ Usage smoke coverage:
   blocks. A direct pricing-reservation test also proves the stage estimate is evaluated before the
   provider call.
 - `pnpm security:dependencies` reports no known high-severity dependency vulnerabilities.
+- Capability-routing docs pass formatting, changelog-marker, modularity, version-plan, full
+  `pnpm check`, and clean-copy usage gates.
 - Readiness passes with committed brand assets.
 - Unit coverage confirms readiness blocks when `costs/estimate.json` disallows the next step or
   reports blocked reasons.
