@@ -110,7 +110,8 @@ function renderEvidenceMarkdown(bundle: unknown): string {
     "",
     bulletList(
       data.promptProvenance.map(
-        (prompt) => `${prompt.key}: ${prompt.hash} -> ${path.posix.normalize(prompt.artifact)}`,
+        (prompt) =>
+          `${prompt.key}: ${prompt.hash} from ${prompt.source ?? "legacy-inline"} -> ${path.posix.normalize(prompt.artifact)}`,
       ),
     ),
     "",

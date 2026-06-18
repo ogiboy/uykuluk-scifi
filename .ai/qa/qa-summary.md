@@ -2,8 +2,8 @@
 
 Latest usage smoke report:
 
-- `.ai/qa/artifacts/usage-smoke-20260618-154022/qa-report.md`
-- `.ai/qa/artifacts/usage-smoke-20260618-154022/usage-smoke-summary.json`
+- `.ai/qa/artifacts/usage-smoke-20260618-154558/qa-report.md`
+- `.ai/qa/artifacts/usage-smoke-20260618-154558/usage-smoke-summary.json`
 
 Validated gates:
 
@@ -31,8 +31,10 @@ Usage smoke coverage:
 - Readiness diagnostics current state matches `state.json` after a successful transition.
 - Run-store tests reject malformed/schema-invalid state and preserve the last valid record when an
   invalid save is attempted.
-- Evidence and clean-copy usage QA verify three runtime prompt provenance records with SHA-256
-  hashes.
+- Evidence and clean-copy usage QA verify three runtime prompt provenance records with tracked
+  `.ai/prompts/` source paths and SHA-256 hashes.
+- Direct prompt-template coverage proves ideas, scripts, and production packages render the tracked
+  operator defaults rather than separate hard-coded stage prompts.
 - Direct Vitest coverage verifies deterministic mock output, Ollama diagnostics/usage metadata, and
   publish configuration plus approval boundaries.
 - Content/asset guard tests verify clickbait title warnings and brand/overlay/intro/outro inventory.

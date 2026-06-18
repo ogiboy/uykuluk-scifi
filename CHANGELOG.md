@@ -13,12 +13,14 @@ future generated release notes can be inserted predictably.
 
 - Basic type-safe `next-intl` foundation for English and Turkish Studio locales.
 - Unit and browser coverage for locale normalization and cookie-based document language.
+- Typed runtime loading for tracked idea, scriptwriter, and production-package prompt defaults.
 
 ### Changed
 
 - Browser QA now builds and serves the production Studio instead of running a file-watching dev
   server.
 - Script review, approval, and production packaging now require the same SHA-256 content digest.
+- Prompt provenance now records the tracked source path in addition to the rendered prompt hash.
 - Explicit public publish config now passes the configuration guard only when the run also contains
   explicit publish approval; execution remains an intentionally disabled MVP scaffold.
 

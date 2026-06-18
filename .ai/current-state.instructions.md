@@ -4,7 +4,8 @@
 
 - TypeScript CLI project.
 - Mock-first provider layer with Ollama adapter scaffold.
-- Runtime prompt key/hash provenance for ideas, scripts, and production packages.
+- Typed runtime loading of tracked `.ai/prompts/` defaults for ideas, scripts, and production
+  packages, with prompt key/source/hash provenance.
 - Strict run state machine.
 - Schema-validated run records with atomic JSON replacement.
 - Approval ledger.
@@ -87,6 +88,8 @@ Corepack/PATH before treating failures as product failures.
 - Locale infrastructure is ready, but full translation catalogs and a language selector are
   intentionally deferred.
 - Prompt editing UI is planned but not implemented.
+- Local prompt overrides and revision history are not implemented; tracked defaults are read-only
+  runtime inputs.
 - TTS, render, upload, and publish are intentionally disabled scaffolds.
 - Brand, overlay, thumbnail, background, transition, icon, waveform, intro-frame, and outro-frame
   assets are present. Editable source files, rendered intro/outro clips, and font licensing notes

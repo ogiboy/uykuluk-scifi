@@ -18,12 +18,11 @@
 
 - Add read-only run index and run detail routes to `apps/studio`.
 - Define typed read/write service contracts that both CLI and web can use.
-- Define prompt template keys, prompt hash metadata, and local prompt override storage before adding
-  a prompt editor.
+- Define local prompt override storage and revision events before adding a prompt editor; typed
+  keys, tracked runtime defaults, source paths, and prompt hashes are implemented.
 - Define revision events for script, subtitles, scene prompts, popup cards, and YouTube metadata
   edits.
 - Add a `producer doctor` command for provider and asset readiness.
-- Move tracked prompt defaults into typed runtime templates before adding prompt editing.
 - Add route security requirements before any web action routes exist.
 
 ## Later

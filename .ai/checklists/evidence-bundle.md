@@ -7,6 +7,7 @@
 - [ ] Reviews.
 - [ ] Approvals.
 - [ ] Costs.
+- [ ] Prompt key, tracked source path, and rendered hash for each provider-backed artifact.
 - [ ] Warnings.
 - [ ] Artifacts.
 - [ ] Blocked actions.

@@ -153,9 +153,11 @@ try {
       (prompt) =>
         typeof prompt.key === "string" &&
         typeof prompt.artifact === "string" &&
+        typeof prompt.source === "string" &&
+        prompt.source.startsWith(".ai/prompts/") &&
         /^[a-f0-9]{64}$/.test(prompt.hash),
     ),
-    "prompt provenance records contain stable SHA-256 hashes",
+    "prompt provenance records contain tracked sources and stable SHA-256 hashes",
   );
   assert(readiness.passed === true, "readiness JSON passed=true");
   assert(

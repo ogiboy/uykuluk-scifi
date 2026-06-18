@@ -27,6 +27,13 @@ Reason: This project is safety-sensitive even though it produces media rather th
 runbooks, workflows, QA checklists, and role guidance should be reviewable project artifacts so
 future agent work does not silently weaken approval gates or evidence quality.
 
+### Tracked operator prompts are runtime defaults
+
+Reason: Provider stages and operator review must use one prompt authority. Ideas, scripts, and
+production packages load their typed defaults from `.ai/prompts/`, and generated artifacts record
+the exact source path and rendered prompt hash. Prompt edits affect future generation only and do
+not mutate existing runs or imply approval.
+
 ### Public/scheduled publish is a separate future risk review
 
 Reason: Publishing is irreversible and public. Upload config or generated metadata must not imply

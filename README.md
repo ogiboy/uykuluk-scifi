@@ -74,7 +74,8 @@ to YouTube in the MVP.
 - Every run persists state, ledger events, costs, warnings, artifacts, and evidence under
   `runs/<run_id>/`.
 - Persisted run records are schema-validated and JSON artifacts use atomic file replacement.
-- Generated ideas, scripts, and production packages record runtime prompt key/hash provenance.
+- Generated ideas, scripts, and production packages render their tracked `.ai/prompts/` defaults at
+  runtime and record prompt key, source path, and hash provenance.
 - Idea, script, and production-package generation re-check existing per-video, daily, and weekly
   budgets, using the stage pricing estimate, before calling a provider or writing generated
   artifacts.
@@ -215,6 +216,15 @@ pnpm producer init
 
 Keep `producer.config.json` ignored. Keep `providers.llm.mode` as `mock` for normal local testing.
 Use `ollama` only when a local Ollama server and model are available.
+
+Tracked runtime prompt defaults:
+
+- `.ai/prompts/planner-task.md`
+- `.ai/prompts/scriptwriter-task.md`
+- `.ai/prompts/production-package-task.md`
+
+Editing a tracked prompt changes future generation only. It does not rerun a stage, mutate an
+existing artifact, or grant approval.
 
 ## Run Artifacts
 

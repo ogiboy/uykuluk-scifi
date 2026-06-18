@@ -4,7 +4,8 @@ Use before changing prompt files or implementing prompt editing.
 
 ## Current Contract
 
-Tracked default prompts live in `.ai/prompts/`.
+Tracked default prompts live in `.ai/prompts/` and are loaded by typed runtime templates for ideas,
+scripts, and production packages.
 
 Prompt changes are product changes because they can alter generated ideas, scripts, reviews,
 production packages, and readiness behavior.
@@ -16,6 +17,7 @@ production packages, and readiness behavior.
 - Show diff before saving.
 - Require an operator note for local override saves.
 - Preserve the existing runtime prompt key/hash metadata when prompt templates become editable.
+- Preserve the tracked source path alongside the rendered prompt hash.
 - Provide rollback to tracked default or previous local version.
 
 ## Safety Rules

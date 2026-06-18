@@ -10,6 +10,7 @@ import { enforceBudget } from "../safeguards/budgetGuard";
 import { requireApproval, requireState } from "../safeguards/approvalGuard";
 import { createLlmProvider } from "../providers";
 import { createPromptProvenance } from "../prompts/provenance";
+import { renderProductionPackagePrompt } from "../prompts/templates";
 import { sha256 } from "../utils/hash";
 import { ProductionScene } from "./types";
 
@@ -55,14 +56,10 @@ export async function generateProductionPackage(runId: string): Promise<void> {
       recordCostEvent: false,
     });
     const provider = createLlmProvider(config);
-    const prompt = [
-      "PRODUCTION_PACKAGE_JSON",
-      "Create popup cards, lower thirds, and YouTube metadata.",
-      script,
-    ].join("\n");
+    const prompt = await renderProductionPackagePrompt(script);
     const result = await provider.generateText({
       model: config.providers.llm.model,
-      prompt,
+      prompt: prompt.text,
     });
     const providerPayload = JSON.parse(result.text) as PackageProviderPayload;
     const voiceover = cleanVoiceover(script);
@@ -97,9 +94,10 @@ export async function generateProductionPackage(runId: string): Promise<void> {
       outputTokensApprox: result.outputTokensApprox,
       durationMs: result.durationMs,
       prompt: createPromptProvenance(
-        "production-package",
-        prompt,
+        prompt.key,
+        prompt.text,
         "production/production_package.md",
+        prompt.source,
       ),
     });
     await setRunState(run, "PRODUCTION_PACKAGE_GENERATED", "package");

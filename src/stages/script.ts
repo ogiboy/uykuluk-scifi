@@ -9,6 +9,7 @@ import { enforceBudget } from "../safeguards/budgetGuard";
 import { requireApproval, requireState } from "../safeguards/approvalGuard";
 import { createLlmProvider } from "../providers";
 import { createPromptProvenance } from "../prompts/provenance";
+import { renderScriptPrompt } from "../prompts/templates";
 import { ScriptMeta, VideoIdea } from "./types";
 
 export async function generateScript(runId: string): Promise<ScriptMeta> {
@@ -35,15 +36,11 @@ export async function generateScript(runId: string): Promise<ScriptMeta> {
       recordCostEvent: false,
     });
     const provider = createLlmProvider(config);
-    const prompt = [
-      "SCRIPT_MARKDOWN",
-      `Idea: ${JSON.stringify(idea)}`,
-      "Write Turkish narration with a clear hook, careful scientific speculation, and visual beat hints.",
-    ].join("\n");
+    const prompt = await renderScriptPrompt(JSON.stringify(idea));
     const result = await provider.generateText({
       model: config.providers.llm.model,
       temperature: 0.6,
-      prompt,
+      prompt: prompt.text,
     });
     const script = result.text;
     const wordCount = script.trim().split(/\s+/).filter(Boolean).length;
@@ -58,7 +55,7 @@ export async function generateScript(runId: string): Promise<ScriptMeta> {
       inputTokensApprox: result.inputTokensApprox,
       outputTokensApprox: result.outputTokensApprox,
       durationMs: result.durationMs,
-      prompt: createPromptProvenance("script", prompt, "script.md"),
+      prompt: createPromptProvenance(prompt.key, prompt.text, "script.md", prompt.source),
     };
     await enforceBudget({
       run,

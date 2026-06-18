@@ -25,7 +25,8 @@ Status: implemented and under QA.
 - Block readiness when the persisted cost estimate reports blocked reasons or disallows the next
   step.
 - Validate run state on read/write and atomically replace persisted JSON files.
-- Record runtime prompt key/hash provenance for generated ideas, scripts, and production packages.
+- Render tracked operator prompts at runtime and record prompt key/source/hash provenance for
+  generated ideas, scripts, and production packages.
 - Run budget preflight before provider-backed generation so an already-exceeded ledger cannot cause
   another provider call or generated artifact; use the stage pricing estimate for the reservation
   decision.
@@ -45,7 +46,6 @@ Exit criteria:
 
 Hardening still required:
 
-- Replace hard-coded generation prompts with typed tracked runtime templates.
 - Define a dedicated paid-generation cost approval contract before any nonzero-cost provider is
   enabled; until then, approval-threshold estimates remain blocked.
 
@@ -129,8 +129,9 @@ Exit criteria:
 
 Status: planned.
 
-The current `.ai/prompts/` files are operator-facing source prompts. A future dashboard should let
-the operator inspect and edit prompt templates without turning prompt changes into hidden state.
+The current `.ai/prompts/` files are operator-facing runtime defaults for ideas, scripts, and
+production packages. A future dashboard should let the operator inspect and edit prompt templates
+without turning prompt changes into hidden state.
 
 Planned contracts:
 

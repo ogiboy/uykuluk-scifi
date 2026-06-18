@@ -102,6 +102,8 @@ warnings.
 
 Generation budget preflight does not infer asset readiness or mutate this inventory. It only blocks
 provider-backed artifact creation before these production inputs could be referenced downstream.
+Tracked runtime prompt changes likewise affect future text artifacts only; they do not rewrite,
+approve, or change the provenance of committed production assets.
 
 ## Still Useful To Create Later
 

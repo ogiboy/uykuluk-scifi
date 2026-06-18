@@ -24,9 +24,9 @@ Canonical inspection files include `state.json`, `ledger.jsonl`, `costs/ledger.j
 `diagnostics/readiness.json`.
 
 Current readiness validates the persisted cost-estimate allow/block decision. Run state is
-schema-validated and JSON writes use atomic replacement. Evidence records the actual runtime prompt
-key and SHA-256 hash for ideas, scripts, and production packages. Tracked `.ai/prompts/` files are
-still operator guidance rather than typed runtime templates.
+schema-validated and JSON writes use atomic replacement. Ideas, scripts, and production packages
+load tracked `.ai/prompts/` defaults through typed runtime templates. Evidence records the source
+path and actual rendered prompt SHA-256 hash.
 
 After readiness passes, `state.json`, `diagnostics/readiness.json`, and `evidence_bundle.json` must
 all report `READY_FOR_MANUAL_PRODUCTION`.
