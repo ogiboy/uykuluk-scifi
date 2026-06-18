@@ -96,6 +96,10 @@ tracked inventory and future per-run evidence. Readiness/evidence state synchron
 imply that optional asset gaps are resolved; the asset check status remains independently
 reviewable.
 
+The current asset guard inventories brand, overlay, intro, and outro directories. Logo, watermark,
+subtitle/lower-third, intro, and outro availability all contribute operator-visible readiness
+warnings.
+
 ## Still Useful To Create Later
 
 - Editable Figma, PSD, SVG, or layered source files for thumbnail and overlay text changes.

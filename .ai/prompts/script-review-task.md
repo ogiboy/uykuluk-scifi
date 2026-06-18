@@ -11,4 +11,5 @@ Check:
 - Disaster or violent framing without responsible wording.
 - Missing intro hook.
 - Missing outro.
+- Excessive clickbait in the title.
 - Mismatch with UykulukSciFi style.

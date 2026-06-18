@@ -29,6 +29,7 @@ Status: implemented and under QA.
 - Keep readiness diagnostics and evidence synchronized with the final run state.
 - Keep voice, render, upload, and publish disabled by default.
 - Persist state, artifacts, approvals, warnings, costs, and QA evidence.
+- Warn on clickbait title framing and inventory brand, overlay, intro, and outro assets.
 
 Exit criteria:
 

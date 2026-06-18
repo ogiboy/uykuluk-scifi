@@ -34,6 +34,8 @@ future generated release notes can be inserted predictably.
 - CI now audits dependencies for high-severity known vulnerabilities.
 - Successful readiness diagnostics now record the final transitioned run state instead of the
   pre-transition state.
+- Content review now warns on excessive clickbait title framing.
+- Asset readiness now inventories intro and outro inputs in addition to brand and overlay files.
 
 ### Changed
 

@@ -30,7 +30,8 @@ to YouTube in the MVP.
   `next/font`.
 - Mock-first provider layer with Ollama adapter scaffold.
 - Strict run state machine and explicit approval ledger.
-- Cost ledger, budget guard, content review, asset readiness, and evidence bundle generation.
+- Cost ledger, budget guard, content/clickbait review, full asset readiness, and evidence bundle
+  generation.
 - Disabled voice, render, private upload, and public/scheduled publish placeholders.
 - UykulukSciFi visual assets under `assets/`.
 - `.ai/` operating contract for agents, workflows, design, QA, security, and roadmap state.

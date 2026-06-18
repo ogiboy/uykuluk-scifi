@@ -10,7 +10,8 @@
 - Approval ledger.
 - Content-addressed script review and approval; packaging rejects changed script content.
 - Cost ledger and budget guard.
-- Script content review heuristics.
+- Script content review heuristics, including clickbait title warnings.
+- Brand, overlay, intro, and outro asset inventory checks.
 - Production package generation.
 - Evidence bundle generation.
 - Readiness diagnostics that evaluate persisted cost-estimate allow/block decisions.

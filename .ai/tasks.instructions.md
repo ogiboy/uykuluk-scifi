@@ -6,6 +6,7 @@
 - Keep `.ai/` guidance aligned with the source tree.
 - Keep `pnpm qa:usage` passing after workflow changes.
 - Keep visual asset inventory current.
+- Keep content and asset guard coverage aligned with the operator checklist.
 - Keep `apps/studio` thin until shared service contracts exist.
 - Keep first-push repo hygiene files and GitHub workflows passing.
 - Keep direct provider/publish guard coverage and CI dependency audit passing.
