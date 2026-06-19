@@ -1,6 +1,8 @@
+import { mkdir, writeFile } from "node:fs/promises";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { defaultConfig } from "../src/config/config";
-import { readCostEvents } from "../src/costs/costLedger";
+import { costLedgerPath, readCostEvents } from "../src/costs/costLedger";
 import { createRun } from "../src/core/runStore";
 import { checkBudget } from "../src/safeguards/budgetGuard";
 import { useTempProject } from "./helpers";
@@ -102,5 +104,14 @@ describe("budget guard", () => {
     });
     expect(weeklyResult.allowed).toBe(false);
     expect(weeklyResult.blockedReasons.join(" ")).toContain("Weekly budget exceeded");
+  });
+
+  it("fails closed on a malformed cost ledger", async () => {
+    const run = await createRun();
+    const target = costLedgerPath(run.runId);
+    await mkdir(path.dirname(target), { recursive: true });
+    await writeFile(target, '{"estimatedUsd":-1}\n', "utf8");
+
+    await expect(readCostEvents(run.runId)).rejects.toThrow(/cost ledger is invalid/i);
   });
 });

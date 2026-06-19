@@ -120,6 +120,50 @@ export async function validateCurrentCostEstimate(
   config: ProducerConfig,
   estimate: CostEstimate,
 ): Promise<string[]> {
+  const reasons = await validateCostEstimateIntegrity(run, config, estimate);
+  const currentStages = quoteStages(config);
+  const currentTotal = currentStages.reduce(
+    (sum, stage) => sum + (stage.enabled ? stage.estimatedUsd : 0),
+    0,
+  );
+  const budget = await checkBudget({
+    run,
+    config,
+    stage: "cost-approval-validation",
+    provider: "local-estimator",
+    estimatedUsd: currentTotal,
+    recordCostEvent: false,
+  });
+  if (estimate.budgetAllowed !== budget.allowed) {
+    reasons.push("Live hard-budget decision changed after the cost estimate.");
+  }
+  if (estimate.approvalRequired !== budget.approvalRequired) {
+    reasons.push("Live approval threshold changed after the cost estimate.");
+  }
+  if (estimate.cumulativeEstimatedRunCost !== budget.cumulativeEstimatedRunCostUsd) {
+    reasons.push("Live cumulative run cost changed after the cost estimate.");
+  }
+  if (JSON.stringify(estimate.hardBlockedReasons) !== JSON.stringify(budget.blockedReasons)) {
+    reasons.push("Live hard-budget reasons changed after the cost estimate.");
+  }
+  const expectedBlockedReasons = [
+    ...budget.blockedReasons,
+    ...(budget.approvalRequired ? ["Explicit paid-generation cost approval required."] : []),
+  ];
+  if (JSON.stringify(estimate.blockedReasons) !== JSON.stringify(expectedBlockedReasons)) {
+    reasons.push("Quoted block reasons do not match the current budget decision.");
+  }
+  if (estimate.nextStepAllowed !== (budget.allowed && !budget.approvalRequired)) {
+    reasons.push("Quoted next-step decision does not match the current budget decision.");
+  }
+  return reasons;
+}
+
+export async function validateCostEstimateIntegrity(
+  run: RunRecord,
+  config: ProducerConfig,
+  estimate: CostEstimate,
+): Promise<string[]> {
   const currentStages = quoteStages(config);
   const reasons: string[] = [];
   if (estimate.runId !== run.runId) {
@@ -152,36 +196,6 @@ export async function validateCurrentCostEstimate(
   );
   if (estimate.estimatedStageCost !== currentTotal) {
     reasons.push("Quoted total no longer matches current enabled stage pricing.");
-  }
-  const budget = await checkBudget({
-    run,
-    config,
-    stage: "cost-approval-validation",
-    provider: "local-estimator",
-    estimatedUsd: currentTotal,
-    recordCostEvent: false,
-  });
-  if (estimate.budgetAllowed !== budget.allowed) {
-    reasons.push("Live hard-budget decision changed after the cost estimate.");
-  }
-  if (estimate.approvalRequired !== budget.approvalRequired) {
-    reasons.push("Live approval threshold changed after the cost estimate.");
-  }
-  if (estimate.cumulativeEstimatedRunCost !== budget.cumulativeEstimatedRunCostUsd) {
-    reasons.push("Live cumulative run cost changed after the cost estimate.");
-  }
-  if (JSON.stringify(estimate.hardBlockedReasons) !== JSON.stringify(budget.blockedReasons)) {
-    reasons.push("Live hard-budget reasons changed after the cost estimate.");
-  }
-  const expectedBlockedReasons = [
-    ...budget.blockedReasons,
-    ...(budget.approvalRequired ? ["Explicit paid-generation cost approval required."] : []),
-  ];
-  if (JSON.stringify(estimate.blockedReasons) !== JSON.stringify(expectedBlockedReasons)) {
-    reasons.push("Quoted block reasons do not match the current budget decision.");
-  }
-  if (estimate.nextStepAllowed !== (budget.allowed && !budget.approvalRequired)) {
-    reasons.push("Quoted next-step decision does not match the current budget decision.");
   }
   return reasons;
 }

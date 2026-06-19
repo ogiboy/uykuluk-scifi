@@ -23,6 +23,9 @@ future generated release notes can be inserted predictably.
 - Versioned future paid-generation JSON-plus-Markdown quote bundles with exact digest approval, live
   package/config/pricing/budget revalidation, evidence visibility, and a dedicated resumable
   workflow state.
+- Project-wide atomic cost reservations with one-time approved quote-line consumption, integer USD
+  micros, idempotent operation ids, recoverable settlement, uncertain outcomes, explicit
+  reconciliation, and evidence summaries.
 
 ### Changed
 
@@ -32,6 +35,8 @@ future generated release notes can be inserted predictably.
 - Prompt provenance now records the tracked source path in addition to the rendered prompt hash.
 - Cost estimation no longer records an incurred cost event; quote approval is explicitly separate
   from future spend reservation and settlement.
+- Hard-budget checks now include active, settlement-pending, and uncertain reservations across runs
+  so concurrent work cannot overbook per-video, daily, or weekly limits.
 - Explicit public publish config now passes the configuration guard only when the run also contains
   explicit publish approval; execution remains an intentionally disabled MVP scaffold.
 
@@ -53,6 +58,10 @@ future generated release notes can be inserted predictably.
   pre-transition state.
 - Content review now warns on excessive clickbait title framing.
 - Asset readiness now inventories intro and outro inputs in addition to brand and overlay files.
+- Cost and reservation ledgers now reject malformed or foreign-run rows instead of accepting
+  unvalidated JSON.
+- Stale reservation-lock recovery now preserves a live owner instead of allowing overlapping
+  critical sections after the age threshold.
 
 ## 0.1.0 - 2026-06-17
 

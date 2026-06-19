@@ -33,8 +33,9 @@ to YouTube in the MVP.
   defaults.
 - Strict run state machine and explicit approval ledger.
 - Versioned future paid-generation cost quote bundles (JSON plus operator Markdown) with exact
-  digest approval, live hard-budget revalidation, cost ledger, content/clickbait review, full asset
-  readiness, and evidence bundles.
+  digest approval, atomic one-time cost reservations, recoverable settlement/reconciliation, live
+  hard-budget revalidation, cost ledger, content/clickbait review, full asset readiness, and
+  evidence bundles.
 - Disabled voice, render, private upload, and public/scheduled publish placeholders.
 - UykulukSciFi visual assets under `assets/`.
 - `.ai/` operating contract for agents, workflows, design, QA, security, and roadmap state.
@@ -89,15 +90,21 @@ to YouTube in the MVP.
 - Readiness strictly parses the persisted cost quote, rechecks the production package, relevant
   config, pricing, and live hard budgets, and requires approval of the exact quote digest when the
   configured threshold is exceeded.
+- The core can atomically reserve one approved nonzero quote line after readiness. Active,
+  settlement-pending, and uncertain reservations consume per-video, daily, and weekly budget until
+  they are settled or explicitly reconciled.
+- Reservation caps and actual charges use integer USD micros. Settlement is journaled before the
+  linked cost event so retries can recover without recording the same charge twice.
 - Successful readiness diagnostics and evidence reflect the final transitioned run state.
 - TTS, render, upload, and publish are intentionally blocked scaffolds.
 - Upload and public/scheduled publish require future explicit config and separate approval gates.
 - Studio must call typed local service contracts; it must not duplicate workflow state.
 
 Paid generation providers are not implemented. `producer approve cost` approves one exact future
-paid-production quote; it does not authorize or execute spending. Atomic budget reservation,
-one-time approval consumption, settlement, and reconciliation are still required before any paid
-provider can be enabled.
+paid-production quote; it does not authorize or execute spending. The internal reservation service
+now provides atomic one-time quote-line consumption, settlement, uncertain-outcome handling, and
+explicit reconciliation. A future paid adapter must reserve immediately before its provider request
+and settle or reconcile afterward; direct budget-only execution is not allowed.
 
 ## Install
 

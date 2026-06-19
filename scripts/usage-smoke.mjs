@@ -144,6 +144,7 @@ try {
   for (const key of [
     "approvals",
     "costs",
+    "costReservations",
     "warnings",
     "generatedArtifacts",
     "promptProvenance",

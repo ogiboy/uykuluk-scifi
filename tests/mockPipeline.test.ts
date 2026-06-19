@@ -55,8 +55,10 @@ describe("mock pipeline", () => {
     const evidence = await readJsonFile<{
       promptProvenance: Array<{ key: string; hash: string; artifact: string }>;
       revisions: string[];
+      costReservations: unknown[];
     }>(artifactPath(runId, "evidence_bundle.json"));
     expect(evidence.revisions).toEqual([]);
+    expect(evidence.costReservations).toEqual([]);
     expect(evidence.promptProvenance).toEqual([
       {
         key: "ideas",

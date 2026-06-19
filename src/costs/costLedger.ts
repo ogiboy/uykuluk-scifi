@@ -1,6 +1,7 @@
 import path from "node:path";
 import { appendFile, readFile, readdir } from "node:fs/promises";
-import { CostEvent } from "../core/state";
+import { CostEvent, costEventSchema } from "../core/state";
+import { SafeExitError } from "../core/errors";
 import { runDir, runsDir } from "../core/runStore";
 import { ensureDir, pathExists } from "../utils/fs";
 
@@ -9,9 +10,10 @@ export function costLedgerPath(runId: string): string {
 }
 
 export async function appendCostEvent(event: CostEvent): Promise<void> {
+  const parsed = costEventSchema.parse(event);
   const target = costLedgerPath(event.runId);
   await ensureDir(path.dirname(target));
-  await appendFile(target, `${JSON.stringify(event)}\n`, "utf8");
+  await appendFile(target, `${JSON.stringify(parsed)}\n`, "utf8");
 }
 
 export async function readCostEvents(runId: string): Promise<CostEvent[]> {
@@ -20,10 +22,20 @@ export async function readCostEvents(runId: string): Promise<CostEvent[]> {
     return [];
   }
   const text = await readFile(target, "utf8");
-  return text
-    .split("\n")
-    .filter(Boolean)
-    .map((line) => JSON.parse(line) as CostEvent);
+  try {
+    const events = text
+      .split("\n")
+      .filter(Boolean)
+      .map((line) => costEventSchema.parse(JSON.parse(line) as unknown));
+    if (events.some((event) => event.runId !== runId)) {
+      throw new SafeExitError(`Cost ledger contains a foreign run id for ${runId}.`);
+    }
+    return events;
+  } catch (error) {
+    throw new SafeExitError(
+      `Cost ledger is invalid for ${runId}: ${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
 }
 
 export function sumCosts(events: CostEvent[]): number {

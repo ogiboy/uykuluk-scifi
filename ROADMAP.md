@@ -25,6 +25,8 @@ Status: implemented and under QA.
 - Estimate costs.
 - Persist a versioned future paid-generation quote and require explicit approval of the exact quote
   digest above the configured threshold.
+- Atomically reserve an approved nonzero quote line once, count active and uncertain reservations
+  against hard budgets, and support recoverable settlement or explicit reconciliation.
 - Generate evidence bundle and readiness diagnostics.
 - Block readiness when the cost quote is malformed, stale, over a hard budget, or missing its exact
   required approval.
@@ -50,11 +52,11 @@ Exit criteria:
 - Readiness passes with committed brand assets.
 - Upload and public/scheduled publish remain blocked by default.
 
-Hardening still required:
+Paid-provider boundary:
 
-- Add atomic budget reservation, one-time approval consumption, settlement, uncertain-provider
-  outcome handling, and reconciliation before any nonzero-cost provider is enabled. Exact quote
-  approval is implemented but is intentionally not spend authorization.
+- Reservation and settlement foundations are implemented, but no nonzero-cost provider is enabled.
+  The first paid adapter must reserve immediately before the provider request, settle or reconcile
+  every outcome, and prove by negative test that direct budget-only execution is impossible.
 
 ## Phase 1.5 - Project Policy And Tooling
 
@@ -197,8 +199,8 @@ Status: foundation in progress.
 - Improve Ollama model availability checks.
 - Record provider duration and token estimates consistently.
 - Keep provider failures explicit in readiness and evidence.
-- Do not introduce paid APIs until reservation, one-time approval consumption, settlement, and
-  reconciliation semantics are tested.
+- Do not introduce paid APIs until the reservation service is integrated as the only provider-call
+  entry path and its failure/timeout behavior is covered end to end.
 
 ## Phase 4 - TTS And Render
 

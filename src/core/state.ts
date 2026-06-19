@@ -45,7 +45,7 @@ export const approvalRecordSchema = z
     previousState: runStateSchema,
     nextState: runStateSchema,
     approvingCommand: z.string().min(1),
-    createdAt: z.string().min(1),
+    createdAt: z.string().datetime(),
   })
   .strict();
 
@@ -53,7 +53,7 @@ export const runRecordSchema = z
   .object({
     runId: z.string().min(1),
     state: runStateSchema,
-    createdAt: z.string().min(1),
+    createdAt: z.string().datetime(),
     updatedAt: z.string().min(1),
     approvedIdeaId: z.string().min(1).optional(),
     approvals: z.array(approvalRecordSchema),
@@ -72,6 +72,11 @@ export type LedgerEventType =
   | "ARTIFACT_REVISED"
   | "APPROVAL_RECORDED"
   | "COST_ESTIMATED"
+  | "COST_RESERVED"
+  | "COST_RELEASED"
+  | "COST_UNCERTAIN"
+  | "COST_SETTLED"
+  | "COST_RECONCILED"
   | "GUARD_PASSED"
   | "GUARD_BLOCKED"
   | "WARNING"
@@ -91,6 +96,7 @@ export type CostEvent = {
   runId: string;
   stage: string;
   provider: string;
+  reservationId?: string;
   model?: string;
   inputTokens?: number;
   outputTokens?: number;
@@ -99,5 +105,21 @@ export type CostEvent = {
   durationMs?: number;
   createdAt: string;
 };
+
+export const costEventSchema = z
+  .object({
+    runId: z.string().min(1),
+    stage: z.string().min(1),
+    provider: z.string().min(1),
+    reservationId: z.string().min(1).optional(),
+    model: z.string().min(1).optional(),
+    inputTokens: z.number().int().nonnegative().optional(),
+    outputTokens: z.number().int().nonnegative().optional(),
+    estimatedUsd: z.number().nonnegative(),
+    actualUsd: z.number().nonnegative().optional(),
+    durationMs: z.number().nonnegative().optional(),
+    createdAt: z.string().datetime(),
+  })
+  .strict();
 
 export const orderedStates: RunState[] = [...runStates];

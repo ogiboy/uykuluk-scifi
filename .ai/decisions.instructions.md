@@ -55,7 +55,7 @@ Reason: Publishing is irreversible and public. Upload config or generated metada
 publish authority. Public/scheduled publish needs its own approval, readiness, warning, evidence,
 and QA matrix.
 
-### Paid-generation quote approval is separate from spend authorization
+### Paid-generation quote approval and reservation are separate authorities
 
 Reason: An operator must be able to review and approve an exact future production quote without that
 approval silently becoming a reusable or concurrent payment capability. The JSON and operator-facing
@@ -67,8 +67,12 @@ Constraints:
 - Hard per-video, daily, and weekly budgets remain non-overridable.
 - Readiness revalidates the current quote and exact approval digest.
 - Approval does not call a provider or record incurred cost.
-- Paid execution remains unavailable until atomic reservation, one-time consumption, settlement,
-  uncertain-outcome handling, and reconciliation are implemented and tested.
+- One project-wide filesystem lock serializes reservation budget decisions across runs.
+- A quote line remains consumed after release; retrying paid work requires a new quote and approval.
+- Active, settlement-pending, and uncertain reservations remain in hard-budget totals.
+- Settlement journals intent before recording the linked cost event so retries are idempotent.
+- Paid execution remains unavailable until a provider adapter makes reservation the only pre-call
+  path and proves its failure and timeout behavior end to end.
 
 ### Visual assets are committed production inputs
 

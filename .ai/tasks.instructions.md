@@ -15,6 +15,8 @@
 - Keep provider-backed generation behind per-video, daily, and weekly budget preflight.
 - Keep future paid-generation quotes bound to exact package/config/pricing digests and require an
   exact matching approval above the configured threshold.
+- Keep atomic reservation, one-time quote-line consumption, active-reservation budget accounting,
+  recoverable settlement, and explicit reconciliation passing.
 - Keep readiness diagnostics and evidence synchronized with persisted run state.
 - Keep the capability inventory current when plugin/MCP versions or project phases materially
   change.
@@ -22,8 +24,8 @@
 
 ## Next
 
-- Define atomic cost reservation, one-time approval consumption, settlement, uncertain-provider
-  outcomes, and reconciliation before any paid provider mode is introduced.
+- Define the first paid-provider adapter contract around `reserveApprovedCost` as the only allowed
+  pre-call path, including timeout/failure reconciliation and negative bypass tests.
 - Add read-only run index and run detail routes to `apps/studio`.
 - Define typed read/write service contracts that both CLI and web can use.
 - Define local prompt override storage and revision events before adding a prompt editor; typed

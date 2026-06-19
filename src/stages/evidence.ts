@@ -1,6 +1,7 @@
 import path from "node:path";
 import { loadConfig } from "../config/config";
 import { readCostEstimate } from "../costs/costEstimate";
+import { readCostReservationSummaries } from "../costs/costReservationStore";
 import { artifactPath, writeRunJson, writeRunText } from "../core/artifacts";
 import { readLedger } from "../core/ledger";
 import { loadRun, saveRun } from "../core/runStore";
@@ -21,6 +22,7 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
   let run = await loadRun(runId);
   const ledger = await readLedger(run.runId);
   const costs = await readCostEvents(run.runId);
+  const costReservations = await readCostReservationSummaries(run.runId);
   const costQuote = await readCostQuoteEvidence(run);
   const promptProvenance = await readPromptProvenance(run.runId);
   const approvedIdea =
@@ -51,6 +53,7 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
     reviews: run.artifacts.filter((item) => item.startsWith("reviews/")),
     approvals: run.approvals,
     costs,
+    costReservations,
     costQuote,
     costEstimatePath: (await pathExists(artifactPath(run.runId, "costs/estimate.json")))
       ? "costs/estimate.json"
@@ -105,6 +108,7 @@ function renderEvidenceMarkdown(bundle: unknown): string {
     approvedIdea: { title?: string } | null;
     approvals: unknown[];
     costs: unknown[];
+    costReservations: unknown[];
     costQuote: Awaited<ReturnType<typeof readCostQuoteEvidence>>;
     generatedArtifacts: string[];
     warnings: string[];
@@ -127,6 +131,10 @@ function renderEvidenceMarkdown(bundle: unknown): string {
     "## Costs",
     "",
     bulletList(data.costs.map((cost) => JSON.stringify(cost))),
+    "",
+    "## Cost Reservations",
+    "",
+    bulletList(data.costReservations.map((reservation) => JSON.stringify(reservation))),
     "",
     "## Cost Quote",
     "",
