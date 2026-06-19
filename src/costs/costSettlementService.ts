@@ -13,7 +13,7 @@ import { appendCostReservationEvent, CostReservationSummary } from "./costReserv
 /**
  * Finalizes a reservation's cost after a provider charge is known.
  *
- * @param input.actualUsdMicros - The actual cost charged by the provider, in microseconds
+ * @param input.actualUsdMicros - The actual cost charged by the provider, in USD micros
  * @throws {SafeExitError} If the reservation cannot be settled due to its status or if the actual cost exceeds the approved cap.
  * @returns The updated reservation.
  */
