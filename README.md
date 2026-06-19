@@ -32,8 +32,9 @@ to YouTube in the MVP.
 - Project-level `producer doctor` diagnostics for config, mock/Ollama readiness, assets, and publish
   defaults.
 - Strict run state machine and explicit approval ledger.
-- Cost ledger, budget guard, content/clickbait review, full asset readiness, and evidence bundle
-  generation.
+- Versioned future paid-generation cost quote bundles (JSON plus operator Markdown) with exact
+  digest approval, live hard-budget revalidation, cost ledger, content/clickbait review, full asset
+  readiness, and evidence bundles.
 - Disabled voice, render, private upload, and public/scheduled publish placeholders.
 - UykulukSciFi visual assets under `assets/`.
 - `.ai/` operating contract for agents, workflows, design, QA, security, and roadmap state.
@@ -85,15 +86,18 @@ to YouTube in the MVP.
 - Idea, script, and production-package generation re-check existing per-video, daily, and weekly
   budgets, using the stage pricing estimate, before calling a provider or writing generated
   artifacts.
-- Readiness reads the persisted cost estimate decision and blocks if the next step is not allowed.
+- Readiness strictly parses the persisted cost quote, rechecks the production package, relevant
+  config, pricing, and live hard budgets, and requires approval of the exact quote digest when the
+  configured threshold is exceeded.
 - Successful readiness diagnostics and evidence reflect the final transitioned run state.
 - TTS, render, upload, and publish are intentionally blocked scaffolds.
 - Upload and public/scheduled publish require future explicit config and separate approval gates.
 - Studio must call typed local service contracts; it must not duplicate workflow state.
 
-Paid generation providers are not implemented. If a future stage estimate exceeds the configured
-approval threshold, the current core fails closed because no paid-generation approval command exists
-yet.
+Paid generation providers are not implemented. `producer approve cost` approves one exact future
+paid-production quote; it does not authorize or execute spending. Atomic budget reservation,
+one-time approval consumption, settlement, and reconciliation are still required before any paid
+provider can be enabled.
 
 ## Install
 
@@ -118,6 +122,7 @@ pnpm producer review script --run <run_id>
 pnpm producer approve script --run <run_id>
 pnpm producer package --run <run_id>
 pnpm producer estimate --run <run_id>
+pnpm producer approve cost --run <run_id> # only when the quote requires it
 pnpm producer evidence --run <run_id>
 pnpm producer readiness --run <run_id>
 ```

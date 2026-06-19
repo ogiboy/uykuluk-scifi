@@ -23,9 +23,11 @@ Status: implemented and under QA.
   approval evidence, and require review/approval again.
 - Generate voiceover text, subtitles, scene prompts, popup cards, and YouTube metadata drafts.
 - Estimate costs.
+- Persist a versioned future paid-generation quote and require explicit approval of the exact quote
+  digest above the configured threshold.
 - Generate evidence bundle and readiness diagnostics.
-- Block readiness when the persisted cost estimate reports blocked reasons or disallows the next
-  step.
+- Block readiness when the cost quote is malformed, stale, over a hard budget, or missing its exact
+  required approval.
 - Validate run state on read/write and atomically replace persisted JSON files.
 - Render tracked operator prompts at runtime and record prompt key/source/hash provenance for
   generated ideas, scripts, and production packages.
@@ -50,8 +52,9 @@ Exit criteria:
 
 Hardening still required:
 
-- Define a dedicated paid-generation cost approval contract before any nonzero-cost provider is
-  enabled; until then, approval-threshold estimates remain blocked.
+- Add atomic budget reservation, one-time approval consumption, settlement, uncertain-provider
+  outcome handling, and reconciliation before any nonzero-cost provider is enabled. Exact quote
+  approval is implemented but is intentionally not spend authorization.
 
 ## Phase 1.5 - Project Policy And Tooling
 
@@ -194,7 +197,8 @@ Status: foundation in progress.
 - Improve Ollama model availability checks.
 - Record provider duration and token estimates consistently.
 - Keep provider failures explicit in readiness and evidence.
-- Do not introduce paid APIs until cost approval semantics are tested.
+- Do not introduce paid APIs until reservation, one-time approval consumption, settlement, and
+  reconciliation semantics are tested.
 
 ## Phase 4 - TTS And Render
 

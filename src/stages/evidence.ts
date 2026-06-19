@@ -1,5 +1,6 @@
 import path from "node:path";
 import { loadConfig } from "../config/config";
+import { readCostEstimate } from "../costs/costEstimate";
 import { artifactPath, writeRunJson, writeRunText } from "../core/artifacts";
 import { readLedger } from "../core/ledger";
 import { loadRun, saveRun } from "../core/runStore";
@@ -20,6 +21,7 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
   let run = await loadRun(runId);
   const ledger = await readLedger(run.runId);
   const costs = await readCostEvents(run.runId);
+  const costQuote = await readCostQuoteEvidence(run);
   const promptProvenance = await readPromptProvenance(run.runId);
   const approvedIdea =
     run.approvedIdeaId && (await pathExists(artifactPath(run.runId, "ideas.json")))
@@ -49,6 +51,7 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
     reviews: run.artifacts.filter((item) => item.startsWith("reviews/")),
     approvals: run.approvals,
     costs,
+    costQuote,
     costEstimatePath: (await pathExists(artifactPath(run.runId, "costs/estimate.json")))
       ? "costs/estimate.json"
       : null,
@@ -59,7 +62,7 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
       (item) => item.startsWith("revisions/") && item.endsWith("/revision.json"),
     ),
     blockedActions,
-    nextRecommendedCommand: nextCommand(run.state),
+    nextRecommendedCommand: nextCommand(run.state, costQuote),
     ledgerEventCount: ledger.length,
   };
   run = await writeRunJson(run, "evidence", "evidence_bundle.json", bundle);
@@ -68,7 +71,10 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
   return bundle;
 }
 
-function nextCommand(state: string): string {
+function nextCommand(
+  state: string,
+  costQuote: Awaited<ReturnType<typeof readCostQuoteEvidence>>,
+): string {
   const map: Record<string, string> = {
     NEW: "pnpm producer ideas",
     IDEAS_GENERATED: "pnpm producer approve idea --run <run_id> --idea <idea_id>",
@@ -77,7 +83,11 @@ function nextCommand(state: string): string {
     SCRIPT_REVIEWED: "pnpm producer approve script --run <run_id>",
     SCRIPT_APPROVED: "pnpm producer package --run <run_id>",
     PRODUCTION_PACKAGE_GENERATED: "pnpm producer estimate --run <run_id>",
-    COST_ESTIMATED: "pnpm producer readiness --run <run_id>",
+    COST_ESTIMATED:
+      costQuote?.approvalRequired && !costQuote.approved
+        ? "pnpm producer approve cost --run <run_id>"
+        : "pnpm producer readiness --run <run_id>",
+    PAID_GENERATION_COST_APPROVED: "pnpm producer readiness --run <run_id>",
     READY_FOR_MANUAL_PRODUCTION: "Manual production review. Render/upload remain approval-gated.",
   };
   return map[state] ?? "Review state and ledger before continuing.";
@@ -95,6 +105,7 @@ function renderEvidenceMarkdown(bundle: unknown): string {
     approvedIdea: { title?: string } | null;
     approvals: unknown[];
     costs: unknown[];
+    costQuote: Awaited<ReturnType<typeof readCostQuoteEvidence>>;
     generatedArtifacts: string[];
     warnings: string[];
     promptProvenance: PromptProvenance[];
@@ -116,6 +127,10 @@ function renderEvidenceMarkdown(bundle: unknown): string {
     "## Costs",
     "",
     bulletList(data.costs.map((cost) => JSON.stringify(cost))),
+    "",
+    "## Cost Quote",
+    "",
+    data.costQuote ? JSON.stringify(data.costQuote) : "None",
     "",
     "## Warnings",
     "",
@@ -146,6 +161,41 @@ function renderEvidenceMarkdown(bundle: unknown): string {
     "",
     data.nextRecommendedCommand,
   ].join("\n");
+}
+
+async function readCostQuoteEvidence(run: Awaited<ReturnType<typeof loadRun>>): Promise<{
+  path: string;
+  digest: string;
+  estimatedUsd: number;
+  currency: "USD";
+  approvalRequired: boolean;
+  approved: boolean;
+  approvalId: string | null;
+} | null> {
+  const relativePath = "costs/estimate.json";
+  if (!(await pathExists(artifactPath(run.runId, relativePath)))) {
+    return null;
+  }
+  try {
+    const { estimate, digest } = await readCostEstimate(run.runId);
+    const approval = run.approvals.find(
+      (item) =>
+        item.runId === run.runId &&
+        item.target === "paid-generation-cost" &&
+        item.approvedRef === digest,
+    );
+    return {
+      path: relativePath,
+      digest,
+      estimatedUsd: estimate.estimatedStageCost,
+      currency: estimate.currency,
+      approvalRequired: estimate.approvalRequired,
+      approved: Boolean(approval),
+      approvalId: approval?.approvalId ?? null,
+    };
+  } catch {
+    return null;
+  }
 }
 
 /**

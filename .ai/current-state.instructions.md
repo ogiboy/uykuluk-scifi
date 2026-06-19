@@ -14,11 +14,15 @@
   evidence-bundle visibility.
 - Cost ledger and budget guard, including provider-call preflight for ideas, scripts, and production
   packages using stage pricing estimates.
+- Versioned future paid-generation cost quote bundles bound to the production package, relevant
+  config, enabled stage pricing, budgets, and exact JSON-plus-Markdown digest; approval is explicit
+  and content-addressed.
 - Script content review heuristics, including clickbait title warnings.
 - Brand, overlay, intro, and outro asset inventory checks.
 - Production package generation.
 - Evidence bundle generation.
-- Readiness diagnostics that evaluate persisted cost-estimate allow/block decisions.
+- Readiness diagnostics that strictly parse and revalidate persisted cost quotes, live hard budgets,
+  and exact paid-generation cost approval when required.
 - Final readiness diagnostics agree with the post-transition run state.
 - Disabled voice, render, upload, and publish placeholders.
 - Basic Next.js Producer Studio shell under `apps/studio`.
@@ -64,6 +68,7 @@ pnpm producer review script --run <run_id>
 pnpm producer approve script --run <run_id>
 pnpm producer package --run <run_id>
 pnpm producer estimate --run <run_id>
+pnpm producer approve cost --run <run_id>
 pnpm producer evidence --run <run_id>
 pnpm producer readiness --run <run_id>
 pnpm producer status --run <run_id>
@@ -95,8 +100,9 @@ Corepack/PATH before treating failures as product failures.
 
 - Ollama doctor checks server reachability and configured model inventory, but live local-model QA
   is environment-dependent and not part of CI.
-- Paid generation and its explicit cost-approval contract are not implemented; nonzero estimates
-  above the approval threshold fail closed.
+- Paid provider execution is not implemented. Exact cost quote approval exists, but it is not spend
+  authorization; atomic reservation, one-time consumption, settlement, and reconciliation remain
+  required before a paid adapter can be enabled.
 - Current Next.js Studio is a basic shell only; read-only run detail routes and service contracts
   are not implemented yet.
 - Locale infrastructure is ready, but full translation catalogs and a language selector are

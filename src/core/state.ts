@@ -9,6 +9,7 @@ const runStates = [
   "SCRIPT_APPROVED",
   "PRODUCTION_PACKAGE_GENERATED",
   "COST_ESTIMATED",
+  "PAID_GENERATION_COST_APPROVED",
   "READY_FOR_MANUAL_PRODUCTION",
   "RENDER_APPROVED",
   "RENDERED",
@@ -20,7 +21,14 @@ const runStates = [
   "FAILED",
 ] as const;
 
-const approvalTargets = ["idea", "script", "render", "upload", "publish"] as const;
+const approvalTargets = [
+  "idea",
+  "script",
+  "paid-generation-cost",
+  "render",
+  "upload",
+  "publish",
+] as const;
 
 export const runStateSchema = z.enum(runStates);
 export const approvalTargetSchema = z.enum(approvalTargets);

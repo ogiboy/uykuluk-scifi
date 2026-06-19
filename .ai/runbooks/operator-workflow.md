@@ -10,6 +10,7 @@ pnpm producer review script --run <run_id>
 pnpm producer approve script --run <run_id>
 pnpm producer package --run <run_id>
 pnpm producer estimate --run <run_id>
+pnpm producer approve cost --run <run_id> # only when evidence reports approvalRequired=true
 pnpm producer evidence --run <run_id>
 pnpm producer readiness --run <run_id>
 ```
@@ -26,10 +27,13 @@ Canonical inspection files include `state.json`, `ledger.jsonl`, `costs/ledger.j
 `reviews/script_review.json`, `revisions/script/`, `costs/estimate.json`, `evidence_bundle.json`,
 and `diagnostics/readiness.json`.
 
-Current readiness validates the persisted cost-estimate allow/block decision. Run state is
-schema-validated and JSON writes use atomic replacement. Ideas, scripts, and production packages
-load tracked `.ai/prompts/` defaults through typed runtime templates. Evidence records the source
-path and actual rendered prompt SHA-256 hash.
+Current readiness strictly validates the versioned cost quote, production-package digest, relevant
+config, enabled stage pricing, and live hard budgets. Above-threshold quotes require an approval
+whose `approvedRef` matches the exact persisted quote SHA-256 digest. Cost approval does not execute
+or authorize a paid provider; paid execution remains disabled. Run state is schema-validated and
+JSON writes use atomic replacement. Ideas, scripts, and production packages load tracked
+`.ai/prompts/` defaults through typed runtime templates. Evidence records the source path and actual
+rendered prompt SHA-256 hash.
 
 After readiness passes, `state.json`, `diagnostics/readiness.json`, and `evidence_bundle.json` must
 all report `READY_FOR_MANUAL_PRODUCTION`.

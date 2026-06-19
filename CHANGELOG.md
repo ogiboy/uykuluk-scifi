@@ -20,6 +20,9 @@ future generated release notes can be inserted predictably.
   events, and evidence-bundle visibility.
 - Project-local capability inventory, task routing, frontend taste selection, swarm/context rules,
   and long-goal checkpoints.
+- Versioned future paid-generation JSON-plus-Markdown quote bundles with exact digest approval, live
+  package/config/pricing/budget revalidation, evidence visibility, and a dedicated resumable
+  workflow state.
 
 ### Changed
 
@@ -27,6 +30,8 @@ future generated release notes can be inserted predictably.
   server.
 - Script review, approval, and production packaging now require the same SHA-256 content digest.
 - Prompt provenance now records the tracked source path in addition to the rendered prompt hash.
+- Cost estimation no longer records an incurred cost event; quote approval is explicitly separate
+  from future spend reservation and settlement.
 - Explicit public publish config now passes the configuration guard only when the run also contains
   explicit publish approval; execution remains an intentionally disabled MVP scaffold.
 
@@ -35,8 +40,8 @@ future generated release notes can be inserted predictably.
 - Provider-backed idea, script, and production-package generation now blocks before provider calls
   and artifact writes when stage pricing would exceed existing per-video, daily, or weekly budgets.
 - Production packaging now fails closed when `script.md` changes after review or approval.
-- Readiness now blocks when the persisted cost estimate disallows the next step or reports blocked
-  reasons.
+- Readiness now rejects malformed, stale, tampered, hard-budget-blocked, or unapproved nonzero cost
+  quotes instead of trusting editable allow/block fields.
 - Run loading now rejects malformed or schema-invalid state, and JSON persistence uses atomic
   replacement.
 - Evidence bundles now include runtime prompt key/hash provenance for ideas, scripts, and production

@@ -55,6 +55,21 @@ Reason: Publishing is irreversible and public. Upload config or generated metada
 publish authority. Public/scheduled publish needs its own approval, readiness, warning, evidence,
 and QA matrix.
 
+### Paid-generation quote approval is separate from spend authorization
+
+Reason: An operator must be able to review and approve an exact future production quote without that
+approval silently becoming a reusable or concurrent payment capability. The JSON and operator-facing
+Markdown form one quote bundle bound to the run, production package, enabled stage pricing, relevant
+provider/budget config, and exact persisted bytes.
+
+Constraints:
+
+- Hard per-video, daily, and weekly budgets remain non-overridable.
+- Readiness revalidates the current quote and exact approval digest.
+- Approval does not call a provider or record incurred cost.
+- Paid execution remains unavailable until atomic reservation, one-time consumption, settlement,
+  uncertain-outcome handling, and reconciliation are implemented and tested.
+
 ### Visual assets are committed production inputs
 
 Reason: The channel brand pack is part of the production pipeline. Readiness should check for logo,

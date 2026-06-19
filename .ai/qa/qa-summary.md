@@ -2,8 +2,8 @@
 
 Latest usage smoke report:
 
-- `.ai/qa/artifacts/usage-smoke-20260618-234309/qa-report.md`
-- `.ai/qa/artifacts/usage-smoke-20260618-234309/usage-smoke-summary.json`
+- `.ai/qa/artifacts/usage-smoke-20260619-050114/qa-report.md`
+- `.ai/qa/artifacts/usage-smoke-20260619-050114/usage-smoke-summary.json`
 
 Validated gates:
 
@@ -56,12 +56,20 @@ Usage smoke coverage:
   production packages do not call the configured provider or write generated artifacts after those
   blocks. A direct pricing-reservation test also proves the stage estimate is evaluated before the
   provider call.
+- Paid-generation cost approval tests verify exact JSON-plus-Markdown quote binding, displayed-stage
+  tamper rejection, quote tamper rejection after approval, live hard-budget rechecks, hard-budget
+  non-override, no extra incurred-cost event, and unnecessary zero-cost approval rejection.
+- The clean-copy usage smoke exercises `producer approve cost` and confirms a zero-cost quote fails
+  closed as an unnecessary approval before normal readiness continues.
+- The diff-scoped Codex Security review completed with 12/12 worklist receipts and no reportable
+  findings; the generated report is under the system temp
+  `codex-security-scans/uykuluk-scifi/7bd5801bfede_20260619T045040Z/report.md`.
 - `pnpm security:dependencies` reports no known high-severity dependency vulnerabilities.
 - Capability-routing docs pass formatting, changelog-marker, modularity, version-plan, full
   `pnpm check`, and clean-copy usage gates.
 - Readiness passes with committed brand assets.
-- Unit coverage confirms readiness blocks when `costs/estimate.json` disallows the next step or
-  reports blocked reasons.
+- Unit coverage confirms readiness rejects malformed, stale, tampered, hard-budget-blocked, or
+  unapproved nonzero cost quote bundles.
 - Voice, render, upload, and publish are blocked by default.
 - Playwright browser smoke verifies the initial Studio shell, module tabs, and cookie-based document
   locale through a production build/server.
@@ -75,3 +83,5 @@ Remaining known MVP limits:
   overlays, and intro/outro frames. Editable source files, rendered intro/outro clips, and font
   licensing notes remain useful before render work.
 - TTS, render, upload, and publish are intentionally disabled scaffolds.
+- Paid execution still requires atomic reservation, one-time approval consumption, settlement,
+  uncertain-outcome handling, and reconciliation.

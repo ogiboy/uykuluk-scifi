@@ -17,49 +17,48 @@ coherent, tested slices until the safe core and its evidence contracts are genui
 
 ## Current State
 
-- Branch/worktree: `fix/core-script-approval-integrity` at
-  `/Users/ogiboy/.codex/worktrees/94cb/uykuluk-scifi`.
-- Last completed slice: `fcc5f9a feat(cli): add producer doctor diagnostics`.
-- Earlier completed hardening includes content-addressed approval, budget/readiness enforcement,
-  atomic state writes, prompt provenance/runtime templates, provider/publish tests, dependency
-  audit, diagnostics synchronization, and content/asset guards.
-- Active uncommitted slice: attributable script revision command, snapshots, state rollback,
-  approval invalidation, evidence visibility, CLI wiring, usage smoke, and documentation.
-- External edits to preserve: planner/scriptwriter duration prompt changes and example model config
-  change.
+- Branch/worktree: `feat/core-paid-cost-approval` at
+  `/Users/ogiboy/.codex/worktrees/894d/uykuluk-scifi`.
+- Base: `7bd5801`, the merge of the completed script approval/revision hardening work.
+- Earlier completed hardening includes content-addressed script approval and revisions,
+  budget/readiness enforcement, atomic state writes, prompt provenance/runtime templates,
+  provider/publish tests, dependency audit, diagnostics synchronization, and content/asset guards.
+- Completed slice: `feat(core): add paid generation cost approvals` on the current branch.
+- Worktree was clean before this slice.
 
 ## Verification Evidence
 
-- Focused script-revision-related tests reached 12/12 green with typecheck.
-- A later full gate found modularity limits in `src/cli.ts` and `scripts/usage-smoke.mjs`;
-  extraction into focused files began.
-- On 2026-06-19, the integrated dirty worktree passed `pnpm check` with 48/48 tests, Studio build,
-  modularity, secret scan, changelog, and formatting.
-- `pnpm qa:usage`, `pnpm version:plan`, and `pnpm security:dependencies` also passed; the latest
-  ignored report is `.ai/qa/artifacts/usage-smoke-20260618-234309/qa-report.md`.
-- The script-revision slice is mechanically green but remains uncommitted and still needs the
-  independent review findings resolved before completion.
+- Baseline on 2026-06-19: `pnpm test` passed 48/48 and `pnpm typecheck` passed before edits.
+- Three independent read-only reviews agreed that approval must bind an exact persisted quote and
+  that paid execution must remain disabled until atomic reservation/settlement exists.
+- Current plan: `.ai/plans/2026-06-19-paid-generation-cost-approval.md`.
+- Strict TDD added 7 paid-generation cost approval tests; focused cost/readiness/mock tests and
+  typecheck pass.
+- `pnpm check` passed with 56/56 tests, Studio production build, modularity, secret scan, changelog,
+  and formatting.
+- `pnpm qa:usage`, `pnpm version:plan`, and `pnpm security:dependencies` passed; the latest ignored
+  smoke report is `.ai/qa/artifacts/usage-smoke-20260619-050114/qa-report.md`.
+- A diff-scoped Codex Security scan reviewed all 12 executable/test worklist rows and reported no
+  surviving findings after JSON-plus-Markdown quote binding was added.
 
 ## Decisions
 
-- `src/revisions/scriptRevision.ts` is the canonical revision owner.
-- Revisions are allowed only through `SCRIPT_APPROVED`; downstream package/cost/readiness runs are
-  immutable.
-- Revised scripts return to `SCRIPT_GENERATED` and require review/approval again.
-- Existing review evidence must remain historically inspectable without appearing active.
+- `src/costs/` owns cost quote shape and fingerprints; core state/ledger owns approval authority.
+- Cost approval covers future paid production stages after package generation only.
+- Cost approval does not authorize or execute a provider call.
+- Hard budgets remain non-overridable and must be rechecked at readiness and future execution.
+- Paid execution still requires atomic reservation, one-time consumption, settlement, and
+  reconciliation before any provider mode is enabled.
 
 ## Remaining Work
 
-1. Resolve the independent review findings for transaction/journaling safety, revision input file
-   boundaries, stale review visibility, evidence detail, and failure-path coverage.
-2. Re-run focused tests and full gates after review-driven code changes.
-3. Stage only the script-revision slice while preserving external prompt/config edits.
-4. Commit only when green, then re-audit the remaining product goal.
+1. Re-audit the next product gap, with atomic cost reservation/settlement as the primary core
+   hardening candidate.
+2. Keep paid providers disabled until reservation, one-time consumption, settlement, uncertain
+   outcome handling, and reconciliation are implemented and verified.
 
 ## Blockers And Risks
 
-- Multi-write revision flow can leave partial state without a transaction or recoverable journal.
-- `--file` must not ingest arbitrary sensitive paths into run artifacts.
-- Physical stale review files may be mistaken for active evidence by consumers checking existence.
-- Evidence and docs may overstate the revision detail exposed.
-- Direct `SCRIPT_REVIEWED` rollback and injected failure behavior need stronger tests.
+- Cost quote approval is not sufficient for paid execution; reservation/settlement remains open.
+- Cost and event ledgers are not yet concurrency-safe or tamper-evident.
+- Run ID path validation and broader stale-artifact readiness checks remain separate hardening work.
