@@ -5,50 +5,45 @@ import { artifactPath } from "../core/artifacts";
 import { SafeExitError } from "../core/errors";
 import { RunRecord } from "../core/state";
 import { checkBudget } from "../safeguards/budgetGuard";
+import { verifyProductionPackage } from "../stages/productionPackageIntegrity";
 import { sha256 } from "../utils/hash";
 import { nowIso } from "../utils/time";
 import { renderCostEstimateMarkdown } from "./costEstimatePresentation";
 import { defaultStagePricing, StagePricing } from "./pricing";
 
-const budgetSnapshotSchema = z
-  .object({
-    perVideoUsd: z.number().nonnegative(),
-    dailyUsd: z.number().nonnegative(),
-    weeklyUsd: z.number().nonnegative(),
-    requireApprovalAboveUsd: z.number().nonnegative(),
-  })
-  .strict();
+const budgetSnapshotSchema = z.strictObject({
+  perVideoUsd: z.number().nonnegative(),
+  dailyUsd: z.number().nonnegative(),
+  weeklyUsd: z.number().nonnegative(),
+  requireApprovalAboveUsd: z.number().nonnegative(),
+});
 
-const quotedStageSchema = z
-  .object({
-    stage: z.string().min(1),
-    provider: z.string().min(1),
-    model: z.string().min(1).optional(),
-    enabled: z.boolean(),
-    estimatedUsd: z.number().nonnegative(),
-  })
-  .strict();
+const quotedStageSchema = z.strictObject({
+  stage: z.string().min(1),
+  provider: z.string().min(1),
+  model: z.string().min(1).optional(),
+  enabled: z.boolean(),
+  estimatedUsd: z.number().nonnegative(),
+});
 
-export const costEstimateSchema = z
-  .object({
-    schemaVersion: z.literal(1),
-    runId: z.string().min(1),
-    generatedAt: z.string().min(1),
-    currency: z.literal("USD"),
-    stages: z.array(quotedStageSchema),
-    estimatedStageCost: z.number().nonnegative(),
-    cumulativeEstimatedRunCost: z.number().nonnegative(),
-    budgets: budgetSnapshotSchema,
-    budgetAllowed: z.boolean(),
-    approvalRequired: z.boolean(),
-    hardBlockedReasons: z.array(z.string()),
-    nextStepAllowed: z.boolean(),
-    blockedReasons: z.array(z.string()),
-    productionPackageDigest: z.string().regex(/^[a-f0-9]{64}$/),
-    configDigest: z.string().regex(/^[a-f0-9]{64}$/),
-    pricingDigest: z.string().regex(/^[a-f0-9]{64}$/),
-  })
-  .strict();
+export const costEstimateSchema = z.strictObject({
+  schemaVersion: z.literal(1),
+  runId: z.string().min(1),
+  generatedAt: z.iso.datetime(),
+  currency: z.literal("USD"),
+  stages: z.array(quotedStageSchema),
+  estimatedStageCost: z.number().nonnegative(),
+  cumulativeEstimatedRunCost: z.number().nonnegative(),
+  budgets: budgetSnapshotSchema,
+  budgetAllowed: z.boolean(),
+  approvalRequired: z.boolean(),
+  hardBlockedReasons: z.array(z.string()),
+  nextStepAllowed: z.boolean(),
+  blockedReasons: z.array(z.string()),
+  productionPackageDigest: z.string().regex(/^[a-f0-9]{64}$/),
+  configDigest: z.string().regex(/^[a-f0-9]{64}$/),
+  pricingDigest: z.string().regex(/^[a-f0-9]{64}$/),
+});
 
 export type CostEstimate = z.infer<typeof costEstimateSchema>;
 
@@ -88,7 +83,7 @@ export async function buildCostEstimate(
       ...hardBlockedReasons,
       ...(approvalRequired ? ["Explicit paid-generation cost approval required."] : []),
     ],
-    productionPackageDigest: await currentProductionPackageDigest(run.runId),
+    productionPackageDigest: await currentProductionPackageDigest(run),
     configDigest: relevantConfigDigest(config),
     pricingDigest: stagesDigest(stages),
   };
@@ -169,7 +164,7 @@ export async function validateCostEstimateIntegrity(
   if (estimate.runId !== run.runId) {
     reasons.push("Cost estimate belongs to a different run.");
   }
-  if (estimate.productionPackageDigest !== (await currentProductionPackageDigest(run.runId))) {
+  if (estimate.productionPackageDigest !== (await currentProductionPackageDigest(run))) {
     reasons.push("Production package changed after the cost estimate.");
   }
   if (estimate.configDigest !== relevantConfigDigest(config)) {
@@ -201,17 +196,23 @@ export async function validateCostEstimateIntegrity(
 }
 
 function quoteStages(config: ProducerConfig): Array<StagePricing & { enabled: boolean }> {
-  return Object.values(defaultStagePricing).map((pricing) => ({
-    ...pricing,
-    enabled:
-      pricing.stage === "tts"
-        ? config.providers.tts.enabled
-        : pricing.stage === "imageGeneration" || pricing.stage === "videoGeneration"
-          ? config.providers.imageGeneration.enabled
-          : pricing.stage === "upload"
-            ? config.providers.youtube.enabled
-            : true,
-  }));
+  return Object.values(defaultStagePricing).map((pricing) => {
+    let enabled: boolean;
+    if (pricing.stage === "tts") {
+      enabled = config.providers.tts.enabled;
+    } else if (pricing.stage === "imageGeneration" || pricing.stage === "videoGeneration") {
+      enabled = config.providers.imageGeneration.enabled;
+    } else if (pricing.stage === "upload") {
+      enabled = config.providers.youtube.enabled;
+    } else {
+      enabled = true;
+    }
+
+    return {
+      ...pricing,
+      enabled,
+    };
+  });
 }
 
 function relevantConfigDigest(config: ProducerConfig): string {
@@ -241,6 +242,6 @@ function canonicalStages(stages: CostEstimate["stages"]): CostEstimate["stages"]
   }));
 }
 
-async function currentProductionPackageDigest(runId: string): Promise<string> {
-  return sha256(await readFile(artifactPath(runId, "production/production_package.md"), "utf8"));
+async function currentProductionPackageDigest(run: RunRecord): Promise<string> {
+  return (await verifyProductionPackage(run)).digest;
 }

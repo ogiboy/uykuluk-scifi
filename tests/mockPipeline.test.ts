@@ -56,9 +56,21 @@ describe("mock pipeline", () => {
       promptProvenance: Array<{ key: string; hash: string; artifact: string }>;
       revisions: string[];
       costReservations: unknown[];
+      productionPackageIntegrity: {
+        status: string;
+        path: string;
+        digest: string;
+        artifactCount: number;
+      };
     }>(artifactPath(runId, "evidence_bundle.json"));
     expect(evidence.revisions).toEqual([]);
     expect(evidence.costReservations).toEqual([]);
+    expect(evidence.productionPackageIntegrity).toEqual({
+      status: "pass",
+      path: "production/production_package.meta.json",
+      digest: expect.stringMatching(/^[a-f0-9]{64}$/),
+      artifactCount: 5,
+    });
     expect(evidence.promptProvenance).toEqual([
       {
         key: "ideas",

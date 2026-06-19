@@ -96,6 +96,12 @@ Usage smoke coverage:
 - Readiness passes with committed brand assets.
 - Unit coverage confirms readiness rejects malformed, stale, tampered, hard-budget-blocked, or
   unapproved nonzero cost quote bundles.
+- Production-package integrity coverage confirms generation records all derived artifact digests and
+  that modification, deletion, foreign manifests, or approved-script drift block cost estimation and
+  readiness while evidence reports the failure.
+- The production-package integrity diff security review completed with 7/7 worklist receipts. It
+  reproduced and fixed missing-manifest evidence reporting; no reportable finding survived. Report:
+  `/tmp/codex-security-scans/uykuluk-scifi/d4a7e61a4ecf_20260619T120922Z/report.md`.
 - Voice, render, upload, and publish are blocked by default.
 - Playwright browser smoke verifies the initial Studio shell, module tabs, and cookie-based document
   locale through a production build/server.

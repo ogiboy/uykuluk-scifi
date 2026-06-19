@@ -8,6 +8,7 @@ import { checkAssets } from "../safeguards/assetGuard";
 import { pathExists } from "../utils/fs";
 import { bulletList, table } from "../utils/markdown";
 import { generateEvidenceBundle } from "./evidence";
+import { verifyProductionPackage } from "./productionPackageIntegrity";
 
 type ReadinessCheck = {
   name: string;
@@ -60,11 +61,7 @@ export async function runReadiness(
         : "block",
       message: "Script approval must be explicit in run state.",
     },
-    await artifactCheck(
-      run.runId,
-      "production package generated",
-      "production/production_package.md",
-    ),
+    await productionPackageIntegrityCheck(run),
     await budgetEstimateCheck(run, config),
     {
       name: "no blocked publish action",
@@ -146,6 +143,23 @@ async function artifactCheck(
     `${relativePath} exists.`,
     `${relativePath} is missing.`,
   );
+}
+
+async function productionPackageIntegrityCheck(run: RunRecord): Promise<ReadinessCheck> {
+  try {
+    const { digest } = await verifyProductionPackage(run);
+    return {
+      name: "production package integrity",
+      status: "pass",
+      message: `Complete production package matches manifest ${digest}.`,
+    };
+  } catch (error) {
+    return {
+      name: "production package integrity",
+      status: "block",
+      message: error instanceof Error ? error.message : String(error),
+    };
+  }
 }
 
 /**

@@ -10,6 +10,7 @@ import { PromptProvenance } from "../prompts/provenance";
 import { pathExists } from "../utils/fs";
 import { readJsonFile } from "../utils/json";
 import { bulletList } from "../utils/markdown";
+import { readProductionPackageIntegrityEvidence } from "./productionPackageIntegrity";
 
 /**
  * Generates and persists an evidence bundle for a run.
@@ -24,6 +25,7 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
   const costs = await readCostEvents(run.runId);
   const costReservations = await readCostReservationSummaries(run.runId);
   const costQuote = await readCostQuoteEvidence(run);
+  const productionPackageIntegrity = await readProductionPackageIntegrityEvidence(run);
   const promptProvenance = await readPromptProvenance(run.runId);
   const approvedIdea =
     run.approvedIdeaId && (await pathExists(artifactPath(run.runId, "ideas.json")))
@@ -55,6 +57,7 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
     costs,
     costReservations,
     costQuote,
+    productionPackageIntegrity,
     costEstimatePath: (await pathExists(artifactPath(run.runId, "costs/estimate.json")))
       ? "costs/estimate.json"
       : null,
@@ -110,6 +113,7 @@ function renderEvidenceMarkdown(bundle: unknown): string {
     costs: unknown[];
     costReservations: unknown[];
     costQuote: Awaited<ReturnType<typeof readCostQuoteEvidence>>;
+    productionPackageIntegrity: Awaited<ReturnType<typeof readProductionPackageIntegrityEvidence>>;
     generatedArtifacts: string[];
     warnings: string[];
     promptProvenance: PromptProvenance[];
@@ -139,6 +143,12 @@ function renderEvidenceMarkdown(bundle: unknown): string {
     "## Cost Quote",
     "",
     data.costQuote ? JSON.stringify(data.costQuote) : "None",
+    "",
+    "## Production Package Integrity",
+    "",
+    data.productionPackageIntegrity
+      ? JSON.stringify(data.productionPackageIntegrity)
+      : "No production package manifest.",
     "",
     "## Warnings",
     "",

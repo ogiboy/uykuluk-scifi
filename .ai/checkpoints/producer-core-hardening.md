@@ -17,7 +17,7 @@ coherent, tested slices until the safe core and its evidence contracts are genui
 
 ## Current State
 
-- Branch/worktree: `fix/core-artifact-path-validation` at
+- Branch/worktree: `fix/core-production-package-integrity` at
   `/Users/ogiboy/.codex/worktrees/894d/uykuluk-scifi`.
 - Base: `7bd5801`, the merge of the completed script approval/revision hardening work.
 - Earlier completed hardening includes content-addressed script approval and revisions,
@@ -27,6 +27,7 @@ coherent, tested slices until the safe core and its evidence contracts are genui
 - Completed slice: `e155b02 feat(core): add atomic cost reservations`.
 - Completed slice: `f16e643 fix(core): validate run identifiers`.
 - Completed slice: `3c04cdd fix(core): constrain artifact paths`.
+- Active green slice awaiting commit: complete production-package manifest integrity.
 - Worktree was clean before this slice.
 
 ## Verification Evidence
@@ -70,6 +71,18 @@ coherent, tested slices until the safe core and its evidence contracts are genui
 - Diff-scoped security review closed all 6 executable/test/supporting rows, reproduced and fixed
   Windows reserved-device/trailing-dot aliases, and produced validated Markdown/HTML reports with no
   surviving reportable findings.
+- Current plan: `.ai/plans/2026-06-19-production-package-integrity.md`.
+- Strict TDD added complete-package manifest coverage for generation, modification/deletion of every
+  derived artifact, missing/foreign/changed manifests, approved-script drift, readiness state
+  preservation, and evidence block reporting.
+- Final gates pass: `pnpm check` with 143/143 tests and Studio production build, `pnpm qa:usage`,
+  `pnpm version:plan`, `pnpm security:dependencies`, `pnpm release:check`, modularity, secret scan,
+  changelog, formatting, and `git diff --check`.
+- Latest ignored usage report: `.ai/qa/artifacts/usage-smoke-20260619-121222/qa-report.md`.
+- Diff-scoped security review closed all 7 executable/test/supporting rows, reproduced and fixed a
+  missing-manifest evidence projection gap, and produced validated Markdown/HTML reports with no
+  surviving reportable findings:
+  `/tmp/codex-security-scans/uykuluk-scifi/d4a7e61a4ecf_20260619T120922Z/report.html`.
 
 ## Decisions
 
@@ -82,8 +95,9 @@ coherent, tested slices until the safe core and its evidence contracts are genui
 
 ## Remaining Work
 
-1. Re-audit symlink containment and stale-artifact readiness as the next safe-core candidates.
-2. Choose the smallest enforceable vertical slice and continue under strict TDD.
+1. Commit the green production-package integrity slice without the unrelated concurrent
+   `sonar-project.properties` modification.
+2. Re-audit symlink containment as the next safe-core candidate.
 
 ## Blockers And Risks
 
@@ -91,4 +105,6 @@ coherent, tested slices until the safe core and its evidence contracts are genui
   adapter integration and end-to-end failure semantics remain open.
 - Reservation writes are serialized locally, but JSONL ledgers are not cryptographically
   tamper-evident and the lock is not a distributed lease.
-- Symlink containment and stale-artifact readiness checks remain separate hardening work.
+- Symlink containment remains separate hardening work.
+- Production-package manifests provide consistency, not authenticity; cryptographic tamper evidence
+  remains separate roadmap work.

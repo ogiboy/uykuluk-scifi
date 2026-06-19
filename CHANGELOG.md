@@ -26,6 +26,8 @@ future generated release notes can be inserted predictably.
 - Project-wide atomic cost reservations with one-time approved quote-line consumption, integer USD
   micros, idempotent operation ids, recoverable settlement, uncertain outcomes, explicit
   reconciliation, and evidence summaries.
+- Versioned production-package manifests covering voiceover, subtitles, scenes, YouTube metadata,
+  package Markdown, approved-script provenance, and exact artifact digests.
 
 ### Changed
 
@@ -67,6 +69,9 @@ future generated release notes can be inserted predictably.
 - Artifact reads, writes, and persisted artifact lists now reject absolute, traversal-shaped,
   Windows-style, reserved-device, trailing-dot, malformed, control-character, or oversized relative
   paths before side effects.
+- Cost estimation and readiness now fail closed when any generated production-package artifact or
+  its manifest is missing, malformed, foreign, or changed; evidence bundles report the verified
+  manifest digest or blocking integrity reason.
 
 ## 0.1.0 - 2026-06-17
 

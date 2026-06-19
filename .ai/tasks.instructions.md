@@ -15,6 +15,8 @@
 - Keep provider-backed generation behind per-video, daily, and weekly budget preflight.
 - Keep future paid-generation quotes bound to exact package/config/pricing digests and require an
   exact matching approval above the configured threshold.
+- Keep production-package generation, cost estimation, readiness, and evidence bound to one strict
+  manifest covering every derived package artifact and the approved script digest.
 - Keep atomic reservation, one-time quote-line consumption, active-reservation budget accounting,
   recoverable settlement, and explicit reconciliation passing.
 - Keep readiness diagnostics and evidence synchronized with persisted run state.

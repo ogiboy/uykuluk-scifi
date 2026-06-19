@@ -21,15 +21,18 @@
 - Versioned future paid-generation cost quote bundles bound to the production package, relevant
   config, enabled stage pricing, budgets, and exact JSON-plus-Markdown digest; approval is explicit
   and content-addressed.
+- Versioned production-package manifests bind the approved script and prompt/provider provenance to
+  exact voiceover, subtitle, scene, YouTube metadata, and package-Markdown digests.
 - Project-wide atomic cost reservations with one-time approved quote-line consumption, operation-id
   idempotency, active-reservation hard-budget accounting, integer USD micros, recoverable
   settlement, uncertain outcomes, and explicit reconciliation.
 - Script content review heuristics, including clickbait title warnings.
 - Brand, overlay, intro, and outro asset inventory checks.
-- Production package generation.
-- Evidence bundle generation.
+- Production package generation with complete manifest creation after all derived artifacts are
+  persisted.
+- Evidence bundle generation with production-package integrity status and manifest digest.
 - Readiness diagnostics that strictly parse and revalidate persisted cost quotes, live hard budgets,
-  and exact paid-generation cost approval when required.
+  complete production-package integrity, and exact paid-generation cost approval when required.
 - Final readiness diagnostics agree with the post-transition run state.
 - Disabled voice, render, upload, and publish placeholders.
 - Basic Next.js Producer Studio shell under `apps/studio`.
