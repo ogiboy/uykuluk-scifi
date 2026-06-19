@@ -32,6 +32,15 @@ const scriptRevisionSchema = z
 
 export type ScriptRevision = z.infer<typeof scriptRevisionSchema>;
 
+/**
+ * Revises the script for a run, invalidating related approvals and artifacts.
+ *
+ * Validates that the run is in a revisable state and that the provided reason, editor, and content are non-empty.
+ * Creates a revision record capturing before and after script states, invalidates approvals targeting the script,
+ * removes artifacts derived from script review, and clears warnings. Updates the run state to `SCRIPT_GENERATED`.
+ *
+ * @returns The created script revision
+ */
 export async function reviseScript(input: {
   runId: string;
   content: string;
@@ -123,6 +132,12 @@ export async function reviseScript(input: {
   return revision;
 }
 
+/**
+ * Determines if an artifact path is derived from a script review.
+ *
+ * @param relativePath - The artifact path to evaluate
+ * @returns `true` if the path matches patterns indicating script review derivation, `false` otherwise
+ */
 function isDerivedFromScriptReview(relativePath: string): boolean {
   return (
     relativePath.startsWith("reviews/") ||
@@ -132,6 +147,13 @@ function isDerivedFromScriptReview(relativePath: string): boolean {
   );
 }
 
+/**
+ * Blocks a script revision by recording a guard event to the ledger and throwing an error.
+ *
+ * @param runId - The ID of the run being revised
+ * @param message - The reason for blocking the revision
+ * @param data - Optional additional context to include in the ledger event
+ */
 async function blockRevision(runId: string, message: string, data?: unknown): Promise<never> {
   await appendLedgerEvent({
     runId,

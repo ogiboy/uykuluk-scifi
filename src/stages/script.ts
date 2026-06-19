@@ -12,6 +12,12 @@ import { createPromptProvenance } from "../prompts/provenance";
 import { renderScriptPrompt } from "../prompts/templates";
 import { ScriptMeta, VideoIdea } from "./types";
 
+/**
+ * Generates a Turkish video script from an approved video idea.
+ *
+ * @param runId - The ID of the run containing the approved idea
+ * @returns Script metadata including word count, estimated duration, claims requiring fact-checking, and visual beat suggestions.
+ */
 export async function generateScript(runId: string): Promise<ScriptMeta> {
   const config = await loadConfig();
   let run = await loadRun(runId);

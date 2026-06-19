@@ -12,6 +12,12 @@ import { VideoIdea } from "./types";
 
 type IdeasPayload = { ideas: VideoIdea[] };
 
+/**
+ * Generates a set of video ideas using an LLM and writes formatted artifacts to the run.
+ *
+ * @returns An object containing the run ID and the generated video ideas (up to 10).
+ * @throws When generation or artifact writing fails.
+ */
 export async function runIdeas(): Promise<{ runId: string; ideas: VideoIdea[] }> {
   const config = await loadConfig();
   let run = await createRun();

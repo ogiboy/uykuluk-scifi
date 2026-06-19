@@ -14,6 +14,14 @@ type ReadinessCheck = {
   message: string;
 };
 
+/**
+ * Validates a run's readiness for manual production.
+ *
+ * Performs 11 readiness checks covering configuration, assets, artifacts, approvals, and budget. Writes diagnostic reports to the run directory. If all checks pass and conditions are met, transitions the run state to `READY_FOR_MANUAL_PRODUCTION` and generates an evidence bundle.
+ *
+ * @param runId - The ID of the run to validate
+ * @returns `passed` is `true` if no checks have a block status; `checks` is the array of all readiness checks performed
+ */
 export async function runReadiness(
   runId: string,
 ): Promise<{ passed: boolean; checks: ReadinessCheck[] }> {
@@ -119,6 +127,13 @@ export async function runReadiness(
   return { passed, checks };
 }
 
+/**
+ * Checks whether an artifact file exists within a run.
+ *
+ * @param name - The name of the readiness check
+ * @param relativePath - The artifact path relative to the run directory
+ * @returns A readiness check that passes if the artifact exists, blocks if it is missing
+ */
 async function artifactCheck(
   runId: string,
   name: string,
@@ -132,6 +147,14 @@ async function artifactCheck(
   );
 }
 
+/**
+ * Validates the cost estimate and determines if the next step is allowed.
+ *
+ * Reads `costs/estimate.json` and checks if the estimate permits proceeding. Blocks readiness if the file is missing, cannot be read, or indicates the next step is not allowed.
+ *
+ * @param runId - The run identifier
+ * @returns A readiness check that passes if the cost estimate allows proceeding, blocks otherwise
+ */
 async function budgetEstimateCheck(runId: string): Promise<ReadinessCheck> {
   const relativePath = "costs/estimate.json";
   const target = artifactPath(runId, relativePath);
@@ -174,6 +197,11 @@ async function budgetEstimateCheck(runId: string): Promise<ReadinessCheck> {
   }
 }
 
+/**
+ * Creates a readiness check based on a condition.
+ *
+ * @returns A readiness check with status `pass` if `ok` is `true`, `block` if `ok` is `false`, using the corresponding message.
+ */
 async function fileCheck(
   name: string,
   ok: boolean,

@@ -8,6 +8,11 @@ import { reviewScriptContent } from "../safeguards/contentGuard";
 import { sha256 } from "../utils/hash";
 import { bulletList } from "../utils/markdown";
 
+/**
+ * Reviews the generated script content for a run.
+ *
+ * @returns An object containing the warnings produced by the content review.
+ */
 export async function reviewScript(
   runId: string,
 ): Promise<{ warnings: ReturnType<typeof reviewScriptContent> }> {

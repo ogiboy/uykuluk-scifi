@@ -29,6 +29,14 @@ export type BudgetGuardInput = {
   recordCostEvent?: boolean;
 };
 
+/**
+ * Enforces a budget constraint, blocking execution if the budget check fails or approval is required.
+ *
+ * When approval is required, records a `GUARD_BLOCKED` ledger event before blocking.
+ *
+ * @throws SafeExitError when the budget is blocked or approval is required.
+ * @returns The budget guard result if the budget is allowed and no approval is required.
+ */
 export async function enforceBudget(input: BudgetGuardInput): Promise<BudgetGuardResult> {
   const result = await checkBudget(input);
   if (!result.allowed) {
@@ -51,6 +59,11 @@ export async function enforceBudget(input: BudgetGuardInput): Promise<BudgetGuar
   return result;
 }
 
+/**
+ * Assesses whether a stage run is within configured budget limits.
+ *
+ * @returns A result indicating whether the stage is allowed, any exceeded budget reasons, whether approval is required, and estimated and cumulative costs.
+ */
 export async function checkBudget(input: BudgetGuardInput): Promise<BudgetGuardResult> {
   const events = await readCostEvents(input.run.runId);
   const allEvents = await readAllCostEvents();

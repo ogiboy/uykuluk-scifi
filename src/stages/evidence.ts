@@ -9,6 +9,12 @@ import { pathExists } from "../utils/fs";
 import { readJsonFile } from "../utils/json";
 import { bulletList } from "../utils/markdown";
 
+/**
+ * Generates and persists an evidence bundle for a run.
+ *
+ * @param runId - The identifier of the run.
+ * @returns The generated evidence bundle object.
+ */
 export async function generateEvidenceBundle(runId: string): Promise<unknown> {
   const config = await loadConfig();
   let run = await loadRun(runId);
@@ -77,6 +83,11 @@ function nextCommand(state: string): string {
   return map[state] ?? "Review state and ledger before continuing.";
 }
 
+/**
+ * Renders an evidence bundle as markdown.
+ *
+ * @returns A markdown string representation of the evidence bundle.
+ */
 function renderEvidenceMarkdown(bundle: unknown): string {
   const data = bundle as {
     runId: string;
@@ -137,6 +148,12 @@ function renderEvidenceMarkdown(bundle: unknown): string {
   ].join("\n");
 }
 
+/**
+ * Collects prompt provenance records from a run's artifacts.
+ *
+ * @param runId - The run identifier
+ * @returns An array of prompt provenance records found in the run's artifacts
+ */
 async function readPromptProvenance(runId: string): Promise<PromptProvenance[]> {
   const sources = ["ideas.json", "script.meta.json", "production/production_package.meta.json"];
   const records: PromptProvenance[] = [];

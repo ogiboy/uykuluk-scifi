@@ -22,6 +22,13 @@ export async function blockPrivateUploadUnlessExplicitlyEnabled(
   }
 }
 
+/**
+ * Enforces configuration safeguards for public YouTube publishing.
+ *
+ * Blocks publishing if YouTube is disabled, public publishing is disabled, or explicit publish approval is required but missing.
+ *
+ * @throws `SafeExitError` if publishing is blocked.
+ */
 export async function blockPublicPublishUnlessExplicitlyEnabled(
   run: RunRecord,
   config: ProducerConfig,

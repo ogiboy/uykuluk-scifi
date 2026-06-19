@@ -21,14 +21,32 @@ export type DoctorReport = {
   checks: DoctorCheck[];
 };
 
+/**
+ * Gets the absolute path to the doctor JSON diagnostics file.
+ *
+ * @returns The absolute path to `diagnostics/doctor.json` under the current working directory.
+ */
 export function doctorJsonPath(): string {
   return path.join(process.cwd(), "diagnostics", "doctor.json");
 }
 
+/**
+ * Resolves the absolute path to the diagnostic Markdown report.
+ *
+ * @returns The absolute path to the diagnostic Markdown report.
+ */
 export function doctorMarkdownPath(): string {
   return path.join(process.cwd(), "diagnostics", "doctor.md");
 }
 
+/**
+ * Generates and writes a diagnostic report of the project's health.
+ *
+ * Performs checks on project configuration validity, provider availability, production assets, and publish settings.
+ * Writes the report in JSON and Markdown formats to the diagnostics directory.
+ *
+ * @returns The diagnostic report with all checks and overall pass/fail status.
+ */
 export async function runDoctor(): Promise<DoctorReport> {
   const startedAt = Date.now();
   const checks: DoctorCheck[] = [];
@@ -74,6 +92,11 @@ export async function runDoctor(): Promise<DoctorReport> {
   return report;
 }
 
+/**
+ * Diagnoses the availability and readiness of the LLM provider.
+ *
+ * @returns A diagnostic check with the provider's current status and configuration message.
+ */
 async function providerCheck(config: ProducerConfig | undefined): Promise<DoctorCheck> {
   if (!config) {
     return {
@@ -100,6 +123,11 @@ async function providerCheck(config: ProducerConfig | undefined): Promise<Doctor
   };
 }
 
+/**
+ * Checks whether required production assets are present.
+ *
+ * @returns A DoctorCheck with status "pass" if all required assets are present, "warn" if any are missing, or "block" if the project configuration is unavailable.
+ */
 async function assetCheck(config: ProducerConfig | undefined): Promise<DoctorCheck> {
   if (!config) {
     return {
@@ -116,6 +144,11 @@ async function assetCheck(config: ProducerConfig | undefined): Promise<DoctorChe
   };
 }
 
+/**
+ * Determines if YouTube publish defaults are safely locked.
+ *
+ * @returns A diagnostic check with `pass` status if YouTube upload and public publish are disabled with explicit approval required, `block` status otherwise.
+ */
 function publishDefaultsCheck(config: ProducerConfig | undefined): DoctorCheck {
   if (!config) {
     return {
@@ -139,6 +172,11 @@ function publishDefaultsCheck(config: ProducerConfig | undefined): DoctorCheck {
   };
 }
 
+/**
+ * Renders a diagnostic report as Markdown.
+ *
+ * @returns A Markdown string containing the report metadata and checks in table format.
+ */
 function renderDoctorMarkdown(report: DoctorReport): string {
   return [
     "# Producer Doctor",

@@ -10,6 +10,12 @@ import { createId, nowIso } from "../utils/time";
 import { SafeExitError } from "../core/errors";
 import { requireState } from "../safeguards/approvalGuard";
 
+/**
+ * Approves a script for a given run after verifying its content matches the previously reviewed state.
+ *
+ * @param runId - The ID of the run containing the script to approve
+ * @returns The approval record for the script
+ */
 export async function approveScript(runId: string): Promise<ApprovalRecord> {
   let run = await loadRun(runId);
   await requireState(run, "SCRIPT_REVIEWED", "approve-script");

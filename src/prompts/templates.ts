@@ -23,14 +23,31 @@ const promptSources = {
   },
 } as const satisfies Record<PromptKey, { path: string; url: URL }>;
 
+/**
+ * Renders the ideas prompt template.
+ *
+ * @returns A `RenderedPrompt` containing the ideas prompt.
+ */
 export async function renderIdeasPrompt(): Promise<RenderedPrompt> {
   return renderTrackedPrompt("ideas", "IDEAS_JSON");
 }
 
+/**
+ * Composes a script prompt with an approved idea.
+ *
+ * @param ideaJson - The approved idea as a JSON string
+ * @returns A `RenderedPrompt` containing the script template with the idea integrated
+ */
 export async function renderScriptPrompt(ideaJson: string): Promise<RenderedPrompt> {
   return renderTrackedPrompt("script", "SCRIPT_MARKDOWN", ["## Approved Idea", ideaJson]);
 }
 
+/**
+ * Renders a production package prompt template with the provided approved script.
+ *
+ * @param script - The approved script content to include in the prompt
+ * @returns A `RenderedPrompt` containing the production package prompt with the script context
+ */
 export async function renderProductionPackagePrompt(script: string): Promise<RenderedPrompt> {
   return renderTrackedPrompt("production-package", "PRODUCTION_PACKAGE_JSON", [
     "## Approved Script",
@@ -38,6 +55,15 @@ export async function renderProductionPackagePrompt(script: string): Promise<Ren
   ]);
 }
 
+/**
+ * Loads a prompt template from disk and composes it with a contract marker and optional context blocks.
+ *
+ * @param key - The prompt type to load
+ * @param contractMarker - A marker string to include at the start of the composed text
+ * @param context - Optional content blocks to append after the template
+ * @returns A rendered prompt containing the template key, source path, and composed text
+ * @throws {SafeExitError} If the template file cannot be read or is empty
+ */
 async function renderTrackedPrompt(
   key: PromptKey,
   contractMarker: string,

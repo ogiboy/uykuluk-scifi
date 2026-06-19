@@ -9,6 +9,12 @@ export type PromptProvenance = {
   source?: string;
 };
 
+/**
+ * Creates a provenance metadata object for a prompt.
+ *
+ * @param prompt - The prompt text used to compute the SHA-256 hash
+ * @returns A provenance object containing the key, computed hash, artifact, and source
+ */
 export function createPromptProvenance(
   key: PromptKey,
   prompt: string,

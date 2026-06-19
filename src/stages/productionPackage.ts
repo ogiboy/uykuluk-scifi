@@ -24,6 +24,14 @@ type PackageProviderPayload = {
   };
 };
 
+/**
+ * Generates production assets from an approved script with script integrity validation and budget enforcement.
+ *
+ * Verifies that the current script matches the approved script by hash comparison, enforces budget constraints before and after LLM generation, and persists generated voiceover, subtitles, scenes, YouTube metadata, and production package documentation. Records a run state transition to "PRODUCTION_PACKAGE_GENERATED" upon completion.
+ *
+ * @param runId - The run identifier
+ * @throws Throws if the script content has changed since approval or if budget limits are exceeded.
+ */
 export async function generateProductionPackage(runId: string): Promise<void> {
   const config = await loadConfig();
   let run = await loadRun(runId);

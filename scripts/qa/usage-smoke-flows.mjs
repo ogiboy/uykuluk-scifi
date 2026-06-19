@@ -1,6 +1,10 @@
 import { readFile, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 
+/**
+ * Validates the local development environment passes all required diagnostic checks.
+ * Confirms that the doctor command executes successfully and all critical checks (project config, LLM provider, production assets, publish defaults) have passed.
+ */
 export async function runDoctorSmoke({ run, pnpm, workdir, assertFile, assert }) {
   run([pnpm, "producer", "doctor"], {
     label: "doctor validates local setup",
@@ -25,6 +29,10 @@ export async function runDoctorSmoke({ run, pnpm, workdir, assertFile, assert })
   }
 }
 
+/**
+ * Validates the script revision workflow by executing a revision command and confirming artifacts.
+ * Reads a generated script, creates a revised version, runs the revision command, and asserts that exactly one revision directory exists with the required artifacts.
+ */
 export async function runScriptRevisionSmoke({ run, pnpm, workdir, runId, assertFile, assert }) {
   const generatedScript = await readFile(path.join(workdir, "runs", runId, "script.md"), "utf8");
   const revisedScriptPath = path.join(workdir, "revised-script.md");

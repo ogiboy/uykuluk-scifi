@@ -4,6 +4,16 @@ export type ScriptReviewWarning = {
   message: string;
 };
 
+/**
+ * Validates a script against quality, safety, and style guidelines.
+ *
+ * Checks for word count, clickbait framing, excessive certainty language, scientific claims,
+ * disaster framing responsibility, missing outro, weak opening hooks, trademark references,
+ * and UykulukSciFi style compliance.
+ *
+ * @param script - The script text to review
+ * @returns An array of warnings describing detected issues
+ */
 export function reviewScriptContent(script: string): ScriptReviewWarning[] {
   const warnings: ScriptReviewWarning[] = [];
   const words = script.trim().split(/\s+/).filter(Boolean);

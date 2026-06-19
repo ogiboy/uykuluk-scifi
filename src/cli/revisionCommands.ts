@@ -13,6 +13,13 @@ type WrapRevisionAction = (
   handler: (options: RevisionOptions) => Promise<void>,
 ) => (options: RevisionOptions) => void;
 
+/**
+ * Registers CLI commands for recording script revisions.
+ *
+ * Creates a `revise script` command that accepts required metadata (run ID, file path, and revision reason) plus an optional editor name, then records the script revision.
+ *
+ * @param wrap - A function that wraps async handlers for CLI action execution
+ */
 export function registerRevisionCommands(program: Command, wrap: WrapRevisionAction): void {
   const revise = program.command("revise").description("Record attributable artifact revisions.");
   revise
