@@ -26,8 +26,7 @@ coherent, tested slices until the safe core and its evidence contracts are genui
 - Completed slice: `30986f8 feat(core): add paid generation cost approvals`.
 - Completed slice: `e155b02 feat(core): add atomic cost reservations`.
 - Completed slice: `f16e643 fix(core): validate run identifiers`.
-- Completed slice pending commit: canonical artifact-relative path validation for run reads, writes,
-  and persisted artifact evidence.
+- Completed slice: `3c04cdd fix(core): constrain artifact paths`.
 - Worktree was clean before this slice.
 
 ## Verification Evidence
@@ -83,8 +82,8 @@ coherent, tested slices until the safe core and its evidence contracts are genui
 
 ## Remaining Work
 
-1. Commit the completed green artifact-path hardening slice.
-2. Re-audit the next safe-core gap.
+1. Re-audit symlink containment and stale-artifact readiness as the next safe-core candidates.
+2. Choose the smallest enforceable vertical slice and continue under strict TDD.
 
 ## Blockers And Risks
 
