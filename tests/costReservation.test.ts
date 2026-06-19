@@ -53,7 +53,14 @@ describe("cost reservation", () => {
       maxUsdMicros: 20_000,
       status: "RESERVED",
     });
-    expect(await readCostEvents(runId)).toHaveLength(3);
+    const costEvents = await readCostEvents(runId);
+    const reservedEvents = costEvents.filter((event) => event.stage === "tts");
+    expect(reservedEvents).toHaveLength(1);
+    expect(reservedEvents[0]).toMatchObject({
+      runId,
+      stage: "tts",
+      provider: "future-paid-tts",
+    });
   });
 
   it("returns the same reservation for an idempotent operation retry", async () => {

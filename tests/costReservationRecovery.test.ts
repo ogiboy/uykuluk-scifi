@@ -14,6 +14,7 @@ import {
 } from "../src/costs/costReservationService";
 import { defaultStagePricing } from "../src/costs/pricing";
 import { artifactPath } from "../src/core/artifacts";
+import { loadRun } from "../src/core/runStore";
 import { approvePaidGenerationCost } from "../src/stages/approveCost";
 import { approveIdea } from "../src/stages/approveIdea";
 import { approveScript } from "../src/stages/approveScript";
@@ -195,6 +196,9 @@ async function prepareReadyPaidRun(estimatedUsd: number): Promise<string> {
   await estimateCost(runId);
   await generateEvidenceBundle(runId);
   await approvePaidGenerationCost(runId);
-  await runReadiness(runId);
+  const readinessResult = await runReadiness(runId);
+  expect(readinessResult.passed).toBe(true);
+  const run = await loadRun(runId);
+  expect(run.state).toBe("READY_FOR_MANUAL_PRODUCTION");
   return runId;
 }

@@ -100,9 +100,11 @@ function nextCommand(
     SCRIPT_APPROVED: "pnpm producer package --run <run_id>",
     PRODUCTION_PACKAGE_GENERATED: "pnpm producer estimate --run <run_id>",
     COST_ESTIMATED:
-      costQuote?.approvalRequired && !costQuote.approved
-        ? "pnpm producer approve cost --run <run_id>"
-        : "pnpm producer readiness --run <run_id>",
+      costQuote?.invalid
+        ? "pnpm producer estimate --run <run_id> (cost quote is invalid and must be regenerated)"
+        : costQuote?.approvalRequired && !costQuote.approved
+          ? "pnpm producer approve cost --run <run_id>"
+          : "pnpm producer readiness --run <run_id>",
     PAID_GENERATION_COST_APPROVED: "pnpm producer readiness --run <run_id>",
     READY_FOR_MANUAL_PRODUCTION: "Manual production review. Render/upload remain approval-gated.",
   };
@@ -187,7 +189,7 @@ function renderEvidenceMarkdown(bundle: unknown): string {
 /**
  * Reads cost estimate evidence for a run, including approval status.
  *
- * @returns An object with cost estimate details and approval status, or `null` if the estimate file does not exist or cannot be read.
+ * @returns An object with cost estimate details and approval status, or an invalid quote object if the estimate cannot be read or parsed.
  */
 async function readCostQuoteEvidence(run: Awaited<ReturnType<typeof loadRun>>): Promise<{
   path: string;
@@ -197,6 +199,8 @@ async function readCostQuoteEvidence(run: Awaited<ReturnType<typeof loadRun>>): 
   approvalRequired: boolean;
   approved: boolean;
   approvalId: string | null;
+  invalid?: boolean;
+  invalidReason?: string;
 } | null> {
   const relativePath = "costs/estimate.json";
   if (!(await pathExists(artifactPath(run.runId, relativePath)))) {
@@ -219,8 +223,18 @@ async function readCostQuoteEvidence(run: Awaited<ReturnType<typeof loadRun>>): 
       approved: Boolean(approval),
       approvalId: approval?.approvalId ?? null,
     };
-  } catch {
-    return null;
+  } catch (error) {
+    return {
+      path: relativePath,
+      digest: "invalid",
+      estimatedUsd: 0,
+      currency: "USD",
+      approvalRequired: false,
+      approved: false,
+      approvalId: null,
+      invalid: true,
+      invalidReason: (error as Error).message,
+    };
   }
 }
 

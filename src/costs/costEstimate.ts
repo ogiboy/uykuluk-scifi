@@ -240,15 +240,29 @@ export async function validateCostEstimateIntegrity(
 function quoteStages(config: ProducerConfig): Array<StagePricing & { enabled: boolean }> {
   return Object.values(defaultStagePricing).map((pricing) => ({
     ...pricing,
-    enabled:
-      pricing.stage === "tts"
-        ? config.providers.tts.enabled
-        : pricing.stage === "imageGeneration" || pricing.stage === "videoGeneration"
-          ? config.providers.imageGeneration.enabled
-          : pricing.stage === "upload"
-            ? config.providers.youtube.enabled
-            : true,
+    enabled: isStageEnabled(pricing.stage, config),
   }));
+}
+
+/**
+ * Determines if a stage is enabled based on provider configuration.
+ *
+ * @param stage - The stage identifier
+ * @param config - The producer configuration
+ * @returns True if the stage is enabled, false otherwise
+ */
+function isStageEnabled(stage: string, config: ProducerConfig): boolean {
+  switch (stage) {
+    case "tts":
+      return config.providers.tts.enabled;
+    case "imageGeneration":
+    case "videoGeneration":
+      return config.providers.imageGeneration.enabled;
+    case "upload":
+      return config.providers.youtube.enabled;
+    default:
+      return true;
+  }
 }
 
 /**
@@ -296,9 +310,25 @@ function canonicalStages(stages: CostEstimate["stages"]): CostEstimate["stages"]
 /**
  * Computes the SHA-256 digest of the production package.
  *
+ * Hashes all active production artifacts in canonical sorted order to bind the cost quote
+ * to the complete package artifact set, not just the markdown summary.
+ *
  * @param runId - The run identifier
  * @returns The SHA-256 digest as a hexadecimal string
  */
 async function currentProductionPackageDigest(runId: string): Promise<string> {
-  return sha256(await readFile(artifactPath(runId, "production/production_package.md"), "utf8"));
+  const artifacts = [
+    "production/production_package.md",
+    "production/scenes.json",
+    "production/subtitles.srt",
+    "production/voiceover.txt",
+    "production/youtube_metadata.json",
+  ].sort();
+  const contents = await Promise.all(
+    artifacts.map(async (artifact) => {
+      const content = await readFile(artifactPath(runId, artifact), "utf8");
+      return `${artifact}\0${content}`;
+    }),
+  );
+  return sha256(contents.join("\0"));
 }
