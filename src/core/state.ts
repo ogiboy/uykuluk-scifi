@@ -36,31 +36,27 @@ export const approvalTargetSchema = z.enum(approvalTargets);
 export type RunState = z.infer<typeof runStateSchema>;
 export type ApprovalTarget = z.infer<typeof approvalTargetSchema>;
 
-export const approvalRecordSchema = z
-  .object({
-    approvalId: z.string().min(1),
-    runId: z.string().min(1),
-    target: approvalTargetSchema,
-    approvedRef: z.string().min(1).optional(),
-    previousState: runStateSchema,
-    nextState: runStateSchema,
-    approvingCommand: z.string().min(1),
-    createdAt: z.string().datetime(),
-  })
-  .strict();
+export const approvalRecordSchema = z.strictObject({
+  approvalId: z.string().min(1),
+  runId: z.string().min(1),
+  target: approvalTargetSchema,
+  approvedRef: z.string().min(1).optional(),
+  previousState: runStateSchema,
+  nextState: runStateSchema,
+  approvingCommand: z.string().min(1),
+  createdAt: z.iso.datetime(),
+});
 
-export const runRecordSchema = z
-  .object({
-    runId: z.string().min(1),
-    state: runStateSchema,
-    createdAt: z.string().datetime(),
-    updatedAt: z.string().min(1),
-    approvedIdeaId: z.string().min(1).optional(),
-    approvals: z.array(approvalRecordSchema),
-    artifacts: z.array(z.string()),
-    warnings: z.array(z.string()),
-  })
-  .strict();
+export const runRecordSchema = z.strictObject({
+  runId: z.string().min(1),
+  state: runStateSchema,
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime(),
+  approvedIdeaId: z.string().min(1).optional(),
+  approvals: z.array(approvalRecordSchema),
+  artifacts: z.array(z.string()),
+  warnings: z.array(z.string()),
+});
 
 export type ApprovalRecord = z.infer<typeof approvalRecordSchema>;
 export type RunRecord = z.infer<typeof runRecordSchema>;
@@ -106,20 +102,18 @@ export type CostEvent = {
   createdAt: string;
 };
 
-export const costEventSchema = z
-  .object({
-    runId: z.string().min(1),
-    stage: z.string().min(1),
-    provider: z.string().min(1),
-    reservationId: z.string().min(1).optional(),
-    model: z.string().min(1).optional(),
-    inputTokens: z.number().int().nonnegative().optional(),
-    outputTokens: z.number().int().nonnegative().optional(),
-    estimatedUsd: z.number().nonnegative(),
-    actualUsd: z.number().nonnegative().optional(),
-    durationMs: z.number().nonnegative().optional(),
-    createdAt: z.string().datetime(),
-  })
-  .strict();
+export const costEventSchema = z.strictObject({
+  runId: z.string().min(1),
+  stage: z.string().min(1),
+  provider: z.string().min(1),
+  reservationId: z.string().min(1).optional(),
+  model: z.string().min(1).optional(),
+  inputTokens: z.int().nonnegative().optional(),
+  outputTokens: z.int().nonnegative().optional(),
+  estimatedUsd: z.number().nonnegative(),
+  actualUsd: z.number().nonnegative().optional(),
+  durationMs: z.number().nonnegative().optional(),
+  createdAt: z.iso.datetime(),
+});
 
 export const orderedStates: RunState[] = [...runStates];

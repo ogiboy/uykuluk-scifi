@@ -1,51 +1,43 @@
-import path from "node:path";
 import { appendFile, readFile, readdir } from "node:fs/promises";
+import path from "node:path";
 import { z } from "zod";
 import { SafeExitError } from "../core/errors";
 import { isValidRunId, runDir, runsDir } from "../core/runStore";
 import { ensureDir, pathExists } from "../utils/fs";
 
-const reservationBaseSchema = z.object({
+const reservationBaseSchema = z.strictObject({
   eventId: z.string().min(1),
   reservationId: z.string().min(1),
   runId: z.string().min(1),
-  createdAt: z.string().datetime(),
+  createdAt: z.iso.datetime(),
 });
 
-const reservedEventSchema = reservationBaseSchema
-  .extend({
-    type: z.literal("RESERVED"),
-    operationId: z.string().min(1),
-    approvalId: z.string().min(1),
-    quoteDigest: z.string().regex(/^[a-f0-9]{64}$/),
-    stage: z.string().min(1),
-    provider: z.string().min(1),
-    model: z.string().min(1).optional(),
-    maxUsdMicros: z.number().int().nonnegative(),
-  })
-  .strict();
+const reservedEventSchema = reservationBaseSchema.extend({
+  type: z.literal("RESERVED"),
+  operationId: z.string().min(1),
+  approvalId: z.string().min(1),
+  quoteDigest: z.string().regex(/^[a-f0-9]{64}$/),
+  stage: z.string().min(1),
+  provider: z.string().min(1),
+  model: z.string().min(1).optional(),
+  maxUsdMicros: z.int().nonnegative(),
+});
 
-const settlementEventSchema = reservationBaseSchema
-  .extend({
-    type: z.enum(["SETTLEMENT_PENDING", "SETTLED"]),
-    actualUsdMicros: z.number().int().nonnegative(),
-  })
-  .strict();
+const settlementEventSchema = reservationBaseSchema.extend({
+  type: z.enum(["SETTLEMENT_PENDING", "SETTLED"]),
+  actualUsdMicros: z.int().nonnegative(),
+});
 
-const reasonEventSchema = reservationBaseSchema
-  .extend({
-    type: z.enum(["RELEASED", "UNCERTAIN", "RECONCILED_RELEASED"]),
-    reason: z.string().min(1),
-  })
-  .strict();
+const reasonEventSchema = reservationBaseSchema.extend({
+  type: z.enum(["RELEASED", "UNCERTAIN", "RECONCILED_RELEASED"]),
+  reason: z.string().min(1),
+});
 
-const reconciledSettledEventSchema = reservationBaseSchema
-  .extend({
-    type: z.literal("RECONCILED_SETTLED"),
-    actualUsdMicros: z.number().int().nonnegative(),
-    reason: z.string().min(1),
-  })
-  .strict();
+const reconciledSettledEventSchema = reservationBaseSchema.extend({
+  type: z.literal("RECONCILED_SETTLED"),
+  actualUsdMicros: z.int().nonnegative(),
+  reason: z.string().min(1),
+});
 
 export const costReservationEventSchema = z.discriminatedUnion("type", [
   reservedEventSchema,
@@ -168,7 +160,7 @@ function summarizeCostReservationEvents(events: CostReservationEvent[]): CostRes
       continue;
     }
     const current = summaries.get(event.reservationId);
-    if (!current || current.runId !== event.runId) {
+    if (current?.runId !== event.runId) {
       throw new SafeExitError(`Reservation event has no matching reserve: ${event.reservationId}.`);
     }
     summaries.set(event.reservationId, applyReservationEvent(current, event));

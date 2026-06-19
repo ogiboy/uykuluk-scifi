@@ -41,6 +41,8 @@ future generated release notes can be inserted predictably.
   so concurrent work cannot overbook per-video, daily, or weekly limits.
 - Explicit public publish config now passes the configuration guard only when the run also contains
   explicit publish approval; execution remains an intentionally disabled MVP scaffold.
+- Runtime schemas now use current Zod 4 APIs (`z.strictObject`, top-level string formats,
+  `z.iso.datetime`, and `z.int`) with regression coverage preventing deprecated Zod 3 patterns.
 
 ### Fixed
 

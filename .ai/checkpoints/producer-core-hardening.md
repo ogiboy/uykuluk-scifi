@@ -27,7 +27,8 @@ coherent, tested slices until the safe core and its evidence contracts are genui
 - Completed slice: `e155b02 feat(core): add atomic cost reservations`.
 - Completed slice: `f16e643 fix(core): validate run identifiers`.
 - Completed slice: `3c04cdd fix(core): constrain artifact paths`.
-- Active green slice awaiting commit: complete production-package manifest integrity.
+- Completed slice: `66d2095 feat(core): verify production package integrity`.
+- Active green slice awaiting commit: Zod 4 schema modernization.
 - Worktree was clean before this slice.
 
 ## Verification Evidence
@@ -83,6 +84,13 @@ coherent, tested slices until the safe core and its evidence contracts are genui
   missing-manifest evidence projection gap, and produced validated Markdown/HTML reports with no
   surviving reportable findings:
   `/tmp/codex-security-scans/uykuluk-scifi/d4a7e61a4ecf_20260619T120922Z/report.html`.
+- Zod 4 documentation and installed 4.4.3 declarations confirmed top-level string formats,
+  `z.strictObject`, and `z.int` as current replacements for project v3-style APIs.
+- Strict TDD first found 22 deprecated or legacy schema usages; the regression gate and 51 focused
+  schema/workflow tests pass after migration.
+- Final gates pass: `pnpm check` with 144/144 tests and Studio production build, `pnpm qa:usage`,
+  `pnpm version:plan`, `pnpm security:dependencies`, `pnpm release:check`, and `git diff --check`.
+- Latest ignored usage report: `.ai/qa/artifacts/usage-smoke-20260619-165149/qa-report.md`.
 
 ## Decisions
 
@@ -95,9 +103,9 @@ coherent, tested slices until the safe core and its evidence contracts are genui
 
 ## Remaining Work
 
-1. Commit the green production-package integrity slice without the unrelated concurrent
-   `sonar-project.properties` modification.
-2. Re-audit symlink containment as the next safe-core candidate.
+1. Commit the green Zod 4 modernization without unrelated README, Sonar, or import-only changes.
+2. Reconcile the branch with its remote before push.
+3. Re-audit symlink containment as the next safe-core candidate.
 
 ## Blockers And Risks
 

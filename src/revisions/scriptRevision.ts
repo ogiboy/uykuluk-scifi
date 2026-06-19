@@ -12,23 +12,21 @@ import { createId, nowIso } from "../utils/time";
 
 const revisableStates = ["SCRIPT_GENERATED", "SCRIPT_REVIEWED", "SCRIPT_APPROVED"] as const;
 
-const scriptRevisionSchema = z
-  .object({
-    revisionId: z.string().min(1),
-    runId: z.string().min(1),
-    artifact: z.literal("script.md"),
-    editor: z.string().min(1),
-    reason: z.string().min(1),
-    previousState: runStateSchema,
-    nextState: z.literal("SCRIPT_GENERATED"),
-    beforeHash: z.string().length(64),
-    afterHash: z.string().length(64),
-    invalidatedApprovalIds: z.array(z.string()),
-    invalidatedArtifacts: z.array(z.string()),
-    invalidatedWarnings: z.array(z.string()),
-    createdAt: z.string().min(1),
-  })
-  .strict();
+const scriptRevisionSchema = z.strictObject({
+  revisionId: z.string().min(1),
+  runId: z.string().min(1),
+  artifact: z.literal("script.md"),
+  editor: z.string().min(1),
+  reason: z.string().min(1),
+  previousState: runStateSchema,
+  nextState: z.literal("SCRIPT_GENERATED"),
+  beforeHash: z.string().length(64),
+  afterHash: z.string().length(64),
+  invalidatedApprovalIds: z.array(z.string()),
+  invalidatedArtifacts: z.array(z.string()),
+  invalidatedWarnings: z.array(z.string()),
+  createdAt: z.iso.datetime(),
+});
 
 export type ScriptRevision = z.infer<typeof scriptRevisionSchema>;
 

@@ -8,6 +8,8 @@
   packages, with prompt key/source/hash provenance.
 - Strict run state machine.
 - Schema-validated run records with atomic JSON replacement.
+- Zod 4-native runtime schemas with strict persisted objects, ISO timestamp validation, current
+  top-level format validators, and a regression test rejecting deprecated or legacy Zod 3 APIs.
 - Canonical bounded run-ID validation before state, ledger, artifact, or cost path construction;
   persisted run IDs must match their containing directory.
 - Canonical bounded artifact-relative path validation before run artifact reads, writes, ledger

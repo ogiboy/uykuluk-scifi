@@ -102,6 +102,8 @@ Usage smoke coverage:
 - The production-package integrity diff security review completed with 7/7 worklist receipts. It
   reproduced and fixed missing-manifest evidence reporting; no reportable finding survived. Report:
   `/tmp/codex-security-scans/uykuluk-scifi/d4a7e61a4ecf_20260619T120922Z/report.md`.
+- Zod 4 migration coverage rejects deprecated chained string formats, object strict/passthrough
+  methods, native enums, object merges, and legacy integer/number APIs across `src/`.
 - Voice, render, upload, and publish are blocked by default.
 - Playwright browser smoke verifies the initial Studio shell, module tabs, and cookie-based document
   locale through a production build/server.
