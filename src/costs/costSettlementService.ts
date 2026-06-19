@@ -10,6 +10,13 @@ import {
 import { withCostReservationLock } from "./costReservationLock";
 import { appendCostReservationEvent, CostReservationSummary } from "./costReservationStore";
 
+/**
+ * Finalizes a reservation's cost after a provider charge is known.
+ *
+ * @param input.actualUsdMicros - The actual cost charged by the provider, in microseconds
+ * @throws {SafeExitError} If the reservation cannot be settled due to its status or if the actual cost exceeds the approved cap.
+ * @returns The updated reservation.
+ */
 export async function settleCostReservation(input: {
   runId: string;
   reservationId: string;
@@ -75,6 +82,12 @@ export async function settleCostReservation(input: {
   });
 }
 
+/**
+ * Resolves an uncertain cost reservation by recording its final outcome as settled or released.
+ *
+ * @returns The updated reservation summary
+ * @throws {SafeExitError} If the reservation is not in UNCERTAIN status
+ */
 export async function reconcileCostReservation(
   input:
     | {

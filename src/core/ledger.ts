@@ -5,10 +5,20 @@ import { ensureDir, pathExists } from "../utils/fs";
 import { createId, nowIso } from "../utils/time";
 import { runDir } from "./runPaths";
 
+/**
+ * Constructs the filesystem path to a run's ledger file.
+ *
+ * @returns The filesystem path to the run's ledger file
+ */
 export function ledgerPath(runId: string): string {
   return path.join(runDir(runId), "ledger.jsonl");
 }
 
+/**
+ * Creates and appends a ledger event for a run.
+ *
+ * @returns The created `LedgerEvent`.
+ */
 export async function appendLedgerEvent(input: {
   runId: string;
   type: LedgerEventType;

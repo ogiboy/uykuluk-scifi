@@ -65,9 +65,11 @@ export async function enforceBudget(input: BudgetGuardInput): Promise<BudgetGuar
 }
 
 /**
- * Assesses whether a stage run is within configured budget limits.
+ * Evaluates whether a stage can proceed based on budget thresholds and reservation commitments.
  *
- * @returns A result indicating whether the stage is allowed, any exceeded budget reasons, whether approval is required, and estimated and cumulative costs.
+ * Computes cumulative costs for the run (including active reservations) and daily/weekly totals against configured limits. Optionally records a cost event and always records a ledger event indicating whether the stage was allowed or blocked.
+ *
+ * @returns The budget check result containing the decision, reasons for blocking, approval requirement status, and cost/budget details.
  */
 export async function checkBudget(input: BudgetGuardInput): Promise<BudgetGuardResult> {
   const events = await readCostEvents(input.run.runId);

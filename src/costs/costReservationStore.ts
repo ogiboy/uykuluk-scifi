@@ -71,10 +71,12 @@ export type CostReservationSummary = {
   updatedAt: string;
 };
 
+/** Returns the validated run's reservation ledger path. */
 export function costReservationLedgerPath(runId: string): string {
   return path.join(runDir(runId), "costs", "reservations.jsonl");
 }
 
+/** Validates and appends one reservation event without permitting an invalid sequence. */
 export async function appendCostReservationEvent(event: CostReservationEvent): Promise<void> {
   const parsed = costReservationEventSchema.parse(event);
   const existing = await readCostReservationEvents(parsed.runId);
@@ -84,6 +86,7 @@ export async function appendCostReservationEvent(event: CostReservationEvent): P
   await appendFile(target, `${JSON.stringify(parsed)}\n`, "utf8");
 }
 
+/** Reads a run's validated reservation event stream. */
 export async function readCostReservationEvents(runId: string): Promise<CostReservationEvent[]> {
   const target = costReservationLedgerPath(runId);
   if (!(await pathExists(target))) {
@@ -107,12 +110,14 @@ export async function readCostReservationEvents(runId: string): Promise<CostRese
   }
 }
 
+/** Replays one run's reservation events into current summaries. */
 export async function readCostReservationSummaries(
   runId: string,
 ): Promise<CostReservationSummary[]> {
   return summarizeCostReservationEvents(await readCostReservationEvents(runId));
 }
 
+/** Aggregates reservation summaries across valid run directories. */
 export async function readAllCostReservationSummaries(): Promise<CostReservationSummary[]> {
   if (!(await pathExists(runsDir()))) {
     return [];
@@ -127,6 +132,7 @@ export async function readAllCostReservationSummaries(): Promise<CostReservation
   return summaries;
 }
 
+/** Reports whether a reservation still counts against a hard budget. */
 export function isActiveCostReservation(summary: CostReservationSummary): boolean {
   return ["RESERVED", "SETTLEMENT_PENDING", "UNCERTAIN"].includes(summary.status);
 }

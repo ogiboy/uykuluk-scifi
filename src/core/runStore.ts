@@ -10,6 +10,11 @@ import { validateArtifactRelativePath } from "./artifactPaths";
 
 export { isValidRunId, runDir, runsDir, statePath, validateRunId } from "./runPaths";
 
+/**
+ * Creates a new run record with an initial state.
+ *
+ * @returns The newly created run record.
+ */
 export async function createRun(): Promise<RunRecord> {
   const runId = createId("run");
   const now = nowIso();
@@ -101,6 +106,11 @@ export async function setRunState(
   return updated;
 }
 
+/**
+ * Retrieves all run records.
+ *
+ * @returns An array of all run records, sorted by creation time descending.
+ */
 export async function listRuns(): Promise<RunRecord[]> {
   if (!(await pathExists(runsDir()))) {
     return [];
@@ -122,6 +132,12 @@ export async function listRuns(): Promise<RunRecord[]> {
   return records.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
+/**
+ * Validates all artifact relative paths in a run record.
+ *
+ * @param record - The run record whose artifacts should be validated
+ * @returns The input `record` after validating all artifact relative paths
+ */
 function validateRunArtifacts(record: RunRecord): RunRecord {
   for (const relativePath of record.artifacts) {
     validateArtifactRelativePath(relativePath);

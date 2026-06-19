@@ -163,12 +163,14 @@ async function productionPackageIntegrityCheck(run: RunRecord): Promise<Readines
 }
 
 /**
- * Validates the cost estimate and determines if the next step is allowed.
+ * Validates whether a cost estimate allows proceeding with the run.
  *
- * Reads `costs/estimate.json` and checks if the estimate permits proceeding. Blocks readiness if the file is missing, cannot be read, or indicates the next step is not allowed.
+ * Reads and validates the cost estimate, enforcing budget constraints and approval requirements.
+ * Blocks readiness if the estimate file is missing, validation fails, hard budget constraints are violated,
+ * or required approvals are not satisfied.
  *
- * @param runId - The run identifier
- * @returns A readiness check that passes if the cost estimate allows proceeding, blocks otherwise
+ * @param run - The run record
+ * @returns A readiness check that passes if the cost estimate permits proceeding, blocks otherwise
  */
 async function budgetEstimateCheck(
   run: RunRecord,

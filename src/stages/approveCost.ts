@@ -8,6 +8,15 @@ import { assertTransition } from "../core/transitions";
 import { requireState } from "../safeguards/approvalGuard";
 import { createId, nowIso } from "../utils/time";
 
+/**
+ * Records an approval for a run's paid-generation cost after validating the estimate.
+ *
+ * Verifies the run is in COST_ESTIMATED state and validates that the cost estimate is current, not blocked by hard budget constraints, and requires explicit approval. On success, persists the approval record and transitions the run to PAID_GENERATION_COST_APPROVED state.
+ *
+ * @param runId - The ID of the run to approve
+ * @returns The newly created approval record
+ * @throws If validation fails (invalid estimate, hard budget block, or approval not required) or if the run is not in COST_ESTIMATED state
+ */
 export async function approvePaidGenerationCost(runId: string): Promise<ApprovalRecord> {
   const config = await loadConfig();
   let run = await loadRun(runId);

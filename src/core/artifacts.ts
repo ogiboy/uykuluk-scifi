@@ -10,6 +10,15 @@ export {
   validateArtifactRelativePath,
 } from "./artifactPaths";
 
+/**
+ * Writes a JSON artifact to the run, logs the action to the ledger, and updates the artifact list.
+ *
+ * @param run - The run record to update
+ * @param stage - The run stage identifier
+ * @param relativePath - The relative path where the artifact will be stored
+ * @param value - The value to serialize as JSON
+ * @returns The updated run record with the artifact added
+ */
 export async function writeRunJson(
   run: RunRecord,
   stage: string,

@@ -47,6 +47,7 @@ export const costEstimateSchema = z.strictObject({
 
 export type CostEstimate = z.infer<typeof costEstimateSchema>;
 
+/** Builds a cost quote bound to current budgets, config, pricing, and package integrity. */
 export async function buildCostEstimate(
   run: RunRecord,
   config: ProducerConfig,
@@ -89,6 +90,7 @@ export async function buildCostEstimate(
   };
 }
 
+/** Reads a quote and verifies its operator Markdown matches the persisted JSON. */
 export async function readCostEstimate(runId: string): Promise<{
   estimate: CostEstimate;
   text: string;
@@ -110,6 +112,7 @@ export async function readCostEstimate(runId: string): Promise<{
   };
 }
 
+/** Returns all package, config, pricing, and live-budget reasons that make a quote stale. */
 export async function validateCurrentCostEstimate(
   run: RunRecord,
   config: ProducerConfig,
@@ -154,6 +157,7 @@ export async function validateCurrentCostEstimate(
   return reasons;
 }
 
+/** Returns structural quote-integrity failures; an empty array means the quote is current. */
 export async function validateCostEstimateIntegrity(
   run: RunRecord,
   config: ProducerConfig,
