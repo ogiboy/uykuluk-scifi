@@ -18,6 +18,7 @@
 - Keep atomic reservation, one-time quote-line consumption, active-reservation budget accounting,
   recoverable settlement, and explicit reconciliation passing.
 - Keep readiness diagnostics and evidence synchronized with persisted run state.
+- Keep all run-root filesystem access behind canonical bounded run-ID validation.
 - Keep the capability inventory current when plugin/MCP versions or project phases materially
   change.
 - Keep long-running goals resumable from Git state and `.ai/checkpoints/`, not chat history alone.

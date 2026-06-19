@@ -62,6 +62,8 @@ future generated release notes can be inserted predictably.
   unvalidated JSON.
 - Stale reservation-lock recovery now preserves a live owner instead of allowing overlapping
   critical sections after the age threshold.
+- Run state, ledger, artifact, and cost path helpers now reject malformed or traversal-shaped run
+  identifiers, and run loading rejects state whose embedded id differs from its directory.
 
 ## 0.1.0 - 2026-06-17
 

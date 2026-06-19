@@ -2,8 +2,8 @@
 
 Latest usage smoke report:
 
-- `.ai/qa/artifacts/usage-smoke-20260619-053319/qa-report.md`
-- `.ai/qa/artifacts/usage-smoke-20260619-053319/usage-smoke-summary.json`
+- `.ai/qa/artifacts/usage-smoke-20260619-114340/qa-report.md`
+- `.ai/qa/artifacts/usage-smoke-20260619-114340/usage-smoke-summary.json`
 
 Validated gates:
 
@@ -45,6 +45,9 @@ Usage smoke coverage:
 - Readiness diagnostics current state matches `state.json` after a successful transition.
 - Run-store tests reject malformed/schema-invalid state and preserve the last valid record when an
   invalid save is attempted.
+- Run-ID boundary tests reject path traversal, absolute paths, separators, whitespace, invalid
+  prefixes, and oversized identifiers across state, ledger, artifact, cost, reservation, and CLI
+  entry points while preserving generated IDs and valid run listing.
 - Evidence and clean-copy usage QA verify three runtime prompt provenance records with tracked
   `.ai/prompts/` source paths and SHA-256 hashes.
 - Direct prompt-template coverage proves ideas, scripts, and production packages render the tracked
@@ -75,6 +78,10 @@ Usage smoke coverage:
   fixed one live-owner stale-lock race; no reportable finding survived the final policy and
   remediation gates. Report:
   `/tmp/codex-security-scans/uykuluk-scifi/30986f87b682_20260619T052633Z/report.md`.
+- The run-ID validation diff security review completed with 9/9 worklist receipts and no reportable
+  findings. One regex-anchor candidate was falsified with focused Vitest and direct Node runtime
+  evidence. Report:
+  `/tmp/codex-security-scans/uykuluk-scifi/e155b027681d_20260619T114436Z/report.md`.
 - `pnpm security:dependencies` reports no known high-severity dependency vulnerabilities.
 - Capability-routing docs pass formatting, changelog-marker, modularity, version-plan, full
   `pnpm check`, and clean-copy usage gates.

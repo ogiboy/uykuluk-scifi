@@ -2,7 +2,7 @@ import path from "node:path";
 import { appendFile, readFile, readdir } from "node:fs/promises";
 import { z } from "zod";
 import { SafeExitError } from "../core/errors";
-import { runDir, runsDir } from "../core/runStore";
+import { isValidRunId, runDir, runsDir } from "../core/runStore";
 import { ensureDir, pathExists } from "../utils/fs";
 
 const reservationBaseSchema = z.object({
@@ -128,7 +128,7 @@ export async function readAllCostReservationSummaries(): Promise<CostReservation
   const entries = await readdir(runsDir(), { withFileTypes: true });
   const summaries: CostReservationSummary[] = [];
   for (const entry of entries) {
-    if (entry.isDirectory() && !entry.name.startsWith(".")) {
+    if (entry.isDirectory() && isValidRunId(entry.name)) {
       summaries.push(...(await readCostReservationSummaries(entry.name)));
     }
   }

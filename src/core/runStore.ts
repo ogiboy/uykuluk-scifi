@@ -1,4 +1,3 @@
-import path from "node:path";
 import { readdir } from "node:fs/promises";
 import { appendLedgerEvent } from "./ledger";
 import { RunRecord, RunState, runRecordSchema } from "./state";
@@ -6,18 +5,9 @@ import { invariant, SafeExitError } from "./errors";
 import { ensureDir, pathExists } from "../utils/fs";
 import { readJsonFile, writeJsonFile } from "../utils/json";
 import { createId, nowIso } from "../utils/time";
+import { isValidRunId, runDir, runsDir, statePath } from "./runPaths";
 
-export function runsDir(): string {
-  return path.join(process.cwd(), "runs");
-}
-
-export function runDir(runId: string): string {
-  return path.join(runsDir(), runId);
-}
-
-export function statePath(runId: string): string {
-  return path.join(runDir(runId), "state.json");
-}
+export { isValidRunId, runDir, runsDir, statePath, validateRunId } from "./runPaths";
 
 export async function createRun(): Promise<RunRecord> {
   const runId = createId("run");
@@ -53,7 +43,11 @@ export async function loadRun(runId: string): Promise<RunRecord> {
   const target = statePath(runId);
   invariant(await pathExists(target), `Run not found: ${runId}`);
   try {
-    return runRecordSchema.parse(await readJsonFile<unknown>(target));
+    const record = runRecordSchema.parse(await readJsonFile<unknown>(target));
+    if (record.runId !== runId) {
+      throw new SafeExitError("Persisted run id does not match its directory.");
+    }
+    return record;
   } catch (error) {
     throw new SafeExitError(
       `Run state is invalid for ${runId}: ${error instanceof Error ? error.message : String(error)}`,
@@ -111,7 +105,7 @@ export async function listRuns(): Promise<RunRecord[]> {
   const entries = await readdir(runsDir(), { withFileTypes: true });
   const records: RunRecord[] = [];
   for (const entry of entries) {
-    if (!entry.isDirectory()) {
+    if (!entry.isDirectory() || !isValidRunId(entry.name)) {
       continue;
     }
     try {

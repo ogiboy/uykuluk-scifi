@@ -12,6 +12,8 @@
 - `Readiness` consumes the persisted cost estimate decision; a blocked estimate prevents manual
   production readiness.
 - `RunStore` rejects malformed or schema-invalid state and replaces JSON files atomically.
+- `RunPaths` rejects traversal-shaped, absolute, whitespace-bearing, or oversized run identifiers
+  before constructing any run-root path.
 - `ContentGuard` provides heuristic warnings for script review, including excessive clickbait
   titles.
 - `PublishGuard` keeps upload and publish disabled by default.

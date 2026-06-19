@@ -8,6 +8,8 @@
   packages, with prompt key/source/hash provenance.
 - Strict run state machine.
 - Schema-validated run records with atomic JSON replacement.
+- Canonical bounded run-ID validation before state, ledger, artifact, or cost path construction;
+  persisted run IDs must match their containing directory.
 - Approval ledger.
 - Content-addressed script review and approval; packaging rejects changed script content.
 - Attributable script revisions with before/after snapshots, stale review/approval invalidation, and

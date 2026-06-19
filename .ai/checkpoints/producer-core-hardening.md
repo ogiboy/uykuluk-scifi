@@ -17,16 +17,16 @@ coherent, tested slices until the safe core and its evidence contracts are genui
 
 ## Current State
 
-- Branch/worktree: `feat/core-cost-reservations` at
+- Branch/worktree: `fix/core-run-id-validation` at
   `/Users/ogiboy/.codex/worktrees/894d/uykuluk-scifi`.
 - Base: `7bd5801`, the merge of the completed script approval/revision hardening work.
 - Earlier completed hardening includes content-addressed script approval and revisions,
   budget/readiness enforcement, atomic state writes, prompt provenance/runtime templates,
   provider/publish tests, dependency audit, diagnostics synchronization, and content/asset guards.
 - Completed slice: `30986f8 feat(core): add paid generation cost approvals`.
-- Completed slice pending commit: project-wide atomic cost reservation, one-time quote-line
-  consumption, recoverable settlement, uncertain outcomes, and reconciliation without enabling a
-  paid provider.
+- Completed slice: `e155b02 feat(core): add atomic cost reservations`.
+- Completed slice pending commit: canonical run-ID path validation across run state, ledgers,
+  artifacts, costs, and CLI entry points.
 - Worktree was clean before this slice.
 
 ## Verification Evidence
@@ -52,6 +52,14 @@ coherent, tested slices until the safe core and its evidence contracts are genui
 - Final gates pass: `pnpm check` with 69/69 tests and Studio production build, `pnpm qa:usage`,
   `pnpm version:plan`, `pnpm security:dependencies`, `pnpm release:check`, and `git diff --check`.
 - Latest ignored usage report: `.ai/qa/artifacts/usage-smoke-20260619-053319/qa-report.md`.
+- Current plan: `.ai/plans/2026-06-19-run-id-path-validation.md`.
+- Strict TDD captured 15 initial failures for malformed IDs and state-directory mismatch, then
+  broadened to unrelated run-directory enumeration and CLI coverage.
+- Final gates pass: `pnpm check` with 89/89 tests and Studio production build, `pnpm qa:usage`,
+  `pnpm version:plan`, `pnpm security:dependencies`, `pnpm release:check`, and `git diff --check`.
+- Latest ignored usage report: `.ai/qa/artifacts/usage-smoke-20260619-114340/qa-report.md`.
+- Diff-scoped security review closed all 9 executable/test/supporting rows with validated
+  Markdown/HTML reports and no surviving reportable findings.
 
 ## Decisions
 
@@ -64,8 +72,8 @@ coherent, tested slices until the safe core and its evidence contracts are genui
 
 ## Remaining Work
 
-1. Commit the completed green reservation slice.
-2. Re-audit the next safe-core gap before enabling any paid provider.
+1. Commit the completed green run-ID hardening slice.
+2. Re-audit the next safe-core gap.
 
 ## Blockers And Risks
 
@@ -73,4 +81,5 @@ coherent, tested slices until the safe core and its evidence contracts are genui
   adapter integration and end-to-end failure semantics remain open.
 - Reservation writes are serialized locally, but JSONL ledgers are not cryptographically
   tamper-evident and the lock is not a distributed lease.
-- Run ID path validation and broader stale-artifact readiness checks remain separate hardening work.
+- Broader artifact-relative path validation and stale-artifact readiness checks remain separate
+  hardening work.

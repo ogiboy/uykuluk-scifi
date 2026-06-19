@@ -3,9 +3,10 @@ import { appendFile, readFile } from "node:fs/promises";
 import { LedgerEvent, LedgerEventType } from "./state";
 import { ensureDir, pathExists } from "../utils/fs";
 import { createId, nowIso } from "../utils/time";
+import { runDir } from "./runPaths";
 
 export function ledgerPath(runId: string): string {
-  return path.join(process.cwd(), "runs", runId, "ledger.jsonl");
+  return path.join(runDir(runId), "ledger.jsonl");
 }
 
 export async function appendLedgerEvent(input: {

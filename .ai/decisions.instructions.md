@@ -74,6 +74,20 @@ Constraints:
 - Paid execution remains unavailable until a provider adapter makes reservation the only pre-call
   path and proves its failure and timeout behavior end to end.
 
+### Run identifiers are filesystem capabilities
+
+Reason: CLI input and future Studio/worker requests use a run id to select durable local state.
+Allowing separators, dot segments, absolute paths, or unbounded identifiers would turn that lookup
+into authority outside the run root.
+
+Constraints:
+
+- One canonical validator owns the accepted format.
+- Every run-root state, ledger, artifact, and cost path must pass through the validated `runDir`
+  boundary.
+- Persisted state must contain the same run id as its directory.
+- Unrelated or malformed directories are ignored by run listing and never treated as runs.
+
 ### Visual assets are committed production inputs
 
 Reason: The channel brand pack is part of the production pipeline. Readiness should check for logo,

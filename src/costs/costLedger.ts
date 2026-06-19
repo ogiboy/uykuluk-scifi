@@ -2,7 +2,7 @@ import path from "node:path";
 import { appendFile, readFile, readdir } from "node:fs/promises";
 import { CostEvent, costEventSchema } from "../core/state";
 import { SafeExitError } from "../core/errors";
-import { runDir, runsDir } from "../core/runStore";
+import { isValidRunId, runDir, runsDir } from "../core/runStore";
 import { ensureDir, pathExists } from "../utils/fs";
 
 export function costLedgerPath(runId: string): string {
@@ -49,7 +49,7 @@ export async function readAllCostEvents(): Promise<CostEvent[]> {
   const entries = await readdir(runsDir(), { withFileTypes: true });
   const all: CostEvent[] = [];
   for (const entry of entries) {
-    if (!entry.isDirectory()) {
+    if (!entry.isDirectory() || !isValidRunId(entry.name)) {
       continue;
     }
     all.push(...(await readCostEvents(entry.name)));
