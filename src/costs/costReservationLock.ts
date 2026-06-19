@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { mkdir, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { SafeExitError } from "../core/errors";
-import { runsDir } from "../core/runStore";
+import { runsPath } from "../core/runStore";
 
 type LockOptions = {
   timeoutMs?: number;
@@ -22,7 +22,7 @@ const defaultOptions = {
  * @returns The absolute path to the lock directory
  */
 export function reservationLockPath(): string {
-  return path.join(runsDir(), ".cost-reservation.lock");
+  return runsPath(".cost-reservation.lock");
 }
 
 /**

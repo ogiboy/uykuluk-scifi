@@ -22,6 +22,10 @@
 - Keep readiness diagnostics and evidence synchronized with persisted run state.
 - Keep all run-root filesystem access behind canonical bounded run-ID validation.
 - Keep run artifact reads, writes, and persisted lists behind canonical relative-path validation.
+- Keep state, ledger, cost, reservation, lock, and artifact access behind canonical
+  existing-component symlink containment.
+- Keep final protected files fail-closed when their filesystem link count indicates another pathname
+  shares the same inode.
 - Keep the capability inventory current when plugin/MCP versions or project phases materially
   change.
 - Keep long-running goals resumable from Git state and `.ai/checkpoints/`, not chat history alone.

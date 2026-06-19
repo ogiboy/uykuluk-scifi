@@ -2,8 +2,8 @@
 
 Latest usage smoke report:
 
-- `.ai/qa/artifacts/usage-smoke-20260619-115623/qa-report.md`
-- `.ai/qa/artifacts/usage-smoke-20260619-115623/usage-smoke-summary.json`
+- `.ai/qa/artifacts/usage-smoke-20260619-171824/qa-report.md`
+- `.ai/qa/artifacts/usage-smoke-20260619-171824/usage-smoke-summary.json`
 
 Validated gates:
 
@@ -52,6 +52,11 @@ Usage smoke coverage:
   duplicate/trailing separators, whitespace, controls, non-ASCII names, malformed segments, and
   oversized paths before filesystem or ledger mutation. Windows device basenames and trailing-dot
   aliases are also blocked; persisted unsafe artifact lists fail closed.
+- Run-filesystem containment tests reject symbolic links at the `runs/` root, run directory, state
+  file, intermediate artifact directory, final artifact file, core ledger, and global reservation
+  lock before outside-tree reads, writes, or ledger mutation.
+- Core, cost, and reservation ledger tests reject multiply-linked final files before reading or
+  appending through an inode reachable by another pathname.
 - Evidence and clean-copy usage QA verify three runtime prompt provenance records with tracked
   `.ai/prompts/` source paths and SHA-256 hashes.
 - Direct prompt-template coverage proves ideas, scripts, and production packages render the tracked
@@ -104,6 +109,10 @@ Usage smoke coverage:
   `/tmp/codex-security-scans/uykuluk-scifi/d4a7e61a4ecf_20260619T120922Z/report.md`.
 - Zod 4 migration coverage rejects deprecated chained string formats, object strict/passthrough
   methods, native enums, object merges, and legacy integer/number APIs across `src/`.
+- The run-filesystem containment diff security review completed with 10/10 worklist receipts. It
+  reproduced and fixed hard-linked core, cost, and reservation ledger access; no reportable finding
+  survived the current-architecture policy and remediation gates. Report:
+  `/tmp/codex-security-scans/uykuluk-scifi/bd00db439703_20260619T171338Z/report.md`.
 - Voice, render, upload, and publish are blocked by default.
 - Playwright browser smoke verifies the initial Studio shell, module tabs, and cookie-based document
   locale through a production build/server.

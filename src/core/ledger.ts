@@ -1,9 +1,8 @@
-import path from "node:path";
 import { appendFile, readFile } from "node:fs/promises";
 import { LedgerEvent, LedgerEventType } from "./state";
 import { ensureDir, pathExists } from "../utils/fs";
 import { createId, nowIso } from "../utils/time";
-import { runDir } from "./runPaths";
+import { runPath } from "./runPaths";
 
 /**
  * Constructs the filesystem path to a run's ledger file.
@@ -11,7 +10,7 @@ import { runDir } from "./runPaths";
  * @returns The filesystem path to the run's ledger file
  */
 export function ledgerPath(runId: string): string {
-  return path.join(runDir(runId), "ledger.jsonl");
+  return runPath(runId, "ledger.jsonl");
 }
 
 /**
@@ -36,7 +35,7 @@ export async function appendLedgerEvent(input: {
     createdAt: nowIso(),
   };
   const target = ledgerPath(input.runId);
-  await ensureDir(path.dirname(target));
+  await ensureDir(runPath(input.runId));
   await appendFile(target, `${JSON.stringify(event)}\n`, "utf8");
   return event;
 }

@@ -17,7 +17,7 @@ coherent, tested slices until the safe core and its evidence contracts are genui
 
 ## Current State
 
-- Branch/worktree: `fix/core-production-package-integrity` at
+- Branch/worktree: `fix/core-symlink-containment` at
   `/Users/ogiboy/.codex/worktrees/894d/uykuluk-scifi`.
 - Base: `7bd5801`, the merge of the completed script approval/revision hardening work.
 - Earlier completed hardening includes content-addressed script approval and revisions,
@@ -28,8 +28,9 @@ coherent, tested slices until the safe core and its evidence contracts are genui
 - Completed slice: `f16e643 fix(core): validate run identifiers`.
 - Completed slice: `3c04cdd fix(core): constrain artifact paths`.
 - Completed slice: `66d2095 feat(core): verify production package integrity`.
-- Active green slice awaiting commit: Zod 4 schema modernization.
-- Worktree was clean before this slice.
+- Completed slice: `2f9e34c refactor(core): modernize Zod schemas`.
+- Active slice: fail-closed run-filesystem symlink containment.
+- Worktree was clean before the symlink-containment slice.
 
 ## Verification Evidence
 
@@ -91,6 +92,17 @@ coherent, tested slices until the safe core and its evidence contracts are genui
 - Final gates pass: `pnpm check` with 144/144 tests and Studio production build, `pnpm qa:usage`,
   `pnpm version:plan`, `pnpm security:dependencies`, `pnpm release:check`, and `git diff --check`.
 - Latest ignored usage report: `.ai/qa/artifacts/usage-smoke-20260619-165149/qa-report.md`.
+- Current plan: `.ai/plans/2026-06-19-symlink-containment.md`.
+- Strict TDD captured failures for symbolic links at the runs root, run directory, state file,
+  intermediate artifact directory, final artifact, core ledger, and reservation lock. Security
+  review then reproduced hard-link bypasses for all three append-only ledgers.
+- Final gates pass: `pnpm check` with 156/156 tests and Studio production build, `pnpm qa:usage`,
+  `pnpm version:plan`, `pnpm security:dependencies`, `pnpm release:check`, and `git diff --check`.
+- Latest ignored usage report: `.ai/qa/artifacts/usage-smoke-20260619-171824/qa-report.md`.
+- Diff-scoped security review closed all 10 executable/test/supporting rows, reproduced and fixed
+  hard-linked core, cost, and reservation ledger access, and produced validated Markdown/HTML
+  reports with no surviving reportable findings:
+  `/tmp/codex-security-scans/uykuluk-scifi/bd00db439703_20260619T171338Z/report.html`.
 
 ## Decisions
 
@@ -103,9 +115,8 @@ coherent, tested slices until the safe core and its evidence contracts are genui
 
 ## Remaining Work
 
-1. Commit the green Zod 4 modernization without unrelated README, Sonar, or import-only changes.
-2. Reconcile the branch with its remote before push.
-3. Re-audit symlink containment as the next safe-core candidate.
+1. Commit and push the green filesystem-containment slice.
+2. Re-audit the next safe-core candidate without enabling paid or publishing execution.
 
 ## Blockers And Risks
 
@@ -113,6 +124,8 @@ coherent, tested slices until the safe core and its evidence contracts are genui
   adapter integration and end-to-end failure semantics remain open.
 - Reservation writes are serialized locally, but JSONL ledgers are not cryptographically
   tamper-evident and the lock is not a distributed lease.
-- Symlink containment remains separate hardening work.
+- Existing-component symlink containment cannot prevent a hostile local process from racing path
+  replacement between validation and access; portable Node APIs do not expose directory-handle
+  `openat` semantics.
 - Production-package manifests provide consistency, not authenticity; cryptographic tamper evidence
   remains separate roadmap work.

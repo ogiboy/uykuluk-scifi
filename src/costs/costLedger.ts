@@ -1,8 +1,7 @@
-import path from "node:path";
 import { appendFile, readFile, readdir } from "node:fs/promises";
 import { CostEvent, costEventSchema } from "../core/state";
 import { SafeExitError } from "../core/errors";
-import { isValidRunId, runDir, runsDir } from "../core/runStore";
+import { isValidRunId, runPath, runsDir } from "../core/runStore";
 import { ensureDir, pathExists } from "../utils/fs";
 
 /**
@@ -12,7 +11,7 @@ import { ensureDir, pathExists } from "../utils/fs";
  * @returns The filesystem path to the cost ledger file
  */
 export function costLedgerPath(runId: string): string {
-  return path.join(runDir(runId), "costs", "ledger.jsonl");
+  return runPath(runId, "costs", "ledger.jsonl");
 }
 
 /**
@@ -21,7 +20,7 @@ export function costLedgerPath(runId: string): string {
 export async function appendCostEvent(event: CostEvent): Promise<void> {
   const parsed = costEventSchema.parse(event);
   const target = costLedgerPath(event.runId);
-  await ensureDir(path.dirname(target));
+  await ensureDir(runPath(event.runId, "costs"));
   await appendFile(target, `${JSON.stringify(parsed)}\n`, "utf8");
 }
 

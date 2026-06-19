@@ -1,6 +1,5 @@
-import path from "node:path";
 import { SafeExitError } from "./errors";
-import { runDir } from "./runPaths";
+import { runPath } from "./runPaths";
 
 const ARTIFACT_PATH_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]*(?:\/[A-Za-z0-9][A-Za-z0-9._-]*)*$/;
 const MAX_ARTIFACT_PATH_LENGTH = 512;
@@ -45,7 +44,7 @@ export function validateArtifactRelativePath(relativePath: string): string {
  */
 export function artifactPath(runId: string, relativePath: string): string {
   const validated = validateArtifactRelativePath(relativePath);
-  return path.join(runDir(runId), ...validated.split("/"));
+  return runPath(runId, ...validated.split("/"));
 }
 
 /**

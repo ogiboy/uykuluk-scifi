@@ -14,6 +14,11 @@
   persisted run IDs must match their containing directory.
 - Canonical bounded artifact-relative path validation before run artifact reads, writes, ledger
   events, or state persistence.
+- Canonical existing-component symlink containment for the `runs/` root, run directories, internal
+  directories, state, ledgers, reservation lock, and artifacts before filesystem access.
+- Final regular files with multiple hard links are rejected before reads, writes, or append-only
+  ledger mutation.
+- Atomic temporary-file replacement for JSON and text artifact writes.
 - Approval ledger.
 - Content-addressed script review and approval; packaging rejects changed script content.
 - Attributable script revisions with before/after snapshots, stale review/approval invalidation, and
@@ -125,6 +130,9 @@ Corepack/PATH before treating failures as product failures.
   runtime inputs.
 - Revision contracts for subtitles, scenes, popup cards, and YouTube metadata are not implemented.
 - TTS, render, upload, and publish are intentionally disabled scaffolds.
+- Run-path containment blocks pre-existing symbolic links. Hostile concurrent path replacement
+  remains a local TOCTOU limitation because portable Node APIs do not expose directory-handle
+  `openat` semantics.
 - Brand, overlay, thumbnail, background, transition, icon, waveform, intro-frame, and outro-frame
   assets are present. Editable source files, rendered intro/outro clips, and font licensing notes
   remain useful additions.

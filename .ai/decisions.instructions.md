@@ -102,8 +102,12 @@ Constraints:
 - Windows reserved device basenames and trailing-dot aliases are rejected.
 - Validation happens before filesystem and ledger mutation.
 - Persisted artifact lists are revalidated when run state is loaded or saved.
-- Lexical validation does not claim symlink containment; that remains a separate filesystem
-  integrity control.
+- Existing `runs/`, run-directory, intermediate-directory, and final-file symbolic links are
+  rejected by the canonical run-path owner before access.
+- Existing final regular files with multiple hard links are rejected before reads or append sinks.
+- Missing path suffixes remain valid for creation. Portable Node APIs do not provide a directory
+  handle-based `openat` workflow, so hostile concurrent path replacement remains a local TOCTOU
+  limitation rather than a claimed guarantee.
 
 ### Visual assets are committed production inputs
 

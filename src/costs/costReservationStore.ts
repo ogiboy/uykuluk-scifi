@@ -1,8 +1,7 @@
 import { appendFile, readFile, readdir } from "node:fs/promises";
-import path from "node:path";
 import { z } from "zod";
 import { SafeExitError } from "../core/errors";
-import { isValidRunId, runDir, runsDir } from "../core/runStore";
+import { isValidRunId, runPath, runsDir } from "../core/runStore";
 import { ensureDir, pathExists } from "../utils/fs";
 
 const reservationBaseSchema = z.strictObject({
@@ -73,7 +72,7 @@ export type CostReservationSummary = {
 
 /** Returns the validated run's reservation ledger path. */
 export function costReservationLedgerPath(runId: string): string {
-  return path.join(runDir(runId), "costs", "reservations.jsonl");
+  return runPath(runId, "costs", "reservations.jsonl");
 }
 
 /** Validates and appends one reservation event without permitting an invalid sequence. */
@@ -82,7 +81,7 @@ export async function appendCostReservationEvent(event: CostReservationEvent): P
   const existing = await readCostReservationEvents(parsed.runId);
   summarizeCostReservationEvents([...existing, parsed]);
   const target = costReservationLedgerPath(parsed.runId);
-  await ensureDir(path.dirname(target));
+  await ensureDir(runPath(parsed.runId, "costs"));
   await appendFile(target, `${JSON.stringify(parsed)}\n`, "utf8");
 }
 

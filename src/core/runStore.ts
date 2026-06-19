@@ -8,7 +8,15 @@ import { createId, nowIso } from "../utils/time";
 import { isValidRunId, runDir, runsDir, statePath } from "./runPaths";
 import { validateArtifactRelativePath } from "./artifactPaths";
 
-export { isValidRunId, runDir, runsDir, statePath, validateRunId } from "./runPaths";
+export {
+  isValidRunId,
+  runDir,
+  runPath,
+  runsDir,
+  runsPath,
+  statePath,
+  validateRunId,
+} from "./runPaths";
 
 /**
  * Creates a new run record with an initial state.

@@ -1,3 +1,4 @@
+import { lstatSync } from "node:fs";
 import path from "node:path";
 import { SafeExitError } from "./errors";
 
@@ -34,7 +35,19 @@ export function validateRunId(runId: string): string {
  * @returns The absolute path to the runs directory under the current working directory.
  */
 export function runsDir(): string {
-  return path.join(process.cwd(), "runs");
+  return runsPath();
+}
+
+/**
+ * Constructs a symlink-contained path beneath the project runs directory.
+ *
+ * Existing path components must not be symbolic links. Missing suffixes are allowed for creation.
+ */
+export function runsPath(...segments: string[]): string {
+  validateInternalSegments(segments);
+  const root = path.join(process.cwd(), "runs");
+  assertExistingComponentsAreContained(root, segments);
+  return path.join(root, ...segments);
 }
 
 /**
@@ -44,7 +57,12 @@ export function runsDir(): string {
  * @returns The absolute path to the run's directory
  */
 export function runDir(runId: string): string {
-  return path.join(runsDir(), validateRunId(runId));
+  return runsPath(validateRunId(runId));
+}
+
+/** Constructs a symlink-contained internal path beneath a validated run directory. */
+export function runPath(runId: string, ...segments: string[]): string {
+  return runsPath(validateRunId(runId), ...segments);
 }
 
 /**
@@ -53,5 +71,48 @@ export function runDir(runId: string): string {
  * @returns The absolute path to the state file.
  */
 export function statePath(runId: string): string {
-  return path.join(runDir(runId), "state.json");
+  return runPath(runId, "state.json");
+}
+
+function validateInternalSegments(segments: string[]): void {
+  if (
+    segments.some(
+      (segment) =>
+        !segment ||
+        segment === "." ||
+        segment === ".." ||
+        path.isAbsolute(segment) ||
+        segment.includes("/") ||
+        segment.includes("\\"),
+    )
+  ) {
+    throw new SafeExitError("Invalid internal run path segment.");
+  }
+}
+
+function assertExistingComponentsAreContained(root: string, segments: string[]): void {
+  const components = [root];
+  for (const segment of segments) {
+    components.push(path.join(components.at(-1)!, segment));
+  }
+  for (let index = 0; index < components.length; index += 1) {
+    const component = components[index];
+    try {
+      const info = lstatSync(component);
+      if (info.isSymbolicLink()) {
+        throw new SafeExitError(`Blocked symbolic link in run filesystem path: ${component}.`);
+      }
+      if (index === components.length - 1 && info.isFile() && info.nlink > 1) {
+        throw new SafeExitError(`Blocked hard-linked run filesystem path: ${component}.`);
+      }
+      if (index < components.length - 1 && !info.isDirectory()) {
+        throw new SafeExitError(`Blocked non-directory run filesystem path: ${component}.`);
+      }
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+        return;
+      }
+      throw error;
+    }
+  }
 }

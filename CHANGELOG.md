@@ -74,6 +74,9 @@ future generated release notes can be inserted predictably.
 - Cost estimation and readiness now fail closed when any generated production-package artifact or
   its manifest is missing, malformed, foreign, or changed; evidence bundles report the verified
   manifest digest or blocking integrity reason.
+- Run state, ledger, cost, reservation, lock, and artifact access now rejects existing symbolic
+  links beneath `runs/` and multiply-linked final files; text artifact writes also use atomic
+  temporary-file replacement.
 
 ## 0.1.0 - 2026-06-17
 
