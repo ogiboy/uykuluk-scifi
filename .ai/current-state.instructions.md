@@ -10,6 +10,8 @@
 - Schema-validated run records with atomic JSON replacement.
 - Canonical bounded run-ID validation before state, ledger, artifact, or cost path construction;
   persisted run IDs must match their containing directory.
+- Canonical bounded artifact-relative path validation before run artifact reads, writes, ledger
+  events, or state persistence.
 - Approval ledger.
 - Content-addressed script review and approval; packaging rejects changed script content.
 - Attributable script revisions with before/after snapshots, stale review/approval invalidation, and

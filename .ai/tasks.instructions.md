@@ -19,6 +19,7 @@
   recoverable settlement, and explicit reconciliation passing.
 - Keep readiness diagnostics and evidence synchronized with persisted run state.
 - Keep all run-root filesystem access behind canonical bounded run-ID validation.
+- Keep run artifact reads, writes, and persisted lists behind canonical relative-path validation.
 - Keep the capability inventory current when plugin/MCP versions or project phases materially
   change.
 - Keep long-running goals resumable from Git state and `.ai/checkpoints/`, not chat history alone.

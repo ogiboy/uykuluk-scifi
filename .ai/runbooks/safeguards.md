@@ -14,6 +14,8 @@
 - `RunStore` rejects malformed or schema-invalid state and replaces JSON files atomically.
 - `RunPaths` rejects traversal-shaped, absolute, whitespace-bearing, or oversized run identifiers
   before constructing any run-root path.
+- `ArtifactPaths` rejects absolute, traversal-shaped, separator-ambiguous, malformed, or oversized
+  artifact names before reads, writes, ledger events, or state persistence.
 - `ContentGuard` provides heuristic warnings for script review, including excessive clickbait
   titles.
 - `PublishGuard` keeps upload and publish disabled by default.

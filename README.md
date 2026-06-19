@@ -84,6 +84,8 @@ to YouTube in the MVP.
 - Persisted run records are schema-validated and JSON artifacts use atomic file replacement.
 - Run identifiers are validated as one bounded safe path segment before state, ledger, artifact, or
   cost paths are constructed; persisted state must carry the same run id as its directory.
+- Run artifact names are validated as bounded canonical relative paths before reads, writes, ledger
+  events, or persistence; absolute paths, dot segments, backslashes, and malformed segments block.
 - Generated ideas, scripts, and production packages render their tracked `.ai/prompts/` defaults at
   runtime and record prompt key, source path, and hash provenance.
 - Idea, script, and production-package generation re-check existing per-video, daily, and weekly

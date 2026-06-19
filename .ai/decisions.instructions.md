@@ -88,6 +88,23 @@ Constraints:
 - Persisted state must contain the same run id as its directory.
 - Unrelated or malformed directories are ignored by run listing and never treated as runs.
 
+### Artifact names are run-scoped filesystem capabilities
+
+Reason: Artifact helpers are shared by CLI stages and future Studio/worker services. A caller-chosen
+absolute path, separator variant, or dot segment must not escape or ambiguously address the run
+root.
+
+Constraints:
+
+- Artifact paths use one bounded canonical forward-slash relative format.
+- Every segment starts with an ASCII letter or digit and contains only ASCII letters, digits, dots,
+  underscores, or hyphens.
+- Windows reserved device basenames and trailing-dot aliases are rejected.
+- Validation happens before filesystem and ledger mutation.
+- Persisted artifact lists are revalidated when run state is loaded or saved.
+- Lexical validation does not claim symlink containment; that remains a separate filesystem
+  integrity control.
+
 ### Visual assets are committed production inputs
 
 Reason: The channel brand pack is part of the production pipeline. Readiness should check for logo,

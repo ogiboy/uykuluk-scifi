@@ -6,6 +6,7 @@ import { ensureDir, pathExists } from "../utils/fs";
 import { readJsonFile, writeJsonFile } from "../utils/json";
 import { createId, nowIso } from "../utils/time";
 import { isValidRunId, runDir, runsDir, statePath } from "./runPaths";
+import { validateArtifactRelativePath } from "./artifactPaths";
 
 export { isValidRunId, runDir, runsDir, statePath, validateRunId } from "./runPaths";
 
@@ -43,7 +44,7 @@ export async function loadRun(runId: string): Promise<RunRecord> {
   const target = statePath(runId);
   invariant(await pathExists(target), `Run not found: ${runId}`);
   try {
-    const record = runRecordSchema.parse(await readJsonFile<unknown>(target));
+    const record = validateRunArtifacts(runRecordSchema.parse(await readJsonFile<unknown>(target)));
     if (record.runId !== runId) {
       throw new SafeExitError("Persisted run id does not match its directory.");
     }
@@ -61,10 +62,12 @@ export async function loadRun(runId: string): Promise<RunRecord> {
  * @param record - The run record to save
  */
 export async function saveRun(record: RunRecord): Promise<void> {
-  const updated = runRecordSchema.parse({
-    ...record,
-    updatedAt: nowIso(),
-  });
+  const updated = validateRunArtifacts(
+    runRecordSchema.parse({
+      ...record,
+      updatedAt: nowIso(),
+    }),
+  );
   await writeJsonFile(statePath(record.runId), updated);
 }
 
@@ -117,4 +120,11 @@ export async function listRuns(): Promise<RunRecord[]> {
     }
   }
   return records.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+
+function validateRunArtifacts(record: RunRecord): RunRecord {
+  for (const relativePath of record.artifacts) {
+    validateArtifactRelativePath(relativePath);
+  }
+  return record;
 }

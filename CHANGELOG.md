@@ -64,6 +64,9 @@ future generated release notes can be inserted predictably.
   critical sections after the age threshold.
 - Run state, ledger, artifact, and cost path helpers now reject malformed or traversal-shaped run
   identifiers, and run loading rejects state whose embedded id differs from its directory.
+- Artifact reads, writes, and persisted artifact lists now reject absolute, traversal-shaped,
+  Windows-style, reserved-device, trailing-dot, malformed, control-character, or oversized relative
+  paths before side effects.
 
 ## 0.1.0 - 2026-06-17
 

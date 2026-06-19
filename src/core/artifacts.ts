@@ -1,13 +1,14 @@
-import path from "node:path";
 import { appendLedgerEvent } from "./ledger";
-import { runDir } from "./runStore";
 import { RunRecord } from "./state";
 import { writeJsonFile } from "../utils/json";
 import { writeTextFile } from "../utils/fs";
+import { artifactPath } from "./artifactPaths";
 
-export function artifactPath(runId: string, relativePath: string): string {
-  return path.join(runDir(runId), relativePath);
-}
+export {
+  artifactPath,
+  isValidArtifactRelativePath,
+  validateArtifactRelativePath,
+} from "./artifactPaths";
 
 export async function writeRunJson(
   run: RunRecord,

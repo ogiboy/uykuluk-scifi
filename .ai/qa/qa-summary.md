@@ -2,8 +2,8 @@
 
 Latest usage smoke report:
 
-- `.ai/qa/artifacts/usage-smoke-20260619-114340/qa-report.md`
-- `.ai/qa/artifacts/usage-smoke-20260619-114340/usage-smoke-summary.json`
+- `.ai/qa/artifacts/usage-smoke-20260619-115623/qa-report.md`
+- `.ai/qa/artifacts/usage-smoke-20260619-115623/usage-smoke-summary.json`
 
 Validated gates:
 
@@ -48,6 +48,10 @@ Usage smoke coverage:
 - Run-ID boundary tests reject path traversal, absolute paths, separators, whitespace, invalid
   prefixes, and oversized identifiers across state, ledger, artifact, cost, reservation, and CLI
   entry points while preserving generated IDs and valid run listing.
+- Artifact-path boundary tests reject POSIX/Windows absolute paths, dot segments, backslashes,
+  duplicate/trailing separators, whitespace, controls, non-ASCII names, malformed segments, and
+  oversized paths before filesystem or ledger mutation. Windows device basenames and trailing-dot
+  aliases are also blocked; persisted unsafe artifact lists fail closed.
 - Evidence and clean-copy usage QA verify three runtime prompt provenance records with tracked
   `.ai/prompts/` source paths and SHA-256 hashes.
 - Direct prompt-template coverage proves ideas, scripts, and production packages render the tracked
@@ -82,6 +86,10 @@ Usage smoke coverage:
   findings. One regex-anchor candidate was falsified with focused Vitest and direct Node runtime
   evidence. Report:
   `/tmp/codex-security-scans/uykuluk-scifi/e155b027681d_20260619T114436Z/report.md`.
+- The artifact-path validation diff security review completed with 6/6 worklist receipts. It
+  reproduced and fixed Windows reserved-device and trailing-dot alias acceptance; no reportable
+  finding survived final policy and remediation. Report:
+  `/tmp/codex-security-scans/uykuluk-scifi/f16e6434e22f_20260619T115254Z/report.md`.
 - `pnpm security:dependencies` reports no known high-severity dependency vulnerabilities.
 - Capability-routing docs pass formatting, changelog-marker, modularity, version-plan, full
   `pnpm check`, and clean-copy usage gates.

@@ -14,6 +14,6 @@
 - [ ] Prompt key, tracked source path, and rendered hash for each provider-backed artifact.
 - [ ] Revision metadata, attribution, reason, before/after hashes, and invalidated approvals.
 - [ ] Warnings.
-- [ ] Artifacts.
+- [ ] Canonical validated run-relative artifacts.
 - [ ] Blocked actions.
 - [ ] Next recommended command.
