@@ -7,6 +7,12 @@ import { loadRun, setRunState } from "../core/runStore";
 import { assertTransition } from "../core/transitions";
 import { requireState } from "../safeguards/approvalGuard";
 
+/**
+ * Generates a cost estimate for a production package and updates the run state.
+ *
+ * @param runId - The unique identifier of the run
+ * @returns The computed cost estimate
+ */
 export async function estimateCost(runId: string): Promise<unknown> {
   const config = await loadConfig();
   let run = await loadRun(runId);

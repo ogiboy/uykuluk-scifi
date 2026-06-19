@@ -1,6 +1,11 @@
 import { table } from "../utils/markdown";
 import type { CostEstimate } from "./costEstimate";
 
+/**
+ * Renders a cost estimate as a markdown-formatted report.
+ *
+ * @returns A markdown string containing the cost estimate.
+ */
 export function renderCostEstimateMarkdown(estimate: CostEstimate): string {
   return [
     "# Cost Estimate",

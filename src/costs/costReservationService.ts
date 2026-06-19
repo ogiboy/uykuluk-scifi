@@ -17,6 +17,14 @@ import { checkBudget } from "../safeguards/budgetGuard";
 import { createId, nowIso } from "../utils/time";
 export { reconcileCostReservation, settleCostReservation } from "./costSettlementService";
 
+/**
+ * Creates or returns a cost reservation for an approved quote line.
+ *
+ * If a reservation with the same operation ID already exists with matching run, stage, approval, and quote digest, returns the existing reservation. Otherwise, validates budget constraints and records a new reservation in both the cost reservation and ledger stores.
+ *
+ * @returns The cost reservation summary.
+ * @throws SafeExitError if the operation ID is already bound to different bindings, if the approved quote line is already consumed, if budget validation fails, or if stage or operation ID is empty.
+ */
 export async function reserveApprovedCost(input: {
   runId: string;
   stage: string;
@@ -90,6 +98,12 @@ export async function reserveApprovedCost(input: {
   });
 }
 
+/**
+ * Releases an existing cost reservation from the reserved state.
+ *
+ * @returns The updated cost reservation summary.
+ * @throws `SafeExitError` if the reservation is not in the reserved state.
+ */
 export async function releaseCostReservation(input: {
   runId: string;
   reservationId: string;
@@ -123,6 +137,11 @@ export async function releaseCostReservation(input: {
   });
 }
 
+/**
+ * Marks a cost reservation as uncertain.
+ *
+ * @returns The updated reservation summary
+ */
 export async function markCostReservationUncertain(input: {
   runId: string;
   reservationId: string;

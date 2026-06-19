@@ -52,6 +52,17 @@ export const costEstimateSchema = z
 
 export type CostEstimate = z.infer<typeof costEstimateSchema>;
 
+/**
+ * Generates a cost estimate based on current stage pricing and budget constraints.
+ *
+ * Creates an estimate artifact containing stage costs, budget and approval decisions,
+ * blocked reasons, and integrity digests for the production package, configuration,
+ * and pricing.
+ *
+ * @param run - The current run record
+ * @param config - The producer configuration
+ * @returns A cost estimate with stage quotations, budget decisions, and digests
+ */
 export async function buildCostEstimate(
   run: RunRecord,
   config: ProducerConfig,
@@ -94,6 +105,12 @@ export async function buildCostEstimate(
   };
 }
 
+/**
+ * Reads and validates a persisted cost estimate, ensuring the markdown rendering matches the saved JSON.
+ *
+ * @returns An object containing the parsed estimate, raw JSON and markdown text, and their combined SHA-256 digest.
+ * @throws If the persisted markdown does not match the re-rendered markdown.
+ */
 export async function readCostEstimate(runId: string): Promise<{
   estimate: CostEstimate;
   text: string;
@@ -115,6 +132,16 @@ export async function readCostEstimate(runId: string): Promise<{
   };
 }
 
+/**
+ * Validates that a saved cost estimate reflects the current runtime and configuration state.
+ *
+ * Checks both structural integrity (production package, configuration, and pricing digests) and decision parity (budget constraints, approval requirements, and derived costs).
+ *
+ * @param run - The current run record
+ * @param config - The current producer configuration
+ * @param estimate - The saved cost estimate to validate
+ * @returns An array of reason strings describing discrepancies between the saved estimate and current state; empty if the estimate remains current
+ */
 export async function validateCurrentCostEstimate(
   run: RunRecord,
   config: ProducerConfig,
@@ -159,6 +186,11 @@ export async function validateCurrentCostEstimate(
   return reasons;
 }
 
+/**
+ * Validates that a cost estimate remains consistent with current runtime state and configuration.
+ *
+ * @returns An array of human-readable reasons for any detected inconsistencies. Empty if the estimate is valid.
+ */
 export async function validateCostEstimateIntegrity(
   run: RunRecord,
   config: ProducerConfig,
@@ -200,6 +232,11 @@ export async function validateCostEstimateIntegrity(
   return reasons;
 }
 
+/**
+ * Derives stage quotes with enabled flags based on provider configuration.
+ *
+ * @returns An array of stage pricing entries with enabled status derived from the provider configuration.
+ */
 function quoteStages(config: ProducerConfig): Array<StagePricing & { enabled: boolean }> {
   return Object.values(defaultStagePricing).map((pricing) => ({
     ...pricing,
@@ -214,6 +251,11 @@ function quoteStages(config: ProducerConfig): Array<StagePricing & { enabled: bo
   }));
 }
 
+/**
+ * Computes a digest of the relevant provider and budget configuration.
+ *
+ * @returns A SHA-256 hex digest of the configuration settings.
+ */
 function relevantConfigDigest(config: ProducerConfig): string {
   return sha256(
     JSON.stringify({
@@ -227,10 +269,20 @@ function relevantConfigDigest(config: ProducerConfig): string {
   );
 }
 
+/**
+ * Computes a SHA-256 digest of the cost estimate stages.
+ *
+ * @returns A hexadecimal string representing the SHA-256 digest of the normalized stages.
+ */
 function stagesDigest(stages: CostEstimate["stages"]): string {
   return sha256(JSON.stringify(canonicalStages(stages)));
 }
 
+/**
+ * Normalizes stages to include only essential fields in a consistent order.
+ *
+ * @returns A normalized stages array with only `stage`, `provider`, optional `model`, `enabled`, and `estimatedUsd` fields.
+ */
 function canonicalStages(stages: CostEstimate["stages"]): CostEstimate["stages"] {
   return stages.map((stage) => ({
     stage: stage.stage,
@@ -241,6 +293,12 @@ function canonicalStages(stages: CostEstimate["stages"]): CostEstimate["stages"]
   }));
 }
 
+/**
+ * Computes the SHA-256 digest of the production package.
+ *
+ * @param runId - The run identifier
+ * @returns The SHA-256 digest as a hexadecimal string
+ */
 async function currentProductionPackageDigest(runId: string): Promise<string> {
   return sha256(await readFile(artifactPath(runId, "production/production_package.md"), "utf8"));
 }

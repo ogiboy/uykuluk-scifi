@@ -14,6 +14,9 @@ import { bulletList } from "../utils/markdown";
 /**
  * Generates and persists an evidence bundle for a run.
  *
+ * The bundle contains run metadata, state, costs, approvals, artifacts, and prompt
+ * provenance. It is written in both JSON and markdown formats.
+ *
  * @param runId - The identifier of the run.
  * @returns The generated evidence bundle object.
  */
@@ -74,6 +77,16 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
   return bundle;
 }
 
+/**
+ * Returns the next recommended CLI command for a given run state.
+ *
+ * When the state is `COST_ESTIMATED`, the recommendation depends on whether cost approval
+ * is required and has already been approved.
+ *
+ * @param state - The current run state
+ * @param costQuote - Cost quote evidence with approval information
+ * @returns A command string to execute, or a fallback message if the state is unknown
+ */
 function nextCommand(
   state: string,
   costQuote: Awaited<ReturnType<typeof readCostQuoteEvidence>>,
@@ -171,6 +184,11 @@ function renderEvidenceMarkdown(bundle: unknown): string {
   ].join("\n");
 }
 
+/**
+ * Reads cost estimate evidence for a run, including approval status.
+ *
+ * @returns An object with cost estimate details and approval status, or `null` if the estimate file does not exist or cannot be read.
+ */
 async function readCostQuoteEvidence(run: Awaited<ReturnType<typeof loadRun>>): Promise<{
   path: string;
   digest: string;

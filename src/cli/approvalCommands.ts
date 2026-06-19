@@ -7,6 +7,14 @@ type AsyncActionWrapper = <T extends unknown[]>(
   handler: (...args: T) => Promise<void>,
 ) => (...args: T) => void;
 
+/**
+ * Registers CLI commands for recording explicit approvals.
+ *
+ * Registers three subcommands under `approve`: `idea`, `script`, and `cost`.
+ *
+ * @param program - The commander `Command` instance to register the approval commands on
+ * @param wrap - An async action wrapper that adapts async handlers to synchronous callback signatures
+ */
 export function registerApprovalCommands(program: Command, wrap: AsyncActionWrapper): void {
   const approve = program.command("approve").description("Record explicit approvals.");
 
