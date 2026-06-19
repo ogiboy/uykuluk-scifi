@@ -200,23 +200,24 @@ export async function validateCostEstimateIntegrity(
 }
 
 function quoteStages(config: ProducerConfig): Array<StagePricing & { enabled: boolean }> {
-  return Object.values(defaultStagePricing).map((pricing) => {
-    let enabled: boolean;
-    if (pricing.stage === "tts") {
-      enabled = config.providers.tts.enabled;
-    } else if (pricing.stage === "imageGeneration" || pricing.stage === "videoGeneration") {
-      enabled = config.providers.imageGeneration.enabled;
-    } else if (pricing.stage === "upload") {
-      enabled = config.providers.youtube.enabled;
-    } else {
-      enabled = true;
-    }
+  return Object.values(defaultStagePricing).map((pricing) => ({
+    ...pricing,
+    enabled: isStageEnabled(pricing.stage, config),
+  }));
+}
 
-    return {
-      ...pricing,
-      enabled,
-    };
-  });
+function isStageEnabled(stage: string, config: ProducerConfig): boolean {
+  switch (stage) {
+    case "tts":
+      return config.providers.tts.enabled;
+    case "imageGeneration":
+    case "videoGeneration":
+      return config.providers.imageGeneration.enabled;
+    case "upload":
+      return config.providers.youtube.enabled;
+    default:
+      return true;
+  }
 }
 
 function relevantConfigDigest(config: ProducerConfig): string {

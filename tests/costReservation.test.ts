@@ -1,7 +1,6 @@
 import { mkdir, utimes, writeFile } from "node:fs/promises";
 import { afterEach, describe, expect, it } from "vitest";
 import { defaultConfig } from "../src/config/config";
-import { readCostEvents } from "../src/costs/costLedger";
 import { reservationLockPath, withCostReservationLock } from "../src/costs/costReservationLock";
 import {
   costReservationLedgerPath,
@@ -10,6 +9,7 @@ import {
 } from "../src/costs/costReservationStore";
 import { releaseCostReservation, reserveApprovedCost } from "../src/costs/costReservationService";
 import { defaultStagePricing } from "../src/costs/pricing";
+import { readLedger } from "../src/core/ledger";
 import { loadRun } from "../src/core/runStore";
 import { approvePaidGenerationCost } from "../src/stages/approveCost";
 import { approveIdea } from "../src/stages/approveIdea";
@@ -53,7 +53,15 @@ describe("cost reservation", () => {
       maxUsdMicros: 20_000,
       status: "RESERVED",
     });
-    expect(await readCostEvents(runId)).toHaveLength(3);
+    const reservedEvents = (await readLedger(runId)).filter(
+      (event) => event.type === "COST_RESERVED",
+    );
+    expect(reservedEvents).toHaveLength(1);
+    expect(reservedEvents[0]).toMatchObject({
+      runId,
+      stage: "tts",
+      data: { reservationId: summaries[0].reservationId },
+    });
   });
 
   it("returns the same reservation for an idempotent operation retry", async () => {

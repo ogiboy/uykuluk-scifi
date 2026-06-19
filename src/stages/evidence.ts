@@ -80,16 +80,7 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
   return bundle;
 }
 
-/**
- * Returns the next recommended CLI command for a given run state.
- *
- * When the state is `COST_ESTIMATED`, the recommendation depends on whether cost approval
- * is required and has already been approved.
- *
- * @param state - The current run state
- * @param costQuote - Cost quote evidence with approval information
- * @returns A command string to execute, or a fallback message if the state is unknown
- */
+/** Returns the next safe operator command for the current state and quote status. */
 function nextCommand(
   state: string,
   costQuote: Awaited<ReturnType<typeof readCostQuoteEvidence>>,
@@ -102,8 +93,9 @@ function nextCommand(
     SCRIPT_REVIEWED: "pnpm producer approve script --run <run_id>",
     SCRIPT_APPROVED: "pnpm producer package --run <run_id>",
     PRODUCTION_PACKAGE_GENERATED: "pnpm producer estimate --run <run_id>",
-    COST_ESTIMATED:
-      costQuote?.approvalRequired && !costQuote.approved
+    COST_ESTIMATED: costQuote?.invalid
+      ? "pnpm producer estimate --run <run_id> (cost quote is invalid and must be regenerated)"
+      : costQuote?.approvalRequired && !costQuote.approved
         ? "pnpm producer approve cost --run <run_id>"
         : "pnpm producer readiness --run <run_id>",
     PAID_GENERATION_COST_APPROVED: "pnpm producer readiness --run <run_id>",
@@ -112,11 +104,7 @@ function nextCommand(
   return map[state] ?? "Review state and ledger before continuing.";
 }
 
-/**
- * Renders an evidence bundle as markdown.
- *
- * @returns A markdown string representation of the evidence bundle.
- */
+/** Renders the persisted evidence bundle for operator review. */
 function renderEvidenceMarkdown(bundle: unknown): string {
   const data = bundle as {
     runId: string;
@@ -194,11 +182,7 @@ function renderEvidenceMarkdown(bundle: unknown): string {
   ].join("\n");
 }
 
-/**
- * Reads cost estimate evidence for a run, including approval status.
- *
- * @returns An object with cost estimate details and approval status, or `null` if the estimate file does not exist or cannot be read.
- */
+/** Reads quote evidence, preserving parse failures as explicit invalid status. */
 async function readCostQuoteEvidence(run: Awaited<ReturnType<typeof loadRun>>): Promise<{
   path: string;
   digest: string;
@@ -207,6 +191,8 @@ async function readCostQuoteEvidence(run: Awaited<ReturnType<typeof loadRun>>): 
   approvalRequired: boolean;
   approved: boolean;
   approvalId: string | null;
+  invalid?: boolean;
+  invalidReason?: string;
 } | null> {
   const relativePath = "costs/estimate.json";
   if (!(await pathExists(artifactPath(run.runId, relativePath)))) {
@@ -229,17 +215,22 @@ async function readCostQuoteEvidence(run: Awaited<ReturnType<typeof loadRun>>): 
       approved: Boolean(approval),
       approvalId: approval?.approvalId ?? null,
     };
-  } catch {
-    return null;
+  } catch (error) {
+    return {
+      path: relativePath,
+      digest: "invalid",
+      estimatedUsd: 0,
+      currency: "USD",
+      approvalRequired: false,
+      approved: false,
+      approvalId: null,
+      invalid: true,
+      invalidReason: (error as Error).message,
+    };
   }
 }
 
-/**
- * Collects prompt provenance records from a run's artifacts.
- *
- * @param runId - The run identifier
- * @returns An array of prompt provenance records found in the run's artifacts
- */
+/** Collects prompt provenance from generated run artifacts. */
 async function readPromptProvenance(runId: string): Promise<PromptProvenance[]> {
   const sources = ["ideas.json", "script.meta.json", "production/production_package.meta.json"];
   const records: PromptProvenance[] = [];

@@ -119,6 +119,24 @@ describe("paid generation cost approval", () => {
     expect((await loadRun(runId)).state).toBe("COST_ESTIMATED");
   });
 
+  it("reports an invalid persisted quote and recommends regeneration", async () => {
+    const runId = await prepareQuotedRun({ estimatedUsd: 0.02 });
+    await writeFile(artifactPath(runId, "costs/estimate.json"), '{"invalid":true}\n');
+
+    await generateEvidenceBundle(runId);
+
+    const evidence = await readJsonFile<{
+      costQuote: { invalid: boolean; invalidReason: string };
+      nextRecommendedCommand: string;
+    }>(artifactPath(runId, "evidence_bundle.json"));
+    expect(evidence.costQuote).toMatchObject({
+      invalid: true,
+      invalidReason: expect.stringMatching(/invalid|expected|schema/i),
+    });
+    expect(evidence.nextRecommendedCommand).toContain("estimate");
+    expect(evidence.nextRecommendedCommand).toContain("invalid");
+  });
+
   it("rechecks live hard budgets after approval", async () => {
     const runId = await prepareQuotedRun({ estimatedUsd: 0.02 });
     await approvePaidGenerationCost(runId);
