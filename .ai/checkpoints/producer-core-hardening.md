@@ -29,7 +29,9 @@ coherent, tested slices until the safe core and its evidence contracts are genui
 - Completed slice: `3c04cdd fix(core): constrain artifact paths`.
 - Completed slice: `66d2095 feat(core): verify production package integrity`.
 - Completed slice: `2f9e34c refactor(core): modernize Zod schemas`.
-- Active slice: fail-closed run-filesystem symlink containment.
+- Completed slice: `a046523 fix(core): contain linked run paths`.
+- Active next action: re-audit the next safe-core candidate without enabling paid or publishing
+  execution.
 - Worktree was clean before the symlink-containment slice.
 
 ## Verification Evidence
@@ -115,8 +117,7 @@ coherent, tested slices until the safe core and its evidence contracts are genui
 
 ## Remaining Work
 
-1. Commit and push the green filesystem-containment slice.
-2. Re-audit the next safe-core candidate without enabling paid or publishing execution.
+1. Re-audit the next safe-core candidate without enabling paid or publishing execution.
 
 ## Blockers And Risks
 
