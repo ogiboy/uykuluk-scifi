@@ -3,41 +3,59 @@ import { writeRunJson, writeRunText } from "../core/artifacts";
 import { createRun, setRunState } from "../core/runStore";
 import { assertTransition } from "../core/transitions";
 import { appendLedgerEvent } from "../core/ledger";
-import { checkBudget } from "../safeguards/budgetGuard";
+import { defaultStagePricing } from "../costs/pricing";
+import { enforceBudget } from "../safeguards/budgetGuard";
 import { createLlmProvider } from "../providers";
+import { createPromptProvenance } from "../prompts/provenance";
+import { renderIdeasPrompt } from "../prompts/templates";
 import { VideoIdea } from "./types";
 
 type IdeasPayload = { ideas: VideoIdea[] };
 
+/**
+ * Generates a set of video ideas using an LLM and writes formatted artifacts to the run.
+ *
+ * @returns An object containing the run ID and the generated video ideas (up to 10).
+ * @throws When generation or artifact writing fails.
+ */
 export async function runIdeas(): Promise<{ runId: string; ideas: VideoIdea[] }> {
   const config = await loadConfig();
   let run = await createRun();
   assertTransition(run.state, "IDEAS_GENERATED");
   const provider = createLlmProvider(config);
   try {
+    const estimatedUsd = defaultStagePricing.ideas.estimatedUsd;
+    await enforceBudget({
+      run,
+      config,
+      stage: "ideas",
+      provider: defaultStagePricing.ideas.provider,
+      estimatedUsd,
+      recordCostEvent: false,
+    });
+    const prompt = await renderIdeasPrompt();
     const result = await provider.generateText({
       model: config.providers.llm.model,
       temperature: 0.7,
-      prompt: [
-        "IDEAS_JSON",
-        "Generate 5-10 Turkish UykulukSciFi video ideas.",
-        "Return JSON only with an ideas array. Avoid overclaiming.",
-      ].join("\n"),
+      prompt: prompt.text,
     });
     const parsed = JSON.parse(result.text) as IdeasPayload;
     const ideas = parsed.ideas.slice(0, 10);
-    await checkBudget({
+    await enforceBudget({
       run,
       config,
       stage: "ideas",
       provider: result.provider,
       model: result.model,
-      estimatedUsd: 0,
+      estimatedUsd,
       inputTokens: result.inputTokensApprox,
       outputTokens: result.outputTokensApprox,
       durationMs: result.durationMs,
     });
-    run = await writeRunJson(run, "ideas", "ideas.json", { ideas });
+    run = await writeRunJson(run, "ideas", "ideas.json", {
+      ideas,
+      prompt: createPromptProvenance(prompt.key, prompt.text, "ideas.json", prompt.source),
+    });
     run = await writeRunText(run, "ideas", "ideas.md", renderIdeasMarkdown(ideas));
     run = await setRunState(run, "IDEAS_GENERATED", "ideas");
     return { runId: run.runId, ideas };

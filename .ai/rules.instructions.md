@@ -9,6 +9,10 @@
   scripts, and future web surfaces should each have a clear owner.
 - Do not let generated advisory state become product state. Durable guidance belongs in `.ai/`,
   `README.md`, `ROADMAP.md`, or source-controlled tests.
+- Route skills, plugins, MCPs, connectors, browsers, and subagents through
+  `.ai/capabilities.instructions.md`; do not reload the complete host catalog per thread.
+- For long goals, keep a repository checkpoint and preserve the full completion criteria across
+  context resets.
 
 ## Runtime Rules
 

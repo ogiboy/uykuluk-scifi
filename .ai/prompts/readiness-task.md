@@ -8,5 +8,6 @@ Verify:
 - Mock or Ollama provider is configured.
 - Brand assets are present or warnings are clear.
 - Script, review, approval, production package, cost estimate, and evidence bundle exist.
+- The persisted cost estimate allows the next step and has no blocked reasons.
 - Budget is not exceeded.
 - Upload and public publish remain blocked unless explicitly configured and approved.

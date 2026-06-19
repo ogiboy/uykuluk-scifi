@@ -1,12 +1,17 @@
 import { readFile } from "node:fs/promises";
 import { loadConfig } from "../config/config";
 import { artifactPath, writeRunJson, writeRunText } from "../core/artifacts";
+import { SafeExitError } from "../core/errors";
 import { appendLedgerEvent } from "../core/ledger";
 import { loadRun, setRunState } from "../core/runStore";
 import { assertTransition } from "../core/transitions";
-import { checkBudget } from "../safeguards/budgetGuard";
+import { defaultStagePricing } from "../costs/pricing";
+import { enforceBudget } from "../safeguards/budgetGuard";
 import { requireApproval, requireState } from "../safeguards/approvalGuard";
 import { createLlmProvider } from "../providers";
+import { createPromptProvenance } from "../prompts/provenance";
+import { renderProductionPackagePrompt } from "../prompts/templates";
+import { sha256 } from "../utils/hash";
 import { ProductionScene } from "./types";
 
 type PackageProviderPayload = {
@@ -19,6 +24,14 @@ type PackageProviderPayload = {
   };
 };
 
+/**
+ * Generates production assets from an approved script with script integrity validation and budget enforcement.
+ *
+ * Verifies that the current script matches the approved script by hash comparison, enforces budget constraints before and after LLM generation, and persists generated voiceover, subtitles, scenes, YouTube metadata, and production package documentation. Records a run state transition to "PRODUCTION_PACKAGE_GENERATED" upon completion.
+ *
+ * @param runId - The run identifier
+ * @throws Throws if the script content has changed since approval or if budget limits are exceeded.
+ */
 export async function generateProductionPackage(runId: string): Promise<void> {
   const config = await loadConfig();
   let run = await loadRun(runId);
@@ -27,27 +40,47 @@ export async function generateProductionPackage(runId: string): Promise<void> {
   assertTransition(run.state, "PRODUCTION_PACKAGE_GENERATED");
   try {
     const script = await readFile(artifactPath(run.runId, "script.md"), "utf8");
+    const approval = run.approvals.find(
+      (item) => item.runId === run.runId && item.target === "script",
+    );
+    const scriptHash = sha256(script);
+    if (!approval?.approvedRef || approval.approvedRef !== scriptHash) {
+      await appendLedgerEvent({
+        runId: run.runId,
+        type: "GUARD_BLOCKED",
+        stage: "package",
+        message: "Script content hash does not match the approved script.",
+        data: { approvedHash: approval?.approvedRef ?? null, currentHash: scriptHash },
+      });
+      throw new SafeExitError("Blocked: script changed after approval.");
+    }
+    const estimatedUsd = defaultStagePricing.package.estimatedUsd;
+    await enforceBudget({
+      run,
+      config,
+      stage: "package",
+      provider: defaultStagePricing.package.provider,
+      estimatedUsd,
+      recordCostEvent: false,
+    });
     const provider = createLlmProvider(config);
+    const prompt = await renderProductionPackagePrompt(script);
     const result = await provider.generateText({
       model: config.providers.llm.model,
-      prompt: [
-        "PRODUCTION_PACKAGE_JSON",
-        "Create popup cards, lower thirds, and YouTube metadata.",
-        script,
-      ].join("\n"),
+      prompt: prompt.text,
     });
     const providerPayload = JSON.parse(result.text) as PackageProviderPayload;
     const voiceover = cleanVoiceover(script);
     const scenes = buildScenes(voiceover);
     const subtitles = buildSrt(scenes);
     const packageMarkdown = renderPackageMarkdown(providerPayload, scenes);
-    await checkBudget({
+    await enforceBudget({
       run,
       config,
       stage: "package",
       provider: result.provider,
       model: result.model,
-      estimatedUsd: 0,
+      estimatedUsd,
       inputTokens: result.inputTokensApprox,
       outputTokens: result.outputTokensApprox,
       durationMs: result.durationMs,
@@ -62,6 +95,19 @@ export async function generateProductionPackage(runId: string): Promise<void> {
       providerPayload.youtube,
     );
     run = await writeRunText(run, "package", "production/production_package.md", packageMarkdown);
+    run = await writeRunJson(run, "package", "production/production_package.meta.json", {
+      provider: result.provider,
+      model: result.model,
+      inputTokensApprox: result.inputTokensApprox,
+      outputTokensApprox: result.outputTokensApprox,
+      durationMs: result.durationMs,
+      prompt: createPromptProvenance(
+        prompt.key,
+        prompt.text,
+        "production/production_package.md",
+        prompt.source,
+      ),
+    });
     await setRunState(run, "PRODUCTION_PACKAGE_GENERATED", "package");
   } catch (error) {
     await appendLedgerEvent({

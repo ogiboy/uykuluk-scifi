@@ -4,11 +4,20 @@ import { artifactPath, writeRunJson, writeRunText } from "../core/artifacts";
 import { appendLedgerEvent } from "../core/ledger";
 import { loadRun, setRunState } from "../core/runStore";
 import { assertTransition } from "../core/transitions";
-import { checkBudget } from "../safeguards/budgetGuard";
+import { defaultStagePricing } from "../costs/pricing";
+import { enforceBudget } from "../safeguards/budgetGuard";
 import { requireApproval, requireState } from "../safeguards/approvalGuard";
 import { createLlmProvider } from "../providers";
+import { createPromptProvenance } from "../prompts/provenance";
+import { renderScriptPrompt } from "../prompts/templates";
 import { ScriptMeta, VideoIdea } from "./types";
 
+/**
+ * Generates a Turkish video script from an approved video idea.
+ *
+ * @param runId - The ID of the run containing the approved idea
+ * @returns Script metadata including word count, estimated duration, claims requiring fact-checking, and visual beat suggestions.
+ */
 export async function generateScript(runId: string): Promise<ScriptMeta> {
   const config = await loadConfig();
   let run = await loadRun(runId);
@@ -23,15 +32,21 @@ export async function generateScript(runId: string): Promise<ScriptMeta> {
     if (!idea) {
       throw new Error(`Approved idea missing from ideas artifact: ${run.approvedIdeaId}`);
     }
+    const estimatedUsd = defaultStagePricing.script.estimatedUsd;
+    await enforceBudget({
+      run,
+      config,
+      stage: "script",
+      provider: defaultStagePricing.script.provider,
+      estimatedUsd,
+      recordCostEvent: false,
+    });
     const provider = createLlmProvider(config);
+    const prompt = await renderScriptPrompt(JSON.stringify(idea));
     const result = await provider.generateText({
       model: config.providers.llm.model,
       temperature: 0.6,
-      prompt: [
-        "SCRIPT_MARKDOWN",
-        `Idea: ${JSON.stringify(idea)}`,
-        "Write Turkish narration with a clear hook, careful scientific speculation, and visual beat hints.",
-      ].join("\n"),
+      prompt: prompt.text,
     });
     const script = result.text;
     const wordCount = script.trim().split(/\s+/).filter(Boolean).length;
@@ -46,14 +61,15 @@ export async function generateScript(runId: string): Promise<ScriptMeta> {
       inputTokensApprox: result.inputTokensApprox,
       outputTokensApprox: result.outputTokensApprox,
       durationMs: result.durationMs,
+      prompt: createPromptProvenance(prompt.key, prompt.text, "script.md", prompt.source),
     };
-    await checkBudget({
+    await enforceBudget({
       run,
       config,
       stage: "script",
       provider: result.provider,
       model: result.model,
-      estimatedUsd: 0,
+      estimatedUsd,
       inputTokens: result.inputTokensApprox,
       outputTokens: result.outputTokensApprox,
       durationMs: result.durationMs,

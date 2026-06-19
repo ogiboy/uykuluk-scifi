@@ -29,11 +29,16 @@ to YouTube in the MVP.
 - Studio foundation with Tailwind CSS v4, shadcn-style primitives, Radix UI, lucide icons, GSAP, and
   `next/font`.
 - Mock-first provider layer with Ollama adapter scaffold.
+- Project-level `producer doctor` diagnostics for config, mock/Ollama readiness, assets, and publish
+  defaults.
 - Strict run state machine and explicit approval ledger.
-- Cost ledger, budget guard, content review, asset readiness, and evidence bundle generation.
+- Cost ledger, budget guard, content/clickbait review, full asset readiness, and evidence bundle
+  generation.
 - Disabled voice, render, private upload, and public/scheduled publish placeholders.
 - UykulukSciFi visual assets under `assets/`.
 - `.ai/` operating contract for agents, workflows, design, QA, security, and roadmap state.
+- Project-local capability routing so technical, product, design, marketing, data, security, QA, and
+  multi-agent work loads only the tools relevant to the current task.
 - CI, CodeQL, Dependabot, SonarQube, Prettier, ESLint, Vitest, Playwright, modularity, secret-scan,
   and changelog gates.
 - Future Ink dependency is present for a richer CLI/TUI surface after the current commander CLI
@@ -68,18 +73,34 @@ to YouTube in the MVP.
 
 - Mock mode is the default.
 - Script generation requires explicit idea approval.
-- Production packaging requires explicit script approval.
+- Script review and approval are bound to the exact `script.md` SHA-256 digest.
+- Script edits use an attributable revision command with before/after snapshots; reviewed or
+  approved scripts return to `SCRIPT_GENERATED` and require review/approval again.
+- Production packaging requires explicit script approval for the unchanged reviewed content.
 - Every run persists state, ledger events, costs, warnings, artifacts, and evidence under
   `runs/<run_id>/`.
+- Persisted run records are schema-validated and JSON artifacts use atomic file replacement.
+- Generated ideas, scripts, and production packages render their tracked `.ai/prompts/` defaults at
+  runtime and record prompt key, source path, and hash provenance.
+- Idea, script, and production-package generation re-check existing per-video, daily, and weekly
+  budgets, using the stage pricing estimate, before calling a provider or writing generated
+  artifacts.
+- Readiness reads the persisted cost estimate decision and blocks if the next step is not allowed.
+- Successful readiness diagnostics and evidence reflect the final transitioned run state.
 - TTS, render, upload, and publish are intentionally blocked scaffolds.
 - Upload and public/scheduled publish require future explicit config and separate approval gates.
 - Studio must call typed local service contracts; it must not duplicate workflow state.
+
+Paid generation providers are not implemented. If a future stage estimate exceeds the configured
+approval threshold, the current core fails closed because no paid-generation approval command exists
+yet.
 
 ## Install
 
 ```bash
 pnpm install
 pnpm producer init
+pnpm producer doctor
 ```
 
 If your shell cannot find `pnpm` or `node`, restore Node 22/Corepack first. The repository declares
@@ -88,9 +109,11 @@ If your shell cannot find `pnpm` or `node`, restore Node 22/Corepack first. The 
 ## CLI MVP Workflow
 
 ```bash
+pnpm producer doctor
 pnpm producer ideas
 pnpm producer approve idea --run <run_id> --idea <idea_id>
 pnpm producer script --run <run_id>
+pnpm producer revise script --run <run_id> --file <path> --reason "<reason>" --editor <name>
 pnpm producer review script --run <run_id>
 pnpm producer approve script --run <run_id>
 pnpm producer package --run <run_id>
@@ -105,6 +128,11 @@ Inspection:
 pnpm producer status --run <run_id>
 pnpm producer list-runs
 ```
+
+Do not edit `runs/<run_id>/script.md` directly. Use `producer revise script` before production
+packaging. Revisions are blocked after the production package exists. Each revision stores the old
+and new script, attribution, reason, hashes, invalidated review/approval references, and a ledger
+event under `revisions/script/<revision_id>/`.
 
 Blocked future actions:
 
@@ -172,9 +200,16 @@ pnpm studio:build
 pnpm qa:browser
 pnpm qa:modularity
 pnpm security:check
+pnpm security:dependencies
 pnpm changelog:check
 pnpm format:check
 ```
+
+## Agent Capability Routing
+
+Agents start with `.ai/capabilities.instructions.md`. It routes tasks to a small selected set of
+skills, plugins, MCPs, connectors, browser tools, or subagents and records long-goal state under
+`.ai/checkpoints/`. The complete host catalog is not loaded into each thread.
 
 SonarQube:
 
@@ -202,21 +237,41 @@ pnpm producer init
 Keep `producer.config.json` ignored. Keep `providers.llm.mode` as `mock` for normal local testing.
 Use `ollama` only when a local Ollama server and model are available.
 
+Run `pnpm producer doctor` before starting production work. Mock mode passes without network access.
+Ollama mode checks `/api/tags` with a bounded timeout and blocks when the server is unavailable or
+the configured model is not installed. The command writes ignored local evidence to
+`diagnostics/doctor.json` and `diagnostics/doctor.md`; it does not create a run or grant approval.
+
+Tracked runtime prompt defaults:
+
+- `.ai/prompts/planner-task.md`
+- `.ai/prompts/scriptwriter-task.md`
+- `.ai/prompts/production-package-task.md`
+
+Editing a tracked prompt changes future generation only. It does not rerun a stage, mutate an
+existing artifact, or grant approval.
+
 ## Run Artifacts
 
 Each run can write:
 
+- `state.json`;
 - `ideas.json` and `ideas.md`;
 - `script.md` and `script.meta.json`;
+- `revisions/script/<revision_id>/before.md`, `after.md`, invalidated review snapshots, and
+  `revision.json`;
 - `reviews/script_review.json` and `reviews/script_review.md`;
 - `production/voiceover.txt`, `production/subtitles.srt`, `production/scenes.json`,
-  `production/youtube_metadata.json`;
+  `production/youtube_metadata.json`, `production/production_package.md`,
+  `production/production_package.meta.json`;
 - `costs/estimate.json` and `costs/estimate.md`;
+- `costs/ledger.jsonl`;
 - `evidence_bundle.json` and `evidence_bundle.md`;
 - `diagnostics/readiness.json` and `diagnostics/readiness.md`;
 - `ledger.jsonl`.
 
-Generated run directories are ignored except `runs/.gitkeep`.
+Generated run directories are ignored except `runs/.gitkeep`. Generated project diagnostics under
+`diagnostics/` are also ignored.
 
 ## Branch And Release Policy
 

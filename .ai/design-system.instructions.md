@@ -35,6 +35,21 @@ Expected first-screen composition:
 - right-side evidence/next-action rail;
 - persistent warning/blocked-action area.
 
+## Taste Skill Routing
+
+- Producer Studio is a dense operator product. Do not use `gpt-taste`, `design-taste-frontend`, or
+  `design-taste-frontend-v1` as its primary design authority.
+- For Studio work, use this file with Product Design context gathering and Build Web Apps
+  implementation/QA. A taste skill may contribute only bounded checks such as anti-generic
+  composition, hierarchy, contrast, consistency, reduced motion, and accessibility.
+- For public product, campaign, or channel-facing web pages, prefer `design-taste-frontend`.
+- Use `gpt-taste` only for an explicitly requested cinematic/Awwwards-style landing page whose
+  motion and dependency budget supports GSAP-heavy composition.
+- Use `stitch-design-taste` only for a Google Stitch design-system or screen-generation workflow
+  when Stitch access is available.
+- Use `design-taste-frontend-v1` only for exact legacy compatibility.
+- Select one taste skill per task. Never merge their full rule sets.
+
 ## Brand Assets
 
 Committed assets should drive the visual language:

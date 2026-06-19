@@ -20,6 +20,7 @@ export type ScriptMeta = {
   inputTokensApprox?: number;
   outputTokensApprox?: number;
   durationMs: number;
+  prompt: PromptProvenance;
 };
 
 export type ProductionScene = {
@@ -28,3 +29,4 @@ export type ProductionScene = {
   visualPrompt: string;
   durationSeconds: number;
 };
+import { PromptProvenance } from "../prompts/provenance";

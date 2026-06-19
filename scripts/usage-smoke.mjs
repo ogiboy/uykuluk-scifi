@@ -3,6 +3,7 @@ import { existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
+import { runDoctorSmoke, runScriptRevisionSmoke } from "./qa/usage-smoke-flows.mjs";
 
 const repoRoot = process.cwd();
 const pnpm = process.env.PNPM_EXECUTABLE ?? "pnpm";
@@ -24,6 +25,7 @@ const requiredArtifacts = [
   "production/scenes.json",
   "production/youtube_metadata.json",
   "production/production_package.md",
+  "production/production_package.meta.json",
   "costs/estimate.json",
   "costs/estimate.md",
   "costs/ledger.jsonl",
@@ -58,6 +60,7 @@ try {
   run([pnpm, "install"], { label: "clean install" });
   run([pnpm, "producer", "init"], { label: "init creates config and dirs" });
   await assertFile("producer.config.json");
+  await runDoctorSmoke({ run, pnpm, workdir, assertFile, assert });
 
   const defaults = JSON.parse(await readFile(path.join(workdir, "producer.config.json"), "utf8"));
   assert(defaults.providers.llm.mode === "mock", "default LLM mode is mock");
@@ -97,6 +100,7 @@ try {
     label: "approve idea",
   });
   run([pnpm, "producer", "script", "--run", runId], { label: "script" });
+  await runScriptRevisionSmoke({ run, pnpm, workdir, runId, assertFile, assert });
   run([pnpm, "producer", "review", "script", "--run", runId], { label: "review script" });
   run([pnpm, "producer", "approve", "script", "--run", runId], { label: "approve script" });
   run([pnpm, "producer", "package", "--run", runId], { label: "package" });
@@ -131,16 +135,35 @@ try {
     "final state is READY_FOR_MANUAL_PRODUCTION",
   );
   assert(evidence.currentState === state.state, "evidence currentState matches state.json");
+  assert(readiness.currentState === state.state, "readiness currentState matches state.json");
   for (const key of [
     "approvals",
     "costs",
     "warnings",
     "generatedArtifacts",
+    "promptProvenance",
+    "revisions",
     "blockedActions",
     "nextRecommendedCommand",
   ]) {
     assert(Object.hasOwn(evidence, key), `evidence includes ${key}`);
   }
+  assert(
+    evidence.promptProvenance.length === 3,
+    "evidence includes three prompt provenance records",
+  );
+  assert(
+    evidence.promptProvenance.every(
+      (prompt) =>
+        typeof prompt.key === "string" &&
+        typeof prompt.artifact === "string" &&
+        typeof prompt.source === "string" &&
+        prompt.source.startsWith(".ai/prompts/") &&
+        /^[a-f0-9]{64}$/.test(prompt.hash),
+    ),
+    "prompt provenance records contain tracked sources and stable SHA-256 hashes",
+  );
+  assert(evidence.revisions.length === 1, "evidence includes one script revision");
   assert(readiness.passed === true, "readiness JSON passed=true");
   assert(
     readiness.checks.some(
@@ -164,6 +187,7 @@ try {
     "RUN_CREATED",
     "STATE_CHANGED",
     "ARTIFACT_WRITTEN",
+    "ARTIFACT_REVISED",
     "APPROVAL_RECORDED",
     "COST_ESTIMATED",
     "GUARD_PASSED",

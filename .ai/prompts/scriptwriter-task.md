@@ -10,3 +10,4 @@ Requirements:
 - Avoid unsupported certainty.
 - Include visual beat hints through the narration.
 - End with a gentle outro or call to action.
+- Target at least 20 minutes of estimated narration time.

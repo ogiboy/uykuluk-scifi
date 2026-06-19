@@ -5,8 +5,14 @@ import { loadRun, setRunState } from "../core/runStore";
 import { assertTransition } from "../core/transitions";
 import { requireState } from "../safeguards/approvalGuard";
 import { reviewScriptContent } from "../safeguards/contentGuard";
+import { sha256 } from "../utils/hash";
 import { bulletList } from "../utils/markdown";
 
+/**
+ * Reviews the generated script content for a run.
+ *
+ * @returns An object containing the warnings produced by the content review.
+ */
 export async function reviewScript(
   runId: string,
 ): Promise<{ warnings: ReturnType<typeof reviewScriptContent> }> {
@@ -18,6 +24,7 @@ export async function reviewScript(
     const warnings = reviewScriptContent(script);
     const review = {
       runId: run.runId,
+      scriptHash: sha256(script),
       warningCount: warnings.length,
       blockerCount: warnings.filter((warning) => warning.severity === "blocker").length,
       warnings,

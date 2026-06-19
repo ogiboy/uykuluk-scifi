@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { artifactPath } from "../src/core/artifacts";
 import { loadRun } from "../src/core/runStore";
 import { pathExists } from "../src/utils/fs";
+import { readJsonFile } from "../src/utils/json";
 import { approveIdea } from "../src/stages/approveIdea";
 import { approveScript } from "../src/stages/approveScript";
 import { generateEvidenceBundle } from "../src/stages/evidence";
@@ -41,6 +42,7 @@ describe("mock pipeline", () => {
       "production/scenes.json",
       "production/youtube_metadata.json",
       "production/production_package.md",
+      "production/production_package.meta.json",
       "costs/estimate.json",
       "costs/estimate.md",
       "evidence_bundle.md",
@@ -50,5 +52,30 @@ describe("mock pipeline", () => {
     ]) {
       expect(await pathExists(artifactPath(runId, artifact))).toBe(true);
     }
+    const evidence = await readJsonFile<{
+      promptProvenance: Array<{ key: string; hash: string; artifact: string }>;
+      revisions: string[];
+    }>(artifactPath(runId, "evidence_bundle.json"));
+    expect(evidence.revisions).toEqual([]);
+    expect(evidence.promptProvenance).toEqual([
+      {
+        key: "ideas",
+        hash: expect.stringMatching(/^[a-f0-9]{64}$/),
+        artifact: "ideas.json",
+        source: ".ai/prompts/planner-task.md",
+      },
+      {
+        key: "script",
+        hash: expect.stringMatching(/^[a-f0-9]{64}$/),
+        artifact: "script.md",
+        source: ".ai/prompts/scriptwriter-task.md",
+      },
+      {
+        key: "production-package",
+        hash: expect.stringMatching(/^[a-f0-9]{64}$/),
+        artifact: "production/production_package.md",
+        source: ".ai/prompts/production-package-task.md",
+      },
+    ]);
   });
 });

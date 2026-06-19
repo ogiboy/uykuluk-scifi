@@ -3,6 +3,7 @@
 Use these workflow files before changing source, QA, frontend plans, security, or release/tooling
 behavior.
 
+- `capability-routing-workflow.instructions.md`
 - `feature-workflow.instructions.md`
 - `frontend-dashboard-workflow.instructions.md`
 - `prompt-management-workflow.instructions.md`

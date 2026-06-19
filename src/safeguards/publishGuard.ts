@@ -22,15 +22,25 @@ export async function blockPrivateUploadUnlessExplicitlyEnabled(
   }
 }
 
+/**
+ * Enforces configuration safeguards for public YouTube publishing.
+ *
+ * Blocks publishing if YouTube is disabled, public publishing is disabled, or explicit publish approval is required but missing.
+ *
+ * @throws `SafeExitError` if publishing is blocked.
+ */
 export async function blockPublicPublishUnlessExplicitlyEnabled(
   run: RunRecord,
   config: ProducerConfig,
 ): Promise<void> {
   const stage = "publish";
+  const hasExplicitApproval = run.approvals.some(
+    (approval) => approval.runId === run.runId && approval.target === "publish",
+  );
   if (
     !config.providers.youtube.enabled ||
     !config.providers.youtube.allowPublicPublish ||
-    config.safeguards.neverPublicPublishWithoutExplicitApproval
+    (config.safeguards.neverPublicPublishWithoutExplicitApproval && !hasExplicitApproval)
   ) {
     await appendLedgerEvent({
       runId: run.runId,
@@ -41,6 +51,7 @@ export async function blockPublicPublishUnlessExplicitlyEnabled(
         youtube: config.providers.youtube,
         neverPublicPublishWithoutExplicitApproval:
           config.safeguards.neverPublicPublishWithoutExplicitApproval,
+        hasExplicitApproval,
       },
     });
     throw new SafeExitError(

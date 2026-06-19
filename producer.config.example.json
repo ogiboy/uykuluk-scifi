@@ -8,7 +8,7 @@
     "llm": {
       "mode": "mock",
       "ollamaBaseUrl": "http://localhost:11434",
-      "model": "qwen2.5:7b"
+      "model": "qwen3:8b"
     },
     "tts": {
       "enabled": false,

@@ -21,6 +21,18 @@ This file is the repository-local operating contract for AI agents working on Uy
 - Do not enable paid APIs, upload, render, or publish paths without explicit roadmap and approval
   work.
 
+## Capability Routing
+
+- Read `.ai/capabilities.instructions.md` before selecting skills, plugins, MCP servers, connectors,
+  browser tools, or subagents.
+- Use the project routing matrix instead of enumerating the complete host capability catalog.
+- Load only the selected skill instructions and deferred tools required for the current task.
+- Use `.ai/capabilities/orchestration.instructions.md` for multi-agent or long-running goals.
+- Persist long-goal state under `.ai/checkpoints/` before context rotation; do not rely on a large
+  forked chat as the only continuation mechanism.
+- Run heavy Node, build, test, browser, and analysis processes sequentially unless safe concurrency
+  is explicitly established.
+
 ## Quality Gates
 
 Run before push-ready handoff:

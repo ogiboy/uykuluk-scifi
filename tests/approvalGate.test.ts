@@ -1,7 +1,10 @@
+import { appendFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
+import { artifactPath } from "../src/core/artifacts";
 import { requireApproval } from "../src/safeguards/approvalGuard";
 import { approveIdea } from "../src/stages/approveIdea";
 import { approveScript } from "../src/stages/approveScript";
+import { generateProductionPackage } from "../src/stages/productionPackage";
 import { runIdeas } from "../src/stages/ideas";
 import { reviewScript } from "../src/stages/reviewScript";
 import { generateScript } from "../src/stages/script";
@@ -38,5 +41,40 @@ describe("approval guard", () => {
     await expect(approveScript(runId)).rejects.toThrow(/requires state SCRIPT_REVIEWED/);
     await reviewScript(runId);
     await expect(approveScript(runId)).resolves.toMatchObject({ target: "script" });
+  });
+
+  it("blocks script approval when the reviewed content changes", async () => {
+    const { runId, ideas } = await runIdeas();
+    await approveIdea(runId, ideas[0].id);
+    await generateScript(runId);
+    await reviewScript(runId);
+
+    await appendFile(artifactPath(runId, "script.md"), "\nUnreviewed operator edit.\n", "utf8");
+
+    await expect(approveScript(runId)).rejects.toThrow(/changed after review/i);
+    expect((await loadRun(runId)).state).toBe("SCRIPT_REVIEWED");
+  });
+
+  it("blocks packaging when the approved script content changes", async () => {
+    const { runId, ideas } = await runIdeas();
+    await approveIdea(runId, ideas[0].id);
+    await generateScript(runId);
+    await reviewScript(runId);
+    await approveScript(runId);
+
+    await appendFile(artifactPath(runId, "script.md"), "\nUnreviewed operator edit.\n", "utf8");
+
+    await expect(generateProductionPackage(runId)).rejects.toThrow(
+      /script changed after approval/i,
+    );
+    expect((await loadRun(runId)).state).toBe("SCRIPT_APPROVED");
+    expect(
+      (await readLedger(runId)).some(
+        (event) =>
+          event.type === "GUARD_BLOCKED" &&
+          event.stage === "package" &&
+          event.message.includes("Script content hash"),
+      ),
+    ).toBe(true);
   });
 });

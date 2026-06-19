@@ -1,4 +1,5 @@
 import { ProducerConfig } from "../config/schema";
+import { SafeExitError } from "../core/errors";
 import { CostEvent, RunRecord } from "../core/state";
 import { appendLedgerEvent } from "../core/ledger";
 import { appendCostEvent, readAllCostEvents, readCostEvents, sumCosts } from "../costs/costLedger";
@@ -15,7 +16,7 @@ export type BudgetGuardResult = {
   weeklyBudgetUsd: number;
 };
 
-export async function checkBudget(input: {
+export type BudgetGuardInput = {
   run: RunRecord;
   config: ProducerConfig;
   stage: string;
@@ -26,7 +27,44 @@ export async function checkBudget(input: {
   outputTokens?: number;
   durationMs?: number;
   recordCostEvent?: boolean;
-}): Promise<BudgetGuardResult> {
+};
+
+/**
+ * Enforces a budget constraint, blocking execution if the budget check fails or approval is required.
+ *
+ * When approval is required, records a `GUARD_BLOCKED` ledger event before blocking.
+ *
+ * @throws SafeExitError when the budget is blocked or approval is required.
+ * @returns The budget guard result if the budget is allowed and no approval is required.
+ */
+export async function enforceBudget(input: BudgetGuardInput): Promise<BudgetGuardResult> {
+  const result = await checkBudget(input);
+  if (!result.allowed) {
+    throw new SafeExitError(
+      `Blocked: ${input.stage} budget guard failed. ${result.blockedReasons.join(" ")}`,
+    );
+  }
+  if (result.approvalRequired) {
+    await appendLedgerEvent({
+      runId: input.run.runId,
+      type: "GUARD_BLOCKED",
+      stage: input.stage,
+      message: "Budget threshold requires explicit approval.",
+      data: result,
+    });
+    throw new SafeExitError(
+      `Blocked: ${input.stage} budget requires explicit approval above ${input.config.budgets.requireApprovalAboveUsd} USD.`,
+    );
+  }
+  return result;
+}
+
+/**
+ * Assesses whether a stage run is within configured budget limits.
+ *
+ * @returns A result indicating whether the stage is allowed, any exceeded budget reasons, whether approval is required, and estimated and cumulative costs.
+ */
+export async function checkBudget(input: BudgetGuardInput): Promise<BudgetGuardResult> {
   const events = await readCostEvents(input.run.runId);
   const allEvents = await readAllCostEvents();
   const cumulativeBefore = sumCosts(events);

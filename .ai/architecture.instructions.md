@@ -11,6 +11,11 @@ Primary contracts:
   package, estimate, evidence, readiness, and disabled placeholders.
 - `src/safeguards/` owns approval, budget, content, asset, and publish guards.
 - `src/providers/` owns LLM adapters for mock and Ollama.
+- `src/diagnostics/` owns project-level, read-only operator diagnostics; it must not mutate run
+  state or imply workflow approval.
+- `src/prompts/` owns runtime prompt provenance metadata shared by stages and evidence.
+- `src/revisions/` owns attributable artifact edits, snapshots, stale-evidence invalidation, and
+  revision ledger events.
 - `src/costs/` owns cost event persistence and local budget calculations.
 - `src/youtube/` currently owns disabled upload/publish scaffolds only.
 - `apps/studio/` owns the local Next.js operator shell. It should call typed service contracts and

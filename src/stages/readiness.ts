@@ -4,6 +4,7 @@ import { loadRun, setRunState } from "../core/runStore";
 import { canTransition } from "../core/transitions";
 import { checkAssets } from "../safeguards/assetGuard";
 import { pathExists } from "../utils/fs";
+import { readJsonFile } from "../utils/json";
 import { bulletList, table } from "../utils/markdown";
 import { generateEvidenceBundle } from "./evidence";
 
@@ -13,6 +14,14 @@ type ReadinessCheck = {
   message: string;
 };
 
+/**
+ * Validates a run's readiness for manual production.
+ *
+ * Performs 11 readiness checks covering configuration, assets, artifacts, approvals, and budget. Writes diagnostic reports to the run directory. If all checks pass and conditions are met, transitions the run state to `READY_FOR_MANUAL_PRODUCTION` and generates an evidence bundle.
+ *
+ * @param runId - The ID of the run to validate
+ * @returns `passed` is `true` if no checks have a block status; `checks` is the array of all readiness checks performed
+ */
 export async function runReadiness(
   runId: string,
 ): Promise<{ passed: boolean; checks: ReadinessCheck[] }> {
@@ -55,7 +64,7 @@ export async function runReadiness(
       "production package generated",
       "production/production_package.md",
     ),
-    await artifactCheck(run.runId, "budget not exceeded", "costs/estimate.json"),
+    await budgetEstimateCheck(run.runId),
     {
       name: "no blocked publish action",
       status: "pass",
@@ -106,12 +115,25 @@ export async function runReadiness(
     run.state === "COST_ESTIMATED" &&
     canTransition(run.state, "READY_FOR_MANUAL_PRODUCTION")
   ) {
-    await setRunState(run, "READY_FOR_MANUAL_PRODUCTION", "readiness");
+    run = await setRunState(run, "READY_FOR_MANUAL_PRODUCTION", "readiness");
+    await writeRunJson(run, "readiness", "diagnostics/readiness.json", {
+      runId: run.runId,
+      currentState: run.state,
+      passed,
+      checks,
+    });
     await generateEvidenceBundle(run.runId);
   }
   return { passed, checks };
 }
 
+/**
+ * Checks whether an artifact file exists within a run.
+ *
+ * @param name - The name of the readiness check
+ * @param relativePath - The artifact path relative to the run directory
+ * @returns A readiness check that passes if the artifact exists, blocks if it is missing
+ */
 async function artifactCheck(
   runId: string,
   name: string,
@@ -125,6 +147,61 @@ async function artifactCheck(
   );
 }
 
+/**
+ * Validates the cost estimate and determines if the next step is allowed.
+ *
+ * Reads `costs/estimate.json` and checks if the estimate permits proceeding. Blocks readiness if the file is missing, cannot be read, or indicates the next step is not allowed.
+ *
+ * @param runId - The run identifier
+ * @returns A readiness check that passes if the cost estimate allows proceeding, blocks otherwise
+ */
+async function budgetEstimateCheck(runId: string): Promise<ReadinessCheck> {
+  const relativePath = "costs/estimate.json";
+  const target = artifactPath(runId, relativePath);
+  if (!(await pathExists(target))) {
+    return {
+      name: "budget not exceeded",
+      status: "block",
+      message: `${relativePath} is missing.`,
+    };
+  }
+  try {
+    const estimate = await readJsonFile<{
+      nextStepAllowed?: boolean;
+      blockedReasons?: unknown;
+    }>(target);
+    const blockedReasons = Array.isArray(estimate.blockedReasons)
+      ? estimate.blockedReasons.filter((reason): reason is string => typeof reason === "string")
+      : [];
+    if (estimate.nextStepAllowed !== true || blockedReasons.length > 0) {
+      return {
+        name: "budget not exceeded",
+        status: "block",
+        message:
+          blockedReasons.length > 0
+            ? blockedReasons.join(" ")
+            : "Cost estimate does not allow the next step.",
+      };
+    }
+    return {
+      name: "budget not exceeded",
+      status: "pass",
+      message: "Cost estimate allows the next step.",
+    };
+  } catch (error) {
+    return {
+      name: "budget not exceeded",
+      status: "block",
+      message: `Cost estimate could not be read: ${(error as Error).message}`,
+    };
+  }
+}
+
+/**
+ * Creates a readiness check based on a condition.
+ *
+ * @returns A readiness check with status `pass` if `ok` is `true`, `block` if `ok` is `false`, using the corresponding message.
+ */
 async function fileCheck(
   name: string,
   ok: boolean,

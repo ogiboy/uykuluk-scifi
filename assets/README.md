@@ -86,6 +86,35 @@ Imported from:
 - `source-docs/addon-visual-pack/README.md` - original addon pack notes.
 - `source-docs/addon-visual-pack/manifest.json` - original addon pack manifest.
 
+Creative, design, and marketing agents must route through `.ai/capabilities.instructions.md` before
+creating or changing production assets. Generated assets still require source, licensing, and
+inventory documentation here.
+
+## Production Evidence Contract
+
+These files are tracked production inputs. Script review and approval are content-addressed today;
+evidence also records runtime prompt hashes. Future render work must likewise record the exact asset
+paths and revisions used in each evidence bundle rather than inferring them from directory presence.
+Security dependency auditing covers executable packages; asset provenance remains governed by this
+tracked inventory and future per-run evidence. Readiness/evidence state synchronization does not
+imply that optional asset gaps are resolved; the asset check status remains independently
+reviewable.
+
+The current asset guard inventories brand, overlay, intro, and outro directories. Logo, watermark,
+subtitle/lower-third, intro, and outro availability all contribute operator-visible readiness
+warnings.
+
+`pnpm producer doctor` runs the same inventory before a run and records the result in ignored local
+project diagnostics. Asset warnings do not create a run or imply production approval.
+
+Generation budget preflight does not infer asset readiness or mutate this inventory. It only blocks
+provider-backed artifact creation before these production inputs could be referenced downstream.
+Tracked runtime prompt changes likewise affect future text artifacts only; they do not rewrite,
+approve, or change the provenance of committed production assets.
+
+Script revisions snapshot text artifacts and invalidate script review/approval only. They do not
+modify or reclassify files in the tracked asset inventory.
+
 ## Still Useful To Create Later
 
 - Editable Figma, PSD, SVG, or layered source files for thumbnail and overlay text changes.

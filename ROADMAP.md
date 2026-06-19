@@ -18,11 +18,26 @@ Status: implemented and under QA.
 - Approve one idea explicitly.
 - Generate and review a Turkish narration script.
 - Approve the reviewed script explicitly.
+- Bind script review, approval, and packaging to the same content digest.
+- Record attributable script revisions with before/after snapshots, invalidate stale review and
+  approval evidence, and require review/approval again.
 - Generate voiceover text, subtitles, scene prompts, popup cards, and YouTube metadata drafts.
 - Estimate costs.
 - Generate evidence bundle and readiness diagnostics.
+- Block readiness when the persisted cost estimate reports blocked reasons or disallows the next
+  step.
+- Validate run state on read/write and atomically replace persisted JSON files.
+- Render tracked operator prompts at runtime and record prompt key/source/hash provenance for
+  generated ideas, scripts, and production packages.
+- Run budget preflight before provider-backed generation so an already-exceeded ledger cannot cause
+  another provider call or generated artifact; use the stage pricing estimate for the reservation
+  decision.
+- Keep readiness diagnostics and evidence synchronized with the final run state.
 - Keep voice, render, upload, and publish disabled by default.
 - Persist state, artifacts, approvals, warnings, costs, and QA evidence.
+- Warn on clickbait title framing and inventory brand, overlay, intro, and outro assets.
+- Diagnose project config, mock/Ollama availability, required assets, and publish-default safety
+  before a run through `producer doctor`.
 
 Exit criteria:
 
@@ -33,14 +48,24 @@ Exit criteria:
 - Readiness passes with committed brand assets.
 - Upload and public/scheduled publish remain blocked by default.
 
+Hardening still required:
+
+- Define a dedicated paid-generation cost approval contract before any nonzero-cost provider is
+  enabled; until then, approval-threshold estimates remain blocked.
+
 ## Phase 1.5 - Project Policy And Tooling
 
 Status: in progress.
 
 - Strengthen `.ai/` as the durable project operating contract.
+- Keep a project-local capability inventory and routing matrix for engineering, product, design,
+  marketing, analytics, security, QA, research, release, and swarm work.
+- Keep long-running goals resumable through repository checkpoints without depending on oversized
+  forked chat history.
 - Keep CodeRabbit focused on approval gates, cost controls, evidence, assets, frontend route safety,
   and no public publish by default.
 - Add Prettier as the shared formatting contract.
+- Keep direct provider/publish safeguard tests and high-severity dependency audit in CI.
 - Keep QA evidence under `.ai/qa/artifacts/`.
 - Document visual asset inventory and gaps.
 
@@ -50,6 +75,8 @@ Exit criteria:
   `.ai/current-state.instructions.md`, and `.ai/tasks.instructions.md` exist and match the current
   repo.
 - `.ai/workflows/` covers feature, QA, security, and frontend work.
+- `.ai/capabilities.instructions.md` and `.ai/capabilities/` route tasks without loading the full
+  host tool catalog.
 - `.ai/agents/` defines development-only role guidance.
 - `.coderabbit.yaml`, `.prettierrc`, `.prettierignore`, and package scripts are present.
 
@@ -68,8 +95,8 @@ Planned surfaces:
   evidence, and ledger.
 - Editable idea board: compare generated ideas, add manual idea notes, reject or approve one idea
   with explicit ledger evidence.
-- Script workspace: edit narration draft locally before review, keep revision history, and require
-  review after edits.
+- Script workspace: use the implemented core revision contract to edit narration, browse revision
+  history, and require review after edits.
 - Prompt studio: edit planner, scriptwriter, review, production package, and readiness prompts from
   a guarded UI with preview/diff and rollback.
 - Production package editor: adjust subtitle segments, scene prompts, popup cards, lower-third
@@ -112,8 +139,9 @@ Exit criteria:
 
 Status: planned.
 
-The current `.ai/prompts/` files are operator-facing source prompts. A future dashboard should let
-the operator inspect and edit prompt templates without turning prompt changes into hidden state.
+The current `.ai/prompts/` files are operator-facing runtime defaults for ideas, scripts, and
+production packages. A future dashboard should let the operator inspect and edit prompt templates
+without turning prompt changes into hidden state.
 
 Planned contracts:
 
@@ -131,6 +159,9 @@ Prompt editing must not:
 - approve a stage;
 - mutate previous run artifacts;
 - hide changed prompt hashes from evidence.
+
+Script revision history is implemented in the CLI/core. Prompt overrides and production-package
+field revisions remain planned.
 
 ## Phase 2.2 - Modular Core/Web Service Boundary
 
@@ -156,9 +187,10 @@ Rules:
 
 ## Phase 3 - Real Local Providers
 
-Status: planned.
+Status: foundation in progress.
 
-- Add `producer doctor` for local provider readiness.
+- `producer doctor` provides local config, provider, asset, and publish-default diagnostics with
+  durable ignored JSON/Markdown evidence.
 - Improve Ollama model availability checks.
 - Record provider duration and token estimates consistently.
 - Keep provider failures explicit in readiness and evidence.

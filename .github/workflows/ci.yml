@@ -35,6 +35,9 @@ jobs:
       - name: Run full project check
         run: pnpm check
 
+      - name: Audit high-severity dependency vulnerabilities
+        run: pnpm security:dependencies
+
       - name: Run usage smoke
         run: pnpm qa:usage
 

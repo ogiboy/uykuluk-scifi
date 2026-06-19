@@ -4,15 +4,23 @@ import { artifactPath, writeRunJson, writeRunText } from "../core/artifacts";
 import { readLedger } from "../core/ledger";
 import { loadRun, saveRun } from "../core/runStore";
 import { readCostEvents } from "../costs/costLedger";
+import { PromptProvenance } from "../prompts/provenance";
 import { pathExists } from "../utils/fs";
 import { readJsonFile } from "../utils/json";
 import { bulletList } from "../utils/markdown";
 
+/**
+ * Generates and persists an evidence bundle for a run.
+ *
+ * @param runId - The identifier of the run.
+ * @returns The generated evidence bundle object.
+ */
 export async function generateEvidenceBundle(runId: string): Promise<unknown> {
   const config = await loadConfig();
   let run = await loadRun(runId);
   const ledger = await readLedger(run.runId);
   const costs = await readCostEvents(run.runId);
+  const promptProvenance = await readPromptProvenance(run.runId);
   const approvedIdea =
     run.approvedIdeaId && (await pathExists(artifactPath(run.runId, "ideas.json")))
       ? ((
@@ -46,6 +54,10 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
       : null,
     generatedArtifacts: run.artifacts,
     warnings: run.warnings,
+    promptProvenance,
+    revisions: run.artifacts.filter(
+      (item) => item.startsWith("revisions/") && item.endsWith("/revision.json"),
+    ),
     blockedActions,
     nextRecommendedCommand: nextCommand(run.state),
     ledgerEventCount: ledger.length,
@@ -71,6 +83,11 @@ function nextCommand(state: string): string {
   return map[state] ?? "Review state and ledger before continuing.";
 }
 
+/**
+ * Renders an evidence bundle as markdown.
+ *
+ * @returns A markdown string representation of the evidence bundle.
+ */
 function renderEvidenceMarkdown(bundle: unknown): string {
   const data = bundle as {
     runId: string;
@@ -80,6 +97,8 @@ function renderEvidenceMarkdown(bundle: unknown): string {
     costs: unknown[];
     generatedArtifacts: string[];
     warnings: string[];
+    promptProvenance: PromptProvenance[];
+    revisions: string[];
     blockedActions: string[];
     nextRecommendedCommand: string;
   };
@@ -102,6 +121,19 @@ function renderEvidenceMarkdown(bundle: unknown): string {
     "",
     bulletList(data.warnings),
     "",
+    "## Prompt Provenance",
+    "",
+    bulletList(
+      data.promptProvenance.map(
+        (prompt) =>
+          `${prompt.key}: ${prompt.hash} from ${prompt.source ?? "legacy-inline"} -> ${path.posix.normalize(prompt.artifact)}`,
+      ),
+    ),
+    "",
+    "## Revisions",
+    "",
+    bulletList(data.revisions.map((revision) => path.posix.normalize(revision))),
+    "",
     "## Artifacts",
     "",
     bulletList(data.generatedArtifacts.map((artifact) => path.posix.normalize(artifact))),
@@ -114,4 +146,26 @@ function renderEvidenceMarkdown(bundle: unknown): string {
     "",
     data.nextRecommendedCommand,
   ].join("\n");
+}
+
+/**
+ * Collects prompt provenance records from a run's artifacts.
+ *
+ * @param runId - The run identifier
+ * @returns An array of prompt provenance records found in the run's artifacts
+ */
+async function readPromptProvenance(runId: string): Promise<PromptProvenance[]> {
+  const sources = ["ideas.json", "script.meta.json", "production/production_package.meta.json"];
+  const records: PromptProvenance[] = [];
+  for (const relativePath of sources) {
+    const target = artifactPath(runId, relativePath);
+    if (!(await pathExists(target))) {
+      continue;
+    }
+    const value = await readJsonFile<{ prompt?: PromptProvenance }>(target);
+    if (value.prompt) {
+      records.push(value.prompt);
+    }
+  }
+  return records;
 }

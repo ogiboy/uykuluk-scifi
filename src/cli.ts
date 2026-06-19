@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 import { Command } from "commander";
+import { registerRevisionCommands } from "./cli/revisionCommands";
 import { initProject } from "./config/config";
 import { SafeExitError } from "./core/errors";
 import { listRuns, loadRun } from "./core/runStore";
+import { runDoctor } from "./diagnostics/doctor";
 import { approveIdea } from "./stages/approveIdea";
 import { approveScript } from "./stages/approveScript";
 import {
@@ -44,6 +46,22 @@ program
       const result = await runIdeas();
       console.log(`Run created: ${result.runId}`);
       console.log(`Ideas generated: ${result.ideas.map((idea) => idea.id).join(", ")}`);
+    }),
+  );
+
+program
+  .command("doctor")
+  .description("Diagnose local config, provider, assets, and publish safety.")
+  .action(
+    wrap(async () => {
+      const report = await runDoctor();
+      console.log(`Doctor ${report.passed ? "passed" : "blocked"}.`);
+      for (const check of report.checks) {
+        console.log(`[${check.status}] ${check.name}: ${check.message}`);
+      }
+      if (!report.passed) {
+        throw new SafeExitError("Doctor blocked.", 1);
+      }
     }),
   );
 
@@ -94,6 +112,8 @@ review
       console.log(`Script reviewed. Warnings: ${result.warnings.length}`);
     }),
   );
+
+registerRevisionCommands(program, wrap);
 
 program
   .command("package")

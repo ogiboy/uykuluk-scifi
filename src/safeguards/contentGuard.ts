@@ -4,9 +4,23 @@ export type ScriptReviewWarning = {
   message: string;
 };
 
+/**
+ * Validates a script against quality, safety, and style guidelines.
+ *
+ * Checks for word count, clickbait framing, excessive certainty language, scientific claims,
+ * disaster framing responsibility, missing outro, weak opening hooks, trademark references,
+ * and UykulukSciFi style compliance.
+ *
+ * @param script - The script text to review
+ * @returns An array of warnings describing detected issues
+ */
 export function reviewScriptContent(script: string): ScriptReviewWarning[] {
   const warnings: ScriptReviewWarning[] = [];
   const words = script.trim().split(/\s+/).filter(Boolean);
+  const title = script
+    .split("\n")
+    .map((line) => line.trim())
+    .find(Boolean);
   if (words.length < 250) {
     warnings.push({
       code: "too_short",
@@ -19,6 +33,19 @@ export function reviewScriptContent(script: string): ScriptReviewWarning[] {
       code: "too_long",
       severity: "warning",
       message: `Script may be too long for the MVP target (${words.length} words).`,
+    });
+  }
+  if (
+    title &&
+    (/\b(şok|sok|inanılmaz|inanilmaz|kimse bilmiyor|aklınızı alacak|aklinizi alacak)\b/i.test(
+      title,
+    ) ||
+      /!{2,}/.test(title))
+  ) {
+    warnings.push({
+      code: "clickbait_title",
+      severity: "warning",
+      message: "Title uses excessive clickbait framing; prefer specific, credible curiosity.",
     });
   }
   const certaintyMatches =
