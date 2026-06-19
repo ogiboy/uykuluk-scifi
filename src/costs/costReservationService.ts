@@ -1,3 +1,7 @@
+import { SafeExitError } from "../core/errors";
+import { appendLedgerEvent } from "../core/ledger";
+import { checkBudget } from "../safeguards/budgetGuard";
+import { createId, nowIso } from "../utils/time";
 import {
   appendUncertainEvent,
   loadApprovedQuoteLine,
@@ -11,10 +15,6 @@ import {
   readAllCostReservationSummaries,
 } from "./costReservationStore";
 import { microsToUsd } from "./money";
-import { SafeExitError } from "../core/errors";
-import { appendLedgerEvent } from "../core/ledger";
-import { checkBudget } from "../safeguards/budgetGuard";
-import { createId, nowIso } from "../utils/time";
 export { reconcileCostReservation, settleCostReservation } from "./costSettlementService";
 
 export async function reserveApprovedCost(input: {

@@ -1,31 +1,31 @@
 import { writeFile } from "node:fs/promises";
 import { afterEach, describe, expect, it } from "vitest";
 import { defaultConfig } from "../src/config/config";
+import { artifactPath } from "../src/core/artifacts";
 import { readCostEvents } from "../src/costs/costLedger";
-import {
-  appendCostReservationEvent,
-  readCostReservationSummaries,
-} from "../src/costs/costReservationStore";
 import {
   markCostReservationUncertain,
   reconcileCostReservation,
   reserveApprovedCost,
   settleCostReservation,
 } from "../src/costs/costReservationService";
+import {
+  appendCostReservationEvent,
+  readCostReservationSummaries,
+} from "../src/costs/costReservationStore";
 import { defaultStagePricing } from "../src/costs/pricing";
-import { artifactPath } from "../src/core/artifacts";
 import { approvePaidGenerationCost } from "../src/stages/approveCost";
 import { approveIdea } from "../src/stages/approveIdea";
 import { approveScript } from "../src/stages/approveScript";
-import { generateEvidenceBundle } from "../src/stages/evidence";
 import { estimateCost } from "../src/stages/estimate";
+import { generateEvidenceBundle } from "../src/stages/evidence";
 import { runIdeas } from "../src/stages/ideas";
 import { generateProductionPackage } from "../src/stages/productionPackage";
 import { runReadiness } from "../src/stages/readiness";
 import { reviewScript } from "../src/stages/reviewScript";
 import { generateScript } from "../src/stages/script";
-import { nowIso } from "../src/utils/time";
 import { readJsonFile } from "../src/utils/json";
+import { nowIso } from "../src/utils/time";
 import { useTempProject } from "./helpers";
 
 describe("cost reservation recovery", () => {
