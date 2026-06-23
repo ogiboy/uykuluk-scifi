@@ -38,6 +38,8 @@ future generated release notes can be inserted predictably.
   server.
 - Script review, approval, and production packaging now require the same SHA-256 content digest.
 - Prompt provenance now records the tracked source path in addition to the rendered prompt hash.
+- Runtime prompt defaults now live under `prompts/defaults/` so the CLI no longer depends on `.ai/`
+  development files.
 - Cost estimation no longer records an incurred cost event; quote approval is explicitly separate
   from future spend reservation and settlement.
 - Hard-budget checks now include active, settlement-pending, and uncertain reservations across runs

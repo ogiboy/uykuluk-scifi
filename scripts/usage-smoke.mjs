@@ -1,8 +1,8 @@
-import { cp, mkdir, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
+import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
+import { cp, mkdir, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { spawnSync } from "node:child_process";
 import { runDoctorSmoke, runScriptRevisionSmoke } from "./qa/usage-smoke-flows.mjs";
 
 const repoRoot = process.cwd();
@@ -164,10 +164,10 @@ try {
         typeof prompt.key === "string" &&
         typeof prompt.artifact === "string" &&
         typeof prompt.source === "string" &&
-        prompt.source.startsWith(".ai/prompts/") &&
+        prompt.source.startsWith("prompts/defaults/") &&
         /^[a-f0-9]{64}$/.test(prompt.hash),
     ),
-    "prompt provenance records contain tracked sources and stable SHA-256 hashes",
+    "prompt provenance records contain runtime default sources and stable SHA-256 hashes",
   );
   assert(evidence.revisions.length === 1, "evidence includes one script revision");
   assert(readiness.passed === true, "readiness JSON passed=true");
@@ -339,5 +339,5 @@ function renderMarkdown(report) {
 }
 
 function escapeCell(value) {
-  return String(value).replace(/\|/g, "/").replace(/\n/g, "<br>");
+  return String(value).replaceAll("|", "/").replaceAll("\n", "<br>");
 }

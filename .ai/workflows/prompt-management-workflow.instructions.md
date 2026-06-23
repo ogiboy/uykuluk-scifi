@@ -4,8 +4,9 @@ Use before changing prompt files or implementing prompt editing.
 
 ## Current Contract
 
-Tracked default prompts live in `.ai/prompts/` and are loaded by typed runtime templates for ideas,
-scripts, and production packages.
+Tracked default prompts live in `prompts/defaults/` and are loaded by typed runtime templates for
+ideas, scripts, and production packages. `.ai/` prompt notes may guide development, but runtime code
+must not require `.ai/` files.
 
 Prompt changes are product changes because they can alter generated ideas, scripts, reviews,
 production packages, and readiness behavior.

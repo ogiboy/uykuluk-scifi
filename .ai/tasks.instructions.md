@@ -3,7 +3,7 @@
 ## Now
 
 - Keep CLI/core contracts stable.
-- Keep `.ai/` guidance aligned with the source tree.
+- Keep `.ai/` guidance aligned with the source tree without making `.ai/` part of runtime execution.
 - Keep `pnpm qa:usage` passing after workflow changes.
 - Keep visual asset inventory current.
 - Keep content and asset guard coverage aligned with the operator checklist.
@@ -39,7 +39,8 @@
 - Add read-only run index and run detail routes to `apps/studio`.
 - Define typed read/write service contracts that both CLI and web can use.
 - Define local prompt override storage and revision events before adding a prompt editor; typed
-  keys, tracked runtime defaults, source paths, and prompt hashes are implemented.
+  keys, tracked `prompts/defaults/` runtime defaults, source paths, and prompt hashes are
+  implemented.
 - Define revision events for subtitles, scene prompts, popup cards, and YouTube metadata edits;
   script revision evidence is implemented.
 - Keep `producer doctor` config/provider/model/asset/publish diagnostics and evidence passing.

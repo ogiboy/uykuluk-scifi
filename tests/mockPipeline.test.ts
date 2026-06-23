@@ -76,19 +76,19 @@ describe("mock pipeline", () => {
         key: "ideas",
         hash: expect.stringMatching(/^[a-f0-9]{64}$/),
         artifact: "ideas.json",
-        source: ".ai/prompts/planner-task.md",
+        source: "prompts/defaults/planner-task.md",
       },
       {
         key: "script",
         hash: expect.stringMatching(/^[a-f0-9]{64}$/),
         artifact: "script.md",
-        source: ".ai/prompts/scriptwriter-task.md",
+        source: "prompts/defaults/scriptwriter-task.md",
       },
       {
         key: "production-package",
         hash: expect.stringMatching(/^[a-f0-9]{64}$/),
         artifact: "production/production_package.md",
-        source: ".ai/prompts/production-package-task.md",
+        source: "prompts/defaults/production-package-task.md",
       },
     ]);
   });

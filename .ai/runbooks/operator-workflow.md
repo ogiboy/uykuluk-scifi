@@ -36,9 +36,9 @@ artifacts block cost estimation and readiness. Above-threshold quotes require an
 authorize a paid provider. An internal callback contract now proves reservation-before-execution,
 at-most-once local dispatch, timeout/unknown handling, and settlement, but no paid adapter or CLI
 path is enabled. Run state is schema-validated and JSON writes use atomic replacement. Ideas,
-scripts, and production packages load tracked `.ai/prompts/` defaults through typed runtime
-templates. Evidence records prompt provenance, reservation/execution status, and the verified
-production-package manifest digest or blocking integrity reason.
+scripts, and production packages load tracked `prompts/defaults/` product defaults through typed
+runtime templates. Evidence records prompt provenance, reservation/execution status, and the
+verified production-package manifest digest or blocking integrity reason.
 
 After readiness passes, `state.json`, `diagnostics/readiness.json`, and `evidence_bundle.json` must
 all report `READY_FOR_MANUAL_PRODUCTION`.

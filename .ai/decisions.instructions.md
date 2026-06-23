@@ -21,11 +21,12 @@ Constraints:
 - No public upload or publish path appears in the dashboard until the CLI has the same gate.
 - UI work must include browser QA and route negative tests.
 
-### `.ai/` is a product operating contract, not decoration
+### `.ai/` is development guidance, not runtime state
 
-Reason: This project is safety-sensitive even though it produces media rather than trades. Prompts,
-runbooks, workflows, QA checklists, and role guidance should be reviewable project artifacts so
-future agent work does not silently weaken approval gates or evidence quality.
+Reason: This project is safety-sensitive even though it produces media rather than trades. Runbooks,
+workflows, QA checklists, checkpoints, findings, and role guidance should be reviewable development
+artifacts so future agent work does not silently weaken approval gates or evidence quality. Runtime
+code must not require `.ai/` files to execute.
 
 ### Project-local capability routing is the agent tool authority
 
@@ -42,12 +43,12 @@ Constraints:
   otherwise.
 - Large-thread forks are not the default continuation mechanism.
 
-### Tracked operator prompts are runtime defaults
+### Product prompt defaults are runtime assets outside `.ai`
 
-Reason: Provider stages and operator review must use one prompt authority. Ideas, scripts, and
-production packages load their typed defaults from `.ai/prompts/`, and generated artifacts record
-the exact source path and rendered prompt hash. Prompt edits affect future generation only and do
-not mutate existing runs or imply approval.
+Reason: Provider stages and operator review must use one prompt authority without depending on the
+agent-tracking area. Ideas, scripts, and production packages load their typed defaults from
+`prompts/defaults/`, and generated artifacts record the exact source path and rendered prompt hash.
+Prompt edits affect future generation only and do not mutate existing runs or imply approval.
 
 ### Public/scheduled publish is a separate future risk review
 
