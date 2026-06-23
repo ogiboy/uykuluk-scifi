@@ -16,6 +16,7 @@ import {
   PackageProviderPayload,
   parseProductionPackageProviderPayload,
 } from "./providerPayloads.js";
+import { productionPackageResponseFormat } from "./providerResponseFormats.js";
 import { createProductionPackageManifest } from "./productionPackageIntegrity.js";
 import { ProductionScene } from "./types.js";
 
@@ -63,6 +64,7 @@ export async function generateProductionPackage(runId: string): Promise<void> {
     const result = await provider.generateText({
       model: config.providers.llm.model,
       maxTokens: config.providers.llm.maxOutputTokens.productionPackage,
+      responseFormat: productionPackageResponseFormat,
       prompt: prompt.text,
     });
     const providerPayload = parseProductionPackageProviderPayload(result.text);

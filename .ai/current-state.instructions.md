@@ -46,6 +46,9 @@
   payloads fail-closed.
 - Ollama provider config supports `thinkingMode` (`default`, `think`, `no_think`) and stage-specific
   `maxOutputTokens` caps that are passed to Ollama as `num_predict`.
+- Script generation uses bounded hook/context/development/outro provider calls, writes
+  `script.sections.json` receipts, and assembles `script.md` only after all sections pass blocking
+  quality checks.
 - Evidence bundle generation with production-package integrity status and manifest digest.
 - Readiness diagnostics that strictly parse and revalidate persisted cost quotes, live hard budgets,
   complete production-package integrity, and exact paid-generation cost approval when required.
@@ -127,10 +130,11 @@ Corepack/PATH before treating failures as product failures.
 ## Known Limits
 
 - Ollama doctor checks server reachability and configured model inventory, but live local-model QA
-  is environment-dependent and not part of CI. Live qwen3:8b QA on 2026-06-23 verified that idea
-  generation can pass in `think` and `no_think`, but single-call script generation still tends to
-  end incomplete and is now blocked before `script.md` is written. Chunked/sectional script
-  generation is the next required local-provider improvement.
+  is environment-dependent and not part of CI. Live qwen3:8b QA on 2026-06-23 verified that `think`
+  and `no_think` can run idea approval, sectional script generation, section receipt persistence,
+  and script review without thinking traces or English production labels. Current qwen3:8b drafts
+  remain short and review warns on long-form, intro-hook, and outro quality; prompt tuning or
+  multi-pass expansion is still needed before treating local model scripts as production quality.
 - No paid provider adapter is implemented. Exact cost quote approval remains separate from spend
   authorization. The internal execution boundary is ready for a future approved adapter, but no SDK,
   credential, network integration, or CLI mutation command exposes it.

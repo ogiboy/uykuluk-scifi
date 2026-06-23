@@ -33,6 +33,7 @@ future generated release notes can be inserted predictably.
   package Markdown, approved-script provenance, and exact artifact digests.
 - Ollama `thinkingMode` config (`default`, `think`, `no_think`) plus stage output-token caps for
   ideas, scripts, and production packages.
+- Sectioned script-generation receipts for hook, context, development, and outro provider calls.
 
 ### Changed
 
@@ -44,6 +45,9 @@ future generated release notes can be inserted predictably.
   development files.
 - Script review now reports 20-minute target shortfalls and blocking findings for incomplete or
   non-Turkish provider output.
+- Script generation now uses bounded section-level provider calls instead of one large script call.
+- Ollama JSON response formatting now uses explicit schemas for idea, script-section, and
+  production-package payloads where structured local output is required.
 - Cost estimation no longer records an incurred cost event; quote approval is explicitly separate
   from future spend reservation and settlement.
 - Hard-budget checks now include active, settlement-pending, and uncertain reservations across runs
@@ -60,7 +64,7 @@ future generated release notes can be inserted predictably.
   thinking traces before writing reviewable artifacts.
 - Ollama-backed idea parsing now normalizes localized Turkish difficulty/risk labels while still
   rejecting English operator-facing idea payloads or rating-only `fit` fields.
-- Script generation now rejects incomplete or English-labeled provider output before writing
+- Script generation now rejects incomplete or English-labeled section output before writing
   `script.md`, and script approval rejects reviewed scripts with blocking findings.
 - Production build now emits a Node-runnable CLI without compiling tests into `dist/`, and build
   smoke verifies the compiled CLI can initialize a fresh project from another working directory.

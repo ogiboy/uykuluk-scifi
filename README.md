@@ -290,9 +290,10 @@ Useful Ollama settings:
 ```
 
 `thinkingMode` can be `default`, `think`, or `no_think`. Token caps are sent to Ollama as
-`num_predict` so local generation cannot run unbounded. If a local model returns malformed JSON,
-English operator-facing text, or an incomplete script, the stage fails closed before writing the
-next artifact.
+`num_predict` so local generation cannot run unbounded. Script generation splits the approved idea
+into bounded hook, context, development, and outro sections, then persists section receipts before
+the run can advance. If a local model returns malformed JSON, English operator-facing text, or an
+incomplete script section, the stage fails closed before writing the next artifact.
 
 Run `pnpm producer doctor` before starting production work. Mock mode passes without network access.
 Ollama mode checks `/api/tags` with a bounded timeout and blocks when the server is unavailable or
@@ -315,7 +316,7 @@ Each run can write:
 
 - `state.json`;
 - `ideas.json` and `ideas.md`;
-- `script.md` and `script.meta.json`;
+- `script.md`, `script.sections.json`, and `script.meta.json`;
 - `revisions/script/<revision_id>/before.md`, `after.md`, invalidated review snapshots, and
   `revision.json`;
 - `reviews/script_review.json` and `reviews/script_review.md`;

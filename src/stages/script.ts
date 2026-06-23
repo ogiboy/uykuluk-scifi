@@ -13,6 +13,15 @@ import { createLlmProvider } from "../providers/index.js";
 import { createPromptProvenance } from "../prompts/provenance.js";
 import { renderScriptPrompt } from "../prompts/templates.js";
 import { stripProviderThinking } from "./providerPayloads.js";
+import {
+  assembleScriptFromSections,
+  createScriptSectionReceipt,
+  parseScriptSectionProviderPayload,
+  renderScriptSectionPrompt,
+  scriptSectionResponseFormat,
+  scriptSectionPlans,
+  sectionTokenCap,
+} from "./scriptSections.js";
 import { ScriptMeta, VideoIdea } from "./types.js";
 
 /**
@@ -46,21 +55,25 @@ export async function generateScript(runId: string): Promise<ScriptMeta> {
     });
     const provider = createLlmProvider(config);
     const prompt = await renderScriptPrompt(JSON.stringify(idea));
-    const result = await provider.generateText({
-      model: config.providers.llm.model,
-      temperature: 0.6,
-      maxTokens: config.providers.llm.maxOutputTokens.script,
-      prompt: prompt.text,
-    });
-    const script = stripProviderThinking(result.text);
-    const blockerCodes = reviewScriptContent(script)
-      .filter((warning) => warning.severity === "blocker")
-      .map((warning) => warning.code);
-    if (blockerCodes.length > 0) {
-      throw new SafeExitError(
-        `Invalid script provider response: blocking findings: ${blockerCodes.join(", ")}.`,
-      );
+    const sectionCap = sectionTokenCap(config.providers.llm.maxOutputTokens.script);
+    const sectionOutputs = [];
+    const sectionReceipts = [];
+    for (const section of scriptSectionPlans) {
+      const sectionPrompt = renderScriptSectionPrompt(prompt.text, section);
+      const result = await provider.generateText({
+        model: config.providers.llm.model,
+        temperature: 0.6,
+        maxTokens: sectionCap,
+        responseFormat: scriptSectionResponseFormat,
+        prompt: sectionPrompt,
+      });
+      const text = stripProviderThinking(parseScriptSectionProviderPayload(result.text));
+      assertNoScriptBlockers(text);
+      sectionOutputs.push({ heading: section.heading, text });
+      sectionReceipts.push(createScriptSectionReceipt(section, sectionPrompt, text, result));
     }
+    const script = assembleScriptFromSections(idea.title, sectionOutputs);
+    assertNoScriptBlockers(script);
     const wordCount = script.trim().split(/\s+/).filter(Boolean).length;
     const meta: ScriptMeta = {
       estimatedDuration: `${Math.max(1, Math.round(wordCount / 135))}-${Math.max(2, Math.round(wordCount / 115))} dakika`,
@@ -68,25 +81,41 @@ export async function generateScript(runId: string): Promise<ScriptMeta> {
       tone: config.channel.defaultTone,
       claimsRequiringFactCheck: extractClaims(script),
       possibleVisualBeats: extractVisualBeats(script),
-      provider: result.provider,
-      model: result.model,
-      inputTokensApprox: result.inputTokensApprox,
-      outputTokensApprox: result.outputTokensApprox,
-      durationMs: result.durationMs,
-      prompt: createPromptProvenance(prompt.key, prompt.text, "script.md", prompt.source),
+      provider: sectionReceipts[0]?.provider ?? "unknown",
+      model: sectionReceipts[0]?.model ?? config.providers.llm.model,
+      inputTokensApprox: sumOptionalNumbers(
+        sectionReceipts.map((receipt) => receipt.inputTokensApprox),
+      ),
+      outputTokensApprox: sumOptionalNumbers(
+        sectionReceipts.map((receipt) => receipt.outputTokensApprox),
+      ),
+      durationMs: sectionReceipts.reduce((sum, receipt) => sum + receipt.durationMs, 0),
+      sectionCount: sectionReceipts.length,
+      prompt: createPromptProvenance(
+        prompt.key,
+        scriptSectionPlans
+          .map((section) => renderScriptSectionPrompt(prompt.text, section))
+          .join("\n\n---\n\n"),
+        "script.md",
+        prompt.source,
+      ),
     };
     await enforceBudget({
       run,
       config,
       stage: "script",
-      provider: result.provider,
-      model: result.model,
+      provider: meta.provider,
+      model: meta.model,
       estimatedUsd,
-      inputTokens: result.inputTokensApprox,
-      outputTokens: result.outputTokensApprox,
-      durationMs: result.durationMs,
+      inputTokens: meta.inputTokensApprox,
+      outputTokens: meta.outputTokensApprox,
+      durationMs: meta.durationMs,
     });
     run = await writeRunText(run, "script", "script.md", script);
+    run = await writeRunJson(run, "script", "script.sections.json", {
+      sectionCount: sectionReceipts.length,
+      sections: sectionReceipts,
+    });
     run = await writeRunJson(run, "script", "script.meta.json", meta);
     await setRunState(run, "SCRIPT_GENERATED", "script");
     return meta;
@@ -99,6 +128,23 @@ export async function generateScript(runId: string): Promise<ScriptMeta> {
     });
     throw error;
   }
+}
+
+function assertNoScriptBlockers(script: string): void {
+  const blockerCodes = reviewScriptContent(script)
+    .filter((warning) => warning.severity === "blocker")
+    .map((warning) => warning.code);
+  if (blockerCodes.length > 0) {
+    throw new SafeExitError(
+      `Invalid script provider response: blocking findings: ${blockerCodes.join(", ")}.`,
+    );
+  }
+}
+
+function sumOptionalNumbers(values: Array<number | undefined>): number | undefined {
+  return values.every((value): value is number => typeof value === "number")
+    ? values.reduce((sum, value) => sum + value, 0)
+    : undefined;
 }
 
 function extractClaims(script: string): string[] {

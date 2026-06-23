@@ -108,6 +108,7 @@ export class OllamaProvider implements LlmProvider {
       body: JSON.stringify({
         model,
         prompt,
+        format: input.responseFormat,
         system: input.system,
         options: {
           temperature: input.temperature,

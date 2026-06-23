@@ -81,6 +81,9 @@ function generateMockText(prompt: string): string {
       ],
     });
   }
+  if (prompt.includes("SCRIPT_SECTION_JSON")) {
+    return generateMockScriptSection(prompt);
+  }
   if (prompt.includes("SCRIPT_MARKDOWN")) {
     return [
       "# Uyuyan Bir Gezegenin Altindaki Okyanus",
@@ -114,4 +117,38 @@ function generateMockText(prompt: string): string {
     });
   }
   return "Mock provider output.";
+}
+
+function generateMockScriptSection(prompt: string): string {
+  const sectionId = prompt.match(/Section id: (\w+)/)?.[1];
+  if (sectionId === "hook") {
+    return sectionJson([
+      "Anlatıcı: Bazı gezegenler vardır; dışarıdan bakıldığında sadece sessizlik gibi görünür.",
+      "Görsel: Kalın buz kabuğu, uzak bir yıldızın soluk ışığını geri yansıtır.",
+      "Bu açılışta soru basittir: Sessizlik gerçekten boşluk mudur, yoksa dinlemeyi bilmediğimiz bir ritim mi saklar?",
+    ]);
+  }
+  if (sectionId === "context") {
+    return sectionJson([
+      "Anlatıcı: Bilim bize kesin hüküm değil, ölçülü olasılıklar verir.",
+      "Europa ve Enceladus gibi buzlu dünyalar, suyun ve gelgit ısınmasının beklenmedik yerlerde saklanabileceğini düşündürür.",
+      "Bu, yaşam kanıtı değildir; yalnızca doğru soruyu daha dikkatli sormak için bir nedendir.",
+    ]);
+  }
+  if (sectionId === "development") {
+    return sectionJson([
+      "Anlatıcı: Yalnız bir sonda, buzun altına gönderdiği düşük frekanslı yankılarda düzenli bir titreşim fark eder.",
+      "Görsel: Kamera çatlak buz çizgilerinden mavi karanlığa inerken, mineral bulutları ağır çekimde dağılır.",
+      "Ritim bir mesaj olmayabilir; jeolojik bir süreç, gelgit etkisi ya da cihaz hatası olabilir.",
+    ]);
+  }
+  return sectionJson([
+    "Anlatıcı: Belki orada canlı yoktur; belki yalnızca kimya, basınç ve zaman vardır.",
+    "Ama bazen bilimkurgunun en güzel yanı kesin cevap vermek değil, doğru soruyu sakin bir sesle korumaktır.",
+    "Bu yolculuk hoşunuza gittiyse, UykulukSciFi'de bir sonraki sessiz gezegende yeniden buluşalım.",
+  ]);
+}
+
+function sectionJson(paragraphs: string[]): string {
+  return JSON.stringify({ text: paragraphs.join("\n\n") });
 }

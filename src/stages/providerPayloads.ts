@@ -1,6 +1,9 @@
 import { z } from "zod";
 import { SafeExitError } from "../core/errors.js";
+import { parseProviderJson } from "./providerJson.js";
 import { VideoIdea } from "./types.js";
+
+export { stripProviderThinking } from "./providerJson.js";
 
 const videoIdeaLevelSchema = z.preprocess(normalizeIdeaLevel, z.enum(["low", "medium", "high"]));
 const durationTextSchema = z
@@ -149,28 +152,6 @@ export function parseProductionPackageProviderPayload(text: string): PackageProv
     throw invalidProviderPayload("production package", result.error);
   }
   return productionPackageRuntimePayloadSchema.parse(result.data);
-}
-
-function parseProviderJson(text: string, label: string): unknown {
-  const normalized = stripProviderThinking(text);
-  const jsonText = stripJsonFence(normalized);
-  try {
-    return JSON.parse(jsonText) as unknown;
-  } catch {
-    throw new SafeExitError(`Invalid ${label} provider response: expected JSON.`);
-  }
-}
-
-export function stripProviderThinking(text: string): string {
-  return text
-    .trim()
-    .replace(/^(?:<think>[\s\S]*?<\/think>\s*)+/i, "")
-    .trim();
-}
-
-function stripJsonFence(text: string): string {
-  const match = text.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);
-  return match ? match[1].trim() : text;
 }
 
 function invalidProviderPayload(label: string, error: z.ZodError): SafeExitError {

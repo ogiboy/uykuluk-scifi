@@ -82,6 +82,16 @@ ${JSON.stringify([validIdea])}
     expect(parseIdeasProviderPayload(text)).toEqual([validIdea]);
   });
 
+  it("extracts the first complete JSON payload from noisy local model prose", () => {
+    const text = `Elbette, aşağıda JSON var:
+
+${JSON.stringify({ ideas: [validIdea] })}
+
+Not: Bu açıklama ürün durumuna yazılmamalı.`;
+
+    expect(parseIdeasProviderPayload(text)).toEqual([validIdea]);
+  });
+
   it("rejects invalid idea levels instead of widening them to arbitrary strings", () => {
     expect(() =>
       parseIdeasProviderPayload(JSON.stringify([{ ...validIdea, riskLevel: "unknown" }])),

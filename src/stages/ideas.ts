@@ -9,6 +9,7 @@ import { createLlmProvider } from "../providers/index.js";
 import { createPromptProvenance } from "../prompts/provenance.js";
 import { renderIdeasPrompt } from "../prompts/templates.js";
 import { parseIdeasProviderPayload } from "./providerPayloads.js";
+import { ideasResponseFormat } from "./providerResponseFormats.js";
 import { VideoIdea } from "./types.js";
 
 /**
@@ -37,6 +38,7 @@ export async function runIdeas(): Promise<{ runId: string; ideas: VideoIdea[] }>
       model: config.providers.llm.model,
       temperature: 0.7,
       maxTokens: config.providers.llm.maxOutputTokens.ideas,
+      responseFormat: ideasResponseFormat,
       prompt: prompt.text,
     });
     const ideas = parseIdeasProviderPayload(result.text);

@@ -10,6 +10,7 @@ import { runIdeas } from "../src/stages/ideas";
 import { generateProductionPackage } from "../src/stages/productionPackage";
 import { reviewScript } from "../src/stages/reviewScript";
 import { generateScript } from "../src/stages/script";
+import { renderScriptSectionPrompt, scriptSectionPlans } from "../src/stages/scriptSections";
 import { useTempProject } from "./helpers";
 
 describe("runtime prompt defaults", () => {
@@ -35,12 +36,18 @@ describe("runtime prompt defaults", () => {
 
     await approveIdea(runId, ideas[0].id);
     const scriptMeta = await generateScript(runId);
+    const baseScriptPrompt = [
+      "SCRIPT_MARKDOWN",
+      scriptTemplate,
+      "## Approved Idea",
+      JSON.stringify(ideas[0]),
+    ].join("\n\n");
     expect(scriptMeta.prompt).toEqual({
       key: "script",
       hash: sha256(
-        ["SCRIPT_MARKDOWN", scriptTemplate, "## Approved Idea", JSON.stringify(ideas[0])].join(
-          "\n\n",
-        ),
+        scriptSectionPlans
+          .map((section) => renderScriptSectionPrompt(baseScriptPrompt, section))
+          .join("\n\n---\n\n"),
       ),
       artifact: "script.md",
       source: "prompts/defaults/scriptwriter-task.md",

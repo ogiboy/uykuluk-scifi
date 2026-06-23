@@ -94,4 +94,25 @@ describe("LLM providers", () => {
     };
     expect(body.options.num_predict).toBe(1234);
   });
+
+  it("passes structured response format through to Ollama", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ response: '{"text":"tamam"}', model: "qwen3:8b" }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    const provider = new OllamaProvider("http://localhost:11434/", "qwen3:8b");
+
+    await provider.generateText({
+      prompt: "JSON",
+      responseFormat: { type: "object", properties: { text: { type: "string" } } },
+    });
+
+    const body = JSON.parse(fetchMock.mock.calls[0]?.[1]?.body as string) as {
+      format?: unknown;
+    };
+    expect(body.format).toEqual({ type: "object", properties: { text: { type: "string" } } });
+  });
 });

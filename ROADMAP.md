@@ -202,8 +202,8 @@ Status: foundation in progress.
 - `producer doctor` provides local config, provider, asset, and publish-default diagnostics with
   durable ignored JSON/Markdown evidence.
 - Improve Ollama model availability checks.
-- Add chunked or section-by-section Ollama script generation so local models can complete long-form
-  Turkish scripts without truncation.
+- Section-by-section Ollama script generation is implemented; continue tuning section prompts or
+  multi-pass expansion for long-form Turkish script quality.
 - Record provider duration and token estimates consistently.
 - Keep provider failures explicit in readiness and evidence.
 - Do not introduce paid APIs until a separately approved adapter is designed to expose only the
