@@ -34,6 +34,8 @@ future generated release notes can be inserted predictably.
 - Ollama `thinkingMode` config (`default`, `think`, `no_think`) plus stage output-token caps for
   ideas, scripts, and production packages.
 - Sectioned script-generation receipts for hook, context, development, and outro provider calls.
+- Chunked script-section expansion receipts so local Ollama script drafts can be assembled from
+  smaller bounded JSON payloads.
 
 ### Changed
 
@@ -46,6 +48,8 @@ future generated release notes can be inserted predictably.
 - Script review now reports 20-minute target shortfalls and blocking findings for incomplete or
   non-Turkish provider output.
 - Script generation now uses bounded section-level provider calls instead of one large script call.
+- Script section generation now keeps the global 20-minute prompt target out of individual local
+  provider calls and expands each section through three smaller chunks.
 - Ollama JSON response formatting now uses explicit schemas for idea, script-section, and
   production-package payloads where structured local output is required.
 - Cost estimation no longer records an incurred cost event; quote approval is explicitly separate
@@ -83,6 +87,8 @@ future generated release notes can be inserted predictably.
 - Successful readiness diagnostics now record the final transitioned run state instead of the
   pre-transition state.
 - Content review now warns on excessive clickbait title framing.
+- Content review now detects intro hooks after Markdown title and section headings instead of only
+  scanning the first raw lines.
 - Asset readiness now inventories intro and outro inputs in addition to brand and overlay files.
 - Cost and reservation ledgers now reject malformed or foreign-run rows instead of accepting
   unvalidated JSON.

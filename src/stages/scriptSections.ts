@@ -7,11 +7,22 @@ import { sha256 } from "../utils/hash.js";
 const scriptSectionPayloadSchema = z.strictObject({
   text: z.string().min(1).max(750),
 });
+const scriptSectionExpansionPayloadSchema = z.strictObject({
+  text: z.string().min(1).max(1400),
+});
 
 export const scriptSectionResponseFormat = {
   type: "object",
   properties: {
     text: { type: "string", minLength: 1, maxLength: 750 },
+  },
+  required: ["text"],
+} as const satisfies Record<string, unknown>;
+
+export const scriptSectionExpansionResponseFormat = {
+  type: "object",
+  properties: {
+    text: { type: "string", minLength: 1, maxLength: 1400 },
   },
   required: ["text"],
 } as const satisfies Record<string, unknown>;
@@ -24,6 +35,8 @@ export type ScriptSectionPlan = {
 
 export type ScriptSectionReceipt = {
   id: ScriptSectionPlan["id"];
+  pass: "draft" | "expansion";
+  chunk?: number;
   heading: string;
   promptHash: string;
   contentHash: string;
@@ -58,10 +71,30 @@ export const scriptSectionPlans: ScriptSectionPlan[] = [
   },
 ];
 
+export type ScriptSectionExpansionChunk = {
+  index: 1 | 2 | 3;
+  focus: string;
+};
+
+export const scriptSectionExpansionChunks: ScriptSectionExpansionChunk[] = [
+  {
+    index: 1,
+    focus: "strong image, hook continuity, and scene-setting narration",
+  },
+  {
+    index: 2,
+    focus: "scientific framing, uncertainty, alternatives, and responsible speculation",
+  },
+  {
+    index: 3,
+    focus: "cinematic transition, emotional rhythm, and section-level closure",
+  },
+];
+
 export function renderScriptSectionPrompt(basePrompt: string, section: ScriptSectionPlan): string {
   return [
     "SCRIPT_SECTION_JSON",
-    basePrompt,
+    renderScopedScriptSectionContext(basePrompt),
     "## Section Contract",
     `Section id: ${section.id}`,
     `Section heading: ${section.heading}`,
@@ -77,18 +110,82 @@ export function renderScriptSectionPrompt(basePrompt: string, section: ScriptSec
   ].join("\n\n");
 }
 
+export function renderScriptSectionExpansionPrompt(
+  basePrompt: string,
+  section: ScriptSectionPlan,
+  draft: string,
+  chunk: ScriptSectionExpansionChunk = scriptSectionExpansionChunks[0],
+): string {
+  return [
+    "SCRIPT_SECTION_JSON",
+    renderScopedScriptSectionContext(basePrompt),
+    "## Section Expansion Contract",
+    `Section id: ${section.id}`,
+    `Section heading: ${section.heading}`,
+    `Section instruction: ${section.instruction}`,
+    `Expansion chunk: ${chunk.index}/${scriptSectionExpansionChunks.length}`,
+    `Chunk focus: ${chunk.focus}.`,
+    "Write only this chunk for this one section. Do not write the full script.",
+    "Target length: 110-150 Turkish words.",
+    "Hard limit: 1100 characters and 8 complete Turkish sentences.",
+    "Keep complete sentences, no repeated sentence loops.",
+    "Preserve useful details from the draft, but add richer narration, visual rhythm, and careful scientific framing.",
+    section.id === "hook" ? "Start with a strong Turkish hook question or image." : "",
+    section.id === "outro"
+      ? "End with a gentle UykulukSciFi call to action and a complete closing sentence."
+      : "",
+    'Return only JSON with this exact shape: {"text":"..."}',
+    "End the JSON object immediately after the final complete sentence.",
+    "## Draft",
+    draft,
+  ]
+    .filter(Boolean)
+    .join("\n\n");
+}
+
 export function sectionTokenCap(totalScriptCap: number): number {
   return Math.max(500, Math.ceil(totalScriptCap / scriptSectionPlans.length / 3));
 }
 
+export function sectionExpansionTokenCap(totalScriptCap: number): number {
+  return Math.max(
+    1000,
+    Math.ceil(totalScriptCap / scriptSectionPlans.length / scriptSectionExpansionChunks.length),
+  );
+}
+
+function renderScopedScriptSectionContext(basePrompt: string): string {
+  return [
+    "You are writing one bounded Turkish script section for UykulukSciFi.",
+    "Use a cinematic, calm, scientifically careful, accessible Turkish narration tone.",
+    "Treat scientific speculation responsibly and avoid unsupported certainty.",
+    "Use Turkish production labels only, such as `Anlatıcı:` and `Görsel:`.",
+    "Ignore full-script duration and 1600+ word requirements in the runtime prompt; this call writes only one bounded section.",
+    extractApprovedIdeaBlock(basePrompt),
+  ].join("\n\n");
+}
+
+function extractApprovedIdeaBlock(basePrompt: string): string {
+  const marker = "## Approved Idea";
+  const markerIndex = basePrompt.indexOf(marker);
+  if (markerIndex >= 0) {
+    return basePrompt.slice(markerIndex).trim();
+  }
+  return basePrompt.trim();
+}
+
 export function createScriptSectionReceipt(
   section: ScriptSectionPlan,
+  pass: ScriptSectionReceipt["pass"],
   prompt: string,
   text: string,
   result: GenerateTextResult,
+  chunk?: number,
 ): ScriptSectionReceipt {
   return {
     id: section.id,
+    pass,
+    chunk,
     heading: section.heading,
     promptHash: sha256(prompt),
     contentHash: sha256(text),
@@ -102,7 +199,15 @@ export function createScriptSectionReceipt(
 }
 
 export function parseScriptSectionProviderPayload(text: string): string {
-  const result = scriptSectionPayloadSchema.safeParse(parseProviderJson(text, "script section"));
+  return parseScriptSectionPayload(text, scriptSectionPayloadSchema);
+}
+
+export function parseScriptSectionExpansionProviderPayload(text: string): string {
+  return parseScriptSectionPayload(text, scriptSectionExpansionPayloadSchema);
+}
+
+function parseScriptSectionPayload(text: string, schema: z.ZodType<{ text: string }>): string {
+  const result = schema.safeParse(parseProviderJson(text, "script section"));
   if (!result.success) {
     const summary = result.error.issues
       .slice(0, 5)

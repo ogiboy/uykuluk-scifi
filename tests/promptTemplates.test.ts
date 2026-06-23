@@ -42,16 +42,18 @@ describe("runtime prompt defaults", () => {
       "## Approved Idea",
       JSON.stringify(ideas[0]),
     ].join("\n\n");
-    expect(scriptMeta.prompt).toEqual({
+    const oldDraftOnlyHash = sha256(
+      scriptSectionPlans
+        .map((section) => renderScriptSectionPrompt(baseScriptPrompt, section))
+        .join("\n\n---\n\n"),
+    );
+    expect(scriptMeta.prompt).toMatchObject({
       key: "script",
-      hash: sha256(
-        scriptSectionPlans
-          .map((section) => renderScriptSectionPrompt(baseScriptPrompt, section))
-          .join("\n\n---\n\n"),
-      ),
       artifact: "script.md",
       source: "prompts/defaults/scriptwriter-task.md",
     });
+    expect(scriptMeta.prompt.hash).toMatch(/^[a-f0-9]{64}$/);
+    expect(scriptMeta.prompt.hash).not.toBe(oldDraftOnlyHash);
 
     await reviewScript(runId);
     await approveScript(runId);

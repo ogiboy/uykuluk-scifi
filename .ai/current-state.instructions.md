@@ -47,8 +47,11 @@
 - Ollama provider config supports `thinkingMode` (`default`, `think`, `no_think`) and stage-specific
   `maxOutputTokens` caps that are passed to Ollama as `num_predict`.
 - Script generation uses bounded hook/context/development/outro provider calls, writes
-  `script.sections.json` receipts, and assembles `script.md` only after all sections pass blocking
-  quality checks.
+  `script.sections.json` draft and expansion-chunk receipts, and assembles `script.md` only after
+  all sections pass blocking quality checks.
+- Live local Ollama qwen3:8b smoke tests on 2026-06-23 verified safe idea generation, explicit idea
+  approval, chunked section script generation, receipt persistence, and script review in both
+  `no_think` and `think` modes without upload, render, or publish actions.
 - Evidence bundle generation with production-package integrity status and manifest digest.
 - Readiness diagnostics that strictly parse and revalidate persisted cost quotes, live hard budgets,
   complete production-package integrity, and exact paid-generation cost approval when required.
@@ -130,11 +133,11 @@ Corepack/PATH before treating failures as product failures.
 ## Known Limits
 
 - Ollama doctor checks server reachability and configured model inventory, but live local-model QA
-  is environment-dependent and not part of CI. Live qwen3:8b QA on 2026-06-23 verified that `think`
-  and `no_think` can run idea approval, sectional script generation, section receipt persistence,
-  and script review without thinking traces or English production labels. Current qwen3:8b drafts
-  remain short and review warns on long-form, intro-hook, and outro quality; prompt tuning or
-  multi-pass expansion is still needed before treating local model scripts as production quality.
+  is environment-dependent and not part of CI. Live qwen3:8b QA on 2026-06-23 verified that
+  `no_think` reached `SCRIPT_REVIEWED` with 966 words and `think` reached `SCRIPT_REVIEWED` with 715
+  words. Current qwen3:8b drafts remain short and may carry content-review warnings such as
+  long-form shortfall, fact-check needs, or weak intro hooks; further prompt tuning or a long-form
+  continuation pass is still needed before treating local model scripts as production quality.
 - No paid provider adapter is implemented. Exact cost quote approval remains separate from spend
   authorization. The internal execution boundary is ready for a future approved adapter, but no SDK,
   credential, network integration, or CLI mutation command exposes it.

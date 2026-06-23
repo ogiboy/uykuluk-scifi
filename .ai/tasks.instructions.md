@@ -23,6 +23,8 @@
   local at-most-once dispatch, bounded timeout, and fail-closed outcome classification.
 - Keep live Ollama generation fail-closed when local models return malformed JSON, English
   operator-facing text, or incomplete scripts.
+- Keep chunked Ollama script receipts complete enough to diagnose which draft or expansion chunk
+  failed.
 - Keep readiness diagnostics and evidence synchronized with persisted run state.
 - Keep all run-root filesystem access behind canonical bounded run-ID validation.
 - Keep run artifact reads, writes, and persisted lists behind canonical relative-path validation.
@@ -46,8 +48,8 @@
 - Define revision events for subtitles, scene prompts, popup cards, and YouTube metadata edits;
   script revision evidence is implemented.
 - Keep `producer doctor` config/provider/model/asset/publish diagnostics and evidence passing.
-- Tune sectional local Ollama script prompts or add multi-pass expansion so qwen3:8b drafts satisfy
-  long-form, intro-hook, and outro review expectations instead of only producing safe short drafts.
+- Add a bounded long-form continuation or quality-improvement pass so qwen3:8b drafts satisfy
+  long-form and hook quality expectations instead of only producing safe short reviewable drafts.
 - Add route security requirements before any web action routes exist.
 
 ## Later

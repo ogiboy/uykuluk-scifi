@@ -102,13 +102,7 @@ export function reviewScriptContent(script: string): ScriptReviewWarning[] {
       message: "Script may be missing an outro or call to action.",
     });
   }
-  if (
-    !script
-      .split("\n")
-      .slice(0, 4)
-      .join(" ")
-      .match(/\?|vardir|vardır|hayal|sessiz|uzak|bazi|bazı/i)
-  ) {
+  if (!introNarrationWindow(script).match(/\?|vardir|vardır|hayal|sessiz|uzak|bazi|bazı/i)) {
     warnings.push({
       code: "missing_intro_hook",
       severity: "warning",
@@ -130,6 +124,15 @@ export function reviewScriptContent(script: string): ScriptReviewWarning[] {
     });
   }
   return warnings;
+}
+
+function introNarrationWindow(script: string): string {
+  return script
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line && !line.startsWith("#"))
+    .slice(0, 4)
+    .join(" ");
 }
 
 function looksTruncated(script: string): boolean {
