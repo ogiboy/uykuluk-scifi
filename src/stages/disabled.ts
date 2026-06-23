@@ -5,20 +5,6 @@ import { SafeExitError } from "../core/errors.js";
 import { requireApproval } from "../safeguards/approvalGuard.js";
 import { runPrivateUploadPlaceholder, runPublishPlaceholder } from "../youtube/uploadDisabled.js";
 
-export async function voicePlaceholder(runId: string): Promise<never> {
-  const run = await loadRun(runId);
-  await appendLedgerEvent({
-    runId: run.runId,
-    type: "GUARD_BLOCKED",
-    stage: "voice",
-    message:
-      "TTS generation is disabled in the MVP until cost estimate, configuration, and approval are added.",
-  });
-  throw new SafeExitError(
-    "Voice/TTS is disabled in the MVP and requires explicit future approval controls.",
-  );
-}
-
 export async function renderPlaceholder(runId: string): Promise<never> {
   const run = await loadRun(runId);
   await requireApproval(run, "render", "render");

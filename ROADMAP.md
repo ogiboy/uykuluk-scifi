@@ -33,7 +33,8 @@ The current CLI/core already covers the safe production foundation:
   budget accounting;
 - provider failure diagnostics, Ollama receipts, prompt provenance, production-package integrity,
   and durable evidence;
-- disabled TTS, render, upload, and public/scheduled publish scaffolds;
+- disabled-by-default local TTS, plus disabled render, upload, and public/scheduled publish
+  scaffolds;
 - CI, CodeQL, Sonar, formatting, modularity, secret scan, usage smoke, and release hygiene gates.
 
 Ongoing work in this phase should improve operator clarity instead of adding more unused
@@ -69,14 +70,14 @@ Constraints:
 
 - render planning consumes existing production-package and asset contracts;
 - render planning does not create a second workflow engine;
-- no TTS, FFmpeg render, upload, paid provider, or public publish is introduced in this slice;
+- no FFmpeg render, upload, paid provider, or public publish is introduced in this slice;
 - evidence/readiness should surface render-plan presence and blockers only after the artifact
   contract exists.
 
 Next Real Production Loop slices:
 
-- local TTS adapter behind script approval and cost/readiness gates;
-- rendered audio artifact and duration metadata;
+- harden local TTS with real Piper voice QA and better operator guidance; current foundation writes
+  deterministic reference WAV metadata and can call a configured local Piper binary/model path;
 - FFmpeg draft render using committed backgrounds, subtitle panels, watermark, intro/outro frames,
   popup cards, and render manifest;
 - manual final review/approval before any private upload work.

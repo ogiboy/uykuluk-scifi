@@ -21,6 +21,10 @@ describe("release policy", () => {
         commit("c".repeat(40), "chore(release): v0.1.1"),
         commit("d".repeat(40), "Merge pull request #1", ["p1", "p2"]),
         commit(
+          "e".repeat(40),
+          "Merge cac2786e3d91f707d82c60de92bc114fcae92154 into 29aa2650a0319e0831f53197b2f5bfcc869566d1",
+        ),
+        commit(
           "ec58978101438e9c02b548d92ac4d1a3e7aceadf",
           "📝 Add docstrings to `fix/core-script-approval-integrity`",
         ),
@@ -31,7 +35,7 @@ describe("release policy", () => {
     expect(plan.bump).toBe("minor");
     expect(plan.nextVersion).toBe("0.2.0");
     expect(plan.invalidCommits).toEqual([]);
-    expect(plan.ignoredCommits).toHaveLength(3);
+    expect(plan.ignoredCommits).toHaveLength(4);
   });
 
   it("reports invalid release-range commit subjects", () => {

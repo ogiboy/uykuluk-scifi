@@ -13,6 +13,10 @@ type RenderPlanNextStep = {
   status?: string;
 } | null;
 
+type VoiceoverNextStep = {
+  status?: string;
+} | null;
+
 /** Returns the next safe operator action represented by an evidence snapshot. */
 export function evidenceNextCommand(
   state: string,
@@ -20,6 +24,8 @@ export function evidenceNextCommand(
   hasUnresolvedCostReservation: boolean,
   scriptReview: ScriptReviewNextStep = {},
   renderPlan: RenderPlanNextStep = null,
+  voiceoverAudio: VoiceoverNextStep = null,
+  ttsEnabled = false,
 ): string {
   if (hasUnresolvedCostReservation) {
     return "Internal cost reconciliation is required; no operator CLI is available.";
@@ -49,7 +55,10 @@ export function evidenceNextCommand(
         ? "pnpm producer approve cost --run <run_id>"
         : "pnpm producer readiness --run <run_id>",
     PAID_GENERATION_COST_APPROVED: "pnpm producer readiness --run <run_id>",
-    READY_FOR_MANUAL_PRODUCTION: "Manual production review. Render/upload remain approval-gated.",
+    READY_FOR_MANUAL_PRODUCTION:
+      ttsEnabled && voiceoverAudio?.status !== "pass"
+        ? "pnpm producer voice --run <run_id>"
+        : "Manual production review. Render/upload remain approval-gated.",
   };
   return commands[state] ?? "Review state and ledger before continuing.";
 }

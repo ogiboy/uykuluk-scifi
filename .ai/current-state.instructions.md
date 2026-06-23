@@ -45,10 +45,15 @@
   persisted.
 - Render Plan + Contact Sheet MVP that consumes the verified production-package manifest and tracked
   assets, then writes `production/render_plan.json`, `production/storyboard_contact_sheet.md`, and
-  `production/asset_provenance.json` without TTS, FFmpeg render, upload, paid provider, or public
-  publish execution.
+  `production/asset_provenance.json` without FFmpeg render, upload, paid provider, or public publish
+  execution.
 - Evidence and readiness now surface render-plan presence; missing render plans warn, while partial
   or malformed render-plan artifacts block readiness.
+- Disabled-by-default local voiceover generation. `producer voice` requires local TTS config,
+  `READY_FOR_MANUAL_PRODUCTION`, explicit script approval, a verified production package, and valid
+  render-plan evidence before it writes `production/audio/voiceover.wav` and
+  `production/audio/voiceover.meta.json`. `deterministic-local` is a timing/reference adapter;
+  `local-piper` shells out to a configured local Piper binary and ignored model path.
 - Provider-backed idea and production-package stages schema-validate and normalize common Ollama
   JSON variants before artifact writes, while rejecting malformed or English operator-facing
   payloads fail-closed.
@@ -70,7 +75,7 @@
 - Readiness diagnostics that strictly parse and revalidate persisted cost quotes, live hard budgets,
   complete production-package integrity, and exact paid-generation cost approval when required.
 - Final readiness diagnostics agree with the post-transition run state.
-- Disabled voice, render, upload, and publish placeholders.
+- Disabled render, upload, and publish placeholders.
 - Basic Next.js Producer Studio shell under `apps/studio`.
 - Visual asset pack imported under `assets/`.
 - Clean-copy usage smoke script.
@@ -176,7 +181,10 @@ Corepack/PATH before treating failures as product failures.
 - Revision contracts for subtitles, scenes, popup cards, and YouTube metadata are not implemented.
 - Render planning does not render media, approve render execution, or reserve spend. It is a local
   review/planning artifact only.
-- TTS, render, upload, and publish are intentionally disabled scaffolds.
+- Local TTS currently provides a deterministic timing/reference WAV and an optional configured Piper
+  shell-out. It does not download or commit voice models, approve render execution, upload, or
+  publish. Real Piper voice quality still needs local QA.
+- Render, upload, and publish are intentionally disabled scaffolds.
 - Manual analytics import/reporting is not implemented. Future analytics should start from
   operator-provided CSV/JSON before any YouTube Analytics API integration.
 - Run-path containment blocks pre-existing symbolic links. Hostile concurrent path replacement

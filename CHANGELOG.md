@@ -17,6 +17,10 @@ future generated release notes can be inserted predictably.
   changelog generation.
 - `producer render-plan` command that writes a deterministic render plan, storyboard contact sheet,
   and asset provenance from a verified production package and tracked visual assets.
+- Disabled-by-default `producer voice` local TTS foundation that writes voiceover WAV/audio metadata
+  after readiness, script approval, production-package integrity, and render-plan evidence pass.
+- Optional `local-piper` TTS adapter configuration for a local Piper binary and ignored voice model
+  paths, alongside a deterministic local reference adapter for CI-safe timing artifacts.
 - Basic type-safe `next-intl` foundation for English and Turkish Studio locales.
 - Unit and browser coverage for locale normalization and cookie-based document language.
 - Typed runtime loading for tracked idea, scriptwriter, and production-package prompt defaults.
@@ -70,10 +74,14 @@ future generated release notes can be inserted predictably.
   `z.iso.datetime`, and `z.int`) with regression coverage preventing deprecated Zod 3 patterns.
 - Evidence and readiness now surface render-plan availability, warning when missing and blocking
   when partial or malformed render-plan artifacts exist.
+- Evidence and readiness now surface voiceover audio availability, warning when absent and blocking
+  when partial, stale, or malformed voiceover artifacts exist.
 
 ### Fixed
 
 - Release commit checks now scan the actual release range instead of an empty range.
+- Release commit checks now ignore GitHub pull-request synthetic merge subjects even when checkout
+  history hides parent metadata.
 - Local AgentDB/RuVector database files are no longer tracked as repository artifacts.
 - Ollama-backed idea and production-package stages now schema-validate provider JSON, accept common
   root-array and snake_case variants, assign deterministic local idea ids, and strip leading

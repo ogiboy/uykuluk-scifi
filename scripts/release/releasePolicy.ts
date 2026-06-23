@@ -103,7 +103,7 @@ export function isLegacyAllowed(commit: GitCommit): boolean {
 }
 
 export function isMergeCommit(commit: GitCommit): boolean {
-  return commit.parents.length > 1;
+  return commit.parents.length > 1 || /^Merge [0-9a-f]{40} into [0-9a-f]{40}$/.test(commit.subject);
 }
 
 export function buildReleasePlan(input: BuildReleasePlanInput): ReleasePlan {

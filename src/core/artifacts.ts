@@ -1,7 +1,7 @@
 import { appendLedgerEvent } from "./ledger.js";
 import { RunRecord } from "./state.js";
 import { writeJsonFile } from "../utils/json.js";
-import { writeTextFile } from "../utils/fs.js";
+import { writeBinaryFile, writeTextFile } from "../utils/fs.js";
 import { artifactPath } from "./artifactPaths.js";
 
 export {
@@ -46,6 +46,32 @@ export async function writeRunText(
     artifactPath(run.runId, relativePath),
     value.endsWith("\n") ? value : `${value}\n`,
   );
+  await appendLedgerEvent({
+    runId: run.runId,
+    type: "ARTIFACT_WRITTEN",
+    stage,
+    message: `Wrote ${relativePath}.`,
+    data: { path: relativePath },
+  });
+  return addArtifact(run, relativePath);
+}
+
+export async function writeRunBinary(
+  run: RunRecord,
+  stage: string,
+  relativePath: string,
+  value: Uint8Array,
+): Promise<RunRecord> {
+  await writeBinaryFile(artifactPath(run.runId, relativePath), value);
+  return recordRunArtifact(run, stage, relativePath);
+}
+
+export async function recordRunArtifact(
+  run: RunRecord,
+  stage: string,
+  relativePath: string,
+): Promise<RunRecord> {
+  artifactPath(run.runId, relativePath);
   await appendLedgerEvent({
     runId: run.runId,
     type: "ARTIFACT_WRITTEN",

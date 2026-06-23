@@ -27,6 +27,7 @@ export const defaultConfig: ProducerConfig = {
     tts: {
       enabled: false,
       mode: "local-piper",
+      piperBinary: "piper",
     },
     imageGeneration: {
       enabled: false,

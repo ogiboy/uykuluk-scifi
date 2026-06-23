@@ -38,9 +38,9 @@ is a channel-specific production loop for regularly producing original, scientif
 visually consistent UykulukSciFi drafts.
 
 Near-term value is reliable draft production first: turn approved ideas into reviewable script,
-metadata, subtitle, scene, and evidence packages that can become weekly videos. TTS, render, private
-upload, analytics feedback, and public/scheduled publish remain separate future phases with their
-own approval, cost, readiness, and evidence boundaries.
+metadata, subtitle, scene, render-plan, evidence, and local voiceover packages that can become
+weekly videos. Render, private upload, analytics feedback, and public/scheduled publish remain
+separate future phases with their own approval, cost, readiness, and evidence boundaries.
 
 ## Primary Journey
 
@@ -54,7 +54,8 @@ doctor
   -> package
   -> render-plan
   -> estimate / evidence / readiness
-  -> future local TTS / FFmpeg draft render
+  -> optional local voiceover
+  -> future FFmpeg draft render
 ```
 
 Every expensive, irreversible, or publishing-adjacent step stays blocked until the matching
@@ -78,9 +79,11 @@ agent-tracking state only; runtime code must not require it.
   hard-budget revalidation, adapter-bound local at-most-once execution claims, fail-closed
   timeout/unknown outcomes, cost ledger, content/clickbait review, full asset readiness, and
   evidence bundles.
-- Disabled voice, render, private upload, and public/scheduled publish placeholders.
 - Render Plan + Contact Sheet MVP that maps generated scenes to tracked visual assets and records
   per-run asset provenance.
+- Disabled-by-default local voiceover generation with deterministic reference WAV output and an
+  optional Piper binary/model-path adapter.
+- Disabled render, private upload, and public/scheduled publish placeholders.
 - UykulukSciFi visual assets under `assets/`.
 - `.ai/` operating contract for agents, workflows, design, QA, security, and roadmap state.
 - Project-local capability routing so technical, product, design, marketing, data, security, QA, and
@@ -148,7 +151,9 @@ agent-tracking state only; runtime code must not require it.
 - Reservation caps and actual charges use integer USD micros. Settlement is journaled before the
   linked cost event so retries can recover without recording the same charge twice.
 - Successful readiness diagnostics and evidence reflect the final transitioned run state.
-- TTS, render, upload, and publish are intentionally blocked scaffolds.
+- TTS is disabled by default and only runs after readiness with explicit local configuration, script
+  approval, production-package integrity, and render-plan evidence. Render, upload, and publish
+  remain intentionally blocked scaffolds.
 - Upload and public/scheduled publish require future explicit config and separate approval gates.
 - Studio must call typed local service contracts; it must not duplicate workflow state.
 
@@ -187,6 +192,7 @@ pnpm producer estimate --run <run_id>
 pnpm producer approve cost --run <run_id> # only when the quote requires it
 pnpm producer evidence --run <run_id>
 pnpm producer readiness --run <run_id>
+pnpm producer voice --run <run_id> # optional, only after local TTS is explicitly enabled
 ```
 
 Inspection:
@@ -204,7 +210,6 @@ event under `revisions/script/<revision_id>/`.
 Blocked future actions:
 
 ```bash
-pnpm producer voice --run <run_id>
 pnpm producer render --run <run_id>
 pnpm producer upload private --run <run_id>
 pnpm producer publish schedule --run <run_id>
@@ -327,6 +332,24 @@ Useful Ollama settings:
 }
 ```
 
+Useful local TTS settings:
+
+```json
+{
+  "providers": {
+    "tts": {
+      "enabled": true,
+      "mode": "deterministic-local"
+    }
+  }
+}
+```
+
+`deterministic-local` writes a reference WAV for timing and pipeline validation; it is not a
+production-quality voice. `local-piper` requires a local `piper` binary and ignored model files
+configured with `piperModelPath` and, when needed, `piperConfigPath`. Do not commit downloaded voice
+models or generated audio.
+
 `thinkingMode` can be `default`, `think`, or `no_think`. Token caps are sent to Ollama as
 `num_predict` so local generation cannot run unbounded. Script generation splits the approved idea
 into bounded hook, context, development, and outro sections. Each section is drafted once and then
@@ -365,6 +388,8 @@ Each run can write:
   `production/production_package.meta.json`;
 - `production/render_plan.json`, `production/storyboard_contact_sheet.md`, and
   `production/asset_provenance.json`;
+- `production/audio/voiceover.wav` and `production/audio/voiceover.meta.json` when local TTS is
+  explicitly enabled and run after readiness;
 - `costs/estimate.json` and `costs/estimate.md`;
 - `costs/ledger.jsonl`;
 - `costs/reservations.jsonl`;

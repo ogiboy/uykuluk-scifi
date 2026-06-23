@@ -49,6 +49,9 @@
 
 - Harden the Render Plan + Contact Sheet MVP with operator review refinements only where real use
   exposes gaps; do not turn it into render execution.
+- Harden local TTS with real Piper model QA and operator guidance. Keep models and generated audio
+  ignored; the current implemented foundation is deterministic reference WAV plus optional
+  configured `local-piper` shell-out.
 - Add a bounded long-form continuation or quality-improvement pass so qwen3:8b drafts satisfy
   long-form and hook quality expectations instead of only producing safe short reviewable drafts.
 - Prefer continuation/retry designs over simply raising local section chunk caps; live local QA
@@ -69,8 +72,6 @@
 ## Later
 
 - Repeat live Ollama generation QA after provider, prompt, or model-setting changes.
-- Local TTS behind script approval and cost/readiness gates, consuming the render-plan artifacts
-  without enabling paid providers.
 - FFmpeg render behind render approval.
 - Manual analytics import/reporting from operator-provided CSV/JSON.
 - Private YouTube upload behind upload approval and explicit config.

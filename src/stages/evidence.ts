@@ -15,9 +15,11 @@ import { readJsonFile } from "../utils/json.js";
 import { bulletList } from "../utils/markdown.js";
 import { nowIso } from "../utils/time.js";
 import { evidenceNextCommand } from "./evidenceNextCommand.js";
+import { evidenceBlockedActions } from "./evidenceBlockedActions.js";
 import { readProductionPackageIntegrityEvidence } from "./productionPackageIntegrity.js";
 import { readRenderPlanEvidence } from "./renderPlan.js";
 import { readScriptReviewEvidence } from "./scriptReviewEvidence.js";
+import { readVoiceoverAudioEvidence } from "./voiceoverEvidence.js";
 
 /**
  * Generates and persists an evidence bundle for a run.
@@ -37,6 +39,7 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
   const costQuote = await readCostQuoteEvidence(run);
   const productionPackageIntegrity = await readProductionPackageIntegrityEvidence(run);
   const renderPlan = await readRenderPlanEvidence(run);
+  const voiceoverAudio = await readVoiceoverAudioEvidence(run);
   const scriptReview = await readScriptReviewEvidence(run);
   const promptProvenance = await readPromptProvenance(run.runId);
   const unresolvedCostReservations = costReservations.filter(isActiveCostReservation);
@@ -48,27 +51,12 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
           )
         ).ideas.find((idea) => idea.id === run.approvedIdeaId) ?? null)
       : null;
-  const blockedActions = [
-    renderPlan.status === "missing"
-      ? "Render plan not generated; run pnpm producer render-plan --run <run_id> before TTS/render work."
-      : undefined,
-    renderPlan.status === "block"
-      ? `Render plan evidence is blocked: ${renderPlan.message}`
-      : undefined,
-    !config.providers.tts.enabled ? "TTS disabled until configured and approved." : undefined,
-    !config.providers.imageGeneration.enabled
-      ? "Image/video generation disabled until configured and approved."
-      : undefined,
-    !config.providers.youtube.allowPrivateUpload
-      ? "Private YouTube upload disabled by default."
-      : undefined,
-    !config.providers.youtube.allowPublicPublish
-      ? "Public/scheduled publish disabled by default."
-      : undefined,
-    unresolvedCostReservations.length > 0
-      ? `${unresolvedCostReservations.length} cost reservation outcome(s) remain active or uncertain; internal reconciliation is required.`
-      : undefined,
-  ].filter((item): item is string => Boolean(item));
+  const blockedActions = evidenceBlockedActions(
+    config,
+    renderPlan,
+    voiceoverAudio,
+    unresolvedCostReservations.length,
+  );
   const bundle = {
     runId: run.runId,
     generatedAt: nowIso(),
@@ -82,6 +70,7 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
     costQuote,
     productionPackageIntegrity,
     renderPlan,
+    voiceoverAudio,
     costEstimatePath: (await pathExists(artifactPath(run.runId, "costs/estimate.json")))
       ? "costs/estimate.json"
       : null,
@@ -98,6 +87,8 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
       unresolvedCostReservations.length > 0,
       scriptReview,
       renderPlan,
+      voiceoverAudio,
+      config.providers.tts.enabled,
     ),
     ledgerEventCount: ledger.length,
   };
@@ -120,6 +111,7 @@ function renderEvidenceMarkdown(bundle: unknown): string {
     costQuote: Awaited<ReturnType<typeof readCostQuoteEvidence>>;
     productionPackageIntegrity: Awaited<ReturnType<typeof readProductionPackageIntegrityEvidence>>;
     renderPlan: Awaited<ReturnType<typeof readRenderPlanEvidence>>;
+    voiceoverAudio: Awaited<ReturnType<typeof readVoiceoverAudioEvidence>>;
     generatedArtifacts: string[];
     warnings: string[];
     promptProvenance: PromptProvenance[];
@@ -160,6 +152,10 @@ function renderEvidenceMarkdown(bundle: unknown): string {
     "## Render Plan",
     "",
     JSON.stringify(data.renderPlan),
+    "",
+    "## Voiceover Audio",
+    "",
+    JSON.stringify(data.voiceoverAudio),
     "",
     "## Warnings",
     "",

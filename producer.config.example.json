@@ -18,7 +18,10 @@
     },
     "tts": {
       "enabled": false,
-      "mode": "local-piper"
+      "mode": "local-piper",
+      "piperBinary": "piper",
+      "piperModelPath": "models/piper/tr_TR/model.onnx",
+      "piperConfigPath": "models/piper/tr_TR/model.onnx.json"
     },
     "imageGeneration": {
       "enabled": false,

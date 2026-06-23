@@ -25,9 +25,24 @@ Constraints:
 
 - Implemented artifacts are `production/render_plan.json`, `production/storyboard_contact_sheet.md`,
   and `production/asset_provenance.json`.
-- The slice consumes approved production-package and asset contracts; it does not implement TTS,
-  FFmpeg render, upload, public publish, or paid providers.
+- The slice consumes approved production-package and asset contracts; it does not implement FFmpeg
+  render, upload, public publish, or paid providers.
 - Artifact presence does not imply render approval.
+
+### Local TTS starts as disabled-by-default voiceover artifact generation
+
+Reason: The product needs reviewable local audio before FFmpeg render, but voice generation must not
+become an implicit render, upload, publish, or paid-provider path.
+
+Constraints:
+
+- `producer voice` requires explicit local TTS config, `READY_FOR_MANUAL_PRODUCTION`, script
+  approval, production-package integrity, and valid render-plan evidence.
+- `deterministic-local` is a reference adapter for timing and pipeline tests, not production voice
+  quality.
+- `local-piper` may call a configured local Piper binary and model path, but voice models and
+  generated audio are local/ignored artifacts, not committed repository state.
+- Voiceover artifact presence does not imply render approval.
 
 ### Manual analytics feedback precedes YouTube Analytics API
 

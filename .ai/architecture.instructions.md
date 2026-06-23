@@ -39,7 +39,9 @@ The next product phase should extend the existing CLI/core flow toward a local v
   scene/subtitle metadata, and tracked asset inventory;
 - storyboard/contact-sheet output is an operator review artifact, not an approval by itself;
 - asset provenance identifies the exact committed assets selected for a future render;
-- local TTS should run only after script approval and the relevant cost/readiness gates;
+- local TTS is owned by the workflow stages and runs only after readiness, script approval,
+  production-package integrity, and render-plan evidence. Deterministic reference audio is for
+  pipeline timing; Piper remains an optional local binary/model-path adapter with ignored models;
 - FFmpeg render should run only after render planning, render approval, and local artifact checks;
 - analytics import/reporting should consume operator-provided files and link results back to runs.
 

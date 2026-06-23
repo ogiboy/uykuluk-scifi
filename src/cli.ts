@@ -10,7 +10,6 @@ import {
   publishSchedulePlaceholder,
   renderPlaceholder,
   uploadPrivatePlaceholder,
-  voicePlaceholder,
 } from "./stages/disabled.js";
 import { generateEvidenceBundle } from "./stages/evidence.js";
 import { estimateCost } from "./stages/estimate.js";
@@ -20,6 +19,7 @@ import { runReadiness } from "./stages/readiness.js";
 import { generateRenderPlan } from "./stages/renderPlan.js";
 import { reviewScript } from "./stages/reviewScript.js";
 import { generateScript } from "./stages/script.js";
+import { generateVoiceoverAudio } from "./stages/voice.js";
 
 const program = new Command();
 
@@ -179,10 +179,11 @@ program
 program
   .command("voice")
   .requiredOption("--run <run_id>")
-  .description("Disabled MVP TTS placeholder.")
+  .description("Generate local voiceover audio after readiness and render planning.")
   .action(
     wrap(async (options: { run: string }) => {
-      await voicePlaceholder(options.run);
+      const meta = await generateVoiceoverAudio(options.run);
+      console.log(`Voiceover generated. Duration: ${Math.round(meta.output.durationSeconds)}s`);
     }),
   );
 

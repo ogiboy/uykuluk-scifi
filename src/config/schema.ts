@@ -26,7 +26,10 @@ export const producerConfigSchema = z.object({
     }),
     tts: z.object({
       enabled: z.boolean(),
-      mode: z.string(),
+      mode: z.enum(["deterministic-local", "local-piper"]),
+      piperBinary: z.string().min(1).optional(),
+      piperModelPath: z.string().min(1).optional(),
+      piperConfigPath: z.string().min(1).optional(),
     }),
     imageGeneration: z.object({
       enabled: z.boolean(),
