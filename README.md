@@ -11,10 +11,19 @@
 Production desk for Turkish sci-fi YouTube episodes.
 ```
 
+[![SonarQube Cloud](https://sonarcloud.io/images/project_badges/sonarcloud-light.svg)](https://sonarcloud.io/summary/new_code?id=ogiboy_uykuluk-scifi)
+[![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=ogiboy_uykuluk-scifi)](https://sonarcloud.io/summary/new_code?id=ogiboy_uykuluk-scifi)
 [![CI](https://github.com/ogiboy/uykuluk-scifi/actions/workflows/ci.yml/badge.svg)](https://github.com/ogiboy/uykuluk-scifi/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/ogiboy/uykuluk-scifi/actions/workflows/codeql.yml/badge.svg)](https://github.com/ogiboy/uykuluk-scifi/actions/workflows/codeql.yml)
 [![License: LGPL-3.0](https://img.shields.io/badge/license-LGPL--3.0-blue.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D22-3c873a.svg)](package.json)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=ogiboy_uykuluk-scifi&metric=coverage)](https://sonarcloud.io/summary/new_code?id=ogiboy_uykuluk-scifi)
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=ogiboy_uykuluk-scifi&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=ogiboy_uykuluk-scifi)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=ogiboy_uykuluk-scifi&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=ogiboy_uykuluk-scifi)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=ogiboy_uykuluk-scifi&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=ogiboy_uykuluk-scifi)
+[![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=ogiboy_uykuluk-scifi&metric=sqale_index)](https://sonarcloud.io/summary/new_code?id=ogiboy_uykuluk-scifi)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=ogiboy_uykuluk-scifi&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=ogiboy_uykuluk-scifi)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ogiboy_uykuluk-scifi&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=ogiboy_uykuluk-scifi)
 
 UykulukSciFi Producer is a local production system for building reviewable YouTube video drafts. The
 current product has a TypeScript CLI as the source of truth and a basic Next.js Producer Studio
@@ -32,8 +41,11 @@ to YouTube in the MVP.
 - Project-level `producer doctor` diagnostics for config, mock/Ollama readiness, assets, and publish
   defaults.
 - Strict run state machine and explicit approval ledger.
-- Cost ledger, budget guard, content/clickbait review, full asset readiness, and evidence bundle
-  generation.
+- Versioned future paid-generation cost quote bundles (JSON plus operator Markdown) with exact
+  digest approval, atomic one-time cost reservations, recoverable settlement/reconciliation, live
+  hard-budget revalidation, adapter-bound local at-most-once execution claims, fail-closed
+  timeout/unknown outcomes, cost ledger, content/clickbait review, full asset readiness, and
+  evidence bundles.
 - Disabled voice, render, private upload, and public/scheduled publish placeholders.
 - UykulukSciFi visual assets under `assets/`.
 - `.ai/` operating contract for agents, workflows, design, QA, security, and roadmap state.
@@ -80,20 +92,34 @@ to YouTube in the MVP.
 - Every run persists state, ledger events, costs, warnings, artifacts, and evidence under
   `runs/<run_id>/`.
 - Persisted run records are schema-validated and JSON artifacts use atomic file replacement.
+- Run identifiers are validated as one bounded safe path segment before state, ledger, artifact, or
+  cost paths are constructed; persisted state must carry the same run id as its directory.
+- Run artifact names are validated as bounded canonical relative paths before reads, writes, ledger
+  events, or persistence; absolute paths, dot segments, backslashes, and malformed segments block.
 - Generated ideas, scripts, and production packages render their tracked `.ai/prompts/` defaults at
   runtime and record prompt key, source path, and hash provenance.
 - Idea, script, and production-package generation re-check existing per-video, daily, and weekly
   budgets, using the stage pricing estimate, before calling a provider or writing generated
   artifacts.
-- Readiness reads the persisted cost estimate decision and blocks if the next step is not allowed.
+- Readiness strictly parses the persisted cost quote, rechecks the production package, relevant
+  config, pricing, and live hard budgets, and requires approval of the exact quote digest when the
+  configured threshold is exceeded.
+- The core can atomically reserve one approved nonzero quote line after readiness. Active,
+  settlement-pending, and uncertain reservations consume per-video, daily, and weekly budget until
+  they are settled or explicitly reconciled.
+- Reservation caps and actual charges use integer USD micros. Settlement is journaled before the
+  linked cost event so retries can recover without recording the same charge twice.
 - Successful readiness diagnostics and evidence reflect the final transitioned run state.
 - TTS, render, upload, and publish are intentionally blocked scaffolds.
 - Upload and public/scheduled publish require future explicit config and separate approval gates.
 - Studio must call typed local service contracts; it must not duplicate workflow state.
 
-Paid generation providers are not implemented. If a future stage estimate exceeds the configured
-approval threshold, the current core fails closed because no paid-generation approval command exists
-yet.
+Paid generation providers are not implemented. `producer approve cost` approves one exact future
+paid-production quote; it does not authorize or execute spending. The internal reservation and
+execution services provide atomic one-time quote-line consumption, persist callback intent before
+execution, and keep active or uncertain commitments inside hard budgets until settlement or explicit
+reconciliation. Future adapters must expose only this boundary; direct budget-only or raw provider
+execution is not allowed. No paid adapter, SDK, credential, or operator command is enabled.
 
 ## Install
 
@@ -118,6 +144,7 @@ pnpm producer review script --run <run_id>
 pnpm producer approve script --run <run_id>
 pnpm producer package --run <run_id>
 pnpm producer estimate --run <run_id>
+pnpm producer approve cost --run <run_id> # only when the quote requires it
 pnpm producer evidence --run <run_id>
 pnpm producer readiness --run <run_id>
 ```
@@ -266,6 +293,7 @@ Each run can write:
   `production/production_package.meta.json`;
 - `costs/estimate.json` and `costs/estimate.md`;
 - `costs/ledger.jsonl`;
+- `costs/reservations.jsonl`;
 - `evidence_bundle.json` and `evidence_bundle.md`;
 - `diagnostics/readiness.json` and `diagnostics/readiness.md`;
 - `ledger.jsonl`.

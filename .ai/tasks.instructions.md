@@ -13,13 +13,29 @@
 - Keep script review, approval, and packaging bound to one exact content digest.
 - Keep script revision snapshots, attribution, state rollback, and approval invalidation passing.
 - Keep provider-backed generation behind per-video, daily, and weekly budget preflight.
+- Keep future paid-generation quotes bound to exact package/config/pricing digests and require an
+  exact matching approval above the configured threshold.
+- Keep production-package generation, cost estimation, readiness, and evidence bound to one strict
+  manifest covering every derived package artifact and the approved script digest.
+- Keep atomic reservation, one-time quote-line consumption, active-reservation budget accounting,
+  recoverable settlement, and explicit reconciliation passing.
+- Keep future nonzero provider callbacks behind adapter identity matching, durable execution claim,
+  local at-most-once dispatch, bounded timeout, and fail-closed outcome classification.
 - Keep readiness diagnostics and evidence synchronized with persisted run state.
+- Keep all run-root filesystem access behind canonical bounded run-ID validation.
+- Keep run artifact reads, writes, and persisted lists behind canonical relative-path validation.
+- Keep state, ledger, cost, reservation, lock, and artifact access behind canonical
+  existing-component symlink containment.
+- Keep final protected files fail-closed when their filesystem link count indicates another pathname
+  shares the same inode.
 - Keep the capability inventory current when plugin/MCP versions or project phases materially
   change.
 - Keep long-running goals resumable from Git state and `.ai/checkpoints/`, not chat history alone.
 
 ## Next
 
+- Keep the internal reserved-provider execution contract ready for a separately approved real
+  adapter without adding paid SDKs, credentials, or operator execution commands.
 - Add read-only run index and run detail routes to `apps/studio`.
 - Define typed read/write service contracts that both CLI and web can use.
 - Define local prompt override storage and revision events before adding a prompt editor; typed

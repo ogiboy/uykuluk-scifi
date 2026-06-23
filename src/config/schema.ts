@@ -9,7 +9,7 @@ export const producerConfigSchema = z.object({
   providers: z.object({
     llm: z.object({
       mode: z.enum(["mock", "ollama"]).default("mock"),
-      ollamaBaseUrl: z.string().url(),
+      ollamaBaseUrl: z.url(),
       model: z.string(),
     }),
     tts: z.object({

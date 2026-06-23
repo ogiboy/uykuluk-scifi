@@ -1,12 +1,11 @@
 #!/usr/bin/env node
 import { Command } from "commander";
+import { registerApprovalCommands } from "./cli/approvalCommands";
 import { registerRevisionCommands } from "./cli/revisionCommands";
 import { initProject } from "./config/config";
 import { SafeExitError } from "./core/errors";
 import { listRuns, loadRun } from "./core/runStore";
 import { runDoctor } from "./diagnostics/doctor";
-import { approveIdea } from "./stages/approveIdea";
-import { approveScript } from "./stages/approveScript";
 import {
   publishSchedulePlaceholder,
   renderPlaceholder,
@@ -65,30 +64,7 @@ program
     }),
   );
 
-const approve = program.command("approve").description("Record explicit approvals.");
-
-approve
-  .command("idea")
-  .requiredOption("--run <run_id>")
-  .requiredOption("--idea <idea_id>")
-  .description("Approve one generated idea.")
-  .action(
-    wrap(async (options: { run: string; idea: string }) => {
-      const approval = await approveIdea(options.run, options.idea);
-      console.log(`Idea approval recorded: ${approval.approvalId}`);
-    }),
-  );
-
-approve
-  .command("script")
-  .requiredOption("--run <run_id>")
-  .description("Approve reviewed script.")
-  .action(
-    wrap(async (options: { run: string }) => {
-      const approval = await approveScript(options.run);
-      console.log(`Script approval recorded: ${approval.approvalId}`);
-    }),
-  );
+registerApprovalCommands(program, wrap);
 
 program
   .command("script")

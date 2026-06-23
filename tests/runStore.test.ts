@@ -42,4 +42,22 @@ describe("run store integrity", () => {
       state: "NEW",
     });
   });
+
+  it("rejects state whose embedded run id does not match its directory", async () => {
+    const run = await createRun();
+    await writeFile(
+      statePath(run.runId),
+      `${JSON.stringify(
+        {
+          ...run,
+          runId: "run_20260619053334_foreign",
+        },
+        null,
+        2,
+      )}\n`,
+      "utf8",
+    );
+
+    await expect(loadRun(run.runId)).rejects.toThrow(/run id.*match|different run/i);
+  });
 });

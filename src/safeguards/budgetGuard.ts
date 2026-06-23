@@ -3,6 +3,11 @@ import { SafeExitError } from "../core/errors";
 import { CostEvent, RunRecord } from "../core/state";
 import { appendLedgerEvent } from "../core/ledger";
 import { appendCostEvent, readAllCostEvents, readCostEvents, sumCosts } from "../costs/costLedger";
+import {
+  isActiveCostReservation,
+  readAllCostReservationSummaries,
+} from "../costs/costReservationStore";
+import { microsToUsd } from "../costs/money";
 import { nowIso } from "../utils/time";
 
 export type BudgetGuardResult = {
@@ -60,23 +65,37 @@ export async function enforceBudget(input: BudgetGuardInput): Promise<BudgetGuar
 }
 
 /**
- * Assesses whether a stage run is within configured budget limits.
+ * Evaluates whether a stage can proceed based on budget thresholds and reservation commitments.
  *
- * @returns A result indicating whether the stage is allowed, any exceeded budget reasons, whether approval is required, and estimated and cumulative costs.
+ * Computes cumulative costs for the run (including active reservations) and daily/weekly totals against configured limits. Optionally records a cost event and always records a ledger event indicating whether the stage was allowed or blocked.
+ *
+ * @returns The budget check result containing the decision, reasons for blocking, approval requirement status, and cost/budget details.
  */
 export async function checkBudget(input: BudgetGuardInput): Promise<BudgetGuardResult> {
   const events = await readCostEvents(input.run.runId);
   const allEvents = await readAllCostEvents();
-  const cumulativeBefore = sumCosts(events);
+  const activeReservations = (await readAllCostReservationSummaries()).filter(
+    isActiveCostReservation,
+  );
+  const runReservedUsd = activeReservations
+    .filter((reservation) => reservation.runId === input.run.runId)
+    .reduce((total, reservation) => total + microsToUsd(reservation.maxUsdMicros), 0);
+  const globalReservedUsd = activeReservations.reduce(
+    (total, reservation) => total + microsToUsd(reservation.maxUsdMicros),
+    0,
+  );
+  const cumulativeBefore = sumCosts(events) + runReservedUsd;
   const cumulativeAfter = cumulativeBefore + input.estimatedUsd;
   const now = Date.now();
   const oneDayAgo = now - 24 * 60 * 60 * 1000;
   const oneWeekAgo = now - 7 * 24 * 60 * 60 * 1000;
   const dailyAfter =
     sumCosts(allEvents.filter((event) => Date.parse(event.createdAt) >= oneDayAgo)) +
+    globalReservedUsd +
     input.estimatedUsd;
   const weeklyAfter =
     sumCosts(allEvents.filter((event) => Date.parse(event.createdAt) >= oneWeekAgo)) +
+    globalReservedUsd +
     input.estimatedUsd;
   const blockedReasons: string[] = [];
   if (cumulativeAfter > input.config.budgets.perVideoUsd) {

@@ -105,6 +105,11 @@ try {
   run([pnpm, "producer", "approve", "script", "--run", runId], { label: "approve script" });
   run([pnpm, "producer", "package", "--run", runId], { label: "package" });
   run([pnpm, "producer", "estimate", "--run", runId], { label: "estimate" });
+  run([pnpm, "producer", "approve", "cost", "--run", runId], {
+    label: "zero-cost quote rejects unnecessary cost approval",
+    expectFailure: true,
+    expectOutput: "does not require explicit approval",
+  });
   run([pnpm, "producer", "evidence", "--run", runId], { label: "evidence" });
   run([pnpm, "producer", "readiness", "--run", runId], {
     label: "readiness",
@@ -139,6 +144,7 @@ try {
   for (const key of [
     "approvals",
     "costs",
+    "costReservations",
     "warnings",
     "generatedArtifacts",
     "promptProvenance",

@@ -8,17 +8,41 @@
   packages, with prompt key/source/hash provenance.
 - Strict run state machine.
 - Schema-validated run records with atomic JSON replacement.
+- Zod 4-native runtime schemas with strict persisted objects, ISO timestamp validation, current
+  top-level format validators, and a regression test rejecting deprecated or legacy Zod 3 APIs.
+- Canonical bounded run-ID validation before state, ledger, artifact, or cost path construction;
+  persisted run IDs must match their containing directory.
+- Canonical bounded artifact-relative path validation before run artifact reads, writes, ledger
+  events, or state persistence.
+- Canonical existing-component symlink containment for the `runs/` root, run directories, internal
+  directories, state, ledgers, reservation lock, and artifacts before filesystem access.
+- Final regular files with multiple hard links are rejected before reads, writes, or append-only
+  ledger mutation.
+- Atomic temporary-file replacement for JSON and text artifact writes.
 - Approval ledger.
 - Content-addressed script review and approval; packaging rejects changed script content.
 - Attributable script revisions with before/after snapshots, stale review/approval invalidation, and
   evidence-bundle visibility.
 - Cost ledger and budget guard, including provider-call preflight for ideas, scripts, and production
   packages using stage pricing estimates.
+- Versioned future paid-generation cost quote bundles bound to the production package, relevant
+  config, enabled stage pricing, budgets, and exact JSON-plus-Markdown digest; approval is explicit
+  and content-addressed.
+- Versioned production-package manifests bind the approved script and prompt/provider provenance to
+  exact voiceover, subtitle, scene, YouTube metadata, and package-Markdown digests.
+- Project-wide atomic cost reservations with one-time approved quote-line consumption, operation-id
+  idempotency, active-reservation hard-budget accounting, integer USD micros, recoverable
+  settlement, uncertain outcomes, and explicit reconciliation.
+- Internal adapter-bound reserved-provider execution with a durable `EXECUTION_STARTED` claim,
+  provider/model quote matching, local at-most-once callback dispatch, bounded timeout/abort,
+  fail-closed unknown outcomes, exact settlement, and hashed request-id evidence.
 - Script content review heuristics, including clickbait title warnings.
 - Brand, overlay, intro, and outro asset inventory checks.
-- Production package generation.
-- Evidence bundle generation.
-- Readiness diagnostics that evaluate persisted cost-estimate allow/block decisions.
+- Production package generation with complete manifest creation after all derived artifacts are
+  persisted.
+- Evidence bundle generation with production-package integrity status and manifest digest.
+- Readiness diagnostics that strictly parse and revalidate persisted cost quotes, live hard budgets,
+  complete production-package integrity, and exact paid-generation cost approval when required.
 - Final readiness diagnostics agree with the post-transition run state.
 - Disabled voice, render, upload, and publish placeholders.
 - Basic Next.js Producer Studio shell under `apps/studio`.
@@ -64,6 +88,7 @@ pnpm producer review script --run <run_id>
 pnpm producer approve script --run <run_id>
 pnpm producer package --run <run_id>
 pnpm producer estimate --run <run_id>
+pnpm producer approve cost --run <run_id>
 pnpm producer evidence --run <run_id>
 pnpm producer readiness --run <run_id>
 pnpm producer status --run <run_id>
@@ -95,8 +120,9 @@ Corepack/PATH before treating failures as product failures.
 
 - Ollama doctor checks server reachability and configured model inventory, but live local-model QA
   is environment-dependent and not part of CI.
-- Paid generation and its explicit cost-approval contract are not implemented; nonzero estimates
-  above the approval threshold fail closed.
+- No paid provider adapter is implemented. Exact cost quote approval remains separate from spend
+  authorization. The internal execution boundary is ready for a future approved adapter, but no SDK,
+  credential, network integration, or CLI mutation command exposes it.
 - Current Next.js Studio is a basic shell only; read-only run detail routes and service contracts
   are not implemented yet.
 - Locale infrastructure is ready, but full translation catalogs and a language selector are
@@ -106,6 +132,9 @@ Corepack/PATH before treating failures as product failures.
   runtime inputs.
 - Revision contracts for subtitles, scenes, popup cards, and YouTube metadata are not implemented.
 - TTS, render, upload, and publish are intentionally disabled scaffolds.
+- Run-path containment blocks pre-existing symbolic links. Hostile concurrent path replacement
+  remains a local TOCTOU limitation because portable Node APIs do not expose directory-handle
+  `openat` semantics.
 - Brand, overlay, thumbnail, background, transition, icon, waveform, intro-frame, and outro-frame
   assets are present. Editable source files, rendered intro/outro clips, and font licensing notes
   remain useful additions.

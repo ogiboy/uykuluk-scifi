@@ -1,5 +1,10 @@
 import path from "node:path";
 import { loadConfig } from "../config/config";
+import { readCostEstimate } from "../costs/costEstimate";
+import {
+  isActiveCostReservation,
+  readCostReservationSummaries,
+} from "../costs/costReservationStore";
 import { artifactPath, writeRunJson, writeRunText } from "../core/artifacts";
 import { readLedger } from "../core/ledger";
 import { loadRun, saveRun } from "../core/runStore";
@@ -8,9 +13,15 @@ import { PromptProvenance } from "../prompts/provenance";
 import { pathExists } from "../utils/fs";
 import { readJsonFile } from "../utils/json";
 import { bulletList } from "../utils/markdown";
+import { nowIso } from "../utils/time";
+import { evidenceNextCommand } from "./evidenceNextCommand";
+import { readProductionPackageIntegrityEvidence } from "./productionPackageIntegrity";
 
 /**
  * Generates and persists an evidence bundle for a run.
+ *
+ * The bundle contains run metadata, state, costs, approvals, artifacts, and prompt
+ * provenance. It is written in both JSON and markdown formats.
  *
  * @param runId - The identifier of the run.
  * @returns The generated evidence bundle object.
@@ -20,7 +31,11 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
   let run = await loadRun(runId);
   const ledger = await readLedger(run.runId);
   const costs = await readCostEvents(run.runId);
+  const costReservations = await readCostReservationSummaries(run.runId);
+  const costQuote = await readCostQuoteEvidence(run);
+  const productionPackageIntegrity = await readProductionPackageIntegrityEvidence(run);
   const promptProvenance = await readPromptProvenance(run.runId);
+  const unresolvedCostReservations = costReservations.filter(isActiveCostReservation);
   const approvedIdea =
     run.approvedIdeaId && (await pathExists(artifactPath(run.runId, "ideas.json")))
       ? ((
@@ -40,15 +55,22 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
     !config.providers.youtube.allowPublicPublish
       ? "Public/scheduled publish disabled by default."
       : undefined,
+    unresolvedCostReservations.length > 0
+      ? `${unresolvedCostReservations.length} cost reservation outcome(s) remain active or uncertain; internal reconciliation is required.`
+      : undefined,
   ].filter((item): item is string => Boolean(item));
   const bundle = {
     runId: run.runId,
+    generatedAt: nowIso(),
     currentState: run.state,
     approvedIdea,
     scriptPath: "script.md",
     reviews: run.artifacts.filter((item) => item.startsWith("reviews/")),
     approvals: run.approvals,
     costs,
+    costReservations,
+    costQuote,
+    productionPackageIntegrity,
     costEstimatePath: (await pathExists(artifactPath(run.runId, "costs/estimate.json")))
       ? "costs/estimate.json"
       : null,
@@ -59,7 +81,11 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
       (item) => item.startsWith("revisions/") && item.endsWith("/revision.json"),
     ),
     blockedActions,
-    nextRecommendedCommand: nextCommand(run.state),
+    nextRecommendedCommand: evidenceNextCommand(
+      run.state,
+      costQuote,
+      unresolvedCostReservations.length > 0,
+    ),
     ledgerEventCount: ledger.length,
   };
   run = await writeRunJson(run, "evidence", "evidence_bundle.json", bundle);
@@ -68,33 +94,18 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
   return bundle;
 }
 
-function nextCommand(state: string): string {
-  const map: Record<string, string> = {
-    NEW: "pnpm producer ideas",
-    IDEAS_GENERATED: "pnpm producer approve idea --run <run_id> --idea <idea_id>",
-    IDEA_APPROVED: "pnpm producer script --run <run_id>",
-    SCRIPT_GENERATED: "pnpm producer review script --run <run_id>",
-    SCRIPT_REVIEWED: "pnpm producer approve script --run <run_id>",
-    SCRIPT_APPROVED: "pnpm producer package --run <run_id>",
-    PRODUCTION_PACKAGE_GENERATED: "pnpm producer estimate --run <run_id>",
-    COST_ESTIMATED: "pnpm producer readiness --run <run_id>",
-    READY_FOR_MANUAL_PRODUCTION: "Manual production review. Render/upload remain approval-gated.",
-  };
-  return map[state] ?? "Review state and ledger before continuing.";
-}
-
-/**
- * Renders an evidence bundle as markdown.
- *
- * @returns A markdown string representation of the evidence bundle.
- */
+/** Renders the persisted evidence bundle for operator review. */
 function renderEvidenceMarkdown(bundle: unknown): string {
   const data = bundle as {
     runId: string;
+    generatedAt: string;
     currentState: string;
     approvedIdea: { title?: string } | null;
     approvals: unknown[];
     costs: unknown[];
+    costReservations: unknown[];
+    costQuote: Awaited<ReturnType<typeof readCostQuoteEvidence>>;
+    productionPackageIntegrity: Awaited<ReturnType<typeof readProductionPackageIntegrityEvidence>>;
     generatedArtifacts: string[];
     warnings: string[];
     promptProvenance: PromptProvenance[];
@@ -106,6 +117,7 @@ function renderEvidenceMarkdown(bundle: unknown): string {
     "# Evidence Bundle",
     "",
     `Run: ${data.runId}`,
+    `Generated at: ${data.generatedAt}`,
     `Current state: ${data.currentState}`,
     `Approved idea: ${data.approvedIdea?.title ?? "None"}`,
     "",
@@ -116,6 +128,20 @@ function renderEvidenceMarkdown(bundle: unknown): string {
     "## Costs",
     "",
     bulletList(data.costs.map((cost) => JSON.stringify(cost))),
+    "",
+    "## Cost Reservations",
+    "",
+    bulletList(data.costReservations.map((reservation) => JSON.stringify(reservation))),
+    "",
+    "## Cost Quote",
+    "",
+    data.costQuote ? JSON.stringify(data.costQuote) : "None",
+    "",
+    "## Production Package Integrity",
+    "",
+    data.productionPackageIntegrity
+      ? JSON.stringify(data.productionPackageIntegrity)
+      : "No production package manifest.",
     "",
     "## Warnings",
     "",
@@ -148,12 +174,55 @@ function renderEvidenceMarkdown(bundle: unknown): string {
   ].join("\n");
 }
 
-/**
- * Collects prompt provenance records from a run's artifacts.
- *
- * @param runId - The run identifier
- * @returns An array of prompt provenance records found in the run's artifacts
- */
+/** Reads quote evidence, preserving parse failures as explicit invalid status. */
+async function readCostQuoteEvidence(run: Awaited<ReturnType<typeof loadRun>>): Promise<{
+  path: string;
+  digest: string;
+  estimatedUsd: number;
+  currency: "USD";
+  approvalRequired: boolean;
+  approved: boolean;
+  approvalId: string | null;
+  invalid?: boolean;
+  invalidReason?: string;
+} | null> {
+  const relativePath = "costs/estimate.json";
+  if (!(await pathExists(artifactPath(run.runId, relativePath)))) {
+    return null;
+  }
+  try {
+    const { estimate, digest } = await readCostEstimate(run.runId);
+    const approval = run.approvals.find(
+      (item) =>
+        item.runId === run.runId &&
+        item.target === "paid-generation-cost" &&
+        item.approvedRef === digest,
+    );
+    return {
+      path: relativePath,
+      digest,
+      estimatedUsd: estimate.estimatedStageCost,
+      currency: estimate.currency,
+      approvalRequired: estimate.approvalRequired,
+      approved: Boolean(approval),
+      approvalId: approval?.approvalId ?? null,
+    };
+  } catch (error) {
+    return {
+      path: relativePath,
+      digest: "invalid",
+      estimatedUsd: 0,
+      currency: "USD",
+      approvalRequired: false,
+      approved: false,
+      approvalId: null,
+      invalid: true,
+      invalidReason: (error as Error).message,
+    };
+  }
+}
+
+/** Collects prompt provenance from generated run artifacts. */
 async function readPromptProvenance(runId: string): Promise<PromptProvenance[]> {
   const sources = ["ideas.json", "script.meta.json", "production/production_package.meta.json"];
   const records: PromptProvenance[] = [];

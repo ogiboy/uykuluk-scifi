@@ -17,4 +17,14 @@ describe("state transitions", () => {
       /Transition blocked/,
     );
   });
+
+  it("keeps paid-generation cost approval explicit and resumable", () => {
+    expect(canTransition("COST_ESTIMATED", "PAID_GENERATION_COST_APPROVED")).toBe(true);
+    expect(canTransition("PAID_GENERATION_COST_APPROVED", "READY_FOR_MANUAL_PRODUCTION")).toBe(
+      true,
+    );
+    expect(canTransition("PRODUCTION_PACKAGE_GENERATED", "PAID_GENERATION_COST_APPROVED")).toBe(
+      false,
+    );
+  });
 });

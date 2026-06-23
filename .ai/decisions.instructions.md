@@ -55,6 +55,79 @@ Reason: Publishing is irreversible and public. Upload config or generated metada
 publish authority. Public/scheduled publish needs its own approval, readiness, warning, evidence,
 and QA matrix.
 
+### Paid-generation quote approval and reservation are separate authorities
+
+Reason: An operator must be able to review and approve an exact future production quote without that
+approval silently becoming a reusable or concurrent payment capability. The JSON and operator-facing
+Markdown form one quote bundle bound to the run, production package, enabled stage pricing, relevant
+provider/budget config, and exact persisted bytes.
+
+Constraints:
+
+- Hard per-video, daily, and weekly budgets remain non-overridable.
+- Readiness revalidates the current quote and exact approval digest.
+- Approval does not call a provider or record incurred cost.
+- One project-wide filesystem lock serializes reservation budget decisions across runs.
+- A quote line remains consumed after release; retrying paid work requires a new quote and approval.
+- Active, settlement-pending, and uncertain reservations remain in hard-budget totals.
+- Settlement journals intent before recording the linked cost event so retries are idempotent.
+- Paid execution remains unavailable until a provider adapter makes reservation the only pre-call
+  path and proves its failure and timeout behavior end to end.
+
+### Reserved provider execution is a separate internal authority
+
+Reason: A reservation proves budget commitment but does not prove whether an external callback was
+invoked. Future nonzero provider adapters need one composed boundary that durably claims execution
+before callback entry and classifies every observed outcome without treating an error as proof that
+no request was sent.
+
+Constraints:
+
+- Adapter provider/model identity must match the exact approved quote before reservation.
+- Only `RESERVED -> EXECUTION_STARTED` grants one local callback invocation.
+- Same-operation retries never redispatch after execution starts or reaches a terminal state.
+- Definitely-not-sent outcomes release; unknown, malformed, thrown, or timed-out outcomes remain
+  uncertain; confirmed success settles exact integer USD micros.
+- Provider request ids are bounded at the callback boundary and only their SHA-256 hashes persist;
+  neither form is proof of charge.
+- The contract does not enable a paid adapter, CLI command, credential, TTS, render, upload, or
+  publish path.
+
+### Run identifiers are filesystem capabilities
+
+Reason: CLI input and future Studio/worker requests use a run id to select durable local state.
+Allowing separators, dot segments, absolute paths, or unbounded identifiers would turn that lookup
+into authority outside the run root.
+
+Constraints:
+
+- One canonical validator owns the accepted format.
+- Every run-root state, ledger, artifact, and cost path must pass through the validated `runDir`
+  boundary.
+- Persisted state must contain the same run id as its directory.
+- Unrelated or malformed directories are ignored by run listing and never treated as runs.
+
+### Artifact names are run-scoped filesystem capabilities
+
+Reason: Artifact helpers are shared by CLI stages and future Studio/worker services. A caller-chosen
+absolute path, separator variant, or dot segment must not escape or ambiguously address the run
+root.
+
+Constraints:
+
+- Artifact paths use one bounded canonical forward-slash relative format.
+- Every segment starts with an ASCII letter or digit and contains only ASCII letters, digits, dots,
+  underscores, or hyphens.
+- Windows reserved device basenames and trailing-dot aliases are rejected.
+- Validation happens before filesystem and ledger mutation.
+- Persisted artifact lists are revalidated when run state is loaded or saved.
+- Existing `runs/`, run-directory, intermediate-directory, and final-file symbolic links are
+  rejected by the canonical run-path owner before access.
+- Existing final regular files with multiple hard links are rejected before reads or append sinks.
+- Missing path suffixes remain valid for creation. Portable Node APIs do not provide a directory
+  handle-based `openat` workflow, so hostile concurrent path replacement remains a local TOCTOU
+  limitation rather than a claimed guarantee.
+
 ### Visual assets are committed production inputs
 
 Reason: The channel brand pack is part of the production pipeline. Readiness should check for logo,

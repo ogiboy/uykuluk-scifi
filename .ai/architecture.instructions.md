@@ -16,7 +16,8 @@ Primary contracts:
 - `src/prompts/` owns runtime prompt provenance metadata shared by stages and evidence.
 - `src/revisions/` owns attributable artifact edits, snapshots, stale-evidence invalidation, and
   revision ledger events.
-- `src/costs/` owns cost event persistence and local budget calculations.
+- `src/costs/` owns cost event persistence, local budget calculations, reservation/settlement, and
+  the internal adapter-bound execution contract for future nonzero provider calls.
 - `src/youtube/` currently owns disabled upload/publish scaffolds only.
 - `apps/studio/` owns the local Next.js operator shell. It should call typed service contracts and
   must not duplicate workflow state.

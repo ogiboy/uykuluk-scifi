@@ -20,6 +20,17 @@ future generated release notes can be inserted predictably.
   events, and evidence-bundle visibility.
 - Project-local capability inventory, task routing, frontend taste selection, swarm/context rules,
   and long-goal checkpoints.
+- Versioned future paid-generation JSON-plus-Markdown quote bundles with exact digest approval, live
+  package/config/pricing/budget revalidation, evidence visibility, and a dedicated resumable
+  workflow state.
+- Project-wide atomic cost reservations with one-time approved quote-line consumption, integer USD
+  micros, idempotent operation ids, recoverable settlement, uncertain outcomes, explicit
+  reconciliation, and evidence summaries.
+- Internal adapter-bound reserved-provider execution with durable execution claims, provider/model
+  quote matching, local at-most-once callback dispatch, bounded timeout/abort, fail-closed outcome
+  classification, exact settlement, and hashed request-id evidence.
+- Versioned production-package manifests covering voiceover, subtitles, scenes, YouTube metadata,
+  package Markdown, approved-script provenance, and exact artifact digests.
 
 ### Changed
 
@@ -27,16 +38,22 @@ future generated release notes can be inserted predictably.
   server.
 - Script review, approval, and production packaging now require the same SHA-256 content digest.
 - Prompt provenance now records the tracked source path in addition to the rendered prompt hash.
+- Cost estimation no longer records an incurred cost event; quote approval is explicitly separate
+  from future spend reservation and settlement.
+- Hard-budget checks now include active, settlement-pending, and uncertain reservations across runs
+  so concurrent work cannot overbook per-video, daily, or weekly limits.
 - Explicit public publish config now passes the configuration guard only when the run also contains
   explicit publish approval; execution remains an intentionally disabled MVP scaffold.
+- Runtime schemas now use current Zod 4 APIs (`z.strictObject`, top-level string formats,
+  `z.iso.datetime`, and `z.int`) with regression coverage preventing deprecated Zod 3 patterns.
 
 ### Fixed
 
 - Provider-backed idea, script, and production-package generation now blocks before provider calls
   and artifact writes when stage pricing would exceed existing per-video, daily, or weekly budgets.
 - Production packaging now fails closed when `script.md` changes after review or approval.
-- Readiness now blocks when the persisted cost estimate disallows the next step or reports blocked
-  reasons.
+- Readiness now rejects malformed, stale, tampered, hard-budget-blocked, or unapproved nonzero cost
+  quotes instead of trusting editable allow/block fields.
 - Run loading now rejects malformed or schema-invalid state, and JSON persistence uses atomic
   replacement.
 - Evidence bundles now include runtime prompt key/hash provenance for ideas, scripts, and production
@@ -48,6 +65,21 @@ future generated release notes can be inserted predictably.
   pre-transition state.
 - Content review now warns on excessive clickbait title framing.
 - Asset readiness now inventories intro and outro inputs in addition to brand and overlay files.
+- Cost and reservation ledgers now reject malformed or foreign-run rows instead of accepting
+  unvalidated JSON.
+- Stale reservation-lock recovery now preserves a live owner instead of allowing overlapping
+  critical sections after the age threshold.
+- Run state, ledger, artifact, and cost path helpers now reject malformed or traversal-shaped run
+  identifiers, and run loading rejects state whose embedded id differs from its directory.
+- Artifact reads, writes, and persisted artifact lists now reject absolute, traversal-shaped,
+  Windows-style, reserved-device, trailing-dot, malformed, control-character, or oversized relative
+  paths before side effects.
+- Cost estimation and readiness now fail closed when any generated production-package artifact or
+  its manifest is missing, malformed, foreign, or changed; evidence bundles report the verified
+  manifest digest or blocking integrity reason.
+- Run state, ledger, cost, reservation, lock, and artifact access now rejects existing symbolic
+  links beneath `runs/` and multiply-linked final files; text artifact writes also use atomic
+  temporary-file replacement.
 
 ## 0.1.0 - 2026-06-17
 

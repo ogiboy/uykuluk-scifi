@@ -1,12 +1,14 @@
 import { loadConfig, projectConfigExists } from "../config/config";
+import { readCostEstimate, validateCurrentCostEstimate } from "../costs/costEstimate";
 import { artifactPath, writeRunJson, writeRunText } from "../core/artifacts";
 import { loadRun, setRunState } from "../core/runStore";
+import { RunRecord } from "../core/state";
 import { canTransition } from "../core/transitions";
 import { checkAssets } from "../safeguards/assetGuard";
 import { pathExists } from "../utils/fs";
-import { readJsonFile } from "../utils/json";
 import { bulletList, table } from "../utils/markdown";
 import { generateEvidenceBundle } from "./evidence";
+import { verifyProductionPackage } from "./productionPackageIntegrity";
 
 type ReadinessCheck = {
   name: string;
@@ -59,12 +61,8 @@ export async function runReadiness(
         : "block",
       message: "Script approval must be explicit in run state.",
     },
-    await artifactCheck(
-      run.runId,
-      "production package generated",
-      "production/production_package.md",
-    ),
-    await budgetEstimateCheck(run.runId),
+    await productionPackageIntegrityCheck(run),
+    await budgetEstimateCheck(run, config),
     {
       name: "no blocked publish action",
       status: "pass",
@@ -112,7 +110,7 @@ export async function runReadiness(
   );
   if (
     passed &&
-    run.state === "COST_ESTIMATED" &&
+    (run.state === "COST_ESTIMATED" || run.state === "PAID_GENERATION_COST_APPROVED") &&
     canTransition(run.state, "READY_FOR_MANUAL_PRODUCTION")
   ) {
     run = await setRunState(run, "READY_FOR_MANUAL_PRODUCTION", "readiness");
@@ -147,17 +145,39 @@ async function artifactCheck(
   );
 }
 
+async function productionPackageIntegrityCheck(run: RunRecord): Promise<ReadinessCheck> {
+  try {
+    const { digest } = await verifyProductionPackage(run);
+    return {
+      name: "production package integrity",
+      status: "pass",
+      message: `Complete production package matches manifest ${digest}.`,
+    };
+  } catch (error) {
+    return {
+      name: "production package integrity",
+      status: "block",
+      message: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
 /**
- * Validates the cost estimate and determines if the next step is allowed.
+ * Validates whether a cost estimate allows proceeding with the run.
  *
- * Reads `costs/estimate.json` and checks if the estimate permits proceeding. Blocks readiness if the file is missing, cannot be read, or indicates the next step is not allowed.
+ * Reads and validates the cost estimate, enforcing budget constraints and approval requirements.
+ * Blocks readiness if the estimate file is missing, validation fails, hard budget constraints are violated,
+ * or required approvals are not satisfied.
  *
- * @param runId - The run identifier
- * @returns A readiness check that passes if the cost estimate allows proceeding, blocks otherwise
+ * @param run - The run record
+ * @returns A readiness check that passes if the cost estimate permits proceeding, blocks otherwise
  */
-async function budgetEstimateCheck(runId: string): Promise<ReadinessCheck> {
+async function budgetEstimateCheck(
+  run: RunRecord,
+  config: Awaited<ReturnType<typeof loadConfig>>,
+): Promise<ReadinessCheck> {
   const relativePath = "costs/estimate.json";
-  const target = artifactPath(runId, relativePath);
+  const target = artifactPath(run.runId, relativePath);
   if (!(await pathExists(target))) {
     return {
       name: "budget not exceeded",
@@ -166,27 +186,47 @@ async function budgetEstimateCheck(runId: string): Promise<ReadinessCheck> {
     };
   }
   try {
-    const estimate = await readJsonFile<{
-      nextStepAllowed?: boolean;
-      blockedReasons?: unknown;
-    }>(target);
-    const blockedReasons = Array.isArray(estimate.blockedReasons)
-      ? estimate.blockedReasons.filter((reason): reason is string => typeof reason === "string")
-      : [];
-    if (estimate.nextStepAllowed !== true || blockedReasons.length > 0) {
+    const { estimate, digest } = await readCostEstimate(run.runId);
+    const validationReasons = await validateCurrentCostEstimate(run, config, estimate);
+    if (validationReasons.length > 0) {
+      return {
+        name: "budget not exceeded",
+        status: "block",
+        message: `Cost estimate is stale or invalid. ${validationReasons.join(" ")}`,
+      };
+    }
+    if (!estimate.budgetAllowed || estimate.hardBlockedReasons.length > 0) {
       return {
         name: "budget not exceeded",
         status: "block",
         message:
-          blockedReasons.length > 0
-            ? blockedReasons.join(" ")
-            : "Cost estimate does not allow the next step.",
+          estimate.hardBlockedReasons.join(" ") || "Cost estimate is blocked by a hard budget.",
+      };
+    }
+    if (estimate.approvalRequired) {
+      const approval = run.approvals.find(
+        (item) =>
+          item.runId === run.runId &&
+          item.target === "paid-generation-cost" &&
+          item.approvedRef === digest,
+      );
+      if (!approval || run.state !== "PAID_GENERATION_COST_APPROVED") {
+        return {
+          name: "budget not exceeded",
+          status: "block",
+          message: "The exact quote requires explicit paid-generation cost approval.",
+        };
+      }
+      return {
+        name: "budget not exceeded",
+        status: "pass",
+        message: `Hard budgets pass and exact cost quote approval ${approval.approvalId} is active.`,
       };
     }
     return {
       name: "budget not exceeded",
       status: "pass",
-      message: "Cost estimate allows the next step.",
+      message: "Cost estimate is within hard budgets and requires no paid-generation approval.",
     };
   } catch (error) {
     return {

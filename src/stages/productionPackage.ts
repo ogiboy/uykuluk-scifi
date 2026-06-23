@@ -12,6 +12,7 @@ import { createLlmProvider } from "../providers";
 import { createPromptProvenance } from "../prompts/provenance";
 import { renderProductionPackagePrompt } from "../prompts/templates";
 import { sha256 } from "../utils/hash";
+import { createProductionPackageManifest } from "./productionPackageIntegrity";
 import { ProductionScene } from "./types";
 
 type PackageProviderPayload = {
@@ -74,6 +75,12 @@ export async function generateProductionPackage(runId: string): Promise<void> {
     const scenes = buildScenes(voiceover);
     const subtitles = buildSrt(scenes);
     const packageMarkdown = renderPackageMarkdown(providerPayload, scenes);
+    const promptProvenance = createPromptProvenance(
+      prompt.key,
+      prompt.text,
+      "production/production_package.md",
+      prompt.source,
+    );
     await enforceBudget({
       run,
       config,
@@ -95,19 +102,15 @@ export async function generateProductionPackage(runId: string): Promise<void> {
       providerPayload.youtube,
     );
     run = await writeRunText(run, "package", "production/production_package.md", packageMarkdown);
-    run = await writeRunJson(run, "package", "production/production_package.meta.json", {
+    const manifest = await createProductionPackageManifest(run, scriptHash, {
       provider: result.provider,
       model: result.model,
       inputTokensApprox: result.inputTokensApprox,
       outputTokensApprox: result.outputTokensApprox,
       durationMs: result.durationMs,
-      prompt: createPromptProvenance(
-        prompt.key,
-        prompt.text,
-        "production/production_package.md",
-        prompt.source,
-      ),
+      prompt: promptProvenance,
     });
+    run = await writeRunJson(run, "package", "production/production_package.meta.json", manifest);
     await setRunState(run, "PRODUCTION_PACKAGE_GENERATED", "package");
   } catch (error) {
     await appendLedgerEvent({

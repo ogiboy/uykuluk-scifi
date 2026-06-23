@@ -90,7 +90,7 @@ describe("readiness and disabled public actions", () => {
     expect(readiness.passed).toBe(false);
     expect(readiness.checks.find((check) => check.name === "budget not exceeded")).toMatchObject({
       status: "block",
-      message: expect.stringContaining("Per-video budget exceeded"),
+      message: expect.stringMatching(/could not be read|invalid/i),
     });
     expect((await loadRun(runId)).state).toBe("COST_ESTIMATED");
   });

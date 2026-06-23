@@ -1,14 +1,24 @@
-import path from "node:path";
 import { appendLedgerEvent } from "./ledger";
-import { runDir } from "./runStore";
 import { RunRecord } from "./state";
 import { writeJsonFile } from "../utils/json";
 import { writeTextFile } from "../utils/fs";
+import { artifactPath } from "./artifactPaths";
 
-export function artifactPath(runId: string, relativePath: string): string {
-  return path.join(runDir(runId), relativePath);
-}
+export {
+  artifactPath,
+  isValidArtifactRelativePath,
+  validateArtifactRelativePath,
+} from "./artifactPaths";
 
+/**
+ * Writes a JSON artifact to the run, logs the action to the ledger, and updates the artifact list.
+ *
+ * @param run - The run record to update
+ * @param stage - The run stage identifier
+ * @param relativePath - The relative path where the artifact will be stored
+ * @param value - The value to serialize as JSON
+ * @returns The updated run record with the artifact added
+ */
 export async function writeRunJson(
   run: RunRecord,
   stage: string,

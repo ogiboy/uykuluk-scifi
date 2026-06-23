@@ -2,8 +2,8 @@
 
 Latest usage smoke report:
 
-- `.ai/qa/artifacts/usage-smoke-20260618-234309/qa-report.md`
-- `.ai/qa/artifacts/usage-smoke-20260618-234309/usage-smoke-summary.json`
+- `.ai/qa/artifacts/usage-smoke-20260623-131633/qa-report.md`
+- `.ai/qa/artifacts/usage-smoke-20260623-131633/usage-smoke-summary.json`
 
 Validated gates:
 
@@ -45,6 +45,18 @@ Usage smoke coverage:
 - Readiness diagnostics current state matches `state.json` after a successful transition.
 - Run-store tests reject malformed/schema-invalid state and preserve the last valid record when an
   invalid save is attempted.
+- Run-ID boundary tests reject path traversal, absolute paths, separators, whitespace, invalid
+  prefixes, and oversized identifiers across state, ledger, artifact, cost, reservation, and CLI
+  entry points while preserving generated IDs and valid run listing.
+- Artifact-path boundary tests reject POSIX/Windows absolute paths, dot segments, backslashes,
+  duplicate/trailing separators, whitespace, controls, non-ASCII names, malformed segments, and
+  oversized paths before filesystem or ledger mutation. Windows device basenames and trailing-dot
+  aliases are also blocked; persisted unsafe artifact lists fail closed.
+- Run-filesystem containment tests reject symbolic links at the `runs/` root, run directory, state
+  file, intermediate artifact directory, final artifact file, core ledger, and global reservation
+  lock before outside-tree reads, writes, or ledger mutation.
+- Core, cost, and reservation ledger tests reject multiply-linked final files before reading or
+  appending through an inode reachable by another pathname.
 - Evidence and clean-copy usage QA verify three runtime prompt provenance records with tracked
   `.ai/prompts/` source paths and SHA-256 hashes.
 - Direct prompt-template coverage proves ideas, scripts, and production packages render the tracked
@@ -56,12 +68,58 @@ Usage smoke coverage:
   production packages do not call the configured provider or write generated artifacts after those
   blocks. A direct pricing-reservation test also proves the stage estimate is evaluated before the
   provider call.
+- Paid-generation cost approval tests verify exact JSON-plus-Markdown quote binding, displayed-stage
+  tamper rejection, quote tamper rejection after approval, live hard-budget rechecks, hard-budget
+  non-override, no extra incurred-cost event, and unnecessary zero-cost approval rejection.
+- Cost reservation tests verify same-line concurrency exclusion, operation-id idempotency,
+  irreversible quote-line consumption after release, cross-run daily-budget serialization, stale
+  lock recovery, task-error propagation, and malformed reservation-ledger rejection.
+- Settlement tests verify reservation-linked cost idempotency, recovery from `SETTLEMENT_PENDING`,
+  over-cap uncertainty, and explicit reconciliation to settled or released.
+- Reserved-provider execution tests prove callbacks do not run before exact approval/readiness or
+  after quote/config drift; adapter identity must match the quote; execution claim precedes callback
+  entry; success settles exact usage; definitely-not-sent releases; malformed, thrown, unknown, and
+  timed-out outcomes remain uncertain; same-operation retries and concurrent callers do not
+  redispatch.
+- Evidence tests project execution-start time, hashed provider request id, generation time, and an
+  explicit internal-reconciliation action for unresolved reservations without persisting raw ids.
+- Lock regression coverage proves stale dead locks can be reclaimed while a live owner remains
+  exclusive after the stale threshold.
+- The clean-copy usage smoke exercises `producer approve cost` and confirms a zero-cost quote fails
+  closed as an unnecessary approval before normal readiness continues.
+- The diff-scoped Codex Security review completed with 12/12 worklist receipts and no reportable
+  findings; the generated report is under the system temp
+  `codex-security-scans/uykuluk-scifi/7bd5801bfede_20260619T045040Z/report.md`.
+- The reservation diff security review completed with 14/14 worklist receipts. It reproduced and
+  fixed one live-owner stale-lock race; no reportable finding survived the final policy and
+  remediation gates. Report:
+  `/tmp/codex-security-scans/uykuluk-scifi/30986f87b682_20260619T052633Z/report.md`.
+- The run-ID validation diff security review completed with 9/9 worklist receipts and no reportable
+  findings. One regex-anchor candidate was falsified with focused Vitest and direct Node runtime
+  evidence. Report:
+  `/tmp/codex-security-scans/uykuluk-scifi/e155b027681d_20260619T114436Z/report.md`.
+- The artifact-path validation diff security review completed with 6/6 worklist receipts. It
+  reproduced and fixed Windows reserved-device and trailing-dot alias acceptance; no reportable
+  finding survived final policy and remediation. Report:
+  `/tmp/codex-security-scans/uykuluk-scifi/f16e6434e22f_20260619T115254Z/report.md`.
 - `pnpm security:dependencies` reports no known high-severity dependency vulnerabilities.
 - Capability-routing docs pass formatting, changelog-marker, modularity, version-plan, full
   `pnpm check`, and clean-copy usage gates.
 - Readiness passes with committed brand assets.
-- Unit coverage confirms readiness blocks when `costs/estimate.json` disallows the next step or
-  reports blocked reasons.
+- Unit coverage confirms readiness rejects malformed, stale, tampered, hard-budget-blocked, or
+  unapproved nonzero cost quote bundles.
+- Production-package integrity coverage confirms generation records all derived artifact digests and
+  that modification, deletion, foreign manifests, or approved-script drift block cost estimation and
+  readiness while evidence reports the failure.
+- The production-package integrity diff security review completed with 7/7 worklist receipts. It
+  reproduced and fixed missing-manifest evidence reporting; no reportable finding survived. Report:
+  `/tmp/codex-security-scans/uykuluk-scifi/d4a7e61a4ecf_20260619T120922Z/report.md`.
+- Zod 4 migration coverage rejects deprecated chained string formats, object strict/passthrough
+  methods, native enums, object merges, and legacy integer/number APIs across `src/`.
+- The run-filesystem containment diff security review completed with 10/10 worklist receipts. It
+  reproduced and fixed hard-linked core, cost, and reservation ledger access; no reportable finding
+  survived the current-architecture policy and remediation gates. Report:
+  `/tmp/codex-security-scans/uykuluk-scifi/bd00db439703_20260619T171338Z/report.md`.
 - Voice, render, upload, and publish are blocked by default.
 - Playwright browser smoke verifies the initial Studio shell, module tabs, and cookie-based document
   locale through a production build/server.
@@ -75,3 +133,6 @@ Remaining known MVP limits:
   overlays, and intro/outro frames. Editable source files, rendered intro/outro clips, and font
   licensing notes remain useful before render work.
 - TTS, render, upload, and publish are intentionally disabled scaffolds.
+- Paid execution remains disabled. The internal reserved-provider callback contract has
+  deterministic failure/timeout coverage, but no real adapter, paid SDK, credential, or operator
+  command exists.

@@ -17,49 +17,133 @@ coherent, tested slices until the safe core and its evidence contracts are genui
 
 ## Current State
 
-- Branch/worktree: `fix/core-script-approval-integrity` at
-  `/Users/ogiboy/.codex/worktrees/94cb/uykuluk-scifi`.
-- Last completed slice: `fcc5f9a feat(cli): add producer doctor diagnostics`.
-- Earlier completed hardening includes content-addressed approval, budget/readiness enforcement,
-  atomic state writes, prompt provenance/runtime templates, provider/publish tests, dependency
-  audit, diagnostics synchronization, and content/asset guards.
-- Active uncommitted slice: attributable script revision command, snapshots, state rollback,
-  approval invalidation, evidence visibility, CLI wiring, usage smoke, and documentation.
-- External edits to preserve: planner/scriptwriter duration prompt changes and example model config
-  change.
+- Branch/worktree: `feat/core-reserved-provider-execution` at
+  `/Users/ogiboy/.codex/worktrees/894d/uykuluk-scifi`.
+- Base: `7bd5801`, the merge of the completed script approval/revision hardening work.
+- Earlier completed hardening includes content-addressed script approval and revisions,
+  budget/readiness enforcement, atomic state writes, prompt provenance/runtime templates,
+  provider/publish tests, dependency audit, diagnostics synchronization, and content/asset guards.
+- Completed slice: `30986f8 feat(core): add paid generation cost approvals`.
+- Completed slice: `e155b02 feat(core): add atomic cost reservations`.
+- Completed slice: `f16e643 fix(core): validate run identifiers`.
+- Completed slice: `3c04cdd fix(core): constrain artifact paths`.
+- Completed slice: `66d2095 feat(core): verify production package integrity`.
+- Completed slice: `2f9e34c refactor(core): modernize Zod schemas`.
+- Completed slice: `a046523 fix(core): contain linked run paths`.
+- Active slice: internal reserved-provider callback execution contract without enabling a paid
+  provider or operator command.
+- Worktree was clean before the reserved-provider execution slice.
 
 ## Verification Evidence
 
-- Focused script-revision-related tests reached 12/12 green with typecheck.
-- A later full gate found modularity limits in `src/cli.ts` and `scripts/usage-smoke.mjs`;
-  extraction into focused files began.
-- On 2026-06-19, the integrated dirty worktree passed `pnpm check` with 48/48 tests, Studio build,
-  modularity, secret scan, changelog, and formatting.
-- `pnpm qa:usage`, `pnpm version:plan`, and `pnpm security:dependencies` also passed; the latest
-  ignored report is `.ai/qa/artifacts/usage-smoke-20260618-234309/qa-report.md`.
-- The script-revision slice is mechanically green but remains uncommitted and still needs the
-  independent review findings resolved before completion.
+- Baseline on 2026-06-19: `pnpm test` passed 48/48 and `pnpm typecheck` passed before edits.
+- Three independent read-only reviews agreed that approval must bind an exact persisted quote and
+  that paid execution must remain disabled until atomic reservation/settlement exists.
+- Current plan: `.ai/plans/2026-06-19-paid-generation-cost-approval.md`.
+- Strict TDD added 7 paid-generation cost approval tests; focused cost/readiness/mock tests and
+  typecheck pass.
+- `pnpm check` passed with 56/56 tests, Studio production build, modularity, secret scan, changelog,
+  and formatting.
+- `pnpm qa:usage`, `pnpm version:plan`, and `pnpm security:dependencies` passed; the latest ignored
+  smoke report is `.ai/qa/artifacts/usage-smoke-20260619-050114/qa-report.md`.
+- A diff-scoped Codex Security scan reviewed all 12 executable/test worklist rows and reported no
+  surviving findings after JSON-plus-Markdown quote binding was added.
+- Current plan: `.ai/plans/2026-06-19-cost-reservation-lifecycle.md`.
+- Focused reservation, recovery, budget, approval, and mock tests pass (25/25); typecheck and the
+  156-file modularity gate pass.
+- The reservation diff security review closed all 14 worklist rows, reproduced and fixed a
+  live-owner stale-lock race, and produced validated Markdown/HTML reports with no surviving
+  reportable findings.
+- Final gates pass: `pnpm check` with 69/69 tests and Studio production build, `pnpm qa:usage`,
+  `pnpm version:plan`, `pnpm security:dependencies`, `pnpm release:check`, and `git diff --check`.
+- Latest ignored usage report: `.ai/qa/artifacts/usage-smoke-20260619-053319/qa-report.md`.
+- Current plan: `.ai/plans/2026-06-19-run-id-path-validation.md`.
+- Strict TDD captured 15 initial failures for malformed IDs and state-directory mismatch, then
+  broadened to unrelated run-directory enumeration and CLI coverage.
+- Final gates pass: `pnpm check` with 89/89 tests and Studio production build, `pnpm qa:usage`,
+  `pnpm version:plan`, `pnpm security:dependencies`, `pnpm release:check`, and `git diff --check`.
+- Latest ignored usage report: `.ai/qa/artifacts/usage-smoke-20260619-114340/qa-report.md`.
+- Diff-scoped security review closed all 9 executable/test/supporting rows with validated
+  Markdown/HTML reports and no surviving reportable findings.
+- Current plan: `.ai/plans/2026-06-19-artifact-path-validation.md`.
+- Strict TDD captured 20 initial failures for lexical paths, outside-write side effects, and
+  persisted-state tampering; security review added 6 failing portable-name regressions.
+- Final gates pass: `pnpm check` with 121/121 tests and Studio production build, `pnpm qa:usage`,
+  `pnpm version:plan`, `pnpm security:dependencies`, `pnpm release:check`, modularity, secret scan,
+  changelog, formatting, and security report validation.
+- Latest ignored usage report: `.ai/qa/artifacts/usage-smoke-20260619-115623/qa-report.md`.
+- Diff-scoped security review closed all 6 executable/test/supporting rows, reproduced and fixed
+  Windows reserved-device/trailing-dot aliases, and produced validated Markdown/HTML reports with no
+  surviving reportable findings.
+- Current plan: `.ai/plans/2026-06-19-production-package-integrity.md`.
+- Strict TDD added complete-package manifest coverage for generation, modification/deletion of every
+  derived artifact, missing/foreign/changed manifests, approved-script drift, readiness state
+  preservation, and evidence block reporting.
+- Final gates pass: `pnpm check` with 143/143 tests and Studio production build, `pnpm qa:usage`,
+  `pnpm version:plan`, `pnpm security:dependencies`, `pnpm release:check`, modularity, secret scan,
+  changelog, formatting, and `git diff --check`.
+- Latest ignored usage report: `.ai/qa/artifacts/usage-smoke-20260619-121222/qa-report.md`.
+- Diff-scoped security review closed all 7 executable/test/supporting rows, reproduced and fixed a
+  missing-manifest evidence projection gap, and produced validated Markdown/HTML reports with no
+  surviving reportable findings:
+  `/tmp/codex-security-scans/uykuluk-scifi/d4a7e61a4ecf_20260619T120922Z/report.html`.
+- Zod 4 documentation and installed 4.4.3 declarations confirmed top-level string formats,
+  `z.strictObject`, and `z.int` as current replacements for project v3-style APIs.
+- Strict TDD first found 22 deprecated or legacy schema usages; the regression gate and 51 focused
+  schema/workflow tests pass after migration.
+- Final gates pass: `pnpm check` with 144/144 tests and Studio production build, `pnpm qa:usage`,
+  `pnpm version:plan`, `pnpm security:dependencies`, `pnpm release:check`, and `git diff --check`.
+- Latest ignored usage report: `.ai/qa/artifacts/usage-smoke-20260619-165149/qa-report.md`.
+- Current plan: `.ai/plans/2026-06-19-symlink-containment.md`.
+- Strict TDD captured failures for symbolic links at the runs root, run directory, state file,
+  intermediate artifact directory, final artifact, core ledger, and reservation lock. Security
+  review then reproduced hard-link bypasses for all three append-only ledgers.
+- Final gates pass: `pnpm check` with 156/156 tests and Studio production build, `pnpm qa:usage`,
+  `pnpm version:plan`, `pnpm security:dependencies`, `pnpm release:check`, and `git diff --check`.
+- Latest ignored usage report: `.ai/qa/artifacts/usage-smoke-20260619-171824/qa-report.md`.
+- Diff-scoped security review closed all 10 executable/test/supporting rows, reproduced and fixed
+  hard-linked core, cost, and reservation ledger access, and produced validated Markdown/HTML
+  reports with no surviving reportable findings:
+  `/tmp/codex-security-scans/uykuluk-scifi/bd00db439703_20260619T171338Z/report.html`.
+- Current plan: `.ai/plans/2026-06-23-reserved-provider-execution.md`.
+- Three independent read-only reviews converged on a durable `EXECUTION_STARTED` reservation state,
+  adapter provider/model quote matching, and local at-most-once callback dispatch.
+- Strict TDD first failed because the composed execution owner did not exist. Focused execution,
+  reservation, recovery, budget, cost-approval, mock-workflow, and readiness coverage now passes
+  48/48; typecheck and the 176-file modularity gate pass.
+- Independent post-implementation review found and fixed timeout/abort outcome ordering, overly
+  broad release authority after callback claim, settled receipt-hash mismatch acceptance, raw
+  provider request-id persistence, and low-level provider/stage import pressure.
+- Current full gates pass: `pnpm check` with 175/175 tests and Studio production build,
+  `pnpm qa:usage`, `pnpm version:plan`, `pnpm security:dependencies`, `pnpm release:check`, and
+  `git diff --check`.
+- Latest ignored usage report: `.ai/qa/artifacts/usage-smoke-20260623-131633/qa-report.md`.
 
 ## Decisions
 
-- `src/revisions/scriptRevision.ts` is the canonical revision owner.
-- Revisions are allowed only through `SCRIPT_APPROVED`; downstream package/cost/readiness runs are
-  immutable.
-- Revised scripts return to `SCRIPT_GENERATED` and require review/approval again.
-- Existing review evidence must remain historically inspectable without appearing active.
+- `src/costs/` owns cost quote shape and fingerprints; core state/ledger owns approval authority.
+- Cost approval covers future paid production stages after package generation only.
+- Cost approval does not authorize or execute a provider call.
+- Hard budgets remain non-overridable and must be rechecked at readiness and future execution.
+- Paid execution remains disabled until the first adapter uses reservation as its only provider-call
+  path and proves failure/timeout behavior.
 
 ## Remaining Work
 
-1. Resolve the independent review findings for transaction/journaling safety, revision input file
-   boundaries, stale review visibility, evidence detail, and failure-path coverage.
-2. Re-run focused tests and full gates after review-driven code changes.
-3. Stage only the script-revision slice while preserving external prompt/config edits.
-4. Commit only when green, then re-audit the remaining product goal.
+1. Complete full quality, usage, release, dependency, and diff-scoped security gates for the
+   reserved-provider execution contract.
+2. Commit and push the green execution-contract slice.
+3. Re-audit the next safe-core candidate without enabling paid or publishing execution.
 
 ## Blockers And Risks
 
-- Multi-write revision flow can leave partial state without a transaction or recoverable journal.
-- `--file` must not ingest arbitrary sensitive paths into run artifacts.
-- Physical stale review files may be mistaken for active evidence by consumers checking existence.
-- Evidence and docs may overstate the revision detail exposed.
-- Direct `SCRIPT_REVIEWED` rollback and injected failure behavior need stronger tests.
+- No real paid adapter, SDK, credential policy, or operator command exists. The internal callback
+  contract covers local dispatch and failure semantics, but external provider idempotency and charge
+  confirmation remain adapter-specific future work.
+- Reservation writes are serialized locally, but JSONL ledgers are not cryptographically
+  tamper-evident and the lock is not a distributed lease.
+- Existing-component symlink containment cannot prevent a hostile local process from racing path
+  replacement between validation and access; portable Node APIs do not expose directory-handle
+  `openat` semantics.
+- Production-package manifests provide consistency, not authenticity; cryptographic tamper evidence
+  remains separate roadmap work.

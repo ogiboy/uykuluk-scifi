@@ -23,9 +23,16 @@ Status: implemented and under QA.
   approval evidence, and require review/approval again.
 - Generate voiceover text, subtitles, scene prompts, popup cards, and YouTube metadata drafts.
 - Estimate costs.
+- Persist a versioned future paid-generation quote and require explicit approval of the exact quote
+  digest above the configured threshold.
+- Atomically reserve an approved nonzero quote line once, count active and uncertain reservations
+  against hard budgets, and support recoverable settlement or explicit reconciliation.
+- Route future nonzero provider callbacks through one adapter-bound internal execution contract that
+  persists `EXECUTION_STARTED`, prevents local redispatch, bounds timeout/abort, and classifies
+  definitely-not-sent, unknown, and successful outcomes.
 - Generate evidence bundle and readiness diagnostics.
-- Block readiness when the persisted cost estimate reports blocked reasons or disallows the next
-  step.
+- Block readiness when the cost quote is malformed, stale, over a hard budget, or missing its exact
+  required approval.
 - Validate run state on read/write and atomically replace persisted JSON files.
 - Render tracked operator prompts at runtime and record prompt key/source/hash provenance for
   generated ideas, scripts, and production packages.
@@ -48,10 +55,11 @@ Exit criteria:
 - Readiness passes with committed brand assets.
 - Upload and public/scheduled publish remain blocked by default.
 
-Hardening still required:
+Paid-provider boundary:
 
-- Define a dedicated paid-generation cost approval contract before any nonzero-cost provider is
-  enabled; until then, approval-threshold estimates remain blocked.
+- Reservation, execution-claim, timeout/failure classification, and settlement foundations are
+  implemented, but no nonzero-cost provider is enabled. A future separately approved adapter must
+  plug into the internal execution boundary; no direct provider-call path is permitted.
 
 ## Phase 1.5 - Project Policy And Tooling
 
@@ -194,7 +202,8 @@ Status: foundation in progress.
 - Improve Ollama model availability checks.
 - Record provider duration and token estimates consistently.
 - Keep provider failures explicit in readiness and evidence.
-- Do not introduce paid APIs until cost approval semantics are tested.
+- Do not introduce paid APIs until a separately approved adapter is designed to expose only the
+  tested reserved-provider execution boundary and its credential/evidence policy is reviewed.
 
 ## Phase 4 - TTS And Render
 
