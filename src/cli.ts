@@ -6,16 +6,13 @@ import { initProject } from "./config/config.js";
 import { SafeExitError } from "./core/errors.js";
 import { listRuns, loadRun } from "./core/runStore.js";
 import { runDoctor } from "./diagnostics/doctor.js";
-import {
-  publishSchedulePlaceholder,
-  renderPlaceholder,
-  uploadPrivatePlaceholder,
-} from "./stages/disabled.js";
+import { publishSchedulePlaceholder, uploadPrivatePlaceholder } from "./stages/disabled.js";
 import { generateEvidenceBundle } from "./stages/evidence.js";
 import { estimateCost } from "./stages/estimate.js";
 import { runIdeas } from "./stages/ideas.js";
 import { generateProductionPackage } from "./stages/productionPackage.js";
 import { runReadiness } from "./stages/readiness.js";
+import { renderDraft } from "./stages/render.js";
 import { generateRenderPlan } from "./stages/renderPlan.js";
 import { reviewScript } from "./stages/reviewScript.js";
 import { generateScript } from "./stages/script.js";
@@ -190,10 +187,11 @@ program
 program
   .command("render")
   .requiredOption("--run <run_id>")
-  .description("Disabled MVP render placeholder.")
+  .description("Generate a local FFmpeg draft render after explicit render approval.")
   .action(
     wrap(async (options: { run: string }) => {
-      await renderPlaceholder(options.run);
+      const manifest = await renderDraft(options.run);
+      console.log(`Draft render generated: ${manifest.output.path}`);
     }),
   );
 

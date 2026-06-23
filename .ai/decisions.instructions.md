@@ -44,6 +44,20 @@ Constraints:
   generated audio are local/ignored artifacts, not committed repository state.
 - Voiceover artifact presence does not imply render approval.
 
+### FFmpeg draft render is a local review artifact behind exact approval
+
+Reason: The channel needs reviewable local video drafts, but render execution must not imply upload
+or publish authority and must not run from stale visual/audio inputs.
+
+Constraints:
+
+- `producer approve render` records approval for the exact current render-plan and voiceover audio
+  digests.
+- `producer render` requires `RENDER_APPROVED`, production-package integrity, valid render-plan
+  evidence, valid voiceover evidence, and the matching render approval digest.
+- The first implementation may be visually simple, but it must write local render evidence and must
+  not call upload, schedule, public publish, paid providers, or external media services.
+
 ### Manual analytics feedback precedes YouTube Analytics API
 
 Reason: The product needs a learning loop, but API credentials, privacy, quota, and external-state

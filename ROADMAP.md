@@ -33,8 +33,8 @@ The current CLI/core already covers the safe production foundation:
   budget accounting;
 - provider failure diagnostics, Ollama receipts, prompt provenance, production-package integrity,
   and durable evidence;
-- disabled-by-default local TTS, plus disabled render, upload, and public/scheduled publish
-  scaffolds;
+- disabled-by-default local TTS, approval-gated local draft render, and disabled upload and
+  public/scheduled publish scaffolds;
 - CI, CodeQL, Sonar, formatting, modularity, secret scan, usage smoke, and release hygiene gates.
 
 Ongoing work in this phase should improve operator clarity instead of adding more unused
@@ -70,7 +70,7 @@ Constraints:
 
 - render planning consumes existing production-package and asset contracts;
 - render planning does not create a second workflow engine;
-- no FFmpeg render, upload, paid provider, or public publish is introduced in this slice;
+- no upload, paid provider, or public publish is introduced in this slice;
 - evidence/readiness should surface render-plan presence and blockers only after the artifact
   contract exists.
 
@@ -78,8 +78,9 @@ Next Real Production Loop slices:
 
 - harden local TTS with real Piper voice QA and better operator guidance; current foundation writes
   deterministic reference WAV metadata and can call a configured local Piper binary/model path;
-- FFmpeg draft render using committed backgrounds, subtitle panels, watermark, intro/outro frames,
-  popup cards, and render manifest;
+- harden FFmpeg draft render quality and visual composition. Current foundation renders local review
+  MP4 from the current render plan, voiceover audio, subtitles, background plate, and watermark, and
+  writes a render manifest;
 - manual final review/approval before any private upload work.
 
 ## Phase C - Operator Studio

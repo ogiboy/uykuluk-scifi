@@ -21,6 +21,9 @@ future generated release notes can be inserted predictably.
   after readiness, script approval, production-package integrity, and render-plan evidence pass.
 - Optional `local-piper` TTS adapter configuration for a local Piper binary and ignored voice model
   paths, alongside a deterministic local reference adapter for CI-safe timing artifacts.
+- `producer approve render` and `producer render` local FFmpeg draft-render flow with exact
+  render-plan/voiceover approval, MP4 output, manifest evidence, and draft-render readiness/evidence
+  status.
 - Basic type-safe `next-intl` foundation for English and Turkish Studio locales.
 - Unit and browser coverage for locale normalization and cookie-based document language.
 - Typed runtime loading for tracked idea, scriptwriter, and production-package prompt defaults.
@@ -76,6 +79,8 @@ future generated release notes can be inserted predictably.
   when partial or malformed render-plan artifacts exist.
 - Evidence and readiness now surface voiceover audio availability, warning when absent and blocking
   when partial, stale, or malformed voiceover artifacts exist.
+- Evidence next-command guidance now moves from voiceover to render approval and local draft render
+  review when the required artifacts are present.
 
 ### Fixed
 

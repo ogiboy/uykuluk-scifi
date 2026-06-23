@@ -1,4 +1,5 @@
 import type { ProducerConfig } from "../config/schema.js";
+import type { DraftRenderEvidence } from "./renderEvidence.js";
 import type { RenderPlanEvidence } from "./renderPlan.js";
 import type { VoiceoverAudioEvidence } from "./voiceoverEvidence.js";
 
@@ -6,6 +7,7 @@ export function evidenceBlockedActions(
   config: ProducerConfig,
   renderPlan: RenderPlanEvidence,
   voiceoverAudio: VoiceoverAudioEvidence,
+  draftRender: DraftRenderEvidence,
   unresolvedCostReservationCount: number,
 ): string[] {
   return [
@@ -17,6 +19,9 @@ export function evidenceBlockedActions(
       : undefined,
     voiceoverAudio.status === "block"
       ? `Voiceover audio evidence is blocked: ${voiceoverAudio.message}`
+      : undefined,
+    draftRender.status === "block"
+      ? `Draft render evidence is blocked: ${draftRender.message}`
       : undefined,
     !config.providers.tts.enabled ? "TTS disabled until configured and approved." : undefined,
     !config.providers.imageGeneration.enabled

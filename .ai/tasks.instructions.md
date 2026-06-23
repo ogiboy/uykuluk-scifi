@@ -52,6 +52,9 @@
 - Harden local TTS with real Piper model QA and operator guidance. Keep models and generated audio
   ignored; the current implemented foundation is deterministic reference WAV plus optional
   configured `local-piper` shell-out.
+- Harden FFmpeg draft render composition with scene timing, popup cards, waveform overlays,
+  intro/outro usage, and operator preview checks; the current foundation is exact-approval-gated
+  local MP4 plus render manifest.
 - Add a bounded long-form continuation or quality-improvement pass so qwen3:8b drafts satisfy
   long-form and hook quality expectations instead of only producing safe short reviewable drafts.
 - Prefer continuation/retry designs over simply raising local section chunk caps; live local QA
@@ -72,7 +75,6 @@
 ## Later
 
 - Repeat live Ollama generation QA after provider, prompt, or model-setting changes.
-- FFmpeg render behind render approval.
 - Manual analytics import/reporting from operator-provided CSV/JSON.
 - Private YouTube upload behind upload approval and explicit config.
 - Public/scheduled publish only after separate risk review.

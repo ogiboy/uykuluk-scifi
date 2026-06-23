@@ -38,8 +38,8 @@ is a channel-specific production loop for regularly producing original, scientif
 visually consistent UykulukSciFi drafts.
 
 Near-term value is reliable draft production first: turn approved ideas into reviewable script,
-metadata, subtitle, scene, render-plan, evidence, and local voiceover packages that can become
-weekly videos. Render, private upload, analytics feedback, and public/scheduled publish remain
+metadata, subtitle, scene, render-plan, local voiceover, draft render, and evidence packages that
+can become weekly videos. Private upload, analytics feedback, and public/scheduled publish remain
 separate future phases with their own approval, cost, readiness, and evidence boundaries.
 
 ## Primary Journey
@@ -55,7 +55,9 @@ doctor
   -> render-plan
   -> estimate / evidence / readiness
   -> optional local voiceover
-  -> future FFmpeg draft render
+  -> approve render
+  -> local FFmpeg draft render
+  -> future private upload review
 ```
 
 Every expensive, irreversible, or publishing-adjacent step stays blocked until the matching
@@ -83,7 +85,9 @@ agent-tracking state only; runtime code must not require it.
   per-run asset provenance.
 - Disabled-by-default local voiceover generation with deterministic reference WAV output and an
   optional Piper binary/model-path adapter.
-- Disabled render, private upload, and public/scheduled publish placeholders.
+- Approval-gated local FFmpeg draft render that writes a review MP4 and manifest from the current
+  render plan, voiceover audio, subtitles, background plate, and watermark.
+- Disabled private upload and public/scheduled publish placeholders.
 - UykulukSciFi visual assets under `assets/`.
 - `.ai/` operating contract for agents, workflows, design, QA, security, and roadmap state.
 - Project-local capability routing so technical, product, design, marketing, data, security, QA, and
@@ -152,8 +156,10 @@ agent-tracking state only; runtime code must not require it.
   linked cost event so retries can recover without recording the same charge twice.
 - Successful readiness diagnostics and evidence reflect the final transitioned run state.
 - TTS is disabled by default and only runs after readiness with explicit local configuration, script
-  approval, production-package integrity, and render-plan evidence. Render, upload, and publish
-  remain intentionally blocked scaffolds.
+  approval, production-package integrity, and render-plan evidence.
+- Draft render runs only after explicit render approval for the exact current render-plan and
+  voiceover digests. Render output is local review media, not upload or publish authority.
+- Upload and publish remain intentionally blocked scaffolds.
 - Upload and public/scheduled publish require future explicit config and separate approval gates.
 - Studio must call typed local service contracts; it must not duplicate workflow state.
 
@@ -193,6 +199,8 @@ pnpm producer approve cost --run <run_id> # only when the quote requires it
 pnpm producer evidence --run <run_id>
 pnpm producer readiness --run <run_id>
 pnpm producer voice --run <run_id> # optional, only after local TTS is explicitly enabled
+pnpm producer approve render --run <run_id>
+pnpm producer render --run <run_id>
 ```
 
 Inspection:
@@ -210,7 +218,6 @@ event under `revisions/script/<revision_id>/`.
 Blocked future actions:
 
 ```bash
-pnpm producer render --run <run_id>
 pnpm producer upload private --run <run_id>
 pnpm producer publish schedule --run <run_id>
 ```
@@ -350,6 +357,10 @@ production-quality voice. `local-piper` requires a local `piper` binary and igno
 configured with `piperModelPath` and, when needed, `piperConfigPath`. Do not commit downloaded voice
 models or generated audio.
 
+`producer render` requires `ffmpeg` on `PATH` unless called through a test harness with an explicit
+binary. The draft render is a local review artifact and may be regenerated after approval; it does
+not upload, schedule, or publish anything.
+
 `thinkingMode` can be `default`, `think`, or `no_think`. Token caps are sent to Ollama as
 `num_predict` so local generation cannot run unbounded. Script generation splits the approved idea
 into bounded hook, context, development, and outro sections. Each section is drafted once and then
@@ -390,6 +401,8 @@ Each run can write:
   `production/asset_provenance.json`;
 - `production/audio/voiceover.wav` and `production/audio/voiceover.meta.json` when local TTS is
   explicitly enabled and run after readiness;
+- `production/render/draft.mp4` and `production/render/render_manifest.json` after exact render
+  approval and local FFmpeg execution;
 - `costs/estimate.json` and `costs/estimate.md`;
 - `costs/ledger.jsonl`;
 - `costs/reservations.jsonl`;

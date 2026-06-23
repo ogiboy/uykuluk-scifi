@@ -1,0 +1,110 @@
+import { createHash } from "node:crypto";
+import { readFile, stat } from "node:fs/promises";
+import { z } from "zod";
+import { artifactPath } from "../core/artifacts.js";
+import { SafeExitError } from "../core/errors.js";
+import { RunRecord } from "../core/state.js";
+import { pathExists } from "../utils/fs.js";
+import { readJsonFile } from "../utils/json.js";
+import { readRenderPlanEvidence } from "./renderPlan.js";
+import { digestSchema } from "./renderPlanSchemas.js";
+import { readVoiceoverAudioEvidence } from "./voiceoverEvidence.js";
+
+export const draftRenderPath = "production/render/draft.mp4";
+export const draftRenderManifestPath = "production/render/render_manifest.json";
+export const draftRenderArtifactPaths = [draftRenderPath, draftRenderManifestPath] as const;
+
+export const draftRenderManifestSchema = z.strictObject({
+  schemaVersion: z.literal(1),
+  runId: z.string().min(1),
+  createdAt: z.iso.datetime(),
+  renderPlan: z.strictObject({
+    path: z.literal("production/render_plan.json"),
+    digest: digestSchema,
+  }),
+  voiceoverAudio: z.strictObject({
+    path: z.literal("production/audio/voiceover.wav"),
+    digest: digestSchema,
+  }),
+  output: z.strictObject({
+    path: z.literal(draftRenderPath),
+    sha256: digestSchema,
+    bytes: z.int().positive(),
+    durationSeconds: z.number().positive(),
+  }),
+  ffmpeg: z.strictObject({
+    binary: z.string().min(1),
+    args: z.array(z.string()),
+  }),
+});
+
+export type DraftRenderManifest = z.infer<typeof draftRenderManifestSchema>;
+
+export type DraftRenderEvidence =
+  | { status: "missing"; requiredArtifacts: readonly string[] }
+  | { status: "pass"; path: string; digest: string; bytes: number; durationSeconds: number }
+  | { status: "block"; path: string; message: string };
+
+export async function readDraftRenderEvidence(run: RunRecord): Promise<DraftRenderEvidence> {
+  const registered = draftRenderArtifactPaths.some((relativePath) =>
+    run.artifacts.includes(relativePath),
+  );
+  const exists = await Promise.all(
+    draftRenderArtifactPaths.map((relativePath) =>
+      pathExists(artifactPath(run.runId, relativePath)),
+    ),
+  );
+  if (!registered && exists.every((item) => !item)) {
+    return { status: "missing", requiredArtifacts: draftRenderArtifactPaths };
+  }
+  try {
+    await assertDraftRenderArtifacts(run);
+    const manifest = draftRenderManifestSchema.parse(
+      await readJsonFile(artifactPath(run.runId, draftRenderManifestPath)),
+    );
+    if (manifest.runId !== run.runId) {
+      throw new SafeExitError("Draft render manifest run id does not match this run.");
+    }
+    const output = await readFile(artifactPath(run.runId, draftRenderPath));
+    const digest = createHash("sha256").update(output).digest("hex");
+    const info = await stat(artifactPath(run.runId, draftRenderPath));
+    if (digest !== manifest.output.sha256 || info.size !== manifest.output.bytes) {
+      throw new SafeExitError("Draft render output does not match manifest.");
+    }
+    const renderPlan = await readRenderPlanEvidence(run);
+    const voiceoverAudio = await readVoiceoverAudioEvidence(run);
+    if (renderPlan.status !== "pass" || renderPlan.digest !== manifest.renderPlan.digest) {
+      throw new SafeExitError("Draft render was generated from a stale or missing render plan.");
+    }
+    if (
+      voiceoverAudio.status !== "pass" ||
+      voiceoverAudio.digest !== manifest.voiceoverAudio.digest
+    ) {
+      throw new SafeExitError("Draft render was generated from stale or missing voiceover audio.");
+    }
+    return {
+      status: "pass",
+      path: draftRenderPath,
+      digest,
+      bytes: manifest.output.bytes,
+      durationSeconds: manifest.output.durationSeconds,
+    };
+  } catch (error) {
+    return {
+      status: "block",
+      path: draftRenderPath,
+      message: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
+async function assertDraftRenderArtifacts(run: RunRecord): Promise<void> {
+  for (const relativePath of draftRenderArtifactPaths) {
+    if (!run.artifacts.includes(relativePath)) {
+      throw new SafeExitError(`Draft render artifact is not registered: ${relativePath}.`);
+    }
+    if (!(await pathExists(artifactPath(run.runId, relativePath)))) {
+      throw new SafeExitError(`Draft render artifact is missing: ${relativePath}.`);
+    }
+  }
+}

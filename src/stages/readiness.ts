@@ -9,6 +9,7 @@ import { pathExists } from "../utils/fs.js";
 import { bulletList, table } from "../utils/markdown.js";
 import { generateEvidenceBundle } from "./evidence.js";
 import { verifyProductionPackage } from "./productionPackageIntegrity.js";
+import { draftRenderReadinessCheck } from "./readinessRenderDraft.js";
 import { renderPlanReadinessCheck } from "./readinessRenderPlan.js";
 import { voiceoverReadinessCheck } from "./readinessVoiceover.js";
 
@@ -58,6 +59,7 @@ export async function runReadiness(
     await productionPackageIntegrityCheck(run),
     await renderPlanReadinessCheck(run),
     await voiceoverReadinessCheck(run),
+    await draftRenderReadinessCheck(run),
     await budgetEstimateCheck(run, config),
     {
       name: "no blocked publish action",

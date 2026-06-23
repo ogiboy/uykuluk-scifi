@@ -17,6 +17,10 @@ type VoiceoverNextStep = {
   status?: string;
 } | null;
 
+type DraftRenderNextStep = {
+  status?: string;
+} | null;
+
 /** Returns the next safe operator action represented by an evidence snapshot. */
 export function evidenceNextCommand(
   state: string,
@@ -25,6 +29,7 @@ export function evidenceNextCommand(
   scriptReview: ScriptReviewNextStep = {},
   renderPlan: RenderPlanNextStep = null,
   voiceoverAudio: VoiceoverNextStep = null,
+  draftRender: DraftRenderNextStep = null,
   ttsEnabled = false,
 ): string {
   if (hasUnresolvedCostReservation) {
@@ -56,9 +61,19 @@ export function evidenceNextCommand(
         : "pnpm producer readiness --run <run_id>",
     PAID_GENERATION_COST_APPROVED: "pnpm producer readiness --run <run_id>",
     READY_FOR_MANUAL_PRODUCTION:
-      ttsEnabled && voiceoverAudio?.status !== "pass"
-        ? "pnpm producer voice --run <run_id>"
-        : "Manual production review. Render/upload remain approval-gated.",
+      voiceoverAudio?.status === "pass"
+        ? "pnpm producer approve render --run <run_id>"
+        : ttsEnabled
+          ? "pnpm producer voice --run <run_id>"
+          : "Manual production review. Enable local TTS before draft render.",
+    RENDER_APPROVED:
+      draftRender?.status === "pass"
+        ? "Manual draft render review. Upload remains approval-gated."
+        : "pnpm producer render --run <run_id>",
+    RENDERED:
+      draftRender?.status === "pass"
+        ? "Manual final draft review. Upload remains approval-gated."
+        : "Regenerate evidence; draft render artifacts are missing or blocked.",
   };
   return commands[state] ?? "Review state and ledger before continuing.";
 }

@@ -1,4 +1,3 @@
-import path from "node:path";
 import { loadConfig } from "../config/config.js";
 import { readCostEstimate } from "../costs/costEstimate.js";
 import {
@@ -12,11 +11,12 @@ import { readCostEvents } from "../costs/costLedger.js";
 import { PromptProvenance } from "../prompts/provenance.js";
 import { pathExists } from "../utils/fs.js";
 import { readJsonFile } from "../utils/json.js";
-import { bulletList } from "../utils/markdown.js";
 import { nowIso } from "../utils/time.js";
 import { evidenceNextCommand } from "./evidenceNextCommand.js";
 import { evidenceBlockedActions } from "./evidenceBlockedActions.js";
+import { renderEvidenceMarkdown } from "./evidenceMarkdown.js";
 import { readProductionPackageIntegrityEvidence } from "./productionPackageIntegrity.js";
+import { readDraftRenderEvidence } from "./renderEvidence.js";
 import { readRenderPlanEvidence } from "./renderPlan.js";
 import { readScriptReviewEvidence } from "./scriptReviewEvidence.js";
 import { readVoiceoverAudioEvidence } from "./voiceoverEvidence.js";
@@ -40,6 +40,7 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
   const productionPackageIntegrity = await readProductionPackageIntegrityEvidence(run);
   const renderPlan = await readRenderPlanEvidence(run);
   const voiceoverAudio = await readVoiceoverAudioEvidence(run);
+  const draftRender = await readDraftRenderEvidence(run);
   const scriptReview = await readScriptReviewEvidence(run);
   const promptProvenance = await readPromptProvenance(run.runId);
   const unresolvedCostReservations = costReservations.filter(isActiveCostReservation);
@@ -55,6 +56,7 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
     config,
     renderPlan,
     voiceoverAudio,
+    draftRender,
     unresolvedCostReservations.length,
   );
   const bundle = {
@@ -71,6 +73,7 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
     productionPackageIntegrity,
     renderPlan,
     voiceoverAudio,
+    draftRender,
     costEstimatePath: (await pathExists(artifactPath(run.runId, "costs/estimate.json")))
       ? "costs/estimate.json"
       : null,
@@ -88,6 +91,7 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
       scriptReview,
       renderPlan,
       voiceoverAudio,
+      draftRender,
       config.providers.tts.enabled,
     ),
     ledgerEventCount: ledger.length,
@@ -98,98 +102,8 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
   return bundle;
 }
 
-/** Renders the persisted evidence bundle for operator review. */
-function renderEvidenceMarkdown(bundle: unknown): string {
-  const data = bundle as {
-    runId: string;
-    generatedAt: string;
-    currentState: string;
-    approvedIdea: { title?: string } | null;
-    approvals: unknown[];
-    costs: unknown[];
-    costReservations: unknown[];
-    costQuote: Awaited<ReturnType<typeof readCostQuoteEvidence>>;
-    productionPackageIntegrity: Awaited<ReturnType<typeof readProductionPackageIntegrityEvidence>>;
-    renderPlan: Awaited<ReturnType<typeof readRenderPlanEvidence>>;
-    voiceoverAudio: Awaited<ReturnType<typeof readVoiceoverAudioEvidence>>;
-    generatedArtifacts: string[];
-    warnings: string[];
-    promptProvenance: PromptProvenance[];
-    revisions: string[];
-    blockedActions: string[];
-    nextRecommendedCommand: string;
-  };
-  return [
-    "# Evidence Bundle",
-    "",
-    `Run: ${data.runId}`,
-    `Generated at: ${data.generatedAt}`,
-    `Current state: ${data.currentState}`,
-    `Approved idea: ${data.approvedIdea?.title ?? "None"}`,
-    "",
-    "## Approvals",
-    "",
-    bulletList(data.approvals.map((approval) => JSON.stringify(approval))),
-    "",
-    "## Costs",
-    "",
-    bulletList(data.costs.map((cost) => JSON.stringify(cost))),
-    "",
-    "## Cost Reservations",
-    "",
-    bulletList(data.costReservations.map((reservation) => JSON.stringify(reservation))),
-    "",
-    "## Cost Quote",
-    "",
-    data.costQuote ? JSON.stringify(data.costQuote) : "None",
-    "",
-    "## Production Package Integrity",
-    "",
-    data.productionPackageIntegrity
-      ? JSON.stringify(data.productionPackageIntegrity)
-      : "No production package manifest.",
-    "",
-    "## Render Plan",
-    "",
-    JSON.stringify(data.renderPlan),
-    "",
-    "## Voiceover Audio",
-    "",
-    JSON.stringify(data.voiceoverAudio),
-    "",
-    "## Warnings",
-    "",
-    bulletList(data.warnings),
-    "",
-    "## Prompt Provenance",
-    "",
-    bulletList(
-      data.promptProvenance.map(
-        (prompt) =>
-          `${prompt.key}: ${prompt.hash} from ${prompt.source ?? "legacy-inline"} -> ${path.posix.normalize(prompt.artifact)}`,
-      ),
-    ),
-    "",
-    "## Revisions",
-    "",
-    bulletList(data.revisions.map((revision) => path.posix.normalize(revision))),
-    "",
-    "## Artifacts",
-    "",
-    bulletList(data.generatedArtifacts.map((artifact) => path.posix.normalize(artifact))),
-    "",
-    "## Blocked Actions",
-    "",
-    bulletList(data.blockedActions),
-    "",
-    "## Next Recommended Command",
-    "",
-    data.nextRecommendedCommand,
-  ].join("\n");
-}
-
 /** Reads quote evidence, preserving parse failures as explicit invalid status. */
-async function readCostQuoteEvidence(run: Awaited<ReturnType<typeof loadRun>>): Promise<{
+export async function readCostQuoteEvidence(run: Awaited<ReturnType<typeof loadRun>>): Promise<{
   path: string;
   digest: string;
   estimatedUsd: number;

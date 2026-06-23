@@ -54,6 +54,9 @@
   render-plan evidence before it writes `production/audio/voiceover.wav` and
   `production/audio/voiceover.meta.json`. `deterministic-local` is a timing/reference adapter;
   `local-piper` shells out to a configured local Piper binary and ignored model path.
+- Approval-gated local FFmpeg draft render. `producer approve render` records approval for the exact
+  current render-plan and voiceover digests, then `producer render` requires `RENDER_APPROVED`
+  before writing `production/render/draft.mp4` and `production/render/render_manifest.json`.
 - Provider-backed idea and production-package stages schema-validate and normalize common Ollama
   JSON variants before artifact writes, while rejecting malformed or English operator-facing
   payloads fail-closed.
@@ -75,7 +78,7 @@
 - Readiness diagnostics that strictly parse and revalidate persisted cost quotes, live hard budgets,
   complete production-package integrity, and exact paid-generation cost approval when required.
 - Final readiness diagnostics agree with the post-transition run state.
-- Disabled render, upload, and publish placeholders.
+- Disabled upload and publish placeholders.
 - Basic Next.js Producer Studio shell under `apps/studio`.
 - Visual asset pack imported under `assets/`.
 - Clean-copy usage smoke script.
@@ -184,7 +187,10 @@ Corepack/PATH before treating failures as product failures.
 - Local TTS currently provides a deterministic timing/reference WAV and an optional configured Piper
   shell-out. It does not download or commit voice models, approve render execution, upload, or
   publish. Real Piper voice quality still needs local QA.
-- Render, upload, and publish are intentionally disabled scaffolds.
+- FFmpeg draft render currently focuses on a simple local review MP4 using a background plate,
+  subtitle burn-in, watermark overlay, and voiceover audio. More complete scene timing, popup card,
+  waveform, intro/outro, and composition polish remain follow-up work.
+- Upload and publish are intentionally disabled scaffolds.
 - Manual analytics import/reporting is not implemented. Future analytics should start from
   operator-provided CSV/JSON before any YouTube Analytics API integration.
 - Run-path containment blocks pre-existing symbolic links. Hostile concurrent path replacement

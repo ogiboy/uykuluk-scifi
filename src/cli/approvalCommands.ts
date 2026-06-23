@@ -1,6 +1,7 @@
 import { Command } from "commander";
 import { approvePaidGenerationCost } from "../stages/approveCost.js";
 import { approveIdea } from "../stages/approveIdea.js";
+import { approveRender } from "../stages/approveRender.js";
 import { approveScript } from "../stages/approveScript.js";
 
 type AsyncActionWrapper = <T extends unknown[]>(
@@ -52,6 +53,19 @@ export function registerApprovalCommands(program: Command, wrap: AsyncActionWrap
       wrap(async (options: { run: string }) => {
         const approval = await approvePaidGenerationCost(options.run);
         console.log(`Paid-generation cost approval recorded: ${approval.approvalId}`);
+      }),
+    );
+
+  approve
+    .command("render")
+    .requiredOption("--run <run_id>")
+    .description(
+      "Approve the exact current render plan and voiceover audio for local draft render.",
+    )
+    .action(
+      wrap(async (options: { run: string }) => {
+        const approval = await approveRender(options.run);
+        console.log(`Render approval recorded: ${approval.approvalId}`);
       }),
     );
 }

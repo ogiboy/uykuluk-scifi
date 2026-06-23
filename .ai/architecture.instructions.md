@@ -42,7 +42,8 @@ The next product phase should extend the existing CLI/core flow toward a local v
 - local TTS is owned by the workflow stages and runs only after readiness, script approval,
   production-package integrity, and render-plan evidence. Deterministic reference audio is for
   pipeline timing; Piper remains an optional local binary/model-path adapter with ignored models;
-- FFmpeg render should run only after render planning, render approval, and local artifact checks;
+- FFmpeg render is owned by the workflow stages and runs only after render planning, exact render
+  approval, voiceover evidence, production-package integrity, and local artifact checks;
 - analytics import/reporting should consume operator-provided files and link results back to runs.
 
 Render planning must not create a second workflow engine. It should reuse run state, artifact,
