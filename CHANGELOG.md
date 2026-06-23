@@ -93,6 +93,8 @@ future generated release notes can be inserted predictably.
   scanning the first raw lines.
 - Evidence next-command guidance now recommends `--acknowledge-warnings` for reviewed scripts with
   warnings and avoids approval guidance while review blockers remain.
+- Script review Markdown now shows the matching next approval command or blocker remediation
+  guidance.
 - Asset readiness now inventories intro and outro inputs in addition to brand and overlay files.
 - Cost and reservation ledgers now reject malformed or foreign-run rows instead of accepting
   unvalidated JSON.

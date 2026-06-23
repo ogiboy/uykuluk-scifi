@@ -12,6 +12,8 @@
 - Keep direct provider/publish guard coverage and CI dependency audit passing.
 - Keep script review, warning acknowledgement, approval, and packaging bound to one exact content
   digest.
+- Keep script review Markdown approval guidance synchronized with the enforced warning/blocker
+  gates.
 - Keep script revision snapshots, attribution, state rollback, and approval invalidation passing.
 - Keep provider-backed generation behind per-video, daily, and weekly budget preflight.
 - Keep future paid-generation quotes bound to exact package/config/pricing digests and require an

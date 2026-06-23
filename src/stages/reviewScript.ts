@@ -8,14 +8,14 @@ import { reviewScriptContent } from "../safeguards/contentGuard.js";
 import { sha256 } from "../utils/hash.js";
 import { bulletList } from "../utils/markdown.js";
 
+type ScriptReviewWarnings = ReturnType<typeof reviewScriptContent>;
+
 /**
  * Reviews the generated script content for a run.
  *
  * @returns An object containing the warnings produced by the content review.
  */
-export async function reviewScript(
-  runId: string,
-): Promise<{ warnings: ReturnType<typeof reviewScriptContent> }> {
+export async function reviewScript(runId: string): Promise<{ warnings: ScriptReviewWarnings }> {
   let run = await loadRun(runId);
   await requireState(run, "SCRIPT_GENERATED", "review-script");
   assertTransition(run.state, "SCRIPT_REVIEWED");
@@ -48,6 +48,10 @@ export async function reviewScript(
         bulletList(
           warnings.map((warning) => `[${warning.severity}] ${warning.code}: ${warning.message}`),
         ),
+        "",
+        "## Next Approval Step",
+        "",
+        scriptReviewNextApprovalStep(warnings),
       ].join("\n"),
     );
     await setRunState(run, "SCRIPT_REVIEWED", "review-script");
@@ -61,4 +65,14 @@ export async function reviewScript(
     });
     throw error;
   }
+}
+
+function scriptReviewNextApprovalStep(warnings: ScriptReviewWarnings): string {
+  if (warnings.some((warning) => warning.severity === "blocker")) {
+    return "Resolve blocking review findings before script approval.";
+  }
+  if (warnings.length > 0) {
+    return "pnpm producer approve script --run <run_id> --acknowledge-warnings";
+  }
+  return "pnpm producer approve script --run <run_id>";
 }

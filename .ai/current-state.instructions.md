@@ -39,6 +39,7 @@
   fail-closed unknown outcomes, exact settlement, and hashed request-id evidence.
 - Script content review heuristics, including clickbait title warnings, long-form shortfall
   warnings, and blockers for incomplete or English-labeled provider output.
+- Script review Markdown shows the next safe approval command or blocker remediation guidance.
 - Brand, overlay, intro, and outro asset inventory checks.
 - Production package generation with complete manifest creation after all derived artifacts are
   persisted.
