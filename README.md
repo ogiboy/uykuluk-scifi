@@ -40,6 +40,8 @@ to YouTube in the MVP.
 - Mock-first provider layer with Ollama adapter scaffold.
 - Project-level `producer doctor` diagnostics for config, mock/Ollama readiness, assets, and publish
   defaults.
+- Runtime prompt defaults under `prompts/defaults/`; `.ai/` is development and agent-tracking
+  guidance, not a runtime dependency.
 - Strict run state machine and explicit approval ledger.
 - Versioned future paid-generation cost quote bundles (JSON plus operator Markdown) with exact
   digest approval, atomic one-time cost reservations, recoverable settlement/reconciliation, live
@@ -62,6 +64,7 @@ to YouTube in the MVP.
 .
 ├── apps/studio/              # Next.js Producer Studio shell
 ├── assets/                   # Committed production visual assets and manifest docs
+├── prompts/defaults/         # Runtime prompt defaults used by provider-backed stages
 ├── scripts/
 │   ├── qa/                   # Usage smoke, modularity gate, Sonar scanner wrapper
 │   ├── release/              # Changelog and conventional-commit checks
@@ -77,7 +80,7 @@ to YouTube in the MVP.
 │   ├── utils/                # Small shared helpers
 │   └── youtube/              # Disabled upload/publish boundary
 ├── tests/                    # Vitest coverage for workflow and guards
-├── .ai/                      # Durable project rules, workflows, QA, and decisions
+├── .ai/                      # Development-only agent rules, workflows, QA, and decisions
 └── .github/                  # CI, CodeQL, Dependabot, Sonar workflow
 ```
 
@@ -96,8 +99,8 @@ to YouTube in the MVP.
   cost paths are constructed; persisted state must carry the same run id as its directory.
 - Run artifact names are validated as bounded canonical relative paths before reads, writes, ledger
   events, or persistence; absolute paths, dot segments, backslashes, and malformed segments block.
-- Generated ideas, scripts, and production packages render their tracked `.ai/prompts/` defaults at
-  runtime and record prompt key, source path, and hash provenance.
+- Generated ideas, scripts, and production packages render product runtime prompt defaults from
+  `prompts/defaults/` and record prompt key, source path, and hash provenance.
 - Idea, script, and production-package generation re-check existing per-video, daily, and weekly
   budgets, using the stage pricing estimate, before calling a provider or writing generated
   artifacts.
@@ -271,12 +274,13 @@ the configured model is not installed. The command writes ignored local evidence
 
 Tracked runtime prompt defaults:
 
-- `.ai/prompts/planner-task.md`
-- `.ai/prompts/scriptwriter-task.md`
-- `.ai/prompts/production-package-task.md`
+- `prompts/defaults/planner-task.md`
+- `prompts/defaults/scriptwriter-task.md`
+- `prompts/defaults/production-package-task.md`
 
-Editing a tracked prompt changes future generation only. It does not rerun a stage, mutate an
-existing artifact, or grant approval.
+Editing a runtime default prompt changes future generation only. It does not rerun a stage, mutate
+an existing artifact, or grant approval. Files under `.ai/` are for development guidance, QA
+evidence, checkpoints, and agent coordination; the CLI must not require them to run.
 
 ## Run Artifacts
 

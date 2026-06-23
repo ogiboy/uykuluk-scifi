@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { artifactPath } from "../src/core/artifacts";
 import { sha256 } from "../src/utils/hash";
 import { readJsonFile } from "../src/utils/json";
+import { pathExists } from "../src/utils/fs";
 import { approveIdea } from "../src/stages/approveIdea";
 import { approveScript } from "../src/stages/approveScript";
 import { runIdeas } from "../src/stages/ideas";
@@ -11,13 +12,15 @@ import { reviewScript } from "../src/stages/reviewScript";
 import { generateScript } from "../src/stages/script";
 import { useTempProject } from "./helpers";
 
-describe("tracked runtime prompt templates", () => {
+describe("runtime prompt defaults", () => {
   useTempProject();
 
-  it("uses tracked operator prompts for every provider-backed artifact", async () => {
-    const plannerTemplate = await trackedPrompt("planner-task.md");
-    const scriptTemplate = await trackedPrompt("scriptwriter-task.md");
-    const packageTemplate = await trackedPrompt("production-package-task.md");
+  it("uses product runtime prompt defaults without requiring .ai files", async () => {
+    expect(await pathExists(".ai")).toBe(false);
+
+    const plannerTemplate = await defaultPrompt("planner-task.md");
+    const scriptTemplate = await defaultPrompt("scriptwriter-task.md");
+    const packageTemplate = await defaultPrompt("production-package-task.md");
 
     const { runId, ideas } = await runIdeas();
     const ideasArtifact = await readJsonFile<{
@@ -27,7 +30,7 @@ describe("tracked runtime prompt templates", () => {
       key: "ideas",
       hash: sha256(["IDEAS_JSON", plannerTemplate].join("\n\n")),
       artifact: "ideas.json",
-      source: ".ai/prompts/planner-task.md",
+      source: "prompts/defaults/planner-task.md",
     });
 
     await approveIdea(runId, ideas[0].id);
@@ -40,7 +43,7 @@ describe("tracked runtime prompt templates", () => {
         ),
       ),
       artifact: "script.md",
-      source: ".ai/prompts/scriptwriter-task.md",
+      source: "prompts/defaults/scriptwriter-task.md",
     });
 
     await reviewScript(runId);
@@ -58,11 +61,13 @@ describe("tracked runtime prompt templates", () => {
         ),
       ),
       artifact: "production/production_package.md",
-      source: ".ai/prompts/production-package-task.md",
+      source: "prompts/defaults/production-package-task.md",
     });
   });
 });
 
-async function trackedPrompt(filename: string): Promise<string> {
-  return (await readFile(new URL(`../.ai/prompts/${filename}`, import.meta.url), "utf8")).trim();
+async function defaultPrompt(filename: string): Promise<string> {
+  return (
+    await readFile(new URL(`../prompts/defaults/${filename}`, import.meta.url), "utf8")
+  ).trim();
 }

@@ -34,7 +34,7 @@ Status: implemented and under QA.
 - Block readiness when the cost quote is malformed, stale, over a hard budget, or missing its exact
   required approval.
 - Validate run state on read/write and atomically replace persisted JSON files.
-- Render tracked operator prompts at runtime and record prompt key/source/hash provenance for
+- Render tracked product prompt defaults at runtime and record prompt key/source/hash provenance for
   generated ideas, scripts, and production packages.
 - Run budget preflight before provider-backed generation so an already-exceeded ledger cannot cause
   another provider call or generated artifact; use the stage pricing estimate for the reservation
@@ -65,7 +65,8 @@ Paid-provider boundary:
 
 Status: in progress.
 
-- Strengthen `.ai/` as the durable project operating contract.
+- Strengthen `.ai/` as the durable development and agent-tracking contract, without making it a
+  runtime dependency.
 - Keep a project-local capability inventory and routing matrix for engineering, product, design,
   marketing, analytics, security, QA, research, release, and swarm work.
 - Keep long-running goals resumable through repository checkpoints without depending on oversized
@@ -147,9 +148,10 @@ Exit criteria:
 
 Status: planned.
 
-The current `.ai/prompts/` files are operator-facing runtime defaults for ideas, scripts, and
-production packages. A future dashboard should let the operator inspect and edit prompt templates
-without turning prompt changes into hidden state.
+The current `prompts/defaults/` files are product runtime defaults for ideas, scripts, and
+production packages. `.ai/` remains development guidance and QA/checkpoint evidence only. A future
+dashboard should let the operator inspect and edit prompt templates without turning prompt changes
+into hidden state.
 
 Planned contracts:
 

@@ -71,17 +71,7 @@ export async function projectConfigExists(): Promise<boolean> {
 
 export async function initProject(): Promise<string[]> {
   const created: string[] = [];
-  const dirs = [
-    ".ai/prompts",
-    ".ai/runbooks",
-    ".ai/checklists",
-    ".ai/reviews",
-    "assets/brand",
-    "assets/overlays",
-    "assets/intro",
-    "assets/outro",
-    "runs",
-  ];
+  const dirs = ["assets/brand", "assets/overlays", "assets/intro", "assets/outro", "runs"];
   for (const dir of dirs) {
     await ensureDir(path.join(process.cwd(), dir));
     created.push(dir);

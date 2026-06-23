@@ -4,8 +4,8 @@
 
 - TypeScript CLI project.
 - Mock-first provider layer with Ollama adapter scaffold.
-- Typed runtime loading of tracked `.ai/prompts/` defaults for ideas, scripts, and production
-  packages, with prompt key/source/hash provenance.
+- Typed runtime loading of tracked `prompts/defaults/` product prompt defaults for ideas, scripts,
+  and production packages, with prompt key/source/hash provenance.
 - Strict run state machine.
 - Schema-validated run records with atomic JSON replacement.
 - Zod 4-native runtime schemas with strict persisted objects, ISO timestamp validation, current

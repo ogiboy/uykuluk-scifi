@@ -17,10 +17,6 @@ export function useTempProject(): void {
       path.join(previousCwd, "producer.config.example.json"),
       path.join(currentDir, "producer.config.example.json"),
     );
-    await mkdir(".ai/prompts", { recursive: true });
-    await mkdir(".ai/runbooks", { recursive: true });
-    await mkdir(".ai/checklists", { recursive: true });
-    await mkdir(".ai/reviews", { recursive: true });
     await initProject();
   });
 

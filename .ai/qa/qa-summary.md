@@ -2,8 +2,8 @@
 
 Latest usage smoke report:
 
-- `.ai/qa/artifacts/usage-smoke-20260623-131633/qa-report.md`
-- `.ai/qa/artifacts/usage-smoke-20260623-131633/usage-smoke-summary.json`
+- `.ai/qa/artifacts/usage-smoke-20260623-143747/qa-report.md`
+- `.ai/qa/artifacts/usage-smoke-20260623-143747/usage-smoke-summary.json`
 
 Validated gates:
 
@@ -58,9 +58,9 @@ Usage smoke coverage:
 - Core, cost, and reservation ledger tests reject multiply-linked final files before reading or
   appending through an inode reachable by another pathname.
 - Evidence and clean-copy usage QA verify three runtime prompt provenance records with tracked
-  `.ai/prompts/` source paths and SHA-256 hashes.
-- Direct prompt-template coverage proves ideas, scripts, and production packages render the tracked
-  operator defaults rather than separate hard-coded stage prompts.
+  `prompts/defaults/` source paths and SHA-256 hashes.
+- Direct prompt-template coverage proves ideas, scripts, and production packages render product
+  runtime defaults without requiring `.ai` files.
 - Direct Vitest coverage verifies deterministic mock output, Ollama diagnostics/usage metadata, and
   publish configuration plus approval boundaries.
 - Content/asset guard tests verify clickbait title warnings and brand/overlay/intro/outro inventory.
