@@ -1,13 +1,13 @@
 import { readFile } from "node:fs/promises";
-import { artifactPath } from "../core/artifacts";
-import { appendLedgerEvent } from "../core/ledger";
-import { loadRun, setRunState } from "../core/runStore";
-import { assertTransition } from "../core/transitions";
-import { ApprovalRecord } from "../core/state";
-import { SafeExitError } from "../core/errors";
-import { requireState } from "../safeguards/approvalGuard";
-import { createId, nowIso } from "../utils/time";
-import { VideoIdea } from "./types";
+import { artifactPath } from "../core/artifacts.js";
+import { appendLedgerEvent } from "../core/ledger.js";
+import { loadRun, setRunState } from "../core/runStore.js";
+import { assertTransition } from "../core/transitions.js";
+import { ApprovalRecord } from "../core/state.js";
+import { SafeExitError } from "../core/errors.js";
+import { requireState } from "../safeguards/approvalGuard.js";
+import { createId, nowIso } from "../utils/time.js";
+import { VideoIdea } from "./types.js";
 
 export async function approveIdea(runId: string, ideaId: string): Promise<ApprovalRecord> {
   let run = await loadRun(runId);

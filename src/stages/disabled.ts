@@ -1,9 +1,9 @@
-import { loadConfig } from "../config/config";
-import { loadRun } from "../core/runStore";
-import { appendLedgerEvent } from "../core/ledger";
-import { SafeExitError } from "../core/errors";
-import { requireApproval } from "../safeguards/approvalGuard";
-import { runPrivateUploadPlaceholder, runPublishPlaceholder } from "../youtube/uploadDisabled";
+import { loadConfig } from "../config/config.js";
+import { loadRun } from "../core/runStore.js";
+import { appendLedgerEvent } from "../core/ledger.js";
+import { SafeExitError } from "../core/errors.js";
+import { requireApproval } from "../safeguards/approvalGuard.js";
+import { runPrivateUploadPlaceholder, runPublishPlaceholder } from "../youtube/uploadDisabled.js";
 
 export async function voicePlaceholder(runId: string): Promise<never> {
   const run = await loadRun(runId);

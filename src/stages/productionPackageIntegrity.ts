@@ -1,11 +1,11 @@
 import { readFile } from "node:fs/promises";
 import { z } from "zod";
-import { artifactPath } from "../core/artifacts";
-import { SafeExitError } from "../core/errors";
-import { RunRecord } from "../core/state";
-import { PromptProvenance } from "../prompts/provenance";
-import { pathExists } from "../utils/fs";
-import { sha256 } from "../utils/hash";
+import { artifactPath } from "../core/artifacts.js";
+import { SafeExitError } from "../core/errors.js";
+import { RunRecord } from "../core/state.js";
+import { PromptProvenance } from "../prompts/provenance.js";
+import { pathExists } from "../utils/fs.js";
+import { sha256 } from "../utils/hash.js";
 
 export const productionPackageManifestPath = "production/production_package.meta.json";
 

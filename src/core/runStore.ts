@@ -1,12 +1,12 @@
 import { readdir } from "node:fs/promises";
-import { appendLedgerEvent } from "./ledger";
-import { RunRecord, RunState, runRecordSchema } from "./state";
-import { invariant, SafeExitError } from "./errors";
-import { ensureDir, pathExists } from "../utils/fs";
-import { readJsonFile, writeJsonFile } from "../utils/json";
-import { createId, nowIso } from "../utils/time";
-import { isValidRunId, runDir, runsDir, statePath } from "./runPaths";
-import { validateArtifactRelativePath } from "./artifactPaths";
+import { appendLedgerEvent } from "./ledger.js";
+import { RunRecord, RunState, runRecordSchema } from "./state.js";
+import { invariant, SafeExitError } from "./errors.js";
+import { ensureDir, pathExists } from "../utils/fs.js";
+import { readJsonFile, writeJsonFile } from "../utils/json.js";
+import { createId, nowIso } from "../utils/time.js";
+import { isValidRunId, runDir, runsDir, statePath } from "./runPaths.js";
+import { validateArtifactRelativePath } from "./artifactPaths.js";
 
 export {
   isValidRunId,
@@ -16,7 +16,7 @@ export {
   runsPath,
   statePath,
   validateRunId,
-} from "./runPaths";
+} from "./runPaths.js";
 
 /**
  * Creates a new run record with an initial state.

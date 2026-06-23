@@ -2,13 +2,15 @@
 
 Latest usage smoke report:
 
-- `.ai/qa/artifacts/usage-smoke-20260623-143747/qa-report.md`
-- `.ai/qa/artifacts/usage-smoke-20260623-143747/usage-smoke-summary.json`
+- `.ai/qa/artifacts/usage-smoke-20260623-145603/qa-report.md`
+- `.ai/qa/artifacts/usage-smoke-20260623-145603/usage-smoke-summary.json`
 
 Validated gates:
 
 - `pnpm lint`
 - `pnpm typecheck`
+- `pnpm build`
+- `pnpm build:smoke`
 - `pnpm test`
 - `pnpm qa:usage`
 - `pnpm qa:browser`

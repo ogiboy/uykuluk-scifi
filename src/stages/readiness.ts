@@ -1,14 +1,14 @@
-import { loadConfig, projectConfigExists } from "../config/config";
-import { readCostEstimate, validateCurrentCostEstimate } from "../costs/costEstimate";
-import { artifactPath, writeRunJson, writeRunText } from "../core/artifacts";
-import { loadRun, setRunState } from "../core/runStore";
-import { RunRecord } from "../core/state";
-import { canTransition } from "../core/transitions";
-import { checkAssets } from "../safeguards/assetGuard";
-import { pathExists } from "../utils/fs";
-import { bulletList, table } from "../utils/markdown";
-import { generateEvidenceBundle } from "./evidence";
-import { verifyProductionPackage } from "./productionPackageIntegrity";
+import { loadConfig, projectConfigExists } from "../config/config.js";
+import { readCostEstimate, validateCurrentCostEstimate } from "../costs/costEstimate.js";
+import { artifactPath, writeRunJson, writeRunText } from "../core/artifacts.js";
+import { loadRun, setRunState } from "../core/runStore.js";
+import { RunRecord } from "../core/state.js";
+import { canTransition } from "../core/transitions.js";
+import { checkAssets } from "../safeguards/assetGuard.js";
+import { pathExists } from "../utils/fs.js";
+import { bulletList, table } from "../utils/markdown.js";
+import { generateEvidenceBundle } from "./evidence.js";
+import { verifyProductionPackage } from "./productionPackageIntegrity.js";
 
 type ReadinessCheck = {
   name: string;

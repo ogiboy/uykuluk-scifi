@@ -51,6 +51,8 @@ future generated release notes can be inserted predictably.
 
 ### Fixed
 
+- Production build now emits a Node-runnable CLI without compiling tests into `dist/`, and build
+  smoke verifies the compiled CLI can initialize a fresh project from another working directory.
 - Provider-backed idea, script, and production-package generation now blocks before provider calls
   and artifact writes when stage pricing would exceed existing per-video, daily, or weekly budgets.
 - Production packaging now fails closed when `script.md` changes after review or approval.

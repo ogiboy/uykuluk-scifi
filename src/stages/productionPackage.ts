@@ -1,19 +1,19 @@
 import { readFile } from "node:fs/promises";
-import { loadConfig } from "../config/config";
-import { artifactPath, writeRunJson, writeRunText } from "../core/artifacts";
-import { SafeExitError } from "../core/errors";
-import { appendLedgerEvent } from "../core/ledger";
-import { loadRun, setRunState } from "../core/runStore";
-import { assertTransition } from "../core/transitions";
-import { defaultStagePricing } from "../costs/pricing";
-import { enforceBudget } from "../safeguards/budgetGuard";
-import { requireApproval, requireState } from "../safeguards/approvalGuard";
-import { createLlmProvider } from "../providers";
-import { createPromptProvenance } from "../prompts/provenance";
-import { renderProductionPackagePrompt } from "../prompts/templates";
-import { sha256 } from "../utils/hash";
-import { createProductionPackageManifest } from "./productionPackageIntegrity";
-import { ProductionScene } from "./types";
+import { loadConfig } from "../config/config.js";
+import { artifactPath, writeRunJson, writeRunText } from "../core/artifacts.js";
+import { SafeExitError } from "../core/errors.js";
+import { appendLedgerEvent } from "../core/ledger.js";
+import { loadRun, setRunState } from "../core/runStore.js";
+import { assertTransition } from "../core/transitions.js";
+import { defaultStagePricing } from "../costs/pricing.js";
+import { enforceBudget } from "../safeguards/budgetGuard.js";
+import { requireApproval, requireState } from "../safeguards/approvalGuard.js";
+import { createLlmProvider } from "../providers/index.js";
+import { createPromptProvenance } from "../prompts/provenance.js";
+import { renderProductionPackagePrompt } from "../prompts/templates.js";
+import { sha256 } from "../utils/hash.js";
+import { createProductionPackageManifest } from "./productionPackageIntegrity.js";
+import { ProductionScene } from "./types.js";
 
 type PackageProviderPayload = {
   popupCards: string[];

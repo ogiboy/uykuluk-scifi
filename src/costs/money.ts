@@ -1,4 +1,4 @@
-import { SafeExitError } from "../core/errors";
+import { SafeExitError } from "../core/errors.js";
 
 const USD_MICROS = 1_000_000;
 

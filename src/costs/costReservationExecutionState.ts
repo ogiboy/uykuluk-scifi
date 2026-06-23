@@ -1,9 +1,9 @@
-import { SafeExitError } from "../core/errors";
-import { appendLedgerEvent } from "../core/ledger";
-import { createId, nowIso } from "../utils/time";
-import { requireReservation } from "./costReservationContext";
-import { withCostReservationLock } from "./costReservationLock";
-import { appendCostReservationEvent, CostReservationSummary } from "./costReservationStore";
+import { SafeExitError } from "../core/errors.js";
+import { appendLedgerEvent } from "../core/ledger.js";
+import { createId, nowIso } from "../utils/time.js";
+import { requireReservation } from "./costReservationContext.js";
+import { withCostReservationLock } from "./costReservationLock.js";
+import { appendCostReservationEvent, CostReservationSummary } from "./costReservationStore.js";
 
 type AdapterIdentity = {
   provider: string;

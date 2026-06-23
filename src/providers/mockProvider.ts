@@ -3,7 +3,7 @@ import {
   GenerateTextResult,
   LlmProvider,
   approximateTokens,
-} from "./llmProvider";
+} from "./llmProvider.js";
 
 export class MockProvider implements LlmProvider {
   async generateText(input: GenerateTextInput): Promise<GenerateTextResult> {

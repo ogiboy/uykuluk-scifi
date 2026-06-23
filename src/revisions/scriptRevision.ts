@@ -1,14 +1,14 @@
 import { readFile } from "node:fs/promises";
 import { z } from "zod";
-import { artifactPath, writeRunJson, writeRunText } from "../core/artifacts";
-import { SafeExitError } from "../core/errors";
-import { appendLedgerEvent } from "../core/ledger";
-import { loadRun, saveRun, setRunState } from "../core/runStore";
-import { runStateSchema } from "../core/state";
-import { assertTransition } from "../core/transitions";
-import { pathExists } from "../utils/fs";
-import { sha256 } from "../utils/hash";
-import { createId, nowIso } from "../utils/time";
+import { artifactPath, writeRunJson, writeRunText } from "../core/artifacts.js";
+import { SafeExitError } from "../core/errors.js";
+import { appendLedgerEvent } from "../core/ledger.js";
+import { loadRun, saveRun, setRunState } from "../core/runStore.js";
+import { runStateSchema } from "../core/state.js";
+import { assertTransition } from "../core/transitions.js";
+import { pathExists } from "../utils/fs.js";
+import { sha256 } from "../utils/hash.js";
+import { createId, nowIso } from "../utils/time.js";
 
 const revisableStates = ["SCRIPT_GENERATED", "SCRIPT_REVIEWED", "SCRIPT_APPROVED"] as const;
 

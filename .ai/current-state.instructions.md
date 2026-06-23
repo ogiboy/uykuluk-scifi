@@ -48,6 +48,8 @@
 - Basic Next.js Producer Studio shell under `apps/studio`.
 - Visual asset pack imported under `assets/`.
 - Clean-copy usage smoke script.
+- Production build emits a Node-runnable `dist/cli.js` and `pnpm build:smoke` verifies the built CLI
+  starts and can initialize a fresh project from an arbitrary working directory.
 - Direct mock/Ollama provider diagnostics and upload/publish safeguard tests.
 - `producer doctor` project diagnostics with durable local JSON/Markdown evidence for config,
   provider/model availability, assets, and publish defaults.

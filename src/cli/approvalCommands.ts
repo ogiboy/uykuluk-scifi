@@ -1,7 +1,7 @@
 import { Command } from "commander";
-import { approvePaidGenerationCost } from "../stages/approveCost";
-import { approveIdea } from "../stages/approveIdea";
-import { approveScript } from "../stages/approveScript";
+import { approvePaidGenerationCost } from "../stages/approveCost.js";
+import { approveIdea } from "../stages/approveIdea.js";
+import { approveScript } from "../stages/approveScript.js";
 
 type AsyncActionWrapper = <T extends unknown[]>(
   handler: (...args: T) => Promise<void>,

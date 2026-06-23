@@ -1,14 +1,14 @@
-import { appendLedgerEvent } from "./ledger";
-import { RunRecord } from "./state";
-import { writeJsonFile } from "../utils/json";
-import { writeTextFile } from "../utils/fs";
-import { artifactPath } from "./artifactPaths";
+import { appendLedgerEvent } from "./ledger.js";
+import { RunRecord } from "./state.js";
+import { writeJsonFile } from "../utils/json.js";
+import { writeTextFile } from "../utils/fs.js";
+import { artifactPath } from "./artifactPaths.js";
 
 export {
   artifactPath,
   isValidArtifactRelativePath,
   validateArtifactRelativePath,
-} from "./artifactPaths";
+} from "./artifactPaths.js";
 
 /**
  * Writes a JSON artifact to the run, logs the action to the ledger, and updates the artifact list.

@@ -1,21 +1,21 @@
 import path from "node:path";
-import { loadConfig } from "../config/config";
-import { readCostEstimate } from "../costs/costEstimate";
+import { loadConfig } from "../config/config.js";
+import { readCostEstimate } from "../costs/costEstimate.js";
 import {
   isActiveCostReservation,
   readCostReservationSummaries,
-} from "../costs/costReservationStore";
-import { artifactPath, writeRunJson, writeRunText } from "../core/artifacts";
-import { readLedger } from "../core/ledger";
-import { loadRun, saveRun } from "../core/runStore";
-import { readCostEvents } from "../costs/costLedger";
-import { PromptProvenance } from "../prompts/provenance";
-import { pathExists } from "../utils/fs";
-import { readJsonFile } from "../utils/json";
-import { bulletList } from "../utils/markdown";
-import { nowIso } from "../utils/time";
-import { evidenceNextCommand } from "./evidenceNextCommand";
-import { readProductionPackageIntegrityEvidence } from "./productionPackageIntegrity";
+} from "../costs/costReservationStore.js";
+import { artifactPath, writeRunJson, writeRunText } from "../core/artifacts.js";
+import { readLedger } from "../core/ledger.js";
+import { loadRun, saveRun } from "../core/runStore.js";
+import { readCostEvents } from "../costs/costLedger.js";
+import { PromptProvenance } from "../prompts/provenance.js";
+import { pathExists } from "../utils/fs.js";
+import { readJsonFile } from "../utils/json.js";
+import { bulletList } from "../utils/markdown.js";
+import { nowIso } from "../utils/time.js";
+import { evidenceNextCommand } from "./evidenceNextCommand.js";
+import { readProductionPackageIntegrityEvidence } from "./productionPackageIntegrity.js";
 
 /**
  * Generates and persists an evidence bundle for a run.

@@ -1,4 +1,4 @@
-import { mkdtemp, cp, mkdir, rm } from "node:fs/promises";
+import { mkdtemp, mkdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { beforeEach, afterEach } from "vitest";
@@ -13,10 +13,6 @@ export function useTempProject(): void {
     currentDir = await mkdtemp(path.join(tmpdir(), "uykulukscifi-producer-"));
     process.chdir(currentDir);
     await mkdir("runs", { recursive: true });
-    await cp(
-      path.join(previousCwd, "producer.config.example.json"),
-      path.join(currentDir, "producer.config.example.json"),
-    );
     await initProject();
   });
 

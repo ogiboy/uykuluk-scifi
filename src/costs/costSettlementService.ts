@@ -1,14 +1,14 @@
-import { SafeExitError } from "../core/errors";
-import { appendLedgerEvent } from "../core/ledger";
-import { createId, nowIso } from "../utils/time";
+import { SafeExitError } from "../core/errors.js";
+import { appendLedgerEvent } from "../core/ledger.js";
+import { createId, nowIso } from "../utils/time.js";
 import {
   appendUncertainEvent,
   ensureReservationCostEvent,
   requireReservation,
   requireReservationText,
-} from "./costReservationContext";
-import { withCostReservationLock } from "./costReservationLock";
-import { appendCostReservationEvent, CostReservationSummary } from "./costReservationStore";
+} from "./costReservationContext.js";
+import { withCostReservationLock } from "./costReservationLock.js";
+import { appendCostReservationEvent, CostReservationSummary } from "./costReservationStore.js";
 
 /**
  * Finalizes a reservation's cost after a provider charge is known.

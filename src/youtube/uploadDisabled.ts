@@ -1,10 +1,10 @@
-import { ProducerConfig } from "../config/schema";
-import { RunRecord } from "../core/state";
-import { requireApproval } from "../safeguards/approvalGuard";
+import { ProducerConfig } from "../config/schema.js";
+import { RunRecord } from "../core/state.js";
+import { requireApproval } from "../safeguards/approvalGuard.js";
 import {
   blockPrivateUploadUnlessExplicitlyEnabled,
   blockPublicPublishUnlessExplicitlyEnabled,
-} from "../safeguards/publishGuard";
+} from "../safeguards/publishGuard.js";
 
 export async function runPrivateUploadPlaceholder(
   run: RunRecord,

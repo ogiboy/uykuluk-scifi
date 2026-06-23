@@ -1,5 +1,5 @@
-import { SafeExitError } from "./errors";
-import { RunState } from "./state";
+import { SafeExitError } from "./errors.js";
+import { RunState } from "./state.js";
 
 const allowedTransitions: Record<RunState, RunState[]> = {
   NEW: ["IDEAS_GENERATED", "FAILED"],

@@ -1,5 +1,5 @@
 import { readFile } from "node:fs/promises";
-import { writeFileAtomic } from "./fs";
+import { writeFileAtomic } from "./fs.js";
 
 /**
  * Reads and parses a JSON file.

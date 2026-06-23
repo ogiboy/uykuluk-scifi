@@ -1,11 +1,11 @@
-import { loadConfig } from "../config/config";
-import { buildCostEstimate } from "../costs/costEstimate";
-import { renderCostEstimateMarkdown } from "../costs/costEstimatePresentation";
-import { writeRunJson, writeRunText } from "../core/artifacts";
-import { appendLedgerEvent } from "../core/ledger";
-import { loadRun, setRunState } from "../core/runStore";
-import { assertTransition } from "../core/transitions";
-import { requireState } from "../safeguards/approvalGuard";
+import { loadConfig } from "../config/config.js";
+import { buildCostEstimate } from "../costs/costEstimate.js";
+import { renderCostEstimateMarkdown } from "../costs/costEstimatePresentation.js";
+import { writeRunJson, writeRunText } from "../core/artifacts.js";
+import { appendLedgerEvent } from "../core/ledger.js";
+import { loadRun, setRunState } from "../core/runStore.js";
+import { assertTransition } from "../core/transitions.js";
+import { requireState } from "../safeguards/approvalGuard.js";
 
 /**
  * Generates a cost estimate for a production package and updates the run state.

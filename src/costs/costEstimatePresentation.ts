@@ -1,5 +1,5 @@
-import { table } from "../utils/markdown";
-import type { CostEstimate } from "./costEstimate";
+import { table } from "../utils/markdown.js";
+import type { CostEstimate } from "./costEstimate.js";
 
 /**
  * Renders a cost estimate as a markdown-formatted report.

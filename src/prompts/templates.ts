@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
-import { SafeExitError } from "../core/errors";
-import { PromptKey } from "./provenance";
+import { SafeExitError } from "../core/errors.js";
+import { PromptKey } from "./provenance.js";
 
 export type RenderedPrompt = {
   key: PromptKey;

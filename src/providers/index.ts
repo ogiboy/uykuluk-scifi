@@ -1,7 +1,7 @@
-import { ProducerConfig } from "../config/schema";
-import { LlmProvider } from "./llmProvider";
-import { MockProvider } from "./mockProvider";
-import { OllamaProvider } from "./ollamaProvider";
+import { ProducerConfig } from "../config/schema.js";
+import { LlmProvider } from "./llmProvider.js";
+import { MockProvider } from "./mockProvider.js";
+import { OllamaProvider } from "./ollamaProvider.js";
 
 export function createLlmProvider(config: ProducerConfig): LlmProvider {
   if (config.providers.llm.mode === "ollama") {
