@@ -25,11 +25,40 @@ Production desk for Turkish sci-fi YouTube episodes.
 [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=ogiboy_uykuluk-scifi&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=ogiboy_uykuluk-scifi)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ogiboy_uykuluk-scifi&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=ogiboy_uykuluk-scifi)
 
-UykulukSciFi Producer is a local production system for building reviewable YouTube video drafts. The
-current product has a TypeScript CLI as the source of truth and a basic Next.js Producer Studio
-shell prepared for the future web interface. It generates ideas, scripts, reviews, production
-packages, cost estimates, evidence bundles, and readiness diagnostics. It does not upload or publish
-to YouTube in the MVP.
+UykulukSciFi Producer is a local-first, approval-gated, cost-aware production desk for building
+reviewable UykulukSciFi YouTube video draft packages. The TypeScript CLI is the source of truth; the
+Next.js Producer Studio is a future operator surface over the same local contracts. The system
+generates ideas, scripts, reviews, production packages, cost estimates, evidence bundles, and
+readiness diagnostics. It does not upload or publish to YouTube in the MVP.
+
+## Product Direction
+
+This product is not a generic AI video platform, a one-click publishing bot, or a content farm. It
+is a channel-specific production loop for regularly producing original, scientifically careful, and
+visually consistent UykulukSciFi drafts.
+
+Near-term value is reliable draft production first: turn approved ideas into reviewable script,
+metadata, subtitle, scene, and evidence packages that can become weekly videos. TTS, render, private
+upload, analytics feedback, and public/scheduled publish remain separate future phases with their
+own approval, cost, readiness, and evidence boundaries.
+
+## Primary Journey
+
+```text
+doctor
+  -> ideas
+  -> approve idea
+  -> script
+  -> review script
+  -> approve script
+  -> package
+  -> estimate / evidence / readiness
+  -> future render plan / local TTS / FFmpeg draft render
+```
+
+Every expensive, irreversible, or publishing-adjacent step stays blocked until the matching
+configuration, approval, and evidence contracts exist. `.ai/` remains development guidance and
+agent-tracking state only; runtime code must not require it.
 
 ## What Exists
 

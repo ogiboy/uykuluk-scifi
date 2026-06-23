@@ -91,6 +91,9 @@
 - Roadmap and `.ai` guidance now include future Next.js Producer Studio, prompt editing, revision
   tracking, design direction, development preferences, versioning expectations, and Computer Use QA
   boundaries.
+- Roadmap and `.ai` guidance now prioritize a channel-specific production loop: Render Plan +
+  Contact Sheet MVP first, then local TTS, FFmpeg draft render, Studio read-only review, and manual
+  analytics feedback.
 - CodeRabbit is configured to auto-suggest and auto-assign `ogiboy` for PR review.
 - Local SonarQube configuration targets project `uykuluk-scifi`; manual SonarCloud scans target
   `ogiboy_uykuluk-scifi`.
@@ -159,7 +162,11 @@ Corepack/PATH before treating failures as product failures.
 - Local prompt overrides and revision history are not implemented; tracked defaults are read-only
   runtime inputs.
 - Revision contracts for subtitles, scenes, popup cards, and YouTube metadata are not implemented.
+- Render planning is not implemented. Planned next artifacts are `production/render_plan.json`,
+  `production/storyboard_contact_sheet.md`, and `production/asset_provenance.json`.
 - TTS, render, upload, and publish are intentionally disabled scaffolds.
+- Manual analytics import/reporting is not implemented. Future analytics should start from
+  operator-provided CSV/JSON before any YouTube Analytics API integration.
 - Run-path containment blocks pre-existing symbolic links. Hostile concurrent path replacement
   remains a local TOCTOU limitation because portable Node APIs do not expose directory-handle
   `openat` semantics.

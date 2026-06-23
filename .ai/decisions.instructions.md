@@ -2,6 +2,55 @@
 
 ## Decision Log
 
+### Product is channel-specific production software, not a generic AI video platform
+
+Reason: The strongest product advantage is the UykulukSciFi context: Turkish cinematic sci-fi
+narration, scientific caution, channel assets, approval gates, evidence, and local cost control.
+Competing with broad AI video editors would pull the project toward generic features before the
+channel can reliably ship videos.
+
+Constraints:
+
+- Optimize for repeatable UykulukSciFi draft production first.
+- Do not add generic SaaS, hosted workspace, marketplace, or one-prompt public publishing features
+  merely because they are common in video tools.
+- Keep public upload/publish manual or separately gated until the exact CLI/core controls exist.
+
+### Render Plan + Contact Sheet MVP is the next product slice
+
+Reason: The safe core can already produce reviewable packages. The next useful product step is to
+make the first real video format explicit before adding TTS or FFmpeg execution.
+
+Constraints:
+
+- Planned artifacts are `production/render_plan.json`, `production/storyboard_contact_sheet.md`, and
+  `production/asset_provenance.json`.
+- The slice consumes approved production-package and asset contracts; it does not implement TTS,
+  FFmpeg render, upload, public publish, or paid providers.
+- Artifact presence does not imply render approval.
+
+### Manual analytics feedback precedes YouTube Analytics API
+
+Reason: The product needs a learning loop, but API credentials, privacy, quota, and external-state
+handling are unnecessary before the channel has a stable production cadence.
+
+Constraints:
+
+- Start with operator-provided CSV/JSON imports.
+- Record source, time range, definitions, and missingness.
+- Do not invent metrics or claim causality from weak data.
+
+### Paid or generative media providers are deferred until local production works
+
+Reason: Paid image/video/TTS APIs add cost, credential, policy, consistency, and evidence risk. The
+first useful draft format can be produced with local prompts, local assets, local TTS, and FFmpeg.
+
+Constraints:
+
+- No paid adapter, SDK, credential, or operator command is enabled without a separate design review.
+- Future paid providers must use the approved reservation/execution boundary.
+- Deterministic local render should be useful before paid/generative video providers are considered.
+
 ### CLI/core remains the workflow source of truth
 
 Reason: The first reliable surface is the strict state machine, ledger, artifact, and approval

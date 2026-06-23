@@ -31,6 +31,21 @@ Primary contracts:
 The CLI/core state machine is the source of truth. Future web surfaces must read and mutate the same
 typed contracts rather than copying stage logic into frontend route handlers.
 
+## Future Real Production Loop Ownership
+
+The next product phase should extend the existing CLI/core flow toward a local video draft package:
+
+- render planning belongs in the workflow stages and should consume the approved production package,
+  scene/subtitle/popup metadata, and tracked asset inventory;
+- storyboard/contact-sheet output is an operator review artifact, not an approval by itself;
+- asset provenance should identify the exact committed assets selected for a future render;
+- local TTS should run only after script approval and the relevant cost/readiness gates;
+- FFmpeg render should run only after render planning, render approval, and local artifact checks;
+- analytics import/reporting should consume operator-provided files and link results back to runs.
+
+Render planning must not create a second workflow engine. It should reuse run state, artifact,
+ledger, approval, evidence, readiness, asset, and cost patterns already owned by the CLI/core.
+
 ## Next.js Studio
 
 The frontend lives under `apps/studio` as a local Next.js App Router app.
