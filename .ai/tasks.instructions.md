@@ -26,6 +26,7 @@
   local at-most-once dispatch, bounded timeout, and fail-closed outcome classification.
 - Keep live Ollama generation fail-closed when local models return malformed JSON, English
   operator-facing text, or incomplete scripts.
+- Keep script provider failure diagnostics safe, raw-output-free, and state-preserving.
 - Keep chunked Ollama script receipts complete enough to diagnose which draft or expansion chunk
   failed.
 - Keep readiness diagnostics and evidence synchronized with persisted run state.
@@ -54,6 +55,8 @@
 - Keep `producer doctor` config/provider/model/asset/publish diagnostics and evidence passing.
 - Add a bounded long-form continuation or quality-improvement pass so qwen3:8b drafts satisfy
   long-form and hook quality expectations instead of only producing safe short reviewable drafts.
+- Prefer continuation/retry designs over simply raising local section chunk caps; live local QA
+  showed larger chunks can destabilize JSON parse reliability.
 - Add route security requirements before any web action routes exist.
 
 ## Later

@@ -72,6 +72,8 @@ future generated release notes can be inserted predictably.
   rejecting English operator-facing idea payloads or rating-only `fit` fields.
 - Script generation now rejects incomplete or English-labeled section output before writing
   `script.md`, and script approval rejects reviewed scripts with blocking findings.
+- Script generation provider parse/transport failures now persist safe run diagnostics without
+  advancing workflow state or storing raw provider output.
 - Production build now emits a Node-runnable CLI without compiling tests into `dist/`, and build
   smoke verifies the compiled CLI can initialize a fresh project from another working directory.
 - Provider-backed idea, script, and production-package generation now blocks before provider calls

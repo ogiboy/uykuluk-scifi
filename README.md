@@ -299,7 +299,7 @@ into bounded hook, context, development, and outro sections. Each section is dra
 expanded through three smaller bounded JSON chunks so local models can finish valid payloads. The
 run persists draft/expansion receipts before it can advance. If a local model returns malformed
 JSON, English operator-facing text, or an incomplete script section, the stage fails closed before
-writing the next artifact.
+writing `script.md`; provider failure diagnostics are persisted under the run when safe to record.
 
 Run `pnpm producer doctor` before starting production work. Mock mode passes without network access.
 Ollama mode checks `/api/tags` with a bounded timeout and blocks when the server is unavailable or
@@ -333,6 +333,7 @@ Each run can write:
 - `costs/ledger.jsonl`;
 - `costs/reservations.jsonl`;
 - `evidence_bundle.json` and `evidence_bundle.md`;
+- `diagnostics/script_generation_failure.json` when script provider parsing or transport fails;
 - `diagnostics/readiness.json` and `diagnostics/readiness.md`;
 - `ledger.jsonl`.
 

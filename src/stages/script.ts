@@ -13,6 +13,7 @@ import { createLlmProvider } from "../providers/index.js";
 import { createPromptProvenance } from "../prompts/provenance.js";
 import { renderScriptPrompt } from "../prompts/templates.js";
 import { stripProviderThinking } from "./providerPayloads.js";
+import { persistScriptGenerationFailure } from "./scriptFailureDiagnostics.js";
 import {
   assembleScriptFromSections,
   createScriptSectionReceipt,
@@ -170,6 +171,7 @@ export async function generateScript(runId: string): Promise<ScriptMeta> {
     await setRunState(run, "SCRIPT_GENERATED", "script");
     return meta;
   } catch (error) {
+    run = await persistScriptGenerationFailure(run, config, error);
     await appendLedgerEvent({
       runId: run.runId,
       type: "ERROR",

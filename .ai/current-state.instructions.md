@@ -51,9 +51,13 @@
 - Script generation uses bounded hook/context/development/outro provider calls, writes
   `script.sections.json` draft and expansion-chunk receipts, and assembles `script.md` only after
   all sections pass blocking quality checks.
+- Script provider parse/transport failures persist safe run diagnostics without advancing state or
+  storing raw provider output.
 - Live local Ollama qwen3:8b smoke tests on 2026-06-23 verified safe idea generation, explicit idea
   approval, chunked section script generation, receipt persistence, and script review in both
-  `no_think` and `think` modes without upload, render, or publish actions.
+  `no_think` and `think` modes without upload, render, or publish actions. Follow-up smoke after
+  provider-failure diagnostics verified `no_think` reached `SCRIPT_REVIEWED` with 769 words and four
+  warnings, while `think` reached `SCRIPT_REVIEWED` with 1051 words and only `too_short`.
 - Evidence bundle generation with production-package integrity status and manifest digest.
 - Evidence next-command guidance reflects script review blockers and required warning
   acknowledgement before script approval.
@@ -138,11 +142,12 @@ Corepack/PATH before treating failures as product failures.
 ## Known Limits
 
 - Ollama doctor checks server reachability and configured model inventory, but live local-model QA
-  is environment-dependent and not part of CI. Live qwen3:8b QA on 2026-06-23 verified that
-  `no_think` reached `SCRIPT_REVIEWED` with 966 words and `think` reached `SCRIPT_REVIEWED` with 715
-  words. Current qwen3:8b drafts remain short and may carry content-review warnings such as
-  long-form shortfall, fact-check needs, or weak intro hooks; further prompt tuning or a long-form
-  continuation pass is still needed before treating local model scripts as production quality.
+  is environment-dependent and not part of CI. Live qwen3:8b QA on 2026-06-23 verified successful
+  `SCRIPT_REVIEWED` runs in both `no_think` and `think`; `think` currently produces stronger script
+  drafts but still misses the 1200-word floor. Current qwen3:8b drafts remain short and may carry
+  content-review warnings such as long-form shortfall, fact-check needs, or weak intro hooks;
+  further prompt tuning or a bounded long-form continuation pass is still needed before treating
+  local model scripts as production quality.
 - No paid provider adapter is implemented. Exact cost quote approval remains separate from spend
   authorization. The internal execution boundary is ready for a future approved adapter, but no SDK,
   credential, network integration, or CLI mutation command exposes it.

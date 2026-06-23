@@ -8,7 +8,7 @@ import {
 export class MockProvider implements LlmProvider {
   async generateText(input: GenerateTextInput): Promise<GenerateTextResult> {
     const started = Date.now();
-    const text = generateMockText(input.prompt);
+    const text = generateMockText(input.prompt, input.model);
     return {
       text,
       provider: "mock",
@@ -20,7 +20,7 @@ export class MockProvider implements LlmProvider {
   }
 }
 
-function generateMockText(prompt: string): string {
+function generateMockText(prompt: string, model = ""): string {
   if (prompt.includes("IDEAS_JSON")) {
     return JSON.stringify({
       ideas: [
@@ -82,6 +82,9 @@ function generateMockText(prompt: string): string {
     });
   }
   if (prompt.includes("SCRIPT_SECTION_JSON")) {
+    if (model === "mock-invalid-script-json") {
+      return "Mock provider returned non-JSON script section text.";
+    }
     return generateMockScriptSection(prompt);
   }
   if (prompt.includes("SCRIPT_MARKDOWN")) {
