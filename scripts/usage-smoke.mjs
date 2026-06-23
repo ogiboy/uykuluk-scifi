@@ -102,7 +102,14 @@ try {
   run([pnpm, "producer", "script", "--run", runId], { label: "script" });
   await runScriptRevisionSmoke({ run, pnpm, workdir, runId, assertFile, assert });
   run([pnpm, "producer", "review", "script", "--run", runId], { label: "review script" });
-  run([pnpm, "producer", "approve", "script", "--run", runId], { label: "approve script" });
+  run([pnpm, "producer", "approve", "script", "--run", runId], {
+    label: "approve script blocked before warning acknowledgement",
+    expectFailure: true,
+    expectOutput: "acknowledge-warnings",
+  });
+  run([pnpm, "producer", "approve", "script", "--run", runId, "--acknowledge-warnings"], {
+    label: "approve script with warning acknowledgement",
+  });
   run([pnpm, "producer", "package", "--run", runId], { label: "package" });
   run([pnpm, "producer", "estimate", "--run", runId], { label: "estimate" });
   run([pnpm, "producer", "approve", "cost", "--run", runId], {

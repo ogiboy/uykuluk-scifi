@@ -89,6 +89,7 @@ to YouTube in the MVP.
 - Mock mode is the default.
 - Script generation requires explicit idea approval.
 - Script review and approval are bound to the exact `script.md` SHA-256 digest.
+- Script approval requires `--acknowledge-warnings` when the review contains non-blocking warnings.
 - Script edits use an attributable revision command with before/after snapshots; reviewed or
   approved scripts return to `SCRIPT_GENERATED` and require review/approval again.
 - Production packaging requires explicit script approval for the unchanged reviewed content.
@@ -145,6 +146,7 @@ pnpm producer script --run <run_id>
 pnpm producer revise script --run <run_id> --file <path> --reason "<reason>" --editor <name>
 pnpm producer review script --run <run_id>
 pnpm producer approve script --run <run_id>
+pnpm producer approve script --run <run_id> --acknowledge-warnings # when review warnings remain
 pnpm producer package --run <run_id>
 pnpm producer estimate --run <run_id>
 pnpm producer approve cost --run <run_id> # only when the quote requires it

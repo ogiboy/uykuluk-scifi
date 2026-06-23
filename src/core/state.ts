@@ -44,6 +44,7 @@ export const approvalRecordSchema = z.strictObject({
   previousState: runStateSchema,
   nextState: runStateSchema,
   approvingCommand: z.string().min(1),
+  acknowledgedWarnings: z.array(z.string().min(1)).optional(),
   createdAt: z.iso.datetime(),
 });
 

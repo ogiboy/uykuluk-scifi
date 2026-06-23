@@ -20,7 +20,8 @@
   ledger mutation.
 - Atomic temporary-file replacement for JSON and text artifact writes.
 - Approval ledger.
-- Content-addressed script review and approval; packaging rejects changed script content.
+- Content-addressed script review and approval; non-blocking review warnings require explicit
+  acknowledgement before script approval, and packaging rejects changed script content.
 - Attributable script revisions with before/after snapshots, stale review/approval invalidation, and
   evidence-bundle visibility.
 - Cost ledger and budget guard, including provider-call preflight for ideas, scripts, and production
@@ -100,6 +101,7 @@ pnpm producer script --run <run_id>
 pnpm producer revise script --run <run_id> --file <path> --reason "<reason>" --editor <name>
 pnpm producer review script --run <run_id>
 pnpm producer approve script --run <run_id>
+pnpm producer approve script --run <run_id> --acknowledge-warnings # when review warnings remain
 pnpm producer package --run <run_id>
 pnpm producer estimate --run <run_id>
 pnpm producer approve cost --run <run_id>

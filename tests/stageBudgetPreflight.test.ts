@@ -95,7 +95,7 @@ describe("stage budget preflight", () => {
     await approveIdea(runId, ideas[0].id);
     await generateScript(runId);
     await reviewScript(runId);
-    await approveScript(runId);
+    await approveScript(runId, { acknowledgeWarnings: true });
     await appendCostEvent({
       runId,
       stage: "seed",

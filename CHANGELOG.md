@@ -47,6 +47,8 @@ future generated release notes can be inserted predictably.
   development files.
 - Script review now reports 20-minute target shortfalls and blocking findings for incomplete or
   non-Turkish provider output.
+- Script approval now requires explicit `--acknowledge-warnings` confirmation when review warnings
+  remain.
 - Script generation now uses bounded section-level provider calls instead of one large script call.
 - Script section generation now keeps the global 20-minute prompt target out of individual local
   provider calls and expands each section through three smaller chunks.

@@ -24,7 +24,7 @@ describe("script revisions", () => {
     await approveIdea(runId, ideas[0].id);
     await generateScript(runId);
     await reviewScript(runId);
-    const approval = await approveScript(runId);
+    const approval = await approveScript(runId, { acknowledgeWarnings: true });
     const before = await readFile(artifactPath(runId, "script.md"), "utf8");
     const revised = `${before.trim()}\n\nOperator tarafından eklenen doğrulanabilir bölüm.\n`;
 
@@ -68,7 +68,9 @@ describe("script revisions", () => {
     ).toBe(true);
 
     await reviewScript(runId);
-    await expect(approveScript(runId)).resolves.toMatchObject({ target: "script" });
+    await expect(approveScript(runId, { acknowledgeWarnings: true })).resolves.toMatchObject({
+      target: "script",
+    });
   });
 
   it("includes revision metadata in the evidence bundle", async () => {
@@ -114,7 +116,7 @@ describe("script revisions", () => {
     ).rejects.toThrow(/empty/i);
 
     await reviewScript(runId);
-    await approveScript(runId);
+    await approveScript(runId, { acknowledgeWarnings: true });
     await generateProductionPackage(runId);
     await expect(
       reviseScript({

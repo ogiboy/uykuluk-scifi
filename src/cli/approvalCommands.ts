@@ -33,10 +33,13 @@ export function registerApprovalCommands(program: Command, wrap: AsyncActionWrap
   approve
     .command("script")
     .requiredOption("--run <run_id>")
+    .option("--acknowledge-warnings", "Confirm non-blocking script review warnings are accepted.")
     .description("Approve reviewed script.")
     .action(
-      wrap(async (options: { run: string }) => {
-        const approval = await approveScript(options.run);
+      wrap(async (options: { run: string; acknowledgeWarnings?: boolean }) => {
+        const approval = await approveScript(options.run, {
+          acknowledgeWarnings: Boolean(options.acknowledgeWarnings),
+        });
         console.log(`Script approval recorded: ${approval.approvalId}`);
       }),
     );

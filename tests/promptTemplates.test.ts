@@ -56,7 +56,7 @@ describe("runtime prompt defaults", () => {
     expect(scriptMeta.prompt.hash).not.toBe(oldDraftOnlyHash);
 
     await reviewScript(runId);
-    await approveScript(runId);
+    await approveScript(runId, { acknowledgeWarnings: true });
     await generateProductionPackage(runId);
     const script = await readFile(artifactPath(runId, "script.md"), "utf8");
     const packageMeta = await readJsonFile<{
