@@ -269,6 +269,31 @@ pnpm producer init
 Keep `producer.config.json` ignored. Keep `providers.llm.mode` as `mock` for normal local testing.
 Use `ollama` only when a local Ollama server and model are available.
 
+Useful Ollama settings:
+
+```json
+{
+  "providers": {
+    "llm": {
+      "mode": "ollama",
+      "ollamaBaseUrl": "http://localhost:11434",
+      "model": "qwen3:8b",
+      "thinkingMode": "default",
+      "maxOutputTokens": {
+        "ideas": 3000,
+        "script": 3200,
+        "productionPackage": 2000
+      }
+    }
+  }
+}
+```
+
+`thinkingMode` can be `default`, `think`, or `no_think`. Token caps are sent to Ollama as
+`num_predict` so local generation cannot run unbounded. If a local model returns malformed JSON,
+English operator-facing text, or an incomplete script, the stage fails closed before writing the
+next artifact.
+
 Run `pnpm producer doctor` before starting production work. Mock mode passes without network access.
 Ollama mode checks `/api/tags` with a bounded timeout and blocks when the server is unavailable or
 the configured model is not installed. The command writes ignored local evidence to

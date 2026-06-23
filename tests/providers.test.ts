@@ -60,4 +60,38 @@ describe("LLM providers", () => {
       durationMs: 2,
     });
   });
+
+  it("prefixes Ollama prompts when a thinking mode is configured", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ response: "yanit", model: "qwen3:8b" }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    const provider = new OllamaProvider("http://localhost:11434/", "qwen3:8b", "no_think");
+
+    await provider.generateText({ prompt: "SCRIPT_MARKDOWN\nMerhaba" });
+
+    const body = JSON.parse(fetchMock.mock.calls[0]?.[1]?.body as string) as { prompt: string };
+    expect(body.prompt).toBe("/no_think\nSCRIPT_MARKDOWN\nMerhaba");
+  });
+
+  it("passes max token caps through to Ollama num_predict", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ response: "yanit", model: "qwen3:8b" }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    const provider = new OllamaProvider("http://localhost:11434/", "qwen3:8b");
+
+    await provider.generateText({ prompt: "hello", maxTokens: 1234 });
+
+    const body = JSON.parse(fetchMock.mock.calls[0]?.[1]?.body as string) as {
+      options: { num_predict?: number };
+    };
+    expect(body.options.num_predict).toBe(1234);
+  });
 });

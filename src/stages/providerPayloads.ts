@@ -1,0 +1,259 @@
+import { z } from "zod";
+import { SafeExitError } from "../core/errors.js";
+import { VideoIdea } from "./types.js";
+
+const videoIdeaLevelSchema = z.preprocess(normalizeIdeaLevel, z.enum(["low", "medium", "high"]));
+const durationTextSchema = z
+  .union([z.string().min(1), z.number()])
+  .transform((value) => normalizeDurationText(value));
+
+const providerVideoIdeaSchema = z
+  .strictObject({
+    id: z.unknown().optional(),
+    title: z.string().min(1),
+    premise: z.string().min(1),
+    targetDuration: durationTextSchema.optional(),
+    target_duration: durationTextSchema.optional(),
+    style: z.string().min(1),
+    estimatedDifficulty: videoIdeaLevelSchema.optional(),
+    estimated_difficulty: videoIdeaLevelSchema.optional(),
+    riskLevel: videoIdeaLevelSchema.optional(),
+    risk_level: videoIdeaLevelSchema.optional(),
+    fit: z.string().min(1),
+  })
+  .transform((idea, context) => {
+    const targetDuration = idea.targetDuration ?? idea.target_duration;
+    const estimatedDifficulty = idea.estimatedDifficulty ?? idea.estimated_difficulty;
+    const riskLevel = idea.riskLevel ?? idea.risk_level;
+    if (!targetDuration) {
+      context.addIssue({
+        code: "custom",
+        path: ["targetDuration"],
+        message: "Required",
+      });
+    }
+    if (!estimatedDifficulty) {
+      context.addIssue({
+        code: "custom",
+        path: ["estimatedDifficulty"],
+        message: "Required",
+      });
+    }
+    if (!riskLevel) {
+      context.addIssue({
+        code: "custom",
+        path: ["riskLevel"],
+        message: "Required",
+      });
+    }
+    if (!targetDuration || !estimatedDifficulty || !riskLevel) {
+      return z.NEVER;
+    }
+    const normalizedIdea = {
+      title: idea.title,
+      premise: idea.premise,
+      targetDuration,
+      style: idea.style,
+      estimatedDifficulty,
+      riskLevel,
+      fit: idea.fit,
+    };
+    const qualityIssue = validateIdeaQuality(normalizedIdea);
+    if (qualityIssue) {
+      context.addIssue({
+        code: "custom",
+        path: qualityIssue.path,
+        message: qualityIssue.message,
+      });
+      return z.NEVER;
+    }
+    return normalizedIdea;
+  });
+
+const packageYoutubeSchema = z.strictObject({
+  title: z.string().min(1),
+  description: z.string().min(1),
+  tags: z.array(z.string().min(1)),
+});
+
+const productionPackageProviderPayloadSchema = z
+  .strictObject({
+    popupCards: z.array(z.string().min(1)).optional(),
+    popup_cards: z.array(z.string().min(1)).optional(),
+    lowerThirds: z.array(z.string().min(1)).optional(),
+    lower_thirds: z.array(z.string().min(1)).optional(),
+    youtube: packageYoutubeSchema,
+  })
+  .transform((payload, context) => {
+    const popupCards = payload.popupCards ?? payload.popup_cards;
+    const lowerThirds = payload.lowerThirds ?? payload.lower_thirds;
+    if (!popupCards) {
+      context.addIssue({
+        code: "custom",
+        path: ["popupCards"],
+        message: "Required",
+      });
+    }
+    if (!lowerThirds) {
+      context.addIssue({
+        code: "custom",
+        path: ["lowerThirds"],
+        message: "Required",
+      });
+    }
+    if (!popupCards || !lowerThirds) {
+      return z.NEVER;
+    }
+    return {
+      popupCards,
+      lowerThirds,
+      youtube: payload.youtube,
+    };
+  });
+
+const productionPackageRuntimePayloadSchema = z.strictObject({
+  popupCards: z.array(z.string().min(1)),
+  lowerThirds: z.array(z.string().min(1)),
+  youtube: z.strictObject({
+    title: z.string().min(1),
+    description: z.string().min(1),
+    tags: z.array(z.string().min(1)),
+  }),
+});
+
+const ideasArraySchema = z.array(providerVideoIdeaSchema).min(1);
+
+const ideasObjectSchema = z.strictObject({ ideas: ideasArraySchema });
+
+export type PackageProviderPayload = z.infer<typeof productionPackageRuntimePayloadSchema>;
+
+export function parseIdeasProviderPayload(text: string): VideoIdea[] {
+  const payload = parseProviderJson(text, "ideas");
+  const result = Array.isArray(payload)
+    ? ideasArraySchema.safeParse(payload)
+    : ideasObjectSchema.safeParse(payload);
+  if (!result.success) {
+    throw invalidProviderPayload("ideas", result.error);
+  }
+  const ideas = Array.isArray(result.data) ? result.data : result.data.ideas;
+  return ideas.slice(0, 10).map((idea, index) => ({
+    id: `idea_${String(index + 1).padStart(3, "0")}`,
+    ...idea,
+  }));
+}
+
+export function parseProductionPackageProviderPayload(text: string): PackageProviderPayload {
+  const payload = parseProviderJson(text, "production package");
+  const result = productionPackageProviderPayloadSchema.safeParse(payload);
+  if (!result.success) {
+    throw invalidProviderPayload("production package", result.error);
+  }
+  return productionPackageRuntimePayloadSchema.parse(result.data);
+}
+
+function parseProviderJson(text: string, label: string): unknown {
+  const normalized = stripProviderThinking(text);
+  const jsonText = stripJsonFence(normalized);
+  try {
+    return JSON.parse(jsonText) as unknown;
+  } catch {
+    throw new SafeExitError(`Invalid ${label} provider response: expected JSON.`);
+  }
+}
+
+export function stripProviderThinking(text: string): string {
+  return text
+    .trim()
+    .replace(/^(?:<think>[\s\S]*?<\/think>\s*)+/i, "")
+    .trim();
+}
+
+function stripJsonFence(text: string): string {
+  const match = text.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);
+  return match ? match[1].trim() : text;
+}
+
+function invalidProviderPayload(label: string, error: z.ZodError): SafeExitError {
+  const summary = error.issues
+    .slice(0, 5)
+    .map((issue) => `${issue.path.join(".") || "root"}: ${issue.message}`)
+    .join("; ");
+  return new SafeExitError(`Invalid ${label} provider response: ${summary}`);
+}
+
+function normalizeDurationText(value: string | number): string {
+  if (typeof value === "number") {
+    return `${value} dakika`;
+  }
+  const trimmed = value.trim();
+  const minutesMatch = trimmed.match(/^(\d+(?:[.,]\d+)?)\s*(?:minutes?|mins?|min)\.?$/i);
+  if (minutesMatch) {
+    return `${minutesMatch[1]} dakika`;
+  }
+  return trimmed;
+}
+
+function normalizeIdeaLevel(value: unknown): unknown {
+  if (typeof value !== "string") return value;
+  const normalized = value.trim().toLocaleLowerCase("tr");
+  const localizedLevels: Record<string, "low" | "medium" | "high"> = {
+    düşük: "low",
+    dusuk: "low",
+    orta: "medium",
+    yüksek: "high",
+    yuksek: "high",
+  };
+  return localizedLevels[normalized] ?? normalized;
+}
+
+type NormalizedProviderIdea = {
+  title: string;
+  premise: string;
+  targetDuration: string;
+  style: string;
+  estimatedDifficulty: string;
+  riskLevel: string;
+  fit: string;
+};
+
+function validateIdeaQuality(
+  idea: NormalizedProviderIdea,
+): { path: string[]; message: string } | undefined {
+  if (/^(?:low|medium|high)$/i.test(idea.fit.trim())) {
+    return {
+      path: ["fit"],
+      message: "Fit must be a Turkish explanation, not a rating.",
+    };
+  }
+  if (!/\bdakika\b/i.test(idea.targetDuration)) {
+    return {
+      path: ["targetDuration"],
+      message: "Target duration must use Turkish dakika wording.",
+    };
+  }
+  const humanText = [idea.title, idea.premise, idea.targetDuration, idea.style, idea.fit].join(" ");
+  if (!looksLikeTurkishOperatorText(humanText)) {
+    return {
+      path: [],
+      message: "Human-facing idea fields must be Turkish.",
+    };
+  }
+  return undefined;
+}
+
+function looksLikeTurkishOperatorText(text: string): boolean {
+  const lower = text.toLocaleLowerCase("tr");
+  const turkishMarkers = countMatches(
+    lower,
+    /\b(?:bir|ve|ile|için|icin|uygun|dakika|sakin|sinematik|bilim|bilimkurgu|bilimsel|olasılık|olasilik|gezegen|uyku|rüya|ruya|insan|hikaye|öykü|oyku|anlatı|anlati|keşif|kesif|evren|kozmik|neden|nasıl|nasil|karanlık|karanlik|sessiz|yavaş|yavas|uzak|dünya|dunya|zaman|ihtiyat|temkinli|merak|kanal|tonuna)\b/g,
+  );
+  const englishMarkers = countMatches(
+    lower,
+    /\b(?:the|with|and|during|minutes?|documentary|narrative|researcher|team|scientists|discovers|colony|cosmic|human|sleep|patterns|identity|environment|exploration|visualizations?|broadcast|memory|brain)\b/g,
+  );
+  return turkishMarkers >= 3 && englishMarkers <= turkishMarkers;
+}
+
+function countMatches(text: string, pattern: RegExp): number {
+  return [...text.matchAll(pattern)].length;
+}

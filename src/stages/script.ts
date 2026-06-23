@@ -4,12 +4,15 @@ import { artifactPath, writeRunJson, writeRunText } from "../core/artifacts.js";
 import { appendLedgerEvent } from "../core/ledger.js";
 import { loadRun, setRunState } from "../core/runStore.js";
 import { assertTransition } from "../core/transitions.js";
+import { SafeExitError } from "../core/errors.js";
 import { defaultStagePricing } from "../costs/pricing.js";
 import { enforceBudget } from "../safeguards/budgetGuard.js";
+import { reviewScriptContent } from "../safeguards/contentGuard.js";
 import { requireApproval, requireState } from "../safeguards/approvalGuard.js";
 import { createLlmProvider } from "../providers/index.js";
 import { createPromptProvenance } from "../prompts/provenance.js";
 import { renderScriptPrompt } from "../prompts/templates.js";
+import { stripProviderThinking } from "./providerPayloads.js";
 import { ScriptMeta, VideoIdea } from "./types.js";
 
 /**
@@ -46,9 +49,18 @@ export async function generateScript(runId: string): Promise<ScriptMeta> {
     const result = await provider.generateText({
       model: config.providers.llm.model,
       temperature: 0.6,
+      maxTokens: config.providers.llm.maxOutputTokens.script,
       prompt: prompt.text,
     });
-    const script = result.text;
+    const script = stripProviderThinking(result.text);
+    const blockerCodes = reviewScriptContent(script)
+      .filter((warning) => warning.severity === "blocker")
+      .map((warning) => warning.code);
+    if (blockerCodes.length > 0) {
+      throw new SafeExitError(
+        `Invalid script provider response: blocking findings: ${blockerCodes.join(", ")}.`,
+      );
+    }
     const wordCount = script.trim().split(/\s+/).filter(Boolean).length;
     const meta: ScriptMeta = {
       estimatedDuration: `${Math.max(1, Math.round(wordCount / 135))}-${Math.max(2, Math.round(wordCount / 115))} dakika`,

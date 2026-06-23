@@ -32,7 +32,7 @@ export async function approveScript(runId: string): Promise<ApprovalRecord> {
   const script = await readFile(artifactPath(run.runId, "script.md"), "utf8");
   const review = JSON.parse(
     await readFile(artifactPath(run.runId, "reviews/script_review.json"), "utf8"),
-  ) as { scriptHash?: string };
+  ) as { scriptHash?: string; blockerCount?: number; warnings?: Array<{ severity?: string }> };
   const scriptHash = sha256(script);
   if (!review.scriptHash || review.scriptHash !== scriptHash) {
     await appendLedgerEvent({
@@ -43,6 +43,20 @@ export async function approveScript(runId: string): Promise<ApprovalRecord> {
       data: { reviewedHash: review.scriptHash ?? null, currentHash: scriptHash },
     });
     throw new SafeExitError("Cannot approve script because it changed after review.");
+  }
+  const blockerCount =
+    review.blockerCount ??
+    review.warnings?.filter((warning) => warning.severity === "blocker").length ??
+    0;
+  if (blockerCount > 0) {
+    await appendLedgerEvent({
+      runId: run.runId,
+      type: "GUARD_BLOCKED",
+      stage: "approve-script",
+      message: "Script review has blocking findings.",
+      data: { blockerCount },
+    });
+    throw new SafeExitError("Cannot approve script with blocking review findings.");
   }
   const approval: ApprovalRecord = {
     approvalId: createId("approval"),

@@ -1,4 +1,4 @@
-import { appendFile } from "node:fs/promises";
+import { appendFile, writeFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { artifactPath } from "../src/core/artifacts";
 import { requireApproval } from "../src/safeguards/approvalGuard";
@@ -52,6 +52,21 @@ describe("approval guard", () => {
     await appendFile(artifactPath(runId, "script.md"), "\nUnreviewed operator edit.\n", "utf8");
 
     await expect(approveScript(runId)).rejects.toThrow(/changed after review/i);
+    expect((await loadRun(runId)).state).toBe("SCRIPT_REVIEWED");
+  });
+
+  it("blocks script approval when review has blocker findings", async () => {
+    const { runId, ideas } = await runIdeas();
+    await approveIdea(runId, ideas[0].id);
+    await generateScript(runId);
+    await writeFile(
+      artifactPath(runId, "script.md"),
+      ["# Kırık Script", "", "**Narration:**", "Bu metin tamamlanmadan"].join("\n"),
+      "utf8",
+    );
+    await reviewScript(runId);
+
+    await expect(approveScript(runId)).rejects.toThrow(/blocking review findings/i);
     expect((await loadRun(runId)).state).toBe("SCRIPT_REVIEWED");
   });
 

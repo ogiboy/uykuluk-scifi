@@ -21,6 +21,8 @@
   recoverable settlement, and explicit reconciliation passing.
 - Keep future nonzero provider callbacks behind adapter identity matching, durable execution claim,
   local at-most-once dispatch, bounded timeout, and fail-closed outcome classification.
+- Keep live Ollama generation fail-closed when local models return malformed JSON, English
+  operator-facing text, or incomplete scripts.
 - Keep readiness diagnostics and evidence synchronized with persisted run state.
 - Keep all run-root filesystem access behind canonical bounded run-ID validation.
 - Keep run artifact reads, writes, and persisted lists behind canonical relative-path validation.
@@ -44,11 +46,13 @@
 - Define revision events for subtitles, scene prompts, popup cards, and YouTube metadata edits;
   script revision evidence is implemented.
 - Keep `producer doctor` config/provider/model/asset/publish diagnostics and evidence passing.
+- Add chunked or section-by-section local Ollama script generation; single-call qwen3:8b script
+  generation currently blocks safely because it tends to truncate before a complete outro.
 - Add route security requirements before any web action routes exist.
 
 ## Later
 
-- Live Ollama generation QA on an operator machine with the configured model installed.
+- Repeat live Ollama generation QA after chunked script generation lands.
 - Local TTS behind script approval and cost estimate.
 - FFmpeg render behind render approval.
 - Private YouTube upload behind upload approval and explicit config.

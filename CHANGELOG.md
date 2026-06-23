@@ -31,6 +31,8 @@ future generated release notes can be inserted predictably.
   classification, exact settlement, and hashed request-id evidence.
 - Versioned production-package manifests covering voiceover, subtitles, scenes, YouTube metadata,
   package Markdown, approved-script provenance, and exact artifact digests.
+- Ollama `thinkingMode` config (`default`, `think`, `no_think`) plus stage output-token caps for
+  ideas, scripts, and production packages.
 
 ### Changed
 
@@ -40,6 +42,8 @@ future generated release notes can be inserted predictably.
 - Prompt provenance now records the tracked source path in addition to the rendered prompt hash.
 - Runtime prompt defaults now live under `prompts/defaults/` so the CLI no longer depends on `.ai/`
   development files.
+- Script review now reports 20-minute target shortfalls and blocking findings for incomplete or
+  non-Turkish provider output.
 - Cost estimation no longer records an incurred cost event; quote approval is explicitly separate
   from future spend reservation and settlement.
 - Hard-budget checks now include active, settlement-pending, and uncertain reservations across runs
@@ -51,6 +55,13 @@ future generated release notes can be inserted predictably.
 
 ### Fixed
 
+- Ollama-backed idea and production-package stages now schema-validate provider JSON, accept common
+  root-array and snake_case variants, assign deterministic local idea ids, and strip leading
+  thinking traces before writing reviewable artifacts.
+- Ollama-backed idea parsing now normalizes localized Turkish difficulty/risk labels while still
+  rejecting English operator-facing idea payloads or rating-only `fit` fields.
+- Script generation now rejects incomplete or English-labeled provider output before writing
+  `script.md`, and script approval rejects reviewed scripts with blocking findings.
 - Production build now emits a Node-runnable CLI without compiling tests into `dist/`, and build
   smoke verifies the compiled CLI can initialize a fresh project from another working directory.
 - Provider-backed idea, script, and production-package generation now blocks before provider calls

@@ -33,6 +33,7 @@ export class OllamaProvider implements LlmProvider {
   constructor(
     private readonly baseUrl: string,
     private readonly defaultModel: string,
+    private readonly thinkingMode: "default" | "think" | "no_think" = "default",
   ) {}
 
   async diagnose(timeoutMs = 3_000): Promise<OllamaDiagnostic> {
@@ -100,12 +101,13 @@ export class OllamaProvider implements LlmProvider {
   async generateText(input: GenerateTextInput): Promise<GenerateTextResult> {
     const started = Date.now();
     const model = input.model ?? this.defaultModel;
+    const prompt = applyThinkingMode(input.prompt, this.thinkingMode);
     const response = await fetch(`${this.baseUrl.replace(/\/$/, "")}/api/generate`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
         model,
-        prompt: input.prompt,
+        prompt,
         system: input.system,
         options: {
           temperature: input.temperature,
@@ -132,7 +134,7 @@ export class OllamaProvider implements LlmProvider {
       provider: "ollama",
       model: raw.model ?? model,
       inputTokensApprox:
-        raw.prompt_eval_count ?? approximateTokens(`${input.system ?? ""}\n${input.prompt}`),
+        raw.prompt_eval_count ?? approximateTokens(`${input.system ?? ""}\n${prompt}`),
       outputTokensApprox: raw.eval_count ?? approximateTokens(text),
       durationMs: raw.total_duration
         ? Math.round(raw.total_duration / 1_000_000)
@@ -140,4 +142,14 @@ export class OllamaProvider implements LlmProvider {
       raw,
     };
   }
+}
+
+function applyThinkingMode(prompt: string, thinkingMode: "default" | "think" | "no_think"): string {
+  if (thinkingMode === "think") {
+    return `/think\n${prompt}`;
+  }
+  if (thinkingMode === "no_think") {
+    return `/no_think\n${prompt}`;
+  }
+  return prompt;
 }

@@ -67,7 +67,7 @@ describe("producer doctor", () => {
     expect(report.passed).toBe(false);
     expect(report.checks.find((check) => check.name === "LLM provider")).toMatchObject({
       status: "block",
-      message: expect.stringContaining("qwen2.5:7b"),
+      message: expect.stringContaining(defaultConfig.providers.llm.model),
     });
   });
 

@@ -50,4 +50,49 @@ describe("content and asset safeguards", () => {
       ]),
     );
   });
+
+  it("warns when a script is too short for the long-form target", () => {
+    const warnings = reviewScriptContent(
+      [
+        "# Sessiz Gezegen",
+        "",
+        "Bazı uzak dünyalar vardır; bilimsel olasılıkları sakin ve ihtiyatlı biçimde düşünürüz.",
+        "",
+        "UykulukSciFi'de yeniden buluşalım.",
+      ].join("\n"),
+    );
+
+    expect(warnings).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: "too_short",
+          severity: "warning",
+        }),
+      ]),
+    );
+  });
+
+  it("blocks incomplete or non-Turkish production script output", () => {
+    const warnings = reviewScriptContent(
+      [
+        "# Uykunun Derinliği",
+        "",
+        "**Narration:**",
+        "Uykunun derinliklerinde sakin bir bilimkurgu yolculuğu başlar",
+      ].join("\n"),
+    );
+
+    expect(warnings).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: "incomplete_script",
+          severity: "blocker",
+        }),
+        expect.objectContaining({
+          code: "non_turkish_production_text",
+          severity: "blocker",
+        }),
+      ]),
+    );
+  });
 });

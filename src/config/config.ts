@@ -16,7 +16,13 @@ export const defaultConfig: ProducerConfig = {
     llm: {
       mode: "mock",
       ollamaBaseUrl: "http://localhost:11434",
-      model: "qwen2.5:7b",
+      model: "qwen3:8b",
+      thinkingMode: "default",
+      maxOutputTokens: {
+        ideas: 3000,
+        script: 3200,
+        productionPackage: 2000,
+      },
     },
     tts: {
       enabled: false,

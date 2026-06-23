@@ -36,10 +36,16 @@
 - Internal adapter-bound reserved-provider execution with a durable `EXECUTION_STARTED` claim,
   provider/model quote matching, local at-most-once callback dispatch, bounded timeout/abort,
   fail-closed unknown outcomes, exact settlement, and hashed request-id evidence.
-- Script content review heuristics, including clickbait title warnings.
+- Script content review heuristics, including clickbait title warnings, long-form shortfall
+  warnings, and blockers for incomplete or English-labeled provider output.
 - Brand, overlay, intro, and outro asset inventory checks.
 - Production package generation with complete manifest creation after all derived artifacts are
   persisted.
+- Provider-backed idea and production-package stages schema-validate and normalize common Ollama
+  JSON variants before artifact writes, while rejecting malformed or English operator-facing
+  payloads fail-closed.
+- Ollama provider config supports `thinkingMode` (`default`, `think`, `no_think`) and stage-specific
+  `maxOutputTokens` caps that are passed to Ollama as `num_predict`.
 - Evidence bundle generation with production-package integrity status and manifest digest.
 - Readiness diagnostics that strictly parse and revalidate persisted cost quotes, live hard budgets,
   complete production-package integrity, and exact paid-generation cost approval when required.
@@ -121,7 +127,10 @@ Corepack/PATH before treating failures as product failures.
 ## Known Limits
 
 - Ollama doctor checks server reachability and configured model inventory, but live local-model QA
-  is environment-dependent and not part of CI.
+  is environment-dependent and not part of CI. Live qwen3:8b QA on 2026-06-23 verified that idea
+  generation can pass in `think` and `no_think`, but single-call script generation still tends to
+  end incomplete and is now blocked before `script.md` is written. Chunked/sectional script
+  generation is the next required local-provider improvement.
 - No paid provider adapter is implemented. Exact cost quote approval remains separate from spend
   authorization. The internal execution boundary is ready for a future approved adapter, but no SDK,
   credential, network integration, or CLI mutation command exposes it.

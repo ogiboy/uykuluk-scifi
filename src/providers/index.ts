@@ -5,7 +5,11 @@ import { OllamaProvider } from "./ollamaProvider.js";
 
 export function createLlmProvider(config: ProducerConfig): LlmProvider {
   if (config.providers.llm.mode === "ollama") {
-    return new OllamaProvider(config.providers.llm.ollamaBaseUrl, config.providers.llm.model);
+    return new OllamaProvider(
+      config.providers.llm.ollamaBaseUrl,
+      config.providers.llm.model,
+      config.providers.llm.thinkingMode,
+    );
   }
   return new MockProvider();
 }
