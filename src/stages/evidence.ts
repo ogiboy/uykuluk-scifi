@@ -16,6 +16,7 @@ import { bulletList } from "../utils/markdown.js";
 import { nowIso } from "../utils/time.js";
 import { evidenceNextCommand } from "./evidenceNextCommand.js";
 import { readProductionPackageIntegrityEvidence } from "./productionPackageIntegrity.js";
+import { readScriptReviewEvidence } from "./scriptReviewEvidence.js";
 
 /**
  * Generates and persists an evidence bundle for a run.
@@ -34,6 +35,7 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
   const costReservations = await readCostReservationSummaries(run.runId);
   const costQuote = await readCostQuoteEvidence(run);
   const productionPackageIntegrity = await readProductionPackageIntegrityEvidence(run);
+  const scriptReview = await readScriptReviewEvidence(run);
   const promptProvenance = await readPromptProvenance(run.runId);
   const unresolvedCostReservations = costReservations.filter(isActiveCostReservation);
   const approvedIdea =
@@ -85,6 +87,7 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
       run.state,
       costQuote,
       unresolvedCostReservations.length > 0,
+      scriptReview,
     ),
     ledgerEventCount: ledger.length,
   };

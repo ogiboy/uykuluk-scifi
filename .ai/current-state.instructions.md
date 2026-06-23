@@ -54,6 +54,8 @@
   approval, chunked section script generation, receipt persistence, and script review in both
   `no_think` and `think` modes without upload, render, or publish actions.
 - Evidence bundle generation with production-package integrity status and manifest digest.
+- Evidence next-command guidance reflects script review blockers and required warning
+  acknowledgement before script approval.
 - Readiness diagnostics that strictly parse and revalidate persisted cost quotes, live hard budgets,
   complete production-package integrity, and exact paid-generation cost approval when required.
 - Final readiness diagnostics agree with the post-transition run state.

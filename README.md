@@ -90,6 +90,7 @@ to YouTube in the MVP.
 - Script generation requires explicit idea approval.
 - Script review and approval are bound to the exact `script.md` SHA-256 digest.
 - Script approval requires `--acknowledge-warnings` when the review contains non-blocking warnings.
+- Evidence next-command guidance reflects script review blockers and warning acknowledgement needs.
 - Script edits use an attributable revision command with before/after snapshots; reviewed or
   approved scripts return to `SCRIPT_GENERATED` and require review/approval again.
 - Production packaging requires explicit script approval for the unchanged reviewed content.

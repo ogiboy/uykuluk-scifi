@@ -27,6 +27,7 @@
 - Keep chunked Ollama script receipts complete enough to diagnose which draft or expansion chunk
   failed.
 - Keep readiness diagnostics and evidence synchronized with persisted run state.
+- Keep evidence next-command guidance synchronized with current approval gates and review blockers.
 - Keep all run-root filesystem access behind canonical bounded run-ID validation.
 - Keep run artifact reads, writes, and persisted lists behind canonical relative-path validation.
 - Keep state, ledger, cost, reservation, lock, and artifact access behind canonical

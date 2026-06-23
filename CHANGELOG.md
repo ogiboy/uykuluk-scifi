@@ -91,6 +91,8 @@ future generated release notes can be inserted predictably.
 - Content review now warns on excessive clickbait title framing.
 - Content review now detects intro hooks after Markdown title and section headings instead of only
   scanning the first raw lines.
+- Evidence next-command guidance now recommends `--acknowledge-warnings` for reviewed scripts with
+  warnings and avoids approval guidance while review blockers remain.
 - Asset readiness now inventories intro and outro inputs in addition to brand and overlay files.
 - Cost and reservation ledgers now reject malformed or foreign-run rows instead of accepting
   unvalidated JSON.

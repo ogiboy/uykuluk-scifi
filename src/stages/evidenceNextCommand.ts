@@ -4,21 +4,35 @@ type CostQuoteNextStep = {
   approved: boolean;
 } | null;
 
+type ScriptReviewNextStep = {
+  scriptReviewBlockerCount?: number;
+  scriptReviewWarningCount?: number;
+};
+
 /** Returns the next safe operator action represented by an evidence snapshot. */
 export function evidenceNextCommand(
   state: string,
   costQuote: CostQuoteNextStep,
   hasUnresolvedCostReservation: boolean,
+  scriptReview: ScriptReviewNextStep = {},
 ): string {
   if (hasUnresolvedCostReservation) {
     return "Internal cost reconciliation is required; no operator CLI is available.";
+  }
+  if (state === "SCRIPT_REVIEWED") {
+    if ((scriptReview.scriptReviewBlockerCount ?? 0) > 0) {
+      return "Resolve blocking script review findings before approval.";
+    }
+    if ((scriptReview.scriptReviewWarningCount ?? 0) > 0) {
+      return "pnpm producer approve script --run <run_id> --acknowledge-warnings";
+    }
+    return "pnpm producer approve script --run <run_id>";
   }
   const commands: Record<string, string> = {
     NEW: "pnpm producer ideas",
     IDEAS_GENERATED: "pnpm producer approve idea --run <run_id> --idea <idea_id>",
     IDEA_APPROVED: "pnpm producer script --run <run_id>",
     SCRIPT_GENERATED: "pnpm producer review script --run <run_id>",
-    SCRIPT_REVIEWED: "pnpm producer approve script --run <run_id>",
     SCRIPT_APPROVED: "pnpm producer package --run <run_id>",
     PRODUCTION_PACKAGE_GENERATED: "pnpm producer estimate --run <run_id>",
     COST_ESTIMATED: costQuote?.invalid
