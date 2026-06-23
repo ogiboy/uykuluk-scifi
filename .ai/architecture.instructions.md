@@ -35,10 +35,10 @@ typed contracts rather than copying stage logic into frontend route handlers.
 
 The next product phase should extend the existing CLI/core flow toward a local video draft package:
 
-- render planning belongs in the workflow stages and should consume the approved production package,
-  scene/subtitle/popup metadata, and tracked asset inventory;
+- render planning belongs in the workflow stages and consumes the approved production package,
+  scene/subtitle metadata, and tracked asset inventory;
 - storyboard/contact-sheet output is an operator review artifact, not an approval by itself;
-- asset provenance should identify the exact committed assets selected for a future render;
+- asset provenance identifies the exact committed assets selected for a future render;
 - local TTS should run only after script approval and the relevant cost/readiness gates;
 - FFmpeg render should run only after render planning, render approval, and local artifact checks;
 - analytics import/reporting should consume operator-provided files and link results back to runs.

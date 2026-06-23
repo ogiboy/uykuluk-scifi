@@ -52,8 +52,9 @@ doctor
   -> review script
   -> approve script
   -> package
+  -> render-plan
   -> estimate / evidence / readiness
-  -> future render plan / local TTS / FFmpeg draft render
+  -> future local TTS / FFmpeg draft render
 ```
 
 Every expensive, irreversible, or publishing-adjacent step stays blocked until the matching
@@ -78,6 +79,8 @@ agent-tracking state only; runtime code must not require it.
   timeout/unknown outcomes, cost ledger, content/clickbait review, full asset readiness, and
   evidence bundles.
 - Disabled voice, render, private upload, and public/scheduled publish placeholders.
+- Render Plan + Contact Sheet MVP that maps generated scenes to tracked visual assets and records
+  per-run asset provenance.
 - UykulukSciFi visual assets under `assets/`.
 - `.ai/` operating contract for agents, workflows, design, QA, security, and roadmap state.
 - Project-local capability routing so technical, product, design, marketing, data, security, QA, and
@@ -179,6 +182,7 @@ pnpm producer review script --run <run_id>
 pnpm producer approve script --run <run_id>
 pnpm producer approve script --run <run_id> --acknowledge-warnings # when review warnings remain
 pnpm producer package --run <run_id>
+pnpm producer render-plan --run <run_id>
 pnpm producer estimate --run <run_id>
 pnpm producer approve cost --run <run_id> # only when the quote requires it
 pnpm producer evidence --run <run_id>
@@ -359,6 +363,8 @@ Each run can write:
 - `production/voiceover.txt`, `production/subtitles.srt`, `production/scenes.json`,
   `production/youtube_metadata.json`, `production/production_package.md`,
   `production/production_package.meta.json`;
+- `production/render_plan.json`, `production/storyboard_contact_sheet.md`, and
+  `production/asset_provenance.json`;
 - `costs/estimate.json` and `costs/estimate.md`;
 - `costs/ledger.jsonl`;
 - `costs/reservations.jsonl`;

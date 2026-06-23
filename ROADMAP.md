@@ -53,6 +53,9 @@ without upload or public publish.
 
 First concrete slice: **Render Plan + Contact Sheet MVP**.
 
+Status: implemented for deterministic CLI artifact generation; keep hardening evidence/readiness and
+operator review wording as later polish.
+
 Planned artifacts:
 
 - `production/render_plan.json` - deterministic mapping from approved production package, scenes,

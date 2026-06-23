@@ -16,15 +16,15 @@ Constraints:
   merely because they are common in video tools.
 - Keep public upload/publish manual or separately gated until the exact CLI/core controls exist.
 
-### Render Plan + Contact Sheet MVP is the next product slice
+### Render Plan + Contact Sheet MVP is the first real production-loop slice
 
 Reason: The safe core can already produce reviewable packages. The next useful product step is to
 make the first real video format explicit before adding TTS or FFmpeg execution.
 
 Constraints:
 
-- Planned artifacts are `production/render_plan.json`, `production/storyboard_contact_sheet.md`, and
-  `production/asset_provenance.json`.
+- Implemented artifacts are `production/render_plan.json`, `production/storyboard_contact_sheet.md`,
+  and `production/asset_provenance.json`.
 - The slice consumes approved production-package and asset contracts; it does not implement TTS,
   FFmpeg render, upload, public publish, or paid providers.
 - Artifact presence does not imply render approval.

@@ -16,6 +16,7 @@ import { bulletList } from "../utils/markdown.js";
 import { nowIso } from "../utils/time.js";
 import { evidenceNextCommand } from "./evidenceNextCommand.js";
 import { readProductionPackageIntegrityEvidence } from "./productionPackageIntegrity.js";
+import { readRenderPlanEvidence } from "./renderPlan.js";
 import { readScriptReviewEvidence } from "./scriptReviewEvidence.js";
 
 /**
@@ -35,6 +36,7 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
   const costReservations = await readCostReservationSummaries(run.runId);
   const costQuote = await readCostQuoteEvidence(run);
   const productionPackageIntegrity = await readProductionPackageIntegrityEvidence(run);
+  const renderPlan = await readRenderPlanEvidence(run);
   const scriptReview = await readScriptReviewEvidence(run);
   const promptProvenance = await readPromptProvenance(run.runId);
   const unresolvedCostReservations = costReservations.filter(isActiveCostReservation);
@@ -47,6 +49,12 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
         ).ideas.find((idea) => idea.id === run.approvedIdeaId) ?? null)
       : null;
   const blockedActions = [
+    renderPlan.status === "missing"
+      ? "Render plan not generated; run pnpm producer render-plan --run <run_id> before TTS/render work."
+      : undefined,
+    renderPlan.status === "block"
+      ? `Render plan evidence is blocked: ${renderPlan.message}`
+      : undefined,
     !config.providers.tts.enabled ? "TTS disabled until configured and approved." : undefined,
     !config.providers.imageGeneration.enabled
       ? "Image/video generation disabled until configured and approved."
@@ -73,6 +81,7 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
     costReservations,
     costQuote,
     productionPackageIntegrity,
+    renderPlan,
     costEstimatePath: (await pathExists(artifactPath(run.runId, "costs/estimate.json")))
       ? "costs/estimate.json"
       : null,
@@ -88,6 +97,7 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
       costQuote,
       unresolvedCostReservations.length > 0,
       scriptReview,
+      renderPlan,
     ),
     ledgerEventCount: ledger.length,
   };
@@ -109,6 +119,7 @@ function renderEvidenceMarkdown(bundle: unknown): string {
     costReservations: unknown[];
     costQuote: Awaited<ReturnType<typeof readCostQuoteEvidence>>;
     productionPackageIntegrity: Awaited<ReturnType<typeof readProductionPackageIntegrityEvidence>>;
+    renderPlan: Awaited<ReturnType<typeof readRenderPlanEvidence>>;
     generatedArtifacts: string[];
     warnings: string[];
     promptProvenance: PromptProvenance[];
@@ -145,6 +156,10 @@ function renderEvidenceMarkdown(bundle: unknown): string {
     data.productionPackageIntegrity
       ? JSON.stringify(data.productionPackageIntegrity)
       : "No production package manifest.",
+    "",
+    "## Render Plan",
+    "",
+    JSON.stringify(data.renderPlan),
     "",
     "## Warnings",
     "",

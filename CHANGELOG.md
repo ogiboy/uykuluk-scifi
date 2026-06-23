@@ -15,6 +15,8 @@ future generated release notes can be inserted predictably.
   changelog section promotion, release commits, and stable `vX.Y.Z` tags.
 - Typed release policy tests covering version bump calculation, legacy commit handling, and
   changelog generation.
+- `producer render-plan` command that writes a deterministic render plan, storyboard contact sheet,
+  and asset provenance from a verified production package and tracked visual assets.
 - Basic type-safe `next-intl` foundation for English and Turkish Studio locales.
 - Unit and browser coverage for locale normalization and cookie-based document language.
 - Typed runtime loading for tracked idea, scriptwriter, and production-package prompt defaults.
@@ -66,6 +68,8 @@ future generated release notes can be inserted predictably.
   explicit publish approval; execution remains an intentionally disabled MVP scaffold.
 - Runtime schemas now use current Zod 4 APIs (`z.strictObject`, top-level string formats,
   `z.iso.datetime`, and `z.int`) with regression coverage preventing deprecated Zod 3 patterns.
+- Evidence and readiness now surface render-plan availability, warning when missing and blocking
+  when partial or malformed render-plan artifacts exist.
 
 ### Fixed
 

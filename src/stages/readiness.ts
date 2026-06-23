@@ -9,8 +9,9 @@ import { pathExists } from "../utils/fs.js";
 import { bulletList, table } from "../utils/markdown.js";
 import { generateEvidenceBundle } from "./evidence.js";
 import { verifyProductionPackage } from "./productionPackageIntegrity.js";
+import { renderPlanReadinessCheck } from "./readinessRenderPlan.js";
 
-type ReadinessCheck = {
+export type ReadinessCheck = {
   name: string;
   status: "pass" | "warn" | "block";
   message: string;
@@ -62,6 +63,7 @@ export async function runReadiness(
       message: "Script approval must be explicit in run state.",
     },
     await productionPackageIntegrityCheck(run),
+    await renderPlanReadinessCheck(run),
     await budgetEstimateCheck(run, config),
     {
       name: "no blocked publish action",

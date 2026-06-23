@@ -17,6 +17,7 @@ import { estimateCost } from "./stages/estimate.js";
 import { runIdeas } from "./stages/ideas.js";
 import { generateProductionPackage } from "./stages/productionPackage.js";
 import { runReadiness } from "./stages/readiness.js";
+import { generateRenderPlan } from "./stages/renderPlan.js";
 import { reviewScript } from "./stages/reviewScript.js";
 import { generateScript } from "./stages/script.js";
 
@@ -110,6 +111,17 @@ program
     wrap(async (options: { run: string }) => {
       await estimateCost(options.run);
       console.log("Cost estimate generated.");
+    }),
+  );
+
+program
+  .command("render-plan")
+  .requiredOption("--run <run_id>")
+  .description("Generate a deterministic render plan and storyboard contact sheet.")
+  .action(
+    wrap(async (options: { run: string }) => {
+      await generateRenderPlan(options.run);
+      console.log("Render plan generated.");
     }),
   );
 

@@ -9,12 +9,17 @@ type ScriptReviewNextStep = {
   scriptReviewWarningCount?: number;
 };
 
+type RenderPlanNextStep = {
+  status?: string;
+} | null;
+
 /** Returns the next safe operator action represented by an evidence snapshot. */
 export function evidenceNextCommand(
   state: string,
   costQuote: CostQuoteNextStep,
   hasUnresolvedCostReservation: boolean,
   scriptReview: ScriptReviewNextStep = {},
+  renderPlan: RenderPlanNextStep = null,
 ): string {
   if (hasUnresolvedCostReservation) {
     return "Internal cost reconciliation is required; no operator CLI is available.";
@@ -34,7 +39,10 @@ export function evidenceNextCommand(
     IDEA_APPROVED: "pnpm producer script --run <run_id>",
     SCRIPT_GENERATED: "pnpm producer review script --run <run_id>",
     SCRIPT_APPROVED: "pnpm producer package --run <run_id>",
-    PRODUCTION_PACKAGE_GENERATED: "pnpm producer estimate --run <run_id>",
+    PRODUCTION_PACKAGE_GENERATED:
+      renderPlan?.status === "pass"
+        ? "pnpm producer estimate --run <run_id>"
+        : "pnpm producer render-plan --run <run_id>",
     COST_ESTIMATED: costQuote?.invalid
       ? "pnpm producer estimate --run <run_id> (cost quote is invalid and must be regenerated)"
       : costQuote?.approvalRequired && !costQuote.approved

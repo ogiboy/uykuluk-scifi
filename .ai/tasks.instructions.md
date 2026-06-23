@@ -47,12 +47,8 @@
 
 ## Next
 
-- Implement Render Plan + Contact Sheet MVP after this docs realignment:
-  `production/render_plan.json`, `production/storyboard_contact_sheet.md`, and
-  `production/asset_provenance.json`.
-- Make render planning consume the approved production package and tracked assets without adding
-  TTS, FFmpeg render, upload, publish, or paid providers in the same slice.
-- Surface render-plan blockers through evidence/readiness only after the artifact contract exists.
+- Harden the Render Plan + Contact Sheet MVP with operator review refinements only where real use
+  exposes gaps; do not turn it into render execution.
 - Add a bounded long-form continuation or quality-improvement pass so qwen3:8b drafts satisfy
   long-form and hook quality expectations instead of only producing safe short reviewable drafts.
 - Prefer continuation/retry designs over simply raising local section chunk caps; live local QA
@@ -73,7 +69,8 @@
 ## Later
 
 - Repeat live Ollama generation QA after provider, prompt, or model-setting changes.
-- Local TTS behind script approval and cost estimate.
+- Local TTS behind script approval and cost/readiness gates, consuming the render-plan artifacts
+  without enabling paid providers.
 - FFmpeg render behind render approval.
 - Manual analytics import/reporting from operator-provided CSV/JSON.
 - Private YouTube upload behind upload approval and explicit config.

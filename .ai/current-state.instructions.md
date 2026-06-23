@@ -43,6 +43,12 @@
 - Brand, overlay, intro, and outro asset inventory checks.
 - Production package generation with complete manifest creation after all derived artifacts are
   persisted.
+- Render Plan + Contact Sheet MVP that consumes the verified production-package manifest and tracked
+  assets, then writes `production/render_plan.json`, `production/storyboard_contact_sheet.md`, and
+  `production/asset_provenance.json` without TTS, FFmpeg render, upload, paid provider, or public
+  publish execution.
+- Evidence and readiness now surface render-plan presence; missing render plans warn, while partial
+  or malformed render-plan artifacts block readiness.
 - Provider-backed idea and production-package stages schema-validate and normalize common Ollama
   JSON variants before artifact writes, while rejecting malformed or English operator-facing
   payloads fail-closed.
@@ -116,6 +122,7 @@ pnpm producer review script --run <run_id>
 pnpm producer approve script --run <run_id>
 pnpm producer approve script --run <run_id> --acknowledge-warnings # when review warnings remain
 pnpm producer package --run <run_id>
+pnpm producer render-plan --run <run_id>
 pnpm producer estimate --run <run_id>
 pnpm producer approve cost --run <run_id>
 pnpm producer evidence --run <run_id>
@@ -167,8 +174,8 @@ Corepack/PATH before treating failures as product failures.
 - Local prompt overrides and revision history are not implemented; tracked defaults are read-only
   runtime inputs.
 - Revision contracts for subtitles, scenes, popup cards, and YouTube metadata are not implemented.
-- Render planning is not implemented. Planned next artifacts are `production/render_plan.json`,
-  `production/storyboard_contact_sheet.md`, and `production/asset_provenance.json`.
+- Render planning does not render media, approve render execution, or reserve spend. It is a local
+  review/planning artifact only.
 - TTS, render, upload, and publish are intentionally disabled scaffolds.
 - Manual analytics import/reporting is not implemented. Future analytics should start from
   operator-provided CSV/JSON before any YouTube Analytics API integration.
