@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { defaultConfig } from "../src/config/config";
 import { artifactPath } from "../src/core/artifacts";
 import { readCostEvents } from "../src/costs/costLedger";
+import { beginCostReservationExecution } from "../src/costs/costReservationExecutionState";
 import {
   markCostReservationUncertain,
   reconcileCostReservation,
@@ -28,6 +29,7 @@ import { generateScript } from "../src/stages/script";
 import { readJsonFile } from "../src/utils/json";
 import { nowIso } from "../src/utils/time";
 import { useTempProject } from "./helpers";
+import { paidAdapterIdentity } from "./paidRun";
 
 describe("cost reservation recovery", () => {
   useTempProject();
@@ -46,6 +48,12 @@ describe("cost reservation recovery", () => {
       runId,
       stage: "tts",
       operationId: "settle-idempotent",
+      adapterIdentity: paidAdapterIdentity,
+    });
+    await beginCostReservationExecution({
+      runId,
+      reservationId: reservation.reservationId,
+      adapterIdentity: paidAdapterIdentity,
     });
 
     const first = await settleCostReservation({
@@ -86,6 +94,12 @@ describe("cost reservation recovery", () => {
       runId,
       stage: "tts",
       operationId: "settle-recovery",
+      adapterIdentity: paidAdapterIdentity,
+    });
+    await beginCostReservationExecution({
+      runId,
+      reservationId: reservation.reservationId,
+      adapterIdentity: paidAdapterIdentity,
     });
     await appendCostReservationEvent({
       eventId: "reservation_event_pending",
@@ -116,6 +130,12 @@ describe("cost reservation recovery", () => {
       runId,
       stage: "tts",
       operationId: "over-cap",
+      adapterIdentity: paidAdapterIdentity,
+    });
+    await beginCostReservationExecution({
+      runId,
+      reservationId: reservation.reservationId,
+      adapterIdentity: paidAdapterIdentity,
     });
 
     await expect(
@@ -149,6 +169,7 @@ describe("cost reservation recovery", () => {
       runId,
       stage: "tts",
       operationId: "uncertain-release",
+      adapterIdentity: paidAdapterIdentity,
     });
     await markCostReservationUncertain({
       runId,

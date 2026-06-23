@@ -27,6 +27,9 @@ Status: implemented and under QA.
   digest above the configured threshold.
 - Atomically reserve an approved nonzero quote line once, count active and uncertain reservations
   against hard budgets, and support recoverable settlement or explicit reconciliation.
+- Route future nonzero provider callbacks through one adapter-bound internal execution contract that
+  persists `EXECUTION_STARTED`, prevents local redispatch, bounds timeout/abort, and classifies
+  definitely-not-sent, unknown, and successful outcomes.
 - Generate evidence bundle and readiness diagnostics.
 - Block readiness when the cost quote is malformed, stale, over a hard budget, or missing its exact
   required approval.
@@ -54,9 +57,9 @@ Exit criteria:
 
 Paid-provider boundary:
 
-- Reservation and settlement foundations are implemented, but no nonzero-cost provider is enabled.
-  The first paid adapter must reserve immediately before the provider request, settle or reconcile
-  every outcome, and prove by negative test that direct budget-only execution is impossible.
+- Reservation, execution-claim, timeout/failure classification, and settlement foundations are
+  implemented, but no nonzero-cost provider is enabled. A future separately approved adapter must
+  plug into the internal execution boundary; no direct provider-call path is permitted.
 
 ## Phase 1.5 - Project Policy And Tooling
 
@@ -199,8 +202,8 @@ Status: foundation in progress.
 - Improve Ollama model availability checks.
 - Record provider duration and token estimates consistently.
 - Keep provider failures explicit in readiness and evidence.
-- Do not introduce paid APIs until the reservation service is integrated as the only provider-call
-  entry path and its failure/timeout behavior is covered end to end.
+- Do not introduce paid APIs until a separately approved adapter is designed to expose only the
+  tested reserved-provider execution boundary and its credential/evidence policy is reviewed.
 
 ## Phase 4 - TTS And Render
 

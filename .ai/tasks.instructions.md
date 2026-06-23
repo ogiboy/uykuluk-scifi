@@ -19,6 +19,8 @@
   manifest covering every derived package artifact and the approved script digest.
 - Keep atomic reservation, one-time quote-line consumption, active-reservation budget accounting,
   recoverable settlement, and explicit reconciliation passing.
+- Keep future nonzero provider callbacks behind adapter identity matching, durable execution claim,
+  local at-most-once dispatch, bounded timeout, and fail-closed outcome classification.
 - Keep readiness diagnostics and evidence synchronized with persisted run state.
 - Keep all run-root filesystem access behind canonical bounded run-ID validation.
 - Keep run artifact reads, writes, and persisted lists behind canonical relative-path validation.
@@ -32,8 +34,8 @@
 
 ## Next
 
-- Define the first paid-provider adapter contract around `reserveApprovedCost` as the only allowed
-  pre-call path, including timeout/failure reconciliation and negative bypass tests.
+- Keep the internal reserved-provider execution contract ready for a separately approved real
+  adapter without adding paid SDKs, credentials, or operator execution commands.
 - Add read-only run index and run detail routes to `apps/studio`.
 - Define typed read/write service contracts that both CLI and web can use.
 - Define local prompt override storage and revision events before adding a prompt editor; typed

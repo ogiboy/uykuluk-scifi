@@ -4,6 +4,8 @@ import { SafeExitError } from "../core/errors";
 import { isValidRunId, runPath, runsDir } from "../core/runStore";
 import { ensureDir, pathExists } from "../utils/fs";
 
+const providerRequestIdHashSchema = z.string().regex(/^[a-f0-9]{64}$/);
+
 const reservationBaseSchema = z.strictObject({
   eventId: z.string().min(1),
   reservationId: z.string().min(1),
@@ -22,14 +24,20 @@ const reservedEventSchema = reservationBaseSchema.extend({
   maxUsdMicros: z.int().nonnegative(),
 });
 
+const executionStartedEventSchema = reservationBaseSchema.extend({
+  type: z.literal("EXECUTION_STARTED"),
+});
+
 const settlementEventSchema = reservationBaseSchema.extend({
   type: z.enum(["SETTLEMENT_PENDING", "SETTLED"]),
   actualUsdMicros: z.int().nonnegative(),
+  providerRequestIdHash: providerRequestIdHashSchema.optional(),
 });
 
 const reasonEventSchema = reservationBaseSchema.extend({
   type: z.enum(["RELEASED", "UNCERTAIN", "RECONCILED_RELEASED"]),
   reason: z.string().min(1),
+  providerRequestIdHash: providerRequestIdHashSchema.optional(),
 });
 
 const reconciledSettledEventSchema = reservationBaseSchema.extend({
@@ -40,6 +48,7 @@ const reconciledSettledEventSchema = reservationBaseSchema.extend({
 
 export const costReservationEventSchema = z.discriminatedUnion("type", [
   reservedEventSchema,
+  executionStartedEventSchema,
   settlementEventSchema,
   reasonEventSchema,
   reconciledSettledEventSchema,
@@ -48,6 +57,7 @@ export const costReservationEventSchema = z.discriminatedUnion("type", [
 export type CostReservationEvent = z.infer<typeof costReservationEventSchema>;
 export type CostReservationStatus =
   | "RESERVED"
+  | "EXECUTION_STARTED"
   | "SETTLEMENT_PENDING"
   | "SETTLED"
   | "RELEASED"
@@ -65,6 +75,8 @@ export type CostReservationSummary = {
   maxUsdMicros: number;
   status: CostReservationStatus;
   actualUsdMicros?: number;
+  executionStartedAt?: string;
+  providerRequestIdHash?: string;
   reason?: string;
   reservedAt: string;
   updatedAt: string;
@@ -133,7 +145,9 @@ export async function readAllCostReservationSummaries(): Promise<CostReservation
 
 /** Reports whether a reservation still counts against a hard budget. */
 export function isActiveCostReservation(summary: CostReservationSummary): boolean {
-  return ["RESERVED", "SETTLEMENT_PENDING", "UNCERTAIN"].includes(summary.status);
+  return ["RESERVED", "EXECUTION_STARTED", "SETTLEMENT_PENDING", "UNCERTAIN"].includes(
+    summary.status,
+  );
 }
 
 function summarizeCostReservationEvents(events: CostReservationEvent[]): CostReservationSummary[] {
@@ -178,7 +192,8 @@ function applyReservationEvent(
   event: Exclude<CostReservationEvent, { type: "RESERVED" }>,
 ): CostReservationSummary {
   const allowed: Record<CostReservationStatus, CostReservationEvent["type"][]> = {
-    RESERVED: ["SETTLEMENT_PENDING", "RELEASED", "UNCERTAIN"],
+    RESERVED: ["EXECUTION_STARTED", "RELEASED", "UNCERTAIN"],
+    EXECUTION_STARTED: ["SETTLEMENT_PENDING", "RELEASED", "UNCERTAIN"],
     SETTLEMENT_PENDING: ["SETTLED"],
     UNCERTAIN: ["RECONCILED_SETTLED", "RECONCILED_RELEASED"],
     SETTLED: [],
@@ -189,11 +204,20 @@ function applyReservationEvent(
       `Invalid cost reservation transition: ${current.status} -> ${event.type}.`,
     );
   }
+  if (event.type === "EXECUTION_STARTED") {
+    return {
+      ...current,
+      status: "EXECUTION_STARTED",
+      executionStartedAt: event.createdAt,
+      updatedAt: event.createdAt,
+    };
+  }
   if (event.type === "SETTLEMENT_PENDING") {
     return {
       ...current,
       status: "SETTLEMENT_PENDING",
       actualUsdMicros: event.actualUsdMicros,
+      providerRequestIdHash: event.providerRequestIdHash ?? current.providerRequestIdHash,
       updatedAt: event.createdAt,
     };
   }
@@ -202,6 +226,9 @@ function applyReservationEvent(
       ...current,
       status: "SETTLED",
       actualUsdMicros: event.actualUsdMicros,
+      providerRequestIdHash:
+        ("providerRequestIdHash" in event ? event.providerRequestIdHash : undefined) ??
+        current.providerRequestIdHash,
       reason: "reason" in event ? event.reason : current.reason,
       updatedAt: event.createdAt,
     };
@@ -214,6 +241,7 @@ function applyReservationEvent(
     return {
       ...current,
       status: event.type === "UNCERTAIN" ? "UNCERTAIN" : "RELEASED",
+      providerRequestIdHash: event.providerRequestIdHash ?? current.providerRequestIdHash,
       reason: event.reason,
       updatedAt: event.createdAt,
     };

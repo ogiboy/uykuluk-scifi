@@ -29,11 +29,23 @@ export async function reserveApprovedCost(input: {
   runId: string;
   stage: string;
   operationId: string;
+  adapterIdentity: {
+    provider: string;
+    model?: string;
+  };
 }): Promise<CostReservationSummary> {
   requireReservationText(input.stage, "stage");
   requireReservationText(input.operationId, "operation id");
   return withCostReservationLock(async () => {
     const context = await loadApprovedQuoteLine(input.runId, input.stage);
+    if (
+      input.adapterIdentity.provider !== context.provider ||
+      input.adapterIdentity.model !== context.model
+    ) {
+      throw new SafeExitError(
+        `Blocked: adapter provider/model does not match the approved quote for ${input.stage}.`,
+      );
+    }
     const all = await readAllCostReservationSummaries();
     const sameOperation = all.find((item) => item.operationId === input.operationId);
     if (sameOperation) {
@@ -146,6 +158,7 @@ export async function markCostReservationUncertain(input: {
   runId: string;
   reservationId: string;
   reason: string;
+  providerRequestIdHash?: string;
 }): Promise<CostReservationSummary> {
   requireReservationText(input.reason, "uncertain outcome reason");
   return withCostReservationLock(async () => {
@@ -153,10 +166,10 @@ export async function markCostReservationUncertain(input: {
     if (reservation.status === "UNCERTAIN") {
       return reservation;
     }
-    if (reservation.status !== "RESERVED") {
+    if (!["RESERVED", "EXECUTION_STARTED"].includes(reservation.status)) {
       throw new SafeExitError(`Cannot mark reservation uncertain from ${reservation.status}.`);
     }
-    await appendUncertainEvent(reservation, input.reason);
+    await appendUncertainEvent(reservation, input.reason, input.providerRequestIdHash);
     return requireReservation(input.runId, input.reservationId);
   });
 }

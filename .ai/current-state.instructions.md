@@ -33,6 +33,9 @@
 - Project-wide atomic cost reservations with one-time approved quote-line consumption, operation-id
   idempotency, active-reservation hard-budget accounting, integer USD micros, recoverable
   settlement, uncertain outcomes, and explicit reconciliation.
+- Internal adapter-bound reserved-provider execution with a durable `EXECUTION_STARTED` claim,
+  provider/model quote matching, local at-most-once callback dispatch, bounded timeout/abort,
+  fail-closed unknown outcomes, exact settlement, and hashed request-id evidence.
 - Script content review heuristics, including clickbait title warnings.
 - Brand, overlay, intro, and outro asset inventory checks.
 - Production package generation with complete manifest creation after all derived artifacts are
@@ -117,10 +120,9 @@ Corepack/PATH before treating failures as product failures.
 
 - Ollama doctor checks server reachability and configured model inventory, but live local-model QA
   is environment-dependent and not part of CI.
-- Paid provider execution is not implemented. Exact cost quote approval remains separate from spend
-  authorization. The internal reservation lifecycle exists, but the first paid adapter must use it
-  immediately before every provider request and settle or reconcile every outcome; no CLI mutation
-  command exposes this internal boundary yet.
+- No paid provider adapter is implemented. Exact cost quote approval remains separate from spend
+  authorization. The internal execution boundary is ready for a future approved adapter, but no SDK,
+  credential, network integration, or CLI mutation command exposes it.
 - Current Next.js Studio is a basic shell only; read-only run detail routes and service contracts
   are not implemented yet.
 - Locale infrastructure is ready, but full translation catalogs and a language selector are

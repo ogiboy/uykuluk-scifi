@@ -9,6 +9,9 @@
   approval before readiness.
 - `CostReservationService` atomically consumes an approved quote line once and journals release,
   pending settlement, settlement, uncertainty, and reconciliation without calling a provider.
+- `ReservedProviderExecution` matches adapter identity to the quote, persists one execution claim
+  before callback entry, prevents redispatch, aborts bounded timeouts, and defaults ambiguous
+  outcomes to uncertainty.
 - `Readiness` consumes the persisted cost estimate decision; a blocked estimate prevents manual
   production readiness.
 - `RunStore` rejects malformed or schema-invalid state and replaces JSON files atomically.

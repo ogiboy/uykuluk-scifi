@@ -74,6 +74,25 @@ Constraints:
 - Paid execution remains unavailable until a provider adapter makes reservation the only pre-call
   path and proves its failure and timeout behavior end to end.
 
+### Reserved provider execution is a separate internal authority
+
+Reason: A reservation proves budget commitment but does not prove whether an external callback was
+invoked. Future nonzero provider adapters need one composed boundary that durably claims execution
+before callback entry and classifies every observed outcome without treating an error as proof that
+no request was sent.
+
+Constraints:
+
+- Adapter provider/model identity must match the exact approved quote before reservation.
+- Only `RESERVED -> EXECUTION_STARTED` grants one local callback invocation.
+- Same-operation retries never redispatch after execution starts or reaches a terminal state.
+- Definitely-not-sent outcomes release; unknown, malformed, thrown, or timed-out outcomes remain
+  uncertain; confirmed success settles exact integer USD micros.
+- Provider request ids are bounded at the callback boundary and only their SHA-256 hashes persist;
+  neither form is proof of charge.
+- The contract does not enable a paid adapter, CLI command, credential, TTS, render, upload, or
+  publish path.
+
 ### Run identifiers are filesystem capabilities
 
 Reason: CLI input and future Studio/worker requests use a run id to select durable local state.

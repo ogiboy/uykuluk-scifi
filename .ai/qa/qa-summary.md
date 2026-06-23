@@ -2,8 +2,8 @@
 
 Latest usage smoke report:
 
-- `.ai/qa/artifacts/usage-smoke-20260619-171824/qa-report.md`
-- `.ai/qa/artifacts/usage-smoke-20260619-171824/usage-smoke-summary.json`
+- `.ai/qa/artifacts/usage-smoke-20260623-131633/qa-report.md`
+- `.ai/qa/artifacts/usage-smoke-20260623-131633/usage-smoke-summary.json`
 
 Validated gates:
 
@@ -76,6 +76,13 @@ Usage smoke coverage:
   lock recovery, task-error propagation, and malformed reservation-ledger rejection.
 - Settlement tests verify reservation-linked cost idempotency, recovery from `SETTLEMENT_PENDING`,
   over-cap uncertainty, and explicit reconciliation to settled or released.
+- Reserved-provider execution tests prove callbacks do not run before exact approval/readiness or
+  after quote/config drift; adapter identity must match the quote; execution claim precedes callback
+  entry; success settles exact usage; definitely-not-sent releases; malformed, thrown, unknown, and
+  timed-out outcomes remain uncertain; same-operation retries and concurrent callers do not
+  redispatch.
+- Evidence tests project execution-start time, hashed provider request id, generation time, and an
+  explicit internal-reconciliation action for unresolved reservations without persisting raw ids.
 - Lock regression coverage proves stale dead locks can be reclaimed while a live owner remains
   exclusive after the stale threshold.
 - The clean-copy usage smoke exercises `producer approve cost` and confirms a zero-cost quote fails
@@ -126,5 +133,6 @@ Remaining known MVP limits:
   overlays, and intro/outro frames. Editable source files, rendered intro/outro clips, and font
   licensing notes remain useful before render work.
 - TTS, render, upload, and publish are intentionally disabled scaffolds.
-- Paid execution remains disabled until the first provider adapter makes the implemented reservation
-  lifecycle its only pre-call path and receives end-to-end failure/timeout coverage.
+- Paid execution remains disabled. The internal reserved-provider callback contract has
+  deterministic failure/timeout coverage, but no real adapter, paid SDK, credential, or operator
+  command exists.

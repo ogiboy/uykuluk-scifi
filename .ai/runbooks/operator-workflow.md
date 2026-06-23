@@ -24,8 +24,8 @@ hashes; it invalidates stale script review/approval and returns the run to `SCRI
 Review and approve the revised script again before packaging.
 
 Canonical inspection files include `state.json`, `ledger.jsonl`, `costs/ledger.jsonl`,
-`reviews/script_review.json`, `revisions/script/`, `costs/estimate.json`, `evidence_bundle.json`,
-and `diagnostics/readiness.json`.
+`costs/reservations.jsonl`, `reviews/script_review.json`, `revisions/script/`,
+`costs/estimate.json`, `evidence_bundle.json`, and `diagnostics/readiness.json`.
 
 Current readiness strictly validates the versioned cost quote, the complete production-package
 manifest, relevant config, enabled stage pricing, and live hard budgets. The manifest binds the
@@ -33,9 +33,11 @@ approved script and prompt/provider provenance to exact voiceover, subtitle, sce
 metadata, and package-Markdown SHA-256 digests. Missing, malformed, foreign, or changed package
 artifacts block cost estimation and readiness. Above-threshold quotes require an approval whose
 `approvedRef` matches the exact persisted quote SHA-256 digest. Cost approval does not execute or
-authorize a paid provider; paid execution remains disabled. Run state is schema-validated and JSON
-writes use atomic replacement. Ideas, scripts, and production packages load tracked `.ai/prompts/`
-defaults through typed runtime templates. Evidence records prompt provenance and the verified
+authorize a paid provider. An internal callback contract now proves reservation-before-execution,
+at-most-once local dispatch, timeout/unknown handling, and settlement, but no paid adapter or CLI
+path is enabled. Run state is schema-validated and JSON writes use atomic replacement. Ideas,
+scripts, and production packages load tracked `.ai/prompts/` defaults through typed runtime
+templates. Evidence records prompt provenance, reservation/execution status, and the verified
 production-package manifest digest or blocking integrity reason.
 
 After readiness passes, `state.json`, `diagnostics/readiness.json`, and `evidence_bundle.json` must

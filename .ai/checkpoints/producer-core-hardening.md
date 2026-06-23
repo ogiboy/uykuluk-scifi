@@ -17,7 +17,7 @@ coherent, tested slices until the safe core and its evidence contracts are genui
 
 ## Current State
 
-- Branch/worktree: `fix/core-symlink-containment` at
+- Branch/worktree: `feat/core-reserved-provider-execution` at
   `/Users/ogiboy/.codex/worktrees/894d/uykuluk-scifi`.
 - Base: `7bd5801`, the merge of the completed script approval/revision hardening work.
 - Earlier completed hardening includes content-addressed script approval and revisions,
@@ -30,9 +30,9 @@ coherent, tested slices until the safe core and its evidence contracts are genui
 - Completed slice: `66d2095 feat(core): verify production package integrity`.
 - Completed slice: `2f9e34c refactor(core): modernize Zod schemas`.
 - Completed slice: `a046523 fix(core): contain linked run paths`.
-- Active next action: re-audit the next safe-core candidate without enabling paid or publishing
-  execution.
-- Worktree was clean before the symlink-containment slice.
+- Active slice: internal reserved-provider callback execution contract without enabling a paid
+  provider or operator command.
+- Worktree was clean before the reserved-provider execution slice.
 
 ## Verification Evidence
 
@@ -105,6 +105,19 @@ coherent, tested slices until the safe core and its evidence contracts are genui
   hard-linked core, cost, and reservation ledger access, and produced validated Markdown/HTML
   reports with no surviving reportable findings:
   `/tmp/codex-security-scans/uykuluk-scifi/bd00db439703_20260619T171338Z/report.html`.
+- Current plan: `.ai/plans/2026-06-23-reserved-provider-execution.md`.
+- Three independent read-only reviews converged on a durable `EXECUTION_STARTED` reservation state,
+  adapter provider/model quote matching, and local at-most-once callback dispatch.
+- Strict TDD first failed because the composed execution owner did not exist. Focused execution,
+  reservation, recovery, budget, cost-approval, mock-workflow, and readiness coverage now passes
+  48/48; typecheck and the 176-file modularity gate pass.
+- Independent post-implementation review found and fixed timeout/abort outcome ordering, overly
+  broad release authority after callback claim, settled receipt-hash mismatch acceptance, raw
+  provider request-id persistence, and low-level provider/stage import pressure.
+- Current full gates pass: `pnpm check` with 175/175 tests and Studio production build,
+  `pnpm qa:usage`, `pnpm version:plan`, `pnpm security:dependencies`, `pnpm release:check`, and
+  `git diff --check`.
+- Latest ignored usage report: `.ai/qa/artifacts/usage-smoke-20260623-131633/qa-report.md`.
 
 ## Decisions
 
@@ -117,12 +130,16 @@ coherent, tested slices until the safe core and its evidence contracts are genui
 
 ## Remaining Work
 
-1. Re-audit the next safe-core candidate without enabling paid or publishing execution.
+1. Complete full quality, usage, release, dependency, and diff-scoped security gates for the
+   reserved-provider execution contract.
+2. Commit and push the green execution-contract slice.
+3. Re-audit the next safe-core candidate without enabling paid or publishing execution.
 
 ## Blockers And Risks
 
-- Cost quote approval and reservation infrastructure are not sufficient to enable a paid provider;
-  adapter integration and end-to-end failure semantics remain open.
+- No real paid adapter, SDK, credential policy, or operator command exists. The internal callback
+  contract covers local dispatch and failure semantics, but external provider idempotency and charge
+  confirmation remain adapter-specific future work.
 - Reservation writes are serialized locally, but JSONL ledgers are not cryptographically
   tamper-evident and the lock is not a distributed lease.
 - Existing-component symlink containment cannot prevent a hostile local process from racing path

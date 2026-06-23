@@ -1,7 +1,10 @@
 import path from "node:path";
 import { loadConfig } from "../config/config";
 import { readCostEstimate } from "../costs/costEstimate";
-import { readCostReservationSummaries } from "../costs/costReservationStore";
+import {
+  isActiveCostReservation,
+  readCostReservationSummaries,
+} from "../costs/costReservationStore";
 import { artifactPath, writeRunJson, writeRunText } from "../core/artifacts";
 import { readLedger } from "../core/ledger";
 import { loadRun, saveRun } from "../core/runStore";
@@ -10,6 +13,8 @@ import { PromptProvenance } from "../prompts/provenance";
 import { pathExists } from "../utils/fs";
 import { readJsonFile } from "../utils/json";
 import { bulletList } from "../utils/markdown";
+import { nowIso } from "../utils/time";
+import { evidenceNextCommand } from "./evidenceNextCommand";
 import { readProductionPackageIntegrityEvidence } from "./productionPackageIntegrity";
 
 /**
@@ -30,6 +35,7 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
   const costQuote = await readCostQuoteEvidence(run);
   const productionPackageIntegrity = await readProductionPackageIntegrityEvidence(run);
   const promptProvenance = await readPromptProvenance(run.runId);
+  const unresolvedCostReservations = costReservations.filter(isActiveCostReservation);
   const approvedIdea =
     run.approvedIdeaId && (await pathExists(artifactPath(run.runId, "ideas.json")))
       ? ((
@@ -49,9 +55,13 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
     !config.providers.youtube.allowPublicPublish
       ? "Public/scheduled publish disabled by default."
       : undefined,
+    unresolvedCostReservations.length > 0
+      ? `${unresolvedCostReservations.length} cost reservation outcome(s) remain active or uncertain; internal reconciliation is required.`
+      : undefined,
   ].filter((item): item is string => Boolean(item));
   const bundle = {
     runId: run.runId,
+    generatedAt: nowIso(),
     currentState: run.state,
     approvedIdea,
     scriptPath: "script.md",
@@ -71,7 +81,11 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
       (item) => item.startsWith("revisions/") && item.endsWith("/revision.json"),
     ),
     blockedActions,
-    nextRecommendedCommand: nextCommand(run.state, costQuote),
+    nextRecommendedCommand: evidenceNextCommand(
+      run.state,
+      costQuote,
+      unresolvedCostReservations.length > 0,
+    ),
     ledgerEventCount: ledger.length,
   };
   run = await writeRunJson(run, "evidence", "evidence_bundle.json", bundle);
@@ -80,34 +94,11 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
   return bundle;
 }
 
-/** Returns the next safe operator command for the current state and quote status. */
-function nextCommand(
-  state: string,
-  costQuote: Awaited<ReturnType<typeof readCostQuoteEvidence>>,
-): string {
-  const map: Record<string, string> = {
-    NEW: "pnpm producer ideas",
-    IDEAS_GENERATED: "pnpm producer approve idea --run <run_id> --idea <idea_id>",
-    IDEA_APPROVED: "pnpm producer script --run <run_id>",
-    SCRIPT_GENERATED: "pnpm producer review script --run <run_id>",
-    SCRIPT_REVIEWED: "pnpm producer approve script --run <run_id>",
-    SCRIPT_APPROVED: "pnpm producer package --run <run_id>",
-    PRODUCTION_PACKAGE_GENERATED: "pnpm producer estimate --run <run_id>",
-    COST_ESTIMATED: costQuote?.invalid
-      ? "pnpm producer estimate --run <run_id> (cost quote is invalid and must be regenerated)"
-      : costQuote?.approvalRequired && !costQuote.approved
-        ? "pnpm producer approve cost --run <run_id>"
-        : "pnpm producer readiness --run <run_id>",
-    PAID_GENERATION_COST_APPROVED: "pnpm producer readiness --run <run_id>",
-    READY_FOR_MANUAL_PRODUCTION: "Manual production review. Render/upload remain approval-gated.",
-  };
-  return map[state] ?? "Review state and ledger before continuing.";
-}
-
 /** Renders the persisted evidence bundle for operator review. */
 function renderEvidenceMarkdown(bundle: unknown): string {
   const data = bundle as {
     runId: string;
+    generatedAt: string;
     currentState: string;
     approvedIdea: { title?: string } | null;
     approvals: unknown[];
@@ -126,6 +117,7 @@ function renderEvidenceMarkdown(bundle: unknown): string {
     "# Evidence Bundle",
     "",
     `Run: ${data.runId}`,
+    `Generated at: ${data.generatedAt}`,
     `Current state: ${data.currentState}`,
     `Approved idea: ${data.approvedIdea?.title ?? "None"}`,
     "",

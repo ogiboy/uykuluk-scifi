@@ -15,16 +15,22 @@ successful readiness. It infers provider, model, and maximum cost from the appro
 cannot supply them.
 
 Per-video, daily, and weekly hard budgets cannot be overridden by approval and are rechecked at
-readiness and reservation. Active `RESERVED`, `SETTLEMENT_PENDING`, and `UNCERTAIN` amounts count
-against those budgets.
+readiness and reservation. Active `RESERVED`, `EXECUTION_STARTED`, `SETTLEMENT_PENDING`, and
+`UNCERTAIN` amounts count against those budgets.
 
 Future paid-adapter sequence:
 
-1. Call `reserveApprovedCost` immediately before submitting the provider request.
-2. If the request was definitely not submitted, release the reservation. The quote line remains
-   consumed and a retry needs a new quote and approval.
-3. If submission may have occurred but the outcome is unknown, mark the reservation uncertain.
-4. Settle a confirmed charge using integer USD micros. A pending settlement is safe to retry.
-5. Explicitly reconcile every uncertain outcome to settled or released with an operator reason.
+1. Call the internal `executeReservedProviderOperation` boundary with an adapter whose provider and
+   model match the approved quote.
+2. The boundary reserves the quote and atomically persists `EXECUTION_STARTED` before callback
+   entry. Same-operation retries cannot invoke the callback again.
+3. If the adapter proves the request was not submitted, release the reservation. The quote line
+   remains consumed and a retry needs a new quote and approval.
+4. If submission may have occurred, callback metadata is malformed, the callback throws, or the
+   timeout expires, keep the reservation uncertain.
+5. Settle a confirmed charge using integer USD micros and a SHA-256 hash of any bounded provider
+   request id. A pending settlement is safe to retry.
+6. Explicitly reconcile every uncertain outcome to settled or released with an operator reason.
 
-No current CLI command or provider adapter invokes this lifecycle. Paid execution remains disabled.
+No real provider adapter, paid SDK, credential, or CLI command invokes this lifecycle. The internal
+contract is tested; paid execution remains disabled.

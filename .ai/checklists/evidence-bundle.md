@@ -8,7 +8,10 @@
 - [ ] Approvals.
 - [ ] Costs.
 - [ ] Cost reservation id, approved quote/approval binding, stage, provider/model, maximum USD
-      micros, operation id, status, actual amount when known, and reconciliation reason when used.
+      micros, operation id, execution-start timestamp, provider request-id hash, status, actual
+      amount when known, and reconciliation reason when used.
+- [ ] Evidence generation timestamp and an explicit unresolved-cost action when a reservation is
+      active, pending, or uncertain.
 - [ ] Cost quote path, digest, amount/currency, approval requirement, and exact matching approval
       id.
 - [ ] Prompt key, tracked source path, and rendered hash for each provider-backed artifact.

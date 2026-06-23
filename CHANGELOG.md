@@ -26,6 +26,9 @@ future generated release notes can be inserted predictably.
 - Project-wide atomic cost reservations with one-time approved quote-line consumption, integer USD
   micros, idempotent operation ids, recoverable settlement, uncertain outcomes, explicit
   reconciliation, and evidence summaries.
+- Internal adapter-bound reserved-provider execution with durable execution claims, provider/model
+  quote matching, local at-most-once callback dispatch, bounded timeout/abort, fail-closed outcome
+  classification, exact settlement, and hashed request-id evidence.
 - Versioned production-package manifests covering voiceover, subtitles, scenes, YouTube metadata,
   package Markdown, approved-script provenance, and exact artifact digests.
 

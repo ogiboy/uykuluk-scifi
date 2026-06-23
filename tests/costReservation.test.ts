@@ -22,6 +22,7 @@ import { runReadiness } from "../src/stages/readiness";
 import { reviewScript } from "../src/stages/reviewScript";
 import { generateScript } from "../src/stages/script";
 import { useTempProject } from "./helpers";
+import { paidAdapterIdentity } from "./paidRun";
 
 describe("cost reservation", () => {
   useTempProject();
@@ -38,8 +39,18 @@ describe("cost reservation", () => {
     const runId = await prepareReadyPaidRun({ estimatedUsd: 0.02 });
 
     const results = await Promise.allSettled([
-      reserveApprovedCost({ runId, stage: "tts", operationId: "tts-attempt-a" }),
-      reserveApprovedCost({ runId, stage: "tts", operationId: "tts-attempt-b" }),
+      reserveApprovedCost({
+        runId,
+        stage: "tts",
+        operationId: "tts-attempt-a",
+        adapterIdentity: paidAdapterIdentity,
+      }),
+      reserveApprovedCost({
+        runId,
+        stage: "tts",
+        operationId: "tts-attempt-b",
+        adapterIdentity: paidAdapterIdentity,
+      }),
     ]);
 
     expect(results.filter((result) => result.status === "fulfilled")).toHaveLength(1);
@@ -71,11 +82,13 @@ describe("cost reservation", () => {
       runId,
       stage: "tts",
       operationId: "tts-idempotent",
+      adapterIdentity: paidAdapterIdentity,
     });
     const second = await reserveApprovedCost({
       runId,
       stage: "tts",
       operationId: "tts-idempotent",
+      adapterIdentity: paidAdapterIdentity,
     });
 
     expect(second.reservationId).toBe(first.reservationId);
@@ -90,6 +103,7 @@ describe("cost reservation", () => {
       runId,
       stage: "tts",
       operationId: "tts-release",
+      adapterIdentity: paidAdapterIdentity,
     });
 
     await releaseCostReservation({
@@ -99,7 +113,12 @@ describe("cost reservation", () => {
     });
 
     await expect(
-      reserveApprovedCost({ runId, stage: "tts", operationId: "tts-retry" }),
+      reserveApprovedCost({
+        runId,
+        stage: "tts",
+        operationId: "tts-retry",
+        adapterIdentity: paidAdapterIdentity,
+      }),
     ).rejects.toThrow(/consumed|new quote|approval/i);
     expect((await readCostReservationSummaries(runId))[0].status).toBe("RELEASED");
   });
@@ -116,8 +135,18 @@ describe("cost reservation", () => {
     const secondRunId = await prepareReadyPaidRun({ estimatedUsd: 0.02, budgets });
 
     const results = await Promise.allSettled([
-      reserveApprovedCost({ runId: firstRunId, stage: "tts", operationId: "daily-a" }),
-      reserveApprovedCost({ runId: secondRunId, stage: "tts", operationId: "daily-b" }),
+      reserveApprovedCost({
+        runId: firstRunId,
+        stage: "tts",
+        operationId: "daily-a",
+        adapterIdentity: paidAdapterIdentity,
+      }),
+      reserveApprovedCost({
+        runId: secondRunId,
+        stage: "tts",
+        operationId: "daily-b",
+        adapterIdentity: paidAdapterIdentity,
+      }),
     ]);
 
     expect(results.filter((result) => result.status === "fulfilled")).toHaveLength(1);

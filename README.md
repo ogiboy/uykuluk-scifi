@@ -43,7 +43,8 @@ to YouTube in the MVP.
 - Strict run state machine and explicit approval ledger.
 - Versioned future paid-generation cost quote bundles (JSON plus operator Markdown) with exact
   digest approval, atomic one-time cost reservations, recoverable settlement/reconciliation, live
-  hard-budget revalidation, cost ledger, content/clickbait review, full asset readiness, and
+  hard-budget revalidation, adapter-bound local at-most-once execution claims, fail-closed
+  timeout/unknown outcomes, cost ledger, content/clickbait review, full asset readiness, and
   evidence bundles.
 - Disabled voice, render, private upload, and public/scheduled publish placeholders.
 - UykulukSciFi visual assets under `assets/`.
@@ -114,10 +115,11 @@ to YouTube in the MVP.
 - Studio must call typed local service contracts; it must not duplicate workflow state.
 
 Paid generation providers are not implemented. `producer approve cost` approves one exact future
-paid-production quote; it does not authorize or execute spending. The internal reservation service
-now provides atomic one-time quote-line consumption, settlement, uncertain-outcome handling, and
-explicit reconciliation. A future paid adapter must reserve immediately before its provider request
-and settle or reconcile afterward; direct budget-only execution is not allowed.
+paid-production quote; it does not authorize or execute spending. The internal reservation and
+execution services provide atomic one-time quote-line consumption, persist callback intent before
+execution, and keep active or uncertain commitments inside hard budgets until settlement or explicit
+reconciliation. Future adapters must expose only this boundary; direct budget-only or raw provider
+execution is not allowed. No paid adapter, SDK, credential, or operator command is enabled.
 
 ## Install
 
@@ -291,6 +293,7 @@ Each run can write:
   `production/production_package.meta.json`;
 - `costs/estimate.json` and `costs/estimate.md`;
 - `costs/ledger.jsonl`;
+- `costs/reservations.jsonl`;
 - `evidence_bundle.json` and `evidence_bundle.md`;
 - `diagnostics/readiness.json` and `diagnostics/readiness.md`;
 - `ledger.jsonl`.

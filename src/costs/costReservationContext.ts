@@ -83,6 +83,7 @@ export async function requireReservation(
 export async function appendUncertainEvent(
   reservation: CostReservationSummary,
   reason: string,
+  providerRequestIdHash?: string,
 ): Promise<void> {
   await appendCostReservationEvent({
     eventId: createId("reservation_event"),
@@ -90,6 +91,7 @@ export async function appendUncertainEvent(
     runId: reservation.runId,
     type: "UNCERTAIN",
     reason,
+    providerRequestIdHash,
     createdAt: nowIso(),
   });
   await appendLedgerEvent({
@@ -97,7 +99,7 @@ export async function appendUncertainEvent(
     type: "COST_UNCERTAIN",
     stage: reservation.stage,
     message: "Cost reservation outcome is uncertain.",
-    data: { reservationId: reservation.reservationId, reason },
+    data: { reservationId: reservation.reservationId, reason, providerRequestIdHash },
   });
 }
 
