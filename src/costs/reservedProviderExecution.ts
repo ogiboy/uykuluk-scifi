@@ -1,15 +1,15 @@
 import { z } from "zod";
-import { sha256 } from "../utils/hash";
+import { sha256 } from "../utils/hash.js";
 import {
   beginCostReservationExecution,
   releaseDefinitelyNotSentExecution,
-} from "./costReservationExecutionState";
+} from "./costReservationExecutionState.js";
 import {
   markCostReservationUncertain,
   reserveApprovedCost,
   settleCostReservation,
-} from "./costReservationService";
-import { CostReservationSummary } from "./costReservationStore";
+} from "./costReservationService.js";
+import { CostReservationSummary } from "./costReservationStore.js";
 
 const timeoutSchema = z.int().positive().max(600_000);
 const providerRequestIdSchema = z.string().min(1).max(256);

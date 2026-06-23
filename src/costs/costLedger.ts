@@ -1,8 +1,8 @@
 import { appendFile, readFile, readdir } from "node:fs/promises";
-import { CostEvent, costEventSchema } from "../core/state";
-import { SafeExitError } from "../core/errors";
-import { isValidRunId, runPath, runsDir } from "../core/runStore";
-import { ensureDir, pathExists } from "../utils/fs";
+import { CostEvent, costEventSchema } from "../core/state.js";
+import { SafeExitError } from "../core/errors.js";
+import { isValidRunId, runPath, runsDir } from "../core/runStore.js";
+import { ensureDir, pathExists } from "../utils/fs.js";
 
 /**
  * Constructs the filesystem path to a cost ledger file for a given run.

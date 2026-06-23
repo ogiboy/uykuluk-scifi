@@ -1,16 +1,16 @@
-import { loadConfig } from "../config/config";
-import { SafeExitError } from "../core/errors";
-import { appendLedgerEvent } from "../core/ledger";
-import { loadRun } from "../core/runStore";
-import { createId, nowIso } from "../utils/time";
-import { readCostEstimate, validateCostEstimateIntegrity } from "./costEstimate";
-import { appendCostEvent, readCostEvents } from "./costLedger";
+import { loadConfig } from "../config/config.js";
+import { SafeExitError } from "../core/errors.js";
+import { appendLedgerEvent } from "../core/ledger.js";
+import { loadRun } from "../core/runStore.js";
+import { createId, nowIso } from "../utils/time.js";
+import { readCostEstimate, validateCostEstimateIntegrity } from "./costEstimate.js";
+import { appendCostEvent, readCostEvents } from "./costLedger.js";
 import {
   appendCostReservationEvent,
   CostReservationSummary,
   readCostReservationSummaries,
-} from "./costReservationStore";
-import { microsToUsd, usdToMicros } from "./money";
+} from "./costReservationStore.js";
+import { microsToUsd, usdToMicros } from "./money.js";
 
 /**
  * Loads an approved quote line for a specified stage of a production-ready run.

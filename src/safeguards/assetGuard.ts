@@ -1,6 +1,6 @@
 import path from "node:path";
-import { ProducerConfig } from "../config/schema";
-import { listFilesIfExists } from "../utils/fs";
+import { ProducerConfig } from "../config/schema.js";
+import { listFilesIfExists } from "../utils/fs.js";
 
 export type AssetCheck = {
   passed: boolean;

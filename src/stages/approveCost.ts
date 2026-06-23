@@ -1,12 +1,12 @@
-import { loadConfig } from "../config/config";
-import { readCostEstimate, validateCurrentCostEstimate } from "../costs/costEstimate";
-import { SafeExitError } from "../core/errors";
-import { appendLedgerEvent } from "../core/ledger";
-import { loadRun, setRunState } from "../core/runStore";
-import { ApprovalRecord } from "../core/state";
-import { assertTransition } from "../core/transitions";
-import { requireState } from "../safeguards/approvalGuard";
-import { createId, nowIso } from "../utils/time";
+import { loadConfig } from "../config/config.js";
+import { readCostEstimate, validateCurrentCostEstimate } from "../costs/costEstimate.js";
+import { SafeExitError } from "../core/errors.js";
+import { appendLedgerEvent } from "../core/ledger.js";
+import { loadRun, setRunState } from "../core/runStore.js";
+import { ApprovalRecord } from "../core/state.js";
+import { assertTransition } from "../core/transitions.js";
+import { requireState } from "../safeguards/approvalGuard.js";
+import { createId, nowIso } from "../utils/time.js";
 
 /**
  * Records an approval for a run's paid-generation cost after validating the estimate.

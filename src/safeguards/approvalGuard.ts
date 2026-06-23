@@ -1,6 +1,6 @@
-import { appendLedgerEvent } from "../core/ledger";
-import { ApprovalTarget, RunRecord, RunState } from "../core/state";
-import { SafeExitError } from "../core/errors";
+import { appendLedgerEvent } from "../core/ledger.js";
+import { ApprovalTarget, RunRecord, RunState } from "../core/state.js";
+import { SafeExitError } from "../core/errors.js";
 
 export async function requireState(
   run: RunRecord,

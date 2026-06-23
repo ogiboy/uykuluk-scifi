@@ -1,14 +1,19 @@
-import { ProducerConfig } from "../config/schema";
-import { SafeExitError } from "../core/errors";
-import { CostEvent, RunRecord } from "../core/state";
-import { appendLedgerEvent } from "../core/ledger";
-import { appendCostEvent, readAllCostEvents, readCostEvents, sumCosts } from "../costs/costLedger";
+import { ProducerConfig } from "../config/schema.js";
+import { SafeExitError } from "../core/errors.js";
+import { CostEvent, RunRecord } from "../core/state.js";
+import { appendLedgerEvent } from "../core/ledger.js";
+import {
+  appendCostEvent,
+  readAllCostEvents,
+  readCostEvents,
+  sumCosts,
+} from "../costs/costLedger.js";
 import {
   isActiveCostReservation,
   readAllCostReservationSummaries,
-} from "../costs/costReservationStore";
-import { microsToUsd } from "../costs/money";
-import { nowIso } from "../utils/time";
+} from "../costs/costReservationStore.js";
+import { microsToUsd } from "../costs/money.js";
+import { nowIso } from "../utils/time.js";
 
 export type BudgetGuardResult = {
   allowed: boolean;

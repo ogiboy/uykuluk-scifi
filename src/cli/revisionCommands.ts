@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { Command } from "commander";
-import { reviseScript } from "../revisions/scriptRevision";
+import { reviseScript } from "../revisions/scriptRevision.js";
 
 type RevisionOptions = {
   run: string;

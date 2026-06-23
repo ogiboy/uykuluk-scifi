@@ -1,21 +1,21 @@
-import { SafeExitError } from "../core/errors";
-import { appendLedgerEvent } from "../core/ledger";
-import { checkBudget } from "../safeguards/budgetGuard";
-import { createId, nowIso } from "../utils/time";
+import { SafeExitError } from "../core/errors.js";
+import { appendLedgerEvent } from "../core/ledger.js";
+import { checkBudget } from "../safeguards/budgetGuard.js";
+import { createId, nowIso } from "../utils/time.js";
 import {
   appendUncertainEvent,
   loadApprovedQuoteLine,
   requireReservation,
   requireReservationText,
-} from "./costReservationContext";
-import { withCostReservationLock } from "./costReservationLock";
+} from "./costReservationContext.js";
+import { withCostReservationLock } from "./costReservationLock.js";
 import {
   appendCostReservationEvent,
   CostReservationSummary,
   readAllCostReservationSummaries,
-} from "./costReservationStore";
-import { microsToUsd } from "./money";
-export { reconcileCostReservation, settleCostReservation } from "./costSettlementService";
+} from "./costReservationStore.js";
+import { microsToUsd } from "./money.js";
+export { reconcileCostReservation, settleCostReservation } from "./costSettlementService.js";
 
 /**
  * Creates or returns a cost reservation for an approved quote line.

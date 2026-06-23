@@ -1,8 +1,8 @@
 import { appendFile, readFile } from "node:fs/promises";
-import { LedgerEvent, LedgerEventType } from "./state";
-import { ensureDir, pathExists } from "../utils/fs";
-import { createId, nowIso } from "../utils/time";
-import { runPath } from "./runPaths";
+import { LedgerEvent, LedgerEventType } from "./state.js";
+import { ensureDir, pathExists } from "../utils/fs.js";
+import { createId, nowIso } from "../utils/time.js";
+import { runPath } from "./runPaths.js";
 
 /**
  * Constructs the filesystem path to a run's ledger file.

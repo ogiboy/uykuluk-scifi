@@ -1,8 +1,10 @@
 import path from "node:path";
 import { copyFile } from "node:fs/promises";
-import { ProducerConfig, producerConfigSchema } from "./schema";
-import { ensureDir, pathExists } from "../utils/fs";
-import { readJsonFile } from "../utils/json";
+import { ProducerConfig, producerConfigSchema } from "./schema.js";
+import { ensureDir, pathExists } from "../utils/fs.js";
+import { readJsonFile } from "../utils/json.js";
+
+const defaultConfigTemplateUrl = new URL("../../producer.config.example.json", import.meta.url);
 
 export const defaultConfig: ProducerConfig = {
   channel: {
@@ -78,7 +80,7 @@ export async function initProject(): Promise<string[]> {
   }
   const target = configPath();
   if (!(await pathExists(target))) {
-    await copyFile(path.join(process.cwd(), "producer.config.example.json"), target);
+    await copyFile(defaultConfigTemplateUrl, target);
     created.push("producer.config.json");
   }
   return created;

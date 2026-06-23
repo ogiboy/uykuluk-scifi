@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { mkdir, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { SafeExitError } from "../core/errors";
-import { runsPath } from "../core/runStore";
+import { SafeExitError } from "../core/errors.js";
+import { runsPath } from "../core/runStore.js";
 
 type LockOptions = {
   timeoutMs?: number;

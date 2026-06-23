@@ -1,12 +1,12 @@
 import path from "node:path";
-import { defaultConfig, loadConfig, projectConfigExists } from "../config/config";
-import { ProducerConfig } from "../config/schema";
-import { OllamaProvider } from "../providers/ollamaProvider";
-import { checkAssets } from "../safeguards/assetGuard";
-import { writeTextFile } from "../utils/fs";
-import { writeJsonFile } from "../utils/json";
-import { table } from "../utils/markdown";
-import { nowIso } from "../utils/time";
+import { defaultConfig, loadConfig, projectConfigExists } from "../config/config.js";
+import { ProducerConfig } from "../config/schema.js";
+import { OllamaProvider } from "../providers/ollamaProvider.js";
+import { checkAssets } from "../safeguards/assetGuard.js";
+import { writeTextFile } from "../utils/fs.js";
+import { writeJsonFile } from "../utils/json.js";
+import { table } from "../utils/markdown.js";
+import { nowIso } from "../utils/time.js";
 
 export type DoctorCheck = {
   name: string;

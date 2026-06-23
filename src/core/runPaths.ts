@@ -1,6 +1,6 @@
 import { lstatSync } from "node:fs";
 import path from "node:path";
-import { SafeExitError } from "./errors";
+import { SafeExitError } from "./errors.js";
 
 const RUN_ID_PATTERN = /^run_[A-Za-z0-9][A-Za-z0-9_-]{0,123}$/;
 

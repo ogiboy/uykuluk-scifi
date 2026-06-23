@@ -1,4 +1,4 @@
-import { sha256 } from "../utils/hash";
+import { sha256 } from "../utils/hash.js";
 
 export type PromptKey = "ideas" | "script" | "production-package";
 

@@ -1,24 +1,24 @@
 #!/usr/bin/env node
 import { Command } from "commander";
-import { registerApprovalCommands } from "./cli/approvalCommands";
-import { registerRevisionCommands } from "./cli/revisionCommands";
-import { initProject } from "./config/config";
-import { SafeExitError } from "./core/errors";
-import { listRuns, loadRun } from "./core/runStore";
-import { runDoctor } from "./diagnostics/doctor";
+import { registerApprovalCommands } from "./cli/approvalCommands.js";
+import { registerRevisionCommands } from "./cli/revisionCommands.js";
+import { initProject } from "./config/config.js";
+import { SafeExitError } from "./core/errors.js";
+import { listRuns, loadRun } from "./core/runStore.js";
+import { runDoctor } from "./diagnostics/doctor.js";
 import {
   publishSchedulePlaceholder,
   renderPlaceholder,
   uploadPrivatePlaceholder,
   voicePlaceholder,
-} from "./stages/disabled";
-import { generateEvidenceBundle } from "./stages/evidence";
-import { estimateCost } from "./stages/estimate";
-import { runIdeas } from "./stages/ideas";
-import { generateProductionPackage } from "./stages/productionPackage";
-import { runReadiness } from "./stages/readiness";
-import { reviewScript } from "./stages/reviewScript";
-import { generateScript } from "./stages/script";
+} from "./stages/disabled.js";
+import { generateEvidenceBundle } from "./stages/evidence.js";
+import { estimateCost } from "./stages/estimate.js";
+import { runIdeas } from "./stages/ideas.js";
+import { generateProductionPackage } from "./stages/productionPackage.js";
+import { runReadiness } from "./stages/readiness.js";
+import { reviewScript } from "./stages/reviewScript.js";
+import { generateScript } from "./stages/script.js";
 
 const program = new Command();
 

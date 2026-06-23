@@ -1,12 +1,12 @@
 import { readFile } from "node:fs/promises";
-import { artifactPath, writeRunJson, writeRunText } from "../core/artifacts";
-import { appendLedgerEvent } from "../core/ledger";
-import { loadRun, setRunState } from "../core/runStore";
-import { assertTransition } from "../core/transitions";
-import { requireState } from "../safeguards/approvalGuard";
-import { reviewScriptContent } from "../safeguards/contentGuard";
-import { sha256 } from "../utils/hash";
-import { bulletList } from "../utils/markdown";
+import { artifactPath, writeRunJson, writeRunText } from "../core/artifacts.js";
+import { appendLedgerEvent } from "../core/ledger.js";
+import { loadRun, setRunState } from "../core/runStore.js";
+import { assertTransition } from "../core/transitions.js";
+import { requireState } from "../safeguards/approvalGuard.js";
+import { reviewScriptContent } from "../safeguards/contentGuard.js";
+import { sha256 } from "../utils/hash.js";
+import { bulletList } from "../utils/markdown.js";
 
 /**
  * Reviews the generated script content for a run.

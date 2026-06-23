@@ -1,11 +1,15 @@
+import type { PromptProvenance } from "../prompts/provenance.js";
+
+export type VideoIdeaLevel = "low" | "medium" | "high";
+
 export type VideoIdea = {
   id: string;
   title: string;
   premise: string;
   targetDuration: string;
   style: string;
-  estimatedDifficulty: "low" | "medium" | "high" | string;
-  riskLevel: "low" | "medium" | "high" | string;
+  estimatedDifficulty: VideoIdeaLevel;
+  riskLevel: VideoIdeaLevel;
   fit: string;
 };
 
@@ -29,4 +33,3 @@ export type ProductionScene = {
   visualPrompt: string;
   durationSeconds: number;
 };
-import { PromptProvenance } from "../prompts/provenance";

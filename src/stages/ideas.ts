@@ -1,14 +1,14 @@
-import { loadConfig } from "../config/config";
-import { writeRunJson, writeRunText } from "../core/artifacts";
-import { createRun, setRunState } from "../core/runStore";
-import { assertTransition } from "../core/transitions";
-import { appendLedgerEvent } from "../core/ledger";
-import { defaultStagePricing } from "../costs/pricing";
-import { enforceBudget } from "../safeguards/budgetGuard";
-import { createLlmProvider } from "../providers";
-import { createPromptProvenance } from "../prompts/provenance";
-import { renderIdeasPrompt } from "../prompts/templates";
-import { VideoIdea } from "./types";
+import { loadConfig } from "../config/config.js";
+import { writeRunJson, writeRunText } from "../core/artifacts.js";
+import { createRun, setRunState } from "../core/runStore.js";
+import { assertTransition } from "../core/transitions.js";
+import { appendLedgerEvent } from "../core/ledger.js";
+import { defaultStagePricing } from "../costs/pricing.js";
+import { enforceBudget } from "../safeguards/budgetGuard.js";
+import { createLlmProvider } from "../providers/index.js";
+import { createPromptProvenance } from "../prompts/provenance.js";
+import { renderIdeasPrompt } from "../prompts/templates.js";
+import { VideoIdea } from "./types.js";
 
 type IdeasPayload = { ideas: VideoIdea[] };
 

@@ -1,15 +1,15 @@
 import { readFile } from "node:fs/promises";
 import { z } from "zod";
-import { ProducerConfig } from "../config/schema";
-import { artifactPath } from "../core/artifacts";
-import { SafeExitError } from "../core/errors";
-import { RunRecord } from "../core/state";
-import { checkBudget } from "../safeguards/budgetGuard";
-import { verifyProductionPackage } from "../stages/productionPackageIntegrity";
-import { sha256 } from "../utils/hash";
-import { nowIso } from "../utils/time";
-import { renderCostEstimateMarkdown } from "./costEstimatePresentation";
-import { defaultStagePricing, StagePricing } from "./pricing";
+import { ProducerConfig } from "../config/schema.js";
+import { artifactPath } from "../core/artifacts.js";
+import { SafeExitError } from "../core/errors.js";
+import { RunRecord } from "../core/state.js";
+import { checkBudget } from "../safeguards/budgetGuard.js";
+import { verifyProductionPackage } from "../stages/productionPackageIntegrity.js";
+import { sha256 } from "../utils/hash.js";
+import { nowIso } from "../utils/time.js";
+import { renderCostEstimateMarkdown } from "./costEstimatePresentation.js";
+import { defaultStagePricing, StagePricing } from "./pricing.js";
 
 const budgetSnapshotSchema = z.strictObject({
   perVideoUsd: z.number().nonnegative(),

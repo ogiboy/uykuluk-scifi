@@ -224,6 +224,8 @@ Focused gates:
 ```bash
 pnpm lint
 pnpm typecheck
+pnpm build
+pnpm build:smoke
 pnpm test
 pnpm studio:typecheck
 pnpm studio:build

@@ -1,5 +1,5 @@
-import { SafeExitError } from "./errors";
-import { runPath } from "./runPaths";
+import { SafeExitError } from "./errors.js";
+import { runPath } from "./runPaths.js";
 
 const ARTIFACT_PATH_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]*(?:\/[A-Za-z0-9][A-Za-z0-9._-]*)*$/;
 const MAX_ARTIFACT_PATH_LENGTH = 512;

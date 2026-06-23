@@ -3,7 +3,7 @@ import {
   GenerateTextResult,
   LlmProvider,
   approximateTokens,
-} from "./llmProvider";
+} from "./llmProvider.js";
 
 type OllamaGenerateResponse = {
   response?: string;

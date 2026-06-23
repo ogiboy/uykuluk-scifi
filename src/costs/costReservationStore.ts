@@ -1,8 +1,8 @@
 import { appendFile, readFile, readdir } from "node:fs/promises";
 import { z } from "zod";
-import { SafeExitError } from "../core/errors";
-import { isValidRunId, runPath, runsDir } from "../core/runStore";
-import { ensureDir, pathExists } from "../utils/fs";
+import { SafeExitError } from "../core/errors.js";
+import { isValidRunId, runPath, runsDir } from "../core/runStore.js";
+import { ensureDir, pathExists } from "../utils/fs.js";
 
 const providerRequestIdHashSchema = z.string().regex(/^[a-f0-9]{64}$/);
 
