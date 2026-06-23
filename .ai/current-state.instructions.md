@@ -79,7 +79,8 @@
   complete production-package integrity, and exact paid-generation cost approval when required.
 - Final readiness diagnostics agree with the post-transition run state.
 - Disabled upload and publish placeholders.
-- Basic Next.js Producer Studio shell under `apps/studio`.
+- Basic Next.js Producer Studio shell under `apps/studio` with read-only run index and run detail
+  routes backed by local run/evidence/readiness service contracts.
 - Visual asset pack imported under `assets/`.
 - Clean-copy usage smoke script.
 - Production build emits a Node-runnable `dist/cli.js` and `pnpm build:smoke` verifies the built CLI
@@ -105,6 +106,9 @@
   `next/font` wired for the initial shell.
 - Studio has a type-safe `next-intl` request/provider foundation with English and Turkish locale
   selection through a local cookie. Existing operator copy has not been migrated yet.
+- Studio can list local persisted runs and show a read-only run detail page with next safe action,
+  readiness status, warning/approval counts, and review artifact availability. It does not mutate
+  run state or call providers.
 - Roadmap and `.ai` guidance now include future Next.js Producer Studio, prompt editing, revision
   tracking, design direction, development preferences, versioning expectations, and Computer Use QA
   boundaries.
@@ -174,8 +178,8 @@ Corepack/PATH before treating failures as product failures.
 - No paid provider adapter is implemented. Exact cost quote approval remains separate from spend
   authorization. The internal execution boundary is ready for a future approved adapter, but no SDK,
   credential, network integration, or CLI mutation command exposes it.
-- Current Next.js Studio is a basic shell only; read-only run detail routes and service contracts
-  are not implemented yet.
+- Current Next.js Studio is still review-only. Rich artifact previews, route security requirements,
+  shared read/write service contracts, and guarded mutation routes are not implemented yet.
 - Locale infrastructure is ready, but full translation catalogs and a language selector are
   intentionally deferred.
 - Prompt editing UI is planned but not implemented.

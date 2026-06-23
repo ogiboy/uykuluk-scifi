@@ -27,9 +27,10 @@ Production desk for Turkish sci-fi YouTube episodes.
 
 UykulukSciFi Producer is a local-first, approval-gated, cost-aware production desk for building
 reviewable UykulukSciFi YouTube video draft packages. The TypeScript CLI is the source of truth; the
-Next.js Producer Studio is a future operator surface over the same local contracts. The system
-generates ideas, scripts, reviews, production packages, cost estimates, evidence bundles, and
-readiness diagnostics. It does not upload or publish to YouTube in the MVP.
+Next.js Producer Studio is a read-only operator surface over the same local contracts. The system
+generates ideas, scripts, reviews, production packages, render plans, local voiceover, local draft
+renders, cost estimates, evidence bundles, and readiness diagnostics. It does not upload or publish
+to YouTube in the MVP.
 
 ## Product Direction
 
@@ -67,7 +68,7 @@ agent-tracking state only; runtime code must not require it.
 ## What Exists
 
 - TypeScript CLI workflow under `src/`.
-- Basic Next.js App Router Studio under `apps/studio/`.
+- Basic Next.js App Router Studio under `apps/studio/` with read-only run index/detail routes.
 - Studio foundation with Tailwind CSS v4, shadcn-style primitives, Radix UI, lucide icons, GSAP, and
   `next/font`.
 - Mock-first provider layer with Ollama adapter scaffold.
@@ -224,7 +225,7 @@ pnpm producer publish schedule --run <run_id>
 
 ## Producer Studio
 
-The first Studio shell is intentionally basic and local-only:
+The Studio is intentionally local-only and read-only today:
 
 ```bash
 pnpm studio
@@ -234,13 +235,17 @@ pnpm studio:build
 Current Studio scope:
 
 - production desk shell;
+- read-only `/runs` index over persisted local run state;
+- read-only `/runs/<run_id>` detail view with next action, readiness status, and review artifact
+  availability;
 - run/workflow command overview;
 - current asset inventory summary;
 - Radix module tabs for planned run, prompt, asset, and safety surfaces;
 - type-safe `next-intl` request/provider foundation for English and Turkish locales;
 - visible reminder that CLI/core remains the workflow source of truth.
 
-Next Studio work should add read-only run views before any mutating route handlers.
+Next Studio work should add richer artifact previews, shared service contracts, and route security
+requirements before any mutating route handlers.
 
 ## Visual Assets
 

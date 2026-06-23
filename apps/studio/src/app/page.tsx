@@ -3,6 +3,7 @@ import { CommandPanel } from "@/components/CommandPanel";
 import { StatusGrid } from "@/components/StatusGrid";
 import { StudioTabs } from "@/components/studio/StudioTabs";
 import { studioSections } from "@/lib/studioData";
+import Link from "next/link";
 
 export default function StudioHomePage() {
   return (
@@ -16,11 +17,17 @@ export default function StudioHomePage() {
           </div>
         </div>
         <nav>
-          {studioSections.map((section) => (
-            <a key={section.id} href={`#${section.id}`}>
-              {section.label}
-            </a>
-          ))}
+          {studioSections.map((section) =>
+            "href" in section ? (
+              <Link key={section.id} href={section.href}>
+                {section.label}
+              </Link>
+            ) : (
+              <a key={section.id} href={`#${section.id}`}>
+                {section.label}
+              </a>
+            ),
+          )}
         </nav>
       </aside>
 

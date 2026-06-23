@@ -85,18 +85,20 @@ Next Real Production Loop slices:
 
 ## Phase C - Operator Studio
 
-Status: foundation exists; read-only surfaces come first.
+Status: read-only run review foundation exists; artifact previews and safety contracts come next.
 
 The Studio should be a local operator surface over CLI/core contracts.
 
 Priority order:
 
-- read-only run index with state, warnings, approvals, cost estimate, and next action;
-- read-only run detail with ideas, script, review, package, costs, readiness, evidence, and ledger;
+- maintain the read-only run index with state, warnings, approvals, readiness, and next action;
+- maintain the read-only run detail with evidence, readiness, warning counts, approvals, and review
+  artifact availability;
 - artifact previews for scripts, production packages, render plans, contact sheets, and assets;
 - asset inventory page;
-- only after shared service contracts and route security exist: approval forms and guarded
-  mutations.
+- shared service contracts for any future Studio read/write operation;
+- route security requirements and negative tests;
+- only after those contracts exist: approval forms and guarded mutations.
 
 Frontend constraints:
 

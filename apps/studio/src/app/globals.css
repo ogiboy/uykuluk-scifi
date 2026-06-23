@@ -106,6 +106,10 @@ a {
   padding: 28px;
 }
 
+.page-shell {
+  min-height: 100vh;
+}
+
 .studio-header {
   display: flex;
   gap: 18px;
@@ -195,6 +199,80 @@ h3 {
   padding: 10px;
   font-family: var(--font-mono), "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   font-size: 12px;
+}
+
+.run-table {
+  display: grid;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.run-row {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.2fr) minmax(160px, 1fr) minmax(120px, 0.7fr) minmax(
+      260px,
+      1.4fr
+    );
+  gap: 12px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  padding: 12px;
+}
+
+.run-row:first-child {
+  border-top: 0;
+}
+
+.run-row:hover {
+  background: #0f151c;
+  color: var(--text);
+}
+
+.run-row-head {
+  background: #0b0f14;
+  color: var(--text);
+  font-weight: 700;
+}
+
+.run-detail-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+}
+
+.run-metadata {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+
+.run-metadata dt {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.run-metadata dd {
+  margin: 4px 0 0;
+  font-weight: 700;
+}
+
+.artifact-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.artifact-list li {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 8px;
 }
 
 .blocked {
