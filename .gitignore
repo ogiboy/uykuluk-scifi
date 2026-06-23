@@ -34,3 +34,8 @@ next-env.d.ts
 .DS_Store
 .gh-cache/
 .pnpm-store/
+
+# Local agent/vector database artifacts.
+agentdb.rvf
+agentdb.rvf.lock
+ruvector.db

@@ -10,6 +10,8 @@
 - Keep `apps/studio` thin until shared service contracts exist.
 - Keep first-push repo hygiene files and GitHub workflows passing.
 - Keep direct provider/publish guard coverage and CI dependency audit passing.
+- Keep release planning, changelog, package version, and stable git tag automation passing on
+  `main`; feature branches should not manually bump `package.json`.
 - Keep roadmap priority focused on the real local production loop, not additional unused
   infrastructure abstractions.
 - Keep script review, warning acknowledgement, approval, and packaging bound to one exact content

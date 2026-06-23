@@ -1,0 +1,79 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-main
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Version And Changelog
+    runs-on: ubuntu-latest
+    if: ${{ github.actor != 'github-actions[bot]' && github.ref == 'refs/heads/main' }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Configure release Git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Validate before release
+        run: |
+          pnpm check
+          pnpm security:dependencies
+          pnpm qa:usage
+          pnpm release:check
+
+      - name: Compute release plan
+        id: plan
+        run: |
+          plan="$(pnpm --silent version:plan)"
+          echo "$plan"
+          release_needed="$(node -e 'const fs=require("node:fs"); const p=JSON.parse(fs.readFileSync(0,"utf8")); console.log(p.releaseNeeded ? "true" : "false")' <<< "$plan")"
+          next_version="$(node -e 'const fs=require("node:fs"); const p=JSON.parse(fs.readFileSync(0,"utf8")); console.log(p.nextVersion || "")' <<< "$plan")"
+          echo "release_needed=$release_needed" >> "$GITHUB_OUTPUT"
+          echo "next_version=$next_version" >> "$GITHUB_OUTPUT"
+
+      - name: Apply release files
+        if: ${{ steps.plan.outputs.release_needed == 'true' }}
+        run: pnpm release:apply
+
+      - name: Commit and tag release
+        if: ${{ steps.plan.outputs.release_needed == 'true' }}
+        run: |
+          set -euo pipefail
+          tag="v${{ steps.plan.outputs.next_version }}"
+          git add CHANGELOG.md package.json
+          if git diff --cached --quiet; then
+            echo "No release file changes to commit."
+            exit 0
+          fi
+          git commit -m "chore(release): ${tag}"
+          git tag -a "$tag" -m "chore(release): ${tag}"
+          git push origin "HEAD:${GITHUB_REF_NAME}" "refs/tags/${tag}"

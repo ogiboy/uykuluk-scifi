@@ -11,6 +11,10 @@ future generated release notes can be inserted predictably.
 
 ### Added
 
+- Main-branch release workflow for Conventional Commit version planning, `package.json` updates,
+  changelog section promotion, release commits, and stable `vX.Y.Z` tags.
+- Typed release policy tests covering version bump calculation, legacy commit handling, and
+  changelog generation.
 - Basic type-safe `next-intl` foundation for English and Turkish Studio locales.
 - Unit and browser coverage for locale normalization and cookie-based document language.
 - Typed runtime loading for tracked idea, scriptwriter, and production-package prompt defaults.
@@ -65,6 +69,8 @@ future generated release notes can be inserted predictably.
 
 ### Fixed
 
+- Release commit checks now scan the actual release range instead of an empty range.
+- Local AgentDB/RuVector database files are no longer tracked as repository artifacts.
 - Ollama-backed idea and production-package stages now schema-validate provider JSON, accept common
   root-array and snake_case variants, assign deterministic local idea ids, and strip leading
   thinking traces before writing reviewable artifacts.

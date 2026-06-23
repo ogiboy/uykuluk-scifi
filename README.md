@@ -267,6 +267,7 @@ pnpm qa:modularity
 pnpm security:check
 pnpm security:dependencies
 pnpm changelog:check
+pnpm release:check
 pnpm format:check
 ```
 
@@ -376,6 +377,11 @@ Generated run directories are ignored except `runs/.gitkeep`. Generated project 
   `fix/core-approval-ledger`, `ci/codeql-hardening`, or `docs/asset-inventory`.
 - Use Conventional Commits.
 - Keep `CHANGELOG.md` and the `<!-- version list -->` marker intact.
+- `pnpm version:plan` reports the next release version from the latest stable tag, and
+  `pnpm release:check` validates release-range commit subjects before publish.
+- Pushes to `main` run the release workflow. When releaseable commits exist, it updates
+  `package.json`, moves `CHANGELOG.md` Unreleased notes into a versioned section, creates
+  `chore(release): vX.Y.Z`, and tags `vX.Y.Z`.
 - Release phase `0.1.x` covers CLI MVP hardening, Studio foundation, browser QA, docs, and tooling.
 
 ## License

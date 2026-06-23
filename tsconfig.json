@@ -12,5 +12,11 @@
     "outDir": "dist",
     "types": ["node", "vitest/globals"]
   },
-  "include": ["src/**/*.ts", "tests/**/*.ts", "eslint.config.js", "vitest.config.ts"]
+  "include": [
+    "src/**/*.ts",
+    "tests/**/*.ts",
+    "scripts/**/*.ts",
+    "eslint.config.js",
+    "vitest.config.ts"
+  ]
 }

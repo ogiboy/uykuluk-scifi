@@ -1,6 +1,7 @@
 # Versioning And Release Notes
 
-The project currently has `package.json` version `0.1.0` and no formal release automation.
+The project uses `package.json` as the version source and a main-branch release workflow to update
+`package.json`, `CHANGELOG.md`, and the stable `vX.Y.Z` git tag from Conventional Commits.
 
 ## Version Intent
 
@@ -22,6 +23,19 @@ The project currently has `package.json` version `0.1.0` and no formal release a
 - Tests/QA.
 - Docs/.ai.
 - Tooling/CI.
+
+## Automation Contract
+
+- Feature branches and PRs do not bump `package.json` manually.
+- `pnpm version:plan` computes the next version from the latest stable tag. If no stable tag exists,
+  it treats the current reachable history as the first releasable range.
+- `pnpm release:check` validates non-merge, non-release commit subjects in the release range.
+- `pnpm release:apply` updates `package.json` and moves `CHANGELOG.md` Unreleased notes into a
+  versioned section; the GitHub release workflow owns the release commit and tag.
+- The release workflow runs only on `main` pushes or manual dispatch and skips bot-authored release
+  commits to avoid loops.
+- Legacy non-conventional subjects may be allowlisted by exact SHA only when history cannot be
+  safely rewritten.
 
 ## Do Not Release As Stable Until
 
