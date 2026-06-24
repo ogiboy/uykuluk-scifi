@@ -59,7 +59,7 @@
   long-form and hook quality expectations instead of only producing safe short reviewable drafts.
 - Prefer continuation/retry designs over simply raising local section chunk caps; live local QA
   showed larger chunks can destabilize JSON parse reliability.
-- Keep `producer doctor` config/provider/model/asset/publish diagnostics and evidence passing.
+- Keep `producer doctor` config/provider/model/TTS/asset/publish diagnostics and evidence passing.
 - Harden Studio read-only run review with artifact previews for scripts, production packages, render
   plans, contact sheets, render manifests, evidence, and readiness output.
 - Define typed read/write service contracts that both CLI and web can use before adding Studio

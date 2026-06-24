@@ -58,6 +58,8 @@ future generated release notes can be inserted predictably.
 
 - Browser QA now builds and serves the production Studio instead of running a file-watching dev
   server.
+- `producer doctor` now reports TTS provider readiness and blocks enabled `local-piper` mode when
+  the configured binary, model, or config file is missing.
 - Script review, approval, and production packaging now require the same SHA-256 content digest.
 - Prompt provenance now records the tracked source path in addition to the rendered prompt hash.
 - Runtime prompt defaults now live under `prompts/defaults/` so the CLI no longer depends on `.ai/`

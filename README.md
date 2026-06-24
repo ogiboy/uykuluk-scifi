@@ -72,8 +72,8 @@ agent-tracking state only; runtime code must not require it.
 - Studio foundation with Tailwind CSS v4, shadcn-style primitives, Radix UI, lucide icons, GSAP, and
   `next/font`.
 - Mock-first provider layer with Ollama adapter scaffold.
-- Project-level `producer doctor` diagnostics for config, mock/Ollama readiness, assets, and publish
-  defaults.
+- Project-level `producer doctor` diagnostics for config, mock/Ollama readiness, local TTS/Piper
+  readiness, assets, and publish defaults.
 - Runtime prompt defaults under `prompts/defaults/`; `.ai/` is development and agent-tracking
   guidance, not a runtime dependency.
 - Strict run state machine and explicit approval ledger.

@@ -90,7 +90,7 @@
   starts and can initialize a fresh project from an arbitrary working directory.
 - Direct mock/Ollama provider diagnostics and upload/publish safeguard tests.
 - `producer doctor` project diagnostics with durable local JSON/Markdown evidence for config,
-  provider/model availability, assets, and publish defaults.
+  provider/model availability, local TTS/Piper readiness, assets, and publish defaults.
 - Project-local capability inventory and routing for engineering, product, design, marketing, data,
   security, testing, research, release, browser QA, and swarm orchestration.
 - Explicit frontend taste routing for public pages, cinematic landing pages, Google Stitch design
