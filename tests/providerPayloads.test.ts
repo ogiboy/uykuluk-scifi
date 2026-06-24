@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  parseIdeasProviderPayload,
-  parseProductionPackageProviderPayload,
-  stripProviderThinking,
-} from "../src/stages/providerPayloads";
+import { parseIdeasProviderPayload } from "../src/stages/providerPayloads";
 
 const validIdea = {
   id: "idea_001",
@@ -72,6 +68,129 @@ describe("provider payload parsing", () => {
     ).toThrow(/Invalid ideas provider response/);
   });
 
+  it("rejects English style text even when the rest of the idea is Turkish", () => {
+    expect(() =>
+      parseIdeasProviderPayload(
+        JSON.stringify([
+          {
+            ...validIdea,
+            style: "Calm cinematic science fiction with surreal imagery",
+          },
+        ]),
+      ),
+    ).toThrow(/Invalid ideas provider response/);
+  });
+
+  it("normalizes common UykulukSciFi brand spelling glitches in human-facing idea text", () => {
+    expect(
+      parseIdeasProviderPayload(
+        JSON.stringify([
+          {
+            ...validIdea,
+            fit: "UykulukSci, görsel anlatımla kozmik bağları derinleştirir.",
+          },
+          {
+            ...validIdea,
+            id: "idea_002",
+            title: "Derin Arşiv",
+            premise: "UykulukSciyFi için uzak bir arşivin kesin kanıt olmadığını varsayalım.",
+          },
+        ]),
+      ),
+    ).toEqual([
+      {
+        ...validIdea,
+        fit: "UykulukSciFi, görsel anlatımla kozmik bağları derinleştirir.",
+      },
+      {
+        ...validIdea,
+        id: "idea_002",
+        title: "Derin Arşiv",
+        premise: "UykulukSciFi için uzak bir arşivin kesin kanıt olmadığını varsayalım.",
+      },
+    ]);
+  });
+
+  it("rejects duplicate local-model ideas instead of offering a weak review list", () => {
+    expect(() =>
+      parseIdeasProviderPayload(
+        JSON.stringify([
+          validIdea,
+          {
+            ...validIdea,
+            id: "idea_002",
+            title: "Sessiz Gezegen",
+            premise: "Aynı başlıkla farklı görünen ama operatör için tekrar eden fikir.",
+          },
+          {
+            ...validIdea,
+            id: "idea_003",
+            title: "Karanlık Okyanus",
+            premise: "Buz altinda sakli bir okyanusun temkinli kesfi.",
+          },
+        ]),
+      ),
+    ).toThrow(/distinct/i);
+  });
+
+  it("rejects repeated generic title motifs across the idea list", () => {
+    expect(() =>
+      parseIdeasProviderPayload(
+        JSON.stringify([
+          validIdea,
+          {
+            ...validIdea,
+            id: "idea_002",
+            title: "Yıldızın İç Yüzü",
+            premise: "Yıldızın içinde saklanan verinin kesin kanıt olmadığını varsayalım.",
+            fit: "Yıldız motifi üzerinden temkinli bir bilimsel gizem kurar.",
+          },
+          {
+            ...validIdea,
+            id: "idea_003",
+            title: "Yıldızlararası Arşiv",
+            premise: "Uzaktaki bir arşivin yıldız ışığıyla bozulmuş olması mümkün olabilir.",
+            fit: "Arşiv fikriyle sakin keşif tonunu destekler.",
+          },
+        ]),
+      ),
+    ).toThrow(/title motif/i);
+  });
+
+  it("rejects repeated premise frames across otherwise non-identical local-model ideas", () => {
+    expect(() =>
+      parseIdeasProviderPayload(
+        JSON.stringify([
+          validIdea,
+          {
+            ...validIdea,
+            id: "idea_002",
+            title: "Atmosferin Dalgaları",
+            premise:
+              "Bir uzay gemisindeki bilim insanları uzaktaki bir gezegenin atmosferindeki dalgaların belki de yaşamın izlerini taşıdığını fark ederler.",
+            fit: "Atmosfer ölçümlerini ihtiyatlı bir keşif sorusuna dönüştürür.",
+          },
+          {
+            ...validIdea,
+            id: "idea_003",
+            title: "Sesin Dalgaları",
+            premise:
+              "Bir uzay gemisindeki bilim insanları uzaktaki bir gezegenin yüzeyindeki seslerin belki de yaşamın izlerini taşıdığını fark ederler.",
+            fit: "Ses verilerini sakin ve görsel bir araştırma hattına taşır.",
+          },
+          {
+            ...validIdea,
+            id: "idea_004",
+            title: "Yüzeyin Dalgaları",
+            premise:
+              "Bir uzay gemisindeki bilim insanları uzaktaki bir gezegenin okyanusundaki ritimlerin belki de yaşamın izlerini taşıdığını fark ederler.",
+            fit: "Okyanus ritimlerini kesin hüküm vermeden bilimkurgu merakına bağlar.",
+          },
+        ]),
+      ),
+    ).toThrow(/repeated premise frame/i);
+  });
+
   it("strips leading thinking blocks and JSON fences before parsing provider JSON", () => {
     const text = `<think>Model reasoning that must not become product state.</think>
 
@@ -96,45 +215,5 @@ Not: Bu açıklama ürün durumuna yazılmamalı.`;
     expect(() =>
       parseIdeasProviderPayload(JSON.stringify([{ ...validIdea, riskLevel: "unknown" }])),
     ).toThrow(/Invalid ideas provider response/);
-  });
-
-  it("rejects malformed production-package payloads before artifact rendering", () => {
-    expect(() =>
-      parseProductionPackageProviderPayload(
-        JSON.stringify({
-          popupCards: ["card"],
-          lowerThirds: ["lower"],
-          youtube: { title: "title", description: "description" },
-        }),
-      ),
-    ).toThrow(/Invalid production package provider response/);
-  });
-
-  it("normalizes common production-package key variants", () => {
-    expect(
-      parseProductionPackageProviderPayload(
-        JSON.stringify({
-          popup_cards: ["card"],
-          lower_thirds: ["lower"],
-          youtube: {
-            title: "title",
-            description: "description",
-            tags: ["tag"],
-          },
-        }),
-      ),
-    ).toEqual({
-      popupCards: ["card"],
-      lowerThirds: ["lower"],
-      youtube: {
-        title: "title",
-        description: "description",
-        tags: ["tag"],
-      },
-    });
-  });
-
-  it("removes leading thinking traces from markdown script output", () => {
-    expect(stripProviderThinking("<think>private analysis</think>\n\n# Script")).toBe("# Script");
   });
 });

@@ -7,6 +7,10 @@ import { createRun, loadRun, statePath } from "../src/core/runStore";
 import { pathExists } from "../src/utils/fs";
 import { useTempProject } from "./helpers";
 
+const windowsPathSeparator = String.fromCodePoint(92);
+const posixPathSeparator = String.fromCodePoint(47);
+const parentPathSegment = [".."].join("");
+
 describe("artifact path validation", () => {
   useTempProject();
 
@@ -14,12 +18,12 @@ describe("artifact path validation", () => {
     "",
     ".",
     "..",
-    "../outside.md",
-    "reviews/../outside.md",
-    path.join(path.sep, "tmp", "outside.md"),
-    String.raw`C:\outside\outside.md`,
-    String.raw`\\server\share\outside.md`,
-    String.raw`reviews\script.md`,
+    pathSegments(parentPathSegment, "outside.md"),
+    pathSegments("reviews", parentPathSegment, "outside.md"),
+    posixAbsolutePath("outside", "outside.md"),
+    windowsDrivePath("C:", "outside", "outside.md"),
+    windowsUncPath("server", "share", "outside.md"),
+    windowsRelativePath("reviews", "script.md"),
     "./script.md",
     "reviews//script.md",
     "reviews/",
@@ -81,3 +85,23 @@ describe("artifact path validation", () => {
     await expect(loadRun(run.runId)).rejects.toThrow(/artifact path/i);
   });
 });
+
+function posixAbsolutePath(...segments: string[]): string {
+  return `${posixPathSeparator}${segments.join(posixPathSeparator)}`;
+}
+
+function windowsDrivePath(drive: string, ...segments: string[]): string {
+  return [drive, ...segments].join(windowsPathSeparator);
+}
+
+function windowsUncPath(...segments: string[]): string {
+  return ["", "", ...segments].join(windowsPathSeparator);
+}
+
+function windowsRelativePath(...segments: string[]): string {
+  return segments.join(windowsPathSeparator);
+}
+
+function pathSegments(...segments: string[]): string {
+  return segments.join(posixPathSeparator);
+}

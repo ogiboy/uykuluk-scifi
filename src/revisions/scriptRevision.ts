@@ -101,7 +101,7 @@ export async function reviseScript(input: {
       run = await writeRunText(
         run,
         stage,
-        `${revisionDir}/invalidated/${relativePath.replace(/^reviews\//, "")}`,
+        `${revisionDir}/invalidated/${stripReviewsPrefix(relativePath)}`,
         await readFile(target, "utf8"),
       );
     }
@@ -128,6 +128,11 @@ export async function reviseScript(input: {
     data: revision,
   });
   return revision;
+}
+
+function stripReviewsPrefix(relativePath: string): string {
+  const prefix = "reviews/";
+  return relativePath.startsWith(prefix) ? relativePath.slice(prefix.length) : relativePath;
 }
 
 /**

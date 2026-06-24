@@ -9,26 +9,30 @@ type JsonScanState = {
 export function parseProviderJson(text: string, label: string): unknown {
   const normalized = stripProviderThinking(text);
   const jsonText = stripJsonFence(normalized);
-  try {
-    return JSON.parse(jsonText) as unknown;
-  } catch {
-    const extracted = extractFirstJsonPayload(jsonText);
-    if (extracted) {
-      try {
-        return JSON.parse(extracted) as unknown;
-      } catch {
-        // Fall through to the canonical provider error below.
-      }
-    }
-    throw new SafeExitError(`Invalid ${label} provider response: expected JSON.`);
+  const directParse = tryParseJson(jsonText);
+  if (directParse.success) {
+    return directParse.value;
   }
+
+  const extracted = extractFirstJsonPayload(jsonText);
+  const extractedParse = extracted ? tryParseJson(extracted) : undefined;
+  if (extractedParse?.success) {
+    return extractedParse.value;
+  }
+
+  throw new SafeExitError(`Invalid ${label} provider response: expected JSON.`);
 }
 
 export function stripProviderThinking(text: string): string {
-  return text
-    .trim()
-    .replace(/^(?:<think>[\s\S]*?<\/think>\s*)+/i, "")
-    .trim();
+  let remaining = text.trim();
+  while (remaining.toLocaleLowerCase("en-US").startsWith("<think>")) {
+    const closingIndex = remaining.toLocaleLowerCase("en-US").indexOf("</think>");
+    if (closingIndex < 0) {
+      return remaining;
+    }
+    remaining = remaining.slice(closingIndex + "</think>".length).trim();
+  }
+  return remaining;
 }
 
 function stripJsonFence(text: string): string {
@@ -45,6 +49,23 @@ function stripJsonFence(text: string): string {
     return text;
   }
   return trimmed.slice(firstLineEnd + 1, -3).trim();
+}
+
+type JsonParseResult =
+  | {
+      success: true;
+      value: unknown;
+    }
+  | {
+      success: false;
+    };
+
+function tryParseJson(text: string): JsonParseResult {
+  try {
+    return { success: true, value: JSON.parse(text) as unknown };
+  } catch {
+    return { success: false };
+  }
 }
 
 function extractFirstJsonPayload(text: string): string | undefined {
@@ -64,8 +85,10 @@ function firstJsonPayloadStart(text: string): number {
 }
 
 function firstJsonPayloadEnd(text: string, start: number): number | undefined {
-  const opener = text[start];
-  const closer = opener === "{" ? "}" : "]";
+  const container = jsonContainer(text[start]);
+  if (!container) {
+    return undefined;
+  }
   const state: JsonScanState = { depth: 0, escaped: false, inString: false };
   for (let index = start; index < text.length; index += 1) {
     const char = text[index];
@@ -73,10 +96,20 @@ function firstJsonPayloadEnd(text: string, start: number): number | undefined {
       scanJsonStringCharacter(state, char);
       continue;
     }
-    scanJsonContainerCharacter(state, char, opener, closer);
+    scanJsonContainerCharacter(state, char, container);
     if (state.depth === 0) {
       return index + 1;
     }
+  }
+  return undefined;
+}
+
+function jsonContainer(opener: string): { opener: string; closer: string } | undefined {
+  if (opener === "{") {
+    return { opener, closer: "}" };
+  }
+  if (opener === "[") {
+    return { opener, closer: "]" };
   }
   return undefined;
 }
@@ -98,18 +131,17 @@ function scanJsonStringCharacter(state: JsonScanState, char: string): void {
 function scanJsonContainerCharacter(
   state: JsonScanState,
   char: string,
-  opener: string,
-  closer: string,
+  container: { opener: string; closer: string },
 ): void {
   if (char === '"') {
     state.inString = true;
     return;
   }
-  if (char === opener) {
+  if (char === container.opener) {
     state.depth += 1;
     return;
   }
-  if (char === closer) {
+  if (char === container.closer) {
     state.depth -= 1;
   }
 }

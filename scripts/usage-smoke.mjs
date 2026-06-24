@@ -12,7 +12,7 @@ import {
 const repoRoot = process.cwd();
 const pnpm = process.env.PNPM_EXECUTABLE ?? "pnpm";
 const startedAt = new Date();
-const stamp = startedAt.toISOString().replaceAll(/[-:]/g, "").replace(/\..+/, "").replace("T", "-");
+const stamp = startedAt.toISOString().replaceAll(/[-:]/g, "").split(".")[0].replaceAll("T", "-");
 const reportDir = path.join(repoRoot, ".ai", "qa", "artifacts", `usage-smoke-${stamp}`);
 const tempRoot = await mkdtemp(path.join(tmpdir(), "uykulukscifi-usage-"));
 const workdir = path.join(tempRoot, "project");
@@ -282,7 +282,7 @@ function run(args, options = {}) {
 }
 
 function extractRunId(output) {
-  const match = output.match(/Run created:\s+(run_[^\s]+)/);
+  const match = /Run created:\s+(run_[^\s]+)/.exec(output);
   if (!match) {
     throw new Error(`Could not extract run id from output:\n${output}`);
   }

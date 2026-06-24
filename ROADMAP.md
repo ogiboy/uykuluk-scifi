@@ -43,6 +43,7 @@ infrastructure:
 - make `status`, evidence, readiness, and docs answer the next safe action clearly;
 - keep `.ai/` aligned with the source tree without becoming runtime state;
 - keep provider failures, approval blockers, and cost blockers visible in durable artifacts;
+- keep bounded long-form continuation evidence aligned with script receipts and prompt provenance;
 - keep paid-provider internals isolated as future scaffolding until a real adapter is approved.
 
 ## Phase B - Real Production Loop

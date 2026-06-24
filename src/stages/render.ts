@@ -206,9 +206,12 @@ function roundDuration(seconds: number): number {
   return Math.max(0.1, Math.round(seconds * 100) / 100);
 }
 
+const ffmpegFilterEscape = String.fromCodePoint(92);
+const escapedFfmpegFilterEscape = `${ffmpegFilterEscape}${ffmpegFilterEscape}`;
+
 function escapeFilterPath(value: string): string {
   return value
-    .replaceAll("\\", String.raw`\\`)
-    .replaceAll(":", String.raw`\:`)
-    .replaceAll("'", String.raw`\'`);
+    .replaceAll(ffmpegFilterEscape, escapedFfmpegFilterEscape)
+    .replaceAll(":", `${ffmpegFilterEscape}:`)
+    .replaceAll("'", `${ffmpegFilterEscape}'`);
 }

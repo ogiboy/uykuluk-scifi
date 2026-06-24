@@ -1,8 +1,15 @@
 import { z } from "zod";
 import { GenerateTextResult } from "../providers/llmProvider.js";
 import { SafeExitError } from "../core/errors.js";
+import type { ScriptContentBlockerRetryEvidence } from "./scriptContentRetry.js";
+import type { ScriptLabelRepairEvidence } from "./scriptLabelRepair.js";
+import { repairScriptProductionLabels } from "./scriptLabelRepair.js";
 import { parseProviderJson } from "./providerJson.js";
 import { stripLeadingMarkdownHeading } from "./scriptMarkdown.js";
+import {
+  renderPreviousExpansionContext,
+  renderScopedScriptSectionContext,
+} from "./scriptSectionPromptContext.js";
 import { sha256 } from "../utils/hash.js";
 
 const scriptSectionPayloadSchema = z.strictObject({
@@ -36,7 +43,7 @@ export type ScriptSectionPlan = {
 
 export type ScriptSectionReceipt = {
   id: ScriptSectionPlan["id"];
-  pass: "draft" | "expansion";
+  pass: "draft" | "expansion" | "continuation";
   chunk?: number;
   heading: string;
   promptHash: string;
@@ -44,10 +51,14 @@ export type ScriptSectionReceipt = {
   wordCount: number;
   provider: string;
   model: string;
+  blockerRetry?: ScriptContentBlockerRetryEvidence;
+  labelRepair?: ScriptLabelRepairEvidence;
   inputTokensApprox?: number;
   outputTokensApprox?: number;
   durationMs: number;
 };
+
+export type ScriptSectionParseResult = { labelRepair?: ScriptLabelRepairEvidence; text: string };
 
 export const scriptSectionPlans: ScriptSectionPlan[] = [
   {
@@ -78,18 +89,9 @@ export type ScriptSectionExpansionChunk = {
 };
 
 export const scriptSectionExpansionChunks: ScriptSectionExpansionChunk[] = [
-  {
-    index: 1,
-    focus: "strong image, hook continuity, and scene-setting narration",
-  },
-  {
-    index: 2,
-    focus: "scientific framing, uncertainty, alternatives, and responsible speculation",
-  },
-  {
-    index: 3,
-    focus: "cinematic transition, emotional rhythm, and section-level closure",
-  },
+  { index: 1, focus: "strong image, hook continuity, and scene-setting narration" },
+  { index: 2, focus: "scientific framing, uncertainty, alternatives, and responsible speculation" },
+  { index: 3, focus: "cinematic transition, emotional rhythm, and section-level closure" },
 ];
 
 export function renderScriptSectionPrompt(basePrompt: string, section: ScriptSectionPlan): string {
@@ -116,6 +118,7 @@ export function renderScriptSectionExpansionPrompt(
   section: ScriptSectionPlan,
   draft: string,
   chunk: ScriptSectionExpansionChunk = scriptSectionExpansionChunks[0],
+  previousChunks: readonly string[] = [],
 ): string {
   return [
     "SCRIPT_SECTION_JSON",
@@ -130,11 +133,12 @@ export function renderScriptSectionExpansionPrompt(
     "Target length: 110-150 Turkish words.",
     "Hard limit: 1100 characters and 8 complete Turkish sentences.",
     "Keep complete sentences, no repeated sentence loops.",
+    "Each sentence must add a new concrete beat; do not recycle the same subject-verb-object pattern.",
+    "Before returning, compare this chunk against the draft and already-written chunks; replace repeated structures with new images or decisions.",
     "Preserve useful details from the draft, but add richer narration, visual rhythm, and careful scientific framing.",
     section.id === "hook" ? "Start with a strong Turkish hook question or image." : "",
-    section.id === "outro"
-      ? "End with a gentle UykulukSciFi call to action and a complete closing sentence."
-      : "",
+    section.id === "outro" ? "End with a gentle UykulukSciFi call to action." : "",
+    renderPreviousExpansionContext(previousChunks),
     'Return only JSON with this exact shape: {"text":"..."}',
     "End the JSON object immediately after the final complete sentence.",
     "## Draft",
@@ -155,26 +159,6 @@ export function sectionExpansionTokenCap(totalScriptCap: number): number {
   );
 }
 
-function renderScopedScriptSectionContext(basePrompt: string): string {
-  return [
-    "You are writing one bounded Turkish script section for UykulukSciFi.",
-    "Use a cinematic, calm, scientifically careful, accessible Turkish narration tone.",
-    "Treat scientific speculation responsibly and avoid unsupported certainty.",
-    "Use Turkish production labels only, such as `Anlatıcı:` and `Görsel:`.",
-    "Ignore full-script duration and 1600+ word requirements in the runtime prompt; this call writes only one bounded section.",
-    extractApprovedIdeaBlock(basePrompt),
-  ].join("\n\n");
-}
-
-function extractApprovedIdeaBlock(basePrompt: string): string {
-  const marker = "## Approved Idea";
-  const markerIndex = basePrompt.indexOf(marker);
-  if (markerIndex >= 0) {
-    return basePrompt.slice(markerIndex).trim();
-  }
-  return basePrompt.trim();
-}
-
 export function createScriptSectionReceipt(
   section: ScriptSectionPlan,
   pass: ScriptSectionReceipt["pass"],
@@ -182,6 +166,7 @@ export function createScriptSectionReceipt(
   text: string,
   result: GenerateTextResult,
   chunk?: number,
+  labelRepair?: ScriptLabelRepairEvidence,
 ): ScriptSectionReceipt {
   return {
     id: section.id,
@@ -193,6 +178,7 @@ export function createScriptSectionReceipt(
     wordCount: countWords(text),
     provider: result.provider,
     model: result.model,
+    labelRepair,
     inputTokensApprox: result.inputTokensApprox,
     outputTokensApprox: result.outputTokensApprox,
     durationMs: result.durationMs,
@@ -200,14 +186,29 @@ export function createScriptSectionReceipt(
 }
 
 export function parseScriptSectionProviderPayload(text: string): string {
-  return parseScriptSectionPayload(text, scriptSectionPayloadSchema);
+  return parseScriptSectionProviderPayloadWithRepair(text).text;
 }
 
 export function parseScriptSectionExpansionProviderPayload(text: string): string {
+  return parseScriptSectionExpansionProviderPayloadWithRepair(text).text;
+}
+
+export function parseScriptSectionProviderPayloadWithRepair(
+  text: string,
+): ScriptSectionParseResult {
+  return parseScriptSectionPayload(text, scriptSectionPayloadSchema);
+}
+
+export function parseScriptSectionExpansionProviderPayloadWithRepair(
+  text: string,
+): ScriptSectionParseResult {
   return parseScriptSectionPayload(text, scriptSectionExpansionPayloadSchema);
 }
 
-function parseScriptSectionPayload(text: string, schema: z.ZodType<{ text: string }>): string {
+function parseScriptSectionPayload(
+  text: string,
+  schema: z.ZodType<{ text: string }>,
+): ScriptSectionParseResult {
   const result = schema.safeParse(parseProviderJson(text, "script section"));
   if (!result.success) {
     const summary = result.error.issues
@@ -222,7 +223,7 @@ function parseScriptSectionPayload(text: string, schema: z.ZodType<{ text: strin
       "Invalid script section provider response: section has no complete sentence.",
     );
   }
-  return trimmed;
+  return repairScriptProductionLabels(trimmed);
 }
 
 export function assembleScriptFromSections(

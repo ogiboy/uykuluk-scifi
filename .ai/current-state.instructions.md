@@ -68,13 +68,120 @@
 - Script generation uses bounded hook/context/development/outro provider calls, writes
   `script.sections.json` draft and expansion-chunk receipts, and assembles `script.md` only after
   all sections pass blocking quality checks.
-- Script provider parse/transport failures persist safe run diagnostics without advancing state or
-  storing raw provider output.
+- Script expansion prompts include the previous expansion chunks from the same section so local
+  models have explicit context to continue from rather than repeating section-level sentence loops.
+- Script generation now runs up to two bounded long-form continuation passes when the assembled
+  script remains below the 1200-word review floor. Continuations extend the existing
+  `Sinematik Gelişme` section, add `continuation` receipts to `script.sections.json`, and are
+  included in prompt provenance, token totals, cost recording, and blocker checks.
+- Script continuation parsing remains JSON-first but accepts bounded raw Turkish continuation text
+  from local models when the response has complete sentences and exact Turkish production labels.
+- Script review and generation now block malformed Turkish production labels, unaccented production
+  labels such as `Anlatici:`/`Gorsel:`, and repeated sentence loops so local model drafts cannot
+  pass solely because they reached the word-count floor.
+- Script section parsing applies bounded production-label repair for known local-model variants such
+  as `Anlatici:`, `Anlatyıcı:`, `Gorsel:`, and `Görsel -`; repaired text uses exact labels and
+  `script.sections.json` receipts record count/variant evidence without storing raw provider output.
+  Unrelated malformed, English, or unsafe labels still block.
+- Malformed production-label blockers now include safe diagnostic categories such as label family
+  and issue class, not raw provider label text. This makes live Ollama failures more actionable
+  while preserving the raw-output-free diagnostics boundary.
+- Repeated sentence-loop blockers now include safe diagnostic categories such as repeat count and a
+  short normalized sentence fingerprint, not raw provider text. This lets live Ollama retries prove
+  repeated-output failures without persisting the repeated sentence.
+- Script section and continuation content blockers now get one bounded retry using only safe blocker
+  summaries and already accepted context. Rejected raw provider text is discarded; the accepted
+  `script.sections.json` receipt records retry evidence with prompt/content hashes, token estimates,
+  and duration for the rejected attempt.
+- Live qwen3:8b `no_think` QA after the bounded script content-blocker retry on 2026-06-24 exercised
+  the retry path but still failed closed without `script.md`: the latest run reached `outro`
+  expansion chunk 3, then reported
+  `repeated_sentence_loop(repeatCount=3;sentenceFingerprint=be3048d09737d3ab) after 1 retry`. State
+  remained `IDEA_APPROVED`, diagnostics stayed raw-output-free, and no upload/render/publish action
+  ran.
+- Script continuation parsing accepts additional bounded malformed local-model `"text"` wrappers,
+  including trailing commas, missing closing quotes, and short external notes, only after the
+  extracted Turkish continuation still passes complete-sentence and exact-label validation.
+- Script expansion prompts now explicitly warn against repeated sentence skeletons, metaphors, and
+  visual directions across the draft and already-written chunks.
+- Script provider parse/transport failures and content-blocker failures persist safe run diagnostics
+  without advancing state or storing raw provider output. Section content blockers include the
+  section id, pass, and expansion chunk when available.
 - Live local Ollama qwen3:8b smoke tests on 2026-06-23 verified safe idea generation, explicit idea
   approval, chunked section script generation, receipt persistence, and script review in both
   `no_think` and `think` modes without upload, render, or publish actions. Follow-up smoke after
   provider-failure diagnostics verified `no_think` reached `SCRIPT_REVIEWED` with 769 words and four
   warnings, while `think` reached `SCRIPT_REVIEWED` with 1051 words and only `too_short`.
+- Live local Ollama qwen3:8b `no_think` QA on 2026-06-24 verified `producer doctor`, real idea
+  generation, explicit idea approval, bounded continuation recovery after JSON parse failures, and a
+  successful 1283-word `SCRIPT_REVIEWED` run with 18 provider receipts and two continuation
+  receipts. The same run exposed production-quality defects in qwen3 output: repeated sentence
+  loops, malformed labels such as `Anlatyıcı:`, weak idea diversity, and unsupported science
+  framing. Guards now block malformed labels and repeated loops; repeat live QA is still required
+  after prompt tuning before treating qwen3 drafts as production-ready.
+- Live local Ollama qwen3:8b `think` QA on 2026-06-24 verified `producer doctor` and exposed another
+  idea-stage quality gap: the model returned duplicated titles/premises and only six usable ideas.
+  Idea parsing now rejects duplicated local-model titles or premises fail-closed. The repeated
+  `think` run stopped before artifact advancement with
+  `Invalid ideas provider response: ideas.6.premise: Ideas must be meaningfully distinct.`
+- Follow-up qwen3:8b `think` QA after planner prompt tuning produced exactly eight ideas, but the
+  list was still not operator-reviewable: repeated generic title motifs, repeated premise frames,
+  and common `UykulukSciFi` spelling glitches remained. The parser now normalizes common
+  `UykulukSci`/`UykulukSciyFi` brand typos, rejects repeated generic title motifs, and rejects
+  repeated premise frames across the idea list. The latest live run stopped before artifact
+  advancement with
+  `Invalid ideas provider response: ideas.2.title: Ideas must be meaningfully distinct.` Prompt-only
+  tuning was therefore not enough.
+- Idea generation now retries up to two bounded repair attempts with parser validation feedback when
+  a local-provider response fails `Invalid ideas provider response` validation. Repair attempts
+  write no raw rejected output, record ledger warnings, include `ideas.json.repair` metadata on
+  success, aggregate token/duration evidence across attempts, and still fail closed without
+  artifacts if the final repair response is invalid.
+- Idea parsing now also rejects repeated sentence loops inside idea fields, malformed `Uykul...`
+  brand fragments, English scientific lane terms such as `exoplanet`, and repeated generic `fit`
+  explanations across a slate. Planner and repair prompts now ask for Turkish lane terms and
+  slot-specific `fit` explanations.
+- Live local Ollama qwen3:8b `think` QA after the retry loop on 2026-06-24 verified that the retry
+  path is exercised and remains fail-closed: the initial response failed on a repeated premise
+  frame, the repair response failed on repeated `yıldız` title motifs, the run stayed `NEW`, no
+  `ideas.json` was written, and the ledger contains both the retry warning and final error. The next
+  product improvement is repair-prompt/idea-quality tuning, not relaxing the guard.
+- Live local Ollama qwen3:8b `think` QA after forced repair slots and stricter idea guards on
+  2026-06-24 produced an `IDEAS_GENERATED` run after one or two repair warnings, proving the repair
+  loop can recover real local output while preserving evidence. Manual review still found the ideas
+  below production quality, but weak repeated sentence, malformed brand, English lane, and duplicate
+  `fit` cases are now blocked or prompted against. A temp QA approval of one idea then exercised
+  script generation in `no_think` and `think`: both remained fail-closed without `script.md`.
+  `no_think` hit `repeated_sentence_loop`; after adding malformed local-model `"text"` wrapper
+  recovery for continuation payloads, the latest `think` retry no longer stopped at `expected JSON`
+  and instead failed closed on `repeated_sentence_loop`.
+- Live qwen3:8b `think` retry after section anti-repetition context and contextual script blocker
+  diagnostics on 2026-06-24 remained fail-closed without `script.md`, but the diagnostics now
+  identify the failing boundary: `development` section, `expansion chunk 1`, blocker
+  `malformed_production_label`.
+- Script section prompts now include an exact-label checklist that permits only `Anlatıcı:` and
+  `Görsel:` with Turkish accents.
+- Live qwen3:8b `think` retry after exact-label prompt/guard tightening on 2026-06-24 still remained
+  fail-closed without `script.md`; diagnostics now identify `context` section, `expansion chunk 1`,
+  blocker `malformed_production_label`. This confirms the prompt-only label discipline is not enough
+  for qwen3 and the next decision is whether to keep strict regeneration or add an auditable bounded
+  label-repair step.
+- Live qwen3:8b `no_think` QA after bounded label repair on 2026-06-24 used
+  `/private/tmp/uykuluk-live-ollama-current-nFMiuN`. Doctor passed, ideas generated, `idea_001` was
+  explicitly approved, and script retries stayed fail-closed without `script.md`. The first retry
+  stopped at continuation `expected JSON`; broader malformed-wrapper recovery moved the next live
+  failure to `outro` expansion chunk 3 `repeated_sentence_loop`; stricter anti-loop prompt wording
+  then moved the latest failure to `development` expansion chunk 1 `malformed_production_label`.
+  State stayed `IDEA_APPROVED`, proving retries remain safe while qwen3 label quality remains the
+  next blocker.
+- A later retry against the same live run after safe malformed-label diagnostic categories again
+  stayed fail-closed without `script.md`, this time at assembled-script review with
+  `repeated_sentence_loop`. This confirms qwen3 output remains nondeterministic and the next tuning
+  target is still production quality, not loosening blockers.
+- A follow-up retry after safe repeated-loop diagnostics stayed fail-closed without `script.md` and
+  reported `repeated_sentence_loop(repeatCount=3;sentenceFingerprint=d425f4180b4005fa)`. State
+  remained `IDEA_APPROVED`, proving the more specific diagnostics still preserve fail-closed
+  behavior.
 - Evidence bundle generation with production-package integrity status and manifest digest.
 - Evidence next-command guidance reflects script review blockers and required warning
   acknowledgement before script approval.
@@ -186,11 +293,16 @@ Corepack/PATH before treating failures as product failures.
 
 - Ollama doctor checks server reachability and configured model inventory, but live local-model QA
   is environment-dependent and not part of CI. Live qwen3:8b QA on 2026-06-23 verified successful
-  `SCRIPT_REVIEWED` runs in both `no_think` and `think`; `think` currently produces stronger script
-  drafts but still misses the 1200-word floor. Current qwen3:8b drafts remain short and may carry
-  content-review warnings such as long-form shortfall, fact-check needs, or weak intro hooks;
-  further prompt tuning or a bounded long-form continuation pass is still needed before treating
-  local model scripts as production quality.
+  `SCRIPT_REVIEWED` runs in both `no_think` and `think`; `think` produced stronger script drafts but
+  still missed the 1200-word floor before bounded continuation was implemented. Live qwen3:8b
+  `no_think` QA on 2026-06-24 proved bounded continuation can recover to 1200+ words, but output
+  quality remained below production expectations until malformed-label and repetition blockers were
+  added. Follow-up `think` runs still produced weak duplicated or repeated-frame ideas and are now
+  blocked by distinct-title, distinct-premise, repeated-title-motif, and repeated-premise-frame
+  guards. A bounded two-attempt idea retry/repair loop now exists and live qwen3 QA proved the first
+  repair path fails closed, but the repaired qwen3 idea slate is still not production quality.
+  Scripts may still carry review warnings such as fact-check needs, weak intro hooks, or unsupported
+  speculative framing.
 - No paid provider adapter is implemented. Exact cost quote approval remains separate from spend
   authorization. The internal execution boundary is ready for a future approved adapter, but no SDK,
   credential, network integration, or CLI mutation command exposes it.

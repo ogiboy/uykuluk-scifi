@@ -16,6 +16,37 @@ import { useTempProject } from "./helpers";
 describe("runtime prompt defaults", () => {
   useTempProject();
 
+  it("keeps the planner prompt anchored to a distinct reviewable idea slate", async () => {
+    const plannerTemplate = await defaultPrompt("planner-task.md");
+
+    expect(plannerTemplate).toContain("Return exactly 8 ideas.");
+    expect(plannerTemplate).toContain("Use eight different topic lanes");
+    expect(plannerTemplate).toContain("Do not reuse the same protagonist");
+    expect(plannerTemplate).toContain(
+      "Do not use `Uyku`, `Yıldız`, `Karanlık`, `Mesaj`, or `Gezegen`",
+    );
+  });
+
+  it("keeps script section prompts anchored to exact Turkish production labels", () => {
+    const prompt = renderScriptSectionPrompt(
+      "SCRIPT_MARKDOWN\n\n## Approved Idea\n{}",
+      scriptSectionPlans[0],
+    );
+
+    expect(prompt).toContain("Spell production labels exactly as `Anlatıcı:` and `Görsel:`");
+    expect(prompt).toContain("Forbidden label variants");
+    expect(prompt).toContain("`Anlatyıcı:`");
+    expect(prompt).toContain("`Gorsel:`");
+    expect(prompt).toContain("`Sahne:`");
+  });
+
+  it("keeps the scriptwriter prompt anchored to anti-repetition constraints", async () => {
+    const scriptTemplate = await defaultPrompt("scriptwriter-task.md");
+
+    expect(scriptTemplate).toContain("sentence skeleton");
+    expect(scriptTemplate).toContain("genuinely new beat");
+  });
+
   it("uses product runtime prompt defaults without requiring .ai files", async () => {
     expect(await pathExists(".ai")).toBe(false);
 
