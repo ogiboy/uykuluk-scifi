@@ -54,6 +54,9 @@
   render-plan evidence before it writes `production/audio/voiceover.wav` and
   `production/audio/voiceover.meta.json`. `deterministic-local` is a timing/reference adapter;
   `local-piper` shells out to a configured local Piper binary and ignored model path.
+- `pnpm tts:piper:setup` downloads the pinned CPU-friendly Turkish
+  `speaches-ai/piper-tr_TR-fahrettin-medium` model into ignored `models/` and prints the matching
+  local config override for `local-piper`.
 - Approval-gated local FFmpeg draft render. `producer approve render` records approval for the exact
   current render-plan and voiceover digests, then `producer render` requires `RENDER_APPROVED`
   before writing `production/render/draft.mp4` and `production/render/render_manifest.json`.
@@ -188,9 +191,9 @@ Corepack/PATH before treating failures as product failures.
 - Revision contracts for subtitles, scenes, popup cards, and YouTube metadata are not implemented.
 - Render planning does not render media, approve render execution, or reserve spend. It is a local
   review/planning artifact only.
-- Local TTS currently provides a deterministic timing/reference WAV and an optional configured Piper
-  shell-out. It does not download or commit voice models, approve render execution, upload, or
-  publish. Real Piper voice quality still needs local QA.
+- Local TTS currently provides a deterministic timing/reference WAV, a configured Piper shell-out,
+  and an ignored-model setup helper. It does not commit voice models, approve render execution,
+  upload, or publish. Real Piper voice quality still needs local QA before production use.
 - FFmpeg draft render currently focuses on a simple local review MP4 using a background plate,
   subtitle burn-in, watermark overlay, and voiceover audio. More complete scene timing, popup card,
   waveform, intro/outro, and composition polish remain follow-up work.

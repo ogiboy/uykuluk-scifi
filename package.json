@@ -22,6 +22,7 @@
     "studio:test:e2e": "playwright test",
     "studio:typecheck": "pnpm --filter @uykulukscifi/studio typecheck",
     "test": "vitest run",
+    "tts:piper:setup": "tsx scripts/tts/setup-piper-model.ts",
     "qa:usage": "node scripts/usage-smoke.mjs",
     "qa:browser": "pnpm studio:test:e2e",
     "qa:modularity": "node scripts/qa/modularity-gate.mjs --fail-on-findings",

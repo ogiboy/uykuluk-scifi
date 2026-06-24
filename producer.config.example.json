@@ -20,8 +20,8 @@
       "enabled": false,
       "mode": "local-piper",
       "piperBinary": "piper",
-      "piperModelPath": "models/piper/tr_TR/model.onnx",
-      "piperConfigPath": "models/piper/tr_TR/model.onnx.json"
+      "piperModelPath": "models/piper/tr_TR/fahrettin-medium/model.onnx",
+      "piperConfigPath": "models/piper/tr_TR/fahrettin-medium/model.onnx.json"
     },
     "imageGeneration": {
       "enabled": false,

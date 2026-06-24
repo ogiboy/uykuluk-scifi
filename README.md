@@ -346,6 +346,11 @@ Useful Ollama settings:
 
 Useful local TTS settings:
 
+```bash
+uv tool install piper-tts
+pnpm tts:piper:setup
+```
+
 ```json
 {
   "providers": {
@@ -358,9 +363,12 @@ Useful local TTS settings:
 ```
 
 `deterministic-local` writes a reference WAV for timing and pipeline validation; it is not a
-production-quality voice. `local-piper` requires a local `piper` binary and ignored model files
-configured with `piperModelPath` and, when needed, `piperConfigPath`. Do not commit downloaded voice
-models or generated audio.
+production-quality voice. `pnpm tts:piper:setup` downloads the default pinned Turkish
+`speaches-ai/piper-tr_TR-fahrettin-medium` model into ignored `models/` and prints the matching
+ignored `producer.config.json` override. The helper keeps Hugging Face `config.json` and also writes
+the Piper-compatible `model.onnx.json` alias. `local-piper` requires a local `piper` binary and
+ignored model files configured with `piperModelPath` and `piperConfigPath`. Do not commit downloaded
+voice models or generated audio.
 
 `producer render` requires `ffmpeg` on `PATH` unless called through a test harness with an explicit
 binary. The draft render is a local review artifact and may be regenerated after approval; it does

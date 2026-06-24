@@ -21,6 +21,9 @@ future generated release notes can be inserted predictably.
   after readiness, script approval, production-package integrity, and render-plan evidence pass.
 - Optional `local-piper` TTS adapter configuration for a local Piper binary and ignored voice model
   paths, alongside a deterministic local reference adapter for CI-safe timing artifacts.
+- `pnpm tts:piper:setup` helper that downloads a pinned Turkish Piper voice from Hugging Face into
+  ignored `models/`, writes the Piper-compatible config alias, and prints the matching local config
+  override.
 - `producer approve render` and `producer render` local FFmpeg draft-render flow with exact
   render-plan/voiceover approval, MP4 output, manifest evidence, and draft-render readiness/evidence
   status.
