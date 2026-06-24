@@ -16,6 +16,7 @@ import { renderDraft } from "./stages/render.js";
 import { generateRenderPlan } from "./stages/renderPlan.js";
 import { reviewScript } from "./stages/reviewScript.js";
 import { generateScript } from "./stages/script.js";
+import { formatRunStatus, readRunStatus } from "./stages/status.js";
 import { generateVoiceoverAudio } from "./stages/voice.js";
 
 const program = new Command();
@@ -153,11 +154,15 @@ program
 program
   .command("status")
   .requiredOption("--run <run_id>")
+  .option("--json", "Print the raw run state JSON for automation.")
   .description("Show run state and artifacts.")
   .action(
-    wrap(async (options: { run: string }) => {
-      const run = await loadRun(options.run);
-      console.log(JSON.stringify(run, null, 2));
+    wrap(async (options: { json?: boolean; run: string }) => {
+      console.log(
+        options.json
+          ? JSON.stringify(await loadRun(options.run), null, 2)
+          : formatRunStatus(await readRunStatus(options.run)),
+      );
     }),
   );
 

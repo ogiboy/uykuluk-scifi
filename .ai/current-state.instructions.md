@@ -78,6 +78,9 @@
 - Evidence bundle generation with production-package integrity status and manifest digest.
 - Evidence next-command guidance reflects script review blockers and required warning
   acknowledgement before script approval.
+- `producer status` now defaults to an operator-readable summary with state,
+  approval/warning/artifact counts, evidence availability, recent artifacts, and next safe action;
+  `--json` preserves raw persisted state output for automation.
 - Readiness diagnostics that strictly parse and revalidate persisted cost quotes, live hard budgets,
   complete production-package integrity, and exact paid-generation cost approval when required.
 - Final readiness diagnostics agree with the post-transition run state.
@@ -143,6 +146,7 @@ pnpm producer approve cost --run <run_id>
 pnpm producer evidence --run <run_id>
 pnpm producer readiness --run <run_id>
 pnpm producer status --run <run_id>
+pnpm producer status --run <run_id> --json
 pnpm producer list-runs
 pnpm producer voice --run <run_id>
 pnpm producer render --run <run_id>

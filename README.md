@@ -132,6 +132,8 @@ agent-tracking state only; runtime code must not require it.
 - Script approval requires `--acknowledge-warnings` when the review contains non-blocking warnings.
 - Script review Markdown shows the next safe approval command or blocker remediation guidance.
 - Evidence next-command guidance reflects script review blockers and warning acknowledgement needs.
+- `producer status` shows an operator-readable run summary with current state, counts, evidence
+  availability, recent artifacts, and next safe action; use `--json` for the raw persisted state.
 - Script edits use an attributable revision command with before/after snapshots; reviewed or
   approved scripts return to `SCRIPT_GENERATED` and require review/approval again.
 - Production packaging requires explicit script approval for the unchanged reviewed content.
@@ -208,6 +210,7 @@ Inspection:
 
 ```bash
 pnpm producer status --run <run_id>
+pnpm producer status --run <run_id> --json
 pnpm producer list-runs
 ```
 

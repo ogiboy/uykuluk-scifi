@@ -58,6 +58,8 @@ future generated release notes can be inserted predictably.
 
 - Browser QA now builds and serves the production Studio instead of running a file-watching dev
   server.
+- `producer status` now defaults to an operator-readable summary with state, evidence, artifact,
+  warning, and next-action details; `--json` preserves raw persisted state output for automation.
 - `producer doctor` now reports TTS provider readiness and blocks enabled `local-piper` mode when
   the configured binary, model, or config file is missing.
 - Script review, approval, and production packaging now require the same SHA-256 content digest.
