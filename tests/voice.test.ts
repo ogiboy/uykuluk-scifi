@@ -1,0 +1,163 @@
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { describe, expect, it } from "vitest";
+import { artifactPath } from "../src/core/artifacts";
+import { loadRun } from "../src/core/runStore";
+import { approveIdea } from "../src/stages/approveIdea";
+import { approveScript } from "../src/stages/approveScript";
+import { generateEvidenceBundle } from "../src/stages/evidence";
+import { estimateCost } from "../src/stages/estimate";
+import { runIdeas } from "../src/stages/ideas";
+import { generateProductionPackage } from "../src/stages/productionPackage";
+import { generateRenderPlan } from "../src/stages/renderPlan";
+import { runReadiness } from "../src/stages/readiness";
+import { reviewScript } from "../src/stages/reviewScript";
+import { generateScript } from "../src/stages/script";
+import { generateVoiceoverAudio } from "../src/stages/voice";
+import { pathExists } from "../src/utils/fs";
+import { readJsonFile } from "../src/utils/json";
+import { useTempProject } from "./helpers";
+
+describe("voiceover audio", () => {
+  useTempProject();
+
+  it("generates local deterministic WAV audio after readiness and render planning", async () => {
+    await enableDeterministicTts();
+    const runId = await prepareReadyRun({ renderPlan: true });
+
+    await generateVoiceoverAudio(runId);
+
+    const run = await loadRun(runId);
+    expect(run.state).toBe("READY_FOR_MANUAL_PRODUCTION");
+    expect(run.artifacts).toEqual(
+      expect.arrayContaining([
+        "production/audio/voiceover.wav",
+        "production/audio/voiceover.meta.json",
+      ]),
+    );
+    const wav = await readFile(artifactPath(runId, "production/audio/voiceover.wav"));
+    expect(wav.subarray(0, 4).toString("ascii")).toBe("RIFF");
+    expect(wav.subarray(8, 12).toString("ascii")).toBe("WAVE");
+
+    const meta = await readJsonFile<{
+      mode: string;
+      runId: string;
+      output: { durationSeconds: number; path: string; sha256: string };
+      renderPlan: { path: string; digest: string };
+      source: { path: string; sha256: string; wordCount: number };
+    }>(artifactPath(runId, "production/audio/voiceover.meta.json"));
+    expect(meta).toMatchObject({
+      mode: "deterministic-local",
+      runId,
+      output: {
+        path: "production/audio/voiceover.wav",
+        sha256: expect.stringMatching(/^[a-f0-9]{64}$/),
+      },
+      renderPlan: {
+        path: "production/render_plan.json",
+        digest: expect.stringMatching(/^[a-f0-9]{64}$/),
+      },
+      source: {
+        path: "production/voiceover.txt",
+        sha256: expect.stringMatching(/^[a-f0-9]{64}$/),
+      },
+    });
+    expect(meta.output.durationSeconds).toBeGreaterThan(0);
+    expect(meta.source.wordCount).toBeGreaterThan(0);
+
+    const evidence = (await generateEvidenceBundle(runId)) as {
+      voiceoverAudio: { status: string; path: string; durationSeconds: number };
+    };
+    expect(evidence.voiceoverAudio).toMatchObject({
+      status: "pass",
+      path: "production/audio/voiceover.wav",
+      durationSeconds: meta.output.durationSeconds,
+    });
+  });
+
+  it("blocks before readiness has passed", async () => {
+    await enableDeterministicTts();
+    await createMinimalRenderAssets();
+    const runId = await preparePackagedRun();
+    await generateRenderPlan(runId);
+
+    await expect(generateVoiceoverAudio(runId)).rejects.toThrow(/ready_for_manual_production/i);
+    expect(await pathExists(artifactPath(runId, "production/audio/voiceover.wav"))).toBe(false);
+  });
+
+  it("blocks when TTS remains disabled", async () => {
+    const runId = await prepareReadyRun({ renderPlan: true });
+
+    await expect(generateVoiceoverAudio(runId)).rejects.toThrow(/voice\/tts is disabled/i);
+    expect(await pathExists(artifactPath(runId, "production/audio/voiceover.wav"))).toBe(false);
+  });
+
+  it("blocks when the render plan is missing", async () => {
+    await enableDeterministicTts();
+    const runId = await prepareReadyRun({ renderPlan: false });
+
+    await expect(generateVoiceoverAudio(runId)).rejects.toThrow(/render plan/i);
+    expect(await pathExists(artifactPath(runId, "production/audio/voiceover.wav"))).toBe(false);
+  });
+
+  it("blocks local Piper mode without a configured model path", async () => {
+    await configureTts({ enabled: true, mode: "local-piper" });
+    const runId = await prepareReadyRun({ renderPlan: true });
+
+    await expect(generateVoiceoverAudio(runId)).rejects.toThrow(/piperModelPath/i);
+    expect(await pathExists(artifactPath(runId, "production/audio/voiceover.wav"))).toBe(false);
+  });
+});
+
+async function prepareReadyRun(options: { renderPlan: boolean }): Promise<string> {
+  await createMinimalRenderAssets();
+  const runId = await preparePackagedRun();
+  if (options.renderPlan) {
+    await generateRenderPlan(runId);
+  }
+  await estimateCost(runId);
+  await generateEvidenceBundle(runId);
+  const readiness = await runReadiness(runId);
+  expect(readiness.passed).toBe(true);
+  return runId;
+}
+
+async function preparePackagedRun(): Promise<string> {
+  const { runId, ideas } = await runIdeas();
+  await approveIdea(runId, ideas[0].id);
+  await generateScript(runId);
+  await reviewScript(runId);
+  await approveScript(runId, { acknowledgeWarnings: true });
+  await generateProductionPackage(runId);
+  return runId;
+}
+
+async function enableDeterministicTts(): Promise<void> {
+  await configureTts({ enabled: true, mode: "deterministic-local" });
+}
+
+async function configureTts(tts: { enabled: boolean; mode: string }): Promise<void> {
+  const config = JSON.parse(await readFile("producer.config.json", "utf8")) as {
+    providers: { tts: Record<string, unknown> };
+  };
+  config.providers.tts = tts;
+  await writeFile("producer.config.json", `${JSON.stringify(config, null, 2)}\n`, "utf8");
+}
+
+async function createMinimalRenderAssets(): Promise<void> {
+  const files = new Map([
+    ["assets/brand/uykulukscifi_channel_logo_square_1024.png", "logo"],
+    ["assets/brand/uykulukscifi_watermark_transparent_500.png", "watermark"],
+    ["assets/overlays/subtitle_panel_blank_1700x190.png", "subtitle panel"],
+    ["assets/overlays/video_lower_third_banner_1920x240.png", "lower third"],
+    ["assets/overlays/popup_info_card_900x520.png", "popup card"],
+    ["assets/intro/episode_title_card_1920x1080.jpg", "intro"],
+    ["assets/outro/youtube_end_screen_1920x1080.jpg", "outro"],
+    ["assets/backgrounds/plate_test_1920x1080.jpg", "background"],
+    ["assets/icons/icon_fact_check_512.png", "fact icon"],
+    ["assets/waveforms/waveform_overlay_thin_panel_transparent_1920x240.png", "waveform"],
+  ]);
+  for (const [target, content] of files) {
+    await mkdir(target.split("/").slice(0, -1).join("/"), { recursive: true });
+    await writeFile(target, content, "utf8");
+  }
+}

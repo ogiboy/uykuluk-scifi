@@ -93,12 +93,12 @@ inventory documentation here.
 ## Production Evidence Contract
 
 These files are tracked production inputs. Script review and approval are content-addressed today;
-evidence also records runtime prompt hashes. Future render work must likewise record the exact asset
-paths and revisions used in each evidence bundle rather than inferring them from directory presence.
-Security dependency auditing covers executable packages; asset provenance remains governed by this
-tracked inventory and future per-run evidence. Readiness/evidence state synchronization does not
-imply that optional asset gaps are resolved; the asset check status remains independently
-reviewable.
+evidence also records runtime prompt hashes. Render planning now records exact selected asset paths,
+roles, and SHA-256 digests in `production/asset_provenance.json` rather than inferring them from
+directory presence. Security dependency auditing covers executable packages; asset provenance
+remains governed by this tracked inventory and per-run evidence. Readiness/evidence state
+synchronization does not imply that optional asset gaps are resolved; the asset check status remains
+independently reviewable.
 
 The current asset guard inventories brand, overlay, intro, and outro directories. Logo, watermark,
 subtitle/lower-third, intro, and outro availability all contribute operator-visible readiness
@@ -121,4 +121,4 @@ modify or reclassify files in the tracked asset inventory.
 - Render-ready intro/outro MP4 clips generated from the committed source frames.
 - Font files and license notes for recurring title, thumbnail, lower-third, and subtitle typography.
 - Additional series-specific background plates once recurring episode categories are defined.
-- Storyboard or contact-sheet template for reviewing generated scene prompts before render work.
+- Storyboard/contact-sheet refinements after the MVP markdown contact sheet is used on real runs.

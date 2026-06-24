@@ -67,7 +67,7 @@ describe("reserved provider execution", () => {
           ...defaultConfig,
           providers: {
             ...defaultConfig.providers,
-            tts: { enabled: true, mode: "changed-after-approval" },
+            tts: { ...defaultConfig.providers.tts, enabled: true, mode: "deterministic-local" },
           },
         },
         null,

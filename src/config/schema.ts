@@ -11,10 +11,25 @@ export const producerConfigSchema = z.object({
       mode: z.enum(["mock", "ollama"]).default("mock"),
       ollamaBaseUrl: z.url(),
       model: z.string(),
+      thinkingMode: z.enum(["default", "think", "no_think"]).default("default"),
+      maxOutputTokens: z
+        .object({
+          ideas: z.int().positive().default(3000),
+          script: z.int().positive().default(3200),
+          productionPackage: z.int().positive().default(2000),
+        })
+        .default({
+          ideas: 3000,
+          script: 3200,
+          productionPackage: 2000,
+        }),
     }),
     tts: z.object({
       enabled: z.boolean(),
-      mode: z.string(),
+      mode: z.enum(["deterministic-local", "local-piper"]),
+      piperBinary: z.string().min(1).optional(),
+      piperModelPath: z.string().min(1).optional(),
+      piperConfigPath: z.string().min(1).optional(),
     }),
     imageGeneration: z.object({
       enabled: z.boolean(),

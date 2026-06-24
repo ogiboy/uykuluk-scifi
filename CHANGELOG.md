@@ -11,6 +11,27 @@ future generated release notes can be inserted predictably.
 
 ### Added
 
+- Main-branch release workflow for Conventional Commit version planning, `package.json` updates,
+  changelog section promotion, release commits, and stable `vX.Y.Z` tags.
+- Typed release policy tests covering version bump calculation, legacy commit handling, and
+  changelog generation.
+- `producer render-plan` command that writes a deterministic render plan, storyboard contact sheet,
+  and asset provenance from a verified production package and tracked visual assets.
+- Disabled-by-default `producer voice` local TTS foundation that writes voiceover WAV/audio metadata
+  after readiness, script approval, production-package integrity, and render-plan evidence pass.
+- Optional `local-piper` TTS adapter configuration for a local Piper binary and ignored voice model
+  paths, alongside a deterministic local reference adapter for CI-safe timing artifacts.
+- `pnpm tts:piper:setup` helper that downloads a pinned Turkish Piper voice from Hugging Face into
+  ignored `models/`, writes the Piper-compatible config alias, and prints the matching local config
+  override.
+- `producer approve render` and `producer render` local FFmpeg draft-render flow with exact
+  render-plan/voiceover approval, MP4 output, manifest evidence, and draft-render readiness/evidence
+  status.
+- Read-only Studio run index and run detail routes backed by local run/evidence/readiness summaries.
+- Read-only Studio artifact preview excerpts for review text/JSON artifacts, with binary draft
+  render media limited to metadata.
+- `producer analytics import` and `producer analytics report` for local operator-provided CSV/JSON
+  performance feedback, with ignored dataset/report artifacts and non-causal summary guidance.
 - Basic type-safe `next-intl` foundation for English and Turkish Studio locales.
 - Unit and browser coverage for locale normalization and cookie-based document language.
 - Typed runtime loading for tracked idea, scriptwriter, and production-package prompt defaults.
@@ -31,15 +52,33 @@ future generated release notes can be inserted predictably.
   classification, exact settlement, and hashed request-id evidence.
 - Versioned production-package manifests covering voiceover, subtitles, scenes, YouTube metadata,
   package Markdown, approved-script provenance, and exact artifact digests.
+- Ollama `thinkingMode` config (`default`, `think`, `no_think`) plus stage output-token caps for
+  ideas, scripts, and production packages.
+- Sectioned script-generation receipts for hook, context, development, and outro provider calls.
+- Chunked script-section expansion receipts so local Ollama script drafts can be assembled from
+  smaller bounded JSON payloads.
 
 ### Changed
 
 - Browser QA now builds and serves the production Studio instead of running a file-watching dev
   server.
+- `producer status` now defaults to an operator-readable summary with state, evidence, artifact,
+  warning, and next-action details; `--json` preserves raw persisted state output for automation.
+- `producer doctor` now reports TTS provider readiness and blocks enabled `local-piper` mode when
+  the configured binary, model, or config file is missing.
 - Script review, approval, and production packaging now require the same SHA-256 content digest.
 - Prompt provenance now records the tracked source path in addition to the rendered prompt hash.
 - Runtime prompt defaults now live under `prompts/defaults/` so the CLI no longer depends on `.ai/`
   development files.
+- Script review now reports 20-minute target shortfalls and blocking findings for incomplete or
+  non-Turkish provider output.
+- Script approval now requires explicit `--acknowledge-warnings` confirmation when review warnings
+  remain.
+- Script generation now uses bounded section-level provider calls instead of one large script call.
+- Script section generation now keeps the global 20-minute prompt target out of individual local
+  provider calls and expands each section through three smaller chunks.
+- Ollama JSON response formatting now uses explicit schemas for idea, script-section, and
+  production-package payloads where structured local output is required.
 - Cost estimation no longer records an incurred cost event; quote approval is explicitly separate
   from future spend reservation and settlement.
 - Hard-budget checks now include active, settlement-pending, and uncertain reservations across runs
@@ -48,9 +87,28 @@ future generated release notes can be inserted predictably.
   explicit publish approval; execution remains an intentionally disabled MVP scaffold.
 - Runtime schemas now use current Zod 4 APIs (`z.strictObject`, top-level string formats,
   `z.iso.datetime`, and `z.int`) with regression coverage preventing deprecated Zod 3 patterns.
+- Evidence and readiness now surface render-plan availability, warning when missing and blocking
+  when partial or malformed render-plan artifacts exist.
+- Evidence and readiness now surface voiceover audio availability, warning when absent and blocking
+  when partial, stale, or malformed voiceover artifacts exist.
+- Evidence next-command guidance now moves from voiceover to render approval and local draft render
+  review when the required artifacts are present.
 
 ### Fixed
 
+- Release commit checks now scan the actual release range instead of an empty range.
+- Release commit checks now ignore GitHub pull-request synthetic merge subjects even when checkout
+  history hides parent metadata.
+- Local AgentDB/RuVector database files are no longer tracked as repository artifacts.
+- Ollama-backed idea and production-package stages now schema-validate provider JSON, accept common
+  root-array and snake_case variants, assign deterministic local idea ids, and strip leading
+  thinking traces before writing reviewable artifacts.
+- Ollama-backed idea parsing now normalizes localized Turkish difficulty/risk labels while still
+  rejecting English operator-facing idea payloads or rating-only `fit` fields.
+- Script generation now rejects incomplete or English-labeled section output before writing
+  `script.md`, and script approval rejects reviewed scripts with blocking findings.
+- Script generation provider parse/transport failures now persist safe run diagnostics without
+  advancing workflow state or storing raw provider output.
 - Production build now emits a Node-runnable CLI without compiling tests into `dist/`, and build
   smoke verifies the compiled CLI can initialize a fresh project from another working directory.
 - Provider-backed idea, script, and production-package generation now blocks before provider calls
@@ -68,6 +126,12 @@ future generated release notes can be inserted predictably.
 - Successful readiness diagnostics now record the final transitioned run state instead of the
   pre-transition state.
 - Content review now warns on excessive clickbait title framing.
+- Content review now detects intro hooks after Markdown title and section headings instead of only
+  scanning the first raw lines.
+- Evidence next-command guidance now recommends `--acknowledge-warnings` for reviewed scripts with
+  warnings and avoids approval guidance while review blockers remain.
+- Script review Markdown now shows the matching next approval command or blocker remediation
+  guidance.
 - Asset readiness now inventories intro and outro inputs in addition to brand and overlay files.
 - Cost and reservation ledgers now reject malformed or foreign-run rows instead of accepting
   unvalidated JSON.

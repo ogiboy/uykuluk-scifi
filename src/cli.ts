@@ -1,24 +1,24 @@
 #!/usr/bin/env node
 import { Command } from "commander";
+import { registerAnalyticsCommands } from "./cli/analyticsCommands.js";
 import { registerApprovalCommands } from "./cli/approvalCommands.js";
 import { registerRevisionCommands } from "./cli/revisionCommands.js";
 import { initProject } from "./config/config.js";
 import { SafeExitError } from "./core/errors.js";
 import { listRuns, loadRun } from "./core/runStore.js";
 import { runDoctor } from "./diagnostics/doctor.js";
-import {
-  publishSchedulePlaceholder,
-  renderPlaceholder,
-  uploadPrivatePlaceholder,
-  voicePlaceholder,
-} from "./stages/disabled.js";
+import { publishSchedulePlaceholder, uploadPrivatePlaceholder } from "./stages/disabled.js";
 import { generateEvidenceBundle } from "./stages/evidence.js";
 import { estimateCost } from "./stages/estimate.js";
 import { runIdeas } from "./stages/ideas.js";
 import { generateProductionPackage } from "./stages/productionPackage.js";
 import { runReadiness } from "./stages/readiness.js";
+import { renderDraft } from "./stages/render.js";
+import { generateRenderPlan } from "./stages/renderPlan.js";
 import { reviewScript } from "./stages/reviewScript.js";
 import { generateScript } from "./stages/script.js";
+import { formatRunStatus, readRunStatus } from "./stages/status.js";
+import { generateVoiceoverAudio } from "./stages/voice.js";
 
 const program = new Command();
 
@@ -65,6 +65,7 @@ program
   );
 
 registerApprovalCommands(program, wrap);
+registerAnalyticsCommands(program, wrap);
 
 program
   .command("script")
@@ -114,6 +115,17 @@ program
   );
 
 program
+  .command("render-plan")
+  .requiredOption("--run <run_id>")
+  .description("Generate a deterministic render plan and storyboard contact sheet.")
+  .action(
+    wrap(async (options: { run: string }) => {
+      await generateRenderPlan(options.run);
+      console.log("Render plan generated.");
+    }),
+  );
+
+program
   .command("evidence")
   .requiredOption("--run <run_id>")
   .description("Generate evidence bundle.")
@@ -144,11 +156,15 @@ program
 program
   .command("status")
   .requiredOption("--run <run_id>")
+  .option("--json", "Print the raw run state JSON for automation.")
   .description("Show run state and artifacts.")
   .action(
-    wrap(async (options: { run: string }) => {
-      const run = await loadRun(options.run);
-      console.log(JSON.stringify(run, null, 2));
+    wrap(async (options: { json?: boolean; run: string }) => {
+      console.log(
+        options.json
+          ? JSON.stringify(await loadRun(options.run), null, 2)
+          : formatRunStatus(await readRunStatus(options.run)),
+      );
     }),
   );
 
@@ -167,20 +183,22 @@ program
 program
   .command("voice")
   .requiredOption("--run <run_id>")
-  .description("Disabled MVP TTS placeholder.")
+  .description("Generate local voiceover audio after readiness and render planning.")
   .action(
     wrap(async (options: { run: string }) => {
-      await voicePlaceholder(options.run);
+      const meta = await generateVoiceoverAudio(options.run);
+      console.log(`Voiceover generated. Duration: ${Math.round(meta.output.durationSeconds)}s`);
     }),
   );
 
 program
   .command("render")
   .requiredOption("--run <run_id>")
-  .description("Disabled MVP render placeholder.")
+  .description("Generate a local FFmpeg draft render after explicit render approval.")
   .action(
     wrap(async (options: { run: string }) => {
-      await renderPlaceholder(options.run);
+      const manifest = await renderDraft(options.run);
+      console.log(`Draft render generated: ${manifest.output.path}`);
     }),
   );
 

@@ -17,15 +17,30 @@ export type ScriptReviewWarning = {
 export function reviewScriptContent(script: string): ScriptReviewWarning[] {
   const warnings: ScriptReviewWarning[] = [];
   const words = script.trim().split(/\s+/).filter(Boolean);
+  const trimmed = script.trim();
   const title = script
     .split("\n")
     .map((line) => line.trim())
     .find(Boolean);
-  if (words.length < 250) {
+  if (looksTruncated(trimmed)) {
+    warnings.push({
+      code: "incomplete_script",
+      severity: "blocker",
+      message: "Script appears incomplete or truncated; regenerate before review approval.",
+    });
+  }
+  if (containsEnglishProductionText(trimmed)) {
+    warnings.push({
+      code: "non_turkish_production_text",
+      severity: "blocker",
+      message: "Script contains English production labels or directions; regenerate in Turkish.",
+    });
+  }
+  if (words.length < 1200) {
     warnings.push({
       code: "too_short",
       severity: "warning",
-      message: `Script is short for a full video (${words.length} words).`,
+      message: `Script is short for the 20-minute target (${words.length} words).`,
     });
   }
   if (words.length > 1800) {
@@ -87,13 +102,7 @@ export function reviewScriptContent(script: string): ScriptReviewWarning[] {
       message: "Script may be missing an outro or call to action.",
     });
   }
-  if (
-    !script
-      .split("\n")
-      .slice(0, 4)
-      .join(" ")
-      .match(/\?|vardir|vardır|hayal|sessiz|uzak|bazi|bazı/i)
-  ) {
+  if (!introNarrationWindow(script).match(/\?|vardir|vardır|hayal|sessiz|uzak|bazi|bazı/i)) {
     warnings.push({
       code: "missing_intro_hook",
       severity: "warning",
@@ -115,4 +124,31 @@ export function reviewScriptContent(script: string): ScriptReviewWarning[] {
     });
   }
   return warnings;
+}
+
+function introNarrationWindow(script: string): string {
+  return script
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line && !line.startsWith("#"))
+    .slice(0, 4)
+    .join(" ");
+}
+
+function looksTruncated(script: string): boolean {
+  const lastLine = script
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .at(-1);
+  if (!lastLine) {
+    return true;
+  }
+  return !/[.!?…)\]”"'](?:\*\*)?$/.test(lastLine);
+}
+
+function containsEnglishProductionText(script: string): boolean {
+  return /\b(?:Narration|Narrator|Cut to|screen fades|camera lingers|ambient soundscape|research laboratory|close-up)\b/i.test(
+    script,
+  );
 }

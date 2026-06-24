@@ -46,7 +46,7 @@ export async function prepareReadyPaidRun(): Promise<string> {
   await approveIdea(runId, ideas[0].id);
   await generateScript(runId);
   await reviewScript(runId);
-  await approveScript(runId);
+  await approveScript(runId, { acknowledgeWarnings: true });
   await generateProductionPackage(runId);
   await estimateCost(runId);
   await generateEvidenceBundle(runId);

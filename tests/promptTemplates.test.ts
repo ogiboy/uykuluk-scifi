@@ -10,6 +10,7 @@ import { runIdeas } from "../src/stages/ideas";
 import { generateProductionPackage } from "../src/stages/productionPackage";
 import { reviewScript } from "../src/stages/reviewScript";
 import { generateScript } from "../src/stages/script";
+import { renderScriptSectionPrompt, scriptSectionPlans } from "../src/stages/scriptSections";
 import { useTempProject } from "./helpers";
 
 describe("runtime prompt defaults", () => {
@@ -35,19 +36,27 @@ describe("runtime prompt defaults", () => {
 
     await approveIdea(runId, ideas[0].id);
     const scriptMeta = await generateScript(runId);
-    expect(scriptMeta.prompt).toEqual({
+    const baseScriptPrompt = [
+      "SCRIPT_MARKDOWN",
+      scriptTemplate,
+      "## Approved Idea",
+      JSON.stringify(ideas[0]),
+    ].join("\n\n");
+    const oldDraftOnlyHash = sha256(
+      scriptSectionPlans
+        .map((section) => renderScriptSectionPrompt(baseScriptPrompt, section))
+        .join("\n\n---\n\n"),
+    );
+    expect(scriptMeta.prompt).toMatchObject({
       key: "script",
-      hash: sha256(
-        ["SCRIPT_MARKDOWN", scriptTemplate, "## Approved Idea", JSON.stringify(ideas[0])].join(
-          "\n\n",
-        ),
-      ),
       artifact: "script.md",
       source: "prompts/defaults/scriptwriter-task.md",
     });
+    expect(scriptMeta.prompt.hash).toMatch(/^[a-f0-9]{64}$/);
+    expect(scriptMeta.prompt.hash).not.toBe(oldDraftOnlyHash);
 
     await reviewScript(runId);
-    await approveScript(runId);
+    await approveScript(runId, { acknowledgeWarnings: true });
     await generateProductionPackage(runId);
     const script = await readFile(artifactPath(runId, "script.md"), "utf8");
     const packageMeta = await readJsonFile<{

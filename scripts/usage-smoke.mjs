@@ -3,7 +3,11 @@ import { existsSync } from "node:fs";
 import { cp, mkdir, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { runDoctorSmoke, runScriptRevisionSmoke } from "./qa/usage-smoke-flows.mjs";
+import {
+  assertReviewEvidenceRecommendsWarningAcknowledgement,
+  runDoctorSmoke,
+  runScriptRevisionSmoke,
+} from "./qa/usage-smoke-flows.mjs";
 
 const repoRoot = process.cwd();
 const pnpm = process.env.PNPM_EXECUTABLE ?? "pnpm";
@@ -102,7 +106,18 @@ try {
   run([pnpm, "producer", "script", "--run", runId], { label: "script" });
   await runScriptRevisionSmoke({ run, pnpm, workdir, runId, assertFile, assert });
   run([pnpm, "producer", "review", "script", "--run", runId], { label: "review script" });
-  run([pnpm, "producer", "approve", "script", "--run", runId], { label: "approve script" });
+  run([pnpm, "producer", "evidence", "--run", runId], {
+    label: "review evidence recommends warning acknowledgement",
+  });
+  await assertReviewEvidenceRecommendsWarningAcknowledgement({ workdir, runId, assert });
+  run([pnpm, "producer", "approve", "script", "--run", runId], {
+    label: "approve script blocked before warning acknowledgement",
+    expectFailure: true,
+    expectOutput: "acknowledge-warnings",
+  });
+  run([pnpm, "producer", "approve", "script", "--run", runId, "--acknowledge-warnings"], {
+    label: "approve script with warning acknowledgement",
+  });
   run([pnpm, "producer", "package", "--run", runId], { label: "package" });
   run([pnpm, "producer", "estimate", "--run", runId], { label: "estimate" });
   run([pnpm, "producer", "approve", "cost", "--run", runId], {

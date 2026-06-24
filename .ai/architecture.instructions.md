@@ -18,6 +18,7 @@ Primary contracts:
   revision ledger events.
 - `src/costs/` owns cost event persistence, local budget calculations, reservation/settlement, and
   the internal adapter-bound execution contract for future nonzero provider calls.
+- `src/analytics/` owns local operator-provided performance imports and non-causal reporting.
 - `src/youtube/` currently owns disabled upload/publish scaffolds only.
 - `apps/studio/` owns the local Next.js operator shell. It should call typed service contracts and
   must not duplicate workflow state.
@@ -30,6 +31,25 @@ Primary contracts:
 
 The CLI/core state machine is the source of truth. Future web surfaces must read and mutate the same
 typed contracts rather than copying stage logic into frontend route handlers.
+
+## Future Real Production Loop Ownership
+
+The next product phase should extend the existing CLI/core flow toward a local video draft package:
+
+- render planning belongs in the workflow stages and consumes the approved production package,
+  scene/subtitle metadata, and tracked asset inventory;
+- storyboard/contact-sheet output is an operator review artifact, not an approval by itself;
+- asset provenance identifies the exact committed assets selected for a future render;
+- local TTS is owned by the workflow stages and runs only after readiness, script approval,
+  production-package integrity, and render-plan evidence. Deterministic reference audio is for
+  pipeline timing; Piper remains an optional local binary/model-path adapter with ignored models;
+- FFmpeg render is owned by the workflow stages and runs only after render planning, exact render
+  approval, voiceover evidence, production-package integrity, and local artifact checks;
+- analytics import/reporting consumes operator-provided CSV/JSON files, writes ignored local
+  analytics artifacts, and links records back to runs when `runId` is present.
+
+Render planning must not create a second workflow engine. It should reuse run state, artifact,
+ledger, approval, evidence, readiness, asset, and cost patterns already owned by the CLI/core.
 
 ## Next.js Studio
 

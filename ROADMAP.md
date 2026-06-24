@@ -1,245 +1,154 @@
 # UykulukSciFi Producer Roadmap
 
-This roadmap keeps the project local-first and approval-gated while moving from CLI-only production
-control toward a local web studio.
+This roadmap keeps the product local-first and approval-gated while shifting the next delivery focus
+from safety infrastructure to a real UykulukSciFi production loop.
 
 ## Product Direction
 
-UykulukSciFi Producer should become a controlled production desk for the channel, not an autonomous
-publishing machine. The CLI remains the first source of truth for workflow contracts, state
-transitions, approvals, costs, evidence, and disabled upload/publish controls. A future web
-interface should make those contracts easier to operate, not replace or weaken them.
+UykulukSciFi Producer is a channel-specific production desk, not a generic AI video platform or an
+autonomous publishing machine. The product should help the channel regularly produce original,
+scientifically careful, visually consistent YouTube draft packages.
 
-## Phase 1 - CLI MVP
+The CLI/core state machine remains the source of truth for state, approvals, costs, evidence, and
+disabled upload/publish controls. The Studio should make those contracts easier to review and
+operate, not replace or weaken them.
 
-Status: implemented and under QA.
+Durable strategy:
 
-- Generate ideas in mock or local Ollama mode.
-- Approve one idea explicitly.
-- Generate and review a Turkish narration script.
-- Approve the reviewed script explicitly.
-- Bind script review, approval, and packaging to the same content digest.
-- Record attributable script revisions with before/after snapshots, invalidate stale review and
-  approval evidence, and require review/approval again.
-- Generate voiceover text, subtitles, scene prompts, popup cards, and YouTube metadata drafts.
-- Estimate costs.
-- Persist a versioned future paid-generation quote and require explicit approval of the exact quote
-  digest above the configured threshold.
-- Atomically reserve an approved nonzero quote line once, count active and uncertain reservations
-  against hard budgets, and support recoverable settlement or explicit reconciliation.
-- Route future nonzero provider callbacks through one adapter-bound internal execution contract that
-  persists `EXECUTION_STARTED`, prevents local redispatch, bounds timeout/abort, and classifies
-  definitely-not-sent, unknown, and successful outcomes.
-- Generate evidence bundle and readiness diagnostics.
-- Block readiness when the cost quote is malformed, stale, over a hard budget, or missing its exact
-  required approval.
-- Validate run state on read/write and atomically replace persisted JSON files.
-- Render tracked product prompt defaults at runtime and record prompt key/source/hash provenance for
-  generated ideas, scripts, and production packages.
-- Run budget preflight before provider-backed generation so an already-exceeded ledger cannot cause
-  another provider call or generated artifact; use the stage pricing estimate for the reservation
-  decision.
-- Keep readiness diagnostics and evidence synchronized with the final run state.
-- Keep voice, render, upload, and publish disabled by default.
-- Persist state, artifacts, approvals, warnings, costs, and QA evidence.
-- Warn on clickbait title framing and inventory brand, overlay, intro, and outro assets.
-- Diagnose project config, mock/Ollama availability, required assets, and publish-default safety
-  before a run through `producer doctor`.
+- produce reliable local draft packages before adding broad integrations;
+- prefer deterministic local assets, TTS, and FFmpeg before paid/generative video providers;
+- learn from published performance through manual imports before YouTube Analytics API work;
+- keep public/scheduled publish out of scope until a separate risk review.
 
-Exit criteria:
+## Phase A - Safe Core Stabilization
 
-- `pnpm lint`
-- `pnpm typecheck`
-- `pnpm test`
-- `pnpm qa:usage`
-- Readiness passes with committed brand assets.
-- Upload and public/scheduled publish remain blocked by default.
+Status: mostly implemented; maintain and simplify.
 
-Paid-provider boundary:
+The current CLI/core already covers the safe production foundation:
 
-- Reservation, execution-claim, timeout/failure classification, and settlement foundations are
-  implemented, but no nonzero-cost provider is enabled. A future separately approved adapter must
-  plug into the internal execution boundary; no direct provider-call path is permitted.
+- mock/Ollama idea, script, review, package, estimate, evidence, and readiness stages;
+- explicit idea, script, and cost approvals;
+- content-addressed script review/approval and attributable script revisions;
+- provider budget preflight, cost quote approval, reservation/settlement foundations, and hard
+  budget accounting;
+- provider failure diagnostics, Ollama receipts, prompt provenance, production-package integrity,
+  and durable evidence;
+- disabled-by-default local TTS, approval-gated local draft render, and disabled upload and
+  public/scheduled publish scaffolds;
+- CI, CodeQL, Sonar, formatting, modularity, secret scan, usage smoke, and release hygiene gates.
 
-## Phase 1.5 - Project Policy And Tooling
+Ongoing work in this phase should improve operator clarity instead of adding more unused
+infrastructure:
 
-Status: in progress.
+- make `status`, evidence, readiness, and docs answer the next safe action clearly;
+- keep `.ai/` aligned with the source tree without becoming runtime state;
+- keep provider failures, approval blockers, and cost blockers visible in durable artifacts;
+- keep paid-provider internals isolated as future scaffolding until a real adapter is approved.
 
-- Strengthen `.ai/` as the durable development and agent-tracking contract, without making it a
-  runtime dependency.
-- Keep a project-local capability inventory and routing matrix for engineering, product, design,
-  marketing, analytics, security, QA, research, release, and swarm work.
-- Keep long-running goals resumable through repository checkpoints without depending on oversized
-  forked chat history.
-- Keep CodeRabbit focused on approval gates, cost controls, evidence, assets, frontend route safety,
-  and no public publish by default.
-- Add Prettier as the shared formatting contract.
-- Keep direct provider/publish safeguard tests and high-severity dependency audit in CI.
-- Keep QA evidence under `.ai/qa/artifacts/`.
-- Document visual asset inventory and gaps.
+## Phase B - Real Production Loop
 
-Exit criteria:
+Status: next active phase.
 
-- `.ai/rules.instructions.md`, `.ai/architecture.instructions.md`, `.ai/decisions.instructions.md`,
-  `.ai/current-state.instructions.md`, and `.ai/tasks.instructions.md` exist and match the current
-  repo.
-- `.ai/workflows/` covers feature, QA, security, and frontend work.
-- `.ai/capabilities.instructions.md` and `.ai/capabilities/` route tasks without loading the full
-  host tool catalog.
-- `.ai/agents/` defines development-only role guidance.
-- `.coderabbit.yaml`, `.prettierrc`, `.prettierignore`, and package scripts are present.
+Goal: turn an approved script/package into a complete local video draft package that can be reviewed
+without upload or public publish.
 
-## Phase 2 - Local Next.js Producer Studio
+First concrete slice: **Render Plan + Contact Sheet MVP**.
 
-Status: foundation in progress. The shell and i18n foundation exist; read-only run routes remain
-planned until the CLI/core contracts are stable.
+Status: implemented for deterministic CLI artifact generation; keep hardening evidence/readiness and
+operator review wording as later polish.
 
-Use Next.js App Router for a local operator dashboard. The dashboard should be a thin web studio
-over the existing local file/state contracts and should not become a second workflow engine.
+Planned artifacts:
 
-Planned surfaces:
+- `production/render_plan.json` - deterministic mapping from approved production package, scenes,
+  subtitles, popup cards, and existing visual assets to an FFmpeg-ready draft plan;
+- `production/storyboard_contact_sheet.md` - operator-readable scene/contact-sheet preview for
+  reviewing visual rhythm before render;
+- `production/asset_provenance.json` - exact asset paths, roles, and provenance used by the render
+  plan.
 
-- Runs index with state, warnings, approvals, cost estimate, and next command.
-- Run detail page with tabs for ideas, script, review, production package, costs, readiness,
-  evidence, and ledger.
-- Editable idea board: compare generated ideas, add manual idea notes, reject or approve one idea
-  with explicit ledger evidence.
-- Script workspace: use the implemented core revision contract to edit narration, browse revision
-  history, and require review after edits.
-- Prompt studio: edit planner, scriptwriter, review, production package, and readiness prompts from
-  a guarded UI with preview/diff and rollback.
-- Production package editor: adjust subtitle segments, scene prompts, popup cards, lower-third
-  suggestions, and YouTube metadata before render work.
-- Approval modals for idea and script only after the current artifact is visible.
-- Readiness panel with pass/warn/block rows.
-- Asset inventory page showing brand/overlay/intro/outro readiness.
-- Disabled future-action panel for TTS/render/upload/publish, with clear missing approval/config
-  explanations.
+Constraints:
+
+- render planning consumes existing production-package and asset contracts;
+- render planning does not create a second workflow engine;
+- no upload, paid provider, or public publish is introduced in this slice;
+- evidence/readiness should surface render-plan presence and blockers only after the artifact
+  contract exists.
+
+Next Real Production Loop slices:
+
+- harden local TTS with real Piper voice QA and better operator guidance; current foundation writes
+  deterministic reference WAV metadata and can call a configured local Piper binary/model path;
+- harden FFmpeg draft render quality and visual composition. Current foundation renders local review
+  MP4 from the current render plan, voiceover audio, subtitles, background plate, and watermark, and
+  writes a render manifest;
+- manual final review/approval before any private upload work.
+
+## Phase C - Operator Studio
+
+Status: read-only run review foundation exists; artifact previews and safety contracts come next.
+
+The Studio should be a local operator surface over CLI/core contracts.
+
+Priority order:
+
+- maintain the read-only run index with state, warnings, approvals, readiness, and next action;
+- maintain the read-only run detail with evidence, readiness, warning counts, approvals, and review
+  artifact availability;
+- artifact previews for scripts, production packages, render plans, contact sheets, and assets;
+- asset inventory page;
+- shared service contracts for any future Studio read/write operation;
+- route security requirements and negative tests;
+- only after those contracts exist: approval forms and guarded mutations.
 
 Frontend constraints:
 
-- Local-first, no hosted dependency required to operate the MVP.
-- Server actions or route handlers may call typed local service contracts, not arbitrary shell
-  commands.
-- No public upload or scheduled publish control until the CLI supports the same approval/config
-  gates.
-- App Router, TypeScript, Tailwind, shadcn-style primitives, Radix UI, lucide icons, GSAP, and
-  `next/font` are acceptable when introduced deliberately.
-- Operator copy should flow through a small translation accessor instead of scattered string
-  constants. The `next-intl` request/provider foundation is in place; copy migration is deferred
-  until operator surfaces are implemented.
-- Design should feel like a quiet production desk: dense, readable, restrained, scan-friendly, and
-  built for repeated review.
-- Prompt editing is a first-class operator workflow, but prompt changes must be saved as versioned
-  local artifacts and should never silently alter an active run.
-- UI-editable production fields should write explicit revision events so the evidence bundle can
-  explain what changed.
+- no second state machine;
+- no arbitrary shell execution;
+- no hidden provider calls;
+- no upload, render, or publish bypasses;
+- no mutating routes before route security requirements and negative tests.
 
-Exit criteria:
+## Phase D - Monetization Feedback Loop
 
-- Dashboard read-only routes pass first.
-- Approval actions have CSRF/same-origin/token controls appropriate for local operation.
-- Browser QA screenshots and route negative tests exist.
-- Playwright browser smoke covers the Studio shell before each push-ready handoff.
-- CLI and web views agree on run state and evidence.
-- Prompt edits have diff/preview/revert behavior and cannot bypass approval gates.
+Status: initial local CLI import/report foundation implemented; API integrations remain deferred.
 
-## Phase 2.1 - Prompt And Revision Management
+The product should eventually learn from channel performance, but manual import comes before API
+integrations.
 
-Status: planned.
+Minimum loop:
 
-The current `prompts/defaults/` files are product runtime defaults for ideas, scripts, and
-production packages. `.ai/` remains development guidance and QA/checkpoint evidence only. A future
-dashboard should let the operator inspect and edit prompt templates without turning prompt changes
-into hidden state.
+- import operator-provided CSV/JSON performance data - implemented locally through
+  `producer analytics import`;
+- map performance records back to runs/videos;
+- summarize CTR, views, average view duration, retention notes, subscriber deltas, and qualitative
+  comments where provided - implemented in `analytics/performance_report.md`;
+- produce “repeat / avoid / test next” recommendations for future ideas, titles, formats, and
+  thumbnail directions.
 
-Planned contracts:
+This phase must not invent metrics or claim causality from weak data. YouTube Analytics API work is
+optional later and requires its own credentials, privacy, cost, and approval design.
 
-- `prompts/` source templates remain tracked defaults.
-- Local prompt overrides live under an ignored runtime path or a future source-controlled
-  `prompt-packs/` contract after review.
-- Every prompt edit records editor, timestamp, prompt key, old hash, new hash, and reason.
-- Runs record which prompt hash produced each artifact.
-- Prompt preview renders variables before execution.
-- Prompt rollback is available before running generation.
+## Phase E - Optional Integrations
 
-Prompt editing must not:
+Status: deferred.
 
-- run generation automatically;
-- approve a stage;
-- mutate previous run artifacts;
-- hide changed prompt hashes from evidence.
+Allowed only after the local production loop is useful:
 
-Script revision history is implemented in the CLI/core. Prompt overrides and production-package
-field revisions remain planned.
+- private YouTube upload with explicit config, approval, and request/response evidence;
+- YouTube Analytics API;
+- idea-only scheduler;
+- prompt override UI;
+- subtitle, scene, popup card, thumbnail, and metadata revision contracts;
+- thumbnail A/B planning;
+- paid image/video/TTS providers through the existing approved reservation/execution boundary;
+- Shorts repurposing.
 
-## Phase 2.2 - Modular Core/Web Service Boundary
+Explicitly out of scope for v1:
 
-Status: planned.
-
-Before a web UI mutates state, extract shared service functions so CLI and web call the same
-contracts.
-
-Likely modules:
-
-- `src/services/runService.ts`
-- `src/services/promptService.ts`
-- `src/services/assetService.ts`
-- `src/services/approvalService.ts`
-- `src/services/readinessService.ts`
-
-Rules:
-
-- services own validation and side effects;
-- CLI and web stay thin;
-- React components do not import raw filesystem helpers;
-- route handlers validate shape, call services, and return stable JSON.
-
-## Phase 3 - Real Local Providers
-
-Status: foundation in progress.
-
-- `producer doctor` provides local config, provider, asset, and publish-default diagnostics with
-  durable ignored JSON/Markdown evidence.
-- Improve Ollama model availability checks.
-- Record provider duration and token estimates consistently.
-- Keep provider failures explicit in readiness and evidence.
-- Do not introduce paid APIs until a separately approved adapter is designed to expose only the
-  tested reserved-provider execution boundary and its credential/evidence policy is reviewed.
-
-## Phase 4 - TTS And Render
-
-Status: planned.
-
-- Add local Piper or equivalent TTS only after script approval and cost estimate.
-- Add FFmpeg render with committed UykulukSciFi assets.
-- Watermark, subtitle panel, lower-third, popup cards, and title/end cards should come from
-  `assets/`.
-- Render must require explicit approval.
-- Render output should be local artifact only.
-
-## Phase 5 - Private Upload
-
-Status: planned, disabled by default.
-
-- Implement private YouTube upload only after upload approval and explicit config.
-- Never make upload public by default.
-- Persist upload request, response, and evidence.
-- Keep public/scheduled publish separate from private upload.
-
-## Phase 6 - Public Or Scheduled Publish
-
-Status: future risk review.
-
-This is not part of the current MVP.
-
-Before any public/scheduled publish path exists:
-
-- Explicit publish approval must be separate from upload approval.
-- Readiness must prove the exact video, metadata, cost, review, and approval trail.
-- The user must see a final irreversible-action warning.
-- QA must include negative tests for missing config, missing approval, stale approval, and
-  non-public default behavior.
+- public/scheduled publish automation;
+- generic SaaS dashboard, hosted auth, team workspaces, billing, cloud database, or queue workers;
+- autonomous multi-agent runtime that bypasses operator approval;
+- paid/generative video providers before deterministic local render works.
 
 ## Visual Asset Status
 
@@ -248,10 +157,10 @@ subtitle panels, title card, end screen, thumbnail templates, text-safe thumbnai
 background plates, glitch/no-signal transition overlays, popup icons, waveform overlays, and
 intro/outro render source frames.
 
-Useful additions before render work now focus on editability and licensing:
+Useful additions before render work focus on editability and licensing:
 
-- Editable Figma, PSD, SVG, or layered source files for thumbnail and overlay text variants.
-- Render-ready intro/outro MP4 clips generated from the committed source frames.
-- Font files and license notes for recurring title, thumbnail, lower-third, and subtitle typography.
-- Additional series-specific background plates once recurring episode categories are defined.
-- Storyboard or contact-sheet template for reviewing generated scene prompts before render work.
+- editable source files for thumbnail and overlay variants;
+- render-ready intro/outro clips generated from committed source frames;
+- font files and license notes for recurring title, thumbnail, lower-third, and subtitle typography;
+- additional series-specific background plates once recurring episode categories are defined;
+- storyboard/contact-sheet template refinements after the MVP render-plan artifact exists.

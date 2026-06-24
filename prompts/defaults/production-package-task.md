@@ -12,3 +12,11 @@ Outputs:
 - YouTube title, description, and tags draft.
 
 Do not trigger TTS, image generation, render, upload, or publish.
+
+Requirements:
+
+- All human-facing text must be Turkish.
+- Return these top-level keys exactly: `popupCards`, `lowerThirds`, and `youtube`.
+- `youtube` must include `title`, `description`, and `tags`.
+
+Return only the final JSON payload. Do not include markdown fences, commentary, or thinking traces.

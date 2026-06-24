@@ -30,3 +30,10 @@ test("studio locale cookie configures the document language", async ({ context, 
 
   await expect(page.locator("html")).toHaveAttribute("lang", "tr");
 });
+
+test("studio exposes the read-only run index route", async ({ page }) => {
+  await page.goto("/runs");
+
+  await expect(page.getByRole("heading", { name: /producer runs/i })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Studio home" })).toBeVisible();
+});

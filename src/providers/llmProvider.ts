@@ -4,6 +4,7 @@ export type GenerateTextInput = {
   model?: string;
   temperature?: number;
   maxTokens?: number;
+  responseFormat?: "json" | Record<string, unknown>;
 };
 
 export type GenerateTextResult = {

@@ -4,12 +4,30 @@ import { artifactPath, writeRunJson, writeRunText } from "../core/artifacts.js";
 import { appendLedgerEvent } from "../core/ledger.js";
 import { loadRun, setRunState } from "../core/runStore.js";
 import { assertTransition } from "../core/transitions.js";
+import { SafeExitError } from "../core/errors.js";
 import { defaultStagePricing } from "../costs/pricing.js";
 import { enforceBudget } from "../safeguards/budgetGuard.js";
+import { reviewScriptContent } from "../safeguards/contentGuard.js";
 import { requireApproval, requireState } from "../safeguards/approvalGuard.js";
 import { createLlmProvider } from "../providers/index.js";
 import { createPromptProvenance } from "../prompts/provenance.js";
 import { renderScriptPrompt } from "../prompts/templates.js";
+import { stripProviderThinking } from "./providerPayloads.js";
+import { persistScriptGenerationFailure } from "./scriptFailureDiagnostics.js";
+import {
+  assembleScriptFromSections,
+  createScriptSectionReceipt,
+  parseScriptSectionExpansionProviderPayload,
+  parseScriptSectionProviderPayload,
+  renderScriptSectionExpansionPrompt,
+  renderScriptSectionPrompt,
+  sectionExpansionTokenCap,
+  scriptSectionExpansionChunks,
+  scriptSectionExpansionResponseFormat,
+  scriptSectionResponseFormat,
+  scriptSectionPlans,
+  sectionTokenCap,
+} from "./scriptSections.js";
 import { ScriptMeta, VideoIdea } from "./types.js";
 
 /**
@@ -43,12 +61,70 @@ export async function generateScript(runId: string): Promise<ScriptMeta> {
     });
     const provider = createLlmProvider(config);
     const prompt = await renderScriptPrompt(JSON.stringify(idea));
-    const result = await provider.generateText({
-      model: config.providers.llm.model,
-      temperature: 0.6,
-      prompt: prompt.text,
-    });
-    const script = result.text;
+    const sectionCap = sectionTokenCap(config.providers.llm.maxOutputTokens.script);
+    const expansionCap = sectionExpansionTokenCap(config.providers.llm.maxOutputTokens.script);
+    const sectionOutputs = [];
+    const sectionReceipts = [];
+    const promptTexts = [];
+    for (const section of scriptSectionPlans) {
+      const sectionPrompt = renderScriptSectionPrompt(prompt.text, section);
+      promptTexts.push(sectionPrompt);
+      const draftResult = await provider.generateText({
+        model: config.providers.llm.model,
+        temperature: 0.6,
+        maxTokens: sectionCap,
+        responseFormat: scriptSectionResponseFormat,
+        prompt: sectionPrompt,
+      });
+      const draft = parseSectionProviderPayload(
+        draftResult.text,
+        parseScriptSectionProviderPayload,
+        section.id,
+        "draft",
+      );
+      assertNoScriptBlockers(draft);
+      sectionReceipts.push(
+        createScriptSectionReceipt(section, "draft", sectionPrompt, draft, draftResult),
+      );
+      const expandedChunks = [];
+      for (const chunk of scriptSectionExpansionChunks) {
+        const expansionPrompt = renderScriptSectionExpansionPrompt(
+          prompt.text,
+          section,
+          draft,
+          chunk,
+        );
+        promptTexts.push(expansionPrompt);
+        const expansionResult = await provider.generateText({
+          model: config.providers.llm.model,
+          temperature: 0.4,
+          maxTokens: expansionCap,
+          responseFormat: scriptSectionExpansionResponseFormat,
+          prompt: expansionPrompt,
+        });
+        const expanded = parseSectionProviderPayload(
+          expansionResult.text,
+          parseScriptSectionExpansionProviderPayload,
+          section.id,
+          `expansion chunk ${chunk.index}`,
+        );
+        assertNoScriptBlockers(expanded);
+        expandedChunks.push(expanded);
+        sectionReceipts.push(
+          createScriptSectionReceipt(
+            section,
+            "expansion",
+            expansionPrompt,
+            expanded,
+            expansionResult,
+            chunk.index,
+          ),
+        );
+      }
+      sectionOutputs.push({ heading: section.heading, text: expandedChunks.join("\n\n") });
+    }
+    const script = assembleScriptFromSections(idea.title, sectionOutputs);
+    assertNoScriptBlockers(script);
     const wordCount = script.trim().split(/\s+/).filter(Boolean).length;
     const meta: ScriptMeta = {
       estimatedDuration: `${Math.max(1, Math.round(wordCount / 135))}-${Math.max(2, Math.round(wordCount / 115))} dakika`,
@@ -56,29 +132,46 @@ export async function generateScript(runId: string): Promise<ScriptMeta> {
       tone: config.channel.defaultTone,
       claimsRequiringFactCheck: extractClaims(script),
       possibleVisualBeats: extractVisualBeats(script),
-      provider: result.provider,
-      model: result.model,
-      inputTokensApprox: result.inputTokensApprox,
-      outputTokensApprox: result.outputTokensApprox,
-      durationMs: result.durationMs,
-      prompt: createPromptProvenance(prompt.key, prompt.text, "script.md", prompt.source),
+      provider: sectionReceipts[0]?.provider ?? "unknown",
+      model: sectionReceipts[0]?.model ?? config.providers.llm.model,
+      inputTokensApprox: sumOptionalNumbers(
+        sectionReceipts.map((receipt) => receipt.inputTokensApprox),
+      ),
+      outputTokensApprox: sumOptionalNumbers(
+        sectionReceipts.map((receipt) => receipt.outputTokensApprox),
+      ),
+      durationMs: sectionReceipts.reduce((sum, receipt) => sum + receipt.durationMs, 0),
+      sectionCount: scriptSectionPlans.length,
+      prompt: createPromptProvenance(
+        prompt.key,
+        promptTexts.join("\n\n---\n\n"),
+        "script.md",
+        prompt.source,
+      ),
     };
     await enforceBudget({
       run,
       config,
       stage: "script",
-      provider: result.provider,
-      model: result.model,
+      provider: meta.provider,
+      model: meta.model,
       estimatedUsd,
-      inputTokens: result.inputTokensApprox,
-      outputTokens: result.outputTokensApprox,
-      durationMs: result.durationMs,
+      inputTokens: meta.inputTokensApprox,
+      outputTokens: meta.outputTokensApprox,
+      durationMs: meta.durationMs,
     });
     run = await writeRunText(run, "script", "script.md", script);
+    run = await writeRunJson(run, "script", "script.sections.json", {
+      sectionCount: scriptSectionPlans.length,
+      expansionChunkCount: scriptSectionExpansionChunks.length,
+      providerCallCount: sectionReceipts.length,
+      sections: sectionReceipts,
+    });
     run = await writeRunJson(run, "script", "script.meta.json", meta);
     await setRunState(run, "SCRIPT_GENERATED", "script");
     return meta;
   } catch (error) {
+    run = await persistScriptGenerationFailure(run, config, error);
     await appendLedgerEvent({
       runId: run.runId,
       type: "ERROR",
@@ -87,6 +180,45 @@ export async function generateScript(runId: string): Promise<ScriptMeta> {
     });
     throw error;
   }
+}
+
+function assertNoScriptBlockers(script: string): void {
+  const blockerCodes = reviewScriptContent(script)
+    .filter((warning) => warning.severity === "blocker")
+    .map((warning) => warning.code);
+  if (blockerCodes.length > 0) {
+    throw new SafeExitError(
+      `Invalid script provider response: blocking findings: ${blockerCodes.join(", ")}.`,
+    );
+  }
+}
+
+function parseSectionProviderPayload(
+  text: string,
+  parser: (text: string) => string,
+  sectionId: string,
+  pass: string,
+): string {
+  try {
+    return stripProviderThinking(parser(text));
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new SafeExitError(
+      `Invalid script section ${pass} provider response for ${sectionId}: ${stripScriptSectionErrorPrefix(
+        message,
+      )}`,
+    );
+  }
+}
+
+function stripScriptSectionErrorPrefix(message: string): string {
+  return message.replace(/^Invalid script section provider response: /, "");
+}
+
+function sumOptionalNumbers(values: Array<number | undefined>): number | undefined {
+  return values.every((value): value is number => typeof value === "number")
+    ? values.reduce((sum, value) => sum + value, 0)
+    : undefined;
 }
 
 function extractClaims(script: string): string[] {

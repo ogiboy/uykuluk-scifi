@@ -1,9 +1,9 @@
 export const studioSections = [
-  { id: "runs", label: "Runs" },
+  { id: "runs", label: "Runs", href: "/runs" },
   { id: "workflow", label: "Workflow" },
   { id: "assets", label: "Assets" },
   { id: "prompts", label: "Prompts" },
-];
+] as const satisfies ReadonlyArray<{ href?: "/runs"; id: string; label: string }>;
 
 export const statusCards = [
   {

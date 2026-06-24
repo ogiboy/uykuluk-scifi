@@ -1,4 +1,4 @@
-import { appendFile } from "node:fs/promises";
+import { appendFile, writeFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { artifactPath } from "../src/core/artifacts";
 import { requireApproval } from "../src/safeguards/approvalGuard";
@@ -40,7 +40,9 @@ describe("approval guard", () => {
     await generateScript(runId);
     await expect(approveScript(runId)).rejects.toThrow(/requires state SCRIPT_REVIEWED/);
     await reviewScript(runId);
-    await expect(approveScript(runId)).resolves.toMatchObject({ target: "script" });
+    await expect(approveScript(runId, { acknowledgeWarnings: true })).resolves.toMatchObject({
+      target: "script",
+    });
   });
 
   it("blocks script approval when the reviewed content changes", async () => {
@@ -55,12 +57,61 @@ describe("approval guard", () => {
     expect((await loadRun(runId)).state).toBe("SCRIPT_REVIEWED");
   });
 
+  it("blocks script approval when review has blocker findings", async () => {
+    const { runId, ideas } = await runIdeas();
+    await approveIdea(runId, ideas[0].id);
+    await generateScript(runId);
+    await writeFile(
+      artifactPath(runId, "script.md"),
+      ["# Kırık Script", "", "**Narration:**", "Bu metin tamamlanmadan"].join("\n"),
+      "utf8",
+    );
+    await reviewScript(runId);
+
+    await expect(approveScript(runId)).rejects.toThrow(/blocking review findings/i);
+    expect((await loadRun(runId)).state).toBe("SCRIPT_REVIEWED");
+  });
+
+  it("requires explicit acknowledgement before approving scripts with review warnings", async () => {
+    const { runId, ideas } = await runIdeas();
+    await approveIdea(runId, ideas[0].id);
+    await generateScript(runId);
+    await writeFile(
+      artifactPath(runId, "script.md"),
+      [
+        "# Uyarılı Script",
+        "",
+        "Bazı uzak dünyalar vardır; bilimsel olasılıkları sakin ve ihtiyatlı biçimde düşünürüz.",
+        "",
+        "UykulukSciFi'de yeniden buluşalım.",
+      ].join("\n"),
+      "utf8",
+    );
+    await reviewScript(runId);
+
+    await expect(approveScript(runId)).rejects.toThrow(/acknowledge.*warnings/i);
+    expect((await loadRun(runId)).state).toBe("SCRIPT_REVIEWED");
+    expect(
+      (await readLedger(runId)).some(
+        (event) =>
+          event.type === "GUARD_BLOCKED" &&
+          event.stage === "approve-script" &&
+          event.message.includes("warnings"),
+      ),
+    ).toBe(true);
+
+    await expect(approveScript(runId, { acknowledgeWarnings: true })).resolves.toMatchObject({
+      target: "script",
+      acknowledgedWarnings: ["too_short"],
+    });
+  });
+
   it("blocks packaging when the approved script content changes", async () => {
     const { runId, ideas } = await runIdeas();
     await approveIdea(runId, ideas[0].id);
     await generateScript(runId);
     await reviewScript(runId);
-    await approveScript(runId);
+    await approveScript(runId, { acknowledgeWarnings: true });
 
     await appendFile(artifactPath(runId, "script.md"), "\nUnreviewed operator edit.\n", "utf8");
 

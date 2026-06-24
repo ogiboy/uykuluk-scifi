@@ -2,6 +2,84 @@
 
 ## Decision Log
 
+### Product is channel-specific production software, not a generic AI video platform
+
+Reason: The strongest product advantage is the UykulukSciFi context: Turkish cinematic sci-fi
+narration, scientific caution, channel assets, approval gates, evidence, and local cost control.
+Competing with broad AI video editors would pull the project toward generic features before the
+channel can reliably ship videos.
+
+Constraints:
+
+- Optimize for repeatable UykulukSciFi draft production first.
+- Do not add generic SaaS, hosted workspace, marketplace, or one-prompt public publishing features
+  merely because they are common in video tools.
+- Keep public upload/publish manual or separately gated until the exact CLI/core controls exist.
+
+### Render Plan + Contact Sheet MVP is the first real production-loop slice
+
+Reason: The safe core can already produce reviewable packages. The next useful product step is to
+make the first real video format explicit before adding TTS or FFmpeg execution.
+
+Constraints:
+
+- Implemented artifacts are `production/render_plan.json`, `production/storyboard_contact_sheet.md`,
+  and `production/asset_provenance.json`.
+- The slice consumes approved production-package and asset contracts; it does not implement FFmpeg
+  render, upload, public publish, or paid providers.
+- Artifact presence does not imply render approval.
+
+### Local TTS starts as disabled-by-default voiceover artifact generation
+
+Reason: The product needs reviewable local audio before FFmpeg render, but voice generation must not
+become an implicit render, upload, publish, or paid-provider path.
+
+Constraints:
+
+- `producer voice` requires explicit local TTS config, `READY_FOR_MANUAL_PRODUCTION`, script
+  approval, production-package integrity, and valid render-plan evidence.
+- `deterministic-local` is a reference adapter for timing and pipeline tests, not production voice
+  quality.
+- `local-piper` may call a configured local Piper binary and model path, but voice models and
+  generated audio are local/ignored artifacts, not committed repository state.
+- Voiceover artifact presence does not imply render approval.
+
+### FFmpeg draft render is a local review artifact behind exact approval
+
+Reason: The channel needs reviewable local video drafts, but render execution must not imply upload
+or publish authority and must not run from stale visual/audio inputs.
+
+Constraints:
+
+- `producer approve render` records approval for the exact current render-plan and voiceover audio
+  digests.
+- `producer render` requires `RENDER_APPROVED`, production-package integrity, valid render-plan
+  evidence, valid voiceover evidence, and the matching render approval digest.
+- The first implementation may be visually simple, but it must write local render evidence and must
+  not call upload, schedule, public publish, paid providers, or external media services.
+
+### Manual analytics feedback precedes YouTube Analytics API
+
+Reason: The product needs a learning loop, but API credentials, privacy, quota, and external-state
+handling are unnecessary before the channel has a stable production cadence.
+
+Constraints:
+
+- Start with operator-provided CSV/JSON imports.
+- Record source, time range, definitions, and missingness.
+- Do not invent metrics or claim causality from weak data.
+
+### Paid or generative media providers are deferred until local production works
+
+Reason: Paid image/video/TTS APIs add cost, credential, policy, consistency, and evidence risk. The
+first useful draft format can be produced with local prompts, local assets, local TTS, and FFmpeg.
+
+Constraints:
+
+- No paid adapter, SDK, credential, or operator command is enabled without a separate design review.
+- Future paid providers must use the approved reservation/execution boundary.
+- Deterministic local render should be useful before paid/generative video providers are considered.
+
 ### CLI/core remains the workflow source of truth
 
 Reason: The first reliable surface is the strict state machine, ledger, artifact, and approval

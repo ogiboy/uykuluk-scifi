@@ -1,9 +1,10 @@
+import { spawnSync } from "node:child_process";
 import path from "node:path";
 import { defaultConfig, loadConfig, projectConfigExists } from "../config/config.js";
 import { ProducerConfig } from "../config/schema.js";
 import { OllamaProvider } from "../providers/ollamaProvider.js";
 import { checkAssets } from "../safeguards/assetGuard.js";
-import { writeTextFile } from "../utils/fs.js";
+import { pathExists, writeTextFile } from "../utils/fs.js";
 import { writeJsonFile } from "../utils/json.js";
 import { table } from "../utils/markdown.js";
 import { nowIso } from "../utils/time.js";
@@ -78,6 +79,7 @@ export async function runDoctor(): Promise<DoctorReport> {
   }
 
   checks.push(await providerCheck(config));
+  checks.push(await ttsProviderCheck(config));
   checks.push(await assetCheck(config));
   checks.push(publishDefaultsCheck(config));
 
@@ -120,6 +122,52 @@ async function providerCheck(config: ProducerConfig | undefined): Promise<Doctor
     name: "LLM provider",
     status: diagnostic.available ? "pass" : "block",
     message: diagnostic.message,
+  };
+}
+
+async function ttsProviderCheck(config: ProducerConfig | undefined): Promise<DoctorCheck> {
+  if (!config) {
+    return {
+      name: "TTS provider",
+      status: "block",
+      message: "TTS diagnostics require valid project config.",
+    };
+  }
+
+  const tts = config.providers.tts;
+  if (!tts.enabled) {
+    return {
+      name: "TTS provider",
+      status: "pass",
+      message: "TTS is disabled by default; local voiceover generation remains opt-in.",
+    };
+  }
+  if (tts.mode === "deterministic-local") {
+    return {
+      name: "TTS provider",
+      status: "pass",
+      message: "deterministic-local reference TTS is configured for timing validation.",
+    };
+  }
+
+  const findings: string[] = [];
+  if (!isCommandAvailable(tts.piperBinary ?? "piper")) {
+    findings.push("Piper binary unavailable");
+  }
+  if (!tts.piperModelPath || !(await pathExists(resolveLocalPath(tts.piperModelPath)))) {
+    findings.push("Piper model missing");
+  }
+  if (!tts.piperConfigPath || !(await pathExists(resolveLocalPath(tts.piperConfigPath)))) {
+    findings.push("Piper config missing");
+  }
+
+  return {
+    name: "TTS provider",
+    status: findings.length === 0 ? "pass" : "block",
+    message:
+      findings.length === 0
+        ? `local-piper is configured with ${tts.piperModelPath}.`
+        : `${findings.join("; ")}. Run pnpm tts:piper:setup and keep model files ignored.`,
   };
 }
 
@@ -170,6 +218,15 @@ function publishDefaultsCheck(config: ProducerConfig | undefined): DoctorCheck {
       ? "YouTube upload and public/scheduled publish remain disabled."
       : "Risky YouTube configuration detected; keep upload and public publish disabled.",
   };
+}
+
+function isCommandAvailable(binary: string): boolean {
+  const result = spawnSync(binary, ["--help"], { stdio: "ignore" });
+  return result.status === 0;
+}
+
+function resolveLocalPath(value: string): string {
+  return path.isAbsolute(value) ? value : path.join(process.cwd(), value);
 }
 
 /**

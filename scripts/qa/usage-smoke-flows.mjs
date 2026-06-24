@@ -65,3 +65,17 @@ export async function runScriptRevisionSmoke({ run, pnpm, workdir, runId, assert
     await assertFile(path.join(revisionDir, artifact));
   }
 }
+
+export async function assertReviewEvidenceRecommendsWarningAcknowledgement({
+  workdir,
+  runId,
+  assert,
+}) {
+  const reviewedEvidence = JSON.parse(
+    await readFile(path.join(workdir, "runs", runId, "evidence_bundle.json"), "utf8"),
+  );
+  assert(
+    reviewedEvidence.nextRecommendedCommand.includes("--acknowledge-warnings"),
+    "review evidence recommends explicit warning acknowledgement",
+  );
+}

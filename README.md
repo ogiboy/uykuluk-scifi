@@ -25,21 +25,55 @@ Production desk for Turkish sci-fi YouTube episodes.
 [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=ogiboy_uykuluk-scifi&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=ogiboy_uykuluk-scifi)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ogiboy_uykuluk-scifi&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=ogiboy_uykuluk-scifi)
 
-UykulukSciFi Producer is a local production system for building reviewable YouTube video drafts. The
-current product has a TypeScript CLI as the source of truth and a basic Next.js Producer Studio
-shell prepared for the future web interface. It generates ideas, scripts, reviews, production
-packages, cost estimates, evidence bundles, and readiness diagnostics. It does not upload or publish
+UykulukSciFi Producer is a local-first, approval-gated, cost-aware production desk for building
+reviewable UykulukSciFi YouTube video draft packages. The TypeScript CLI is the source of truth; the
+Next.js Producer Studio is a read-only operator surface over the same local contracts. The system
+generates ideas, scripts, reviews, production packages, render plans, local voiceover, local draft
+renders, cost estimates, evidence bundles, and readiness diagnostics. It does not upload or publish
 to YouTube in the MVP.
+
+## Product Direction
+
+This product is not a generic AI video platform, a one-click publishing bot, or a content farm. It
+is a channel-specific production loop for regularly producing original, scientifically careful, and
+visually consistent UykulukSciFi drafts.
+
+Near-term value is reliable draft production first: turn approved ideas into reviewable script,
+metadata, subtitle, scene, render-plan, local voiceover, draft render, and evidence packages that
+can become weekly videos. Private upload, analytics feedback, and public/scheduled publish remain
+separate future phases with their own approval, cost, readiness, and evidence boundaries.
+
+## Primary Journey
+
+```text
+doctor
+  -> ideas
+  -> approve idea
+  -> script
+  -> review script
+  -> approve script
+  -> package
+  -> render-plan
+  -> estimate / evidence / readiness
+  -> optional local voiceover
+  -> approve render
+  -> local FFmpeg draft render
+  -> future private upload review
+```
+
+Every expensive, irreversible, or publishing-adjacent step stays blocked until the matching
+configuration, approval, and evidence contracts exist. `.ai/` remains development guidance and
+agent-tracking state only; runtime code must not require it.
 
 ## What Exists
 
 - TypeScript CLI workflow under `src/`.
-- Basic Next.js App Router Studio under `apps/studio/`.
+- Basic Next.js App Router Studio under `apps/studio/` with read-only run index/detail routes.
 - Studio foundation with Tailwind CSS v4, shadcn-style primitives, Radix UI, lucide icons, GSAP, and
   `next/font`.
 - Mock-first provider layer with Ollama adapter scaffold.
-- Project-level `producer doctor` diagnostics for config, mock/Ollama readiness, assets, and publish
-  defaults.
+- Project-level `producer doctor` diagnostics for config, mock/Ollama readiness, local TTS/Piper
+  readiness, assets, and publish defaults.
 - Runtime prompt defaults under `prompts/defaults/`; `.ai/` is development and agent-tracking
   guidance, not a runtime dependency.
 - Strict run state machine and explicit approval ledger.
@@ -48,7 +82,14 @@ to YouTube in the MVP.
   hard-budget revalidation, adapter-bound local at-most-once execution claims, fail-closed
   timeout/unknown outcomes, cost ledger, content/clickbait review, full asset readiness, and
   evidence bundles.
-- Disabled voice, render, private upload, and public/scheduled publish placeholders.
+- Render Plan + Contact Sheet MVP that maps generated scenes to tracked visual assets and records
+  per-run asset provenance.
+- Disabled-by-default local voiceover generation with deterministic reference WAV output and an
+  optional Piper binary/model-path adapter.
+- Approval-gated local FFmpeg draft render that writes a review MP4 and manifest from the current
+  render plan, voiceover audio, subtitles, background plate, and watermark.
+- Manual analytics import/report commands for operator-provided CSV/JSON performance exports.
+- Disabled private upload and public/scheduled publish placeholders.
 - UykulukSciFi visual assets under `assets/`.
 - `.ai/` operating contract for agents, workflows, design, QA, security, and roadmap state.
 - Project-local capability routing so technical, product, design, marketing, data, security, QA, and
@@ -89,6 +130,11 @@ to YouTube in the MVP.
 - Mock mode is the default.
 - Script generation requires explicit idea approval.
 - Script review and approval are bound to the exact `script.md` SHA-256 digest.
+- Script approval requires `--acknowledge-warnings` when the review contains non-blocking warnings.
+- Script review Markdown shows the next safe approval command or blocker remediation guidance.
+- Evidence next-command guidance reflects script review blockers and warning acknowledgement needs.
+- `producer status` shows an operator-readable run summary with current state, counts, evidence
+  availability, recent artifacts, and next safe action; use `--json` for the raw persisted state.
 - Script edits use an attributable revision command with before/after snapshots; reviewed or
   approved scripts return to `SCRIPT_GENERATED` and require review/approval again.
 - Production packaging requires explicit script approval for the unchanged reviewed content.
@@ -113,7 +159,11 @@ to YouTube in the MVP.
 - Reservation caps and actual charges use integer USD micros. Settlement is journaled before the
   linked cost event so retries can recover without recording the same charge twice.
 - Successful readiness diagnostics and evidence reflect the final transitioned run state.
-- TTS, render, upload, and publish are intentionally blocked scaffolds.
+- TTS is disabled by default and only runs after readiness with explicit local configuration, script
+  approval, production-package integrity, and render-plan evidence.
+- Draft render runs only after explicit render approval for the exact current render-plan and
+  voiceover digests. Render output is local review media, not upload or publish authority.
+- Upload and publish remain intentionally blocked scaffolds.
 - Upload and public/scheduled publish require future explicit config and separate approval gates.
 - Studio must call typed local service contracts; it must not duplicate workflow state.
 
@@ -145,19 +195,38 @@ pnpm producer script --run <run_id>
 pnpm producer revise script --run <run_id> --file <path> --reason "<reason>" --editor <name>
 pnpm producer review script --run <run_id>
 pnpm producer approve script --run <run_id>
+pnpm producer approve script --run <run_id> --acknowledge-warnings # when review warnings remain
 pnpm producer package --run <run_id>
+pnpm producer render-plan --run <run_id>
 pnpm producer estimate --run <run_id>
 pnpm producer approve cost --run <run_id> # only when the quote requires it
 pnpm producer evidence --run <run_id>
 pnpm producer readiness --run <run_id>
+pnpm producer voice --run <run_id> # optional, only after local TTS is explicitly enabled
+pnpm producer approve render --run <run_id>
+pnpm producer render --run <run_id>
 ```
 
 Inspection:
 
 ```bash
 pnpm producer status --run <run_id>
+pnpm producer status --run <run_id> --json
 pnpm producer list-runs
 ```
+
+Manual analytics feedback:
+
+```bash
+pnpm producer analytics import --file performance.csv
+pnpm producer analytics report
+```
+
+Analytics imports accept operator-provided CSV or JSON records with fields such as `run_id`,
+`video_id`, `title`, `published_at`, `impressions`, `views`, `ctr`, `avg_view_duration_seconds`,
+`avg_percentage_viewed`, `subscribers_gained`, `likes`, `comments`, and `notes`. The importer writes
+ignored local artifacts under `analytics/`; it does not call YouTube APIs, upload media, publish
+content, or claim causality from performance changes.
 
 Do not edit `runs/<run_id>/script.md` directly. Use `producer revise script` before production
 packaging. Revisions are blocked after the production package exists. Each revision stores the old
@@ -167,15 +236,13 @@ event under `revisions/script/<revision_id>/`.
 Blocked future actions:
 
 ```bash
-pnpm producer voice --run <run_id>
-pnpm producer render --run <run_id>
 pnpm producer upload private --run <run_id>
 pnpm producer publish schedule --run <run_id>
 ```
 
 ## Producer Studio
 
-The first Studio shell is intentionally basic and local-only:
+The Studio is intentionally local-only and read-only today:
 
 ```bash
 pnpm studio
@@ -185,13 +252,19 @@ pnpm studio:build
 Current Studio scope:
 
 - production desk shell;
+- read-only `/runs` index over persisted local run state;
+- read-only `/runs/<run_id>` detail view with next action, readiness status, and review artifact
+  availability;
+- read-only artifact preview excerpts for scripts, reviews, production packages, render plans,
+  contact sheets, evidence, readiness, and render manifests, with binary media limited to metadata;
 - run/workflow command overview;
 - current asset inventory summary;
 - Radix module tabs for planned run, prompt, asset, and safety surfaces;
 - type-safe `next-intl` request/provider foundation for English and Turkish locales;
 - visible reminder that CLI/core remains the workflow source of truth.
 
-Next Studio work should add read-only run views before any mutating route handlers.
+Next Studio work should refine artifact previews, add shared read/write service contracts, and
+define route security requirements before any mutating route handlers.
 
 ## Visual Assets
 
@@ -234,6 +307,7 @@ pnpm qa:modularity
 pnpm security:check
 pnpm security:dependencies
 pnpm changelog:check
+pnpm release:check
 pnpm format:check
 ```
 
@@ -269,6 +343,64 @@ pnpm producer init
 Keep `producer.config.json` ignored. Keep `providers.llm.mode` as `mock` for normal local testing.
 Use `ollama` only when a local Ollama server and model are available.
 
+Useful Ollama settings:
+
+```json
+{
+  "providers": {
+    "llm": {
+      "mode": "ollama",
+      "ollamaBaseUrl": "http://localhost:11434",
+      "model": "qwen3:8b",
+      "thinkingMode": "default",
+      "maxOutputTokens": {
+        "ideas": 3000,
+        "script": 3200,
+        "productionPackage": 2000
+      }
+    }
+  }
+}
+```
+
+Useful local TTS settings:
+
+```bash
+uv tool install piper-tts
+pnpm tts:piper:setup
+```
+
+```json
+{
+  "providers": {
+    "tts": {
+      "enabled": true,
+      "mode": "deterministic-local"
+    }
+  }
+}
+```
+
+`deterministic-local` writes a reference WAV for timing and pipeline validation; it is not a
+production-quality voice. `pnpm tts:piper:setup` downloads the default pinned Turkish
+`speaches-ai/piper-tr_TR-fahrettin-medium` model into ignored `models/` and prints the matching
+ignored `producer.config.json` override. The helper keeps Hugging Face `config.json` and also writes
+the Piper-compatible `model.onnx.json` alias. `local-piper` requires a local `piper` binary and
+ignored model files configured with `piperModelPath` and `piperConfigPath`. Do not commit downloaded
+voice models or generated audio.
+
+`producer render` requires `ffmpeg` on `PATH` unless called through a test harness with an explicit
+binary. The draft render is a local review artifact and may be regenerated after approval; it does
+not upload, schedule, or publish anything.
+
+`thinkingMode` can be `default`, `think`, or `no_think`. Token caps are sent to Ollama as
+`num_predict` so local generation cannot run unbounded. Script generation splits the approved idea
+into bounded hook, context, development, and outro sections. Each section is drafted once and then
+expanded through three smaller bounded JSON chunks so local models can finish valid payloads. The
+run persists draft/expansion receipts before it can advance. If a local model returns malformed
+JSON, English operator-facing text, or an incomplete script section, the stage fails closed before
+writing `script.md`; provider failure diagnostics are persisted under the run when safe to record.
+
 Run `pnpm producer doctor` before starting production work. Mock mode passes without network access.
 Ollama mode checks `/api/tags` with a bounded timeout and blocks when the server is unavailable or
 the configured model is not installed. The command writes ignored local evidence to
@@ -290,22 +422,30 @@ Each run can write:
 
 - `state.json`;
 - `ideas.json` and `ideas.md`;
-- `script.md` and `script.meta.json`;
+- `script.md`, `script.sections.json`, and `script.meta.json`;
 - `revisions/script/<revision_id>/before.md`, `after.md`, invalidated review snapshots, and
   `revision.json`;
 - `reviews/script_review.json` and `reviews/script_review.md`;
 - `production/voiceover.txt`, `production/subtitles.srt`, `production/scenes.json`,
   `production/youtube_metadata.json`, `production/production_package.md`,
   `production/production_package.meta.json`;
+- `production/render_plan.json`, `production/storyboard_contact_sheet.md`, and
+  `production/asset_provenance.json`;
+- `production/audio/voiceover.wav` and `production/audio/voiceover.meta.json` when local TTS is
+  explicitly enabled and run after readiness;
+- `production/render/draft.mp4` and `production/render/render_manifest.json` after exact render
+  approval and local FFmpeg execution;
 - `costs/estimate.json` and `costs/estimate.md`;
 - `costs/ledger.jsonl`;
 - `costs/reservations.jsonl`;
 - `evidence_bundle.json` and `evidence_bundle.md`;
+- `diagnostics/script_generation_failure.json` when script provider parsing or transport fails;
 - `diagnostics/readiness.json` and `diagnostics/readiness.md`;
 - `ledger.jsonl`.
 
 Generated run directories are ignored except `runs/.gitkeep`. Generated project diagnostics under
-`diagnostics/` are also ignored.
+`diagnostics/` are also ignored. Manual analytics outputs under `analytics/` are ignored local
+operator data.
 
 ## Branch And Release Policy
 
@@ -314,6 +454,11 @@ Generated run directories are ignored except `runs/.gitkeep`. Generated project 
   `fix/core-approval-ledger`, `ci/codeql-hardening`, or `docs/asset-inventory`.
 - Use Conventional Commits.
 - Keep `CHANGELOG.md` and the `<!-- version list -->` marker intact.
+- `pnpm version:plan` reports the next release version from the latest stable tag, and
+  `pnpm release:check` validates release-range commit subjects before publish.
+- Pushes to `main` run the release workflow. When releaseable commits exist, it updates
+  `package.json`, moves `CHANGELOG.md` Unreleased notes into a versioned section, creates
+  `chore(release): vX.Y.Z`, and tags `vX.Y.Z`.
 - Release phase `0.1.x` covers CLI MVP hardening, Studio foundation, browser QA, docs, and tooling.
 
 ## License

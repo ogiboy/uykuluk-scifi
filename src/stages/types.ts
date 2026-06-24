@@ -24,6 +24,7 @@ export type ScriptMeta = {
   inputTokensApprox?: number;
   outputTokensApprox?: number;
   durationMs: number;
+  sectionCount: number;
   prompt: PromptProvenance;
 };
 

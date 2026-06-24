@@ -8,9 +8,9 @@ import { enforceBudget } from "../safeguards/budgetGuard.js";
 import { createLlmProvider } from "../providers/index.js";
 import { createPromptProvenance } from "../prompts/provenance.js";
 import { renderIdeasPrompt } from "../prompts/templates.js";
+import { parseIdeasProviderPayload } from "./providerPayloads.js";
+import { ideasResponseFormat } from "./providerResponseFormats.js";
 import { VideoIdea } from "./types.js";
-
-type IdeasPayload = { ideas: VideoIdea[] };
 
 /**
  * Generates a set of video ideas using an LLM and writes formatted artifacts to the run.
@@ -37,10 +37,11 @@ export async function runIdeas(): Promise<{ runId: string; ideas: VideoIdea[] }>
     const result = await provider.generateText({
       model: config.providers.llm.model,
       temperature: 0.7,
+      maxTokens: config.providers.llm.maxOutputTokens.ideas,
+      responseFormat: ideasResponseFormat,
       prompt: prompt.text,
     });
-    const parsed = JSON.parse(result.text) as IdeasPayload;
-    const ideas = parsed.ideas.slice(0, 10);
+    const ideas = parseIdeasProviderPayload(result.text);
     await enforceBudget({
       run,
       config,

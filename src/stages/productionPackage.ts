@@ -12,18 +12,13 @@ import { createLlmProvider } from "../providers/index.js";
 import { createPromptProvenance } from "../prompts/provenance.js";
 import { renderProductionPackagePrompt } from "../prompts/templates.js";
 import { sha256 } from "../utils/hash.js";
+import {
+  PackageProviderPayload,
+  parseProductionPackageProviderPayload,
+} from "./providerPayloads.js";
+import { productionPackageResponseFormat } from "./providerResponseFormats.js";
 import { createProductionPackageManifest } from "./productionPackageIntegrity.js";
 import { ProductionScene } from "./types.js";
-
-type PackageProviderPayload = {
-  popupCards: string[];
-  lowerThirds: string[];
-  youtube: {
-    title: string;
-    description: string;
-    tags: string[];
-  };
-};
 
 /**
  * Generates production assets from an approved script with script integrity validation and budget enforcement.
@@ -68,9 +63,11 @@ export async function generateProductionPackage(runId: string): Promise<void> {
     const prompt = await renderProductionPackagePrompt(script);
     const result = await provider.generateText({
       model: config.providers.llm.model,
+      maxTokens: config.providers.llm.maxOutputTokens.productionPackage,
+      responseFormat: productionPackageResponseFormat,
       prompt: prompt.text,
     });
-    const providerPayload = JSON.parse(result.text) as PackageProviderPayload;
+    const providerPayload = parseProductionPackageProviderPayload(result.text);
     const voiceover = cleanVoiceover(script);
     const scenes = buildScenes(voiceover);
     const subtitles = buildSrt(scenes);

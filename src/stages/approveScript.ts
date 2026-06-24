@@ -16,7 +16,10 @@ import { requireState } from "../safeguards/approvalGuard.js";
  * @param runId - The ID of the run containing the script to approve
  * @returns The approval record for the script
  */
-export async function approveScript(runId: string): Promise<ApprovalRecord> {
+export async function approveScript(
+  runId: string,
+  options: { acknowledgeWarnings?: boolean } = {},
+): Promise<ApprovalRecord> {
   let run = await loadRun(runId);
   await requireState(run, "SCRIPT_REVIEWED", "approve-script");
   assertTransition(run.state, "SCRIPT_APPROVED");
@@ -32,7 +35,12 @@ export async function approveScript(runId: string): Promise<ApprovalRecord> {
   const script = await readFile(artifactPath(run.runId, "script.md"), "utf8");
   const review = JSON.parse(
     await readFile(artifactPath(run.runId, "reviews/script_review.json"), "utf8"),
-  ) as { scriptHash?: string };
+  ) as {
+    scriptHash?: string;
+    blockerCount?: number;
+    warningCount?: number;
+    warnings?: Array<{ code?: string; severity?: string }>;
+  };
   const scriptHash = sha256(script);
   if (!review.scriptHash || review.scriptHash !== scriptHash) {
     await appendLedgerEvent({
@@ -44,6 +52,35 @@ export async function approveScript(runId: string): Promise<ApprovalRecord> {
     });
     throw new SafeExitError("Cannot approve script because it changed after review.");
   }
+  const blockerCount =
+    review.blockerCount ??
+    review.warnings?.filter((warning) => warning.severity === "blocker").length ??
+    0;
+  if (blockerCount > 0) {
+    await appendLedgerEvent({
+      runId: run.runId,
+      type: "GUARD_BLOCKED",
+      stage: "approve-script",
+      message: "Script review has blocking findings.",
+      data: { blockerCount },
+    });
+    throw new SafeExitError("Cannot approve script with blocking review findings.");
+  }
+  const warningCodes = reviewWarningCodes(review.warnings);
+  const nonBlockingWarningCount =
+    (review.warningCount ?? review.warnings?.length ?? 0) - blockerCount;
+  if (nonBlockingWarningCount > 0 && !options.acknowledgeWarnings) {
+    await appendLedgerEvent({
+      runId: run.runId,
+      type: "GUARD_BLOCKED",
+      stage: "approve-script",
+      message: "Script review warnings require explicit acknowledgement.",
+      data: { warningCount: nonBlockingWarningCount, warningCodes },
+    });
+    throw new SafeExitError(
+      "Cannot approve script with review warnings unless --acknowledge-warnings is passed.",
+    );
+  }
   const approval: ApprovalRecord = {
     approvalId: createId("approval"),
     runId: run.runId,
@@ -51,7 +88,8 @@ export async function approveScript(runId: string): Promise<ApprovalRecord> {
     approvedRef: scriptHash,
     previousState: run.state,
     nextState: "SCRIPT_APPROVED",
-    approvingCommand: "producer approve script",
+    approvingCommand: `producer approve script${options.acknowledgeWarnings ? " --acknowledge-warnings" : ""}`,
+    ...(nonBlockingWarningCount > 0 ? { acknowledgedWarnings: warningCodes } : {}),
     createdAt: nowIso(),
   };
   run = {
@@ -67,4 +105,10 @@ export async function approveScript(runId: string): Promise<ApprovalRecord> {
   });
   await setRunState(run, "SCRIPT_APPROVED", "approve-script");
   return approval;
+}
+
+function reviewWarningCodes(warnings: Array<{ code?: string; severity?: string }> = []): string[] {
+  return warnings
+    .filter((warning) => warning.severity !== "blocker")
+    .map((warning, index) => warning.code ?? `warning_${index + 1}`);
 }

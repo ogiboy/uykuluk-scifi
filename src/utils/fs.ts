@@ -22,14 +22,22 @@ export async function writeTextFile(target: string, content: string): Promise<vo
   await writeFileAtomic(target, content);
 }
 
-export async function writeFileAtomic(target: string, content: string): Promise<void> {
+export async function writeBinaryFile(target: string, content: Uint8Array): Promise<void> {
+  await writeFileAtomic(target, content);
+}
+
+export async function writeFileAtomic(target: string, content: string | Uint8Array): Promise<void> {
   await ensureDir(path.dirname(target));
   const temporaryPath = path.join(
     path.dirname(target),
     `.${path.basename(target)}.${process.pid}.${randomUUID()}.tmp`,
   );
   try {
-    await writeFile(temporaryPath, content, "utf8");
+    if (typeof content === "string") {
+      await writeFile(temporaryPath, content, "utf8");
+    } else {
+      await writeFile(temporaryPath, content);
+    }
     await rename(temporaryPath, target);
   } catch (error) {
     await rm(temporaryPath, { force: true }).catch(() => undefined);
