@@ -29,7 +29,7 @@ const excludedPrefixes = [
 
 const patterns = [
   ["AWS access key", /\bAKIA[0-9A-Z]{16}\b/g],
-  ["GitHub token", /\bgh[pousr]_[A-Za-z0-9_]{36,}\b/g],
+  ["GitHub token", /\bgh[pousr]_\w{36,}\b/g],
   ["OpenAI API key", /\bsk-[A-Za-z0-9]{32,}\b/g],
   ["JWT", /\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b/g],
   ["private key block", /-----BEGIN [A-Z ]*PRIVATE KEY-----/g],

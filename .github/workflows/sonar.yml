@@ -30,17 +30,17 @@ jobs:
 
       - name: Check out repository
         if: ${{ env.SONAR_TOKEN != '' }}
-        uses: actions/checkout@v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
         with:
           fetch-depth: 0
 
       - name: Set up pnpm
         if: ${{ env.SONAR_TOKEN != '' }}
-        uses: pnpm/action-setup@v6
+        uses: pnpm/action-setup@b0f76dfb45f55f8421693e4803ac7bb65143bd34
 
       - name: Set up Node
         if: ${{ env.SONAR_TOKEN != '' }}
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
         with:
           node-version: "22"
           cache: pnpm

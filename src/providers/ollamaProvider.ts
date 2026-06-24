@@ -73,7 +73,7 @@ export class OllamaProvider implements LlmProvider {
         ),
       );
       const available = installedModels.includes(this.defaultModel);
-      const visibleModels = installedModels.slice(0, 20);
+      const unavailableMessage = installedModelsMessage(this.defaultModel, installedModels);
       return {
         available,
         baseUrl,
@@ -81,9 +81,7 @@ export class OllamaProvider implements LlmProvider {
         installedModels,
         message: available
           ? `Ollama model ${this.defaultModel} is available at ${baseUrl}.`
-          : `Configured Ollama model ${this.defaultModel} is not installed. Installed models: ${
-              visibleModels.join(", ") || "none"
-            }${installedModels.length > visibleModels.length ? ", …" : ""}.`,
+          : unavailableMessage,
       };
     } catch (error) {
       return {
@@ -143,6 +141,13 @@ export class OllamaProvider implements LlmProvider {
       raw,
     };
   }
+}
+
+function installedModelsMessage(defaultModel: string, installedModels: string[]): string {
+  const visibleModels = installedModels.slice(0, 20);
+  const modelList = visibleModels.join(", ") || "none";
+  const overflowSuffix = installedModels.length > visibleModels.length ? ", …" : "";
+  return `Configured Ollama model ${defaultModel} is not installed. Installed models: ${modelList}${overflowSuffix}.`;
 }
 
 function applyThinkingMode(prompt: string, thinkingMode: "default" | "think" | "no_think"): string {

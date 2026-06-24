@@ -52,14 +52,7 @@ export async function runDoctor(): Promise<DoctorReport> {
   const startedAt = Date.now();
   const checks: DoctorCheck[] = [];
   let config: ProducerConfig | undefined;
-  if (!(await projectConfigExists())) {
-    checks.push({
-      name: "project config",
-      status: "block",
-      message: "producer.config.json is missing. Run pnpm producer init.",
-    });
-    config = defaultConfig;
-  } else {
+  if (await projectConfigExists()) {
     try {
       config = await loadConfig();
       checks.push({
@@ -76,12 +69,22 @@ export async function runDoctor(): Promise<DoctorReport> {
         }`,
       });
     }
+  } else {
+    checks.push({
+      name: "project config",
+      status: "block",
+      message: "producer.config.json is missing. Run pnpm producer init.",
+    });
+    config = defaultConfig;
   }
 
-  checks.push(await providerCheck(config));
-  checks.push(await ttsProviderCheck(config));
-  checks.push(await assetCheck(config));
-  checks.push(publishDefaultsCheck(config));
+  const diagnosticChecks = [
+    await providerCheck(config),
+    await ttsProviderCheck(config),
+    await assetCheck(config),
+    publishDefaultsCheck(config),
+  ];
+  checks.push(...diagnosticChecks);
 
   const report: DoctorReport = {
     createdAt: nowIso(),
@@ -244,7 +247,7 @@ function renderDoctorMarkdown(report: DoctorReport): string {
     "",
     table(
       ["Check", "Status", "Message"],
-      report.checks.map((check) => [check.name, check.status, check.message.replace(/\|/g, "/")]),
+      report.checks.map((check) => [check.name, check.status, check.message.replaceAll("|", "/")]),
     ),
     "",
   ].join("\n");

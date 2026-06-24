@@ -63,9 +63,11 @@ export function reviewScriptContent(script: string): ScriptReviewWarning[] {
       message: "Title uses excessive clickbait framing; prefer specific, credible curiosity.",
     });
   }
-  const certaintyMatches =
-    script.match(/\b(kesin|kanıtlandı|kanitlandi|asla|mutlaka|tartışmasız|tartismasiz)\b/gi) ?? [];
-  if (certaintyMatches.length > 3) {
+  const certaintyMatchCount = countRegexMatches(
+    script,
+    /\b(kesin|kanıtlandı|kanitlandi|asla|mutlaka|tartışmasız|tartismasiz)\b/gi,
+  );
+  if (certaintyMatchCount > 3) {
     warnings.push({
       code: "misleading_certainty",
       severity: "warning",
@@ -73,11 +75,11 @@ export function reviewScriptContent(script: string): ScriptReviewWarning[] {
         "Script uses repeated certainty language; scientific speculation should stay cautious.",
     });
   }
-  const claimMatches =
-    script.match(
-      /\b(bilim|kanıt|kanit|araştırma|arastirma|gözlem|gozlem|veri|teori|hipotez)\b/gi,
-    ) ?? [];
-  if (claimMatches.length > 10) {
+  const scienceClaimCount = countRegexMatches(
+    script,
+    /\b(bilim|kanıt|kanit|araştırma|arastirma|gözlem|gozlem|veri|teori|hipotez)\b/gi,
+  );
+  if (scienceClaimCount > 10) {
     warnings.push({
       code: "claims_require_fact_check",
       severity: "warning",
@@ -102,7 +104,8 @@ export function reviewScriptContent(script: string): ScriptReviewWarning[] {
       message: "Script may be missing an outro or call to action.",
     });
   }
-  if (!introNarrationWindow(script).match(/\?|vardir|vardır|hayal|sessiz|uzak|bazi|bazı/i)) {
+  const introHookPattern = /\?|vardir|vardır|hayal|sessiz|uzak|bazi|bazı/i;
+  if (introHookPattern.exec(introNarrationWindow(script)) === null) {
     warnings.push({
       code: "missing_intro_hook",
       severity: "warning",
@@ -126,6 +129,14 @@ export function reviewScriptContent(script: string): ScriptReviewWarning[] {
   return warnings;
 }
 
+function countRegexMatches(text: string, pattern: RegExp): number {
+  let count = 0;
+  while (pattern.exec(text) !== null) {
+    count += 1;
+  }
+  return count;
+}
+
 function introNarrationWindow(script: string): string {
   return script
     .split("\n")
@@ -136,11 +147,11 @@ function introNarrationWindow(script: string): string {
 }
 
 function looksTruncated(script: string): boolean {
-  const lastLine = script
+  const nonEmptyLines = script
     .split("\n")
     .map((line) => line.trim())
-    .filter(Boolean)
-    .at(-1);
+    .filter(Boolean);
+  const lastLine = nonEmptyLines.at(-1);
   if (!lastLine) {
     return true;
   }
