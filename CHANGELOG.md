@@ -9,6 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
+_No unreleased changes yet._
+
+## v0.2.0 (2026-06-24)
+
 ### Added
 
 - Main-branch release workflow for Conventional Commit version planning, `package.json` updates,
