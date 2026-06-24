@@ -118,6 +118,10 @@
 - Studio run detail includes read-only artifact preview excerpts for scripts, reviews, production
   packages, render plans, contact sheets, evidence, readiness, and render manifests. Binary media is
   intentionally limited to metadata.
+- Manual analytics feedback foundation. `producer analytics import --file <path>` accepts
+  operator-provided CSV/JSON performance exports and writes ignored local
+  `analytics/performance.json` plus `analytics/performance_report.md`. `producer analytics report`
+  prints the current report. No YouTube API, upload, publish, or causal claim is introduced.
 - Roadmap and `.ai` guidance now include future Next.js Producer Studio, prompt editing, revision
   tracking, design direction, development preferences, versioning expectations, and Computer Use QA
   boundaries.
@@ -153,6 +157,8 @@ pnpm producer status --run <run_id> --json
 pnpm producer list-runs
 pnpm producer voice --run <run_id>
 pnpm producer render --run <run_id>
+pnpm producer analytics import --file <path>
+pnpm producer analytics report
 pnpm producer upload private --run <run_id>
 pnpm producer publish schedule --run <run_id>
 pnpm studio
@@ -206,8 +212,8 @@ Corepack/PATH before treating failures as product failures.
   subtitle burn-in, watermark overlay, and voiceover audio. More complete scene timing, popup card,
   waveform, intro/outro, and composition polish remain follow-up work.
 - Upload and publish are intentionally disabled scaffolds.
-- Manual analytics import/reporting is not implemented. Future analytics should start from
-  operator-provided CSV/JSON before any YouTube Analytics API integration.
+- Manual analytics import/reporting is local-only and operator-provided. Richer analytics
+  comparisons, Studio analytics views, and YouTube Analytics API integration are not implemented.
 - Run-path containment blocks pre-existing symbolic links. Hostile concurrent path replacement
   remains a local TOCTOU limitation because portable Node APIs do not expose directory-handle
   `openat` semantics.

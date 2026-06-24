@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { Command } from "commander";
+import { registerAnalyticsCommands } from "./cli/analyticsCommands.js";
 import { registerApprovalCommands } from "./cli/approvalCommands.js";
 import { registerRevisionCommands } from "./cli/revisionCommands.js";
 import { initProject } from "./config/config.js";
@@ -64,6 +65,7 @@ program
   );
 
 registerApprovalCommands(program, wrap);
+registerAnalyticsCommands(program, wrap);
 
 program
   .command("script")

@@ -18,6 +18,7 @@ Primary contracts:
   revision ledger events.
 - `src/costs/` owns cost event persistence, local budget calculations, reservation/settlement, and
   the internal adapter-bound execution contract for future nonzero provider calls.
+- `src/analytics/` owns local operator-provided performance imports and non-causal reporting.
 - `src/youtube/` currently owns disabled upload/publish scaffolds only.
 - `apps/studio/` owns the local Next.js operator shell. It should call typed service contracts and
   must not duplicate workflow state.
@@ -44,7 +45,8 @@ The next product phase should extend the existing CLI/core flow toward a local v
   pipeline timing; Piper remains an optional local binary/model-path adapter with ignored models;
 - FFmpeg render is owned by the workflow stages and runs only after render planning, exact render
   approval, voiceover evidence, production-package integrity, and local artifact checks;
-- analytics import/reporting should consume operator-provided files and link results back to runs.
+- analytics import/reporting consumes operator-provided CSV/JSON files, writes ignored local
+  analytics artifacts, and links records back to runs when `runId` is present.
 
 Render planning must not create a second workflow engine. It should reuse run state, artifact,
 ledger, approval, evidence, readiness, asset, and cost patterns already owned by the CLI/core.

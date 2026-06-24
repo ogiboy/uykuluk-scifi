@@ -88,6 +88,7 @@ agent-tracking state only; runtime code must not require it.
   optional Piper binary/model-path adapter.
 - Approval-gated local FFmpeg draft render that writes a review MP4 and manifest from the current
   render plan, voiceover audio, subtitles, background plate, and watermark.
+- Manual analytics import/report commands for operator-provided CSV/JSON performance exports.
 - Disabled private upload and public/scheduled publish placeholders.
 - UykulukSciFi visual assets under `assets/`.
 - `.ai/` operating contract for agents, workflows, design, QA, security, and roadmap state.
@@ -213,6 +214,19 @@ pnpm producer status --run <run_id>
 pnpm producer status --run <run_id> --json
 pnpm producer list-runs
 ```
+
+Manual analytics feedback:
+
+```bash
+pnpm producer analytics import --file performance.csv
+pnpm producer analytics report
+```
+
+Analytics imports accept operator-provided CSV or JSON records with fields such as `run_id`,
+`video_id`, `title`, `published_at`, `impressions`, `views`, `ctr`, `avg_view_duration_seconds`,
+`avg_percentage_viewed`, `subscribers_gained`, `likes`, `comments`, and `notes`. The importer writes
+ignored local artifacts under `analytics/`; it does not call YouTube APIs, upload media, publish
+content, or claim causality from performance changes.
 
 Do not edit `runs/<run_id>/script.md` directly. Use `producer revise script` before production
 packaging. Revisions are blocked after the production package exists. Each revision stores the old
@@ -430,7 +444,8 @@ Each run can write:
 - `ledger.jsonl`.
 
 Generated run directories are ignored except `runs/.gitkeep`. Generated project diagnostics under
-`diagnostics/` are also ignored.
+`diagnostics/` are also ignored. Manual analytics outputs under `analytics/` are ignored local
+operator data.
 
 ## Branch And Release Policy
 

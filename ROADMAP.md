@@ -110,17 +110,18 @@ Frontend constraints:
 
 ## Phase D - Monetization Feedback Loop
 
-Status: planned after local draft production works.
+Status: initial local CLI import/report foundation implemented; API integrations remain deferred.
 
 The product should eventually learn from channel performance, but manual import comes before API
 integrations.
 
 Minimum loop:
 
-- import operator-provided CSV/JSON performance data;
+- import operator-provided CSV/JSON performance data - implemented locally through
+  `producer analytics import`;
 - map performance records back to runs/videos;
 - summarize CTR, views, average view duration, retention notes, subscriber deltas, and qualitative
-  comments where provided;
+  comments where provided - implemented in `analytics/performance_report.md`;
 - produce “repeat / avoid / test next” recommendations for future ideas, titles, formats, and
   thumbnail directions.
 

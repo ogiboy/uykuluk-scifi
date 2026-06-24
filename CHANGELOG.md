@@ -30,6 +30,8 @@ future generated release notes can be inserted predictably.
 - Read-only Studio run index and run detail routes backed by local run/evidence/readiness summaries.
 - Read-only Studio artifact preview excerpts for review text/JSON artifacts, with binary draft
   render media limited to metadata.
+- `producer analytics import` and `producer analytics report` for local operator-provided CSV/JSON
+  performance feedback, with ignored dataset/report artifacts and non-causal summary guidance.
 - Basic type-safe `next-intl` foundation for English and Turkish Studio locales.
 - Unit and browser coverage for locale normalization and cookie-based document language.
 - Typed runtime loading for tracked idea, scriptwriter, and production-package prompt defaults.
