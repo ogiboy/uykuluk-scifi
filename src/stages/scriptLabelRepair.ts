@@ -38,11 +38,14 @@ export function repairScriptProductionLabels(text: string): {
   const variants = new Set<string>();
 
   for (const rule of scriptLabelRepairRules) {
-    repairedText = repairedText.replace(rule.pattern, (_match, prefix: string, variant: string) => {
-      count += 1;
-      variants.add(`${variant}${rule.variantSuffix}`);
-      return `${prefix}${rule.replacement}`;
-    });
+    repairedText = repairedText.replaceAll(
+      rule.pattern,
+      (_match, prefix: string, variant: string) => {
+        count += 1;
+        variants.add(`${variant}${rule.variantSuffix}`);
+        return `${prefix}${rule.replacement}`;
+      },
+    );
   }
 
   return {

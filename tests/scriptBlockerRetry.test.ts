@@ -34,6 +34,18 @@ describe("script blocker retry", () => {
     expect(JSON.stringify(sections)).not.toContain(repeatedSentence);
   });
 
+  it("uses the strict retry prompt when repairing rejected expansion chunks", async () => {
+    const sections = await generateScriptSectionsWithModel(
+      "mock-repeated-script-expansion-requires-strict-retry",
+    );
+    const retriedReceipt = sections.sections.find(
+      (section) => section.id === "hook" && section.pass === "expansion" && section.chunk === 1,
+    );
+
+    expect(sections.providerCallCount).toBe(17);
+    expect(retriedReceipt?.blockerRetry?.blockers).toContain("repeated_sentence_loop");
+  });
+
   it("retries one rejected continuation chunk with safe blocker evidence", async () => {
     const sections = await generateScriptSectionsWithModel(
       "mock-repeated-continuation-then-repair",

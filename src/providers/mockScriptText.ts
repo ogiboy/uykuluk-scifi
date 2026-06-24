@@ -1,54 +1,45 @@
 export function generateMockScriptSection(prompt: string, model: string): string {
   const sectionId = /Section id: (\w+)/.exec(prompt)?.[1];
   if (prompt.includes("Section Expansion Contract")) {
-    const expansionChunk = /Expansion chunk: (\d+)\/\d+/.exec(prompt)?.[1] ?? "1";
-    if (model === "mock-repeated-script-expansion-then-repair" && isFirstHookExpansion(prompt)) {
-      return repeatedExpansionLoopJson();
-    }
-    if (model === "mock-repeated-script-expansion") {
-      return repeatedExpansionLoopJson();
-    }
-    if (model === "mock-unaccented-script-labels") {
-      return unaccentedLabelExpansionJson(sectionId, Number(expansionChunk));
-    }
-    if (model === "mock-malformed-script-labels") {
-      return malformedLabelExpansionJson();
-    }
-    if (
-      model === "mock-short-script" ||
-      model === "mock-invalid-continuation-json" ||
-      model === "mock-repeated-continuation-then-repair"
-    ) {
-      return sectionJson([shortExpansionText(sectionId, Number(expansionChunk))]);
-    }
-    return generateExpandedMockScriptSection(sectionId, Number(expansionChunk));
+    return generateMockScriptExpansion(prompt, sectionId, model);
   }
-  if (sectionId === "hook") {
-    return sectionJson([
-      "Anlatıcı: Bazı gezegenler vardır; dışarıdan bakıldığında sadece sessizlik gibi görünür.",
-      "Görsel: Kalın buz kabuğu, uzak bir yıldızın soluk ışığını geri yansıtır.",
-      "Bu açılışta soru basittir: Sessizlik gerçekten boşluk mudur, yoksa dinlemeyi bilmediğimiz bir ritim mi saklar?",
-    ]);
+  return sectionJson(draftSectionText(sectionId));
+}
+
+function generateMockScriptExpansion(
+  prompt: string,
+  sectionId: string | undefined,
+  model: string,
+): string {
+  const expansionChunk = /Expansion chunk: (\d+)\/\d+/.exec(prompt)?.[1] ?? "1";
+  const chunkIndex = Number(expansionChunk);
+  if (shouldReturnRepeatedExpansion(prompt, model)) {
+    return repeatedExpansionLoopJson();
   }
-  if (sectionId === "context") {
-    return sectionJson([
-      "Anlatıcı: Bilim bize kesin hüküm değil, ölçülü olasılıklar verir.",
-      "Europa ve Enceladus gibi buzlu dünyalar, suyun ve gelgit ısınmasının beklenmedik yerlerde saklanabileceğini düşündürür.",
-      "Bu, yaşam kanıtı değildir; yalnızca doğru soruyu daha dikkatli sormak için bir nedendir.",
-    ]);
+  if (model === "mock-unaccented-script-labels") {
+    return unaccentedLabelExpansionJson(sectionId, chunkIndex);
   }
-  if (sectionId === "development") {
-    return sectionJson([
-      "Anlatıcı: Yalnız bir sonda, buzun altına gönderdiği düşük frekanslı yankılarda düzenli bir titreşim fark eder.",
-      "Görsel: Kamera çatlak buz çizgilerinden mavi karanlığa inerken, mineral bulutları ağır çekimde dağılır.",
-      "Ritim bir mesaj olmayabilir; jeolojik bir süreç, gelgit etkisi ya da cihaz hatası olabilir.",
-    ]);
+  if (model === "mock-malformed-script-labels") {
+    return malformedLabelExpansionJson();
   }
-  return sectionJson([
-    "Anlatıcı: Belki orada canlı yoktur; belki yalnızca kimya, basınç ve zaman vardır.",
-    "Ama bazen bilimkurgunun en güzel yanı kesin cevap vermek değil, doğru soruyu sakin bir sesle korumaktır.",
-    "Bu yolculuk hoşunuza gittiyse, UykulukSciFi'de bir sonraki sessiz gezegende yeniden buluşalım.",
-  ]);
+  if (shortExpansionModels.has(model)) {
+    return sectionJson([shortExpansionText(sectionId, chunkIndex)]);
+  }
+  return generateExpandedMockScriptSection(sectionId, chunkIndex);
+}
+
+function shouldReturnRepeatedExpansion(prompt: string, model: string): boolean {
+  if (model === "mock-repeated-script-expansion") {
+    return true;
+  }
+  if (model === "mock-repeated-script-expansion-then-repair") {
+    return isFirstHookExpansion(prompt);
+  }
+  return (
+    model === "mock-repeated-script-expansion-requires-strict-retry" &&
+    isFirstHookExpansion(prompt) &&
+    !prompt.includes("four fresh Turkish sentences")
+  );
 }
 
 function repeatedExpansionLoopJson(): string {
@@ -77,9 +68,35 @@ function malformedLabelExpansionJson(): string {
 }
 
 type MockScriptSectionId = "hook" | "context" | "development" | "outro";
+const shortExpansionModels: ReadonlySet<string> = new Set([
+  "mock-short-script",
+  "mock-invalid-continuation-json",
+  "mock-repeated-continuation-then-repair",
+]);
 
-export function generateMockScriptContinuation(prompt: string): string;
-export function generateMockScriptContinuation(prompt: string, model: string): string;
+const draftSectionTexts: Record<MockScriptSectionId, string[]> = {
+  context: [
+    "Anlatıcı: Bilim bize kesin hüküm değil, ölçülü olasılıklar verir.",
+    "Europa ve Enceladus gibi buzlu dünyalar, suyun ve gelgit ısınmasının beklenmedik yerlerde saklanabileceğini düşündürür.",
+    "Bu, yaşam kanıtı değildir; yalnızca doğru soruyu daha dikkatli sormak için bir nedendir.",
+  ],
+  development: [
+    "Anlatıcı: Yalnız bir sonda, buzun altına gönderdiği düşük frekanslı yankılarda düzenli bir titreşim fark eder.",
+    "Görsel: Kamera çatlak buz çizgilerinden mavi karanlığa inerken, mineral bulutları ağır çekimde dağılır.",
+    "Ritim bir mesaj olmayabilir; jeolojik bir süreç, gelgit etkisi ya da cihaz hatası olabilir.",
+  ],
+  hook: [
+    "Anlatıcı: Bazı gezegenler vardır; dışarıdan bakıldığında sadece sessizlik gibi görünür.",
+    "Görsel: Kalın buz kabuğu, uzak bir yıldızın soluk ışığını geri yansıtır.",
+    "Bu açılışta soru basittir: Sessizlik gerçekten boşluk mudur, yoksa dinlemeyi bilmediğimiz bir ritim mi saklar?",
+  ],
+  outro: [
+    "Anlatıcı: Belki orada canlı yoktur; belki yalnızca kimya, basınç ve zaman vardır.",
+    "Ama bazen bilimkurgunun en güzel yanı kesin cevap vermek değil, doğru soruyu sakin bir sesle korumaktır.",
+    "Bu yolculuk hoşunuza gittiyse, UykulukSciFi'de bir sonraki sessiz gezegende yeniden buluşalım.",
+  ],
+};
+
 export function generateMockScriptContinuation(prompt: string, model = ""): string {
   const chunkIndex = /Continuation chunk: (\d+)\/\d+/.exec(prompt)?.[1] ?? "1";
   if (
@@ -118,6 +135,13 @@ function generateExpandedMockScriptSection(
     );
   }
   return expandedSectionJson(sectionChunkText("outro", chunkIndex), "outro", chunkIndex);
+}
+
+function draftSectionText(sectionId: string | undefined): string[] {
+  if (sectionId === "hook" || sectionId === "context" || sectionId === "development") {
+    return draftSectionTexts[sectionId];
+  }
+  return draftSectionTexts.outro;
 }
 
 function shortExpansionText(sectionId: string | undefined, chunkIndex: number): string {

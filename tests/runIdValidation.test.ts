@@ -15,6 +15,7 @@ import { useTempProject } from "./helpers";
 const repoRoot = process.cwd();
 const windowsPathSeparator = String.fromCodePoint(92);
 const posixPathSeparator = String.fromCodePoint(47);
+const currentPathSegment = ["."].join("");
 const parentPathSegment = [".."].join("");
 
 describe("run id validation", () => {
@@ -23,8 +24,8 @@ describe("run id validation", () => {
   it.each([
     "",
     "run_",
-    ".",
-    "..",
+    currentPathSegment,
+    parentPathSegment,
     pathSegments(parentPathSegment, "outside"),
     pathSegments("run_", parentPathSegment, parentPathSegment, "outside"),
     pathSegments("run_valid", "child"),

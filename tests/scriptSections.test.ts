@@ -167,7 +167,12 @@ describe("sectional script generation", () => {
     expect(prompt).toContain('"text"');
     expect(expansionPrompt).toContain("Do not write the full script");
     expect(expansionPrompt).toContain("Expansion chunk: 1/3");
-    expect(expansionPrompt).toContain("1100 characters");
+    expect(expansionPrompt).toContain("80-110 Turkish words");
+    expect(expansionPrompt).toContain("Write exactly 4 complete Turkish sentences");
+    expect(expansionPrompt).toContain("Sentence plan:");
+    expect(expansionPrompt).toContain("Do not start two sentences with the same first four words");
+    expect(expansionPrompt).toContain("Avoid generic filler openers");
+    expect(expansionPrompt).toContain("900 characters");
     expect(expansionPrompt).toContain("Each sentence must add a new concrete beat");
     expect(expansionPrompt).toContain("replace repeated structures with new images or decisions");
     expect(expansionPrompt).toContain("Exact label checklist");

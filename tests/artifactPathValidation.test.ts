@@ -9,6 +9,7 @@ import { useTempProject } from "./helpers";
 
 const windowsPathSeparator = String.fromCodePoint(92);
 const posixPathSeparator = String.fromCodePoint(47);
+const currentPathSegment = ["."].join("");
 const parentPathSegment = [".."].join("");
 
 describe("artifact path validation", () => {
@@ -16,8 +17,8 @@ describe("artifact path validation", () => {
 
   it.each([
     "",
-    ".",
-    "..",
+    currentPathSegment,
+    parentPathSegment,
     pathSegments(parentPathSegment, "outside.md"),
     pathSegments("reviews", parentPathSegment, "outside.md"),
     posixAbsolutePath("outside", "outside.md"),

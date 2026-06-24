@@ -102,6 +102,7 @@ function renderScriptContentRetryPrompt(prompt: string, source: string, blockers
     `Rejected source: ${source}.`,
     `Safe blocker summary: ${blockers}.`,
     "Return a fresh valid response for the same contract.",
+    "Write exactly four fresh Turkish sentences with four distinct sentence openings.",
     "Use only exact Turkish production labels `Anlatıcı:` and `Görsel:`.",
     "Do not repeat sentence skeletons, metaphors, visual directions, or rejected structures.",
     "Return only the JSON shape requested above.",
