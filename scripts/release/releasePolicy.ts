@@ -46,8 +46,7 @@ type BuildReleasePlanInput = {
   latestTag: string | null;
 };
 
-const conventionalSubjectPattern =
-  /^(?<type>[a-z]+)(?:\((?<scope>[^)]+)\))?(?<breaking>!)?:\s+(?<description>\S.+)$/;
+const conventionalSubjectPattern = /^([a-z]+)(?:\(([^)]+)\))?(!)?:\s+(\S.+)$/;
 
 const legacyNonConventionalSubjects = new Map([
   [
@@ -75,21 +74,20 @@ const sectionByType: Record<ReleaseCommitType, string> = {
 
 export function parseConventionalSubject(commit: GitCommit): ParsedCommit | null {
   const match = conventionalSubjectPattern.exec(commit.subject);
-  const groups = match?.groups;
-  if (!groups) {
+  if (!match) {
     return null;
   }
 
-  const type = groups.type;
+  const [, type, scope, breaking, description] = match;
   if (!releaseCommitTypes.includes(type as ReleaseCommitType)) {
     return null;
   }
 
   return {
     ...commit,
-    breaking: groups.breaking === "!",
-    description: groups.description,
-    scope: groups.scope ?? null,
+    breaking: breaking === "!",
+    description,
+    scope: scope ?? null,
     type: type as ReleaseCommitType,
   };
 }
@@ -97,13 +95,18 @@ export function parseConventionalSubject(commit: GitCommit): ParsedCommit | null
 export function isReleaseCommit(commit: GitCommit): boolean {
   return commit.subject.startsWith("chore(release):");
 }
-
 export function isLegacyAllowed(commit: GitCommit): boolean {
   return legacyNonConventionalSubjects.get(commit.hash) === commit.subject;
 }
 
 export function isMergeCommit(commit: GitCommit): boolean {
-  return commit.parents.length > 1 || /^Merge [0-9a-f]{40} into [0-9a-f]{40}$/.test(commit.subject);
+  const subject = commit.subject;
+  return (
+    commit.parents.length > 1 ||
+    /^Merge pull request #\d+ from .+$/.test(subject) ||
+    /^Merge branch .+$/.test(subject) ||
+    /^Merge [0-9a-f]{40} into [0-9a-f]{40}$/.test(subject)
+  );
 }
 
 export function buildReleasePlan(input: BuildReleasePlanInput): ReleasePlan {

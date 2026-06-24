@@ -60,5 +60,6 @@
   "css.lint.universalSelector": "ignore",
   "tailwindCSS.experimental.configFile": {
     "apps/studio/src/app/globals.css": "apps/studio/src/**/*"
-  }
+  },
+  "editor.defaultFormatter": "esbenp.prettier-vscode"
 }

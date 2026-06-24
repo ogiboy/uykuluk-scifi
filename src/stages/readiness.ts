@@ -94,7 +94,7 @@ export async function runReadiness(
       "",
       table(
         ["Check", "Status", "Message"],
-        checks.map((check) => [check.name, check.status, check.message.replace(/\|/g, "/")]),
+        checks.map((check) => [check.name, check.status, check.message.replaceAll("|", "/")]),
       ),
       "",
       "## Warnings",

@@ -12,7 +12,7 @@ import {
 const repoRoot = process.cwd();
 const pnpm = process.env.PNPM_EXECUTABLE ?? "pnpm";
 const startedAt = new Date();
-const stamp = startedAt.toISOString().replace(/[-:]/g, "").replace(/\..+/, "").replace("T", "-");
+const stamp = startedAt.toISOString().replaceAll(/[-:]/g, "").replace(/\..+/, "").replace("T", "-");
 const reportDir = path.join(repoRoot, ".ai", "qa", "artifacts", `usage-smoke-${stamp}`);
 const tempRoot = await mkdtemp(path.join(tmpdir(), "uykulukscifi-usage-"));
 const workdir = path.join(tempRoot, "project");

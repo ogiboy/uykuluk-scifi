@@ -20,16 +20,16 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up pnpm
-        uses: pnpm/action-setup@v6
+        uses: pnpm/action-setup@b0f76dfb45f55f8421693e4803ac7bb65143bd34
 
       - name: Set up Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
         with:
           node-version: "22"
           cache: pnpm
@@ -76,4 +76,4 @@ jobs:
           fi
           git commit -m "chore(release): ${tag}"
           git tag -a "$tag" -m "chore(release): ${tag}"
-          git push origin "HEAD:${GITHUB_REF_NAME}" "refs/tags/${tag}"
+          git push --atomic origin "HEAD:${GITHUB_REF_NAME}" "refs/tags/${tag}"

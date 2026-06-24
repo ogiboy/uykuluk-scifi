@@ -8,8 +8,8 @@ import { SafeExitError } from "./core/errors.js";
 import { listRuns, loadRun } from "./core/runStore.js";
 import { runDoctor } from "./diagnostics/doctor.js";
 import { publishSchedulePlaceholder, uploadPrivatePlaceholder } from "./stages/disabled.js";
-import { generateEvidenceBundle } from "./stages/evidence.js";
 import { estimateCost } from "./stages/estimate.js";
+import { generateEvidenceBundle } from "./stages/evidence.js";
 import { runIdeas } from "./stages/ideas.js";
 import { generateProductionPackage } from "./stages/productionPackage.js";
 import { runReadiness } from "./stages/readiness.js";
@@ -234,7 +234,9 @@ function wrap<T extends unknown[]>(handler: (...args: T) => Promise<void>): (...
   };
 }
 
-program.parseAsync(process.argv).catch((error: unknown) => {
+try {
+  await program.parseAsync(process.argv);
+} catch (error: unknown) {
   console.error(error instanceof Error ? error.message : String(error));
   process.exitCode = 1;
-});
+}

@@ -20,6 +20,8 @@ describe("release policy", () => {
         commit("b".repeat(40), "feat(render): add render plan"),
         commit("c".repeat(40), "chore(release): v0.1.1"),
         commit("d".repeat(40), "Merge pull request #1", ["p1", "p2"]),
+        commit("g".repeat(40), "Merge pull request #19 from ogiboy/feat/example", []),
+        commit("h".repeat(40), "Merge branch 'main' into fix/example", []),
         commit(
           "e".repeat(40),
           "Merge cac2786e3d91f707d82c60de92bc114fcae92154 into 29aa2650a0319e0831f53197b2f5bfcc869566d1",
@@ -35,7 +37,7 @@ describe("release policy", () => {
     expect(plan.bump).toBe("minor");
     expect(plan.nextVersion).toBe("0.2.0");
     expect(plan.invalidCommits).toEqual([]);
-    expect(plan.ignoredCommits).toHaveLength(4);
+    expect(plan.ignoredCommits).toHaveLength(6);
   });
 
   it("reports invalid release-range commit subjects", () => {

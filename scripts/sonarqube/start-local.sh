@@ -26,11 +26,10 @@ echo "Local SonarQube is starting at ${SONAR_HOST_URL}"
 
 deadline=$((SECONDS + START_TIMEOUT_SECONDS))
 while ((SECONDS < deadline)); do
-  if response="$(curl -fsS "${SONAR_HOST_URL}/api/system/status" 2>/dev/null)"; then
-    if grep -q '"status":"UP"' <<<"${response}"; then
-      echo "Local SonarQube is ready at ${SONAR_HOST_URL}"
-      exit 0
-    fi
+  if response="$(curl -fsS "${SONAR_HOST_URL}/api/system/status" 2>/dev/null)" &&
+    grep -q '"status":"UP"' <<<"${response}"; then
+    echo "Local SonarQube is ready at ${SONAR_HOST_URL}"
+    exit 0
   fi
 
   container_state="$(docker inspect -f '{{.State.Status}}' "${SONAR_CONTAINER_NAME}" 2>/dev/null || true)"
