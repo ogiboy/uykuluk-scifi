@@ -4,9 +4,10 @@ import process from "node:process";
 import { buildReleasePlan, type GitCommit, type ReleasePlan } from "./releasePolicy.js";
 
 const stableTagPattern = /^v\d+\.\d+\.\d+$/;
+const gitExecutable = "/usr/bin/git";
 
 export function readGitCommits(range: string): GitCommit[] {
-  const output = execFileSync("git", ["log", "--format=%H%x1f%P%x1f%s", range], {
+  const output = execFileSync(gitExecutable, ["log", "--format=%H%x1f%P%x1f%s", range], {
     encoding: "utf8",
     stdio: ["ignore", "pipe", "ignore"],
   }).trim();
@@ -24,7 +25,7 @@ export function readGitCommits(range: string): GitCommit[] {
 export function latestStableTag(): string | null {
   let output: string;
   try {
-    output = execFileSync("git", ["tag", "--merged", "HEAD", "--sort=-v:refname"], {
+    output = execFileSync(gitExecutable, ["tag", "--merged", "HEAD", "--sort=-v:refname"], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "ignore"],
     }).trim();
@@ -38,7 +39,7 @@ export function latestStableTag(): string | null {
 export function currentPackageVersion(): string {
   const pkg = JSON.parse(readFileSync("package.json", "utf8")) as { version?: unknown };
   if (typeof pkg.version !== "string") {
-    throw new Error("package.json must contain a string version.");
+    throw new TypeError("package.json must contain a string version.");
   }
   return pkg.version;
 }

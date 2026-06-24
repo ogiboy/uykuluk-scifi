@@ -207,5 +207,8 @@ function roundDuration(seconds: number): number {
 }
 
 function escapeFilterPath(value: string): string {
-  return value.replace(/\\/g, "\\\\").replace(/:/g, "\\:").replace(/'/g, "\\'");
+  return value
+    .replaceAll("\\", String.raw`\\`)
+    .replaceAll(":", String.raw`\:`)
+    .replaceAll("'", String.raw`\'`);
 }

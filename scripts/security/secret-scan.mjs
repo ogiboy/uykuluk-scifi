@@ -27,6 +27,9 @@ const excludedPrefixes = [
   "runs/",
 ];
 
+const gitExecutable = "/usr/bin/git";
+
+/** @type {Array<[string, RegExp]>} */
 const patterns = [
   ["AWS access key", /\bAKIA[0-9A-Z]{16}\b/g],
   ["GitHub token", /\bgh[pousr]_\w{36,}\b/g],
@@ -37,9 +40,13 @@ const patterns = [
 ];
 
 function trackedFiles() {
-  const output = execFileSync("git", ["ls-files", "--cached", "--others", "--exclude-standard"], {
-    encoding: "utf8",
-  });
+  const output = execFileSync(
+    gitExecutable,
+    ["ls-files", "--cached", "--others", "--exclude-standard"],
+    {
+      encoding: "utf8",
+    },
+  );
   return output
     .split("\n")
     .filter(Boolean)

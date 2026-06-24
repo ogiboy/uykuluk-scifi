@@ -21,7 +21,7 @@ async function assertMissing(relativePath) {
   try {
     await stat(relativePath);
   } catch (error) {
-    if (error && error.code === "ENOENT") {
+    if (error?.code === "ENOENT") {
       return;
     }
     throw error;

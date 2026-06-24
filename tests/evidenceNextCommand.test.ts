@@ -42,9 +42,14 @@ describe("evidence next command", () => {
 
   it("does not recommend script approval while review blockers remain", () => {
     expect(
-      evidenceNextCommand("SCRIPT_REVIEWED", null, false, {
-        scriptReviewBlockerCount: 1,
-        scriptReviewWarningCount: 1,
+      evidenceNextCommand({
+        costQuote: null,
+        hasUnresolvedCostReservation: false,
+        scriptReview: {
+          scriptReviewBlockerCount: 1,
+          scriptReviewWarningCount: 1,
+        },
+        state: "SCRIPT_REVIEWED",
       }),
     ).not.toContain("approve script");
   });

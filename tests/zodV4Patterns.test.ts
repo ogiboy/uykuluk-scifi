@@ -2,12 +2,40 @@ import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 
+const deprecatedChainedStringMethods = [
+  "base64",
+  "base64url",
+  "cidrv4",
+  "cidrv6",
+  "cuid",
+  "cuid2",
+  "date",
+  "datetime",
+  "duration",
+  "e164",
+  "email",
+  "emoji",
+  "guid",
+  "ipv4",
+  "ipv6",
+  "jwt",
+  "ksuid",
+  "nanoid",
+  "time",
+  "ulid",
+  "url",
+  "uuid",
+  "uuidv4",
+  "uuidv6",
+  "uuidv7",
+  "xid",
+] as const;
+
 const deprecatedPatterns = [
-  {
-    name: "deprecated chained string format",
-    pattern:
-      /z\.string\(\)\.(?:email|url|jwt|emoji|guid|uuid|uuidv4|uuidv6|uuidv7|nanoid|cuid|cuid2|ulid|base64|base64url|xid|ksuid|ipv4|ipv6|cidrv4|cidrv6|e164|datetime|date|time|duration)\s*\(/g,
-  },
+  ...deprecatedChainedStringMethods.map((method) => ({
+    name: `deprecated chained string format: ${method}`,
+    pattern: new RegExp(`z\\.string\\(\\)\\.${method}\\s*\\(`, "g"),
+  })),
   { name: "deprecated object strict method", pattern: /\.strict\(\)/g },
   { name: "deprecated object passthrough method", pattern: /\.passthrough\(\)/g },
   { name: "redundant object strip method", pattern: /\.strip\(\)/g },
@@ -48,5 +76,5 @@ async function sourceFiles(directory: string): Promise<string[]> {
       return entry.isFile() && target.endsWith(".ts") ? [target] : [];
     }),
   );
-  return files.flat().sort();
+  return files.flat().sort((left, right) => left.localeCompare(right));
 }

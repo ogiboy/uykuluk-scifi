@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { RunSummaryTable } from "@/components/runs/RunSummaryTable";
 import { listStudioRuns } from "@/lib/runSummaries";
+import Link from "next/link";
 
 export default async function RunsPage() {
   const runs = await listStudioRuns();
