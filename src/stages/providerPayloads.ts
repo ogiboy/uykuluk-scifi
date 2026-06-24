@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { SafeExitError } from "../core/errors.js";
 import { parseProviderJson } from "./providerJson.js";
+import { looksLikeTurkishOperatorText } from "./providerLanguageQuality.js";
 import { VideoIdea } from "./types.js";
 
 export { stripProviderThinking } from "./providerJson.js";
@@ -167,7 +168,7 @@ function normalizeDurationText(value: string | number): string {
     return `${value} dakika`;
   }
   const trimmed = value.trim();
-  const minutesMatch = trimmed.match(/^(\d+(?:[.,]\d+)?)\s*(?:minutes?|mins?|min)\.?$/i);
+  const minutesMatch = /^(\d+(?:[.,]\d+)?)\s*(?:minutes?|mins?|min)\.?$/i.exec(trimmed);
   if (minutesMatch) {
     return `${minutesMatch[1]} dakika`;
   }
@@ -220,21 +221,4 @@ function validateIdeaQuality(
     };
   }
   return undefined;
-}
-
-function looksLikeTurkishOperatorText(text: string): boolean {
-  const lower = text.toLocaleLowerCase("tr");
-  const turkishMarkers = countMatches(
-    lower,
-    /\b(?:bir|ve|ile|için|icin|uygun|dakika|sakin|sinematik|bilim|bilimkurgu|bilimsel|olasılık|olasilik|gezegen|uyku|rüya|ruya|insan|hikaye|öykü|oyku|anlatı|anlati|keşif|kesif|evren|kozmik|neden|nasıl|nasil|karanlık|karanlik|sessiz|yavaş|yavas|uzak|dünya|dunya|zaman|ihtiyat|temkinli|merak|kanal|tonuna)\b/g,
-  );
-  const englishMarkers = countMatches(
-    lower,
-    /\b(?:the|with|and|during|minutes?|documentary|narrative|researcher|team|scientists|discovers|colony|cosmic|human|sleep|patterns|identity|environment|exploration|visualizations?|broadcast|memory|brain)\b/g,
-  );
-  return turkishMarkers >= 3 && englishMarkers <= turkishMarkers;
-}
-
-function countMatches(text: string, pattern: RegExp): number {
-  return [...text.matchAll(pattern)].length;
 }

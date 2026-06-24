@@ -12,41 +12,63 @@ export function parseCsvRows(input: string): Record<string, string>[] {
   );
 }
 
+type CsvParserState = {
+  current: string;
+  inQuotes: boolean;
+  row: string[];
+  rows: string[][];
+};
+
 function parseCsv(input: string): string[][] {
-  const rows: string[][] = [];
-  let current = "";
-  let row: string[] = [];
-  let inQuotes = false;
-  for (let index = 0; index < input.length; index += 1) {
-    const char = input[index];
-    const next = input[index + 1];
-    if (char === '"' && inQuotes && next === '"') {
-      current += '"';
-      index += 1;
-      continue;
-    }
-    if (char === '"') {
-      inQuotes = !inQuotes;
-      continue;
-    }
-    if (char === "," && !inQuotes) {
-      row.push(current);
-      current = "";
-      continue;
-    }
-    if ((char === "\n" || char === "\r") && !inQuotes) {
-      if (char === "\r" && next === "\n") {
-        index += 1;
-      }
-      row.push(current);
-      rows.push(row);
-      current = "";
-      row = [];
-      continue;
-    }
-    current += char;
+  const state: CsvParserState = {
+    current: "",
+    inQuotes: false,
+    row: [],
+    rows: [],
+  };
+  let index = 0;
+  while (index < input.length) {
+    index = readCsvCharacter(input, index, state);
   }
-  row.push(current);
-  rows.push(row);
-  return rows;
+  finishCell(state);
+  finishRow(state);
+  return state.rows;
+}
+
+function readCsvCharacter(input: string, index: number, state: CsvParserState): number {
+  const char = input[index];
+  const next = input[index + 1];
+  if (char === '"' && state.inQuotes && next === '"') {
+    state.current += '"';
+    return index + 2;
+  }
+  if (char === '"') {
+    state.inQuotes = !state.inQuotes;
+    return index + 1;
+  }
+  if (char === "," && !state.inQuotes) {
+    finishCell(state);
+    return index + 1;
+  }
+  if (isRowBreak(char) && !state.inQuotes) {
+    finishCell(state);
+    finishRow(state);
+    return char === "\r" && next === "\n" ? index + 2 : index + 1;
+  }
+  state.current += char;
+  return index + 1;
+}
+
+function finishCell(state: CsvParserState): void {
+  state.row.push(state.current);
+  state.current = "";
+}
+
+function finishRow(state: CsvParserState): void {
+  state.rows.push(state.row);
+  state.row = [];
+}
+
+function isRowBreak(char: string): boolean {
+  return char === "\n" || char === "\r";
 }

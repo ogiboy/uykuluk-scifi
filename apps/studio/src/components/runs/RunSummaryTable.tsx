@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { StudioRunSummary } from "@/lib/runSummaries";
 
-export function RunSummaryTable({ runs }: { runs: StudioRunSummary[] }) {
+export function RunSummaryTable({ runs }: Readonly<{ runs: StudioRunSummary[] }>) {
   if (runs.length === 0) {
     return (
       <section className='panel' aria-labelledby='runs-empty-heading'>

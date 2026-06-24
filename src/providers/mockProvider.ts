@@ -123,12 +123,10 @@ function generateMockText(prompt: string, model = ""): string {
 }
 
 function generateMockScriptSection(prompt: string): string {
-  const sectionId = prompt.match(/Section id: (\w+)/)?.[1];
+  const sectionId = /Section id: (\w+)/.exec(prompt)?.[1];
   if (prompt.includes("Section Expansion Contract")) {
-    return generateExpandedMockScriptSection(
-      sectionId,
-      Number(prompt.match(/Expansion chunk: (\d+)\/\d+/)?.[1] ?? "1"),
-    );
+    const expansionChunk = /Expansion chunk: (\d+)\/\d+/.exec(prompt)?.[1] ?? "1";
+    return generateExpandedMockScriptSection(sectionId, Number(expansionChunk));
   }
   if (sectionId === "hook") {
     return sectionJson([

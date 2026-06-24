@@ -125,7 +125,7 @@ function cleanVoiceover(script: string): string {
     .split("\n")
     .filter((line) => !line.startsWith("#"))
     .join("\n")
-    .replace(/\n{3,}/g, "\n\n")
+    .replaceAll(/\n{3,}/g, "\n\n")
     .trim();
 }
 

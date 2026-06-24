@@ -1,3 +1,4 @@
+import path from "node:path";
 import {
   defaultPiperModel,
   normalizeModelDir,
@@ -33,7 +34,7 @@ describe("Piper setup helper", () => {
       "models/piper/tr_TR/fahrettin-medium",
     );
     expect(() => normalizeModelDir("../outside")).toThrow(/project root/i);
-    expect(() => normalizeModelDir("/tmp/piper")).toThrow(/relative path/i);
+    expect(() => normalizeModelDir(path.join(path.sep, "tmp", "piper"))).toThrow(/relative path/i);
     expect(() => normalizeModelDir("assets/piper")).toThrow(/models/i);
   });
 });

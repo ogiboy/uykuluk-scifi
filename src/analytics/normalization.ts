@@ -53,8 +53,11 @@ export function normalizeAnalyticsRecord(input: unknown): AnalyticsRecord {
       normalized[key] = parseNumber(rawValue);
     } else if (RATE_FIELDS.has(key)) {
       normalized[key] = parseRate(rawValue);
-    } else if (rawValue !== "" && rawValue !== undefined && rawValue !== null) {
-      normalized[key] = String(rawValue).trim();
+    } else {
+      const text = normalizeScalarText(rawValue);
+      if (text) {
+        normalized[key] = text;
+      }
     }
   }
   return analyticsRecordSchema.parse(dropUndefined(normalized));
@@ -81,13 +84,26 @@ function parseRate(value: unknown): number | undefined {
   if (value === "" || value === undefined || value === null) {
     return undefined;
   }
-  const text = String(value).trim();
+  const text = normalizeScalarText(value);
+  if (!text) {
+    return undefined;
+  }
   const percentage = text.endsWith("%");
   const parsed = parseNumber(percentage ? text.slice(0, -1) : text);
   if (parsed === undefined) {
     return undefined;
   }
   return percentage || parsed > 1 ? parsed / 100 : parsed;
+}
+
+function normalizeScalarText(value: unknown): string | undefined {
+  if (typeof value === "string") {
+    return value.trim();
+  }
+  if (typeof value === "number" || typeof value === "boolean" || typeof value === "bigint") {
+    return value.toString().trim();
+  }
+  return undefined;
 }
 
 function dropUndefined<T extends Record<string, unknown>>(value: T): T {

@@ -56,7 +56,7 @@ describe("sectional script generation", () => {
             ? `${section.id}:${section.pass}:${section.chunk}`
             : `${section.id}:${section.pass}`,
         )
-        .sort(),
+        .sort((left, right) => left.localeCompare(right)),
     ).toEqual([
       "context:draft",
       "context:expansion:1",

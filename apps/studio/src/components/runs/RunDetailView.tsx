@@ -1,6 +1,6 @@
 import type { StudioRunDetail } from "@/lib/runSummaries";
 
-export function RunDetailView({ run }: { run: StudioRunDetail }) {
+export function RunDetailView({ run }: Readonly<{ run: StudioRunDetail }>) {
   return (
     <div className='run-detail-grid'>
       <section className='panel' aria-labelledby='run-overview-heading'>
@@ -20,13 +20,7 @@ export function RunDetailView({ run }: { run: StudioRunDetail }) {
           </div>
           <div>
             <dt>Readiness</dt>
-            <dd>
-              {run.readinessPassed === true
-                ? "passed"
-                : run.readinessPassed === false
-                  ? "blocked"
-                  : "not generated"}
-            </dd>
+            <dd>{formatReadiness(run.readinessPassed)}</dd>
           </div>
         </dl>
       </section>
@@ -91,4 +85,14 @@ export function RunDetailView({ run }: { run: StudioRunDetail }) {
       </section>
     </div>
   );
+}
+
+function formatReadiness(value: boolean | null): string {
+  if (value === true) {
+    return "passed";
+  }
+  if (value === false) {
+    return "blocked";
+  }
+  return "not generated";
 }

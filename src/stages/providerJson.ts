@@ -1,5 +1,11 @@
 import { SafeExitError } from "../core/errors.js";
 
+type JsonScanState = {
+  depth: number;
+  escaped: boolean;
+  inString: boolean;
+};
+
 export function parseProviderJson(text: string, label: string): unknown {
   const normalized = stripProviderThinking(text);
   const jsonText = stripJsonFence(normalized);
@@ -26,33 +32,84 @@ export function stripProviderThinking(text: string): string {
 }
 
 function stripJsonFence(text: string): string {
-  const match = text.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);
-  return match ? match[1].trim() : text;
+  const trimmed = text.trim();
+  if (!trimmed.startsWith("```") || !trimmed.endsWith("```")) {
+    return text;
+  }
+  const firstLineEnd = trimmed.indexOf("\n");
+  if (firstLineEnd < 0) {
+    return text;
+  }
+  const fenceInfo = trimmed.slice(3, firstLineEnd).trim().toLocaleLowerCase("en-US");
+  if (fenceInfo !== "" && fenceInfo !== "json") {
+    return text;
+  }
+  return trimmed.slice(firstLineEnd + 1, -3).trim();
 }
 
 function extractFirstJsonPayload(text: string): string | undefined {
+  const start = firstJsonPayloadStart(text);
+  if (start < 0) {
+    return undefined;
+  }
+  const end = firstJsonPayloadEnd(text, start);
+  return end ? text.slice(start, end) : undefined;
+}
+
+function firstJsonPayloadStart(text: string): number {
   const objectStart = text.indexOf("{");
   const arrayStart = text.indexOf("[");
   const starts = [objectStart, arrayStart].filter((index) => index >= 0);
-  const start = starts.length ? Math.min(...starts) : -1;
-  if (start < 0) return undefined;
+  return starts.length ? Math.min(...starts) : -1;
+}
+
+function firstJsonPayloadEnd(text: string, start: number): number | undefined {
   const opener = text[start];
   const closer = opener === "{" ? "}" : "]";
-  let depth = 0;
-  let inString = false;
-  let escaped = false;
+  const state: JsonScanState = { depth: 0, escaped: false, inString: false };
   for (let index = start; index < text.length; index += 1) {
     const char = text[index];
-    if (inString) {
-      escaped = char === "\\" && !escaped;
-      if (char === '"' && !escaped) inString = false;
-      if (char !== "\\") escaped = false;
+    if (state.inString) {
+      scanJsonStringCharacter(state, char);
       continue;
     }
-    if (char === '"') inString = true;
-    if (char === opener) depth += 1;
-    if (char === closer) depth -= 1;
-    if (depth === 0) return text.slice(start, index + 1);
+    scanJsonContainerCharacter(state, char, opener, closer);
+    if (state.depth === 0) {
+      return index + 1;
+    }
   }
   return undefined;
+}
+
+function scanJsonStringCharacter(state: JsonScanState, char: string): void {
+  if (state.escaped) {
+    state.escaped = false;
+    return;
+  }
+  if (char === "\\") {
+    state.escaped = true;
+    return;
+  }
+  if (char === '"') {
+    state.inString = false;
+  }
+}
+
+function scanJsonContainerCharacter(
+  state: JsonScanState,
+  char: string,
+  opener: string,
+  closer: string,
+): void {
+  if (char === '"') {
+    state.inString = true;
+    return;
+  }
+  if (char === opener) {
+    state.depth += 1;
+    return;
+  }
+  if (char === closer) {
+    state.depth -= 1;
+  }
 }

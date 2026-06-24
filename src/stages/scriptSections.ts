@@ -2,6 +2,7 @@ import { z } from "zod";
 import { GenerateTextResult } from "../providers/llmProvider.js";
 import { SafeExitError } from "../core/errors.js";
 import { parseProviderJson } from "./providerJson.js";
+import { stripLeadingMarkdownHeading } from "./scriptMarkdown.js";
 import { sha256 } from "../utils/hash.js";
 
 const scriptSectionPayloadSchema = z.strictObject({
@@ -237,13 +238,6 @@ export function assembleScriptFromSections(
       stripLeadingMarkdownHeading(section.text),
     ]),
   ].join("\n");
-}
-
-function stripLeadingMarkdownHeading(text: string): string {
-  return text
-    .trim()
-    .replace(/^#{1,3}\s+.+(?:\n+|$)/, "")
-    .trim();
 }
 
 function trimToLastCompleteSentence(text: string): string {

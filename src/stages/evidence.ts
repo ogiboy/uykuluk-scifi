@@ -84,16 +84,16 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
       (item) => item.startsWith("revisions/") && item.endsWith("/revision.json"),
     ),
     blockedActions,
-    nextRecommendedCommand: evidenceNextCommand(
-      run.state,
+    nextRecommendedCommand: evidenceNextCommand({
       costQuote,
-      unresolvedCostReservations.length > 0,
-      scriptReview,
-      renderPlan,
-      voiceoverAudio,
       draftRender,
-      config.providers.tts.enabled,
-    ),
+      hasUnresolvedCostReservation: unresolvedCostReservations.length > 0,
+      renderPlan,
+      scriptReview,
+      state: run.state,
+      ttsEnabled: config.providers.tts.enabled,
+      voiceoverAudio,
+    }),
     ledgerEventCount: ledger.length,
   };
   run = await writeRunJson(run, "evidence", "evidence_bundle.json", bundle);

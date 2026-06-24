@@ -1,13 +1,13 @@
-import Link from "next/link";
-import { notFound } from "next/navigation";
 import { RunDetailView } from "@/components/runs/RunDetailView";
 import { getStudioRunDetail } from "@/lib/runSummaries";
+import Link from "next/link";
+import { notFound } from "next/navigation";
 
 type RunDetailPageProps = {
   params: Promise<{ runId: string }>;
 };
 
-export default async function RunDetailPage({ params }: RunDetailPageProps) {
+export default async function RunDetailPage({ params }: Readonly<RunDetailPageProps>) {
   const { runId } = await params;
   const run = await getStudioRunDetail(runId);
   if (!run) {

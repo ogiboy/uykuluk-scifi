@@ -10,6 +10,10 @@ export function evidenceBlockedActions(
   draftRender: DraftRenderEvidence,
   unresolvedCostReservationCount: number,
 ): string[] {
+  const ttsDisabled = config.providers.tts.enabled === false;
+  const imageGenerationDisabled = config.providers.imageGeneration.enabled === false;
+  const privateUploadDisabled = config.providers.youtube.allowPrivateUpload === false;
+  const publicPublishDisabled = config.providers.youtube.allowPublicPublish === false;
   return [
     renderPlan.status === "missing"
       ? "Render plan not generated; run pnpm producer render-plan --run <run_id> before TTS/render work."
@@ -23,16 +27,12 @@ export function evidenceBlockedActions(
     draftRender.status === "block"
       ? `Draft render evidence is blocked: ${draftRender.message}`
       : undefined,
-    !config.providers.tts.enabled ? "TTS disabled until configured and approved." : undefined,
-    !config.providers.imageGeneration.enabled
+    ttsDisabled ? "TTS disabled until configured and approved." : undefined,
+    imageGenerationDisabled
       ? "Image/video generation disabled until configured and approved."
       : undefined,
-    !config.providers.youtube.allowPrivateUpload
-      ? "Private YouTube upload disabled by default."
-      : undefined,
-    !config.providers.youtube.allowPublicPublish
-      ? "Public/scheduled publish disabled by default."
-      : undefined,
+    privateUploadDisabled ? "Private YouTube upload disabled by default." : undefined,
+    publicPublishDisabled ? "Public/scheduled publish disabled by default." : undefined,
     unresolvedCostReservationCount > 0
       ? `${unresolvedCostReservationCount} cost reservation outcome(s) remain active or uncertain; internal reconciliation is required.`
       : undefined,

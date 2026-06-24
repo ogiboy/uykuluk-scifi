@@ -106,10 +106,9 @@ describe("reserved provider execution recovery", () => {
     ]);
 
     expect(execute).toHaveBeenCalledTimes(1);
-    expect(results.map((result) => result.status).sort()).toEqual([
-      "completed",
-      "reconciliation-required",
-    ]);
+    expect(
+      results.map((result) => result.status).sort((left, right) => left.localeCompare(right)),
+    ).toEqual(["completed", "reconciliation-required"]);
   });
 
   it("projects execution state and safe provider request evidence", async () => {

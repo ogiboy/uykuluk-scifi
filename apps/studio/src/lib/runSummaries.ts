@@ -137,7 +137,7 @@ function summarizeRun(
 
 async function readRunRecord(root: string, runId: string): Promise<RunRecord | null> {
   const record = await readOptionalJson<RunRecord>(root, runId, "state.json");
-  if (!record || record.runId !== runId || !record.state) {
+  if (record?.runId !== runId || !record.state) {
     return null;
   }
   return record;
