@@ -129,6 +129,18 @@ agent-tracking state only; runtime code must not require it.
 
 - Mock mode is the default.
 - Script generation requires explicit idea approval.
+- Script generation uses bounded section calls and can add up to two bounded continuation passes
+  when a local model draft remains below the long-form review floor; continuation receipts are
+  persisted with prompt/content hashes.
+- Local model continuations are JSON-first, with a bounded raw Turkish fallback for models that
+  ignore the JSON wrapper but still return complete, labeled continuation text.
+- Script generation/review blocks malformed production labels and repeated sentence loops instead of
+  allowing a long but low-quality local draft to advance.
+- Script section and continuation content blockers get one bounded retry using only safe blocker
+  summaries and already accepted context; rejected raw provider text is discarded, while hashes,
+  token estimates, duration, and retry evidence are recorded on the accepted receipt.
+- Known local-model production label variants such as `Anlatici:` and `Gorsel:` are repaired only at
+  bounded label prefixes and recorded in section receipts; unrelated malformed labels still block.
 - Script review and approval are bound to the exact `script.md` SHA-256 digest.
 - Script approval requires `--acknowledge-warnings` when the review contains non-blocking warnings.
 - Script review Markdown shows the next safe approval command or blocker remediation guidance.
@@ -147,6 +159,10 @@ agent-tracking state only; runtime code must not require it.
   events, or persistence; absolute paths, dot segments, backslashes, and malformed segments block.
 - Generated ideas, scripts, and production packages render product runtime prompt defaults from
   `prompts/defaults/` and record prompt key, source path, and hash provenance.
+- Idea generation retries up to two bounded repair attempts with parser validation feedback when a
+  local provider returns a malformed or weak idea slate. Rejected raw outputs are not persisted;
+  `ideas.json` records repair metadata and the ledger records each retry warning. A third invalid
+  response still fails closed without idea artifacts.
 - Idea, script, and production-package generation re-check existing per-video, daily, and weekly
   budgets, using the stage pricing estimate, before calling a provider or writing generated
   artifacts.

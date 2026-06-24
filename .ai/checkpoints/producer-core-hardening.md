@@ -17,6 +17,13 @@ coherent, tested slices until the safe core and its evidence contracts are genui
 
 ## Current State
 
+- Branch/worktree on 2026-06-24: `fix/studio-ide-diagnostics` at
+  `/Users/ogiboy/.codex/worktrees/894d/uykuluk-scifi`.
+- Current worktree is green but uncommitted because this sandbox cannot write the shared git index
+  lock under `/Users/ogiboy/Documents/uykuluk-scifi/.git/worktrees/uykuluk-scifi1/index.lock`.
+- Active product slice moved from safe-core-only work into local production-loop hardening: bounded
+  script continuation, local-provider fail-closed guards, Sonar/IDE quality cleanup, and live Ollama
+  QA evidence.
 - Branch/worktree: `feat/core-reserved-provider-execution` at
   `/Users/ogiboy/.codex/worktrees/894d/uykuluk-scifi`.
 - Base: `7bd5801`, the merge of the completed script approval/revision hardening work.
@@ -118,6 +125,52 @@ coherent, tested slices until the safe core and its evidence contracts are genui
   `pnpm qa:usage`, `pnpm version:plan`, `pnpm security:dependencies`, `pnpm release:check`, and
   `git diff --check`.
 - Latest ignored usage report: `.ai/qa/artifacts/usage-smoke-20260623-131633/qa-report.md`.
+- Current full gates on 2026-06-24 pass: `pnpm check` with 235/235 tests and Studio production
+  build, `pnpm qa:usage`, `pnpm version:plan`, `pnpm security:dependencies`, and local `pnpm sonar`
+  with Quality Gate `OK` (`new_coverage=81.8`, `new_violations=0`).
+- Live Ollama qwen3:8b `think` QA in `/private/tmp/uykuluk-live-ollama-think-Ye7tTz` passed
+  `producer doctor`, then exposed duplicated idea premises. The duplicate-idea parser guard was
+  added by strict TDD and the repeat live `ideas` run failed closed before artifact advancement with
+  `Invalid ideas provider response: ideas.6.premise: Ideas must be meaningfully distinct.`
+- Follow-up live idea QA after prompt tuning: `/private/tmp/uykuluk-live-ollama-ideas-smq4GF`
+  produced eight ideas but remained weak; `/private/tmp/uykuluk-live-ollama-ideas3-BHWNsi` failed
+  closed on a common `UykulukSciFi` typo; after deterministic brand typo normalization,
+  `/private/tmp/uykuluk-live-ollama-ideas4-b02dQ6` failed closed on duplicate titles. New guards
+  cover common brand typo normalization, repeated generic title motifs, and repeated premise frames.
+- Latest ignored usage report: `.ai/qa/artifacts/usage-smoke-20260624-090515/qa-report.md`.
+- Current targeted verification after bounded idea retry/repair: `pnpm lint`, `pnpm typecheck`,
+  `pnpm format:check`, focused provider/workflow tests, full `pnpm test` with 41/41 files and
+  241/241 tests, and `pnpm qa:modularity` all pass. The new regression coverage proves one repair
+  retry can recover from invalid local-model ideas, records repair evidence, and still fails closed
+  without artifacts if the repair response remains invalid.
+- Live Ollama qwen3:8b `think` retry smoke in `/private/tmp/uykuluk-live-ollama-repair-chgzu4`
+  passed `producer doctor` and exercised the new retry path. The first response failed on
+  `ideas.3.premise: Ideas reuse a repeated premise frame`; the repair response failed on
+  `ideas.3.title: Repeated title motif "yıldız" weakens idea diversity`; the run remained `NEW`,
+  `ideas.json` was not written, and the ideas ledger contains one retry warning plus the final
+  error.
+- Current full gates on 2026-06-24 after SonarLint cleanup and the second bounded idea-repair
+  attempt pass: targeted Vitest 86/86, `pnpm check` with 41/41 test files and 243/243 tests, Studio
+  production build, `pnpm qa:usage`, `pnpm version:plan`, `pnpm security:dependencies`,
+  `git diff --check`, and local `pnpm sonar:local`. Local Sonar Quality Gate is `OK`
+  (`new_coverage=82.1`, `new_duplicated_lines_density=0.48799`, `new_violations=0`,
+  `OPEN_ISSUES=0`). The scan log is the ignored local artifact
+  `.ai/qa/artifacts/sonar/sonar-npm.log`.
+- Live Ollama qwen3:8b QA after forced repair slots:
+  `/private/tmp/uykuluk-live-ollama-two-repair-wqJuwT` proved the two-attempt loop fails closed
+  without ideas when all repairs remain invalid;
+  `/private/tmp/uykuluk-live-ollama-forced-slots-BpoQih` proved one repair can recover to
+  `IDEAS_GENERATED`; subsequent manual review found repeated sentences, malformed brand fragments,
+  copied English lane terms, and duplicated `fit` copy, so new idea-quality guards were added.
+- Latest live Ollama qwen3:8b QA path: `/private/tmp/uykuluk-live-ollama-fit-guard-e5QSfl`.
+  `producer doctor` passed, ideas generated after two repair warnings, and a temp QA approval of
+  `idea_003` exercised script generation in both `no_think` and `think`. Both script attempts failed
+  closed without `script.md`. `no_think` hit `repeated_sentence_loop`; the first `think` attempt
+  reached continuation and hit `Invalid script continuation provider response: expected JSON`. After
+  adding bounded malformed `"text"` wrapper recovery for local-model continuation payloads, the
+  latest `think` retry no longer stopped at `expected JSON` and failed closed on
+  `repeated_sentence_loop`. The run stayed at `IDEA_APPROVED`, and
+  `diagnostics/script_generation_failure.json` contains safe provider/mode/state diagnostics.
 
 ## Decisions
 
@@ -128,12 +181,80 @@ coherent, tested slices until the safe core and its evidence contracts are genui
 - Paid execution remains disabled until the first adapter uses reservation as its only provider-call
   path and proves failure/timeout behavior.
 
+## Latest Verification
+
+- `pnpm check` passes with 44 test files and 261 tests.
+- `pnpm qa:usage`, `pnpm version:plan`, and `pnpm security:dependencies` pass; latest usage smoke
+  report is `.ai/qa/artifacts/usage-smoke-20260624-120510/qa-report.md`.
+- `pnpm sonar:local` submits successfully; local Quality Gate is `OK` with `new_violations=0`,
+  `new_coverage=83.0`, `new_duplicated_lines_density=0.4661`, and unresolved issue count `0`.
+- Script expansion prompts now pass previous chunks from the same section into the next expansion
+  call; targeted regression coverage verifies the prompt includes an "already written" section so
+  local models have explicit anti-repetition context.
+- Script blocker diagnostics now include section/pass/chunk context for provider text that fails
+  content review, while continuing to omit raw provider output.
+- Live qwen3:8b `think` retry after these diagnostics stayed fail-closed without `script.md`, and
+  now reports
+  `Invalid script section expansion chunk 1 provider response for development: blocking findings: malformed_production_label.`
+- Exact production-label discipline is now stricter: prompts include a checklist that permits only
+  `Anlatıcı:` and `Görsel:`, and content guards reject unaccented labels such as `Anlatici:` and
+  `Gorsel:`.
+- Live qwen3:8b `think` retry after exact-label tightening stayed fail-closed without `script.md`
+  and reported
+  `Invalid script section expansion chunk 1 provider response for context: blocking findings: malformed_production_label.`
+  Prompt-only label discipline is therefore insufficient for this model; the next design choice is
+  strict regeneration versus an auditable bounded label-repair step.
+- Bounded label repair is now implemented for known local-model variants and records count/variant
+  evidence in `script.sections.json` receipts without persisting raw provider output. Unrelated
+  malformed labels remain blockers.
+- Live Ollama qwen3:8b `no_think` QA on 2026-06-24 in
+  `/private/tmp/uykuluk-live-ollama-current-nFMiuN` passed `producer doctor`, generated eight ideas,
+  recorded explicit approval for `idea_001`, and then exercised repeated script retries against the
+  same `IDEA_APPROVED` run. The first retry failed closed at
+  `Invalid script continuation chunk 1 provider response: expected JSON`; broader bounded malformed
+  `"text"` wrapper recovery fixed that class in targeted regression coverage and moved the live
+  failure to content quality blockers. The next retry failed on `outro` expansion chunk 3 with
+  `repeated_sentence_loop`; after stricter anti-loop prompt context, the latest retry failed closed
+  on `development` expansion chunk 1 with `malformed_production_label`. The run stayed
+  `IDEA_APPROVED`, no `script.md` was written, and `diagnostics/script_generation_failure.json`
+  contains safe provider/mode/state diagnostics.
+- Script continuation parsing now has regression coverage for raw Turkish continuation text, fenced
+  raw text, malformed `"text"` wrappers, trailing commas, missing closing quotes, and short external
+  notes. Script section expansion prompts now explicitly prohibit repeated sentence skeletons,
+  metaphors, and visual directions across draft and previous chunks.
+- Malformed production-label blockers now carry safe diagnostic categories (`labelFamily`,
+  `labelIssue`) in warning details and formatted script failure messages without persisting raw
+  provider labels. Regression coverage proves unknown related labels are classified without leaking
+  the original label text.
+- A later live retry against the same `/private/tmp/uykuluk-live-ollama-current-nFMiuN` run after
+  this diagnostics change again stayed fail-closed without `script.md`; the failure moved to
+  assembled-script review with `repeated_sentence_loop`, confirming qwen3 output remains
+  nondeterministic and production quality still needs prompt/label/repetition tuning.
+- Repeated sentence-loop blockers now also carry safe diagnostic categories (`repeatCount`,
+  `sentenceFingerprint`) in warning details and formatted script failure messages without persisting
+  repeated provider text. A follow-up live retry against the same run stayed fail-closed and
+  reported `repeated_sentence_loop(repeatCount=3;sentenceFingerprint=d425f4180b4005fa)` while
+  remaining `IDEA_APPROVED` with no `script.md`.
+- Script section and continuation content blockers now get one bounded retry. The retry prompt uses
+  only the safe blocker summary and accepted context, not the rejected raw provider output. Accepted
+  receipts persist `blockerRetry` evidence with rejected-attempt prompt/content hashes, token
+  estimates, and duration; repeated invalid output still fails closed without `script.md`.
+- Live qwen3:8b `no_think` QA after this retry slice used
+  `/private/tmp/uykuluk-live-ollama-current-nFMiuN` and still failed closed without `script.md`. The
+  latest retry reached `outro` expansion chunk 3 and reported
+  `repeated_sentence_loop(repeatCount=3;sentenceFingerprint=be3048d09737d3ab) after 1 retry`. State
+  stayed `IDEA_APPROVED`; diagnostics and ledger did not contain raw provider text.
+- Commit is still blocked by sandbox git-index permissions:
+  `/Users/ogiboy/Documents/uykuluk-scifi/.git/worktrees/uykuluk-scifi1/index.lock` cannot be created
+  from this worktree.
+
 ## Remaining Work
 
-1. Complete full quality, usage, release, dependency, and diff-scoped security gates for the
-   reserved-provider execution contract.
-2. Commit and push the green execution-contract slice.
-3. Re-audit the next safe-core candidate without enabling paid or publishing execution.
+1. Commit the current green local-provider quality/continuation/Studio/Sonar/two-attempt
+   retry-repair slice once git index write permission is available.
+2. Continue qwen3 prompt/label/repetition hardening. Current live ideas can pass parser after repair
+   but remain weak for production approval, and real `no_think` script retries still fail closed on
+   malformed production labels or assembled repeated sentence loops.
 
 ## Blockers And Risks
 
@@ -147,3 +268,8 @@ coherent, tested slices until the safe core and its evidence contracts are genui
   `openat` semantics.
 - Production-package manifests provide consistency, not authenticity; cryptographic tamper evidence
   remains separate roadmap work.
+- Current sandbox cannot stage or commit because the common worktree git index is outside the
+  writable root. Safe fallback is to preserve the dirty worktree and avoid claiming a committed
+  slice until the user or host grants git write access.
+- qwen3:8b remains useful for fail-closed local QA but is not yet producing production-ready ideas
+  reliably; prompt tuning is still required before approving another live idea.

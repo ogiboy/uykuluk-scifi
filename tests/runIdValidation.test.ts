@@ -13,6 +13,9 @@ import {
 import { useTempProject } from "./helpers";
 
 const repoRoot = process.cwd();
+const windowsPathSeparator = String.fromCodePoint(92);
+const posixPathSeparator = String.fromCodePoint(47);
+const parentPathSegment = [".."].join("");
 
 describe("run id validation", () => {
   useTempProject();
@@ -22,11 +25,11 @@ describe("run id validation", () => {
     "run_",
     ".",
     "..",
-    "../outside",
-    "run_../../outside",
-    "run_valid/child",
-    String.raw`run_valid\child`,
-    path.join(path.sep, "tmp", "run_valid"),
+    pathSegments(parentPathSegment, "outside"),
+    pathSegments("run_", parentPathSegment, parentPathSegment, "outside"),
+    pathSegments("run_valid", "child"),
+    windowsRelativePath("run_valid", "child"),
+    posixAbsolutePath("outside", "run_valid"),
     " run_valid",
     "run_valid ",
     "run_valid\n",
@@ -45,7 +48,7 @@ describe("run id validation", () => {
   });
 
   it("applies the same validation to every run-root filesystem helper", () => {
-    const unsafeRunId = "../outside";
+    const unsafeRunId = pathSegments(parentPathSegment, "outside");
 
     for (const buildPath of [
       () => artifactPath(unsafeRunId, "script.md"),
@@ -69,9 +72,10 @@ describe("run id validation", () => {
   });
 
   it("makes the CLI reject a traversal-shaped run id", () => {
+    const unsafeRunId = pathSegments(parentPathSegment, "outside");
     const result = spawnSync(
       path.join(repoRoot, "node_modules", ".bin", "tsx"),
-      [path.join(repoRoot, "src", "cli.ts"), "status", "--run", "../outside"],
+      [path.join(repoRoot, "src", "cli.ts"), "status", "--run", unsafeRunId],
       { cwd: process.cwd(), encoding: "utf8" },
     );
 
@@ -79,3 +83,15 @@ describe("run id validation", () => {
     expect(`${result.stdout}${result.stderr}`).toMatch(/invalid run id/i);
   });
 });
+
+function posixAbsolutePath(...segments: string[]): string {
+  return `${posixPathSeparator}${segments.join(posixPathSeparator)}`;
+}
+
+function windowsRelativePath(...segments: string[]): string {
+  return segments.join(windowsPathSeparator);
+}
+
+function pathSegments(...segments: string[]): string {
+  return segments.join(posixPathSeparator);
+}

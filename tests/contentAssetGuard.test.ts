@@ -116,4 +116,113 @@ describe("content and asset safeguards", () => {
       ]),
     );
   });
+
+  it("blocks malformed Turkish production labels from local model output", () => {
+    const warnings = reviewScriptContent(
+      [
+        "# Uykuluk Yıldızları",
+        "",
+        "Bazı uzak dünyalar vardır; bilimsel olasılıkları sakin ve ihtiyatlı biçimde düşünürüz.",
+        "Anlatyıcı: Bu satır local modelin bozduğu bir üretim etiketidir.",
+        "",
+        "UykulukSciFi'de yeniden buluşalım.",
+      ].join("\n"),
+    );
+
+    expect(warnings).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: "malformed_production_label",
+          details: {
+            labelFamily: "narration",
+            labelIssue: "misspelled_variant",
+          },
+          severity: "blocker",
+        }),
+      ]),
+    );
+  });
+
+  it("blocks unaccented production labels because exact Turkish labels are required", () => {
+    const warnings = reviewScriptContent(
+      [
+        "# Uykuluk Yıldızları",
+        "",
+        "Anlatici: Bu satır aksansız bir üretim etiketidir.",
+        "Gorsel: Bu satır da aksansız bir görsel etiketidir.",
+        "",
+        "UykulukSciFi'de yeniden buluşalım.",
+      ].join("\n"),
+    );
+
+    expect(warnings).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: "malformed_production_label",
+          details: {
+            labelFamily: "narration",
+            labelIssue: "unaccented_variant",
+          },
+          severity: "blocker",
+        }),
+      ]),
+    );
+  });
+
+  it("classifies unknown related production labels without storing raw label text", () => {
+    const warnings = reviewScriptContent(
+      [
+        "# Uykuluk Yıldızları",
+        "",
+        "Görüntü: Bu satır modele yakın ama onaylı olmayan bir görsel etiket kullandırır.",
+        "",
+        "UykulukSciFi'de yeniden buluşalım.",
+      ].join("\n"),
+    );
+
+    expect(warnings).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: "malformed_production_label",
+          details: {
+            labelFamily: "visual",
+            labelIssue: "unknown_related_label",
+          },
+          severity: "blocker",
+        }),
+      ]),
+    );
+    expect(JSON.stringify(warnings)).not.toContain("Görüntü");
+  });
+
+  it("blocks repeated sentence loops from local model output", () => {
+    const repeated =
+      "Anlatıcı: Bu kaybolma, bilim insanlarının yeni teoriler geliştirmesini zorunlu kılıyor.";
+    const warnings = reviewScriptContent(
+      [
+        "# Uykuluk Yıldızları",
+        "",
+        "Bazı uzak dünyalar vardır; bilimsel olasılıkları sakin ve ihtiyatlı biçimde düşünürüz.",
+        repeated,
+        repeated,
+        repeated,
+        "",
+        "UykulukSciFi'de yeniden buluşalım.",
+      ].join("\n"),
+    );
+
+    expect(warnings).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: "repeated_sentence_loop",
+          details: {
+            repeatCount: "3",
+            sentenceFingerprint: expect.stringMatching(/^[a-f0-9]{16}$/),
+          },
+          severity: "blocker",
+        }),
+      ]),
+    );
+    expect(JSON.stringify(warnings)).not.toContain(repeated);
+  });
 });

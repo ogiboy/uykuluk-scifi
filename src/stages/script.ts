@@ -4,7 +4,6 @@ import { artifactPath, writeRunJson, writeRunText } from "../core/artifacts.js";
 import { appendLedgerEvent } from "../core/ledger.js";
 import { loadRun, setRunState } from "../core/runStore.js";
 import { assertTransition } from "../core/transitions.js";
-import { SafeExitError } from "../core/errors.js";
 import { defaultStagePricing } from "../costs/pricing.js";
 import { enforceBudget } from "../safeguards/budgetGuard.js";
 import { reviewScriptContent } from "../safeguards/contentGuard.js";
@@ -12,30 +11,24 @@ import { requireApproval, requireState } from "../safeguards/approvalGuard.js";
 import { createLlmProvider } from "../providers/index.js";
 import { createPromptProvenance } from "../prompts/provenance.js";
 import { renderScriptPrompt } from "../prompts/templates.js";
-import { stripProviderThinking } from "./providerPayloads.js";
 import { persistScriptGenerationFailure } from "./scriptFailureDiagnostics.js";
+import { scriptContentBlockerError } from "./scriptContentRetry.js";
+import { applyLongFormContinuations } from "./scriptContinuation.js";
+import { extractClaims, extractVisualBeats } from "./scriptMetaExtractors.js";
 import {
   assembleScriptFromSections,
-  createScriptSectionReceipt,
-  parseScriptSectionExpansionProviderPayload,
-  parseScriptSectionProviderPayload,
-  renderScriptSectionExpansionPrompt,
-  renderScriptSectionPrompt,
-  sectionExpansionTokenCap,
   scriptSectionExpansionChunks,
-  scriptSectionExpansionResponseFormat,
-  scriptSectionResponseFormat,
   scriptSectionPlans,
-  sectionTokenCap,
 } from "./scriptSections.js";
+import {
+  generateScriptSections,
+  receiptDurationMs,
+  receiptInputTokens,
+  receiptOutputTokens,
+  sectionProviderCallCount,
+} from "./scriptSectionGeneration.js";
 import { ScriptMeta, VideoIdea } from "./types.js";
 
-/**
- * Generates a Turkish video script from an approved video idea.
- *
- * @param runId - The ID of the run containing the approved idea
- * @returns Script metadata including word count, estimated duration, claims requiring fact-checking, and visual beat suggestions.
- */
 export async function generateScript(runId: string): Promise<ScriptMeta> {
   const config = await loadConfig();
   let run = await loadRun(runId);
@@ -61,70 +54,25 @@ export async function generateScript(runId: string): Promise<ScriptMeta> {
     });
     const provider = createLlmProvider(config);
     const prompt = await renderScriptPrompt(JSON.stringify(idea));
-    const sectionCap = sectionTokenCap(config.providers.llm.maxOutputTokens.script);
-    const expansionCap = sectionExpansionTokenCap(config.providers.llm.maxOutputTokens.script);
-    const sectionOutputs = [];
-    const sectionReceipts = [];
-    const promptTexts = [];
-    for (const section of scriptSectionPlans) {
-      const sectionPrompt = renderScriptSectionPrompt(prompt.text, section);
-      promptTexts.push(sectionPrompt);
-      const draftResult = await provider.generateText({
-        model: config.providers.llm.model,
-        temperature: 0.6,
-        maxTokens: sectionCap,
-        responseFormat: scriptSectionResponseFormat,
-        prompt: sectionPrompt,
-      });
-      const draft = parseSectionProviderPayload(
-        draftResult.text,
-        parseScriptSectionProviderPayload,
-        section.id,
-        "draft",
-      );
-      assertNoScriptBlockers(draft);
-      sectionReceipts.push(
-        createScriptSectionReceipt(section, "draft", sectionPrompt, draft, draftResult),
-      );
-      const expandedChunks = [];
-      for (const chunk of scriptSectionExpansionChunks) {
-        const expansionPrompt = renderScriptSectionExpansionPrompt(
-          prompt.text,
-          section,
-          draft,
-          chunk,
-        );
-        promptTexts.push(expansionPrompt);
-        const expansionResult = await provider.generateText({
-          model: config.providers.llm.model,
-          temperature: 0.4,
-          maxTokens: expansionCap,
-          responseFormat: scriptSectionExpansionResponseFormat,
-          prompt: expansionPrompt,
-        });
-        const expanded = parseSectionProviderPayload(
-          expansionResult.text,
-          parseScriptSectionExpansionProviderPayload,
-          section.id,
-          `expansion chunk ${chunk.index}`,
-        );
-        assertNoScriptBlockers(expanded);
-        expandedChunks.push(expanded);
-        sectionReceipts.push(
-          createScriptSectionReceipt(
-            section,
-            "expansion",
-            expansionPrompt,
-            expanded,
-            expansionResult,
-            chunk.index,
-          ),
-        );
-      }
-      sectionOutputs.push({ heading: section.heading, text: expandedChunks.join("\n\n") });
-    }
+    const { promptTexts, sectionOutputs, sectionReceipts } = await generateScriptSections({
+      basePrompt: prompt.text,
+      config,
+      provider,
+    });
+    await applyLongFormContinuations({
+      basePrompt: prompt.text,
+      config,
+      provider,
+      promptTexts,
+      sectionOutputs,
+      sectionReceipts,
+      title: idea.title,
+    });
     const script = assembleScriptFromSections(idea.title, sectionOutputs);
-    assertNoScriptBlockers(script);
+    const assembledBlockers = reviewBlockers(script);
+    if (assembledBlockers.length > 0) {
+      throw scriptContentBlockerError("assembled script provider response", assembledBlockers);
+    }
     const wordCount = script.trim().split(/\s+/).filter(Boolean).length;
     const meta: ScriptMeta = {
       estimatedDuration: `${Math.max(1, Math.round(wordCount / 135))}-${Math.max(2, Math.round(wordCount / 115))} dakika`,
@@ -135,12 +83,12 @@ export async function generateScript(runId: string): Promise<ScriptMeta> {
       provider: sectionReceipts[0]?.provider ?? "unknown",
       model: sectionReceipts[0]?.model ?? config.providers.llm.model,
       inputTokensApprox: sumOptionalNumbers(
-        sectionReceipts.map((receipt) => receipt.inputTokensApprox),
+        sectionReceipts.map((receipt) => receiptInputTokens(receipt)),
       ),
       outputTokensApprox: sumOptionalNumbers(
-        sectionReceipts.map((receipt) => receipt.outputTokensApprox),
+        sectionReceipts.map((receipt) => receiptOutputTokens(receipt)),
       ),
-      durationMs: sectionReceipts.reduce((sum, receipt) => sum + receipt.durationMs, 0),
+      durationMs: sectionReceipts.reduce((sum, receipt) => sum + receiptDurationMs(receipt), 0),
       sectionCount: scriptSectionPlans.length,
       prompt: createPromptProvenance(
         prompt.key,
@@ -164,7 +112,7 @@ export async function generateScript(runId: string): Promise<ScriptMeta> {
     run = await writeRunJson(run, "script", "script.sections.json", {
       sectionCount: scriptSectionPlans.length,
       expansionChunkCount: scriptSectionExpansionChunks.length,
-      providerCallCount: sectionReceipts.length,
+      providerCallCount: sectionProviderCallCount(sectionReceipts),
       sections: sectionReceipts,
     });
     run = await writeRunJson(run, "script", "script.meta.json", meta);
@@ -182,59 +130,12 @@ export async function generateScript(runId: string): Promise<ScriptMeta> {
   }
 }
 
-function assertNoScriptBlockers(script: string): void {
-  const blockerCodes = reviewScriptContent(script)
-    .filter((warning) => warning.severity === "blocker")
-    .map((warning) => warning.code);
-  if (blockerCodes.length > 0) {
-    throw new SafeExitError(
-      `Invalid script provider response: blocking findings: ${blockerCodes.join(", ")}.`,
-    );
-  }
-}
-
-function parseSectionProviderPayload(
-  text: string,
-  parser: (text: string) => string,
-  sectionId: string,
-  pass: string,
-): string {
-  try {
-    return stripProviderThinking(parser(text));
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    throw new SafeExitError(
-      `Invalid script section ${pass} provider response for ${sectionId}: ${stripScriptSectionErrorPrefix(
-        message,
-      )}`,
-    );
-  }
-}
-
-function stripScriptSectionErrorPrefix(message: string): string {
-  return message.replace(/^Invalid script section provider response: /, "");
-}
-
 function sumOptionalNumbers(values: Array<number | undefined>): number | undefined {
   return values.every((value): value is number => typeof value === "number")
     ? values.reduce((sum, value) => sum + value, 0)
     : undefined;
 }
 
-function extractClaims(script: string): string[] {
-  return script
-    .split(/[.!?]\s+/)
-    .filter((sentence) =>
-      /\b(Europa|Enceladus|okyanus|gelgit|bilim|kanıt|kanit|gözlem|gozlem)\b/i.test(sentence),
-    )
-    .slice(0, 8);
-}
-
-function extractVisualBeats(script: string): string[] {
-  return script
-    .split("\n")
-    .filter((line) =>
-      /\b(goruntu|görüntü|kamera|buz|okyanus|isigi|ışığı|karanlik|karanlık)\b/i.test(line),
-    )
-    .slice(0, 8);
+function reviewBlockers(script: string) {
+  return reviewScriptContent(script).filter((warning) => warning.severity === "blocker");
 }

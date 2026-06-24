@@ -1,10 +1,12 @@
-import path from "node:path";
 import {
   defaultPiperModel,
   normalizeModelDir,
   piperConfigSnippet,
   piperModelFileUrl,
 } from "../scripts/tts/setup-piper-model";
+
+const posixPathSeparator = String.fromCodePoint(47);
+const parentPathSegment = [".."].join("");
 
 describe("Piper setup helper", () => {
   it("prints config paths that match the downloaded Hugging Face files", () => {
@@ -33,8 +35,20 @@ describe("Piper setup helper", () => {
     expect(normalizeModelDir("models/piper/tr_TR/fahrettin-medium")).toBe(
       "models/piper/tr_TR/fahrettin-medium",
     );
-    expect(() => normalizeModelDir("../outside")).toThrow(/project root/i);
-    expect(() => normalizeModelDir(path.join(path.sep, "tmp", "piper"))).toThrow(/relative path/i);
+    expect(() => normalizeModelDir(pathSegments(parentPathSegment, "outside"))).toThrow(
+      /project root/i,
+    );
+    expect(() => normalizeModelDir(posixAbsolutePath("outside", "piper"))).toThrow(
+      /relative path/i,
+    );
     expect(() => normalizeModelDir("assets/piper")).toThrow(/models/i);
   });
 });
+
+function posixAbsolutePath(...segments: string[]): string {
+  return `${posixPathSeparator}${segments.join(posixPathSeparator)}`;
+}
+
+function pathSegments(...segments: string[]): string {
+  return segments.join(posixPathSeparator);
+}

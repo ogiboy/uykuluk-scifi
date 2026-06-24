@@ -1,7 +1,11 @@
 import { z } from "zod";
 import { SafeExitError } from "../core/errors.js";
+import {
+  normalizeIdeaBrandSpelling,
+  validateIdeaListQuality,
+  validateIdeaQuality,
+} from "./providerIdeaQuality.js";
 import { parseProviderJson } from "./providerJson.js";
-import { looksLikeTurkishOperatorText } from "./providerLanguageQuality.js";
 import { VideoIdea } from "./types.js";
 
 export { stripProviderThinking } from "./providerJson.js";
@@ -53,7 +57,7 @@ const providerVideoIdeaSchema = z
     if (!targetDuration || !estimatedDifficulty || !riskLevel) {
       return z.NEVER;
     }
-    const normalizedIdea = {
+    const normalizedIdea = normalizeIdeaBrandSpelling({
       title: idea.title,
       premise: idea.premise,
       targetDuration,
@@ -61,7 +65,7 @@ const providerVideoIdeaSchema = z
       estimatedDifficulty,
       riskLevel,
       fit: idea.fit,
-    };
+    });
     const qualityIssue = validateIdeaQuality(normalizedIdea);
     if (qualityIssue) {
       context.addIssue({
@@ -140,6 +144,10 @@ export function parseIdeasProviderPayload(text: string): VideoIdea[] {
     throw invalidProviderPayload("ideas", result.error);
   }
   const ideas = Array.isArray(result.data) ? result.data : result.data.ideas;
+  const distinctIssue = validateIdeaListQuality(ideas);
+  if (distinctIssue) {
+    throw new SafeExitError(`Invalid ideas provider response: ${distinctIssue}`);
+  }
   return ideas.slice(0, 10).map((idea, index) => ({
     id: `idea_${String(index + 1).padStart(3, "0")}`,
     ...idea,
@@ -186,39 +194,4 @@ function normalizeIdeaLevel(value: unknown): unknown {
     yuksek: "high",
   };
   return localizedLevels[normalized] ?? normalized;
-}
-
-type NormalizedProviderIdea = {
-  title: string;
-  premise: string;
-  targetDuration: string;
-  style: string;
-  estimatedDifficulty: string;
-  riskLevel: string;
-  fit: string;
-};
-
-function validateIdeaQuality(
-  idea: NormalizedProviderIdea,
-): { path: string[]; message: string } | undefined {
-  if (/^(?:low|medium|high)$/i.test(idea.fit.trim())) {
-    return {
-      path: ["fit"],
-      message: "Fit must be a Turkish explanation, not a rating.",
-    };
-  }
-  if (!/\bdakika\b/i.test(idea.targetDuration)) {
-    return {
-      path: ["targetDuration"],
-      message: "Target duration must use Turkish dakika wording.",
-    };
-  }
-  const humanText = [idea.title, idea.premise, idea.targetDuration, idea.style, idea.fit].join(" ");
-  if (!looksLikeTurkishOperatorText(humanText)) {
-    return {
-      path: [],
-      message: "Human-facing idea fields must be Turkish.",
-    };
-  }
-  return undefined;
 }
