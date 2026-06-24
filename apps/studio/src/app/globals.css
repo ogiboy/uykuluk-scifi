@@ -275,8 +275,64 @@ h3 {
   padding-bottom: 8px;
 }
 
+.artifact-preview-list {
+  display: grid;
+  gap: 12px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.artifact-preview-card {
+  display: grid;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #10161d;
+  padding: 12px;
+}
+
+.artifact-preview-header {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.artifact-preview-header strong,
+.artifact-preview-header span {
+  display: block;
+}
+
+.artifact-preview-header span,
+.artifact-meta {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.artifact-preview {
+  overflow: auto;
+  max-height: 220px;
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #0b0f14;
+  color: var(--text);
+  padding: 10px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-family: var(--font-mono), "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 .blocked {
   color: var(--danger);
+}
+
+.status-pill.small {
+  padding: 5px 8px;
+  font-size: 11px;
 }
 
 .tabs-root {

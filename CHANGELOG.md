@@ -28,6 +28,8 @@ future generated release notes can be inserted predictably.
   render-plan/voiceover approval, MP4 output, manifest evidence, and draft-render readiness/evidence
   status.
 - Read-only Studio run index and run detail routes backed by local run/evidence/readiness summaries.
+- Read-only Studio artifact preview excerpts for review text/JSON artifacts, with binary draft
+  render media limited to metadata.
 - Basic type-safe `next-intl` foundation for English and Turkish Studio locales.
 - Unit and browser coverage for locale normalization and cookie-based document language.
 - Typed runtime loading for tracked idea, scriptwriter, and production-package prompt defaults.

@@ -61,8 +61,8 @@
 - Prefer continuation/retry designs over simply raising local section chunk caps; live local QA
   showed larger chunks can destabilize JSON parse reliability.
 - Keep `producer doctor` config/provider/model/TTS/asset/publish diagnostics and evidence passing.
-- Harden Studio read-only run review with artifact previews for scripts, production packages, render
-  plans, contact sheets, render manifests, evidence, and readiness output.
+- Harden Studio read-only artifact previews with better grouping, media-specific metadata, and
+  operator review wording while keeping the surface non-mutating.
 - Define typed read/write service contracts that both CLI and web can use before adding Studio
   mutations.
 - Define local prompt override storage and revision events before adding a prompt editor; typed

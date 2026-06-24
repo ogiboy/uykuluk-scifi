@@ -115,6 +115,9 @@
 - Studio can list local persisted runs and show a read-only run detail page with next safe action,
   readiness status, warning/approval counts, and review artifact availability. It does not mutate
   run state or call providers.
+- Studio run detail includes read-only artifact preview excerpts for scripts, reviews, production
+  packages, render plans, contact sheets, evidence, readiness, and render manifests. Binary media is
+  intentionally limited to metadata.
 - Roadmap and `.ai` guidance now include future Next.js Producer Studio, prompt editing, revision
   tracking, design direction, development preferences, versioning expectations, and Computer Use QA
   boundaries.
@@ -185,8 +188,9 @@ Corepack/PATH before treating failures as product failures.
 - No paid provider adapter is implemented. Exact cost quote approval remains separate from spend
   authorization. The internal execution boundary is ready for a future approved adapter, but no SDK,
   credential, network integration, or CLI mutation command exposes it.
-- Current Next.js Studio is still review-only. Rich artifact previews, route security requirements,
-  shared read/write service contracts, and guarded mutation routes are not implemented yet.
+- Current Next.js Studio is still review-only. Richer media-specific previews, route security
+  requirements, shared read/write service contracts, and guarded mutation routes are not implemented
+  yet.
 - Locale infrastructure is ready, but full translation catalogs and a language selector are
   intentionally deferred.
 - Prompt editing UI is planned but not implemented.

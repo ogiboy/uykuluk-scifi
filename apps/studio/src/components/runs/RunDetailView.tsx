@@ -43,14 +43,36 @@ export function RunDetailView({ run }: { run: StudioRunDetail }) {
       </section>
 
       <section className='panel' aria-labelledby='artifact-heading'>
-        <h2 id='artifact-heading'>Review Artifacts</h2>
-        <ul className='artifact-list'>
+        <h2 id='artifact-heading'>Artifact Previews</h2>
+        <p>Read-only excerpts from review artifacts. Use CLI commands to change workflow state.</p>
+        <ul className='artifact-preview-list'>
           {run.artifacts.map((artifact) => (
-            <li key={artifact.path}>
-              <span>{artifact.path}</span>
-              <strong className={artifact.exists ? undefined : "blocked"}>
-                {artifact.exists ? "available" : "missing"}
-              </strong>
+            <li className='artifact-preview-card' key={artifact.path}>
+              <div className='artifact-preview-header'>
+                <div>
+                  <strong>{artifact.label}</strong>
+                  <span>{artifact.path}</span>
+                </div>
+                <span
+                  className={artifact.exists ? "status-pill small" : "status-pill small blocked"}
+                >
+                  {artifact.exists ? "available" : "missing"}
+                </span>
+              </div>
+              <p className='artifact-meta'>
+                {artifact.kind}
+                {typeof artifact.sizeBytes === "number" ? ` · ${artifact.sizeBytes} bytes` : ""}
+                {artifact.previewTruncated ? " · preview truncated" : ""}
+              </p>
+              {artifact.preview ? (
+                <pre className='artifact-preview'>{artifact.preview}</pre>
+              ) : (
+                <p>
+                  {artifact.exists
+                    ? "Binary or media artifact. Preview is intentionally limited to metadata."
+                    : "Artifact is not generated yet."}
+                </p>
+              )}
             </li>
           ))}
         </ul>

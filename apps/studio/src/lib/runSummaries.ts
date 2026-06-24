@@ -1,18 +1,6 @@
-import { readdir, readFile, stat } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
-
-const REVIEW_ARTIFACTS = [
-  "script.md",
-  "reviews/script_review.md",
-  "production/production_package.md",
-  "production/render_plan.json",
-  "production/storyboard_contact_sheet.md",
-  "production/audio/voiceover.meta.json",
-  "production/render/render_manifest.json",
-  "production/render/draft.mp4",
-  "evidence_bundle.json",
-  "diagnostics/readiness.json",
-] as const;
+import { readReviewArtifactPreviews, type StudioArtifactPreview } from "./artifactPreviews";
 
 export type StudioRunState =
   | "NEW"
@@ -49,7 +37,7 @@ export type StudioRunSummary = {
 
 export type StudioRunDetail = StudioRunSummary & {
   approvals: unknown[];
-  artifacts: Array<{ exists: boolean; path: string }>;
+  artifacts: StudioArtifactPreview[];
   evidence: Record<string, unknown> | null;
   readiness: { checks?: unknown[]; passed?: boolean } | null;
   warnings: string[];
@@ -106,12 +94,7 @@ export async function getStudioRunDetail(runId: string): Promise<StudioRunDetail
   return {
     ...summary,
     approvals: record.approvals ?? [],
-    artifacts: await Promise.all(
-      REVIEW_ARTIFACTS.map(async (artifact) => ({
-        path: artifact,
-        exists: await pathExists(path.join(root, "runs", runId, ...artifact.split("/"))),
-      })),
-    ),
+    artifacts: await readReviewArtifactPreviews(root, runId),
     evidence: evidence ?? null,
     readiness: readiness ?? null,
     warnings: record.warnings ?? [],
@@ -208,18 +191,6 @@ async function safeReaddir(
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") {
       return [];
-    }
-    throw error;
-  }
-}
-
-async function pathExists(target: string): Promise<boolean> {
-  try {
-    await stat(target);
-    return true;
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-      return false;
     }
     throw error;
   }

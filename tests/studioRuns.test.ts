@@ -51,10 +51,27 @@ describe("Studio read-only run summaries", () => {
 
   it("reads run detail with reviewable evidence and artifact flags", async () => {
     const run = await createRun();
+    await mkdir(`runs/${run.runId}/production/render`, { recursive: true });
+    await writeFile(
+      artifactPath(run.runId, "script.md"),
+      "# Bölüm Taslağı\n\nİlk sahne hazır.",
+      "utf8",
+    );
+    await writeFile(
+      artifactPath(run.runId, "production/render_plan.json"),
+      JSON.stringify({ scenes: [{ id: "scene-1", background: "assets/backgrounds/nebula.png" }] }),
+      "utf8",
+    );
+    await writeFile(
+      artifactPath(run.runId, "production/render/draft.mp4"),
+      Buffer.from([0, 1, 2, 3]),
+    );
     await saveRun({
       ...run,
       state: "RENDERED",
       artifacts: [
+        "script.md",
+        "production/render_plan.json",
         "production/render/draft.mp4",
         "production/render/render_manifest.json",
         "evidence_bundle.json",
@@ -81,10 +98,30 @@ describe("Studio read-only run summaries", () => {
     });
     expect(detail?.artifacts).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ path: "production/render/draft.mp4", exists: false }),
+        expect.objectContaining({
+          path: "script.md",
+          exists: true,
+          kind: "markdown",
+          preview: expect.stringContaining("Bölüm Taslağı"),
+          sizeBytes: expect.any(Number),
+        }),
+        expect.objectContaining({
+          path: "production/render_plan.json",
+          exists: true,
+          kind: "json",
+          preview: expect.stringContaining('"scenes"'),
+        }),
+        expect.objectContaining({
+          path: "production/render/draft.mp4",
+          exists: true,
+          kind: "binary",
+          preview: null,
+          sizeBytes: 4,
+        }),
         expect.objectContaining({ path: "evidence_bundle.json", exists: true }),
       ]),
     );
+    expect((await loadRun(run.runId)).state).toBe("RENDERED");
   });
 });
 

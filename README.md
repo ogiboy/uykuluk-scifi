@@ -241,14 +241,16 @@ Current Studio scope:
 - read-only `/runs` index over persisted local run state;
 - read-only `/runs/<run_id>` detail view with next action, readiness status, and review artifact
   availability;
+- read-only artifact preview excerpts for scripts, reviews, production packages, render plans,
+  contact sheets, evidence, readiness, and render manifests, with binary media limited to metadata;
 - run/workflow command overview;
 - current asset inventory summary;
 - Radix module tabs for planned run, prompt, asset, and safety surfaces;
 - type-safe `next-intl` request/provider foundation for English and Turkish locales;
 - visible reminder that CLI/core remains the workflow source of truth.
 
-Next Studio work should add richer artifact previews, shared service contracts, and route security
-requirements before any mutating route handlers.
+Next Studio work should refine artifact previews, add shared read/write service contracts, and
+define route security requirements before any mutating route handlers.
 
 ## Visual Assets
 
