@@ -11,6 +11,12 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.5.0 (2026-06-25)
+
+### Features
+
+- add TTS next-action diagnostics (315392f)
+
 ## v0.4.0 (2026-06-25)
 
 ### Features
