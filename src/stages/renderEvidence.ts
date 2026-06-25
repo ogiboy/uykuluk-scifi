@@ -7,6 +7,7 @@ import { RunRecord } from "../core/state.js";
 import { pathExists } from "../utils/fs.js";
 import { readJsonFile } from "../utils/json.js";
 import { readRenderPlanEvidence } from "./renderPlan.js";
+import { renderMediaProbeSchema, type RenderMediaProbe } from "./renderProbe.js";
 import { assetRefSchema, digestSchema } from "./renderPlanSchemas.js";
 import { readVoiceoverAudioEvidence } from "./voiceoverEvidence.js";
 
@@ -66,6 +67,7 @@ export const draftRenderManifestSchema = z.strictObject({
     binary: z.string().min(1),
     args: z.array(z.string()),
   }),
+  mediaProbe: renderMediaProbeSchema.optional(),
 });
 
 export type DraftRenderManifest = z.infer<typeof draftRenderManifestSchema>;
@@ -82,6 +84,7 @@ export type DraftRenderEvidence =
       timelineSegments: string[];
       reviewPath: string;
       reviewChecklist: string[];
+      mediaProbe?: RenderMediaProbe;
     }
   | { status: "block"; path: string; message: string };
 
@@ -132,6 +135,7 @@ export async function readDraftRenderEvidence(run: RunRecord): Promise<DraftRend
       timelineSegments: manifest.timeline.map((item) => item.segment ?? "scene"),
       reviewPath: draftRenderReviewPath,
       reviewChecklist: manifest.composition.reviewChecklist,
+      mediaProbe: manifest.mediaProbe,
     };
   } catch (error) {
     return {

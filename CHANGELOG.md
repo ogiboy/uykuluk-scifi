@@ -12,6 +12,7 @@ future generated release notes can be inserted predictably.
 ### Features
 
 - record local Piper model and config provenance in voiceover evidence and review artifacts
+- validate local draft renders with `ffprobe` media evidence before recording render completion
 
 ## v0.7.2 (2026-06-25)
 

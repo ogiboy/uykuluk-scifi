@@ -2,7 +2,7 @@ import { bulletList, table } from "../utils/markdown.js";
 import type { DraftRenderManifest } from "./renderEvidence.js";
 
 export function renderDraftReviewMarkdown(manifest: DraftRenderManifest): string {
-  return [
+  const sections = [
     "# Draft Render Review",
     "",
     `Run: ${manifest.runId}`,
@@ -22,6 +22,30 @@ export function renderDraftReviewMarkdown(manifest: DraftRenderManifest): string
       ],
     ),
     "",
+  ];
+  if (manifest.mediaProbe) {
+    sections.push(
+      "## Media Probe",
+      "",
+      table(
+        ["Probe", "Value"],
+        [
+          ["Binary", manifest.mediaProbe.binary],
+          ["Container", manifest.mediaProbe.formatName ?? "unknown"],
+          ["Duration", `${manifest.mediaProbe.durationSeconds}s`],
+          [
+            "Video",
+            `${manifest.mediaProbe.video.width}x${manifest.mediaProbe.video.height}${
+              manifest.mediaProbe.video.codecName ? ` ${manifest.mediaProbe.video.codecName}` : ""
+            }`,
+          ],
+          ["Audio", audioProbeSummary(manifest.mediaProbe.audio)],
+        ],
+      ),
+      "",
+    );
+  }
+  sections.push(
     "## Inputs",
     "",
     table(
@@ -62,5 +86,14 @@ export function renderDraftReviewMarkdown(manifest: DraftRenderManifest): string
     "## Required Decision",
     "",
     "Review the MP4 locally. If it is not acceptable, revise upstream artifacts and regenerate the render. Upload remains disabled until a separate future upload approval exists.",
-  ].join("\n");
+  );
+  return sections.join("\n");
+}
+
+function audioProbeSummary(audio: NonNullable<DraftRenderManifest["mediaProbe"]>["audio"]): string {
+  const details = [audio.codecName, audio.sampleRateHz ? `${audio.sampleRateHz}Hz` : undefined]
+    .filter((item): item is string => item !== undefined)
+    .join(" ");
+  const channels = audio.channels ? ` (${audio.channels} channels)` : "";
+  return `${details || "audio stream"}${channels}`;
 }

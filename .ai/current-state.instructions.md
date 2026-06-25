@@ -67,7 +67,8 @@
   `production/render/draft_review.md`. The draft render now builds an FFmpeg concat timeline from
   render-plan intro/outro bookends and scenes, composes lower-third, popup-card, waveform, and
   watermark overlays when available, records the exact intro-to-outro timeline and overlay
-  roles/placements in the manifest, and writes an operator-readable final local review checklist.
+  roles/placements in the manifest, validates the output with `ffprobe` media stream evidence, and
+  writes an operator-readable final local review checklist.
 - Provider-backed idea and production-package stages schema-validate and normalize common Ollama
   JSON variants before artifact writes, while rejecting malformed or English operator-facing
   payloads fail-closed.
