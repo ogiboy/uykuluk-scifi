@@ -231,7 +231,9 @@
 - Manual analytics feedback foundation. `producer analytics import --file <path>` accepts
   operator-provided CSV/JSON performance exports and writes ignored local
   `analytics/performance.json` plus `analytics/performance_report.md`. `producer analytics report`
-  prints the current report. No YouTube API, upload, publish, or causal claim is introduced.
+  prints the current report. Reports now include overall metrics, top videos, run-linked summaries,
+  unmapped record counts, and non-causal operator review prompts. No YouTube API, upload, publish,
+  or causal claim is introduced.
 - Roadmap and `.ai` guidance now include future Next.js Producer Studio, prompt editing, revision
   tracking, design direction, development preferences, versioning expectations, and Computer Use QA
   boundaries.

@@ -241,9 +241,10 @@ pnpm producer analytics report
 
 Analytics imports accept operator-provided CSV or JSON records with fields such as `run_id`,
 `video_id`, `title`, `published_at`, `impressions`, `views`, `ctr`, `avg_view_duration_seconds`,
-`avg_percentage_viewed`, `subscribers_gained`, `likes`, `comments`, and `notes`. The importer writes
-ignored local artifacts under `analytics/`; it does not call YouTube APIs, upload media, publish
-content, or claim causality from performance changes.
+`avg_percentage_viewed`, `subscribers_gained`, `likes`, `comments`, and `notes`. The report includes
+overall metrics, top videos, run-linked summaries, unmapped record counts, and operator review
+prompts. The importer writes ignored local artifacts under `analytics/`; it does not call YouTube
+APIs, upload media, publish content, or claim causality from performance changes.
 
 Do not edit `runs/<run_id>/script.md` directly. Use `producer revise script` before production
 packaging. Revisions are blocked after the production package exists. Each revision stores the old
