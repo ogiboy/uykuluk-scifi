@@ -1,7 +1,10 @@
 import type { ProducerConfig } from "../config/schema.js";
 import { SafeExitError } from "../core/errors.js";
 import type { LlmProvider } from "../providers/llmProvider.js";
-import { parseScriptContinuationProviderPayload } from "./scriptContinuationParsing.js";
+import {
+  parseScriptContinuationProviderPayload,
+  scriptContinuationMaxLength,
+} from "./scriptContinuationParsing.js";
 import { generateScriptContentWithBlockerRetry } from "./scriptContentRetry.js";
 import {
   assembleScriptFromSections,
@@ -36,7 +39,7 @@ const developmentPlan = scriptSectionPlans.find((section) => section.id === deve
 export const scriptContinuationResponseFormat = {
   type: "object",
   properties: {
-    text: { type: "string", minLength: 1, maxLength: 3200 },
+    text: { type: "string", minLength: 1, maxLength: scriptContinuationMaxLength },
   },
   required: ["text"],
 } as const satisfies Record<string, unknown>;

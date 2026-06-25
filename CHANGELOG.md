@@ -9,7 +9,9 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Fixes
+
+- recover qwen3 script blocker retries with stale diagnostic cleanup
 
 ## v0.6.0 (2026-06-25)
 

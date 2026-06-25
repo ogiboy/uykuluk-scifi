@@ -2,7 +2,7 @@ import { z } from "zod";
 import { SafeExitError } from "../core/errors.js";
 import { parseProviderJson, stripProviderThinking } from "./providerJson.js";
 
-const scriptContinuationMaxLength = 3200;
+export const scriptContinuationMaxLength = 2400;
 const scriptContinuationPayloadSchema = z.strictObject({
   text: z.string().min(1).max(scriptContinuationMaxLength),
 });

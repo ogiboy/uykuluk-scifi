@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { parseScriptContinuationProviderPayload } from "../src/stages/scriptContinuation";
+import {
+  scriptContinuationResponseFormat,
+  parseScriptContinuationProviderPayload,
+} from "../src/stages/scriptContinuation";
+import { scriptContinuationMaxLength } from "../src/stages/scriptContinuationParsing";
 
 describe("script continuation parsing", () => {
   it("accepts raw Turkish continuation text when a local model ignores the JSON wrapper", () => {
@@ -117,6 +121,13 @@ describe("script continuation parsing", () => {
         "Görsel: Ölçüm panosunda olası hata payı ve doğal açıklama başlıkları görünür.",
         "Anlatıcı: Böylece merak, kanıt iddiasına dönüşmeden yavaşça büyür.",
       ].join("\n"),
+    );
+  });
+
+  it("keeps the continuation response schema below Ollama grammar repetition limits", () => {
+    expect(scriptContinuationMaxLength).toBe(2400);
+    expect(scriptContinuationResponseFormat.properties.text.maxLength).toBe(
+      scriptContinuationMaxLength,
     );
   });
 });

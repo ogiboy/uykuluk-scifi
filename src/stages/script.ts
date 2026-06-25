@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { loadConfig } from "../config/config.js";
-import { artifactPath, writeRunJson, writeRunText } from "../core/artifacts.js";
+import { artifactPath, removeRunArtifact, writeRunJson, writeRunText } from "../core/artifacts.js";
 import { appendLedgerEvent } from "../core/ledger.js";
 import { loadRun, setRunState } from "../core/runStore.js";
 import { assertTransition } from "../core/transitions.js";
@@ -108,6 +108,7 @@ export async function generateScript(runId: string): Promise<ScriptMeta> {
       outputTokens: meta.outputTokensApprox,
       durationMs: meta.durationMs,
     });
+    run = await removeRunArtifact(run, "script", "diagnostics/script_generation_failure.json");
     run = await writeRunText(run, "script", "script.md", script);
     run = await writeRunJson(run, "script", "script.sections.json", {
       sectionCount: scriptSectionPlans.length,

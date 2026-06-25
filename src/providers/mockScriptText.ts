@@ -33,11 +33,15 @@ function shouldReturnRepeatedExpansion(prompt: string, model: string): boolean {
     return true;
   }
   if (model === "mock-repeated-script-expansion-then-repair") {
-    return isFirstHookExpansion(prompt);
+    return isHookExpansionChunkOne(prompt) && !prompt.includes("SCRIPT_CONTENT_RETRY");
+  }
+  if (model === "mock-repeated-script-expansion-requires-second-retry") {
+    return isHookExpansionChunkOne(prompt) && !prompt.includes("SCRIPT_CONTENT_RETRY_STRICT_FINAL");
   }
   return (
     model === "mock-repeated-script-expansion-requires-strict-retry" &&
-    isFirstHookExpansion(prompt) &&
+    isHookExpansionChunkOne(prompt) &&
+    !prompt.includes("SCRIPT_CONTENT_RETRY") &&
     !prompt.includes("four fresh Turkish sentences")
   );
 }
@@ -109,12 +113,8 @@ export function generateMockScriptContinuation(prompt: string, model = ""): stri
   return sectionJson(chunkIndex === "1" ? continuationChunkOne() : continuationChunkTwo());
 }
 
-function isFirstHookExpansion(prompt: string): boolean {
-  return (
-    /Section id: hook/u.test(prompt) &&
-    /Expansion chunk: 1\/\d+/u.test(prompt) &&
-    !prompt.includes("SCRIPT_CONTENT_RETRY")
-  );
+function isHookExpansionChunkOne(prompt: string): boolean {
+  return /Section id: hook/u.test(prompt) && /Expansion chunk: 1\/\d+/u.test(prompt);
 }
 
 function generateExpandedMockScriptSection(

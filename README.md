@@ -426,6 +426,8 @@ expanded through three smaller bounded JSON chunks so local models can finish va
 run persists draft/expansion receipts before it can advance. If a local model returns malformed
 JSON, English operator-facing text, or an incomplete script section, the stage fails closed before
 writing `script.md`; provider failure diagnostics are persisted under the run when safe to record.
+Repeated sentence or label blockers get bounded raw-output-free repair retries, and a later
+successful script run clears stale failure diagnostics before advancing.
 
 Run `pnpm producer doctor` before starting production work. Mock mode passes without network access.
 Ollama mode checks `/api/tags` with a bounded timeout and blocks when the server is unavailable or

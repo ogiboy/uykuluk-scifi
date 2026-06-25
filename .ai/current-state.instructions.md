@@ -96,16 +96,17 @@
 - Repeated sentence-loop blockers now include safe diagnostic categories such as repeat count and a
   short normalized sentence fingerprint, not raw provider text. This lets live Ollama retries prove
   repeated-output failures without persisting the repeated sentence.
-- Script section and continuation content blockers now get one bounded retry using only safe blocker
-  summaries and already accepted context. Rejected raw provider text is discarded; the accepted
-  `script.sections.json` receipt records retry evidence with prompt/content hashes, token estimates,
-  and duration for the rejected attempt.
-- Live qwen3:8b `no_think` QA after the bounded script content-blocker retry on 2026-06-24 exercised
-  the retry path but still failed closed without `script.md`: the latest run reached `outro`
-  expansion chunk 3, then reported
-  `repeated_sentence_loop(repeatCount=3;sentenceFingerprint=be3048d09737d3ab) after 1 retry`. State
-  remained `IDEA_APPROVED`, diagnostics stayed raw-output-free, and no upload/render/publish action
-  ran.
+- Script section and continuation content blockers now get up to two bounded retries using only safe
+  blocker summaries and already accepted context. Rejected raw provider text is discarded; the
+  accepted `script.sections.json` receipt records retry evidence with prompt/content hashes, token
+  estimates, and duration for each rejected attempt.
+- Successful script generation removes stale `diagnostics/script_generation_failure.json` evidence
+  from both disk and the run artifact list, with a ledger event, so an earlier failed retry cannot
+  make a later successful run look blocked.
+- Live qwen3:8b `no_think` QA on 2026-06-25 reproduced the earlier repeated-sentence blocker at
+  `context` expansion chunk 2 after one retry, then recovered to `SCRIPT_GENERATED` after the second
+  bounded retry path. The same run still produced only 1015 words and weak repeated content, so this
+  is a generation-recovery improvement, not production-quality sign-off.
 - Script continuation parsing accepts additional bounded malformed local-model `"text"` wrappers,
   including trailing commas, missing closing quotes, and short external notes, only after the
   extracted Turkish continuation still passes complete-sentence and exact-label validation.
@@ -188,7 +189,8 @@
 - A follow-up retry after safe repeated-loop diagnostics stayed fail-closed without `script.md` and
   reported `repeated_sentence_loop(repeatCount=3;sentenceFingerprint=d425f4180b4005fa)`. State
   remained `IDEA_APPROVED`, proving the more specific diagnostics still preserve fail-closed
-  behavior.
+  behavior. A later no_think retry on 2026-06-25 recovered to `SCRIPT_GENERATED` with bounded
+  second-retry evidence but remained below the long-form quality target.
 - Evidence bundle generation with production-package integrity status and manifest digest.
 - Evidence next-command guidance reflects script review blockers and required warning
   acknowledgement before script approval.
@@ -314,8 +316,9 @@ Corepack/PATH before treating failures as product failures.
   blocked by distinct-title, distinct-premise, repeated-title-motif, and repeated-premise-frame
   guards. A bounded two-attempt idea retry/repair loop now exists and live qwen3 QA proved the first
   repair path fails closed, but the repaired qwen3 idea slate is still not production quality.
-  Scripts may still carry review warnings such as fact-check needs, weak intro hooks, or unsupported
-  speculative framing.
+  Script content blockers now have two bounded retries and can recover some no_think repeated-loop
+  failures to `SCRIPT_GENERATED`, but scripts may still be short, repetitive, or carry review
+  warnings such as fact-check needs, weak intro hooks, or unsupported speculative framing.
 - No paid provider adapter is implemented. Exact cost quote approval remains separate from spend
   authorization. The internal execution boundary is ready for a future approved adapter, but no SDK,
   credential, network integration, or CLI mutation command exposes it.
