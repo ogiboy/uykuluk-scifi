@@ -58,6 +58,10 @@ export function renderEvidenceMarkdown(bundle: unknown): string {
       ? JSON.stringify(data.productionPackageIntegrity)
       : "No production package manifest.",
     "",
+    "## Production Media Summary",
+    "",
+    bulletList(productionMediaSummary(data.renderPlan, data.voiceoverAudio, data.draftRender)),
+    "",
     "## Render Plan",
     "",
     JSON.stringify(data.renderPlan),
@@ -99,4 +103,62 @@ export function renderEvidenceMarkdown(bundle: unknown): string {
     "",
     data.nextRecommendedCommand,
   ].join("\n");
+}
+
+function productionMediaSummary(
+  renderPlan: Awaited<ReturnType<typeof readRenderPlanEvidence>>,
+  voiceoverAudio: Awaited<ReturnType<typeof readVoiceoverAudioEvidence>>,
+  draftRender: Awaited<ReturnType<typeof readDraftRenderEvidence>>,
+): string[] {
+  return [
+    renderPlanSummary(renderPlan),
+    voiceoverAudioSummary(voiceoverAudio),
+    draftRenderSummary(draftRender),
+  ];
+}
+
+function renderPlanSummary(renderPlan: Awaited<ReturnType<typeof readRenderPlanEvidence>>): string {
+  if (renderPlan.status === "pass") {
+    return `Render plan: pass (${renderPlan.assetCount} assets, ${renderPlan.artifactCount} artifacts, ${renderPlan.path}).`;
+  }
+  if (renderPlan.status === "block") {
+    return `Render plan: block (${renderPlan.message}).`;
+  }
+  return `Render plan: missing (${renderPlan.requiredArtifacts.join(", ")}).`;
+}
+
+function voiceoverAudioSummary(
+  voiceoverAudio: Awaited<ReturnType<typeof readVoiceoverAudioEvidence>>,
+): string {
+  if (voiceoverAudio.status === "pass") {
+    return `Voiceover audio: pass (${Math.round(voiceoverAudio.durationSeconds)}s, ${voiceoverAudio.mode}, ${voiceoverAudio.sourceWordCount} source words).`;
+  }
+  if (voiceoverAudio.status === "block") {
+    return `Voiceover audio: block (${voiceoverAudio.message}).`;
+  }
+  return `Voiceover audio: missing (${voiceoverAudio.requiredArtifacts.join(", ")}).`;
+}
+
+function draftRenderSummary(
+  draftRender: Awaited<ReturnType<typeof readDraftRenderEvidence>>,
+): string {
+  if (draftRender.status === "pass") {
+    return `Draft render: pass (${Math.round(draftRender.durationSeconds)}s, ${draftRender.timelineSegments.join(" -> ")}${mediaProbeSummary(draftRender.mediaProbe)}).`;
+  }
+  if (draftRender.status === "block") {
+    return `Draft render: block (${draftRender.message}).`;
+  }
+  return `Draft render: missing (${draftRender.requiredArtifacts.join(", ")}).`;
+}
+
+function mediaProbeSummary(
+  mediaProbe: Extract<
+    Awaited<ReturnType<typeof readDraftRenderEvidence>>,
+    { status: "pass" }
+  >["mediaProbe"],
+): string {
+  if (!mediaProbe) {
+    return "";
+  }
+  return `, ffprobe ${mediaProbe.video.width}x${mediaProbe.video.height} audio`;
 }

@@ -166,6 +166,13 @@ describe("draft render", () => {
         video: { height: 720, width: 1280 },
       },
     });
+    const evidenceMarkdown = await readFile(artifactPath(runId, "evidence_bundle.md"), "utf8");
+    expect(evidenceMarkdown).toContain("## Production Media Summary");
+    expect(evidenceMarkdown).toContain("Render plan: pass");
+    expect(evidenceMarkdown).toContain("Voiceover audio: pass");
+    expect(evidenceMarkdown).toContain(
+      "Draft render: pass (8s, intro -> scene -> outro, ffprobe 1280x720 audio)",
+    );
     const review = await readFile(artifactPath(runId, "production/render/draft_review.md"), "utf8");
     expect(review).toContain("# Draft Render Review");
     expect(review).toContain("## Media Probe");
