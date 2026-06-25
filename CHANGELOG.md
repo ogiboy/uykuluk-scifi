@@ -11,6 +11,14 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.7.0 (2026-06-25)
+
+### Features
+
+- add voiceover review artifact (d6eafce)
+- add draft review artifact (589ab9d)
+- add intro outro draft timeline (f2faed6)
+
 ## v0.6.0 (2026-06-25)
 
 ### Features
