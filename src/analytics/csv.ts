@@ -38,25 +38,53 @@ function parseCsv(input: string): string[][] {
 function readCsvCharacter(input: string, index: number, state: CsvParserState): number {
   const char = input[index];
   const next = input[index + 1];
-  if (char === '"' && state.inQuotes && next === '"') {
-    state.current += '"';
+  if (isEscapedQuote(char, next, state.inQuotes)) {
+    appendEscapedQuote(state);
     return index + 2;
   }
-  if (char === '"') {
-    state.inQuotes = !state.inQuotes;
+  if (isQuote(char)) {
+    toggleQuotedField(state);
     return index + 1;
   }
-  if (char === "," && !state.inQuotes) {
+  if (isFieldSeparator(char, state.inQuotes)) {
     finishCell(state);
     return index + 1;
   }
-  if (isRowBreak(char) && !state.inQuotes) {
+  if (isRecordSeparator(char, state.inQuotes)) {
     finishCell(state);
     finishRow(state);
-    return char === "\r" && next === "\n" ? index + 2 : index + 1;
+    return nextCsvRecordIndex(char, next, index);
   }
   state.current += char;
   return index + 1;
+}
+
+function isEscapedQuote(char: string, next: string | undefined, inQuotes: boolean): boolean {
+  return char === '"' && inQuotes && next === '"';
+}
+
+function appendEscapedQuote(state: CsvParserState): void {
+  state.current += '"';
+}
+
+function isQuote(char: string): boolean {
+  return char === '"';
+}
+
+function toggleQuotedField(state: CsvParserState): void {
+  state.inQuotes = !state.inQuotes;
+}
+
+function isFieldSeparator(char: string, inQuotes: boolean): boolean {
+  return char === "," && !inQuotes;
+}
+
+function isRecordSeparator(char: string, inQuotes: boolean): boolean {
+  return isRowBreak(char) && !inQuotes;
+}
+
+function nextCsvRecordIndex(char: string, next: string | undefined, index: number): number {
+  return char === "\r" && next === "\n" ? index + 2 : index + 1;
 }
 
 function finishCell(state: CsvParserState): void {

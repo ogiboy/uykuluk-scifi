@@ -12,6 +12,7 @@ export const producerConfigSchema = z.object({
       ollamaBaseUrl: z.url(),
       model: z.string(),
       thinkingMode: z.enum(["default", "think", "no_think"]).default("default"),
+      requestTimeoutMs: z.int().positive().default(120_000),
       maxOutputTokens: z
         .object({
           ideas: z.int().positive().default(3000),

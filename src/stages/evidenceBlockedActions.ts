@@ -14,27 +14,39 @@ export function evidenceBlockedActions(
   const imageGenerationDisabled = config.providers.imageGeneration.enabled === false;
   const privateUploadDisabled = config.providers.youtube.allowPrivateUpload === false;
   const publicPublishDisabled = config.providers.youtube.allowPublicPublish === false;
-  return [
-    renderPlan.status === "missing"
-      ? "Render plan not generated; run pnpm producer render-plan --run <run_id> before TTS/render work."
-      : undefined,
-    renderPlan.status === "block"
-      ? `Render plan evidence is blocked: ${renderPlan.message}`
-      : undefined,
-    voiceoverAudio.status === "block"
-      ? `Voiceover audio evidence is blocked: ${voiceoverAudio.message}`
-      : undefined,
-    draftRender.status === "block"
-      ? `Draft render evidence is blocked: ${draftRender.message}`
-      : undefined,
-    ttsDisabled ? "TTS disabled until configured and approved." : undefined,
-    imageGenerationDisabled
-      ? "Image/video generation disabled until configured and approved."
-      : undefined,
-    privateUploadDisabled ? "Private YouTube upload disabled by default." : undefined,
-    publicPublishDisabled ? "Public/scheduled publish disabled by default." : undefined,
-    unresolvedCostReservationCount > 0
-      ? `${unresolvedCostReservationCount} cost reservation outcome(s) remain active or uncertain; internal reconciliation is required.`
-      : undefined,
-  ].filter((item): item is string => Boolean(item));
+  const blockedActions: string[] = [];
+
+  if (renderPlan.status === "missing") {
+    blockedActions.push(
+      "Render plan not generated; run pnpm producer render-plan --run <run_id> before TTS/render work.",
+    );
+  }
+  if (renderPlan.status === "block") {
+    blockedActions.push(`Render plan evidence is blocked: ${renderPlan.message}`);
+  }
+  if (voiceoverAudio.status === "block") {
+    blockedActions.push(`Voiceover audio evidence is blocked: ${voiceoverAudio.message}`);
+  }
+  if (draftRender.status === "block") {
+    blockedActions.push(`Draft render evidence is blocked: ${draftRender.message}`);
+  }
+  if (ttsDisabled) {
+    blockedActions.push("TTS disabled until configured and approved.");
+  }
+  if (imageGenerationDisabled) {
+    blockedActions.push("Image/video generation disabled until configured and approved.");
+  }
+  if (privateUploadDisabled) {
+    blockedActions.push("Private YouTube upload disabled by default.");
+  }
+  if (publicPublishDisabled) {
+    blockedActions.push("Public/scheduled publish disabled by default.");
+  }
+  if (unresolvedCostReservationCount > 0) {
+    blockedActions.push(
+      `${unresolvedCostReservationCount} cost reservation outcome(s) remain active or uncertain; internal reconciliation is required.`,
+    );
+  }
+
+  return blockedActions;
 }

@@ -34,10 +34,11 @@ export class OllamaProvider implements LlmProvider {
     private readonly baseUrl: string,
     private readonly defaultModel: string,
     private readonly thinkingMode: "default" | "think" | "no_think" = "default",
+    private readonly requestTimeoutMs = 120_000,
   ) {}
 
   async diagnose(timeoutMs = 3_000): Promise<OllamaDiagnostic> {
-    const baseUrl = this.baseUrl.replace(/\/$/, "");
+    const baseUrl = withoutTrailingSlash(this.baseUrl);
     let response: Response;
     try {
       response = await fetch(`${baseUrl}/api/tags`, {
@@ -100,23 +101,31 @@ export class OllamaProvider implements LlmProvider {
     const started = Date.now();
     const model = input.model ?? this.defaultModel;
     const prompt = applyThinkingMode(input.prompt, this.thinkingMode);
-    const response = await fetch(`${this.baseUrl.replace(/\/$/, "")}/api/generate`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        model,
-        prompt,
-        format: input.responseFormat,
-        system: input.system,
-        options: {
-          temperature: input.temperature,
-          num_predict: input.maxTokens,
-        },
-        stream: false,
-      }),
-    }).catch((error: unknown) => {
-      throw new Error(`Ollama unavailable at ${this.baseUrl}: ${(error as Error).message}`);
-    });
+    const baseUrl = withoutTrailingSlash(this.baseUrl);
+    let response: Response;
+    try {
+      response = await fetch(`${baseUrl}/api/generate`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        signal: AbortSignal.timeout(this.requestTimeoutMs),
+        body: JSON.stringify({
+          model,
+          prompt,
+          format: input.responseFormat,
+          system: input.system,
+          options: {
+            temperature: input.temperature,
+            num_predict: input.maxTokens,
+          },
+          stream: false,
+        }),
+      });
+    } catch (error) {
+      throw new Error(
+        `Ollama unavailable at ${baseUrl}: ${error instanceof Error ? error.message : String(error)}`,
+        { cause: error },
+      );
+    }
 
     if (!response.ok) {
       const body = await response.text();
@@ -148,6 +157,10 @@ function installedModelsMessage(defaultModel: string, installedModels: string[])
   const modelList = visibleModels.join(", ") || "none";
   const overflowSuffix = installedModels.length > visibleModels.length ? ", …" : "";
   return `Configured Ollama model ${defaultModel} is not installed. Installed models: ${modelList}${overflowSuffix}.`;
+}
+
+function withoutTrailingSlash(value: string): string {
+  return value.endsWith("/") ? value.slice(0, -1) : value;
 }
 
 function applyThinkingMode(prompt: string, thinkingMode: "default" | "think" | "no_think"): string {

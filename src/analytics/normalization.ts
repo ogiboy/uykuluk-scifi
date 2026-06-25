@@ -75,9 +75,22 @@ function parseNumber(value: unknown): number | undefined {
   if (value === "" || value === undefined || value === null) {
     return undefined;
   }
-  const normalized = typeof value === "string" ? value.replaceAll(",", "").trim() : value;
+  const normalized = normalizeNumericInput(value);
+  if (normalized === undefined) {
+    return undefined;
+  }
   const parsed = Number(normalized);
   return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function normalizeNumericInput(value: unknown): string | number | undefined {
+  if (typeof value === "number") {
+    return value;
+  }
+  if (typeof value === "string") {
+    return value.replaceAll(",", "").trim();
+  }
+  return undefined;
 }
 
 function parseRate(value: unknown): number | undefined {

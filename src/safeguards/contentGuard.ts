@@ -1,5 +1,9 @@
+import { malformedProductionLabelDetails } from "./productionLabelDetails.js";
+import { repeatedSentenceLoopDetails } from "./scriptRepetitionDetails.js";
+
 export type ScriptReviewWarning = {
   code: string;
+  details?: Record<string, string>;
   severity: "info" | "warning" | "blocker";
   message: string;
 };
@@ -22,47 +26,86 @@ export function reviewScriptContent(script: string): ScriptReviewWarning[] {
     .split("\n")
     .map((line) => line.trim())
     .find(Boolean);
-  if (looksTruncated(trimmed)) {
+  appendBlockingScriptWarnings(warnings, trimmed);
+  appendLengthWarnings(warnings, words.length);
+  appendTitleWarnings(warnings, title);
+  appendScienceWarnings(warnings, script);
+  appendStyleWarnings(warnings, script);
+  return warnings;
+}
+
+function appendBlockingScriptWarnings(warnings: ScriptReviewWarning[], script: string): void {
+  if (looksTruncated(script)) {
     warnings.push({
       code: "incomplete_script",
       severity: "blocker",
       message: "Script appears incomplete or truncated; regenerate before review approval.",
     });
   }
-  if (containsEnglishProductionText(trimmed)) {
+  if (containsEnglishProductionText(script)) {
     warnings.push({
       code: "non_turkish_production_text",
       severity: "blocker",
       message: "Script contains English production labels or directions; regenerate in Turkish.",
     });
   }
-  if (words.length < 1200) {
+  const malformedLabelDetails = malformedProductionLabelDetails(script);
+  if (malformedLabelDetails) {
+    warnings.push({
+      code: "malformed_production_label",
+      details: malformedLabelDetails,
+      severity: "blocker",
+      message: "Script contains malformed Turkish production labels; regenerate before review.",
+    });
+  }
+  const repeatedLoopDetails = repeatedSentenceLoopDetails(script);
+  if (repeatedLoopDetails) {
+    warnings.push({
+      code: "repeated_sentence_loop",
+      details: repeatedLoopDetails,
+      severity: "blocker",
+      message: "Script repeats the same sentence loop; regenerate before review.",
+    });
+  }
+}
+
+function appendLengthWarnings(warnings: ScriptReviewWarning[], wordCount: number): void {
+  if (wordCount < 1200) {
     warnings.push({
       code: "too_short",
       severity: "warning",
-      message: `Script is short for the 20-minute target (${words.length} words).`,
+      message: `Script is short for the 20-minute target (${wordCount} words).`,
     });
   }
-  if (words.length > 1800) {
+  if (wordCount > 1800) {
     warnings.push({
       code: "too_long",
       severity: "warning",
-      message: `Script may be too long for the MVP target (${words.length} words).`,
+      message: `Script may be too long for the MVP target (${wordCount} words).`,
     });
   }
-  if (
-    title &&
-    (/\b(şok|sok|inanılmaz|inanilmaz|kimse bilmiyor|aklınızı alacak|aklinizi alacak)\b/i.test(
+}
+
+function appendTitleWarnings(warnings: ScriptReviewWarning[], title: string | undefined): void {
+  if (!title || !hasClickbaitTitle(title)) {
+    return;
+  }
+  warnings.push({
+    code: "clickbait_title",
+    severity: "warning",
+    message: "Title uses excessive clickbait framing; prefer specific, credible curiosity.",
+  });
+}
+
+function hasClickbaitTitle(title: string): boolean {
+  return (
+    /\b(şok|sok|inanılmaz|inanilmaz|kimse bilmiyor|aklınızı alacak|aklinizi alacak)\b/i.test(
       title,
-    ) ||
-      /!{2,}/.test(title))
-  ) {
-    warnings.push({
-      code: "clickbait_title",
-      severity: "warning",
-      message: "Title uses excessive clickbait framing; prefer specific, credible curiosity.",
-    });
-  }
+    ) || /!{2,}/.test(title)
+  );
+}
+
+function appendScienceWarnings(warnings: ScriptReviewWarning[], script: string): void {
   const certaintyMatchCount = countRegexMatches(
     script,
     /\b(kesin|kanıtlandı|kanitlandi|asla|mutlaka|tartışmasız|tartismasiz)\b/gi,
@@ -97,6 +140,9 @@ export function reviewScriptContent(script: string): ScriptReviewWarning[] {
       message: "Disaster or violent framing needs responsible wording.",
     });
   }
+}
+
+function appendStyleWarnings(warnings: ScriptReviewWarning[], script: string): void {
   if (!/\b(abone|yorum|sonraki|yeniden buluşalım|yeniden bulusalim|UykulukSciFi)\b/i.test(script)) {
     warnings.push({
       code: "missing_outro",
@@ -126,7 +172,6 @@ export function reviewScriptContent(script: string): ScriptReviewWarning[] {
       message: "Script may not match the calm, cinematic, careful UykulukSciFi style.",
     });
   }
-  return warnings;
 }
 
 function countRegexMatches(text: string, pattern: RegExp): number {

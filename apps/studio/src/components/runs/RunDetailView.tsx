@@ -61,11 +61,7 @@ export function RunDetailView({ run }: Readonly<{ run: StudioRunDetail }>) {
               {artifact.preview ? (
                 <pre className='artifact-preview'>{artifact.preview}</pre>
               ) : (
-                <p>
-                  {artifact.exists
-                    ? "Binary or media artifact. Preview is intentionally limited to metadata."
-                    : "Artifact is not generated yet."}
-                </p>
+                <p>{artifactPreviewFallback(artifact.exists)}</p>
               )}
             </li>
           ))}
@@ -95,4 +91,11 @@ function formatReadiness(value: boolean | null): string {
     return "blocked";
   }
   return "not generated";
+}
+
+function artifactPreviewFallback(exists: boolean): string {
+  if (exists) {
+    return "Binary or media artifact. Preview is intentionally limited to metadata.";
+  }
+  return "Artifact is not generated yet.";
 }

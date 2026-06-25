@@ -9,6 +9,7 @@ export function createLlmProvider(config: ProducerConfig): LlmProvider {
       config.providers.llm.ollamaBaseUrl,
       config.providers.llm.model,
       config.providers.llm.thinkingMode,
+      config.providers.llm.requestTimeoutMs,
     );
   }
   return new MockProvider();

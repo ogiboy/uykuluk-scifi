@@ -1,4 +1,6 @@
+import type { ProducerConfig } from "../config/schema.js";
 import { loadConfig } from "../config/config.js";
+import { SafeExitError } from "../core/errors.js";
 import { writeRunJson, writeRunText } from "../core/artifacts.js";
 import { createRun, setRunState } from "../core/runStore.js";
 import { assertTransition } from "../core/transitions.js";
@@ -6,11 +8,38 @@ import { appendLedgerEvent } from "../core/ledger.js";
 import { defaultStagePricing } from "../costs/pricing.js";
 import { enforceBudget } from "../safeguards/budgetGuard.js";
 import { createLlmProvider } from "../providers/index.js";
+import type { GenerateTextResult, LlmProvider } from "../providers/llmProvider.js";
 import { createPromptProvenance } from "../prompts/provenance.js";
-import { renderIdeasPrompt } from "../prompts/templates.js";
+import { renderIdeasPrompt, type RenderedPrompt } from "../prompts/templates.js";
+import { ideasValidationSummary, renderIdeaRepairPrompt } from "./ideaRepairPrompt.js";
 import { parseIdeasProviderPayload } from "./providerPayloads.js";
 import { ideasResponseFormat } from "./providerResponseFormats.js";
 import { VideoIdea } from "./types.js";
+
+export { renderIdeaRepairPrompt } from "./ideaRepairPrompt.js";
+
+const ideaRepairPromptSource = "src/stages/ideaRepairPrompt.ts";
+
+type IdeaRepairEvidence = {
+  attempted: boolean;
+  attempts: number;
+  prompt?: ReturnType<typeof createPromptProvenance>;
+  validationErrors: string[];
+};
+
+type IdeaGenerationOutcome = {
+  ideas: VideoIdea[];
+  repairPromptText?: string;
+  repair: IdeaRepairEvidence;
+  result: GenerateTextResult;
+};
+
+const noIdeaRepair: IdeaRepairEvidence = {
+  attempted: false,
+  attempts: 0,
+  validationErrors: [],
+};
+const maxIdeaRepairAttempts = 2;
 
 /**
  * Generates a set of video ideas using an LLM and writes formatted artifacts to the run.
@@ -34,32 +63,31 @@ export async function runIdeas(): Promise<{ runId: string; ideas: VideoIdea[] }>
       recordCostEvent: false,
     });
     const prompt = await renderIdeasPrompt();
-    const result = await provider.generateText({
-      model: config.providers.llm.model,
-      temperature: 0.7,
-      maxTokens: config.providers.llm.maxOutputTokens.ideas,
-      responseFormat: ideasResponseFormat,
-      prompt: prompt.text,
+    const generation = await generateIdeasWithRepair({
+      config,
+      prompt,
+      provider,
+      runId: run.runId,
     });
-    const ideas = parseIdeasProviderPayload(result.text);
     await enforceBudget({
       run,
       config,
       stage: "ideas",
-      provider: result.provider,
-      model: result.model,
+      provider: generation.result.provider,
+      model: generation.result.model,
       estimatedUsd,
-      inputTokens: result.inputTokensApprox,
-      outputTokens: result.outputTokensApprox,
-      durationMs: result.durationMs,
+      inputTokens: generation.result.inputTokensApprox,
+      outputTokens: generation.result.outputTokensApprox,
+      durationMs: generation.result.durationMs,
     });
     run = await writeRunJson(run, "ideas", "ideas.json", {
-      ideas,
+      ideas: generation.ideas,
       prompt: createPromptProvenance(prompt.key, prompt.text, "ideas.json", prompt.source),
+      repair: repairEvidenceWithPrompt(prompt.key, generation),
     });
-    run = await writeRunText(run, "ideas", "ideas.md", renderIdeasMarkdown(ideas));
+    run = await writeRunText(run, "ideas", "ideas.md", renderIdeasMarkdown(generation.ideas));
     run = await setRunState(run, "IDEAS_GENERATED", "ideas");
-    return { runId: run.runId, ideas };
+    return { runId: run.runId, ideas: generation.ideas };
   } catch (error) {
     await appendLedgerEvent({
       runId: run.runId,
@@ -69,6 +97,118 @@ export async function runIdeas(): Promise<{ runId: string; ideas: VideoIdea[] }>
     });
     throw error;
   }
+}
+
+async function generateIdeasWithRepair(input: {
+  config: ProducerConfig;
+  prompt: RenderedPrompt;
+  provider: LlmProvider;
+  runId: string;
+}): Promise<IdeaGenerationOutcome> {
+  const results: GenerateTextResult[] = [];
+  const validationErrors: string[] = [];
+  let promptText = input.prompt.text;
+  for (let attempt = 0; attempt <= maxIdeaRepairAttempts; attempt += 1) {
+    const result = await requestIdeas(input.provider, input.config, promptText);
+    results.push(result);
+    try {
+      return {
+        ideas: parseIdeasProviderPayload(result.text),
+        repairPromptText: validationErrors.length ? promptText : undefined,
+        repair: repairEvidence(validationErrors),
+        result: combineProviderResults(results),
+      };
+    } catch (error) {
+      if (!isIdeasValidationError(error)) {
+        throw error;
+      }
+      if (attempt >= maxIdeaRepairAttempts) {
+        throw new SafeExitError(
+          `Invalid ideas provider response after repair attempt: ${ideasValidationSummary(
+            error.message,
+          )}`,
+        );
+      }
+      validationErrors.push(error.message);
+      await appendIdeaRepairWarning(input.runId, validationErrors);
+      promptText = renderIdeaRepairPrompt(input.prompt.text, validationErrors);
+    }
+  }
+  throw new SafeExitError("Ideas provider did not return a parseable response.");
+}
+
+function repairEvidenceWithPrompt(
+  key: RenderedPrompt["key"],
+  generation: IdeaGenerationOutcome,
+): IdeaRepairEvidence {
+  if (!generation.repair.attempted || !generation.repairPromptText) {
+    return generation.repair;
+  }
+  return {
+    ...generation.repair,
+    prompt: createPromptProvenance(
+      key,
+      generation.repairPromptText,
+      "ideas.json",
+      ideaRepairPromptSource,
+    ),
+  };
+}
+
+function repairEvidence(validationErrors: string[]): IdeaRepairEvidence {
+  return validationErrors.length
+    ? { attempted: true, attempts: validationErrors.length, validationErrors }
+    : noIdeaRepair;
+}
+
+async function appendIdeaRepairWarning(runId: string, validationErrors: string[]): Promise<void> {
+  const validationError = validationErrors.at(-1) ?? "unknown ideas validation error";
+  await appendLedgerEvent({
+    runId,
+    type: "WARNING",
+    stage: "ideas",
+    message: `Ideas provider response failed validation; retrying repair attempt ${validationErrors.length}/${maxIdeaRepairAttempts}.`,
+    data: { validationError, validationErrors },
+  });
+}
+
+function requestIdeas(
+  provider: LlmProvider,
+  config: ProducerConfig,
+  prompt: string,
+): Promise<GenerateTextResult> {
+  return provider.generateText({
+    model: config.providers.llm.model,
+    temperature: 0.7,
+    maxTokens: config.providers.llm.maxOutputTokens.ideas,
+    responseFormat: ideasResponseFormat,
+    prompt,
+  });
+}
+
+function isIdeasValidationError(error: unknown): error is Error {
+  return error instanceof Error && error.message.startsWith("Invalid ideas provider response");
+}
+
+function combineProviderResults(results: GenerateTextResult[]): GenerateTextResult {
+  const last = results.at(-1);
+  if (!last) {
+    throw new SafeExitError("Ideas provider did not return a result.");
+  }
+  return {
+    text: last.text,
+    provider: last.provider,
+    model: last.model,
+    inputTokensApprox: sumOptionalNumbers(results.map((result) => result.inputTokensApprox)),
+    outputTokensApprox: sumOptionalNumbers(results.map((result) => result.outputTokensApprox)),
+    durationMs: results.reduce((sum, result) => sum + result.durationMs, 0),
+  };
+}
+
+function sumOptionalNumbers(values: Array<number | undefined>): number | undefined {
+  return values.every((value): value is number => typeof value === "number")
+    ? values.reduce((sum, value) => sum + value, 0)
+    : undefined;
 }
 
 function renderIdeasMarkdown(ideas: VideoIdea[]): string {

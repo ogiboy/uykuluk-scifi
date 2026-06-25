@@ -15,6 +15,23 @@ authoritative.
 | Maintainability/code quality       | SonarQube + local gates                | CodeRabbit review                      | findings resolved or recorded              |
 
 Do not use multiple planning frameworks for one slice. Aegis is the default project workflow.
+Superpowers skills may substitute for the matching Aegis skill when the user explicitly tags
+`@superpowers` or the host routes there. GSD is reserved for heavier phase/milestone/UAT governance,
+not ordinary code slices.
+
+### Workflow Family Selection
+
+| Situation                                      | Route                                                                                  |
+| ---------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Small/medium implementation slice              | Aegis or matching Superpowers skill                                                    |
+| Review feedback from a human, Sonar, or PR     | receiving-code-review, then focused tests and quality gates                            |
+| Broad roadmap phase or milestone governance    | GSD spec/discuss/plan/execute/verify only if explicitly useful                         |
+| Large external plan import                     | `gsd-import` or Aegis first-principles review, not both                                |
+| UAT across a completed phase                   | GSD UAT/validate/review skills                                                         |
+| Long-running continuation across context turns | `.ai/checkpoints/` first; Ruflo/GSD only when repository checkpointing is insufficient |
+
+Do not let any workflow family make `.ai/`, `.planning/`, agent artifacts, or QA outputs runtime
+dependencies. They are development-state only.
 
 ## Studio, UX, And Visual Design
 
@@ -124,12 +141,27 @@ No marketing, browser, connector, or automation capability may bypass the disabl
 
 - Keep mock/Ollama as the default runtime route.
 - Use Context7 or official docs for SDK/API changes.
-- Use Hugging Face papers/datasets/evals for model comparisons when evidence is needed.
+- Use Hugging Face docs/models/datasets/papers for local model comparisons, Piper/TTS model
+  selection, lightweight hardware-fit checks, or evaluation evidence.
 - Use OpenAI Developers only after explicit approval for an OpenAI-backed feature.
 - Prompt changes follow `.ai/workflows/prompt-management-workflow.instructions.md`.
 - Model/provider work must preserve cost, duration, provenance, failure, and approval evidence.
 
-Cloud training, hosted inference, paid APIs, or credential setup require explicit user approval.
+Cloud training, hosted inference, HF Jobs, paid APIs, model uploads, dataset uploads, or credential
+setup require explicit user approval.
+
+### Local TTS And Media Research
+
+| Need                                     | Route                                                                                 |
+| ---------------------------------------- | ------------------------------------------------------------------------------------- |
+| Piper/local TTS model discovery          | Hugging Face model search/details plus local filesystem/license checks                |
+| TTS CLI/package API changes              | Context7 or official docs                                                             |
+| Render/FFmpeg command semantics          | official docs or local `ffmpeg -h` output; keep commands deterministic and reviewable |
+| Visual/asset direction for channel packs | Creative Production or brandkit, then persist asset provenance                        |
+| Generated bitmap assets                  | imagegen only when user asks or roadmap approves generated raster assets              |
+
+Local model downloads are allowed only when they are scoped to this workstation, reviewed for size
+and license, and kept out of tracked source unless the roadmap explicitly says otherwise.
 
 ## Cybersecurity
 
@@ -155,6 +187,8 @@ model. Offensive or exploit-oriented skills require explicit authorization and a
 - Security-sensitive diff: Codex Security diff scan.
 - PR/CI: GitHub plugin route; use `gh` only where connector coverage is insufficient.
 - Completion: Aegis verification-before-completion and project quality gates.
+- Release/changelog/version workflow drift: compare this repo's scripts with `agentic-trader` only
+  as design reference; keep Producer's release policy conventional-commit based and deterministic.
 
 Run heavy Node/build/test commands sequentially unless concurrency is proven safe for the operator
 machine.

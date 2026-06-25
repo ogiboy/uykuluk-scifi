@@ -5,6 +5,13 @@
 Use one primary agent for small, sequential, or tightly coupled work. Multi-agent execution is a
 tool for independent uncertainty or disjoint ownership, not a default ceremony.
 
+For this project, ordinary implementation should stay lightweight:
+
+- use Aegis/Superpowers for the current slice only;
+- use GSD only for explicit phase/milestone/UAT governance;
+- use Ruflo or Claude Flow only for a documented orchestration need;
+- keep `.ai/` and any `.planning/` artifacts development-only, never runtime inputs.
+
 ## When To Use A Swarm
 
 Use 2-4 agents when at least two workstreams can proceed independently, for example:
@@ -75,6 +82,9 @@ stable milestone when tool schemas and history leave insufficient compaction hea
 - At each milestone, summarize current truth in project files before continuing.
 - If auto-compaction fails or context is already near the limit, stop adding tools, save the
   checkpoint, and resume from a clean thread.
+- Do not rescan the full skill/plugin/MCP catalog every turn. Refresh the capability inventory only
+  when the user asks, a selected route is missing, or a new project phase needs a capability family
+  that is not already covered.
 
 Use `.ai/checklists/context-budget.md`, `.ai/templates/agent-brief.md`, and
 `.ai/templates/agent-handoff.md` for repeatable execution.
