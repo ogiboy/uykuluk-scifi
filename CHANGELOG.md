@@ -13,6 +13,7 @@ future generated release notes can be inserted predictably.
 
 - record local Piper model and config provenance in voiceover evidence and review artifacts
 - show voiceover WAV and ffprobe render evidence in Studio read-only artifact previews
+- show render plan, voiceover, and draft render status in the CLI run status summary
 - validate local draft renders with `ffprobe` media evidence before recording render completion
 
 ## v0.7.2 (2026-06-25)

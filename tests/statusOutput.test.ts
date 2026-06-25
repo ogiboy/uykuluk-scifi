@@ -47,6 +47,10 @@ describe("operator status output", () => {
     expect(output).toContain("Artifacts: 2");
     expect(output).toContain("Blocked actions: 1");
     expect(output).toContain("Next safe action: pnpm producer approve render --run <run_id>");
+    expect(output).toContain("Production media:");
+    expect(output).toContain("- Render plan: recorded");
+    expect(output).toContain("- Voiceover audio: missing");
+    expect(output).toContain("- Draft render: missing");
     expect(output).toContain("Recent artifacts:");
     expect(output).toContain("- evidence_bundle.json");
     expect((await loadRun(run.runId)).state).toBe("READY_FOR_MANUAL_PRODUCTION");
@@ -59,6 +63,41 @@ describe("operator status output", () => {
 
     expect(output).toContain("Next safe action: pnpm producer ideas");
     expect(output).toContain("Evidence: missing");
+  });
+
+  it("uses evidence statuses for production media when evidence is available", async () => {
+    const run = await createRun();
+    await saveRun({
+      ...run,
+      artifacts: [
+        "production/render_plan.json",
+        "production/audio/voiceover.wav",
+        "production/render/draft.mp4",
+        "evidence_bundle.json",
+      ],
+      state: "RENDERED",
+    });
+    await writeFile(
+      artifactPath(run.runId, "evidence_bundle.json"),
+      JSON.stringify({
+        draftRender: { status: "block", message: "Draft render output does not match manifest." },
+        nextRecommendedCommand:
+          "Regenerate evidence; draft render artifacts are missing or blocked.",
+        renderPlan: { status: "pass" },
+        voiceoverAudio: { status: "pass" },
+      }),
+      "utf8",
+    );
+
+    const output = formatRunStatus(await readRunStatus(run.runId));
+
+    expect(output).toContain("Production media:");
+    expect(output).toContain("- Render plan: pass");
+    expect(output).toContain("- Voiceover audio: pass");
+    expect(output).toContain("- Draft render: block");
+    expect(output).toContain(
+      "Next safe action: Regenerate evidence; draft render artifacts are missing or blocked.",
+    );
   });
 
   it("recommends idea approval before evidence exists", async () => {
