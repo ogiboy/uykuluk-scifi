@@ -30,7 +30,16 @@ function draftRenderReadyMessage(
 ): string {
   const duration = Math.round(evidence.durationSeconds);
   if (!evidence.mediaProbe) {
-    return `${evidence.path} exists with ${duration}s draft video.`;
+    return `${evidence.path} exists with ${duration}s draft video${sourceFrameDetail(evidence)}.`;
   }
-  return `${evidence.path} exists with ${duration}s ffprobe-validated draft video (${evidence.mediaProbe.video.width}x${evidence.mediaProbe.video.height}, audio stream present).`;
+  return `${evidence.path} exists with ${duration}s ffprobe-validated draft video (${evidence.mediaProbe.video.width}x${evidence.mediaProbe.video.height}, audio stream present${sourceFrameDetail(evidence)}).`;
+}
+
+function sourceFrameDetail(
+  evidence: Extract<Awaited<ReturnType<typeof readDraftRenderEvidence>>, { status: "pass" }>,
+): string {
+  if (evidence.sourceFrameCount === 0) {
+    return "";
+  }
+  return `, source frames ${evidence.sourceFrameSegments.join("/")}`;
 }

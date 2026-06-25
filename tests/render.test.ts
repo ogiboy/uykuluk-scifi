@@ -84,6 +84,7 @@ describe("draft render", () => {
         backgroundAsset: { path: string };
         durationSeconds: number;
         segment: string;
+        sourceFrameAssets?: Array<{ path: string }>;
       }>;
       voiceoverAudio: { digest: string; path: string };
     }>(artifactPath(runId, "production/render/render_manifest.json"));
@@ -100,6 +101,10 @@ describe("draft render", () => {
     expect(manifest.timeline[0]).toMatchObject({
       backgroundAsset: { path: "assets/intro/episode_title_card_1920x1080.jpg" },
       durationSeconds: 2,
+      sourceFrameAssets: [
+        { path: "assets/intro/frames/intro_frame_00.jpg" },
+        { path: "assets/intro/frames/intro_frame_01.jpg" },
+      ],
     });
     expect(manifest.timeline[1]).toMatchObject({
       backgroundAsset: { path: "assets/backgrounds/plate_test_1920x1080.jpg" },
@@ -108,6 +113,10 @@ describe("draft render", () => {
     expect(manifest.timeline[2]).toMatchObject({
       backgroundAsset: { path: "assets/outro/youtube_end_screen_1920x1080.jpg" },
       durationSeconds: 3,
+      sourceFrameAssets: [
+        { path: "assets/outro/frames/outro_frame_00.jpg" },
+        { path: "assets/outro/frames/outro_frame_01.jpg" },
+      ],
     });
     expect(manifest.ffmpeg.binary).toBe(ffmpeg);
     expect(manifest.mediaProbe).toEqual({
@@ -122,12 +131,10 @@ describe("draft render", () => {
     expect(manifest.ffmpeg.args.join("\n")).toContain(
       "assets/backgrounds/plate_test_1920x1080.jpg",
     );
-    expect(manifest.ffmpeg.args.join("\n")).toContain(
-      "assets/intro/episode_title_card_1920x1080.jpg",
-    );
-    expect(manifest.ffmpeg.args.join("\n")).toContain(
-      "assets/outro/youtube_end_screen_1920x1080.jpg",
-    );
+    expect(manifest.ffmpeg.args.join("\n")).toContain("assets/intro/frames/intro_frame_00.jpg");
+    expect(manifest.ffmpeg.args.join("\n")).toContain("assets/intro/frames/intro_frame_01.jpg");
+    expect(manifest.ffmpeg.args.join("\n")).toContain("assets/outro/frames/outro_frame_00.jpg");
+    expect(manifest.ffmpeg.args.join("\n")).toContain("assets/outro/frames/outro_frame_01.jpg");
     expect(manifest.ffmpeg.args.join("\n")).toContain(
       "assets/overlays/popup_info_card_900x520.png",
     );
@@ -146,6 +153,8 @@ describe("draft render", () => {
         durationSeconds: number;
         overlayRoles: string[];
         timelineSegments: string[];
+        sourceFrameCount: number;
+        sourceFrameSegments: string[];
         reviewPath: string;
         reviewChecklist: string[];
         mediaProbe?: {
@@ -160,6 +169,8 @@ describe("draft render", () => {
       durationSeconds: 8,
       overlayRoles: expect.arrayContaining(["popup-card", "waveform-overlay"]),
       timelineSegments: ["intro", "scene", "outro"],
+      sourceFrameCount: 4,
+      sourceFrameSegments: ["intro:2", "outro:2"],
       reviewPath: "production/render/draft_review.md",
       mediaProbe: {
         audio: { codecName: "aac" },
@@ -171,7 +182,7 @@ describe("draft render", () => {
     expect(evidenceMarkdown).toContain("Render plan: pass");
     expect(evidenceMarkdown).toContain("Voiceover audio: pass");
     expect(evidenceMarkdown).toContain(
-      "Draft render: pass (8s, intro -> scene -> outro, ffprobe 1280x720 audio)",
+      "Draft render: pass (8s, intro -> scene -> outro, source frames intro:2/outro:2, ffprobe 1280x720 audio)",
     );
     const review = await readFile(artifactPath(runId, "production/render/draft_review.md"), "utf8");
     expect(review).toContain("# Draft Render Review");
@@ -185,7 +196,9 @@ describe("draft render", () => {
     const readiness = await runReadiness(runId);
     expect(readiness.checks.find((check) => check.name === "draft render available")).toMatchObject(
       {
-        message: expect.stringContaining("ffprobe-validated draft video (1280x720"),
+        message: expect.stringContaining(
+          "ffprobe-validated draft video (1280x720, audio stream present, source frames intro:2/outro:2)",
+        ),
         status: "pass",
       },
     );

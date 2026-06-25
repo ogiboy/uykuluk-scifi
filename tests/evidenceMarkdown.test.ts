@@ -50,6 +50,8 @@ describe("evidence Markdown media summary", () => {
         durationSeconds: 3.1,
         overlayRoles: [],
         timelineSegments: ["scene"],
+        sourceFrameCount: 0,
+        sourceFrameSegments: [],
         reviewPath: "production/render/draft_review.md",
         reviewChecklist: ["review locally"],
       },

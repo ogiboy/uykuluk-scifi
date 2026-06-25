@@ -143,12 +143,25 @@ function draftRenderSummary(
   draftRender: Awaited<ReturnType<typeof readDraftRenderEvidence>>,
 ): string {
   if (draftRender.status === "pass") {
-    return `Draft render: pass (${Math.round(draftRender.durationSeconds)}s, ${draftRender.timelineSegments.join(" -> ")}${mediaProbeSummary(draftRender.mediaProbe)}).`;
+    return `Draft render: pass (${Math.round(draftRender.durationSeconds)}s, ${draftRender.timelineSegments.join(" -> ")}${sourceFrameSummary(draftRender)}${mediaProbeSummary(draftRender.mediaProbe)}).`;
   }
   if (draftRender.status === "block") {
     return `Draft render: block (${draftRender.message}).`;
   }
   return `Draft render: missing (${draftRender.requiredArtifacts.join(", ")}).`;
+}
+
+function sourceFrameSummary(
+  draftRender: Extract<Awaited<ReturnType<typeof readDraftRenderEvidence>>, { status: "pass" }>,
+): string {
+  if (
+    draftRender.sourceFrameCount === 0 ||
+    !Array.isArray(draftRender.sourceFrameSegments) ||
+    draftRender.sourceFrameSegments.length === 0
+  ) {
+    return "";
+  }
+  return `, source frames ${draftRender.sourceFrameSegments.join("/")}`;
 }
 
 function mediaProbeSummary(

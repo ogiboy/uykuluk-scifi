@@ -69,8 +69,9 @@
   render-plan intro/outro bookends and scenes, expands committed intro/outro source-frame sequences
   into FFmpeg inputs when enough review time exists, composes lower-third, popup-card, waveform, and
   watermark overlays when available, records the exact intro-to-outro timeline, source-frame counts,
-  and overlay roles/placements in the manifest, validates the output with `ffprobe` media stream
-  evidence, and writes an operator-readable final local review checklist.
+  and overlay roles/placements in the manifest, evidence, and readiness summaries, validates the
+  output with `ffprobe` media stream evidence, and writes an operator-readable final local review
+  checklist.
 - Provider-backed idea and production-package stages schema-validate and normalize common Ollama
   JSON variants before artifact writes, while rejecting malformed or English operator-facing
   payloads fail-closed.
@@ -397,9 +398,9 @@ Corepack/PATH before treating failures as product failures.
   pronunciation still require operator listening before production use.
 - FFmpeg draft render currently focuses on a local review MP4 using intro/outro source-card bookends
   or source-frame sequences, scene-timed background plates, subtitle burn-in, lower-third,
-  popup-card, waveform, watermark overlays, voiceover audio, render manifest evidence, and an
-  operator review checklist. Render-ready intro/outro MP4 clips for reuse outside the draft renderer
-  and broader visual polish remain follow-up work.
+  popup-card, waveform, watermark overlays, voiceover audio, render manifest evidence, source-frame
+  evidence/readiness summaries, and an operator review checklist. Render-ready intro/outro MP4 clips
+  for reuse outside the draft renderer and broader visual polish remain follow-up work.
 - Upload and publish are intentionally disabled scaffolds.
 - Manual analytics import/reporting and the basic read-only Studio analytics overview are local-only
   and operator-provided. Richer analytics comparisons, cohort-level confidence scoring, and YouTube

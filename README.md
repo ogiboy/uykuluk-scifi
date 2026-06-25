@@ -90,7 +90,8 @@ agent-tracking state only; runtime code must not require it.
 - Approval-gated local FFmpeg draft render that writes a review MP4, manifest, operator review
   Markdown, and `ffprobe` media-validation evidence from the current render plan, intro/outro source
   cards or source-frame sequences, scene-timed background plates, voiceover audio, subtitles,
-  lower-third, popup, waveform, and watermark overlays.
+  lower-third, popup, waveform, watermark overlays, and source-frame counts surfaced in
+  evidence/readiness summaries.
 - Manual analytics import/report commands for operator-provided CSV/JSON performance exports, plus a
   read-only Studio view over the ignored local analytics artifacts and import data-quality summary.
 - Typed Studio route-security contract covering current read-only routes and disabled future action

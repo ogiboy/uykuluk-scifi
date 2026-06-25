@@ -83,6 +83,8 @@ export type DraftRenderEvidence =
       durationSeconds: number;
       overlayRoles: string[];
       timelineSegments: string[];
+      sourceFrameCount: number;
+      sourceFrameSegments: string[];
       reviewPath: string;
       reviewChecklist: string[];
       mediaProbe?: RenderMediaProbe;
@@ -134,6 +136,8 @@ export async function readDraftRenderEvidence(run: RunRecord): Promise<DraftRend
       durationSeconds: manifest.output.durationSeconds,
       overlayRoles: manifest.composition.overlays.map((overlay) => overlay.role),
       timelineSegments: manifest.timeline.map((item) => item.segment ?? "scene"),
+      sourceFrameCount: sourceFrameCount(manifest.timeline),
+      sourceFrameSegments: sourceFrameSegments(manifest.timeline),
       reviewPath: draftRenderReviewPath,
       reviewChecklist: manifest.composition.reviewChecklist,
       mediaProbe: manifest.mediaProbe,
@@ -145,6 +149,24 @@ export async function readDraftRenderEvidence(run: RunRecord): Promise<DraftRend
       message: error instanceof Error ? error.message : String(error),
     };
   }
+}
+
+function sourceFrameCount(timeline: DraftRenderManifest["timeline"]): number {
+  return timeline.reduce((total, item) => total + (item.sourceFrameAssets?.length ?? 0), 0);
+}
+
+function sourceFrameSegments(timeline: DraftRenderManifest["timeline"]): string[] {
+  return timeline.flatMap((item) => {
+    const count = item.sourceFrameAssets?.length ?? 0;
+    return count > 0 ? [`${timelineSegmentLabel(item)}:${count}`] : [];
+  });
+}
+
+function timelineSegmentLabel(item: DraftRenderManifest["timeline"][number]): string {
+  if (item.segment === "scene") {
+    return `scene-${item.sceneIndex ?? "unknown"}`;
+  }
+  return item.segment ?? "scene";
 }
 
 async function assertDraftRenderArtifacts(run: RunRecord): Promise<void> {
