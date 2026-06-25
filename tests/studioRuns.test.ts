@@ -79,6 +79,7 @@ describe("Studio read-only run summaries", () => {
       "# Voiceover Review\n\nConfirm pacing before render approval.",
       "utf8",
     );
+    await writeFile(artifactPath(run.runId, "production/audio/voiceover.wav"), Buffer.from([4, 5]));
     await writeFile(
       artifactPath(run.runId, "production/render/draft.mp4"),
       Buffer.from([0, 1, 2, 3]),
@@ -95,6 +96,7 @@ describe("Studio read-only run summaries", () => {
         "script.md",
         "production/render_plan.json",
         "production/asset_provenance.json",
+        "production/audio/voiceover.wav",
         "production/audio/voiceover_review.md",
         "production/render/draft.mp4",
         "production/render/render_manifest.json",
@@ -147,6 +149,16 @@ describe("Studio read-only run summaries", () => {
           preview: expect.stringContaining("assets/backgrounds/nebula.png"),
         }),
         expect.objectContaining({
+          path: "production/audio/voiceover.wav",
+          description: expect.stringContaining("Local TTS WAV"),
+          exists: true,
+          group: "Audio And Render",
+          kind: "binary",
+          operatorAction: expect.stringContaining("Listen locally outside Studio"),
+          preview: null,
+          sizeBytes: 2,
+        }),
+        expect.objectContaining({
           path: "production/audio/voiceover_review.md",
           exists: true,
           group: "Audio And Render",
@@ -161,6 +173,12 @@ describe("Studio read-only run summaries", () => {
           kind: "markdown",
           operatorAction: expect.stringContaining("private upload approval"),
           preview: expect.stringContaining("Upload remains disabled"),
+        }),
+        expect.objectContaining({
+          path: "production/render/render_manifest.json",
+          description: expect.stringContaining("ffprobe media evidence"),
+          group: "Audio And Render",
+          kind: "json",
         }),
         expect.objectContaining({
           path: "production/render/draft.mp4",
