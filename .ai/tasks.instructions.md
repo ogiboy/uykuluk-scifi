@@ -80,8 +80,9 @@
 - Preserve the continuation design over simply raising local section chunk caps; live local QA
   showed larger chunks can destabilize JSON parse reliability.
 - Keep `producer doctor` config/provider/model/TTS/asset/publish diagnostics and evidence passing.
-- Harden Studio read-only artifact previews with better grouping, media-specific metadata, and
-  operator review wording while keeping the surface non-mutating.
+- Keep Studio read-only artifact previews useful as new artifact types are added. Current previews
+  include operator-phase grouping, media-specific metadata, and per-artifact review wording while
+  keeping the surface non-mutating.
 - Harden manual analytics feedback with import edge cases, run-link summaries, and future Studio
   read-only views while keeping data operator-provided and local-only.
 - Define typed read/write service contracts that both CLI and web can use before adding Studio

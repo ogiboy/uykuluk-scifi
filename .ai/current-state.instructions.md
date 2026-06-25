@@ -223,8 +223,9 @@
   readiness status, warning/approval counts, and review artifact availability. It does not mutate
   run state or call providers.
 - Studio run detail includes read-only artifact preview excerpts for scripts, reviews, production
-  packages, render plans, contact sheets, evidence, readiness, and render manifests. Binary media is
-  intentionally limited to metadata.
+  packages, render plans, contact sheets, asset provenance, evidence, readiness, voiceover metadata,
+  and render manifests. Previews are grouped by operator review phase with per-artifact review
+  guidance, and binary media is intentionally limited to metadata.
 - Manual analytics feedback foundation. `producer analytics import --file <path>` accepts
   operator-provided CSV/JSON performance exports and writes ignored local
   `analytics/performance.json` plus `analytics/performance_report.md`. `producer analytics report`
@@ -306,9 +307,9 @@ Corepack/PATH before treating failures as product failures.
 - No paid provider adapter is implemented. Exact cost quote approval remains separate from spend
   authorization. The internal execution boundary is ready for a future approved adapter, but no SDK,
   credential, network integration, or CLI mutation command exposes it.
-- Current Next.js Studio is still review-only. Richer media-specific previews, route security
-  requirements, shared read/write service contracts, and guarded mutation routes are not implemented
-  yet.
+- Current Next.js Studio is still review-only. Artifact previews now include grouped review
+  metadata, but route security requirements, shared read/write service contracts, and guarded
+  mutation routes are not implemented yet.
 - Locale infrastructure is ready, but full translation catalogs and a language selector are
   intentionally deferred.
 - Prompt editing UI is planned but not implemented.
