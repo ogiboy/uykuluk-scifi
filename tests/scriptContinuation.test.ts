@@ -124,10 +124,11 @@ describe("script continuation parsing", () => {
     );
   });
 
-  it("keeps the continuation response schema below Ollama grammar repetition limits", () => {
+  it("keeps continuation length safety in the parser instead of Ollama grammar schema", () => {
     expect(scriptContinuationMaxLength).toBe(2400);
-    expect(scriptContinuationResponseFormat.properties.text.maxLength).toBe(
-      scriptContinuationMaxLength,
-    );
+    expect(scriptContinuationResponseFormat.properties.text).toEqual({
+      type: "string",
+      minLength: 1,
+    });
   });
 });

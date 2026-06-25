@@ -115,6 +115,9 @@
 - Script continuation parsing accepts additional bounded malformed local-model `"text"` wrappers,
   including trailing commas, missing closing quotes, and short external notes, only after the
   extracted Turkish continuation still passes complete-sentence and exact-label validation.
+- Continuation request JSON schema no longer carries a large `maxLength` repetition bound because
+  live Ollama qwen3 still rejected `char{1,2400}` grammar with a sane-defaults warning. The
+  parser-side 2400-character guard remains authoritative for accepted continuation text.
 - Script expansion prompts now explicitly warn against repeated sentence skeletons, metaphors, and
   visual directions across the draft and already-written chunks.
 - Script provider parse/transport failures and content-blocker failures persist safe run diagnostics

@@ -82,6 +82,8 @@
   output; add a variant only when it is safe, bounded, and regression-tested.
 - Preserve the continuation design over simply raising local section chunk caps; live local QA
   showed larger chunks can destabilize JSON parse reliability.
+- Keep continuation request schemas compatible with Ollama grammar limits; large accepted-text
+  bounds belong in parser validation, not provider grammar schemas.
 - Keep `producer doctor` config/provider/model/TTS/asset/publish diagnostics and evidence passing.
 - Keep Studio read-only artifact previews useful as new artifact types are added. Current previews
   include operator-phase grouping, media-specific metadata, and per-artifact review wording while
