@@ -480,6 +480,8 @@ operator data.
 - Pushes to `main` run the release workflow. When releaseable commits exist, it updates
   `package.json`, moves `CHANGELOG.md` Unreleased notes into a versioned section, creates
   `chore(release): vX.Y.Z`, and tags `vX.Y.Z`.
+- The release publish step refreshes `origin/main` before planning and retries atomic push if main
+  advances while earlier release jobs are running.
 - Release phase `0.1.x` covers CLI MVP hardening, Studio foundation, browser QA, docs, and tooling.
 
 ## License
