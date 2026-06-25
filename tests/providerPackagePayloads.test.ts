@@ -44,4 +44,10 @@ describe("production package provider payload parsing", () => {
   it("removes leading thinking traces from markdown script output", () => {
     expect(stripProviderThinking("<think>private analysis</think>\n\n# Script")).toBe("# Script");
   });
+
+  it("removes multiple leading thinking traces without lowercased-index slicing", () => {
+    expect(
+      stripProviderThinking('<think>İÇERİK</think>\n<think>second</think>\n\n{"ok":true}'),
+    ).toBe('{"ok":true}');
+  });
 });

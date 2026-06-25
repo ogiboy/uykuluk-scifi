@@ -10,10 +10,10 @@ const misspelledProductionLabels = new Set(["anlatı", "anlatyıcı"]);
 export function malformedProductionLabelDetails(
   script: string,
 ): MalformedProductionLabelDetails | undefined {
-  const labelPattern = /\b(\p{L}+)\s*:/gu;
+  const labelPattern = /\b(\p{L}+)\s*[:-]/gu;
   let match: RegExpExecArray | null;
   while ((match = labelPattern.exec(script)) !== null) {
-    const details = classifyProductionLabel(match[1] ?? "");
+    const details = classifyProductionLabel(match[1] ?? "", match[0].endsWith(":") ? ":" : "-");
     if (details) {
       return details;
     }
@@ -21,9 +21,12 @@ export function malformedProductionLabelDetails(
   return undefined;
 }
 
-function classifyProductionLabel(label: string): MalformedProductionLabelDetails | undefined {
+function classifyProductionLabel(
+  label: string,
+  separator: string,
+): MalformedProductionLabelDetails | undefined {
   const normalized = label.toLocaleLowerCase("tr");
-  if (allowedProductionLabels.has(normalized)) {
+  if (separator === ":" && allowedProductionLabels.has(normalized)) {
     return undefined;
   }
   const labelFamily = labelFamilyFor(normalized);

@@ -68,6 +68,19 @@ describe("provider payload parsing", () => {
     ).toThrow(/Invalid ideas provider response/);
   });
 
+  it("rejects Turkish rating-only fit values from local providers", () => {
+    expect(() =>
+      parseIdeasProviderPayload(
+        JSON.stringify([
+          {
+            ...validIdea,
+            fit: "yüksek",
+          },
+        ]),
+      ),
+    ).toThrow(/Fit must be a Turkish explanation, not a rating/);
+  });
+
   it("rejects English style text even when the rest of the idea is Turkish", () => {
     expect(() =>
       parseIdeasProviderPayload(

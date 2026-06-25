@@ -21,6 +21,12 @@ type IdeasArtifact = {
   repair: {
     attempted: boolean;
     attempts: number;
+    prompt?: {
+      artifact: string;
+      hash: string;
+      key: string;
+      source?: string;
+    };
     validationErrors: string[];
   };
 };
@@ -90,8 +96,15 @@ describe("idea provider retry and repair", () => {
     expect(artifact.repair).toEqual({
       attempted: true,
       attempts: 1,
+      prompt: {
+        key: "ideas",
+        artifact: "ideas.json",
+        hash: expect.stringMatching(/^[a-f0-9]{64}$/),
+        source: "src/stages/ideaRepairPrompt.ts",
+      },
       validationErrors: [expect.stringMatching(/Invalid ideas provider response/i)],
     });
+    expect(artifact.repair.prompt?.hash).not.toBe(artifact.prompt.hash);
     expect(JSON.stringify(artifact)).not.toContain("Tekrar Eden Gezegen");
     expect((await loadRun(runId)).state).toBe("IDEAS_GENERATED");
     expect(
@@ -121,6 +134,12 @@ describe("idea provider retry and repair", () => {
     expect(artifact.repair).toEqual({
       attempted: true,
       attempts: 2,
+      prompt: {
+        key: "ideas",
+        artifact: "ideas.json",
+        hash: expect.stringMatching(/^[a-f0-9]{64}$/),
+        source: "src/stages/ideaRepairPrompt.ts",
+      },
       validationErrors: [
         expect.stringMatching(/Ideas must be meaningfully distinct/i),
         expect.stringMatching(/repeated premise frame/i),

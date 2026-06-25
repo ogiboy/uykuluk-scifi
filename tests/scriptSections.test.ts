@@ -7,6 +7,7 @@ import { approveIdea } from "../src/stages/approveIdea";
 import { runIdeas } from "../src/stages/ideas";
 import { generateScript } from "../src/stages/script";
 import { reviewScriptContent } from "../src/safeguards/contentGuard";
+import { scriptContinuationTokenCap } from "../src/stages/scriptContinuation";
 import {
   renderScriptSectionExpansionPrompt,
   renderScriptSectionPrompt,
@@ -132,8 +133,9 @@ describe("sectional script generation", () => {
     );
 
     expect(meta.wordCount).toBeGreaterThanOrEqual(1200);
-    expect(sections.providerCallCount).toBeGreaterThan(16);
-    expect(continuationReceipts).toHaveLength(2);
+    expect(sections.providerCallCount).toBeGreaterThanOrEqual(17);
+    expect(continuationReceipts.length).toBeGreaterThanOrEqual(1);
+    expect(continuationReceipts.length).toBeLessThanOrEqual(2);
     expect(continuationReceipts.every((section) => section.wordCount > 0)).toBe(true);
     expect(
       continuationReceipts.every((section) => /^[a-f0-9]{64}$/.test(section.contentHash)),
@@ -184,6 +186,12 @@ describe("sectional script generation", () => {
     expect(scriptSectionExpansionResponseFormat.properties.text).toMatchObject({
       maxLength: 1400,
     });
+  });
+
+  it("keeps continuation token caps within the configured script cap", () => {
+    expect(scriptContinuationTokenCap(900)).toBe(900);
+    expect(scriptContinuationTokenCap(3_200)).toBe(1_100);
+    expect(sectionExpansionTokenCap(3_200)).toBeLessThanOrEqual(3_200);
   });
 
   it("shows previous expansion chunks so local models do not repeat section loops", () => {

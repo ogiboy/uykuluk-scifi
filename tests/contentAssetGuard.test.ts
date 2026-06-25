@@ -169,6 +169,31 @@ describe("content and asset safeguards", () => {
     );
   });
 
+  it("blocks dash-separated production labels because exact colon labels are required", () => {
+    const warnings = reviewScriptContent(
+      [
+        "# Uykuluk Yıldızları",
+        "",
+        "Görsel - Bu satır local modelin tireli görsel etiketidir.",
+        "",
+        "UykulukSciFi'de yeniden buluşalım.",
+      ].join("\n"),
+    );
+
+    expect(warnings).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: "malformed_production_label",
+          details: {
+            labelFamily: "visual",
+            labelIssue: "unknown_related_label",
+          },
+          severity: "blocker",
+        }),
+      ]),
+    );
+  });
+
   it("classifies unknown related production labels without storing raw label text", () => {
     const warnings = reviewScriptContent(
       [

@@ -25,12 +25,12 @@ export function parseProviderJson(text: string, label: string): unknown {
 
 export function stripProviderThinking(text: string): string {
   let remaining = text.trim();
-  while (remaining.toLocaleLowerCase("en-US").startsWith("<think>")) {
-    const closingIndex = remaining.toLocaleLowerCase("en-US").indexOf("</think>");
-    if (closingIndex < 0) {
+  while (/^<think>/iu.test(remaining)) {
+    const withoutThinking = remaining.replace(/^<think>[\s\S]*?<\/think>\s*/iu, "").trim();
+    if (withoutThinking === remaining) {
       return remaining;
     }
-    remaining = remaining.slice(closingIndex + "</think>".length).trim();
+    remaining = withoutThinking;
   }
   return remaining;
 }

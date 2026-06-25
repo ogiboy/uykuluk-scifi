@@ -18,6 +18,7 @@ export const defaultConfig: ProducerConfig = {
       ollamaBaseUrl: "http://localhost:11434",
       model: "qwen3:8b",
       thinkingMode: "default",
+      requestTimeoutMs: 120_000,
       maxOutputTokens: {
         ideas: 3000,
         script: 3200,

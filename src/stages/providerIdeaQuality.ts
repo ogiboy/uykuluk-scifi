@@ -14,7 +14,16 @@ export type NormalizedProviderIdea = {
   fit: string;
 };
 
-const ideaRatingValues = new Set(["low", "medium", "high"]);
+const ideaRatingValues = new Set([
+  "düşük",
+  "dusuk",
+  "high",
+  "low",
+  "medium",
+  "orta",
+  "yüksek",
+  "yuksek",
+]);
 const brandCheckedFields = ["title", "premise", "style", "fit"] as const;
 const humanFacingFields = ["title", "premise", "targetDuration", "style", "fit"] as const;
 
@@ -29,7 +38,7 @@ export function validateIdeaQuality(
   if (repeatedSentenceIssue) {
     return repeatedSentenceIssue;
   }
-  if (ideaRatingValues.has(idea.fit.trim().toLocaleLowerCase("en-US"))) {
+  if (ideaRatingValues.has(idea.fit.trim().toLocaleLowerCase("tr"))) {
     return {
       path: ["fit"],
       message: "Fit must be a Turkish explanation, not a rating.",
@@ -230,23 +239,6 @@ function contentWordCount(words: string[]): number {
   return words.filter((word) => !premiseFrameStopWords.has(word)).length;
 }
 
-const premiseFrameStopWords = new Set([
-  "acaba",
-  "ama",
-  "belki",
-  "bir",
-  "bu",
-  "da",
-  "de",
-  "diye",
-  "gibi",
-  "için",
-  "ile",
-  "mi",
-  "mı",
-  "mu",
-  "mü",
-  "ve",
-  "veya",
-  "ya",
-]);
+const premiseFrameStopWords = new Set(
+  "acaba ama belki bir bu da de diye gibi için ile mi mı mu mü ve veya ya".split(" "),
+);

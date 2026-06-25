@@ -34,6 +34,7 @@ export class OllamaProvider implements LlmProvider {
     private readonly baseUrl: string,
     private readonly defaultModel: string,
     private readonly thinkingMode: "default" | "think" | "no_think" = "default",
+    private readonly requestTimeoutMs = 120_000,
   ) {}
 
   async diagnose(timeoutMs = 3_000): Promise<OllamaDiagnostic> {
@@ -106,6 +107,7 @@ export class OllamaProvider implements LlmProvider {
       response = await fetch(`${baseUrl}/api/generate`, {
         method: "POST",
         headers: { "content-type": "application/json" },
+        signal: AbortSignal.timeout(this.requestTimeoutMs),
         body: JSON.stringify({
           model,
           prompt,

@@ -17,16 +17,12 @@ coherent, tested slices until the safe core and its evidence contracts are genui
 
 ## Current State
 
-- Branch/worktree on 2026-06-24: `fix/studio-ide-diagnostics` at
-  `/Users/ogiboy/.codex/worktrees/894d/uykuluk-scifi`.
-- Current worktree is green but uncommitted because this sandbox cannot write the shared git index
-  lock under `/Users/ogiboy/Documents/uykuluk-scifi/.git/worktrees/uykuluk-scifi1/index.lock`.
+- Active PR branch/worktree on 2026-06-25: `feat/local-production-workflow-hardening` at
+  `/private/tmp/uykuluk-commit-work-20260624153047`.
 - Active product slice moved from safe-core-only work into local production-loop hardening: bounded
   script continuation, local-provider fail-closed guards, Sonar/IDE quality cleanup, and live Ollama
   QA evidence.
-- Branch/worktree: `feat/core-reserved-provider-execution` at
-  `/Users/ogiboy/.codex/worktrees/894d/uykuluk-scifi`.
-- Base: `7bd5801`, the merge of the completed script approval/revision hardening work.
+- Base: `v0.2.1` / `origin/main`; PR #22 carries the local production workflow hardening commits.
 - Earlier completed hardening includes content-addressed script approval and revisions,
   budget/readiness enforcement, atomic state writes, prompt provenance/runtime templates,
   provider/publish tests, dependency audit, diagnostics synchronization, and content/asset guards.

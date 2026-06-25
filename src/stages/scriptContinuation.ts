@@ -144,7 +144,7 @@ export function renderScriptContinuationPrompt(
 export { parseScriptContinuationProviderPayload } from "./scriptContinuationParsing.js";
 
 export function scriptContinuationTokenCap(totalScriptCap: number): number {
-  return Math.max(1100, Math.ceil(totalScriptCap / 3));
+  return Math.min(totalScriptCap, Math.max(1100, Math.ceil(totalScriptCap / 3)));
 }
 
 function extractApprovedIdeaBlock(basePrompt: string): string {

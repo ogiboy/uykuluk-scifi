@@ -18,15 +18,18 @@ import { VideoIdea } from "./types.js";
 
 export { renderIdeaRepairPrompt } from "./ideaRepairPrompt.js";
 
+const ideaRepairPromptSource = "src/stages/ideaRepairPrompt.ts";
+
 type IdeaRepairEvidence = {
   attempted: boolean;
   attempts: number;
+  prompt?: ReturnType<typeof createPromptProvenance>;
   validationErrors: string[];
 };
 
 type IdeaGenerationOutcome = {
   ideas: VideoIdea[];
-  promptText: string;
+  repairPromptText?: string;
   repair: IdeaRepairEvidence;
   result: GenerateTextResult;
 };
@@ -79,13 +82,8 @@ export async function runIdeas(): Promise<{ runId: string; ideas: VideoIdea[] }>
     });
     run = await writeRunJson(run, "ideas", "ideas.json", {
       ideas: generation.ideas,
-      prompt: createPromptProvenance(
-        prompt.key,
-        generation.promptText,
-        "ideas.json",
-        prompt.source,
-      ),
-      repair: generation.repair,
+      prompt: createPromptProvenance(prompt.key, prompt.text, "ideas.json", prompt.source),
+      repair: repairEvidenceWithPrompt(prompt.key, generation),
     });
     run = await writeRunText(run, "ideas", "ideas.md", renderIdeasMarkdown(generation.ideas));
     run = await setRunState(run, "IDEAS_GENERATED", "ideas");
@@ -116,7 +114,7 @@ async function generateIdeasWithRepair(input: {
     try {
       return {
         ideas: parseIdeasProviderPayload(result.text),
-        promptText,
+        repairPromptText: validationErrors.length ? promptText : undefined,
         repair: repairEvidence(validationErrors),
         result: combineProviderResults(results),
       };
@@ -137,6 +135,24 @@ async function generateIdeasWithRepair(input: {
     }
   }
   throw new SafeExitError("Ideas provider did not return a parseable response.");
+}
+
+function repairEvidenceWithPrompt(
+  key: RenderedPrompt["key"],
+  generation: IdeaGenerationOutcome,
+): IdeaRepairEvidence {
+  if (!generation.repair.attempted || !generation.repairPromptText) {
+    return generation.repair;
+  }
+  return {
+    ...generation.repair,
+    prompt: createPromptProvenance(
+      key,
+      generation.repairPromptText,
+      "ideas.json",
+      ideaRepairPromptSource,
+    ),
+  };
 }
 
 function repairEvidence(validationErrors: string[]): IdeaRepairEvidence {

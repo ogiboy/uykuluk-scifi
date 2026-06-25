@@ -143,12 +143,15 @@ export function parseIdeasProviderPayload(text: string): VideoIdea[] {
   if (!result.success) {
     throw invalidProviderPayload("ideas", result.error);
   }
-  const ideas = Array.isArray(result.data) ? result.data : result.data.ideas;
-  const distinctIssue = validateIdeaListQuality(ideas);
+  const persistedIdeas = (Array.isArray(result.data) ? result.data : result.data.ideas).slice(
+    0,
+    10,
+  );
+  const distinctIssue = validateIdeaListQuality(persistedIdeas);
   if (distinctIssue) {
     throw new SafeExitError(`Invalid ideas provider response: ${distinctIssue}`);
   }
-  return ideas.slice(0, 10).map((idea, index) => ({
+  return persistedIdeas.map((idea, index) => ({
     id: `idea_${String(index + 1).padStart(3, "0")}`,
     ...idea,
   }));
