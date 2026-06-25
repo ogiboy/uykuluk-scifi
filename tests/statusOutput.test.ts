@@ -52,12 +52,43 @@ describe("operator status output", () => {
     expect((await loadRun(run.runId)).state).toBe("READY_FOR_MANUAL_PRODUCTION");
   });
 
-  it("falls back to evidence generation guidance when no evidence bundle exists", async () => {
+  it("keeps early workflow guidance when no evidence bundle exists", async () => {
     const run = await createRun();
 
     const output = formatRunStatus(await readRunStatus(run.runId));
 
-    expect(output).toContain("Next safe action: pnpm producer evidence --run <run_id>");
+    expect(output).toContain("Next safe action: pnpm producer ideas");
+    expect(output).toContain("Evidence: missing");
+  });
+
+  it("recommends idea approval before evidence exists", async () => {
+    const run = await createRun();
+    await saveRun({
+      ...run,
+      artifacts: ["ideas.json"],
+      state: "IDEAS_GENERATED",
+    });
+
+    const output = formatRunStatus(await readRunStatus(run.runId));
+
+    expect(output).toContain(
+      "Next safe action: pnpm producer approve idea --run <run_id> --idea <idea_id>",
+    );
+    expect(output).toContain("Evidence: missing");
+  });
+
+  it("recommends script retry after an approved idea when evidence is missing", async () => {
+    const run = await createRun();
+    await saveRun({
+      ...run,
+      approvedIdeaId: "idea_001",
+      artifacts: ["ideas.json", "diagnostics/script_generation_failure.json"],
+      state: "IDEA_APPROVED",
+    });
+
+    const output = formatRunStatus(await readRunStatus(run.runId));
+
+    expect(output).toContain("Next safe action: pnpm producer script --run <run_id>");
     expect(output).toContain("Evidence: missing");
   });
 });

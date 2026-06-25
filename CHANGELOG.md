@@ -15,6 +15,7 @@ future generated release notes can be inserted predictably.
 
 ### Fixes
 
+- keep early `producer status` next-action guidance useful before evidence exists
 - avoid Ollama continuation grammar warnings from large schema length bounds
 - fail closed when script continuations still miss the long-form floor
 - recover qwen3 script blocker retries with stale diagnostic cleanup

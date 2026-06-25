@@ -1,13 +1,19 @@
 import { artifactPath } from "../core/artifacts.js";
 import { loadRun } from "../core/runStore.js";
-import type { RunRecord } from "../core/state.js";
+import type { RunRecord, RunState } from "../core/state.js";
 import { pathExists } from "../utils/fs.js";
 import { readJsonFile } from "../utils/json.js";
+import { staticEvidenceNextCommand } from "./evidenceNextCommand.js";
 
 type EvidenceStatus = {
   blockedActions?: unknown[];
   nextRecommendedCommand?: unknown;
 };
+
+type EvidenceReadResult =
+  | { kind: "present"; evidence: EvidenceStatus }
+  | { kind: "missing" }
+  | { kind: "invalid" };
 
 export type RunStatusSummary = {
   approvalCount: number;
@@ -22,7 +28,8 @@ export type RunStatusSummary = {
 
 export async function readRunStatus(runId: string): Promise<RunStatusSummary> {
   const run = await loadRun(runId);
-  const evidence = await readEvidenceStatus(run.runId);
+  const evidenceResult = await readEvidenceStatus(run.runId);
+  const evidence = evidenceResult.kind === "present" ? evidenceResult.evidence : null;
   return {
     approvalCount: run.approvals.length,
     artifactCount: run.artifacts.length,
@@ -30,10 +37,7 @@ export async function readRunStatus(runId: string): Promise<RunStatusSummary> {
       ? evidence.blockedActions.length
       : null,
     evidencePresent: Boolean(evidence),
-    nextRecommendedCommand:
-      typeof evidence?.nextRecommendedCommand === "string"
-        ? evidence.nextRecommendedCommand
-        : "pnpm producer evidence --run <run_id>",
+    nextRecommendedCommand: statusNextRecommendedCommand(run.state, evidenceResult),
     recentArtifacts: run.artifacts.slice(-5).reverse(),
     run,
     warningCount: run.warnings.length,
@@ -59,14 +63,27 @@ export function formatRunStatus(status: RunStatusSummary): string {
   ].join("\n");
 }
 
-async function readEvidenceStatus(runId: string): Promise<EvidenceStatus | null> {
+function statusNextRecommendedCommand(state: RunState, evidenceResult: EvidenceReadResult): string {
+  if (
+    evidenceResult.kind === "present" &&
+    typeof evidenceResult.evidence.nextRecommendedCommand === "string"
+  ) {
+    return evidenceResult.evidence.nextRecommendedCommand;
+  }
+  if (evidenceResult.kind === "missing") {
+    return staticEvidenceNextCommand(state) ?? "pnpm producer evidence --run <run_id>";
+  }
+  return "pnpm producer evidence --run <run_id>";
+}
+
+async function readEvidenceStatus(runId: string): Promise<EvidenceReadResult> {
   const target = artifactPath(runId, "evidence_bundle.json");
   if (!(await pathExists(target))) {
-    return null;
+    return { kind: "missing" };
   }
   try {
-    return await readJsonFile<EvidenceStatus>(target);
+    return { kind: "present", evidence: await readJsonFile<EvidenceStatus>(target) };
   } catch {
-    return null;
+    return { kind: "invalid" };
   }
 }

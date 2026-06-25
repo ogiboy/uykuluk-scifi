@@ -41,6 +41,10 @@ const STATIC_NEXT_COMMANDS: Record<string, string> = {
   SCRIPT_GENERATED: "pnpm producer review script --run <run_id>",
 };
 
+export function staticEvidenceNextCommand(state: string): string | undefined {
+  return STATIC_NEXT_COMMANDS[state];
+}
+
 /** Returns the next safe operator action represented by an evidence snapshot. */
 export function evidenceNextCommand(input: EvidenceNextCommandInput): string {
   const {
