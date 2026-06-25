@@ -11,6 +11,12 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.3.1 (2026-06-25)
+
+### Chores
+
+- update dependencies to latest versions (270c48b)
+
 ## v0.3.0 (2026-06-25)
 
 ### Documentation
