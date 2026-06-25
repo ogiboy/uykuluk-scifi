@@ -69,9 +69,20 @@ describe("Studio read-only run summaries", () => {
       }),
       "utf8",
     );
+    await mkdir(`runs/${run.runId}/production/audio`, { recursive: true });
+    await writeFile(
+      artifactPath(run.runId, "production/audio/voiceover_review.md"),
+      "# Voiceover Review\n\nConfirm pacing before render approval.",
+      "utf8",
+    );
     await writeFile(
       artifactPath(run.runId, "production/render/draft.mp4"),
       Buffer.from([0, 1, 2, 3]),
+    );
+    await writeFile(
+      artifactPath(run.runId, "production/render/draft_review.md"),
+      "# Draft Render Review\n\nUpload remains disabled.",
+      "utf8",
     );
     await saveRun({
       ...run,
@@ -80,8 +91,10 @@ describe("Studio read-only run summaries", () => {
         "script.md",
         "production/render_plan.json",
         "production/asset_provenance.json",
+        "production/audio/voiceover_review.md",
         "production/render/draft.mp4",
         "production/render/render_manifest.json",
+        "production/render/draft_review.md",
         "evidence_bundle.json",
         "diagnostics/readiness.json",
       ],
@@ -128,6 +141,22 @@ describe("Studio read-only run summaries", () => {
           group: "Render Planning",
           label: "Asset provenance",
           preview: expect.stringContaining("assets/backgrounds/nebula.png"),
+        }),
+        expect.objectContaining({
+          path: "production/audio/voiceover_review.md",
+          exists: true,
+          group: "Audio And Render",
+          kind: "markdown",
+          operatorAction: expect.stringContaining("pacing"),
+          preview: expect.stringContaining("Voiceover Review"),
+        }),
+        expect.objectContaining({
+          path: "production/render/draft_review.md",
+          exists: true,
+          group: "Audio And Render",
+          kind: "markdown",
+          operatorAction: expect.stringContaining("private upload approval"),
+          preview: expect.stringContaining("Upload remains disabled"),
         }),
         expect.objectContaining({
           path: "production/render/draft.mp4",

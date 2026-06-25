@@ -84,11 +84,11 @@ agent-tracking state only; runtime code must not require it.
   evidence bundles.
 - Render Plan + Contact Sheet MVP that maps generated scenes to tracked visual assets and records
   per-run asset provenance.
-- Disabled-by-default local voiceover generation with deterministic reference WAV output and an
-  optional Piper binary/model-path adapter.
-- Approval-gated local FFmpeg draft render that writes a review MP4 and manifest from the current
-  render plan, scene-timed background plates, voiceover audio, subtitles, lower-third, popup,
-  waveform, and watermark overlays.
+- Disabled-by-default local voiceover generation with deterministic reference WAV output, operator
+  review Markdown, and an optional Piper binary/model-path adapter.
+- Approval-gated local FFmpeg draft render that writes a review MP4, manifest, and operator review
+  Markdown from the current render plan, intro/outro source cards, scene-timed background plates,
+  voiceover audio, subtitles, lower-third, popup, waveform, and watermark overlays.
 - Manual analytics import/report commands for operator-provided CSV/JSON performance exports.
 - Disabled private upload and public/scheduled publish placeholders.
 - UykulukSciFi visual assets under `assets/`.
@@ -178,10 +178,12 @@ agent-tracking state only; runtime code must not require it.
 - Successful readiness diagnostics and evidence reflect the final transitioned run state.
 - TTS is disabled by default and only runs after readiness with explicit local configuration, script
   approval, production-package integrity, and render-plan evidence.
+  `production/audio/voiceover_review.md` gives the operator the local audio review checklist; audio
+  file existence never grants render approval.
 - Draft render runs only after explicit render approval for the exact current render-plan and
-  voiceover digests. The manifest records the scene-timed background timeline, composed overlay
-  roles, placements, and operator review checklist used by FFmpeg. Render output is local review
-  media, not upload or publish authority.
+  voiceover digests. The manifest records the intro-to-outro timeline, composed overlay roles, and
+  placements used by FFmpeg; `production/render/draft_review.md` gives the operator the final local
+  review checklist. Render output is local review media, not upload or publish authority.
 - Upload and publish remain intentionally blocked scaffolds.
 - Upload and public/scheduled publish require future explicit config and separate approval gates.
 - Studio must call typed local service contracts; it must not duplicate workflow state.
@@ -408,12 +410,14 @@ production-quality voice. `pnpm tts:piper:setup` downloads the default pinned Tu
 ignored `producer.config.json` override. The helper keeps Hugging Face `config.json` and also writes
 the Piper-compatible `model.onnx.json` alias. `local-piper` requires a local `piper` binary and
 ignored model files configured with `piperModelPath` and `piperConfigPath`. Do not commit downloaded
-voice models or generated audio.
+voice models or generated audio. `producer voice` also writes `production/audio/voiceover_review.md`
+so the operator can check timing, pacing, pronunciation, and source binding before render approval.
 
 `producer render` requires `ffmpeg` on `PATH` unless called through a test harness with an explicit
 binary. The draft render is a local review artifact and may be regenerated after approval; its
-manifest records scene timing, overlay roles, and a final operator review checklist. It does not
-upload, schedule, or publish anything.
+manifest records intro/outro source-card segments, scene timing, and overlay roles, while
+`production/render/draft_review.md` summarizes the final operator checklist. It does not upload,
+schedule, or publish anything.
 
 `thinkingMode` can be `default`, `think`, or `no_think`. Token caps are sent to Ollama as
 `num_predict` so local generation cannot run unbounded. Script generation splits the approved idea
@@ -455,10 +459,11 @@ Each run can write:
   `production/production_package.meta.json`;
 - `production/render_plan.json`, `production/storyboard_contact_sheet.md`, and
   `production/asset_provenance.json`;
-- `production/audio/voiceover.wav` and `production/audio/voiceover.meta.json` when local TTS is
-  explicitly enabled and run after readiness;
-- `production/render/draft.mp4` and `production/render/render_manifest.json` after exact render
-  approval and local FFmpeg execution;
+- `production/audio/voiceover.wav`, `production/audio/voiceover.meta.json`, and
+  `production/audio/voiceover_review.md` when local TTS is explicitly enabled and run after
+  readiness;
+- `production/render/draft.mp4`, `production/render/render_manifest.json`, and
+  `production/render/draft_review.md` after exact render approval and local FFmpeg execution;
 - `costs/estimate.json` and `costs/estimate.md`;
 - `costs/ledger.jsonl`;
 - `costs/reservations.jsonl`;

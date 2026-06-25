@@ -41,7 +41,7 @@ describe("draft render", () => {
     const approval = await approveRender(runId);
     const ffmpeg = await createFakeFfmpeg();
 
-    await renderDraft(runId, { ffmpegBinary: ffmpeg, maxDurationSeconds: 1 });
+    await renderDraft(runId, { ffmpegBinary: ffmpeg, maxDurationSeconds: 8 });
 
     const run = await loadRun(runId);
     expect(approval).toMatchObject({ target: "render", nextState: "RENDER_APPROVED" });
@@ -50,6 +50,7 @@ describe("draft render", () => {
       expect.arrayContaining([
         "production/render/draft.mp4",
         "production/render/render_manifest.json",
+        "production/render/draft_review.md",
       ]),
     );
     const manifest = await readJsonFile<{
@@ -61,28 +62,46 @@ describe("draft render", () => {
       ffmpeg: { args: string[]; binary: string };
       renderPlan: { digest: string; path: string };
       schemaVersion: number;
-      timeline: Array<{ backgroundAsset: { path: string }; durationSeconds: number }>;
+      timeline: Array<{
+        backgroundAsset: { path: string };
+        durationSeconds: number;
+        segment: string;
+      }>;
       voiceoverAudio: { digest: string; path: string };
     }>(artifactPath(runId, "production/render/render_manifest.json"));
     expect(manifest.schemaVersion).toBe(2);
     expect(manifest.output).toMatchObject({
       path: "production/render/draft.mp4",
       sha256: expect.stringMatching(/^[a-f0-9]{64}$/),
-      durationSeconds: 1,
+      durationSeconds: 8,
     });
     expect(manifest.output.bytes).toBeGreaterThan(0);
     expect(manifest.renderPlan.path).toBe("production/render_plan.json");
     expect(manifest.voiceoverAudio.path).toBe("production/audio/voiceover.wav");
-    expect(manifest.timeline.length).toBeGreaterThan(0);
+    expect(manifest.timeline.map((item) => item.segment)).toEqual(["intro", "scene", "outro"]);
     expect(manifest.timeline[0]).toMatchObject({
+      backgroundAsset: { path: "assets/intro/episode_title_card_1920x1080.jpg" },
+      durationSeconds: 2,
+    });
+    expect(manifest.timeline[1]).toMatchObject({
       backgroundAsset: { path: "assets/backgrounds/plate_test_1920x1080.jpg" },
-      durationSeconds: 1,
+      durationSeconds: 3,
+    });
+    expect(manifest.timeline[2]).toMatchObject({
+      backgroundAsset: { path: "assets/outro/youtube_end_screen_1920x1080.jpg" },
+      durationSeconds: 3,
     });
     expect(manifest.ffmpeg.binary).toBe(ffmpeg);
     expect(manifest.ffmpeg.args.join("\n")).toContain("production/audio/voiceover.wav");
     expect(manifest.ffmpeg.args.join("\n")).toContain("production/subtitles.srt");
     expect(manifest.ffmpeg.args.join("\n")).toContain(
       "assets/backgrounds/plate_test_1920x1080.jpg",
+    );
+    expect(manifest.ffmpeg.args.join("\n")).toContain(
+      "assets/intro/episode_title_card_1920x1080.jpg",
+    );
+    expect(manifest.ffmpeg.args.join("\n")).toContain(
+      "assets/outro/youtube_end_screen_1920x1080.jpg",
     );
     expect(manifest.ffmpeg.args.join("\n")).toContain(
       "assets/overlays/popup_info_card_900x520.png",
@@ -101,15 +120,25 @@ describe("draft render", () => {
         path: string;
         durationSeconds: number;
         overlayRoles: string[];
+        timelineSegments: string[];
+        reviewPath: string;
         reviewChecklist: string[];
       };
     };
     expect(evidence.draftRender).toMatchObject({
       status: "pass",
       path: "production/render/draft.mp4",
-      durationSeconds: 1,
+      durationSeconds: 8,
       overlayRoles: expect.arrayContaining(["popup-card", "waveform-overlay"]),
+      timelineSegments: ["intro", "scene", "outro"],
+      reviewPath: "production/render/draft_review.md",
     });
+    const review = await readFile(artifactPath(runId, "production/render/draft_review.md"), "utf8");
+    expect(review).toContain("# Draft Render Review");
+    expect(review).toContain("Local review artifact only");
+    expect(review).toContain("assets/intro/episode_title_card_1920x1080.jpg");
+    expect(review).toContain("assets/outro/youtube_end_screen_1920x1080.jpg");
+    expect(review).toContain("Upload remains disabled");
   });
 
   it("blocks render approval until voiceover audio evidence exists", async () => {

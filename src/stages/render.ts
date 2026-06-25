@@ -2,7 +2,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { readFile, rename, rm, stat } from "node:fs/promises";
 import path from "node:path";
 import { spawn } from "node:child_process";
-import { artifactPath, recordRunArtifact, writeRunJson } from "../core/artifacts.js";
+import { artifactPath, recordRunArtifact, writeRunJson, writeRunText } from "../core/artifacts.js";
 import { SafeExitError } from "../core/errors.js";
 import { appendLedgerEvent } from "../core/ledger.js";
 import { loadRun, saveRun, setRunState } from "../core/runStore.js";
@@ -16,9 +16,11 @@ import {
   draftRenderManifestPath,
   draftRenderManifestSchema,
   draftRenderPath,
+  draftRenderReviewPath,
 } from "./renderEvidence.js";
 import { buildDraftRenderComposition } from "./renderComposition.js";
 import { readRenderPlanEvidence } from "./renderPlan.js";
+import { renderDraftReviewMarkdown } from "./renderReviewMarkdown.js";
 import {
   buildDraftRenderTimeline,
   buildFfmpegArgs,
@@ -126,6 +128,12 @@ export async function renderDraft(
       },
     });
     run = await writeRunJson(run, "render", draftRenderManifestPath, manifest);
+    run = await writeRunText(
+      run,
+      "render",
+      draftRenderReviewPath,
+      renderDraftReviewMarkdown(manifest),
+    );
     await saveRun(run);
     await setRunState(run, "RENDERED", "render");
     return manifest;

@@ -32,6 +32,7 @@ describe("voiceover audio", () => {
       expect.arrayContaining([
         "production/audio/voiceover.wav",
         "production/audio/voiceover.meta.json",
+        "production/audio/voiceover_review.md",
       ]),
     );
     const wav = await readFile(artifactPath(runId, "production/audio/voiceover.wav"));
@@ -63,14 +64,30 @@ describe("voiceover audio", () => {
     });
     expect(meta.output.durationSeconds).toBeGreaterThan(0);
     expect(meta.source.wordCount).toBeGreaterThan(0);
+    const review = await readFile(
+      artifactPath(runId, "production/audio/voiceover_review.md"),
+      "utf8",
+    );
+    expect(review).toContain("# Voiceover Review");
+    expect(review).toContain("Deterministic reference audio is for timing only");
+    expect(review).toContain("production/audio/voiceover.wav");
+    expect(review).toContain(
+      "render approval has not been granted from audio file existence alone",
+    );
 
     const evidence = (await generateEvidenceBundle(runId)) as {
-      voiceoverAudio: { status: string; path: string; durationSeconds: number };
+      voiceoverAudio: {
+        status: string;
+        path: string;
+        durationSeconds: number;
+        reviewPath: string;
+      };
     };
     expect(evidence.voiceoverAudio).toMatchObject({
       status: "pass",
       path: "production/audio/voiceover.wav",
       durationSeconds: meta.output.durationSeconds,
+      reviewPath: "production/audio/voiceover_review.md",
     });
   });
 

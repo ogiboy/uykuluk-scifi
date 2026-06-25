@@ -19,6 +19,10 @@ export const productionSceneSchema = z.strictObject({
   visualPrompt: z.string().min(1),
   durationSeconds: z.number().positive(),
 });
+const renderBookendSchema = z.strictObject({
+  durationSeconds: z.number().positive(),
+  asset: assetRefSchema,
+});
 export const renderPlanSchema = z.strictObject({
   schemaVersion: z.literal(1),
   runId: z.string().min(1),
@@ -31,6 +35,12 @@ export const renderPlanSchema = z.strictObject({
     aspectRatio: z.literal("16:9"),
     draftRenderer: z.literal("ffmpeg-local-draft"),
   }),
+  bookends: z
+    .strictObject({
+      intro: renderBookendSchema,
+      outro: renderBookendSchema,
+    })
+    .optional(),
   scenes: z.array(
     z.strictObject({
       sceneIndex: z.int().positive(),

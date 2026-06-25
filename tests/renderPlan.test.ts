@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { artifactPath } from "../src/core/artifacts";
 import { loadRun } from "../src/core/runStore";
@@ -42,6 +42,10 @@ describe("render plan", () => {
       schemaVersion: number;
       runId: string;
       productionPackageManifestPath: string;
+      bookends: {
+        intro: { durationSeconds: number; asset: { path: string; digest: string } };
+        outro: { durationSeconds: number; asset: { path: string; digest: string } };
+      };
       scenes: Array<{
         sceneIndex: number;
         backgroundAsset: { path: string; digest: string };
@@ -52,6 +56,16 @@ describe("render plan", () => {
       schemaVersion: 1,
       runId,
       productionPackageManifestPath: "production/production_package.meta.json",
+    });
+    expect(plan.bookends).toMatchObject({
+      intro: {
+        durationSeconds: 2,
+        asset: { path: "assets/intro/episode_title_card_1920x1080.jpg" },
+      },
+      outro: {
+        durationSeconds: 3,
+        asset: { path: "assets/outro/youtube_end_screen_1920x1080.jpg" },
+      },
     });
     expect(plan.scenes.length).toBeGreaterThan(0);
     expect(plan.scenes[0].backgroundAsset).toMatchObject({
@@ -74,6 +88,13 @@ describe("render plan", () => {
         expect.objectContaining({ role: "outro-source" }),
       ]),
     );
+    const contactSheet = await readFile(
+      artifactPath(runId, "production/storyboard_contact_sheet.md"),
+      "utf8",
+    );
+    expect(contactSheet).toContain("## Intro And Outro Bookends");
+    expect(contactSheet).toContain("assets/intro/episode_title_card_1920x1080.jpg");
+    expect(contactSheet).toContain("assets/outro/youtube_end_screen_1920x1080.jpg");
 
     await estimateCost(runId);
     const evidence = (await generateEvidenceBundle(runId)) as {

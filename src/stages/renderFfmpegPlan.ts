@@ -2,18 +2,16 @@ import path from "node:path";
 import { artifactPath } from "../core/artifacts.js";
 import { SafeExitError } from "../core/errors.js";
 import { voiceoverAudioPath } from "./voiceoverEvidence.js";
-import { AssetRef, RenderPlan } from "./renderPlanSchemas.js";
+import { RenderPlan } from "./renderPlanSchemas.js";
 import {
   buildDraftRenderComposition,
   type DraftRenderComposition,
   type DraftRenderOverlay,
 } from "./renderComposition.js";
+import { buildDraftRenderTimeline, type DraftRenderTimeline } from "./renderTimeline.js";
 
-type DraftRenderTimeline = Array<{
-  sceneIndex: number;
-  durationSeconds: number;
-  backgroundAsset: AssetRef;
-}>;
+export { buildDraftRenderTimeline, clampRenderDuration } from "./renderTimeline.js";
+export type { DraftRenderTimeline } from "./renderTimeline.js";
 
 export function buildFfmpegArgs(input: {
   composition?: DraftRenderComposition;
@@ -88,43 +86,6 @@ export function buildFfmpegArgs(input: {
   return args;
 }
 
-export function buildDraftRenderTimeline(
-  renderPlan: RenderPlan,
-  targetDurationSeconds: number,
-): DraftRenderTimeline {
-  if (renderPlan.scenes.length === 0) {
-    throw new SafeExitError("Draft render requires at least one render-plan scene.");
-  }
-  const targetDuration = positiveDuration(targetDurationSeconds);
-  const timeline: DraftRenderTimeline = [];
-  let remainingSeconds = targetDuration;
-  for (const scene of renderPlan.scenes) {
-    if (remainingSeconds <= 0) {
-      break;
-    }
-    const durationSeconds = positiveDuration(Math.min(scene.durationSeconds, remainingSeconds));
-    if (durationSeconds > 0) {
-      timeline.push({
-        sceneIndex: scene.sceneIndex,
-        durationSeconds,
-        backgroundAsset: scene.backgroundAsset,
-      });
-      remainingSeconds = roundSeconds(remainingSeconds - durationSeconds);
-    }
-  }
-  if (remainingSeconds > 0) {
-    extendLastTimelineScene(timeline, renderPlan, remainingSeconds);
-  }
-  return timeline;
-}
-
-export function clampRenderDuration(actualSeconds: number, maxSeconds?: number): number {
-  if (!maxSeconds || maxSeconds <= 0) {
-    return positiveDuration(actualSeconds);
-  }
-  return positiveDuration(Math.min(actualSeconds, maxSeconds));
-}
-
 function buildSubtitleConcatFilter(input: {
   concatInputs: string;
   outputLabel: string;
@@ -177,38 +138,6 @@ function overlayFilters(
     inputLabel = outputLabel;
     return filters;
   });
-}
-
-function extendLastTimelineScene(
-  timeline: DraftRenderTimeline,
-  renderPlan: RenderPlan,
-  remainingSeconds: number,
-): void {
-  const lastTimelineItem = timeline.at(-1);
-  if (lastTimelineItem) {
-    timeline[timeline.length - 1] = {
-      ...lastTimelineItem,
-      durationSeconds: positiveDuration(lastTimelineItem.durationSeconds + remainingSeconds),
-    };
-    return;
-  }
-  const firstScene = renderPlan.scenes[0];
-  if (!firstScene) {
-    throw new SafeExitError("Draft render requires at least one render-plan scene.");
-  }
-  timeline.push({
-    sceneIndex: firstScene.sceneIndex,
-    durationSeconds: positiveDuration(remainingSeconds),
-    backgroundAsset: firstScene.backgroundAsset,
-  });
-}
-
-function positiveDuration(seconds: number): number {
-  return Math.max(0.1, roundSeconds(seconds));
-}
-
-function roundSeconds(seconds: number): number {
-  return Math.round(seconds * 100) / 100;
 }
 
 const ffmpegFilterEscape = String.fromCodePoint(92);

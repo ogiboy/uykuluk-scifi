@@ -52,8 +52,9 @@
 - Disabled-by-default local voiceover generation. `producer voice` requires local TTS config,
   `READY_FOR_MANUAL_PRODUCTION`, explicit script approval, a verified production package, and valid
   render-plan evidence before it writes `production/audio/voiceover.wav` and
-  `production/audio/voiceover.meta.json`. `deterministic-local` is a timing/reference adapter;
-  `local-piper` shells out to a configured local Piper binary and ignored model path.
+  `production/audio/voiceover.meta.json`, and `production/audio/voiceover_review.md`.
+  `deterministic-local` is a timing/reference adapter; `local-piper` shells out to a configured
+  local Piper binary and ignored model path.
 - `pnpm tts:piper:setup` downloads the pinned CPU-friendly Turkish
   `speaches-ai/piper-tr_TR-fahrettin-medium` model into ignored `models/` and prints the matching
   local config override for `local-piper`.
@@ -61,10 +62,11 @@
   TTS, deterministic reference audio, valid local Piper config, and local Piper remediation.
 - Approval-gated local FFmpeg draft render. `producer approve render` records approval for the exact
   current render-plan and voiceover digests, then `producer render` requires `RENDER_APPROVED`
-  before writing `production/render/draft.mp4` and `production/render/render_manifest.json`. The
-  draft render now builds an FFmpeg concat timeline from render-plan scenes, composes lower-third,
-  popup-card, waveform, and watermark overlays when available, and records the exact scene
-  background timeline, overlay roles/placements, and operator review checklist in the manifest.
+  before writing `production/render/draft.mp4`, `production/render/render_manifest.json`, and
+  `production/render/draft_review.md`. The draft render now builds an FFmpeg concat timeline from
+  render-plan intro/outro bookends and scenes, composes lower-third, popup-card, waveform, and
+  watermark overlays when available, records the exact intro-to-outro timeline and overlay
+  roles/placements in the manifest, and writes an operator-readable final local review checklist.
 - Provider-backed idea and production-package stages schema-validate and normalize common Ollama
   JSON variants before artifact writes, while rejecting malformed or English operator-facing
   payloads fail-closed.
@@ -329,11 +331,13 @@ Corepack/PATH before treating failures as product failures.
 - Render planning does not render media, approve render execution, or reserve spend. It is a local
   review/planning artifact only.
 - Local TTS currently provides a deterministic timing/reference WAV, a configured Piper shell-out,
-  and an ignored-model setup helper. It does not commit voice models, approve render execution,
-  upload, or publish. Real Piper voice quality still needs local QA before production use.
-- FFmpeg draft render currently focuses on a local review MP4 using scene-timed background plates,
-  subtitle burn-in, lower-third, popup-card, waveform, watermark overlays, voiceover audio, and a
-  manifest review checklist. Intro/outro clip composition and visual polish remain follow-up work.
+  ignored-model setup helper, and operator audio review Markdown. It does not commit voice models,
+  approve render execution, upload, or publish. Real Piper voice quality still needs local QA before
+  production use.
+- FFmpeg draft render currently focuses on a local review MP4 using intro/outro source-card
+  bookends, scene-timed background plates, subtitle burn-in, lower-third, popup-card, waveform,
+  watermark overlays, voiceover audio, render manifest evidence, and an operator review checklist.
+  Render-ready intro/outro MP4 clips and broader visual polish remain follow-up work.
 - Upload and publish are intentionally disabled scaffolds.
 - Manual analytics import/reporting is local-only and operator-provided. Richer analytics
   comparisons, Studio analytics views, and YouTube Analytics API integration are not implemented.
