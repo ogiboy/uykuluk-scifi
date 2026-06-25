@@ -100,6 +100,57 @@ describe("operator status output", () => {
     );
   });
 
+  it("includes production media evidence details when artifacts pass", async () => {
+    const run = await createRun();
+    await saveRun({
+      ...run,
+      artifacts: [
+        "production/render_plan.json",
+        "production/audio/voiceover.wav",
+        "production/render/draft.mp4",
+        "evidence_bundle.json",
+      ],
+      state: "RENDERED",
+    });
+    await writeFile(
+      artifactPath(run.runId, "evidence_bundle.json"),
+      JSON.stringify({
+        blockedActions: [],
+        draftRender: {
+          status: "pass",
+          durationSeconds: 8.2,
+          mediaProbe: {
+            audio: { codecName: "aac" },
+            video: { height: 720, width: 1280 },
+          },
+          sourceFrameCount: 4,
+          sourceFrameSegments: ["intro:2", "outro:2"],
+          timelineSegments: ["intro", "scene", "outro"],
+        },
+        nextRecommendedCommand: "Manual final draft review. Upload remains approval-gated.",
+        renderPlan: { status: "pass", artifactCount: 3, assetCount: 11 },
+        voiceoverAudio: {
+          status: "pass",
+          durationSeconds: 8.2,
+          mode: "local-piper",
+          sourceWordCount: 42,
+        },
+      }),
+      "utf8",
+    );
+
+    const output = formatRunStatus(await readRunStatus(run.runId));
+
+    expect(output).toContain("- Render plan: pass (11 assets, 3 artifacts)");
+    expect(output).toContain("- Voiceover audio: pass (8s, local-piper, 42 source words)");
+    expect(output).toContain(
+      "- Draft render: pass (8s, intro -> scene -> outro, source frames intro:2/outro:2, ffprobe 1280x720 audio)",
+    );
+    expect(output).toContain(
+      "Next safe action: Manual final draft review. Upload remains approval-gated.",
+    );
+  });
+
   it("recommends idea approval before evidence exists", async () => {
     const run = await createRun();
     await saveRun({

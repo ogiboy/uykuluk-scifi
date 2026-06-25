@@ -160,7 +160,8 @@ agent-tracking state only; runtime code must not require it.
 - Script review Markdown shows the next safe approval command or blocker remediation guidance.
 - Evidence next-command guidance reflects script review blockers and warning acknowledgement needs.
 - `producer status` shows an operator-readable run summary with current state, counts, evidence
-  availability, recent artifacts, and next safe action; use `--json` for the raw persisted state.
+  availability, production media evidence details, recent artifacts, and next safe action; use
+  `--json` for the raw persisted state.
 - Script edits use an attributable revision command with before/after snapshots; reviewed or
   approved scripts return to `SCRIPT_GENERATED` and require review/approval again.
 - Production packaging requires explicit script approval for the unchanged reviewed content.
