@@ -275,6 +275,11 @@
   `route.ts` handlers exist, disabled actions require shared CLI/core service contracts, CSRF
   protection, durable evidence writes, and explicit approval targets, and public/scheduled publish
   risk remains disabled.
+- Shared Studio mutation service contract foundations exist for future idea/script/cost/render
+  approval actions and disabled upload/publish actions. Contracts validate future request payloads,
+  bind each action to the CLI/core module/export, require CSRF protection, durable evidence, and
+  explicit approval, and remain non-routable until guarded Studio action routes are intentionally
+  implemented.
 - Manual analytics feedback foundation. `producer analytics import --file <path>` accepts
   operator-provided CSV/JSON performance exports and writes ignored local
   `analytics/performance.json` plus `analytics/performance_report.md`. `producer analytics report`
@@ -370,7 +375,8 @@ Corepack/PATH before treating failures as product failures.
   credential, network integration, or CLI mutation command exposes it.
 - Current Next.js Studio is still review-only. Artifact previews now include grouped review
   metadata, and route-security requirements cover current read-only pages plus disabled future
-  actions. Shared read/write service contracts and guarded mutation routes are not implemented yet.
+  actions. Shared mutation service contract foundations exist, but concrete Studio CSRF/session
+  handling and guarded mutation routes are not implemented yet.
 - Locale infrastructure is ready, but full translation catalogs and a language selector are
   intentionally deferred.
 - Prompt editing UI is planned but not implemented.

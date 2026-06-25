@@ -99,8 +99,9 @@
   repeat / avoid-without-revision / test-next prompts, simple confidence/missingness framing, and
   the basic read-only Studio analytics overview with import data-quality and report freshness
   summaries are implemented.
-- Define typed read/write service contracts that both CLI and web can use before adding Studio
-  mutations.
+- Maintain typed Studio mutation service contracts that both CLI and web can use before adding
+  Studio mutations. Current contracts cover future idea/script/cost/render approvals plus disabled
+  upload/publish actions; concrete CSRF/session handling and route implementations remain deferred.
 - Define local prompt override storage and revision events before adding a prompt editor; typed
   keys, tracked `prompts/defaults/` runtime defaults, source paths, and prompt hashes are
   implemented.
@@ -108,7 +109,7 @@
   script revision evidence is implemented.
 - Maintain route security requirements before any web action routes exist; current tests cover
   read-only page routes, disabled future action routes, and absence of App Router `route.ts`
-  handlers.
+  handlers, and bind each disabled action route to a shared service contract.
 - Keep the internal reserved-provider execution contract ready for a separately approved real
   adapter without adding paid SDKs, credentials, or operator execution commands.
 

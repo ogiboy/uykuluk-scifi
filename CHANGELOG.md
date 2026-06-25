@@ -144,6 +144,8 @@ future generated release notes can be inserted predictably.
 - Analytics report refresh and Studio stale/missing/current report preview status.
 - Typed Studio route-security contract and negative tests for read-only pages plus disabled future
   action routes.
+- Shared Studio mutation service contract foundations for future guarded approval/upload/publish
+  actions without enabling web mutations.
 - Basic type-safe `next-intl` foundation for English and Turkish Studio locales.
 - Unit and browser coverage for locale normalization and cookie-based document language.
 - Typed runtime loading for tracked idea, scriptwriter, and production-package prompt defaults.

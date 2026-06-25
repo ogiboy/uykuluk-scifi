@@ -42,6 +42,7 @@ describe("Studio route security contract", () => {
           requiresCsrfProtection: true,
           requiresEvidenceWrite: true,
           risk: "publish-risk",
+          serviceContractId: "publish.schedule",
         }),
       ]),
     );

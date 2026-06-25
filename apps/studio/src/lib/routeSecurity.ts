@@ -1,3 +1,8 @@
+import {
+  hasStudioMutationServiceContract,
+  type StudioMutationServiceContractId,
+} from "../../../../src/studio/actionServiceContracts";
+
 export type StudioRouteMethod = "DELETE" | "GET" | "PATCH" | "POST" | "PUT";
 export type StudioRouteRisk =
   | "external-side-effect"
@@ -16,6 +21,7 @@ export type StudioRouteSecurityContract = {
   requiresCsrfProtection: boolean;
   requiresEvidenceWrite: boolean;
   risk: StudioRouteRisk;
+  serviceContractId: StudioMutationServiceContractId | null;
 };
 
 export const readOnlyStudioRoutes = [
@@ -58,11 +64,12 @@ function route(id: string, path: string): StudioRouteSecurityContract {
     requiresCsrfProtection: false,
     requiresEvidenceWrite: false,
     risk: "read-only",
+    serviceContractId: null,
   };
 }
 
 function action(
-  id: string,
+  id: StudioMutationServiceContractId,
   path: string,
   requiredApproval: StudioRouteSecurityContract["requiredApproval"],
   risk: Exclude<StudioRouteRisk, "read-only">,
@@ -79,6 +86,7 @@ function action(
     requiresCsrfProtection: true,
     requiresEvidenceWrite: true,
     risk,
+    serviceContractId: id,
   };
 }
 
@@ -103,6 +111,12 @@ function disabledActionFindings(contract: StudioRouteSecurityContract): string[]
   const findings: string[] = [];
   if (!contract.requiresCoreServiceContract) {
     findings.push(`${contract.id} needs a shared CLI/core service contract.`);
+  }
+  if (
+    !contract.serviceContractId ||
+    !hasStudioMutationServiceContract(contract.serviceContractId)
+  ) {
+    findings.push(`${contract.id} needs a valid Studio mutation service contract.`);
   }
   if (!contract.requiresCsrfProtection) {
     findings.push(`${contract.id} needs CSRF protection.`);

@@ -89,8 +89,9 @@ Next Real Production Loop slices:
 
 ## Phase C - Operator Studio
 
-Status: read-only run review, artifact preview, asset inventory, manual analytics overview, and
-route-security contract foundations exist; shared mutation service contracts come next.
+Status: read-only run review, artifact preview, asset inventory, manual analytics overview,
+route-security contract foundations, and shared mutation service contract foundations exist. Guarded
+route implementation still comes later.
 
 The Studio should be a local operator surface over CLI/core contracts.
 
@@ -104,10 +105,11 @@ Priority order:
 - maintain the read-only visual asset inventory page backed by configured guard checks;
 - maintain the read-only manual analytics overview and import data-quality summary backed by ignored
   local CLI analytics artifacts;
-- shared service contracts for any future Studio read/write operation;
+- maintain shared service contracts for any future Studio read/write operation;
 - maintain route security requirements and negative tests for current read-only routes and disabled
   future action routes;
-- only after those contracts exist: approval forms and guarded mutations.
+- only after the contracts have concrete CSRF/session handling and negative route tests: approval
+  forms and guarded mutations.
 
 Frontend constraints:
 

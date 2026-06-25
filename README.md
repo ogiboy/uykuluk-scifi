@@ -95,6 +95,8 @@ agent-tracking state only; runtime code must not require it.
   read-only Studio view over the ignored local analytics artifacts and import data-quality summary.
 - Typed Studio route-security contract covering current read-only routes and disabled future action
   routes.
+- Typed Studio mutation service contracts for future approval/upload/publish actions, including
+  request validation and CLI/core binding metadata, without enabling web mutations.
 - Disabled private upload and public/scheduled publish placeholders.
 - UykulukSciFi visual assets under `assets/`.
 - `.ai/` operating contract for agents, workflows, design, QA, security, and roadmap state.
@@ -199,6 +201,8 @@ agent-tracking state only; runtime code must not require it.
 - Upload and publish remain intentionally blocked scaffolds.
 - Upload and public/scheduled publish require future explicit config and separate approval gates.
 - Studio must call typed local service contracts; it must not duplicate workflow state.
+- Studio mutation service contracts exist for future guarded actions, but no Studio action route is
+  enabled yet.
 
 Paid generation providers are not implemented. `producer approve cost` approves one exact future
 paid-production quote; it does not authorize or execute spending. The internal reservation and
