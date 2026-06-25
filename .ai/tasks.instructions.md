@@ -30,7 +30,7 @@
   local at-most-once dispatch, bounded timeout, and fail-closed outcome classification.
 - Keep live Ollama generation fail-closed when local models return malformed JSON, English
   operator-facing text, or incomplete scripts.
-- Keep script provider failure diagnostics safe, raw-output-free, and state-preserving.
+- Keep idea and script provider failure diagnostics safe, raw-output-free, and state-preserving.
 - Keep chunked Ollama script diagnostics and receipts complete enough to diagnose which draft or
   expansion chunk failed.
 - Keep readiness diagnostics and evidence synchronized with persisted run state.
@@ -60,9 +60,10 @@
   operator-readable `production/render/draft_review.md` checklist.
 - Harden the idea repair prompt and idea-quality constraints with live qwen3 feedback. The
   implemented two-attempt retry loop either recovers to `IDEAS_GENERATED` or fails closed without
-  artifacts. Live qwen3 QA now rejects repeated fit frames, generic fit boilerplate, repeated
-  uncertainty openers, generic unknown-species phrases, and weak premise action frames. Continue
-  tightening prompt and quality checks before treating qwen3 ideas as production-ready.
+  idea artifacts while persisting a safe diagnostic summary. Live qwen3 QA now rejects repeated fit
+  frames, generic fit boilerplate, repeated uncertainty openers, generic unknown-species phrases,
+  and weak premise action frames. Continue tightening prompt and quality checks before treating
+  qwen3 ideas as production-ready.
 - Tune idea and script prompts so qwen3 avoids near-duplicate ideas, English style text, unsupported
   science framing, malformed labels, and repeated sentence loops. The parser now rejects exact
   duplicate idea titles/premises, duplicate `fit` explanations, repeated generic title motifs,

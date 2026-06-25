@@ -153,8 +153,11 @@
 - Idea generation now retries up to two bounded repair attempts with parser validation feedback when
   a local-provider response fails `Invalid ideas provider response` validation. Repair attempts
   write no raw rejected output, record ledger warnings, include `ideas.json.repair` metadata on
-  success, aggregate token/duration evidence across attempts, and still fail closed without
+  success, aggregate token/duration evidence across attempts, and still fail closed without idea
   artifacts if the final repair response is invalid.
+- Idea generation provider validation and transport failures persist safe run diagnostics without
+  advancing state or storing raw provider output. `producer status` and Studio run detail surface
+  these summaries so operators can see why a `NEW` run did not produce reviewable ideas.
 - Idea parsing now also rejects repeated sentence loops inside idea fields, malformed `Uykul...`
   brand fragments, English scientific lane terms such as `exoplanet`, and repeated generic `fit`
   explanations across a slate. Planner and repair prompts now ask for Turkish lane terms and
@@ -166,7 +169,8 @@
   `/private/tmp/uykuluk-live-qwen-weak-guard-20260625-MsGC8N` and proved the tightened idea guards
   remain fail-closed: qwen3 exhausted two repair attempts, the run stayed `NEW`, no `ideas.json` or
   `ideas.md` artifacts were written, and the ledger recorded two retry warnings plus the final
-  repeated-fit-frame error.
+  repeated-fit-frame error. Follow-up hardening now also persists a safe
+  `diagnostics/ideas_generation_failure.json` summary for this class of failure.
 - Live local Ollama qwen3:8b `think` QA after the retry loop on 2026-06-24 verified that the retry
   path is exercised and remains fail-closed: the initial response failed on a repeated premise
   frame, the repair response failed on repeated `yıldız` title motifs, the run stayed `NEW`, no

@@ -8,6 +8,7 @@ import * as ideasStage from "../src/stages/ideas";
 import { runIdeas } from "../src/stages/ideas";
 import type { VideoIdea } from "../src/stages/types";
 import { pathExists } from "../src/utils/fs";
+import { readJsonFile } from "../src/utils/json";
 import { useTempProject } from "./helpers";
 
 type IdeasArtifact = {
@@ -165,8 +166,24 @@ describe("idea provider retry and repair", () => {
 
     const [run] = await listRuns();
     expect(run.state).toBe("NEW");
+    expect(run.artifacts).toContain("diagnostics/ideas_generation_failure.json");
     expect(await pathExists(artifactPath(run.runId, "ideas.json"))).toBe(false);
     expect(await pathExists(artifactPath(run.runId, "ideas.md"))).toBe(false);
+    const diagnostics = await readJsonFile<{
+      message: string;
+      model: string;
+      providerMode: string;
+      stage: string;
+      state: string;
+    }>(artifactPath(run.runId, "diagnostics/ideas_generation_failure.json"));
+    expect(diagnostics).toMatchObject({
+      stage: "ideas",
+      state: "NEW",
+      providerMode: "mock",
+      model: "mock-invalid-ideas-always",
+      message: expect.stringContaining("Invalid ideas provider response after repair attempt"),
+    });
+    expect(JSON.stringify(diagnostics)).not.toContain("Tekrar Eden Gezegen");
     expect(
       (await readLedger(run.runId)).some(
         (event) =>

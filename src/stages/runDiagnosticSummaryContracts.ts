@@ -1,4 +1,5 @@
 export const diagnosticSummaryArtifactPaths = [
+  "diagnostics/ideas_generation_failure.json",
   "diagnostics/script_generation_failure.json",
 ] as const;
 

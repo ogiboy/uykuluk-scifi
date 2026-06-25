@@ -430,12 +430,12 @@ schedule, or publish anything.
 into bounded hook, context, development, and outro sections. Each section is drafted once and then
 expanded through three smaller bounded JSON chunks so local models can finish valid payloads. The
 run persists draft/expansion receipts before it can advance. If a local model returns malformed
-JSON, English operator-facing text, or an incomplete script section, the stage fails closed before
-writing `script.md`; provider failure diagnostics are persisted under the run when safe to record.
-Repeated sentence or label blockers get bounded raw-output-free repair retries, and a later
-successful script run clears stale failure diagnostics before advancing. `producer status` and the
-read-only Studio run detail surface safe script failure diagnostic summaries so the next blocker is
-visible without opening JSON artifacts by hand.
+JSON, English operator-facing text, duplicate/boilerplate ideas, or an incomplete script section,
+the stage fails closed before writing the next review artifact; provider failure diagnostics are
+persisted under the run when safe to record. Repeated sentence or label blockers get bounded
+raw-output-free repair retries, and a later successful script run clears stale failure diagnostics
+before advancing. `producer status` and the read-only Studio run detail surface safe idea/script
+failure diagnostic summaries so the next blocker is visible without opening JSON artifacts by hand.
 
 Run `pnpm producer doctor` before starting production work. Mock mode passes without network access.
 Ollama mode checks `/api/tags` with a bounded timeout and blocks when the server is unavailable or
@@ -478,6 +478,7 @@ Each run can write:
 - `costs/ledger.jsonl`;
 - `costs/reservations.jsonl`;
 - `evidence_bundle.json` and `evidence_bundle.md`;
+- `diagnostics/ideas_generation_failure.json` when idea provider validation or transport fails;
 - `diagnostics/script_generation_failure.json` when script provider parsing or transport fails;
 - `diagnostics/readiness.json` and `diagnostics/readiness.md`;
 - `ledger.jsonl`.

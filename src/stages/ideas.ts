@@ -11,6 +11,7 @@ import { createLlmProvider } from "../providers/index.js";
 import type { GenerateTextResult, LlmProvider } from "../providers/llmProvider.js";
 import { createPromptProvenance } from "../prompts/provenance.js";
 import { renderIdeasPrompt, type RenderedPrompt } from "../prompts/templates.js";
+import { persistIdeaGenerationFailure } from "./ideaFailureDiagnostics.js";
 import { ideasValidationSummary, renderIdeaRepairPrompt } from "./ideaRepairPrompt.js";
 import { parseIdeasProviderPayload } from "./providerPayloads.js";
 import { ideasResponseFormat } from "./providerResponseFormats.js";
@@ -89,6 +90,7 @@ export async function runIdeas(): Promise<{ runId: string; ideas: VideoIdea[] }>
     run = await setRunState(run, "IDEAS_GENERATED", "ideas");
     return { runId: run.runId, ideas: generation.ideas };
   } catch (error) {
+    run = await persistIdeaGenerationFailure(run, config, error);
     await appendLedgerEvent({
       runId: run.runId,
       type: "ERROR",

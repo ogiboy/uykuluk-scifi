@@ -111,4 +111,39 @@ describe("operator status output", () => {
     );
     expect(output).toContain("Evidence: missing");
   });
+
+  it("surfaces idea generation diagnostics while keeping the run in the new state", async () => {
+    const run = await createRun();
+    await mkdir(`runs/${run.runId}/diagnostics`, { recursive: true });
+    await writeFile(
+      artifactPath(run.runId, "diagnostics/ideas_generation_failure.json"),
+      JSON.stringify({
+        runId: run.runId,
+        stage: "ideas",
+        state: "NEW",
+        providerMode: "ollama",
+        model: "qwen3:8b",
+        thinkingMode: "no_think",
+        message:
+          "Invalid ideas provider response after repair attempt: ideas.3.fit: Fit explanations reuse a repeated sentence frame.",
+        createdAt: "2026-06-25T00:00:00.000Z",
+      }),
+      "utf8",
+    );
+    await saveRun({
+      ...run,
+      artifacts: ["diagnostics/ideas_generation_failure.json"],
+      state: "NEW",
+    });
+
+    const output = formatRunStatus(await readRunStatus(run.runId));
+
+    expect(output).toContain("Next safe action: pnpm producer ideas");
+    expect(output).toContain("Diagnostics:");
+    expect(output).toContain(
+      "- diagnostics/ideas_generation_failure.json [ideas]: Invalid ideas provider response after repair attempt: ideas.3.fit: Fit explanations reuse a repeated sentence frame.",
+    );
+    expect(output).toContain("Evidence: missing");
+    expect((await loadRun(run.runId)).state).toBe("NEW");
+  });
 });
