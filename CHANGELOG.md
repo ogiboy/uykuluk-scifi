@@ -11,6 +11,12 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.6.0 (2026-06-25)
+
+### Features
+
+- compose draft review overlays (7c8015a)
+
 ## v0.5.1 (2026-06-25)
 
 ### CI
