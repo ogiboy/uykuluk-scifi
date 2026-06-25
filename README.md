@@ -92,7 +92,7 @@ agent-tracking state only; runtime code must not require it.
   cards, scene-timed background plates, voiceover audio, subtitles, lower-third, popup, waveform,
   and watermark overlays.
 - Manual analytics import/report commands for operator-provided CSV/JSON performance exports, plus a
-  read-only Studio view over the ignored local analytics artifacts.
+  read-only Studio view over the ignored local analytics artifacts and import data-quality summary.
 - Disabled private upload and public/scheduled publish placeholders.
 - UykulukSciFi visual assets under `assets/`.
 - `.ai/` operating contract for agents, workflows, design, QA, security, and roadmap state.
@@ -260,8 +260,9 @@ overall metrics, top videos, run-linked summaries, unmapped record counts, and o
 prompts, including non-causal repeat / avoid-without-revision / test-next recommendations. The
 recommendations include simple confidence/missingness framing based on the fields present in the
 import. The importer writes ignored local artifacts under `analytics/`; Studio can display a
-read-only overview at `/analytics`. Neither path calls YouTube APIs, uploads media, publishes
-content, mutates workflow state, or claims causality from performance changes.
+read-only overview and import data-quality summary at `/analytics`. Neither path calls YouTube APIs,
+uploads media, publishes content, mutates workflow state, or claims causality from performance
+changes.
 
 Do not edit `runs/<run_id>/script.md` directly. Use `producer revise script` before production
 packaging. Revisions are blocked after the production package exists. Each revision stores the old

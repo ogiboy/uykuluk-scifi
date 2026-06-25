@@ -53,6 +53,9 @@ test("studio exposes the read-only manual analytics feedback route", async ({ pa
 
   await expect(page.getByRole("heading", { name: /analytics feedback/i })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Manual Analytics Overview" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Import Data Quality" })).toBeVisible();
+  await expect(page.getByText("High confidence")).toBeVisible();
+  await expect(page.getByText("Missing run links")).toBeVisible();
   await expect(page.getByText("does not call YouTube APIs")).toBeVisible();
   await expect(page.getByRole("link", { name: "Studio home" })).toBeVisible();
 });

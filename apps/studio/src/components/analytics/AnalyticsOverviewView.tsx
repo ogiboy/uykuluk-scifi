@@ -31,6 +31,34 @@ export function AnalyticsOverviewView({ overview }: AnalyticsOverviewViewProps) 
         {overview.error ? <p className='blocked'>{overview.error}</p> : null}
       </section>
 
+      <section className='panel' aria-labelledby='analytics-quality-heading'>
+        <h2 id='analytics-quality-heading'>Import Data Quality</h2>
+        <dl className='run-metadata'>
+          <Metric
+            label='High confidence'
+            value={formatInteger(overview.dataQuality.highConfidenceRecordCount)}
+          />
+          <Metric
+            label='Medium confidence'
+            value={formatInteger(overview.dataQuality.mediumConfidenceRecordCount)}
+          />
+          <Metric
+            label='Low confidence'
+            value={formatInteger(overview.dataQuality.lowConfidenceRecordCount)}
+          />
+          <Metric
+            label='Missing run links'
+            value={formatInteger(overview.dataQuality.missingRunLinkCount)}
+          />
+          <Metric label='Missing CTR' value={formatInteger(overview.dataQuality.missingCtrCount)} />
+          <Metric
+            label='Missing retention'
+            value={formatInteger(overview.dataQuality.missingRetentionCount)}
+          />
+        </dl>
+        <p>{overview.dataQuality.nextDataQualityAction}</p>
+      </section>
+
       <section className='panel' aria-labelledby='analytics-top-video-heading'>
         <h2 id='analytics-top-video-heading'>Top Videos By Imported Views</h2>
         {overview.topVideos.length > 0 ? (

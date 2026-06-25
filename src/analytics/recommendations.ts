@@ -5,7 +5,7 @@ type Recommendation = {
   record: AnalyticsRecord;
 };
 
-type Confidence = {
+export type AnalyticsRecordConfidence = {
   details: string;
   level: "high" | "low" | "medium";
 };
@@ -63,12 +63,12 @@ function recommendationLines(recommendations: Recommendation[], emptyText: strin
     return [`- ${emptyText}`];
   }
   return recommendations.map(({ reasons, record }) => {
-    const confidence = confidenceFor(record);
+    const confidence = analyticsRecordConfidence(record);
     return `- ${inlineText(record.title ?? record.videoId)} (${record.runId ?? "unmapped"}): ${reasons.join(", ")} (confidence: ${confidence.level}; ${confidence.details}).`;
   });
 }
 
-function confidenceFor(record: AnalyticsRecord): Confidence {
+export function analyticsRecordConfidence(record: AnalyticsRecord): AnalyticsRecordConfidence {
   const missing = [
     record.runId ? null : "run link",
     record.views !== undefined ? null : "views",
@@ -86,7 +86,7 @@ function confidenceFor(record: AnalyticsRecord): Confidence {
   };
 }
 
-function confidenceLevel(presentCount: number): Confidence["level"] {
+function confidenceLevel(presentCount: number): AnalyticsRecordConfidence["level"] {
   if (presentCount >= 5) {
     return "high";
   }

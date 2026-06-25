@@ -276,8 +276,8 @@
   prints the current report. Reports now include overall metrics, top videos, run-linked summaries,
   unmapped record counts, and non-causal repeat / avoid-without-revision / test-next operator
   planning prompts with simple confidence/missingness framing. Studio has a read-only `/analytics`
-  overview over those ignored local artifacts. No YouTube API, workflow mutation, upload, publish,
-  or causal claim is introduced.
+  overview and import data-quality summary over those ignored local artifacts. No YouTube API,
+  workflow mutation, upload, publish, or causal claim is introduced.
 - Roadmap and `.ai` guidance now include future Next.js Producer Studio, prompt editing, revision
   tracking, design direction, development preferences, versioning expectations, and Computer Use QA
   boundaries.

@@ -46,6 +46,18 @@ describe("Studio analytics overview", () => {
     const overview = await getStudioAnalyticsOverview();
 
     expect(overview).toMatchObject({
+      dataQuality: {
+        highConfidenceRecordCount: 0,
+        lowConfidenceRecordCount: 0,
+        mediumConfidenceRecordCount: 0,
+        missingCtrCount: 0,
+        missingImpressionsCount: 0,
+        missingRetentionCount: 0,
+        missingRunLinkCount: 0,
+        missingViewsCount: 0,
+        nextDataQualityAction:
+          "Import performance records with run_id, views, impressions, CTR, and retention.",
+      },
       error: null,
       nextCommand: "pnpm producer analytics import --file performance.csv",
       recordCount: 0,
@@ -66,6 +78,18 @@ describe("Studio analytics overview", () => {
     const overview = await getStudioAnalyticsOverview();
 
     expect(overview).toMatchObject({
+      dataQuality: {
+        highConfidenceRecordCount: 1,
+        lowConfidenceRecordCount: 1,
+        mediumConfidenceRecordCount: 1,
+        missingCtrCount: 1,
+        missingImpressionsCount: 0,
+        missingRetentionCount: 2,
+        missingRunLinkCount: 1,
+        missingViewsCount: 0,
+        nextDataQualityAction:
+          "Add run_id values before comparing imported videos back to producer runs.",
+      },
       datasetPath: "analytics/performance.json",
       error: null,
       generatedAt: "2026-06-25T00:00:00.000Z",
@@ -111,6 +135,11 @@ describe("Studio analytics overview", () => {
     const overview = await getStudioAnalyticsOverview();
 
     expect(overview).toMatchObject({
+      dataQuality: {
+        highConfidenceRecordCount: 0,
+        lowConfidenceRecordCount: 0,
+        mediumConfidenceRecordCount: 0,
+      },
       error: "analytics/performance.json is missing required fields.",
       nextCommand: "pnpm producer analytics import --file performance.csv",
       recordCount: 0,

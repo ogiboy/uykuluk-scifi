@@ -102,7 +102,8 @@ Priority order:
 - maintain artifact previews for scripts, production packages, render plans, contact sheets, audio,
   render evidence, and readiness artifacts;
 - maintain the read-only visual asset inventory page backed by configured guard checks;
-- maintain the read-only manual analytics overview backed by ignored local CLI analytics artifacts;
+- maintain the read-only manual analytics overview and import data-quality summary backed by ignored
+  local CLI analytics artifacts;
 - shared service contracts for any future Studio read/write operation;
 - route security requirements and negative tests;
 - only after those contracts exist: approval forms and guarded mutations.
