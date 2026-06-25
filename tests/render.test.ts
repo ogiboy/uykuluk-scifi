@@ -53,12 +53,18 @@ describe("draft render", () => {
       ]),
     );
     const manifest = await readJsonFile<{
+      composition: {
+        overlays: Array<{ role: string; path: string; placement: string }>;
+        reviewChecklist: string[];
+      };
       output: { path: string; sha256: string; bytes: number; durationSeconds: number };
       ffmpeg: { args: string[]; binary: string };
       renderPlan: { digest: string; path: string };
+      schemaVersion: number;
       timeline: Array<{ backgroundAsset: { path: string }; durationSeconds: number }>;
       voiceoverAudio: { digest: string; path: string };
     }>(artifactPath(runId, "production/render/render_manifest.json"));
+    expect(manifest.schemaVersion).toBe(2);
     expect(manifest.output).toMatchObject({
       path: "production/render/draft.mp4",
       sha256: expect.stringMatching(/^[a-f0-9]{64}$/),
@@ -78,14 +84,31 @@ describe("draft render", () => {
     expect(manifest.ffmpeg.args.join("\n")).toContain(
       "assets/backgrounds/plate_test_1920x1080.jpg",
     );
+    expect(manifest.ffmpeg.args.join("\n")).toContain(
+      "assets/overlays/popup_info_card_900x520.png",
+    );
+    expect(manifest.ffmpeg.args.join("\n")).toContain(
+      "assets/waveforms/waveform_overlay_thin_panel_transparent_1920x240.png",
+    );
+    expect(manifest.composition.overlays.map((overlay) => overlay.role)).toEqual(
+      expect.arrayContaining(["watermark", "popup-card", "waveform-overlay"]),
+    );
+    expect(manifest.composition.reviewChecklist.join(" ")).toContain("private upload");
 
     const evidence = (await generateEvidenceBundle(runId)) as {
-      draftRender: { status: string; path: string; durationSeconds: number };
+      draftRender: {
+        status: string;
+        path: string;
+        durationSeconds: number;
+        overlayRoles: string[];
+        reviewChecklist: string[];
+      };
     };
     expect(evidence.draftRender).toMatchObject({
       status: "pass",
       path: "production/render/draft.mp4",
       durationSeconds: 1,
+      overlayRoles: expect.arrayContaining(["popup-card", "waveform-overlay"]),
     });
   });
 

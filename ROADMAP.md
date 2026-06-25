@@ -81,8 +81,9 @@ Next Real Production Loop slices:
   deterministic reference WAV metadata, can call a configured local Piper binary/model path, and
   surfaces Piper setup/remediation next actions through `producer doctor`;
 - harden FFmpeg draft render quality and visual composition. Current foundation renders local review
-  MP4 from the current render plan, scene-timed background plates, voiceover audio, subtitles, and
-  watermark, then writes a render manifest with the exact timeline;
+  MP4 from the current render plan, scene-timed background plates, voiceover audio, subtitles,
+  lower-third, popup, waveform, and watermark overlays, then writes a render manifest with the exact
+  timeline and review checklist;
 - manual final review/approval before any private upload work.
 
 ## Phase C - Operator Studio

@@ -14,8 +14,15 @@ export const draftRenderPath = "production/render/draft.mp4";
 export const draftRenderManifestPath = "production/render/render_manifest.json";
 export const draftRenderArtifactPaths = [draftRenderPath, draftRenderManifestPath] as const;
 
+const renderCompositionOverlaySchema = z.strictObject({
+  role: z.string().min(1),
+  path: z.string().min(1),
+  digest: digestSchema,
+  placement: z.string().min(1),
+});
+
 export const draftRenderManifestSchema = z.strictObject({
-  schemaVersion: z.literal(1),
+  schemaVersion: z.literal(2),
   runId: z.string().min(1),
   createdAt: z.iso.datetime(),
   renderPlan: z.strictObject({
@@ -35,6 +42,10 @@ export const draftRenderManifestSchema = z.strictObject({
       }),
     )
     .min(1),
+  composition: z.strictObject({
+    overlays: z.array(renderCompositionOverlaySchema),
+    reviewChecklist: z.array(z.string().min(1)),
+  }),
   output: z.strictObject({
     path: z.literal(draftRenderPath),
     sha256: digestSchema,
@@ -51,7 +62,15 @@ export type DraftRenderManifest = z.infer<typeof draftRenderManifestSchema>;
 
 export type DraftRenderEvidence =
   | { status: "missing"; requiredArtifacts: readonly string[] }
-  | { status: "pass"; path: string; digest: string; bytes: number; durationSeconds: number }
+  | {
+      status: "pass";
+      path: string;
+      digest: string;
+      bytes: number;
+      durationSeconds: number;
+      overlayRoles: string[];
+      reviewChecklist: string[];
+    }
   | { status: "block"; path: string; message: string };
 
 export async function readDraftRenderEvidence(run: RunRecord): Promise<DraftRenderEvidence> {
@@ -97,6 +116,8 @@ export async function readDraftRenderEvidence(run: RunRecord): Promise<DraftRend
       digest,
       bytes: manifest.output.bytes,
       durationSeconds: manifest.output.durationSeconds,
+      overlayRoles: manifest.composition.overlays.map((overlay) => overlay.role),
+      reviewChecklist: manifest.composition.reviewChecklist,
     };
   } catch (error) {
     return {
