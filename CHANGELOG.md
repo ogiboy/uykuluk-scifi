@@ -142,6 +142,8 @@ future generated release notes can be inserted predictably.
   analytics report, with simple confidence/missingness framing for imported performance fields.
 - Import data-quality summary on the read-only Studio analytics page.
 - Analytics report refresh and Studio stale/missing/current report preview status.
+- Typed Studio route-security contract and negative tests for read-only pages plus disabled future
+  action routes.
 - Basic type-safe `next-intl` foundation for English and Turkish Studio locales.
 - Unit and browser coverage for locale normalization and cookie-based document language.
 - Typed runtime loading for tracked idea, scriptwriter, and production-package prompt defaults.

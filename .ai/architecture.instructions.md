@@ -77,6 +77,10 @@ It must not provide:
 - direct mutation of JSON artifacts without core validation;
 - UI-only approvals.
 
+Any future Studio action route must first be represented in the typed route-security contract with a
+shared CLI/core service contract, CSRF protection, durable evidence writes, and an explicit approval
+target. Current Studio routes remain read-only pages only.
+
 ## Anti-Goals
 
 - No cloud-first dashboard requirement.

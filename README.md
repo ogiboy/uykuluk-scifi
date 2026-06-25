@@ -93,6 +93,8 @@ agent-tracking state only; runtime code must not require it.
   and watermark overlays.
 - Manual analytics import/report commands for operator-provided CSV/JSON performance exports, plus a
   read-only Studio view over the ignored local analytics artifacts and import data-quality summary.
+- Typed Studio route-security contract covering current read-only routes and disabled future action
+  routes.
 - Disabled private upload and public/scheduled publish placeholders.
 - UykulukSciFi visual assets under `assets/`.
 - `.ai/` operating contract for agents, workflows, design, QA, security, and roadmap state.

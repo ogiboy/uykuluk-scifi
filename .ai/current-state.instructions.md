@@ -270,6 +270,11 @@
   directories and committed render-support asset categories. It surfaces invalid producer config and
   missing guarded assets as operator warnings without approving assets, rendering media, or mutating
   run state.
+- Studio has a typed route-security contract for current read-only pages and disabled future action
+  routes. Tests assert that all current App Router pages are covered as read-only, no Studio
+  `route.ts` handlers exist, disabled actions require shared CLI/core service contracts, CSRF
+  protection, durable evidence writes, and explicit approval targets, and public/scheduled publish
+  risk remains disabled.
 - Manual analytics feedback foundation. `producer analytics import --file <path>` accepts
   operator-provided CSV/JSON performance exports and writes ignored local
   `analytics/performance.json` plus `analytics/performance_report.md`. `producer analytics report`
@@ -364,8 +369,8 @@ Corepack/PATH before treating failures as product failures.
   authorization. The internal execution boundary is ready for a future approved adapter, but no SDK,
   credential, network integration, or CLI mutation command exposes it.
 - Current Next.js Studio is still review-only. Artifact previews now include grouped review
-  metadata, but route security requirements, shared read/write service contracts, and guarded
-  mutation routes are not implemented yet.
+  metadata, and route-security requirements cover current read-only pages plus disabled future
+  actions. Shared read/write service contracts and guarded mutation routes are not implemented yet.
 - Locale infrastructure is ready, but full translation catalogs and a language selector are
   intentionally deferred.
 - Prompt editing UI is planned but not implemented.

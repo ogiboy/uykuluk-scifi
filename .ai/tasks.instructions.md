@@ -106,7 +106,9 @@
   implemented.
 - Define revision events for subtitles, scene prompts, popup cards, and YouTube metadata edits;
   script revision evidence is implemented.
-- Add route security requirements before any web action routes exist.
+- Maintain route security requirements before any web action routes exist; current tests cover
+  read-only page routes, disabled future action routes, and absence of App Router `route.ts`
+  handlers.
 - Keep the internal reserved-provider execution contract ready for a separately approved real
   adapter without adding paid SDKs, credentials, or operator execution commands.
 
