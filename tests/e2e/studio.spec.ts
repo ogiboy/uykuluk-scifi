@@ -47,3 +47,12 @@ test("studio exposes the read-only visual asset inventory route", async ({ page 
   await expect(page.getByRole("heading", { name: "Brand" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Studio home" })).toBeVisible();
 });
+
+test("studio exposes the read-only manual analytics feedback route", async ({ page }) => {
+  await page.goto("/analytics");
+
+  await expect(page.getByRole("heading", { name: /analytics feedback/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Manual Analytics Overview" })).toBeVisible();
+  await expect(page.getByText("does not call YouTube APIs")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Studio home" })).toBeVisible();
+});

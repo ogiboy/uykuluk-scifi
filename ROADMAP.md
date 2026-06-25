@@ -89,8 +89,8 @@ Next Real Production Loop slices:
 
 ## Phase C - Operator Studio
 
-Status: read-only run review, artifact preview, and asset inventory foundations exist; safety
-contracts come next.
+Status: read-only run review, artifact preview, asset inventory, and manual analytics overview
+foundations exist; safety contracts come next.
 
 The Studio should be a local operator surface over CLI/core contracts.
 
@@ -102,6 +102,7 @@ Priority order:
 - maintain artifact previews for scripts, production packages, render plans, contact sheets, audio,
   render evidence, and readiness artifacts;
 - maintain the read-only visual asset inventory page backed by configured guard checks;
+- maintain the read-only manual analytics overview backed by ignored local CLI analytics artifacts;
 - shared service contracts for any future Studio read/write operation;
 - route security requirements and negative tests;
 - only after those contracts exist: approval forms and guarded mutations.
@@ -116,7 +117,8 @@ Frontend constraints:
 
 ## Phase D - Monetization Feedback Loop
 
-Status: initial local CLI import/report foundation implemented; API integrations remain deferred.
+Status: initial local CLI import/report foundation and read-only Studio overview implemented; API
+integrations remain deferred.
 
 The product should eventually learn from channel performance, but manual import comes before API
 integrations.
@@ -129,6 +131,8 @@ Minimum loop:
   visibility;
 - summarize CTR, views, average view duration, retention notes, subscriber deltas, and qualitative
   comments where provided - implemented in `analytics/performance_report.md`;
+- review the imported local dataset and report preview in Studio without YouTube API calls, workflow
+  mutation, upload, publish, or causal claims;
 - produce “repeat / avoid / test next” recommendations for future ideas, titles, formats, and
   thumbnail directions.
 

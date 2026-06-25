@@ -68,7 +68,8 @@ agent-tracking state only; runtime code must not require it.
 ## What Exists
 
 - TypeScript CLI workflow under `src/`.
-- Basic Next.js App Router Studio under `apps/studio/` with read-only run index/detail routes.
+- Basic Next.js App Router Studio under `apps/studio/` with read-only run index/detail, visual asset
+  inventory, and manual analytics feedback routes.
 - Studio foundation with Tailwind CSS v4, shadcn-style primitives, Radix UI, lucide icons, GSAP, and
   `next/font`.
 - Mock-first provider layer with Ollama adapter scaffold.
@@ -90,7 +91,8 @@ agent-tracking state only; runtime code must not require it.
   Markdown, and `ffprobe` media-validation evidence from the current render plan, intro/outro source
   cards, scene-timed background plates, voiceover audio, subtitles, lower-third, popup, waveform,
   and watermark overlays.
-- Manual analytics import/report commands for operator-provided CSV/JSON performance exports.
+- Manual analytics import/report commands for operator-provided CSV/JSON performance exports, plus a
+  read-only Studio view over the ignored local analytics artifacts.
 - Disabled private upload and public/scheduled publish placeholders.
 - UykulukSciFi visual assets under `assets/`.
 - `.ai/` operating contract for agents, workflows, design, QA, security, and roadmap state.
@@ -255,8 +257,9 @@ Analytics imports accept operator-provided CSV or JSON records with fields such 
 `video_id`, `title`, `published_at`, `impressions`, `views`, `ctr`, `avg_view_duration_seconds`,
 `avg_percentage_viewed`, `subscribers_gained`, `likes`, `comments`, and `notes`. The report includes
 overall metrics, top videos, run-linked summaries, unmapped record counts, and operator review
-prompts. The importer writes ignored local artifacts under `analytics/`; it does not call YouTube
-APIs, upload media, publish content, or claim causality from performance changes.
+prompts. The importer writes ignored local artifacts under `analytics/`; Studio can display a
+read-only overview at `/analytics`. Neither path calls YouTube APIs, uploads media, publishes
+content, mutates workflow state, or claims causality from performance changes.
 
 Do not edit `runs/<run_id>/script.md` directly. Use `producer revise script` before production
 packaging. Revisions are blocked after the production package exists. Each revision stores the old

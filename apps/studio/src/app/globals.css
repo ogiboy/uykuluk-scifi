@@ -257,6 +257,12 @@ h3 {
   gap: 16px;
 }
 
+.analytics-detail-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+}
+
 .asset-overview {
   display: grid;
   gap: 14px;
@@ -480,6 +486,7 @@ h3 {
   .asset-grid,
   .command-grid,
   .run-detail-grid,
+  .analytics-detail-grid,
   .asset-categories {
     grid-template-columns: 1fr;
   }
