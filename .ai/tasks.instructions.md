@@ -53,9 +53,9 @@
 - Harden local TTS with real Piper voice-quality QA and operator guidance. Keep models and generated
   audio ignored; the current implemented foundation is deterministic reference WAV, optional
   configured `local-piper` shell-out, and pinned Turkish model setup into ignored `models/`.
-- Harden FFmpeg draft render composition with scene timing, popup cards, waveform overlays,
-  intro/outro usage, and operator preview checks; the current foundation is exact-approval-gated
-  local MP4 plus render manifest.
+- Harden FFmpeg draft render composition with popup cards, waveform overlays, intro/outro usage, and
+  operator preview checks; the current foundation is exact-approval-gated local MP4 with scene-timed
+  background plates plus render manifest timeline evidence.
 - Harden the idea repair prompt and idea-quality constraints with live qwen3 feedback. The
   implemented two-attempt retry loop now recovers to `IDEAS_GENERATED` in live qwen3 tests after
   repair warnings, but manual review still found weak/awkward ideas. Continue tightening prompt and
@@ -80,8 +80,9 @@
 - Preserve the continuation design over simply raising local section chunk caps; live local QA
   showed larger chunks can destabilize JSON parse reliability.
 - Keep `producer doctor` config/provider/model/TTS/asset/publish diagnostics and evidence passing.
-- Harden Studio read-only artifact previews with better grouping, media-specific metadata, and
-  operator review wording while keeping the surface non-mutating.
+- Keep Studio read-only artifact previews useful as new artifact types are added. Current previews
+  include operator-phase grouping, media-specific metadata, and per-artifact review wording while
+  keeping the surface non-mutating.
 - Harden manual analytics feedback with import edge cases, richer comparisons, and future Studio
   read-only views while keeping data operator-provided and local-only. Run-linked summaries and
   unmapped-record visibility are implemented in the local Markdown report.

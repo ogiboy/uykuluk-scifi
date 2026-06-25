@@ -56,6 +56,7 @@ describe("draft render", () => {
       output: { path: string; sha256: string; bytes: number; durationSeconds: number };
       ffmpeg: { args: string[]; binary: string };
       renderPlan: { digest: string; path: string };
+      timeline: Array<{ backgroundAsset: { path: string }; durationSeconds: number }>;
       voiceoverAudio: { digest: string; path: string };
     }>(artifactPath(runId, "production/render/render_manifest.json"));
     expect(manifest.output).toMatchObject({
@@ -66,6 +67,11 @@ describe("draft render", () => {
     expect(manifest.output.bytes).toBeGreaterThan(0);
     expect(manifest.renderPlan.path).toBe("production/render_plan.json");
     expect(manifest.voiceoverAudio.path).toBe("production/audio/voiceover.wav");
+    expect(manifest.timeline.length).toBeGreaterThan(0);
+    expect(manifest.timeline[0]).toMatchObject({
+      backgroundAsset: { path: "assets/backgrounds/plate_test_1920x1080.jpg" },
+      durationSeconds: 1,
+    });
     expect(manifest.ffmpeg.binary).toBe(ffmpeg);
     expect(manifest.ffmpeg.args.join("\n")).toContain("production/audio/voiceover.wav");
     expect(manifest.ffmpeg.args.join("\n")).toContain("production/subtitles.srt");

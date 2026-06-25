@@ -7,7 +7,7 @@ import { RunRecord } from "../core/state.js";
 import { pathExists } from "../utils/fs.js";
 import { readJsonFile } from "../utils/json.js";
 import { readRenderPlanEvidence } from "./renderPlan.js";
-import { digestSchema } from "./renderPlanSchemas.js";
+import { assetRefSchema, digestSchema } from "./renderPlanSchemas.js";
 import { readVoiceoverAudioEvidence } from "./voiceoverEvidence.js";
 
 export const draftRenderPath = "production/render/draft.mp4";
@@ -26,6 +26,15 @@ export const draftRenderManifestSchema = z.strictObject({
     path: z.literal("production/audio/voiceover.wav"),
     digest: digestSchema,
   }),
+  timeline: z
+    .array(
+      z.strictObject({
+        sceneIndex: z.int().positive(),
+        durationSeconds: z.number().positive(),
+        backgroundAsset: assetRefSchema,
+      }),
+    )
+    .min(1),
   output: z.strictObject({
     path: z.literal(draftRenderPath),
     sha256: digestSchema,

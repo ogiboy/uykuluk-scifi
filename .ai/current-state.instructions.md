@@ -59,7 +59,9 @@
   local config override for `local-piper`.
 - Approval-gated local FFmpeg draft render. `producer approve render` records approval for the exact
   current render-plan and voiceover digests, then `producer render` requires `RENDER_APPROVED`
-  before writing `production/render/draft.mp4` and `production/render/render_manifest.json`.
+  before writing `production/render/draft.mp4` and `production/render/render_manifest.json`. The
+  draft render now builds an FFmpeg concat timeline from render-plan scenes and records the exact
+  scene background timeline in the manifest.
 - Provider-backed idea and production-package stages schema-validate and normalize common Ollama
   JSON variants before artifact writes, while rejecting malformed or English operator-facing
   payloads fail-closed.
@@ -223,8 +225,9 @@
   readiness status, warning/approval counts, and review artifact availability. It does not mutate
   run state or call providers.
 - Studio run detail includes read-only artifact preview excerpts for scripts, reviews, production
-  packages, render plans, contact sheets, evidence, readiness, and render manifests. Binary media is
-  intentionally limited to metadata.
+  packages, render plans, contact sheets, asset provenance, evidence, readiness, voiceover metadata,
+  and render manifests. Previews are grouped by operator review phase with per-artifact review
+  guidance, and binary media is intentionally limited to metadata.
 - Manual analytics feedback foundation. `producer analytics import --file <path>` accepts
   operator-provided CSV/JSON performance exports and writes ignored local
   `analytics/performance.json` plus `analytics/performance_report.md`. `producer analytics report`
@@ -308,9 +311,9 @@ Corepack/PATH before treating failures as product failures.
 - No paid provider adapter is implemented. Exact cost quote approval remains separate from spend
   authorization. The internal execution boundary is ready for a future approved adapter, but no SDK,
   credential, network integration, or CLI mutation command exposes it.
-- Current Next.js Studio is still review-only. Richer media-specific previews, route security
-  requirements, shared read/write service contracts, and guarded mutation routes are not implemented
-  yet.
+- Current Next.js Studio is still review-only. Artifact previews now include grouped review
+  metadata, but route security requirements, shared read/write service contracts, and guarded
+  mutation routes are not implemented yet.
 - Locale infrastructure is ready, but full translation catalogs and a language selector are
   intentionally deferred.
 - Prompt editing UI is planned but not implemented.
@@ -322,9 +325,9 @@ Corepack/PATH before treating failures as product failures.
 - Local TTS currently provides a deterministic timing/reference WAV, a configured Piper shell-out,
   and an ignored-model setup helper. It does not commit voice models, approve render execution,
   upload, or publish. Real Piper voice quality still needs local QA before production use.
-- FFmpeg draft render currently focuses on a simple local review MP4 using a background plate,
-  subtitle burn-in, watermark overlay, and voiceover audio. More complete scene timing, popup card,
-  waveform, intro/outro, and composition polish remain follow-up work.
+- FFmpeg draft render currently focuses on a local review MP4 using scene-timed background plates,
+  subtitle burn-in, watermark overlay, and voiceover audio. More complete popup card, waveform,
+  intro/outro, and composition polish remain follow-up work.
 - Upload and publish are intentionally disabled scaffolds.
 - Manual analytics import/reporting is local-only and operator-provided. Richer analytics
   comparisons, Studio analytics views, and YouTube Analytics API integration are not implemented.

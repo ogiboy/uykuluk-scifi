@@ -63,6 +63,13 @@ describe("Studio read-only run summaries", () => {
       "utf8",
     );
     await writeFile(
+      artifactPath(run.runId, "production/asset_provenance.json"),
+      JSON.stringify({
+        assets: [{ path: "assets/backgrounds/nebula.png", role: "background" }],
+      }),
+      "utf8",
+    );
+    await writeFile(
       artifactPath(run.runId, "production/render/draft.mp4"),
       Buffer.from([0, 1, 2, 3]),
     );
@@ -72,6 +79,7 @@ describe("Studio read-only run summaries", () => {
       artifacts: [
         "script.md",
         "production/render_plan.json",
+        "production/asset_provenance.json",
         "production/render/draft.mp4",
         "production/render/render_manifest.json",
         "evidence_bundle.json",
@@ -107,14 +115,26 @@ describe("Studio read-only run summaries", () => {
         }),
         expect.objectContaining({
           path: "production/render_plan.json",
+          description: expect.stringContaining("scene-to-asset"),
           exists: true,
+          group: "Render Planning",
           kind: "json",
+          operatorAction: expect.stringContaining("scene timing"),
           preview: expect.stringContaining('"scenes"'),
+        }),
+        expect.objectContaining({
+          path: "production/asset_provenance.json",
+          exists: true,
+          group: "Render Planning",
+          label: "Asset provenance",
+          preview: expect.stringContaining("assets/backgrounds/nebula.png"),
         }),
         expect.objectContaining({
           path: "production/render/draft.mp4",
           exists: true,
+          group: "Audio And Render",
           kind: "binary",
+          operatorAction: expect.stringContaining("Review locally outside Studio"),
           preview: null,
           sizeBytes: 4,
         }),

@@ -87,7 +87,7 @@ agent-tracking state only; runtime code must not require it.
 - Disabled-by-default local voiceover generation with deterministic reference WAV output and an
   optional Piper binary/model-path adapter.
 - Approval-gated local FFmpeg draft render that writes a review MP4 and manifest from the current
-  render plan, voiceover audio, subtitles, background plate, and watermark.
+  render plan, scene-timed background plates, voiceover audio, subtitles, and watermark.
 - Manual analytics import/report commands for operator-provided CSV/JSON performance exports.
 - Disabled private upload and public/scheduled publish placeholders.
 - UykulukSciFi visual assets under `assets/`.
@@ -178,7 +178,8 @@ agent-tracking state only; runtime code must not require it.
 - TTS is disabled by default and only runs after readiness with explicit local configuration, script
   approval, production-package integrity, and render-plan evidence.
 - Draft render runs only after explicit render approval for the exact current render-plan and
-  voiceover digests. Render output is local review media, not upload or publish authority.
+  voiceover digests. The manifest records the scene-timed background timeline used by FFmpeg. Render
+  output is local review media, not upload or publish authority.
 - Upload and publish remain intentionally blocked scaffolds.
 - Upload and public/scheduled publish require future explicit config and separate approval gates.
 - Studio must call typed local service contracts; it must not duplicate workflow state.
@@ -273,7 +274,8 @@ Current Studio scope:
 - read-only `/runs/<run_id>` detail view with next action, readiness status, and review artifact
   availability;
 - read-only artifact preview excerpts for scripts, reviews, production packages, render plans,
-  contact sheets, evidence, readiness, and render manifests, with binary media limited to metadata;
+  contact sheets, asset provenance, evidence, readiness, voiceover metadata, and render manifests,
+  grouped by operator review phase, with binary media limited to metadata;
 - run/workflow command overview;
 - current asset inventory summary;
 - Radix module tabs for planned run, prompt, asset, and safety surfaces;
