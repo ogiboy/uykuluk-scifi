@@ -30,6 +30,7 @@ production/storyboard_contact_sheet.md	Storyboard contact sheet	markdown	Render 
 production/asset_provenance.json	Asset provenance	json	Render Planning	Exact committed asset paths and roles used by the render plan.	Confirm assets are tracked, licensed, and visually appropriate.
 production/audio/voiceover.meta.json	Voiceover metadata	json	Audio And Render	Local TTS metadata, source digest, duration, and render-plan binding.	Confirm voiceover source and duration before render approval.
 production/render/render_manifest.json	Render manifest	json	Audio And Render	Local FFmpeg draft-render manifest with input digests, intro-to-outro timeline, overlays, and review checklist.	Use with the MP4 for local final review; upload remains disabled.
+production/render/draft_review.md	Draft render review	markdown	Audio And Render	Operator-readable final draft review checklist generated with the local MP4.	Review this before any future private upload approval; upload remains disabled.
 production/render/draft.mp4	Draft render video	binary	Audio And Render	Local MP4 review draft generated after exact render approval.	Review locally outside Studio; binary preview is metadata-only.
 evidence_bundle.json	Evidence bundle	json	Evidence And Readiness	Current run evidence, blocked actions, and next safe command.	Use evidence as the review handoff before any next CLI action.
 diagnostics/readiness.json	Readiness diagnostics	json	Evidence And Readiness	Readiness checks for package, cost, render plan, TTS, and publish safety.	Resolve failed checks before production or render work.

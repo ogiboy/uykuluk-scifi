@@ -50,6 +50,7 @@ describe("draft render", () => {
       expect.arrayContaining([
         "production/render/draft.mp4",
         "production/render/render_manifest.json",
+        "production/render/draft_review.md",
       ]),
     );
     const manifest = await readJsonFile<{
@@ -120,6 +121,7 @@ describe("draft render", () => {
         durationSeconds: number;
         overlayRoles: string[];
         timelineSegments: string[];
+        reviewPath: string;
         reviewChecklist: string[];
       };
     };
@@ -129,7 +131,14 @@ describe("draft render", () => {
       durationSeconds: 8,
       overlayRoles: expect.arrayContaining(["popup-card", "waveform-overlay"]),
       timelineSegments: ["intro", "scene", "outro"],
+      reviewPath: "production/render/draft_review.md",
     });
+    const review = await readFile(artifactPath(runId, "production/render/draft_review.md"), "utf8");
+    expect(review).toContain("# Draft Render Review");
+    expect(review).toContain("Local review artifact only");
+    expect(review).toContain("assets/intro/episode_title_card_1920x1080.jpg");
+    expect(review).toContain("assets/outro/youtube_end_screen_1920x1080.jpg");
+    expect(review).toContain("Upload remains disabled");
   });
 
   it("blocks render approval until voiceover audio evidence exists", async () => {

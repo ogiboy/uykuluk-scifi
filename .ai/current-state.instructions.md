@@ -61,11 +61,11 @@
   TTS, deterministic reference audio, valid local Piper config, and local Piper remediation.
 - Approval-gated local FFmpeg draft render. `producer approve render` records approval for the exact
   current render-plan and voiceover digests, then `producer render` requires `RENDER_APPROVED`
-  before writing `production/render/draft.mp4` and `production/render/render_manifest.json`. The
-  draft render now builds an FFmpeg concat timeline from render-plan intro/outro bookends and
-  scenes, composes lower-third, popup-card, waveform, and watermark overlays when available, and
-  records the exact intro-to-outro timeline, overlay roles/placements, and operator review checklist
-  in the manifest.
+  before writing `production/render/draft.mp4`, `production/render/render_manifest.json`, and
+  `production/render/draft_review.md`. The draft render now builds an FFmpeg concat timeline from
+  render-plan intro/outro bookends and scenes, composes lower-third, popup-card, waveform, and
+  watermark overlays when available, records the exact intro-to-outro timeline and overlay
+  roles/placements in the manifest, and writes an operator-readable final local review checklist.
 - Provider-backed idea and production-package stages schema-validate and normalize common Ollama
   JSON variants before artifact writes, while rejecting malformed or English operator-facing
   payloads fail-closed.
@@ -334,8 +334,8 @@ Corepack/PATH before treating failures as product failures.
   upload, or publish. Real Piper voice quality still needs local QA before production use.
 - FFmpeg draft render currently focuses on a local review MP4 using intro/outro source-card
   bookends, scene-timed background plates, subtitle burn-in, lower-third, popup-card, waveform,
-  watermark overlays, voiceover audio, and a manifest review checklist. Render-ready intro/outro MP4
-  clips and broader visual polish remain follow-up work.
+  watermark overlays, voiceover audio, render manifest evidence, and an operator review checklist.
+  Render-ready intro/outro MP4 clips and broader visual polish remain follow-up work.
 - Upload and publish are intentionally disabled scaffolds.
 - Manual analytics import/reporting is local-only and operator-provided. Richer analytics
   comparisons, Studio analytics views, and YouTube Analytics API integration are not implemented.

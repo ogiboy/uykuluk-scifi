@@ -73,6 +73,11 @@ describe("Studio read-only run summaries", () => {
       artifactPath(run.runId, "production/render/draft.mp4"),
       Buffer.from([0, 1, 2, 3]),
     );
+    await writeFile(
+      artifactPath(run.runId, "production/render/draft_review.md"),
+      "# Draft Render Review\n\nUpload remains disabled.",
+      "utf8",
+    );
     await saveRun({
       ...run,
       state: "RENDERED",
@@ -82,6 +87,7 @@ describe("Studio read-only run summaries", () => {
         "production/asset_provenance.json",
         "production/render/draft.mp4",
         "production/render/render_manifest.json",
+        "production/render/draft_review.md",
         "evidence_bundle.json",
         "diagnostics/readiness.json",
       ],
@@ -128,6 +134,14 @@ describe("Studio read-only run summaries", () => {
           group: "Render Planning",
           label: "Asset provenance",
           preview: expect.stringContaining("assets/backgrounds/nebula.png"),
+        }),
+        expect.objectContaining({
+          path: "production/render/draft_review.md",
+          exists: true,
+          group: "Audio And Render",
+          kind: "markdown",
+          operatorAction: expect.stringContaining("private upload approval"),
+          preview: expect.stringContaining("Upload remains disabled"),
         }),
         expect.objectContaining({
           path: "production/render/draft.mp4",

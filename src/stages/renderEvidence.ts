@@ -12,7 +12,12 @@ import { readVoiceoverAudioEvidence } from "./voiceoverEvidence.js";
 
 export const draftRenderPath = "production/render/draft.mp4";
 export const draftRenderManifestPath = "production/render/render_manifest.json";
-export const draftRenderArtifactPaths = [draftRenderPath, draftRenderManifestPath] as const;
+export const draftRenderReviewPath = "production/render/draft_review.md";
+export const draftRenderArtifactPaths = [
+  draftRenderPath,
+  draftRenderManifestPath,
+  draftRenderReviewPath,
+] as const;
 
 const renderCompositionOverlaySchema = z.strictObject({
   role: z.string().min(1),
@@ -75,6 +80,7 @@ export type DraftRenderEvidence =
       durationSeconds: number;
       overlayRoles: string[];
       timelineSegments: string[];
+      reviewPath: string;
       reviewChecklist: string[];
     }
   | { status: "block"; path: string; message: string };
@@ -124,6 +130,7 @@ export async function readDraftRenderEvidence(run: RunRecord): Promise<DraftRend
       durationSeconds: manifest.output.durationSeconds,
       overlayRoles: manifest.composition.overlays.map((overlay) => overlay.role),
       timelineSegments: manifest.timeline.map((item) => item.segment ?? "scene"),
+      reviewPath: draftRenderReviewPath,
       reviewChecklist: manifest.composition.reviewChecklist,
     };
   } catch (error) {

@@ -83,8 +83,8 @@ Next Real Production Loop slices:
 - harden FFmpeg draft render quality and visual composition. Current foundation renders local review
   MP4 from the current render plan, intro/outro source cards, scene-timed background plates,
   voiceover audio, subtitles, lower-third, popup, waveform, and watermark overlays, then writes a
-  render manifest with the exact timeline and review checklist;
-- manual final review/approval before any private upload work.
+  render manifest with the exact timeline plus an operator-readable draft review checklist;
+- define separate private-upload approval only after local final review is reliable.
 
 ## Phase C - Operator Studio
 
