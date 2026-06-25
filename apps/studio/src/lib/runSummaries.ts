@@ -1,5 +1,11 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
+import { staticEvidenceNextCommand } from "../../../../src/stages/evidenceNextCommand";
+import {
+  diagnosticSummaryArtifactPaths,
+  summarizeRunDiagnosticArtifact,
+  type RunDiagnosticSummary,
+} from "../../../../src/stages/runDiagnosticSummaryContracts";
 import { readReviewArtifactPreviews, type StudioArtifactPreview } from "./artifactPreviews";
 
 export type StudioRunState =
@@ -38,6 +44,7 @@ export type StudioRunSummary = {
 export type StudioRunDetail = StudioRunSummary & {
   approvals: unknown[];
   artifacts: StudioArtifactPreview[];
+  diagnostics: RunDiagnosticSummary[];
   evidence: Record<string, unknown> | null;
   readiness: { checks?: unknown[]; passed?: boolean } | null;
   warnings: string[];
@@ -95,6 +102,7 @@ export async function getStudioRunDetail(runId: string): Promise<StudioRunDetail
     ...summary,
     approvals: record.approvals ?? [],
     artifacts: await readReviewArtifactPreviews(root, runId),
+    diagnostics: await readStudioRunDiagnostics(root, runId, record.artifacts ?? []),
     evidence: evidence ?? null,
     readiness: readiness ?? null,
     warnings: record.warnings ?? [],
@@ -126,13 +134,37 @@ function summarizeRun(
       : 0,
     createdAt: record.createdAt ?? "",
     nextRecommendedCommand:
-      typeof evidence?.nextRecommendedCommand === "string" ? evidence.nextRecommendedCommand : null,
+      typeof evidence?.nextRecommendedCommand === "string"
+        ? evidence.nextRecommendedCommand
+        : (staticEvidenceNextCommand(record.state ?? "FAILED") ?? null),
     readinessPassed: typeof readiness?.passed === "boolean" ? readiness.passed : null,
     runId: record.runId ?? "unknown",
     state: record.state ?? "FAILED",
     updatedAt: record.updatedAt ?? record.createdAt ?? "",
     warningCount: record.warnings?.length ?? 0,
   };
+}
+
+async function readStudioRunDiagnostics(
+  root: string,
+  runId: string,
+  artifacts: readonly string[],
+): Promise<RunDiagnosticSummary[]> {
+  const summaries: RunDiagnosticSummary[] = [];
+  for (const relativePath of diagnosticSummaryArtifactPaths) {
+    if (!artifacts.includes(relativePath)) {
+      continue;
+    }
+    const snapshot = await readOptionalJson<Record<string, unknown>>(root, runId, relativePath);
+    if (!snapshot) {
+      continue;
+    }
+    const summary = summarizeRunDiagnosticArtifact(relativePath, snapshot);
+    if (summary) {
+      summaries.push(summary);
+    }
+  }
+  return summaries;
 }
 
 async function readRunRecord(root: string, runId: string): Promise<RunRecord | null> {

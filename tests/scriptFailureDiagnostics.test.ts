@@ -2,6 +2,7 @@ import { writeFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { defaultConfig } from "../src/config/config";
 import { artifactPath } from "../src/core/artifacts";
+import { readLedger } from "../src/core/ledger";
 import { loadRun } from "../src/core/runStore";
 import { approveIdea } from "../src/stages/approveIdea";
 import { runIdeas } from "../src/stages/ideas";
@@ -94,7 +95,7 @@ describe("script generation failure diagnostics", () => {
       "Invalid script section expansion chunk 1 provider response for hook",
     );
     expect(diagnostics.message).toContain("repeated_sentence_loop(repeatCount=3;");
-    expect(diagnostics.message).toContain("after 1 retry");
+    expect(diagnostics.message).toContain("after 2 retries");
     expect(diagnostics.message).toContain("sentenceFingerprint=");
     expect(diagnostics.message).not.toContain(
       "Bu kaybolma, bilim insanlarının yeni teoriler geliştirmesini zorunlu kılıyor",
@@ -171,5 +172,52 @@ describe("script generation failure diagnostics", () => {
     );
     expect(diagnostics.message).toContain("Invalid script continuation chunk 1 provider response");
     expect(diagnostics.message).toContain("continuation has no complete sentence");
+  });
+
+  it("removes stale script failure diagnostics after a later successful script generation", async () => {
+    const { runId, ideas } = await runIdeas();
+    await approveIdea(runId, ideas[0].id);
+    await writeFile(
+      "producer.config.json",
+      `${JSON.stringify(
+        {
+          ...defaultConfig,
+          providers: {
+            ...defaultConfig.providers,
+            llm: {
+              ...defaultConfig.providers.llm,
+              model: "mock-repeated-script-expansion",
+            },
+          },
+        },
+        null,
+        2,
+      )}\n`,
+      "utf8",
+    );
+
+    await expect(generateScript(runId)).rejects.toThrow(/repeated_sentence_loop/);
+    expect(
+      await pathExists(artifactPath(runId, "diagnostics/script_generation_failure.json")),
+    ).toBe(true);
+
+    await writeFile("producer.config.json", `${JSON.stringify(defaultConfig, null, 2)}\n`, "utf8");
+    await generateScript(runId);
+
+    const run = await loadRun(runId);
+    expect(run.state).toBe("SCRIPT_GENERATED");
+    expect(run.artifacts).not.toContain("diagnostics/script_generation_failure.json");
+    expect(
+      await pathExists(artifactPath(runId, "diagnostics/script_generation_failure.json")),
+    ).toBe(false);
+    expect(await readLedger(runId)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          type: "ARTIFACT_REMOVED",
+          stage: "script",
+          data: { path: "diagnostics/script_generation_failure.json" },
+        }),
+      ]),
+    );
   });
 });

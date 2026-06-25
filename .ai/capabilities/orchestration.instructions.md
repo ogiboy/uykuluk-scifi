@@ -12,6 +12,11 @@ For this project, ordinary implementation should stay lightweight:
 - use Ruflo or Claude Flow only for a documented orchestration need;
 - keep `.ai/` and any `.planning/` artifacts development-only, never runtime inputs.
 
+Native one-shot subagents are the preferred delegation mechanism when the active user request or
+goal authorizes delegated work. Ruflo or Claude Flow are for persistent team state, swarm topology,
+shared task queues, consensus, or cross-turn orchestration; they are not needed for an ordinary
+planner/reviewer/tester split.
+
 ## When To Use A Swarm
 
 Use 2-4 agents when at least two workstreams can proceed independently, for example:
@@ -22,6 +27,18 @@ Use 2-4 agents when at least two workstreams can proceed independently, for exam
 - implementation plus independent verification.
 
 Do not spawn one agent per skill or plugin.
+
+For this repo, useful native roles are usually:
+
+- `explorer` for a focused codebase question;
+- `worker` for a bounded implementation module with explicit file ownership;
+- `gsd-code-reviewer`, `gsd-verifier`, or `gsd-security-auditor` for independent review of a broad
+  candidate;
+- `gsd-planner`/`gsd-roadmapper` only for a phase-level plan;
+- `gsd-doc-writer`/`gsd-doc-verifier` only for large documentation sets.
+
+Do not use GSD roles merely because GSD is installed. Prefer single-agent work for small fixes,
+Sonar cleanups, docs-only updates, and sequential file edits.
 
 ## Topology
 
@@ -45,6 +62,8 @@ over the same work unless the plan explicitly proves the need.
 - Do not ask subagents to enumerate the complete capability catalog.
 - Do not duplicate delegated analysis in the coordinator.
 - Close completed agents promptly.
+- Do not let subagents write `.planning/`, `.ai/qa`, generated run artifacts, or runtime config
+  unless the parent task explicitly owns those files.
 
 ## Resource Safety
 

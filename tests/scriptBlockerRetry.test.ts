@@ -30,6 +30,13 @@ describe("script blocker retry", () => {
         contentHash: expect.stringMatching(/^[a-f0-9]{64}$/),
         outputTokensApprox: expect.any(Number),
       },
+      rejectedAttempts: [
+        expect.objectContaining({
+          promptHash: expect.stringMatching(/^[a-f0-9]{64}$/),
+          contentHash: expect.stringMatching(/^[a-f0-9]{64}$/),
+          outputTokensApprox: expect.any(Number),
+        }),
+      ],
     });
     expect(JSON.stringify(sections)).not.toContain(repeatedSentence);
   });
@@ -44,6 +51,27 @@ describe("script blocker retry", () => {
 
     expect(sections.providerCallCount).toBe(17);
     expect(retriedReceipt?.blockerRetry?.blockers).toContain("repeated_sentence_loop");
+  });
+
+  it("uses a second bounded strict retry before failing closed on repeated local output", async () => {
+    const sections = await generateScriptSectionsWithModel(
+      "mock-repeated-script-expansion-requires-second-retry",
+    );
+    const retriedReceipt = sections.sections.find(
+      (section) => section.id === "hook" && section.pass === "expansion" && section.chunk === 1,
+    );
+
+    expect(sections.providerCallCount).toBe(18);
+    expect(retriedReceipt?.blockerRetry).toMatchObject({
+      attemptCount: 3,
+      blockers: expect.stringContaining("attempt 2: repeated_sentence_loop"),
+      rejectedAttempts: [
+        expect.objectContaining({ contentHash: expect.stringMatching(/^[a-f0-9]{64}$/) }),
+        expect.objectContaining({ contentHash: expect.stringMatching(/^[a-f0-9]{64}$/) }),
+      ],
+    });
+    expect(retriedReceipt?.blockerRetry?.rejectedAttempts).toHaveLength(2);
+    expect(JSON.stringify(sections)).not.toContain(repeatedSentence);
   });
 
   it("retries one rejected continuation chunk with safe blocker evidence", async () => {
@@ -61,6 +89,11 @@ describe("script blocker retry", () => {
       rejectedAttempt: {
         contentHash: expect.stringMatching(/^[a-f0-9]{64}$/),
       },
+      rejectedAttempts: [
+        expect.objectContaining({
+          contentHash: expect.stringMatching(/^[a-f0-9]{64}$/),
+        }),
+      ],
     });
     expect(JSON.stringify(sections)).not.toContain(repeatedSentence);
   });
@@ -104,6 +137,11 @@ type ScriptSectionsArtifact = {
         outputTokensApprox?: number;
         promptHash?: string;
       };
+      rejectedAttempts?: Array<{
+        contentHash: string;
+        outputTokensApprox?: number;
+        promptHash?: string;
+      }>;
     };
     chunk?: number;
     id: string;

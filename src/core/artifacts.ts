@@ -1,7 +1,8 @@
+import { rm } from "node:fs/promises";
 import { appendLedgerEvent } from "./ledger.js";
 import { RunRecord } from "./state.js";
 import { writeJsonFile } from "../utils/json.js";
-import { writeBinaryFile, writeTextFile } from "../utils/fs.js";
+import { pathExists, writeBinaryFile, writeTextFile } from "../utils/fs.js";
 import { artifactPath } from "./artifactPaths.js";
 
 export {
@@ -80,6 +81,33 @@ export async function recordRunArtifact(
     data: { path: relativePath },
   });
   return addArtifact(run, relativePath);
+}
+
+export async function removeRunArtifact(
+  run: RunRecord,
+  stage: string,
+  relativePath: string,
+): Promise<RunRecord> {
+  const target = artifactPath(run.runId, relativePath);
+  const hadArtifact = run.artifacts.includes(relativePath);
+  const hadFile = await pathExists(target);
+  if (!hadArtifact && !hadFile) {
+    return run;
+  }
+  if (hadFile) {
+    await rm(target, { force: true });
+  }
+  await appendLedgerEvent({
+    runId: run.runId,
+    type: "ARTIFACT_REMOVED",
+    stage,
+    message: `Removed ${relativePath}.`,
+    data: { path: relativePath },
+  });
+  return {
+    ...run,
+    artifacts: run.artifacts.filter((artifact) => artifact !== relativePath),
+  };
 }
 
 function addArtifact(run: RunRecord, relativePath: string): RunRecord {

@@ -8,6 +8,7 @@ import * as ideasStage from "../src/stages/ideas";
 import { runIdeas } from "../src/stages/ideas";
 import type { VideoIdea } from "../src/stages/types";
 import { pathExists } from "../src/utils/fs";
+import { readJsonFile } from "../src/utils/json";
 import { useTempProject } from "./helpers";
 
 type IdeasArtifact = {
@@ -69,10 +70,22 @@ describe("idea provider retry and repair", () => {
     expect(prompt).toContain("Paslı Android Mezarlığı");
     expect(prompt).toContain("Nötrino Gecikmesi");
     expect(prompt).toContain("Sonda Günlüğü");
+    expect(prompt).toContain(
+      "Do not repeat four-word sentence frames across three or more `fit` explanations",
+    );
+    expect(prompt).toContain("Do not repeat generic fit boilerplate");
     expect(prompt).toContain("Do not begin more than one premise with the same first three words");
+    expect(prompt).toContain("Do not use `Belki bu` in more than one premise");
+    expect(prompt).toContain("Do not repeat generic unknown-species boilerplate");
+    expect(prompt).toContain("Do not repeat weak action boilerplate");
+    expect(prompt).toContain("Do not reuse weak journey or clue boilerplate");
+    expect(prompt).toContain("Do not use English scientific leftovers");
     expect(prompt).toContain("buzaltı okyanusu anomalisi");
     expect(prompt).toContain("insan-sonrası arkeoloji");
     expect(prompt).toContain("no five-word phrase may appear in three or more premises");
+    expect(prompt).toContain("no repeated fit frame");
+    expect(prompt).toContain("no repeated unknown-species boilerplate");
+    expect(prompt).toContain("no repeated weak journey/clue/action boilerplate");
   });
 
   it("retries one invalid local-model idea slate with validation feedback", async () => {
@@ -155,8 +168,24 @@ describe("idea provider retry and repair", () => {
 
     const [run] = await listRuns();
     expect(run.state).toBe("NEW");
+    expect(run.artifacts).toContain("diagnostics/ideas_generation_failure.json");
     expect(await pathExists(artifactPath(run.runId, "ideas.json"))).toBe(false);
     expect(await pathExists(artifactPath(run.runId, "ideas.md"))).toBe(false);
+    const diagnostics = await readJsonFile<{
+      message: string;
+      model: string;
+      providerMode: string;
+      stage: string;
+      state: string;
+    }>(artifactPath(run.runId, "diagnostics/ideas_generation_failure.json"));
+    expect(diagnostics).toMatchObject({
+      stage: "ideas",
+      state: "NEW",
+      providerMode: "mock",
+      model: "mock-invalid-ideas-always",
+      message: expect.stringContaining("Invalid ideas provider response after repair attempt"),
+    });
+    expect(JSON.stringify(diagnostics)).not.toContain("Tekrar Eden Gezegen");
     expect(
       (await readLedger(run.runId)).some(
         (event) =>

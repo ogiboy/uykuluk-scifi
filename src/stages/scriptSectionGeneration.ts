@@ -148,7 +148,7 @@ export function receiptInputTokens(receipt: {
   inputTokensApprox?: number;
 }): number | undefined {
   return sumOptionalNumbers([
-    receipt.blockerRetry?.rejectedAttempt.inputTokensApprox,
+    ...rejectedAttemptValues(receipt.blockerRetry, "inputTokensApprox"),
     receipt.inputTokensApprox,
   ]);
 }
@@ -158,7 +158,7 @@ export function receiptOutputTokens(receipt: {
   outputTokensApprox?: number;
 }): number | undefined {
   return sumOptionalNumbers([
-    receipt.blockerRetry?.rejectedAttempt.outputTokensApprox,
+    ...rejectedAttemptValues(receipt.blockerRetry, "outputTokensApprox"),
     receipt.outputTokensApprox,
   ]);
 }
@@ -167,7 +167,12 @@ export function receiptDurationMs(receipt: {
   blockerRetry?: ScriptContentBlockerRetryEvidence;
   durationMs: number;
 }): number {
-  return (receipt.blockerRetry?.rejectedAttempt.durationMs ?? 0) + receipt.durationMs;
+  return (
+    (receipt.blockerRetry?.rejectedAttempts ?? []).reduce(
+      (sum, attempt) => sum + attempt.durationMs,
+      0,
+    ) + receipt.durationMs
+  );
 }
 
 function parseSectionProviderPayload(
@@ -213,4 +218,11 @@ function sumOptionalNumbers(values: Array<number | undefined>): number | undefin
   return values.every((value): value is number => typeof value === "number")
     ? values.reduce((sum, value) => sum + value, 0)
     : undefined;
+}
+
+function rejectedAttemptValues(
+  blockerRetry: ScriptContentBlockerRetryEvidence | undefined,
+  key: "inputTokensApprox" | "outputTokensApprox",
+): Array<number | undefined> {
+  return (blockerRetry?.rejectedAttempts ?? []).map((attempt) => attempt[key]);
 }

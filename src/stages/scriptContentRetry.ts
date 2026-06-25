@@ -9,7 +9,7 @@ import { formatScriptReviewBlockers } from "../safeguards/scriptReviewFormatting
 import { sha256 } from "../utils/hash.js";
 
 export type ScriptContentBlockerRetryEvidence = {
-  attemptCount: 2;
+  attemptCount: number;
   blockers: string;
   rejectedAttempt: {
     contentHash: string;
@@ -20,6 +20,15 @@ export type ScriptContentBlockerRetryEvidence = {
     promptHash: string;
     provider: string;
   };
+  rejectedAttempts: Array<{
+    contentHash: string;
+    durationMs: number;
+    inputTokensApprox?: number;
+    model: string;
+    outputTokensApprox?: number;
+    promptHash: string;
+    provider: string;
+  }>;
 };
 
 export type ScriptContentGenerationResult<T> = {
@@ -39,32 +48,65 @@ type ScriptContentGenerationInput<T> = {
   validationContext?: string;
 };
 
+const maxScriptContentBlockerRepairAttempts = 2;
+
 export async function generateScriptContentWithBlockerRetry<T>(
   input: ScriptContentGenerationInput<T>,
 ): Promise<ScriptContentGenerationResult<T>> {
-  const first = await generateAttempt(input, input.prompt);
-  const firstBlockers = blockingScriptWarnings(input.textOf(first.parsed), input.validationContext);
-  if (firstBlockers.length === 0) {
-    return { parsed: first.parsed, prompts: [input.prompt], result: first.result };
+  const rejectedAttempts: Array<{
+    blockers: ScriptReviewWarning[];
+    prompt: string;
+    result: GenerateTextResult;
+  }> = [];
+  const prompts: string[] = [];
+  let prompt = input.prompt;
+
+  for (
+    let attemptIndex = 0;
+    attemptIndex <= maxScriptContentBlockerRepairAttempts;
+    attemptIndex += 1
+  ) {
+    prompts.push(prompt);
+    const attempt = await generateAttempt(input, prompt);
+    const blockers = blockingScriptWarnings(input.textOf(attempt.parsed), input.validationContext);
+    if (blockers.length === 0) {
+      if (rejectedAttempts.length === 0) {
+        return { parsed: attempt.parsed, prompts, result: attempt.result };
+      }
+      const rejectedEvidence = rejectedAttempts.map((item) =>
+        attemptEvidence(item.prompt, item.result),
+      );
+      return {
+        blockerRetry: {
+          attemptCount: rejectedAttempts.length + 1,
+          blockers: formatRejectedBlockers(rejectedAttempts),
+          rejectedAttempt: rejectedEvidence[0],
+          rejectedAttempts: rejectedEvidence,
+        },
+        parsed: attempt.parsed,
+        prompts,
+        result: attempt.result,
+      };
+    }
+
+    rejectedAttempts.push({ blockers, prompt, result: attempt.result });
+    if (attemptIndex === maxScriptContentBlockerRepairAttempts) {
+      throw scriptContentBlockerError(
+        input.source,
+        blockers,
+        `after ${maxScriptContentBlockerRepairAttempts} retries`,
+      );
+    }
+
+    prompt = renderScriptContentRetryPrompt(
+      input.prompt,
+      input.source,
+      formatRejectedBlockers(rejectedAttempts),
+      attemptIndex + 1,
+    );
   }
 
-  const blockers = formatScriptReviewBlockers(firstBlockers);
-  const retryPrompt = renderScriptContentRetryPrompt(input.prompt, input.source, blockers);
-  const retry = await generateAttempt(input, retryPrompt);
-  const retryBlockers = blockingScriptWarnings(input.textOf(retry.parsed), input.validationContext);
-  if (retryBlockers.length > 0) {
-    throw scriptContentBlockerError(input.source, retryBlockers, "after 1 retry");
-  }
-  return {
-    blockerRetry: {
-      attemptCount: 2,
-      blockers,
-      rejectedAttempt: attemptEvidence(input.prompt, first.result),
-    },
-    parsed: retry.parsed,
-    prompts: [input.prompt, retryPrompt],
-    result: retry.result,
-  };
+  throw new SafeExitError(`Invalid ${input.source}: exhausted content repair attempts.`);
 }
 
 export function scriptContentBlockerError(
@@ -94,10 +136,25 @@ async function generateAttempt<T>(
   return { parsed: input.parse(result.text), result };
 }
 
-function renderScriptContentRetryPrompt(prompt: string, source: string, blockers: string): string {
-  return [
+function formatRejectedBlockers(
+  rejectedAttempts: Array<{ blockers: readonly ScriptReviewWarning[] }>,
+): string {
+  return rejectedAttempts
+    .map(
+      (attempt, index) => `attempt ${index + 1}: ${formatScriptReviewBlockers(attempt.blockers)}`,
+    )
+    .join(" | ");
+}
+
+function renderScriptContentRetryPrompt(
+  prompt: string,
+  source: string,
+  blockers: string,
+  repairAttempt: number,
+): string {
+  const retryInstructions = [
     prompt,
-    "## SCRIPT_CONTENT_RETRY",
+    `## SCRIPT_CONTENT_RETRY attempt ${repairAttempt}/${maxScriptContentBlockerRepairAttempts}`,
     "The previous response was rejected before artifact persistence and must not be repeated.",
     `Rejected source: ${source}.`,
     `Safe blocker summary: ${blockers}.`,
@@ -106,6 +163,23 @@ function renderScriptContentRetryPrompt(prompt: string, source: string, blockers
     "Use only exact Turkish production labels `Anlatıcı:` and `Görsel:`.",
     "Do not repeat sentence skeletons, metaphors, visual directions, or rejected structures.",
     "Return only the JSON shape requested above.",
+  ];
+
+  if (repairAttempt < maxScriptContentBlockerRepairAttempts) {
+    return retryInstructions.join("\n\n");
+  }
+
+  return [
+    ...retryInstructions,
+    "## SCRIPT_CONTENT_RETRY_STRICT_FINAL",
+    "This is the final bounded repair attempt before fail-closed rejection.",
+    "Use this exact four-sentence semantic ledger in order:",
+    "1. `Anlatıcı:` one concrete measurement or observation.",
+    "2. `Görsel:` one distinct visual change that does not reuse the same nouns or verbs.",
+    "3. `Anlatıcı:` one cautious alternative explanation or limitation.",
+    "4. `Anlatıcı:` one transition or closure sentence with a different opening.",
+    "Never start two sentences with the same first three words after the label.",
+    "Never repeat the same subject, verb, metaphor, or visual object across the four sentences.",
   ].join("\n\n");
 }
 

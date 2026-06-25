@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { loadConfig } from "../config/config.js";
-import { artifactPath, writeRunJson, writeRunText } from "../core/artifacts.js";
+import { artifactPath, removeRunArtifact, writeRunJson, writeRunText } from "../core/artifacts.js";
 import { appendLedgerEvent } from "../core/ledger.js";
 import { loadRun, setRunState } from "../core/runStore.js";
 import { assertTransition } from "../core/transitions.js";
@@ -13,7 +13,7 @@ import { createPromptProvenance } from "../prompts/provenance.js";
 import { renderScriptPrompt } from "../prompts/templates.js";
 import { persistScriptGenerationFailure } from "./scriptFailureDiagnostics.js";
 import { scriptContentBlockerError } from "./scriptContentRetry.js";
-import { applyLongFormContinuations } from "./scriptContinuation.js";
+import { applyLongFormContinuations, assertLongFormWordFloor } from "./scriptContinuation.js";
 import { extractClaims, extractVisualBeats } from "./scriptMetaExtractors.js";
 import {
   assembleScriptFromSections,
@@ -69,6 +69,7 @@ export async function generateScript(runId: string): Promise<ScriptMeta> {
       title: idea.title,
     });
     const script = assembleScriptFromSections(idea.title, sectionOutputs);
+    assertLongFormWordFloor(script);
     const assembledBlockers = reviewBlockers(script);
     if (assembledBlockers.length > 0) {
       throw scriptContentBlockerError("assembled script provider response", assembledBlockers);
@@ -108,6 +109,7 @@ export async function generateScript(runId: string): Promise<ScriptMeta> {
       outputTokens: meta.outputTokensApprox,
       durationMs: meta.durationMs,
     });
+    run = await removeRunArtifact(run, "script", "diagnostics/script_generation_failure.json");
     run = await writeRunText(run, "script", "script.md", script);
     run = await writeRunJson(run, "script", "script.sections.json", {
       sectionCount: scriptSectionPlans.length,

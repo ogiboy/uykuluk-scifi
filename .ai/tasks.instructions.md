@@ -30,7 +30,7 @@
   local at-most-once dispatch, bounded timeout, and fail-closed outcome classification.
 - Keep live Ollama generation fail-closed when local models return malformed JSON, English
   operator-facing text, or incomplete scripts.
-- Keep script provider failure diagnostics safe, raw-output-free, and state-preserving.
+- Keep idea and script provider failure diagnostics safe, raw-output-free, and state-preserving.
 - Keep chunked Ollama script diagnostics and receipts complete enough to diagnose which draft or
   expansion chunk failed.
 - Keep readiness diagnostics and evidence synchronized with persisted run state.
@@ -59,21 +59,26 @@
   lower-third, popup-card, waveform, watermark overlays, render manifest evidence, and an
   operator-readable `production/render/draft_review.md` checklist.
 - Harden the idea repair prompt and idea-quality constraints with live qwen3 feedback. The
-  implemented two-attempt retry loop now recovers to `IDEAS_GENERATED` in live qwen3 tests after
-  repair warnings, but manual review still found weak/awkward ideas. Continue tightening prompt and
-  quality checks before treating qwen3 ideas as production-ready.
+  implemented two-attempt retry loop either recovers to `IDEAS_GENERATED` or fails closed without
+  idea artifacts while persisting a safe diagnostic summary. Live qwen3 QA now rejects repeated fit
+  frames, generic fit boilerplate, repeated uncertainty openers, generic unknown-species phrases,
+  weak premise action frames, English scientific leftovers, and repeated weak inspection/clue verbs.
+  Continue tightening prompt and quality checks before treating qwen3 ideas as production-ready.
 - Tune idea and script prompts so qwen3 avoids near-duplicate ideas, English style text, unsupported
   science framing, malformed labels, and repeated sentence loops. The parser now rejects exact
   duplicate idea titles/premises, duplicate `fit` explanations, repeated generic title motifs,
-  repeated premise frames, repeated idea sentence loops, malformed brand fragments, and copied
-  English lane terms; script expansion prompts now show previous chunks from the same section to
-  reduce repeated sentence loops; prompt quality still needs to produce a reviewable idea list.
+  repeated premise frames, repeated fit frames, repeated idea sentence loops, malformed brand
+  fragments, copied English lane terms, repeated local-model boilerplate, English scientific
+  leftovers such as `anomaly’sı`, and weak verbs such as `inceleyerek`/`yansıtmakta`; script
+  expansion prompts now show previous chunks from the same section to reduce repeated sentence
+  loops; prompt quality still needs to produce a consistently reviewable idea list.
 - Harden script continuation and expansion quality for live qwen3. Malformed local-model `"text"`
   wrappers now have regression coverage for raw text, fences, trailing commas, missing closing
-  quotes, and short external notes. Section and continuation blockers now get one bounded retry with
-  raw-output-free receipt evidence. Live qwen3 `no_think` QA exercised the retry path but still
-  failed closed at `outro` expansion chunk 3 after one retry, so the next work is prompt quality and
-  repetition avoidance rather than relaxing blockers.
+  quotes, and short external notes. Section and continuation blockers now get up to two bounded
+  retries with raw-output-free receipt evidence. Live qwen3 `no_think` QA recovered from repeated
+  section loops to `SCRIPT_GENERATED`, but the resulting 1015-word draft exposed a missing final
+  word-floor check. Underfilled drafts now fail closed after bounded continuation passes; the next
+  work is repeat live qwen QA and prompt/content-quality tuning rather than weakening blockers.
 - Repeat live qwen3 script QA after prompt/label tuning. Known production-label variants now repair
   with section-receipt evidence; unrelated malformed labels must still fail closed without raw
   output persistence. Malformed-label and repeated-loop diagnostics now report safe category
@@ -81,6 +86,8 @@
   output; add a variant only when it is safe, bounded, and regression-tested.
 - Preserve the continuation design over simply raising local section chunk caps; live local QA
   showed larger chunks can destabilize JSON parse reliability.
+- Keep continuation request schemas compatible with Ollama grammar limits; large accepted-text
+  bounds belong in parser validation, not provider grammar schemas.
 - Keep `producer doctor` config/provider/model/TTS/asset/publish diagnostics and evidence passing.
 - Keep Studio read-only artifact previews useful as new artifact types are added. Current previews
   include operator-phase grouping, media-specific metadata, and per-artifact review wording while

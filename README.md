@@ -133,6 +133,9 @@ agent-tracking state only; runtime code must not require it.
 - Script generation uses bounded section calls and can add up to two bounded continuation passes
   when a local model draft remains below the long-form review floor; continuation receipts are
   persisted with prompt/content hashes.
+- If those bounded continuation passes still leave the assembled provider draft below the long-form
+  floor, script generation fails closed without writing script artifacts and records safe
+  diagnostics.
 - Local model continuations are JSON-first, with a bounded raw Turkish fallback for models that
   ignore the JSON wrapper but still return complete, labeled continuation text.
 - Script generation/review blocks malformed production labels and repeated sentence loops instead of
@@ -164,6 +167,9 @@ agent-tracking state only; runtime code must not require it.
   local provider returns a malformed or weak idea slate. Rejected raw outputs are not persisted;
   `ideas.json` records repair metadata and the ledger records each retry warning. A third invalid
   response still fails closed without idea artifacts.
+- Idea slate validation rejects repeated local-model boilerplate in `fit` explanations, uncertainty
+  openers, unknown-species phrases, weak premise action frames, English scientific leftovers, and
+  repeated weak inspection/clue verbs before ideas can reach operator approval.
 - Idea, script, and production-package generation re-check existing per-video, daily, and weekly
   budgets, using the stage pricing estimate, before calling a provider or writing generated
   artifacts.
@@ -424,8 +430,12 @@ schedule, or publish anything.
 into bounded hook, context, development, and outro sections. Each section is drafted once and then
 expanded through three smaller bounded JSON chunks so local models can finish valid payloads. The
 run persists draft/expansion receipts before it can advance. If a local model returns malformed
-JSON, English operator-facing text, or an incomplete script section, the stage fails closed before
-writing `script.md`; provider failure diagnostics are persisted under the run when safe to record.
+JSON, English operator-facing text, duplicate/boilerplate ideas, or an incomplete script section,
+the stage fails closed before writing the next review artifact; provider failure diagnostics are
+persisted under the run when safe to record. Repeated sentence or label blockers get bounded
+raw-output-free repair retries, and a later successful script run clears stale failure diagnostics
+before advancing. `producer status` and the read-only Studio run detail surface safe idea/script
+failure diagnostic summaries so the next blocker is visible without opening JSON artifacts by hand.
 
 Run `pnpm producer doctor` before starting production work. Mock mode passes without network access.
 Ollama mode checks `/api/tags` with a bounded timeout and blocks when the server is unavailable or
@@ -468,6 +478,7 @@ Each run can write:
 - `costs/ledger.jsonl`;
 - `costs/reservations.jsonl`;
 - `evidence_bundle.json` and `evidence_bundle.md`;
+- `diagnostics/ideas_generation_failure.json` when idea provider validation or transport fails;
 - `diagnostics/script_generation_failure.json` when script provider parsing or transport fails;
 - `diagnostics/readiness.json` and `diagnostics/readiness.md`;
 - `ledger.jsonl`.

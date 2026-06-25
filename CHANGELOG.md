@@ -9,7 +9,22 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Documentation
+
+- refresh capability routing for current plugin, MCP, and subagent usage
+
+### Fixes
+
+- reject English scientific leftovers and repeated qwen3 inspection verbs in ideas
+- reject repeated weak qwen3 idea journey and clue boilerplate
+- surface safe idea failure diagnostics in CLI status and Studio run detail
+- fail closed on repeated qwen3 idea fit/premise boilerplate after bounded repairs
+- surface safe script failure diagnostics in CLI status and Studio run detail
+- keep Studio read-only next-action guidance aligned with CLI status before evidence exists
+- keep early `producer status` next-action guidance useful before evidence exists
+- avoid Ollama continuation grammar warnings from large schema length bounds
+- fail closed when script continuations still miss the long-form floor
+- recover qwen3 script blocker retries with stale diagnostic cleanup
 
 ## v0.7.0 (2026-06-25)
 
