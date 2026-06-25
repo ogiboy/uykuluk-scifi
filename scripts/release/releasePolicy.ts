@@ -1,4 +1,10 @@
-export const changelogMarker = "<!-- version list -->";
+import {
+  assertSingleMarker,
+  normalizeUnreleasedNotes,
+  splitUnreleasedSection,
+} from "./changelogPolicy.js";
+
+export { changelogMarker, changelogReleaseSource } from "./changelogPolicy.js";
 
 export const releaseCommitTypes = [
   "build",
@@ -217,41 +223,4 @@ export function updateChangelog(
   const nextUnreleased = "## Unreleased\n\n_No unreleased changes yet._";
   const releaseHeader = `## v${version} (${date})`;
   return `${unreleased.before}${nextUnreleased}\n\n${releaseHeader}\n\n${notes.trim()}\n\n${unreleased.after.trimStart()}`;
-}
-
-export function assertSingleMarker(text: string): void {
-  const count = text.split(changelogMarker).length - 1;
-  if (count !== 1) {
-    throw new Error(
-      `CHANGELOG.md must contain exactly one ${changelogMarker} marker; found ${count}.`,
-    );
-  }
-}
-
-function splitUnreleasedSection(text: string): { after: string; before: string; content: string } {
-  const markerIndex = text.indexOf(changelogMarker);
-  const unreleasedIndex = text.indexOf("## Unreleased", markerIndex);
-  if (unreleasedIndex === -1) {
-    throw new Error("CHANGELOG.md must contain a ## Unreleased section after the version marker.");
-  }
-
-  const contentStart = text.indexOf("\n", unreleasedIndex);
-  const nextVersionIndex = text.indexOf("\n## ", contentStart + 1);
-  if (contentStart === -1) {
-    throw new Error("CHANGELOG.md ## Unreleased section is malformed.");
-  }
-
-  return {
-    before: text.slice(0, unreleasedIndex),
-    content: text.slice(contentStart + 1, nextVersionIndex === -1 ? text.length : nextVersionIndex),
-    after: nextVersionIndex === -1 ? "" : text.slice(nextVersionIndex + 1),
-  };
-}
-
-function normalizeUnreleasedNotes(content: string): string {
-  const trimmed = content.trim();
-  if (!trimmed || trimmed === "_No unreleased changes yet._") {
-    return "";
-  }
-  return trimmed;
 }

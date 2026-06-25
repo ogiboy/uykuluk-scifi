@@ -9,7 +9,9 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Tooling
+
+- make `version:plan` explain pending tags, changelog source, and main-only release ownership
 
 ## v0.7.1 (2026-06-25)
 

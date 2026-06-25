@@ -247,7 +247,8 @@
   release-range commit subjects, updates `package.json`, moves `CHANGELOG.md` Unreleased notes into
   a versioned section, commits `chore(release): vX.Y.Z`, and tags `vX.Y.Z`. The publish helper
   refreshes `origin/main` before planning and retries the atomic push when main advances during
-  rapid consecutive merges.
+  rapid consecutive merges. `pnpm version:plan` now exposes the pending tag, changelog note source,
+  and main-only release-file ownership so PRs do not look like missing package bumps.
 - CodeRabbit, GitHub Actions, CodeQL, Dependabot, SonarQube, Prettier, ESLint,
   eslint-config-prettier, Vitest, Playwright, TypeScript, modularity, secret-scan, changelog, and
   release hygiene gates.
@@ -382,6 +383,6 @@ Corepack/PATH before treating failures as product failures.
   remain useful additions.
 - Sonar scan upload requires a local or cloud token through `SONAR_TOKEN` or Keychain; tokens must
   never be tracked.
-- Stable git tags are present through `v0.5.0`. Release automation treats the latest reachable
+- Stable git tags are present through `v0.7.1`. Release automation treats the latest reachable
   stable tag as the release base and uses exact-SHA legacy allowlist entries for the two historical
   non-conventional docstring commits.

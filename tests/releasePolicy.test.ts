@@ -1,5 +1,6 @@
 import {
   buildReleasePlan,
+  changelogReleaseSource,
   parseConventionalSubject,
   renderCommitReleaseNotes,
   updateChangelog,
@@ -106,5 +107,34 @@ describe("release policy", () => {
     ]);
 
     expect(notes).toBe("### Documentation\n\n- clarify release workflow (2222222)");
+  });
+
+  it("reports whether the release will use curated changelog notes or commit-derived notes", () => {
+    const curatedChangelog = [
+      "# Changelog",
+      "",
+      "<!-- version list -->",
+      "",
+      "## Unreleased",
+      "",
+      "### Tooling",
+      "",
+      "- clarify release planning output.",
+      "",
+    ].join("\n");
+    const emptyChangelog = curatedChangelog.replace(
+      "### Tooling\n\n- clarify release planning output.",
+      "_No unreleased changes yet._",
+    );
+
+    expect(changelogReleaseSource(curatedChangelog, true)).toBe("unreleased");
+    expect(changelogReleaseSource(emptyChangelog, true)).toBe("commit-derived");
+    expect(changelogReleaseSource(curatedChangelog, false)).toBe("none");
+  });
+
+  it("rejects changelog source detection when the version marker is missing", () => {
+    expect(() => changelogReleaseSource("# Changelog\n\n## Unreleased\n", true)).toThrow(
+      /must contain exactly one/,
+    );
   });
 });

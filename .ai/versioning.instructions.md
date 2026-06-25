@@ -28,7 +28,9 @@ The project uses `package.json` as the version source and a main-branch release 
 
 - Feature branches and PRs do not bump `package.json` manually.
 - `pnpm version:plan` computes the next version from the latest stable tag. If no stable tag exists,
-  it treats the current reachable history as the first releasable range.
+  it treats the current reachable history as the first releasable range. The JSON output also
+  reports the pending release tag, whether the changelog will use curated `## Unreleased` notes or
+  commit-derived notes, and that feature branches/PRs should not mutate release files.
 - `pnpm release:check` validates non-merge, non-release commit subjects in the release range.
 - `pnpm release:apply` updates `package.json` and moves `CHANGELOG.md` Unreleased notes into a
   versioned section; the GitHub release workflow owns the release commit and tag.

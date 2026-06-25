@@ -494,8 +494,12 @@ operator data.
   `fix/core-approval-ledger`, `ci/codeql-hardening`, or `docs/asset-inventory`.
 - Use Conventional Commits.
 - Keep `CHANGELOG.md` and the `<!-- version list -->` marker intact.
-- `pnpm version:plan` reports the next release version from the latest stable tag, and
-  `pnpm release:check` validates release-range commit subjects before publish.
+- Feature branches and PRs do not bump `package.json`; use `pnpm version:plan` to inspect the
+  planned release instead.
+- `pnpm version:plan` reports the next release version from the latest stable tag, the pending tag
+  name, whether release notes will come from `CHANGELOG.md` Unreleased notes or commit-derived
+  notes, and the main-only automation policy.
+- `pnpm release:check` validates release-range commit subjects before publish.
 - Pushes to `main` run the release workflow. When releaseable commits exist, it updates
   `package.json`, moves `CHANGELOG.md` Unreleased notes into a versioned section, creates
   `chore(release): vX.Y.Z`, and tags `vX.Y.Z`.
