@@ -19,11 +19,14 @@ export type AssetCheck = {
  * @returns An `AssetCheck` object containing the check result, any warnings about missing
  * assets, and lists of discovered files by category.
  */
-export async function checkAssets(config: ProducerConfig): Promise<AssetCheck> {
-  const brand = await listFilesIfExists(path.join(process.cwd(), config.assets.brandDir));
-  const overlays = await listFilesIfExists(path.join(process.cwd(), config.assets.overlayDir));
-  const intro = await listFilesIfExists(path.join(process.cwd(), config.assets.introDir));
-  const outro = await listFilesIfExists(path.join(process.cwd(), config.assets.outroDir));
+export async function checkAssets(
+  config: ProducerConfig,
+  root: string = process.cwd(),
+): Promise<AssetCheck> {
+  const brand = await listFilesIfExists(path.join(root, config.assets.brandDir));
+  const overlays = await listFilesIfExists(path.join(root, config.assets.overlayDir));
+  const intro = await listFilesIfExists(path.join(root, config.assets.introDir));
+  const outro = await listFilesIfExists(path.join(root, config.assets.outroDir));
   const warnings: string[] = [];
   if (!brand.some((file) => /logo/i.test(file))) {
     warnings.push("Missing brand logo asset in assets/brand.");

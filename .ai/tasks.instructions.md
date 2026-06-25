@@ -5,7 +5,7 @@
 - Keep CLI/core contracts stable.
 - Keep `.ai/` guidance aligned with the source tree without making `.ai/` part of runtime execution.
 - Keep `pnpm qa:usage` passing after workflow changes.
-- Keep visual asset inventory current.
+- Keep visual asset inventory and the read-only Studio `/assets` page current.
 - Keep content and asset guard coverage aligned with the operator checklist.
 - Keep `apps/studio` thin until shared service contracts exist.
 - Keep first-push repo hygiene files and GitHub workflows passing.

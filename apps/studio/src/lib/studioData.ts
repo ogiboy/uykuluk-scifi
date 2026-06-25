@@ -1,9 +1,9 @@
 export const studioSections = [
   { id: "runs", label: "Runs", href: "/runs" },
   { id: "workflow", label: "Workflow" },
-  { id: "assets", label: "Assets" },
+  { id: "assets", label: "Assets", href: "/assets" },
   { id: "prompts", label: "Prompts" },
-] as const satisfies ReadonlyArray<{ href?: "/runs"; id: string; label: string }>;
+] as const satisfies ReadonlyArray<{ href?: "/assets" | "/runs"; id: string; label: string }>;
 
 export const statusCards = [
   {
@@ -44,23 +44,5 @@ export const commandGroups = [
     title: "Evidence",
     command: "pnpm producer evidence --run <run_id>",
     description: "Write the operator-readable evidence bundle for QA and review.",
-  },
-];
-
-export const assetGroups = [
-  {
-    label: "Brand And Overlay",
-    count: "9 files",
-    description: "Logo, watermark, banner, lower-third, popup, title card, and end screen.",
-  },
-  {
-    label: "Thumbnails",
-    count: "6 files",
-    description: "Three 1280x720 templates with matching transparent text-safe overlays.",
-  },
-  {
-    label: "Render Plates",
-    count: "30 files",
-    description: "Backgrounds, transitions, icons, waveforms, and intro/outro source frames.",
   },
 ];

@@ -89,7 +89,8 @@ Next Real Production Loop slices:
 
 ## Phase C - Operator Studio
 
-Status: read-only run review foundation exists; artifact previews and safety contracts come next.
+Status: read-only run review, artifact preview, and asset inventory foundations exist; safety
+contracts come next.
 
 The Studio should be a local operator surface over CLI/core contracts.
 
@@ -98,8 +99,9 @@ Priority order:
 - maintain the read-only run index with state, warnings, approvals, readiness, and next action;
 - maintain the read-only run detail with evidence, readiness, warning counts, approvals, and review
   artifact availability;
-- artifact previews for scripts, production packages, render plans, contact sheets, and assets;
-- asset inventory page;
+- maintain artifact previews for scripts, production packages, render plans, contact sheets, audio,
+  render evidence, and readiness artifacts;
+- maintain the read-only visual asset inventory page backed by configured guard checks;
 - shared service contracts for any future Studio read/write operation;
 - route security requirements and negative tests;
 - only after those contracts exist: approval forms and guarded mutations.

@@ -16,6 +16,7 @@ future generated release notes can be inserted predictably.
 - report ffprobe-validated draft render media details in readiness output
 - show voiceover WAV and ffprobe render evidence in Studio read-only artifact previews
 - show render plan, voiceover, and draft render status in the CLI run status summary
+- add a read-only Studio visual asset inventory page backed by configured asset guard checks
 - validate local draft renders with `ffprobe` media evidence before recording render completion
 
 ### Fixes

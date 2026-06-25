@@ -289,13 +289,15 @@ Current Studio scope:
   contact sheets, asset provenance, evidence, readiness, voiceover metadata, and render manifests,
   grouped by operator review phase, with binary media limited to metadata;
 - run/workflow command overview;
-- current asset inventory summary;
+- current asset inventory summary and read-only `/assets` detail page backed by configured asset
+  guard checks;
 - Radix module tabs for planned run, prompt, asset, and safety surfaces;
 - type-safe `next-intl` request/provider foundation for English and Turkish locales;
 - visible reminder that CLI/core remains the workflow source of truth.
 
-Next Studio work should refine artifact previews, add shared read/write service contracts, and
-define route security requirements before any mutating route handlers.
+Next Studio work should keep artifact and asset previews aligned with new production artifacts, add
+shared read/write service contracts, and define route security requirements before any mutating
+route handlers.
 
 ## Visual Assets
 

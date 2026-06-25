@@ -37,3 +37,13 @@ test("studio exposes the read-only run index route", async ({ page }) => {
   await expect(page.getByRole("heading", { name: /producer runs/i })).toBeVisible();
   await expect(page.getByRole("link", { name: "Studio home" })).toBeVisible();
 });
+
+test("studio exposes the read-only visual asset inventory route", async ({ page }) => {
+  await page.goto("/assets");
+
+  await expect(page.getByRole("heading", { name: /visual asset inventory/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Inventory Overview" })).toBeVisible();
+  await expect(page.getByText("does not approve assets")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Brand" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Studio home" })).toBeVisible();
+});

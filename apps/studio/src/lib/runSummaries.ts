@@ -7,6 +7,7 @@ import {
   type RunDiagnosticSummary,
 } from "../../../../src/stages/runDiagnosticSummaryContracts";
 import { readReviewArtifactPreviews, type StudioArtifactPreview } from "./artifactPreviews";
+import { projectRoot } from "./projectRoot";
 
 export type StudioRunState =
   | "NEW"
@@ -188,30 +189,6 @@ async function readOptionalJson<T>(
       return null;
     }
     return null;
-  }
-}
-
-async function projectRoot(): Promise<string> {
-  if (process.env.UYKULUK_SCIFI_ROOT) {
-    return process.env.UYKULUK_SCIFI_ROOT;
-  }
-  let current = process.cwd();
-  for (;;) {
-    try {
-      const pkg = JSON.parse(await readFile(path.join(current, "package.json"), "utf8")) as {
-        name?: string;
-      };
-      if (pkg.name === "uykuluk-scifi") {
-        return current;
-      }
-    } catch {
-      // Continue walking upward.
-    }
-    const parent = path.dirname(current);
-    if (parent === current) {
-      return process.cwd();
-    }
-    current = parent;
   }
 }
 

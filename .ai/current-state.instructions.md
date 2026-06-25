@@ -266,6 +266,10 @@
   packages, render plans, contact sheets, asset provenance, evidence, readiness, voiceover metadata,
   and render manifests. Previews are grouped by operator review phase with per-artifact review
   guidance, and binary media is intentionally limited to metadata.
+- Studio has a read-only `/assets` visual inventory page backed by configured asset guard
+  directories and committed render-support asset categories. It surfaces invalid producer config and
+  missing guarded assets as operator warnings without approving assets, rendering media, or mutating
+  run state.
 - Manual analytics feedback foundation. `producer analytics import --file <path>` accepts
   operator-provided CSV/JSON performance exports and writes ignored local
   `analytics/performance.json` plus `analytics/performance_report.md`. `producer analytics report`
