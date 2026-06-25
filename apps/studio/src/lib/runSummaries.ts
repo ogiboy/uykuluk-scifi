@@ -6,6 +6,11 @@ import {
   summarizeRunDiagnosticArtifact,
   type RunDiagnosticSummary,
 } from "../../../../src/stages/runDiagnosticSummaryContracts";
+import {
+  productionMediaStatus,
+  type EvidenceStatus,
+  type ProductionMediaStatus,
+} from "../../../../src/stages/statusMedia";
 import { readReviewArtifactPreviews, type StudioArtifactPreview } from "./artifactPreviews";
 import { projectRoot } from "./projectRoot";
 
@@ -47,6 +52,7 @@ export type StudioRunDetail = StudioRunSummary & {
   artifacts: StudioArtifactPreview[];
   diagnostics: RunDiagnosticSummary[];
   evidence: Record<string, unknown> | null;
+  productionMedia: ProductionMediaStatus[];
   readiness: { checks?: unknown[]; passed?: boolean } | null;
   warnings: string[];
 };
@@ -61,10 +67,7 @@ type RunRecord = {
   warnings?: string[];
 };
 
-type EvidenceSnapshot = {
-  blockedActions?: unknown[];
-  nextRecommendedCommand?: unknown;
-};
+type EvidenceSnapshot = EvidenceStatus;
 
 type ReadinessSnapshot = {
   checks?: unknown[];
@@ -105,6 +108,7 @@ export async function getStudioRunDetail(runId: string): Promise<StudioRunDetail
     artifacts: await readReviewArtifactPreviews(root, runId),
     diagnostics: await readStudioRunDiagnostics(root, runId, record.artifacts ?? []),
     evidence: evidence ?? null,
+    productionMedia: productionMediaStatus({ artifacts: record.artifacts ?? [] }, evidence),
     readiness: readiness ?? null,
     warnings: record.warnings ?? [],
   };

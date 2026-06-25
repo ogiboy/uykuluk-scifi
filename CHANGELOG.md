@@ -12,6 +12,7 @@ future generated release notes can be inserted predictably.
 ### Features
 
 - record local Piper model and config provenance in voiceover evidence and review artifacts
+- show production media evidence details in Studio run detail
 - show production media evidence details in operator status output
 - add an operator-readable production media summary to evidence Markdown
 - summarize draft-render source-frame usage in evidence and readiness output

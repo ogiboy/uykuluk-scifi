@@ -1,5 +1,3 @@
-import type { RunRecord } from "../core/state.js";
-
 export type EvidenceStatus = {
   blockedActions?: unknown[];
   draftRender?: EvidenceMediaStatus;
@@ -49,7 +47,7 @@ const PRODUCTION_MEDIA_ARTIFACTS = [
 ] as const;
 
 export function productionMediaStatus(
-  run: RunRecord,
+  run: { artifacts: readonly string[] },
   evidence: EvidenceStatus | null,
 ): ProductionMediaStatus[] {
   return PRODUCTION_MEDIA_ARTIFACTS.map((item) => ({
@@ -67,7 +65,7 @@ export function formatProductionMediaStatus(artifact: ProductionMediaStatus): st
 }
 
 function mediaArtifactStatus(
-  run: RunRecord,
+  run: { artifacts: readonly string[] },
   evidenceStatus: unknown,
   artifactPath: string,
 ): ProductionMediaStatus["status"] {

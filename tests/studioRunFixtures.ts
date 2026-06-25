@@ -1,0 +1,98 @@
+import { mkdir, writeFile } from "node:fs/promises";
+import { artifactPath } from "../src/core/artifacts";
+import { createRun, saveRun } from "../src/core/runStore";
+
+export async function createRenderedStudioRunFixture(): Promise<string> {
+  const run = await createRun();
+  await mkdir(`runs/${run.runId}/production/render`, { recursive: true });
+  await mkdir(`runs/${run.runId}/production/audio`, { recursive: true });
+  await writeFile(
+    artifactPath(run.runId, "script.md"),
+    "# Bölüm Taslağı\n\nİlk sahne hazır.",
+    "utf8",
+  );
+  await writeFile(
+    artifactPath(run.runId, "production/render_plan.json"),
+    JSON.stringify({ scenes: [{ id: "scene-1", background: "assets/backgrounds/nebula.png" }] }),
+    "utf8",
+  );
+  await writeFile(
+    artifactPath(run.runId, "production/asset_provenance.json"),
+    JSON.stringify({
+      assets: [{ path: "assets/backgrounds/nebula.png", role: "background" }],
+    }),
+    "utf8",
+  );
+  await writeFile(
+    artifactPath(run.runId, "production/audio/voiceover_review.md"),
+    "# Voiceover Review\n\nConfirm pacing before render approval.",
+    "utf8",
+  );
+  await writeFile(artifactPath(run.runId, "production/audio/voiceover.wav"), Buffer.from([4, 5]));
+  await writeFile(
+    artifactPath(run.runId, "production/render/draft.mp4"),
+    Buffer.from([0, 1, 2, 3]),
+  );
+  await writeFile(
+    artifactPath(run.runId, "production/render/draft_review.md"),
+    "# Draft Render Review\n\nUpload remains disabled.",
+    "utf8",
+  );
+  await saveRun({
+    ...run,
+    state: "RENDERED",
+    artifacts: [
+      "script.md",
+      "production/render_plan.json",
+      "production/asset_provenance.json",
+      "production/audio/voiceover.wav",
+      "production/audio/voiceover_review.md",
+      "production/render/draft.mp4",
+      "production/render/render_manifest.json",
+      "production/render/draft_review.md",
+      "evidence_bundle.json",
+      "diagnostics/readiness.json",
+    ],
+  });
+  await writeEvidence(run.runId, {
+    currentState: "RENDERED",
+    draftRender: {
+      status: "pass",
+      durationSeconds: 8.2,
+      mediaProbe: {
+        audio: { codecName: "aac" },
+        video: { height: 720, width: 1280 },
+      },
+      path: "production/render/draft.mp4",
+      sourceFrameCount: 4,
+      sourceFrameSegments: ["intro:2", "outro:2"],
+      timelineSegments: ["intro", "scene", "outro"],
+    },
+    nextRecommendedCommand: "Manual final draft review. Upload remains approval-gated.",
+    renderPlan: { status: "pass", artifactCount: 3, assetCount: 11 },
+    voiceoverAudio: {
+      status: "pass",
+      durationSeconds: 8.2,
+      mode: "local-piper",
+      sourceWordCount: 42,
+    },
+  });
+  await writeReadiness(run.runId, true);
+  return run.runId;
+}
+
+export async function writeEvidence(
+  runId: string,
+  evidence: Record<string, unknown>,
+): Promise<void> {
+  await writeFile(artifactPath(runId, "evidence_bundle.json"), JSON.stringify(evidence), "utf8");
+}
+
+export async function writeReadiness(runId: string, passed: boolean): Promise<void> {
+  await mkdir(`runs/${runId}/diagnostics`, { recursive: true });
+  await writeFile(
+    artifactPath(runId, "diagnostics/readiness.json"),
+    JSON.stringify({ runId, passed, checks: [] }),
+    "utf8",
+  );
+}

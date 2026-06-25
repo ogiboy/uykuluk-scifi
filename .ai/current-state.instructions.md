@@ -262,9 +262,10 @@
 - Studio has a type-safe `next-intl` request/provider foundation with English and Turkish locale
   selection through a local cookie. Existing operator copy has not been migrated yet.
 - Studio can list local persisted runs and show a read-only run detail page with next safe action,
-  readiness status, warning/approval counts, and review artifact availability. It does not mutate
-  run state or call providers. Early states without an evidence bundle reuse the CLI/core
-  next-action contract instead of presenting evidence generation as the only possible step.
+  readiness status, warning/approval counts, production media evidence details, and review artifact
+  availability. It does not mutate run state or call providers. Early states without an evidence
+  bundle reuse the CLI/core next-action contract instead of presenting evidence generation as the
+  only possible step.
 - Studio run detail includes read-only artifact preview excerpts for scripts, reviews, production
   packages, render plans, contact sheets, asset provenance, evidence, readiness, voiceover metadata,
   and render manifests. Previews are grouped by operator review phase with per-artifact review

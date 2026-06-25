@@ -56,6 +56,25 @@ export function RunDetailView({ run }: Readonly<{ run: StudioRunDetail }>) {
         )}
       </section>
 
+      <section className='panel' aria-labelledby='production-media-heading'>
+        <h2 id='production-media-heading'>Production Media Evidence</h2>
+        <p>
+          Read-only summary from the CLI evidence bundle. Missing or blocked media remains a CLI
+          workflow issue; Studio does not approve, render, upload, or publish.
+        </p>
+        <ul>
+          {run.productionMedia.map((artifact) => (
+            <li key={artifact.artifactPath}>
+              <strong>{artifact.label}</strong>:{" "}
+              <span className={mediaStatusClassName(artifact.status)}>{artifact.status}</span>
+              {artifact.detail ? ` — ${artifact.detail}` : ""}
+              <br />
+              <span>{artifact.artifactPath}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
       <section className='panel' aria-labelledby='artifact-heading'>
         <h2 id='artifact-heading'>Artifact Previews</h2>
         <p>
@@ -140,6 +159,10 @@ function formatReadiness(value: boolean | null): string {
     return "blocked";
   }
   return "not generated";
+}
+
+function mediaStatusClassName(status: string): string {
+  return status === "pass" ? "status-pill small" : "status-pill small blocked";
 }
 
 function artifactPreviewFallback(artifact: StudioArtifactPreview): string {
