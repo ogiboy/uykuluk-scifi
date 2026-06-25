@@ -80,8 +80,8 @@ Next Real Production Loop slices:
 - harden local TTS with real Piper voice QA and better operator guidance; current foundation writes
   deterministic reference WAV metadata and can call a configured local Piper binary/model path;
 - harden FFmpeg draft render quality and visual composition. Current foundation renders local review
-  MP4 from the current render plan, voiceover audio, subtitles, background plate, and watermark, and
-  writes a render manifest;
+  MP4 from the current render plan, scene-timed background plates, voiceover audio, subtitles, and
+  watermark, then writes a render manifest with the exact timeline;
 - manual final review/approval before any private upload work.
 
 ## Phase C - Operator Studio

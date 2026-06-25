@@ -18,8 +18,15 @@ import {
   draftRenderPath,
 } from "./renderEvidence.js";
 import { readRenderPlanEvidence } from "./renderPlan.js";
+import {
+  buildDraftRenderTimeline,
+  buildFfmpegArgs,
+  clampRenderDuration,
+} from "./renderFfmpegPlan.js";
 import { RenderPlan, renderPlanSchema } from "./renderPlanSchemas.js";
 import { readVoiceoverAudioEvidence, voiceoverAudioPath } from "./voiceoverEvidence.js";
+
+export { buildDraftRenderTimeline, buildFfmpegArgs } from "./renderFfmpegPlan.js";
 
 export type RenderDraftOptions = {
   ffmpegBinary?: string;
@@ -53,10 +60,11 @@ export async function renderDraft(
     }
 
     const renderPlan = await readRenderPlan(run.runId);
-    const durationSeconds = clampDuration(
+    const durationSeconds = clampRenderDuration(
       voiceoverAudio.durationSeconds,
       options.maxDurationSeconds,
     );
+    const timeline = buildDraftRenderTimeline(renderPlan, durationSeconds);
     const output = artifactPath(run.runId, draftRenderPath);
     const temporaryOutput = path.join(
       path.dirname(output),
@@ -70,6 +78,7 @@ export async function renderDraft(
       ffmpegOutputPath: temporaryOutput,
       renderPlan,
       runId: run.runId,
+      timeline,
       durationSeconds,
     });
     await runFfmpeg(ffmpegBinary, args);
@@ -92,6 +101,7 @@ export async function renderDraft(
         path: voiceoverAudioPath,
         digest: voiceoverAudio.digest,
       },
+      timeline,
       output: {
         path: draftRenderPath,
         sha256: createHash("sha256").update(outputBytes).digest("hex"),
@@ -118,57 +128,6 @@ export async function renderDraft(
   }
 }
 
-export function buildFfmpegArgs(input: {
-  durationSeconds: number;
-  ffmpegOutputPath: string;
-  renderPlan: RenderPlan;
-  runId: string;
-}): string[] {
-  const firstScene = input.renderPlan.scenes[0];
-  if (!firstScene) {
-    throw new SafeExitError("Draft render requires at least one render-plan scene.");
-  }
-  const background = path.join(process.cwd(), firstScene.backgroundAsset.path);
-  const audio = artifactPath(input.runId, voiceoverAudioPath);
-  const subtitles = artifactPath(input.runId, "production/subtitles.srt");
-  const watermark = firstScene.overlayAssets.find((asset) => asset.role === "watermark");
-  const filter = watermark
-    ? [
-        `[0:v]scale=1280:720,setsar=1,subtitles=${escapeFilterPath(subtitles)}[base]`,
-        `[2:v]scale=120:-1[wm]`,
-        "[base][wm]overlay=W-w-24:24[v]",
-      ].join(";")
-    : `[0:v]scale=1280:720,setsar=1,subtitles=${escapeFilterPath(subtitles)}[v]`;
-  const args = ["-y", "-loop", "1", "-i", background, "-i", audio];
-  if (watermark) {
-    args.push("-i", path.join(process.cwd(), watermark.path));
-  }
-  args.push(
-    "-filter_complex",
-    filter,
-    "-map",
-    "[v]",
-    "-map",
-    "1:a",
-    "-t",
-    String(input.durationSeconds),
-    "-r",
-    "24",
-    "-c:v",
-    "libx264",
-    "-preset",
-    "veryfast",
-    "-pix_fmt",
-    "yuv420p",
-    "-c:a",
-    "aac",
-    "-movflags",
-    "+faststart",
-    input.ffmpegOutputPath,
-  );
-  return args;
-}
-
 async function readRenderPlan(runId: string): Promise<RenderPlan> {
   return renderPlanSchema.parse(
     JSON.parse(await readFile(artifactPath(runId, "production/render_plan.json"), "utf8")),
@@ -193,25 +152,4 @@ async function runFfmpeg(binary: string, args: string[]): Promise<void> {
       reject(new SafeExitError(`FFmpeg exited with code ${code}: ${stderr.trim()}`));
     });
   });
-}
-
-function clampDuration(actualSeconds: number, maxSeconds?: number): number {
-  if (!maxSeconds || maxSeconds <= 0) {
-    return roundDuration(actualSeconds);
-  }
-  return roundDuration(Math.min(actualSeconds, maxSeconds));
-}
-
-function roundDuration(seconds: number): number {
-  return Math.max(0.1, Math.round(seconds * 100) / 100);
-}
-
-const ffmpegFilterEscape = String.fromCodePoint(92);
-const escapedFfmpegFilterEscape = `${ffmpegFilterEscape}${ffmpegFilterEscape}`;
-
-function escapeFilterPath(value: string): string {
-  return value
-    .replaceAll(ffmpegFilterEscape, escapedFfmpegFilterEscape)
-    .replaceAll(":", `${ffmpegFilterEscape}:`)
-    .replaceAll("'", `${ffmpegFilterEscape}'`);
 }
