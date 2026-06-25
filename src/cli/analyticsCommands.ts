@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { importAnalyticsFile, renderSavedAnalyticsReport } from "../analytics/import.js";
+import { importAnalyticsFile, refreshSavedAnalyticsReport } from "../analytics/import.js";
 
 type AsyncActionWrapper = <T extends unknown[]>(
   handler: (...args: T) => Promise<void>,
@@ -22,10 +22,12 @@ export function registerAnalyticsCommands(program: Command, wrap: AsyncActionWra
 
   analytics
     .command("report")
-    .description("Print the current local manual analytics report.")
+    .description("Refresh and print the current local manual analytics report.")
     .action(
       wrap(async () => {
-        console.log(await renderSavedAnalyticsReport());
+        const result = await refreshSavedAnalyticsReport();
+        console.log(result.report);
+        console.log(`\nReport refreshed: ${result.reportPath}`);
       }),
     );
 }

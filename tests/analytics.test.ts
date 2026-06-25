@@ -1,6 +1,10 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
-import { importAnalyticsFile, loadAnalyticsDataset } from "../src/analytics/import";
+import {
+  importAnalyticsFile,
+  loadAnalyticsDataset,
+  refreshSavedAnalyticsReport,
+} from "../src/analytics/import";
 import { useTempProject } from "./helpers";
 
 describe("manual analytics import", () => {
@@ -101,5 +105,38 @@ describe("manual analytics import", () => {
       videoId: "yt_003",
       ctr: 0.061,
     });
+  });
+
+  it("refreshes the local report artifact from the saved dataset", async () => {
+    await writeFile(
+      "performance.json",
+      JSON.stringify({
+        records: [
+          {
+            runId: "run_20260624010303_abcd14",
+            videoId: "yt_003",
+            title: "Sessiz Gezegen",
+            views: 800,
+            impressions: 9000,
+            ctr: 0.061,
+            averagePercentageViewed: 0.38,
+          },
+        ],
+      }),
+      "utf8",
+    );
+
+    await importAnalyticsFile("performance.json");
+    await writeFile("analytics/performance_report.md", "# stale report\n", "utf8");
+
+    const result = await refreshSavedAnalyticsReport();
+    const report = await readFile("analytics/performance_report.md", "utf8");
+    const dataset = await loadAnalyticsDataset();
+
+    expect(result.reportPath).toBe("analytics/performance_report.md");
+    expect(result.report).toBe(report);
+    expect(report).toContain(dataset.generatedAt);
+    expect(report).toContain(dataset.source.sha256);
+    expect(report).toContain("Non-Causal Recommendations");
   });
 });

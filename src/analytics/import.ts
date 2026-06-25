@@ -57,6 +57,16 @@ export async function renderSavedAnalyticsReport(): Promise<string> {
   return renderAnalyticsReport(await loadAnalyticsDataset());
 }
 
+export async function refreshSavedAnalyticsReport(): Promise<{
+  report: string;
+  reportPath: string;
+}> {
+  const report = await renderSavedAnalyticsReport();
+  await ensureDir(ANALYTICS_DIR);
+  await writeTextFile(analyticsReportPath, report);
+  return { report, reportPath: analyticsReportPath };
+}
+
 function inferFormat(inputPath: string): "csv" | "json" {
   return path.extname(inputPath).toLowerCase() === ".json" ? "json" : "csv";
 }

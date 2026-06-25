@@ -277,7 +277,9 @@
   unmapped record counts, and non-causal repeat / avoid-without-revision / test-next operator
   planning prompts with simple confidence/missingness framing. Studio has a read-only `/analytics`
   overview and import data-quality summary over those ignored local artifacts. No YouTube API,
-  workflow mutation, upload, publish, or causal claim is introduced.
+  workflow mutation, upload, publish, or causal claim is introduced. `producer analytics report`
+  refreshes the ignored Markdown report from the saved dataset before printing it, and Studio marks
+  report previews as missing, stale, or current by checking the dataset timestamp and source digest.
 - Roadmap and `.ai` guidance now include future Next.js Producer Studio, prompt editing, revision
   tracking, design direction, development preferences, versioning expectations, and Computer Use QA
   boundaries.

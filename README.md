@@ -264,6 +264,10 @@ read-only overview and import data-quality summary at `/analytics`. Neither path
 uploads media, publishes content, mutates workflow state, or claims causality from performance
 changes.
 
+`producer analytics report` refreshes `analytics/performance_report.md` from the saved local dataset
+before printing it. Studio marks the report preview as missing, stale, or current by checking it
+against the dataset timestamp and source digest.
+
 Do not edit `runs/<run_id>/script.md` directly. Use `producer revise script` before production
 packaging. Revisions are blocked after the production package exists. Each revision stores the old
 and new script, attribution, reason, hashes, invalidated review/approval references, and a ledger

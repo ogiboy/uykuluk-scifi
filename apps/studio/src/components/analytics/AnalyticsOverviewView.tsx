@@ -84,13 +84,14 @@ export function AnalyticsOverviewView({ overview }: AnalyticsOverviewViewProps) 
       <section className='panel' aria-labelledby='analytics-report-heading'>
         <h2 id='analytics-report-heading'>Report Preview</h2>
         <p className='artifact-meta'>
-          {overview.reportPath}
+          {overview.reportPath} · report status: {overview.reportStatus}
           {overview.reportPreviewTruncated ? " · preview truncated" : ""}
         </p>
+        {overview.reportWarning ? <p className='blocked'>{overview.reportWarning}</p> : null}
         {overview.reportPreview ? (
           <pre className='artifact-preview'>{overview.reportPreview}</pre>
         ) : (
-          <p>Run the CLI analytics import to create a local report artifact.</p>
+          <p>Run the CLI analytics report command to refresh the local report artifact.</p>
         )}
       </section>
     </div>
