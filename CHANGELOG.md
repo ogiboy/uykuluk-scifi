@@ -11,6 +11,21 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.3.0 (2026-06-25)
+
+### Documentation
+
+- refresh capability routing inventory (12cc0cd)
+
+### Fixes
+
+- address workflow review findings (1fda5a1)
+- clear sonar diagnostics (c55b0e2)
+
+### Features
+
+- harden local production workflow (a4e30d2)
+
 ## v0.2.1 (2026-06-25)
 
 ### Chores
