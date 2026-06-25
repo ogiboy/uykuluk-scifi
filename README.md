@@ -272,7 +272,8 @@ Current Studio scope:
 - read-only `/runs/<run_id>` detail view with next action, readiness status, and review artifact
   availability;
 - read-only artifact preview excerpts for scripts, reviews, production packages, render plans,
-  contact sheets, evidence, readiness, and render manifests, with binary media limited to metadata;
+  contact sheets, asset provenance, evidence, readiness, voiceover metadata, and render manifests,
+  grouped by operator review phase, with binary media limited to metadata;
 - run/workflow command overview;
 - current asset inventory summary;
 - Radix module tabs for planned run, prompt, asset, and safety surfaces;

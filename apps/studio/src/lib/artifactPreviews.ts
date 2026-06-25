@@ -3,40 +3,86 @@ import path from "node:path";
 
 const PREVIEW_BYTE_LIMIT = 2_400;
 
+export type StudioArtifactGroup =
+  | "Audio And Render"
+  | "Evidence And Readiness"
+  | "Production Package"
+  | "Render Planning"
+  | "Script Review";
+
 export type StudioArtifactKind = "binary" | "json" | "markdown" | "text";
 
 type ReviewArtifactDefinition = {
+  description: string;
+  group: StudioArtifactGroup;
   kind: StudioArtifactKind;
   label: string;
+  operatorAction: string;
   path: string;
 };
 
-const REVIEW_ARTIFACTS: readonly ReviewArtifactDefinition[] = [
-  { path: "script.md", label: "Script draft", kind: "markdown" },
-  { path: "reviews/script_review.md", label: "Script review", kind: "markdown" },
-  { path: "production/production_package.md", label: "Production package", kind: "markdown" },
-  { path: "production/render_plan.json", label: "Render plan", kind: "json" },
-  {
-    path: "production/storyboard_contact_sheet.md",
-    label: "Storyboard contact sheet",
-    kind: "markdown",
-  },
-  { path: "production/audio/voiceover.meta.json", label: "Voiceover metadata", kind: "json" },
-  { path: "production/render/render_manifest.json", label: "Render manifest", kind: "json" },
-  { path: "production/render/draft.mp4", label: "Draft render video", kind: "binary" },
-  { path: "evidence_bundle.json", label: "Evidence bundle", kind: "json" },
-  { path: "diagnostics/readiness.json", label: "Readiness diagnostics", kind: "json" },
-] as const;
+const REVIEW_ARTIFACTS = parseArtifactTable(String.raw`
+script.md	Script draft	markdown	Script Review	Operator-readable episode script generated from the approved idea.	Review script warnings and approve by digest from the CLI.
+reviews/script_review.md	Script review	markdown	Script Review	Safety, quality, and approval guidance for the current script digest.	Resolve blockers or acknowledge non-blocking warnings before approval.
+production/production_package.md	Production package	markdown	Production Package	Voiceover, scenes, subtitles, popup cards, and YouTube metadata package.	Inspect package completeness before render planning.
+production/render_plan.json	Render plan	json	Render Planning	Deterministic scene-to-asset mapping for the local draft render.	Review scene timing and asset choices before voice/render work.
+production/storyboard_contact_sheet.md	Storyboard contact sheet	markdown	Render Planning	Operator contact sheet summarizing visual rhythm and selected assets.	Use this as review evidence; it is not render approval.
+production/asset_provenance.json	Asset provenance	json	Render Planning	Exact committed asset paths and roles used by the render plan.	Confirm assets are tracked, licensed, and visually appropriate.
+production/audio/voiceover.meta.json	Voiceover metadata	json	Audio And Render	Local TTS metadata, source digest, duration, and render-plan binding.	Confirm voiceover source and duration before render approval.
+production/render/render_manifest.json	Render manifest	json	Audio And Render	Local FFmpeg draft-render manifest and input digests.	Use with the MP4 for local final review; upload remains disabled.
+production/render/draft.mp4	Draft render video	binary	Audio And Render	Local MP4 review draft generated after exact render approval.	Review locally outside Studio; binary preview is metadata-only.
+evidence_bundle.json	Evidence bundle	json	Evidence And Readiness	Current run evidence, blocked actions, and next safe command.	Use evidence as the review handoff before any next CLI action.
+diagnostics/readiness.json	Readiness diagnostics	json	Evidence And Readiness	Readiness checks for package, cost, render plan, TTS, and publish safety.	Resolve failed checks before production or render work.
+`);
 
 export type StudioArtifactPreview = {
+  description: string;
   exists: boolean;
+  group: StudioArtifactGroup;
   kind: StudioArtifactKind;
   label: string;
+  operatorAction: string;
   path: string;
   preview: string | null;
   previewTruncated: boolean;
   sizeBytes: number | null;
 };
+
+function parseArtifactTable(input: string): ReviewArtifactDefinition[] {
+  return input
+    .trim()
+    .split("\n")
+    .map((row) => parseArtifactRow(row));
+}
+
+function parseArtifactRow(row: string): ReviewArtifactDefinition {
+  const [pathName, label, kind, group, description, operatorAction] = row.split("\t");
+  if (
+    !pathName ||
+    !label ||
+    !isStudioArtifactKind(kind) ||
+    !isStudioArtifactGroup(group) ||
+    !description ||
+    !operatorAction
+  ) {
+    throw new Error(`Invalid Studio artifact preview definition: ${row}`);
+  }
+  return { description, group, kind, label, operatorAction, path: pathName };
+}
+
+function isStudioArtifactKind(value: string | undefined): value is StudioArtifactKind {
+  return value === "binary" || value === "json" || value === "markdown" || value === "text";
+}
+
+function isStudioArtifactGroup(value: string | undefined): value is StudioArtifactGroup {
+  return (
+    value === "Audio And Render" ||
+    value === "Evidence And Readiness" ||
+    value === "Production Package" ||
+    value === "Render Planning" ||
+    value === "Script Review"
+  );
+}
 
 export async function readReviewArtifactPreviews(
   root: string,
