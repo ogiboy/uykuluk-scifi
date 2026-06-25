@@ -42,7 +42,8 @@ The next product phase should extend the existing CLI/core flow toward a local v
 - asset provenance identifies the exact committed assets selected for a future render;
 - local TTS is owned by the workflow stages and runs only after readiness, script approval,
   production-package integrity, and render-plan evidence. Deterministic reference audio is for
-  pipeline timing; Piper remains an optional local binary/model-path adapter with ignored models;
+  pipeline timing, `production/audio/voiceover_review.md` carries operator review guidance, and
+  Piper remains an optional local binary/model-path adapter with ignored models;
 - FFmpeg render is owned by the workflow stages and runs only after render planning, exact render
   approval, voiceover evidence, production-package integrity, and local artifact checks. Draft
   render manifests must record the exact intro-to-outro timeline and overlay composition used for

@@ -8,6 +8,7 @@ import {
   recordRunArtifact,
   writeRunBinary,
   writeRunJson,
+  writeRunText,
 } from "../core/artifacts.js";
 import { SafeExitError } from "../core/errors.js";
 import { appendLedgerEvent } from "../core/ledger.js";
@@ -17,12 +18,15 @@ import { ensureDir, pathExists } from "../utils/fs.js";
 import { nowIso } from "../utils/time.js";
 import { verifyProductionPackage } from "./productionPackageIntegrity.js";
 import { readRenderPlanEvidence } from "./renderPlan.js";
+import { readWavInfo, wavFromPcm16 } from "./voiceWav.js";
 import {
   VoiceoverAudioMeta,
   voiceoverAudioMetaPath,
   voiceoverAudioPath,
   voiceoverAudioMetaSchema,
+  voiceoverAudioReviewPath,
 } from "./voiceoverEvidence.js";
+import { renderVoiceoverReviewMarkdown } from "./voiceoverReviewMarkdown.js";
 
 type SynthesizedAudio = {
   buffer: Buffer;
@@ -110,6 +114,12 @@ export async function generateVoiceoverAudio(runId: string): Promise<VoiceoverAu
     provider: audio.provider,
   });
   run = await writeRunJson(run, "voice", voiceoverAudioMetaPath, meta);
+  run = await writeRunText(
+    run,
+    "voice",
+    voiceoverAudioReviewPath,
+    renderVoiceoverReviewMarkdown(meta),
+  );
   await saveRun(run);
   return meta;
 }
@@ -197,59 +207,6 @@ async function runPiper(binary: string, args: string[], input: string): Promise<
     });
     child.stdin.end(input.endsWith("\n") ? input : `${input}\n`);
   });
-}
-
-function wavFromPcm16(pcm: Buffer, sampleRateHz: number, channels: number): Buffer {
-  const header = Buffer.alloc(44);
-  const byteRate = sampleRateHz * channels * 2;
-  header.write("RIFF", 0, "ascii");
-  header.writeUInt32LE(36 + pcm.length, 4);
-  header.write("WAVE", 8, "ascii");
-  header.write("fmt ", 12, "ascii");
-  header.writeUInt32LE(16, 16);
-  header.writeUInt16LE(1, 20);
-  header.writeUInt16LE(channels, 22);
-  header.writeUInt32LE(sampleRateHz, 24);
-  header.writeUInt32LE(byteRate, 28);
-  header.writeUInt16LE(channels * 2, 32);
-  header.writeUInt16LE(16, 34);
-  header.write("data", 36, "ascii");
-  header.writeUInt32LE(pcm.length, 40);
-  return Buffer.concat([header, pcm]);
-}
-
-function readWavInfo(buffer: Buffer): {
-  channels: number;
-  durationSeconds: number;
-  sampleRateHz: number;
-} {
-  if (
-    buffer.subarray(0, 4).toString("ascii") !== "RIFF" ||
-    buffer.subarray(8, 12).toString("ascii") !== "WAVE"
-  ) {
-    throw new SafeExitError("Piper output is not a WAV RIFF file.");
-  }
-  let channels = 0;
-  let sampleRateHz = 0;
-  let byteRate = 0;
-  let dataBytes = 0;
-  for (let offset = 12; offset + 8 <= buffer.length; ) {
-    const chunkId = buffer.subarray(offset, offset + 4).toString("ascii");
-    const chunkSize = buffer.readUInt32LE(offset + 4);
-    const dataOffset = offset + 8;
-    if (chunkId === "fmt ") {
-      channels = buffer.readUInt16LE(dataOffset + 2);
-      sampleRateHz = buffer.readUInt32LE(dataOffset + 4);
-      byteRate = buffer.readUInt32LE(dataOffset + 8);
-    } else if (chunkId === "data") {
-      dataBytes = chunkSize;
-    }
-    offset = dataOffset + chunkSize + (chunkSize % 2);
-  }
-  if (channels <= 0 || sampleRateHz <= 0 || byteRate <= 0 || dataBytes <= 0) {
-    throw new SafeExitError("Piper output WAV metadata is incomplete.");
-  }
-  return { channels, durationSeconds: dataBytes / byteRate, sampleRateHz };
 }
 
 function countWords(value: string): number {

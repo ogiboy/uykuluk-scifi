@@ -51,9 +51,9 @@
 - Harden the Render Plan + Contact Sheet MVP with operator review refinements only where real use
   exposes gaps; do not turn it into render execution.
 - Harden local TTS with real Piper voice-quality QA. Keep models and generated audio ignored; the
-  current implemented foundation is deterministic reference WAV, optional configured `local-piper`
-  shell-out, pinned Turkish model setup into ignored `models/`, and `producer doctor`
-  setup/remediation next actions.
+  current implemented foundation is deterministic reference WAV, operator audio review Markdown,
+  optional configured `local-piper` shell-out, pinned Turkish model setup into ignored `models/`,
+  and `producer doctor` setup/remediation next actions.
 - Harden FFmpeg draft render visual polish; the current foundation is exact-approval-gated local MP4
   with intro/outro source-card bookends, scene-timed background plates, subtitle burn-in,
   lower-third, popup-card, waveform, watermark overlays, render manifest evidence, and an

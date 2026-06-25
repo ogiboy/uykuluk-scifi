@@ -11,7 +11,12 @@ import { digestSchema } from "./renderPlanSchemas.js";
 
 export const voiceoverAudioPath = "production/audio/voiceover.wav";
 export const voiceoverAudioMetaPath = "production/audio/voiceover.meta.json";
-export const voiceoverAudioArtifactPaths = [voiceoverAudioPath, voiceoverAudioMetaPath] as const;
+export const voiceoverAudioReviewPath = "production/audio/voiceover_review.md";
+export const voiceoverAudioArtifactPaths = [
+  voiceoverAudioPath,
+  voiceoverAudioMetaPath,
+  voiceoverAudioReviewPath,
+] as const;
 
 export const voiceoverAudioMetaSchema = z.strictObject({
   schemaVersion: z.literal(1),
@@ -55,6 +60,7 @@ export type VoiceoverAudioEvidence =
       digest: string;
       durationSeconds: number;
       mode: VoiceoverAudioMeta["mode"];
+      reviewPath: string;
       sourceWordCount: number;
     }
   | { status: "block"; path: string; message: string };
@@ -95,6 +101,7 @@ export async function readVoiceoverAudioEvidence(run: RunRecord): Promise<Voiceo
       digest,
       durationSeconds: meta.output.durationSeconds,
       mode: meta.mode,
+      reviewPath: voiceoverAudioReviewPath,
       sourceWordCount: meta.source.wordCount,
     };
   } catch (error) {
