@@ -59,6 +59,16 @@ export async function generateRenderPlan(runId: string): Promise<RenderPlan> {
       aspectRatio: "16:9",
       draftRenderer: "ffmpeg-local-draft",
     },
+    bookends: {
+      intro: {
+        durationSeconds: 2,
+        asset: assets.introSource,
+      },
+      outro: {
+        durationSeconds: 3,
+        asset: assets.outroSource,
+      },
+    },
     scenes: scenes.map((scene, index) => ({
       sceneIndex: scene.index,
       narrationPreview: scene.narration.slice(0, 180),

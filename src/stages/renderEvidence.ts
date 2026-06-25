@@ -20,6 +20,19 @@ const renderCompositionOverlaySchema = z.strictObject({
   digest: digestSchema,
   placement: z.string().min(1),
 });
+const renderTimelineItemSchema = z
+  .strictObject({
+    segment: z.enum(["intro", "scene", "outro"]).optional(),
+    sceneIndex: z.int().positive().optional(),
+    durationSeconds: z.number().positive(),
+    backgroundAsset: assetRefSchema,
+  })
+  .refine(
+    (item) => item.segment === "intro" || item.segment === "outro" || item.sceneIndex !== undefined,
+    {
+      message: "Scene timeline items must include a scene index.",
+    },
+  );
 
 export const draftRenderManifestSchema = z.strictObject({
   schemaVersion: z.literal(2),
@@ -33,15 +46,7 @@ export const draftRenderManifestSchema = z.strictObject({
     path: z.literal("production/audio/voiceover.wav"),
     digest: digestSchema,
   }),
-  timeline: z
-    .array(
-      z.strictObject({
-        sceneIndex: z.int().positive(),
-        durationSeconds: z.number().positive(),
-        backgroundAsset: assetRefSchema,
-      }),
-    )
-    .min(1),
+  timeline: z.array(renderTimelineItemSchema).min(1),
   composition: z.strictObject({
     overlays: z.array(renderCompositionOverlaySchema),
     reviewChecklist: z.array(z.string().min(1)),
@@ -69,6 +74,7 @@ export type DraftRenderEvidence =
       bytes: number;
       durationSeconds: number;
       overlayRoles: string[];
+      timelineSegments: string[];
       reviewChecklist: string[];
     }
   | { status: "block"; path: string; message: string };
@@ -117,6 +123,7 @@ export async function readDraftRenderEvidence(run: RunRecord): Promise<DraftRend
       bytes: manifest.output.bytes,
       durationSeconds: manifest.output.durationSeconds,
       overlayRoles: manifest.composition.overlays.map((overlay) => overlay.role),
+      timelineSegments: manifest.timeline.map((item) => item.segment ?? "scene"),
       reviewChecklist: manifest.composition.reviewChecklist,
     };
   } catch (error) {

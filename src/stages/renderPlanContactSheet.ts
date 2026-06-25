@@ -16,6 +16,7 @@ export function renderContactSheet(plan: RenderPlan, provenance: AssetProvenance
     `- Manifest digest: ${plan.productionPackageManifestDigest}`,
     `- Asset count: ${provenance.assets.length}`,
     "",
+    ...renderBookends(plan),
     "## Asset Provenance",
     "",
     bulletList(
@@ -42,4 +43,19 @@ export function renderContactSheet(plan: RenderPlan, provenance: AssetProvenance
       ].join("\n"),
     ),
   ].join("\n");
+}
+
+function renderBookends(plan: RenderPlan): string[] {
+  if (!plan.bookends) {
+    return [];
+  }
+  return [
+    "## Intro And Outro Bookends",
+    "",
+    `- Intro: ${plan.bookends.intro.asset.path} for ${plan.bookends.intro.durationSeconds}s`,
+    `- Outro: ${plan.bookends.outro.asset.path} for ${plan.bookends.outro.durationSeconds}s`,
+    "",
+    "> These committed source assets are included in the local draft render timeline for review; they do not imply upload or publish approval.",
+    "",
+  ];
 }

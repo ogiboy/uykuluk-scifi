@@ -31,12 +31,22 @@ export function buildDraftRenderComposition(renderPlan: RenderPlan): DraftRender
   return {
     overlays,
     reviewChecklist: [
+      ...bookendChecklist(renderPlan),
       "Confirm subtitles remain readable over lower-third and waveform overlays.",
       "Confirm popup-card placement does not hide critical visual details.",
       "Confirm watermark is visible without distracting from the scene.",
       "Confirm scene timing, overlays, and voiceover are acceptable before any private upload review.",
     ],
   };
+}
+
+function bookendChecklist(renderPlan: RenderPlan): string[] {
+  if (!renderPlan.bookends) {
+    return [];
+  }
+  return [
+    "Confirm intro title card and outro end screen timing are acceptable in the local draft render.",
+  ];
 }
 
 function findFirstOverlayAsset(renderPlan: RenderPlan, role: string): AssetRef | undefined {
