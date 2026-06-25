@@ -15,6 +15,7 @@ future generated release notes can be inserted predictably.
 
 ### Fixes
 
+- fail closed when script continuations still miss the long-form floor
 - recover qwen3 script blocker retries with stale diagnostic cleanup
 
 ## v0.6.0 (2026-06-25)

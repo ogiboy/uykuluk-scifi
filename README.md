@@ -133,6 +133,9 @@ agent-tracking state only; runtime code must not require it.
 - Script generation uses bounded section calls and can add up to two bounded continuation passes
   when a local model draft remains below the long-form review floor; continuation receipts are
   persisted with prompt/content hashes.
+- If those bounded continuation passes still leave the assembled provider draft below the long-form
+  floor, script generation fails closed without writing script artifacts and records safe
+  diagnostics.
 - Local model continuations are JSON-first, with a bounded raw Turkish fallback for models that
   ignore the JSON wrapper but still return complete, labeled continuation text.
 - Script generation/review blocks malformed production labels and repeated sentence loops instead of

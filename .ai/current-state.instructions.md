@@ -81,6 +81,9 @@
   script remains below the 1200-word review floor. Continuations extend the existing
   `Sinematik Gelişme` section, add `continuation` receipts to `script.sections.json`, and are
   included in prompt provenance, token totals, cost recording, and blocker checks.
+- If both bounded continuation passes still leave the assembled provider draft below the 1200-word
+  floor, script generation now fails closed before script artifacts are written and persists a safe
+  diagnostic message without raw provider text.
 - Script continuation parsing remains JSON-first but accepts bounded raw Turkish continuation text
   from local models when the response has complete sentences and exact Turkish production labels.
 - Script review and generation now block malformed Turkish production labels, unaccented production
@@ -106,7 +109,9 @@
 - Live qwen3:8b `no_think` QA on 2026-06-25 reproduced the earlier repeated-sentence blocker at
   `context` expansion chunk 2 after one retry, then recovered to `SCRIPT_GENERATED` after the second
   bounded retry path. The same run still produced only 1015 words and weak repeated content, so this
-  is a generation-recovery improvement, not production-quality sign-off.
+  exposed the missing post-continuation word-floor enforcement. Deterministic regression coverage
+  now makes underfilled provider drafts fail closed before script artifacts are written; repeat live
+  qwen QA is still needed before treating local drafts as production-quality.
 - Script continuation parsing accepts additional bounded malformed local-model `"text"` wrappers,
   including trailing commas, missing closing quotes, and short external notes, only after the
   extracted Turkish continuation still passes complete-sentence and exact-label validation.

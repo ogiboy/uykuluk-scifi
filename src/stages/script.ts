@@ -13,7 +13,7 @@ import { createPromptProvenance } from "../prompts/provenance.js";
 import { renderScriptPrompt } from "../prompts/templates.js";
 import { persistScriptGenerationFailure } from "./scriptFailureDiagnostics.js";
 import { scriptContentBlockerError } from "./scriptContentRetry.js";
-import { applyLongFormContinuations } from "./scriptContinuation.js";
+import { applyLongFormContinuations, assertLongFormWordFloor } from "./scriptContinuation.js";
 import { extractClaims, extractVisualBeats } from "./scriptMetaExtractors.js";
 import {
   assembleScriptFromSections,
@@ -69,6 +69,7 @@ export async function generateScript(runId: string): Promise<ScriptMeta> {
       title: idea.title,
     });
     const script = assembleScriptFromSections(idea.title, sectionOutputs);
+    assertLongFormWordFloor(script);
     const assembledBlockers = reviewBlockers(script);
     if (assembledBlockers.length > 0) {
       throw scriptContentBlockerError("assembled script provider response", assembledBlockers);

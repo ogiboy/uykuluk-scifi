@@ -33,7 +33,7 @@ type ScriptContinuationChunk = {
   index: 1 | 2;
 };
 
-const longFormWordFloor = 1200;
+export const longFormWordFloor = 1200;
 const developmentSectionId = "development";
 const developmentPlan = scriptSectionPlans.find((section) => section.id === developmentSectionId);
 export const scriptContinuationResponseFormat = {
@@ -103,6 +103,15 @@ export async function applyLongFormContinuations(input: ScriptContinuationInput)
         ? { blockerRetry: continuationAttempt.blockerRetry }
         : {}),
     });
+  }
+}
+
+export function assertLongFormWordFloor(script: string): void {
+  const wordCount = countWords(script);
+  if (wordCount < longFormWordFloor) {
+    throw new SafeExitError(
+      `Invalid assembled script provider response: remains below the long-form floor after bounded continuation passes (${wordCount}/${longFormWordFloor} words).`,
+    );
   }
 }
 

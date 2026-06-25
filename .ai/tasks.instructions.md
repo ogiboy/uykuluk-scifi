@@ -72,9 +72,9 @@
   wrappers now have regression coverage for raw text, fences, trailing commas, missing closing
   quotes, and short external notes. Section and continuation blockers now get up to two bounded
   retries with raw-output-free receipt evidence. Live qwen3 `no_think` QA recovered from repeated
-  section loops to `SCRIPT_GENERATED`, but the resulting 1015-word draft remained below the
-  long-form quality target, so the next work is word-floor/quality improvement rather than weakening
-  blockers.
+  section loops to `SCRIPT_GENERATED`, but the resulting 1015-word draft exposed a missing final
+  word-floor check. Underfilled drafts now fail closed after bounded continuation passes; the next
+  work is repeat live qwen QA and prompt/content-quality tuning rather than weakening blockers.
 - Repeat live qwen3 script QA after prompt/label tuning. Known production-label variants now repair
   with section-receipt evidence; unrelated malformed labels must still fail closed without raw
   output persistence. Malformed-label and repeated-loop diagnostics now report safe category
