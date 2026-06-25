@@ -9,6 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
+_No unreleased changes yet._
+
+## v0.7.1 (2026-06-25)
+
 ### Documentation
 
 - refresh capability routing for current plugin, MCP, and subagent usage
