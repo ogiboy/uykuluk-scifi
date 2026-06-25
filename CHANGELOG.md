@@ -9,6 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
+### Documentation
+
+- refresh capability routing for current plugin, MCP, and subagent usage
+
 ### Fixes
 
 - recover qwen3 script blocker retries with stale diagnostic cleanup

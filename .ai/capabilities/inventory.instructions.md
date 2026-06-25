@@ -11,10 +11,19 @@ configuration only. It intentionally does not vendor or preload full skill bodie
   `~/.codex/plugins/cache`;
 - 75 installed plugin/version directories;
 - configured MCP server declarations in `~/.codex/config.toml`;
+- native subagent role metadata exposed by deferred tool discovery, including default
+  `explorer`/`worker` roles and installed GSD specialist roles;
 - current project architecture, workflows, agents, roadmap, assets, QA, and safety contracts.
 
 This is a routing inventory, not a vendored copy of host instructions. Skill bodies remain
 host-owned and must be loaded only after routing selects them.
+
+The latest lightweight refresh on 2026-06-25 confirmed installed plugin families for Aegis,
+Superpowers, Simple Man, Codex Security, GitHub, Hugging Face, Product Design, Creative Production,
+Build Web Apps, Browser/Chrome/Computer Use, CodeRabbit, Vercel, Jam, and Ruflo. It also confirmed
+configured MCP declarations for `context7`, `sonarqube`, `firecrawl`, `node_repl`, `ruflo`,
+`claude-flow`, `figma`, and `alpaca`. Disabled or out-of-scope entries remain non-authoritative
+until a task explicitly routes to them and verifies availability.
 
 ## Primary Project Families
 
@@ -58,6 +67,28 @@ GSD is useful for large phase governance but is intentionally not the default fo
 work. The product already uses `.ai/` as development memory; do not make GSD, `.planning/`, or any
 skill-generated files part of application execution.
 
+### Native Subagent Role Map
+
+Use native subagents only when the current user request or active goal authorizes delegation and the
+work can be split into independent questions or disjoint write ownership. Start without inherited
+thread context unless the task truly needs it.
+
+| Need                              | Preferred role(s)                                           | Boundary                                                                   |
+| --------------------------------- | ----------------------------------------------------------- | -------------------------------------------------------------------------- |
+| Fast codebase question            | `explorer`                                                  | Ask one narrow question; do not use for broad catalog enumeration          |
+| Disjoint implementation module    | `worker`                                                    | Assign exact file/module ownership and integrate locally before commit     |
+| Large phase assumptions           | `gsd-assumptions-analyzer`, `gsd-pattern-mapper`            | Read-only analysis; do not create runtime `.planning/` dependencies        |
+| Roadmap or phase plan             | `gsd-planner`, `gsd-roadmapper`, `gsd-plan-checker`         | Use only for broad milestones, not routine green slices                    |
+| Independent code review           | `gsd-code-reviewer`, project reviewer agents, CodeRabbit    | Review after an integrated candidate exists; tests remain authoritative    |
+| Review remediation                | `gsd-code-fixer` or `worker`                                | Use only with precise findings and owned files                             |
+| Goal or phase verification        | `gsd-verifier`, `gsd-integration-checker`                   | Verify actual goal coverage, not task-list completion                      |
+| Security or trust-boundary review | `gsd-security-auditor` plus Codex Security when appropriate | Must respect the project security workflow and explicit target contract    |
+| Studio visual/UX audit            | `gsd-ui-auditor`, `gsd-ui-checker`, Product Design          | Operator Studio remains workflow-first and accessibility-constrained       |
+| Documentation-only update         | `gsd-doc-writer`, `gsd-doc-verifier`                        | Useful for large docs sets; small docs slices stay single-agent by default |
+
+Do not spawn a subagent just because a matching role exists. Use local repo inspection first, then
+delegate only when it reduces uncertainty or wall-clock time without increasing coordination risk.
+
 ## Frontend Taste Skills
 
 These host-local skills are available as narrow visual-direction authorities. Select at most one for
@@ -88,6 +119,11 @@ data tables, and dense multi-step product UI, so it is not the primary rule set 
 | `alpaca`      | Out of scope for this product                                               |
 
 Connector and plugin tools may be deferred. Discover them only when the route requires them.
+
+Use deferred tool discovery for the current task family only. Examples: search `context7` for a
+library-doc question, `hugging-face` for Piper/model research, `github` for PR/CI state,
+`codex-security` for a requested scan, or `multi-agent` for an authorized delegated split. Do not
+use discovery to print or persist the complete host catalog.
 
 ## Conditional Families
 
