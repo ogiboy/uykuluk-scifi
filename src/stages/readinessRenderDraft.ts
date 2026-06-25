@@ -8,7 +8,7 @@ export async function draftRenderReadinessCheck(run: RunRecord): Promise<Readine
     return {
       name: "draft render available",
       status: "pass",
-      message: `${evidence.path} exists with ${Math.round(evidence.durationSeconds)}s draft video.`,
+      message: draftRenderReadyMessage(evidence),
     };
   }
   if (evidence.status === "missing") {
@@ -23,4 +23,14 @@ export async function draftRenderReadinessCheck(run: RunRecord): Promise<Readine
     status: "block",
     message: evidence.message,
   };
+}
+
+function draftRenderReadyMessage(
+  evidence: Extract<Awaited<ReturnType<typeof readDraftRenderEvidence>>, { status: "pass" }>,
+): string {
+  const duration = Math.round(evidence.durationSeconds);
+  if (!evidence.mediaProbe) {
+    return `${evidence.path} exists with ${duration}s draft video.`;
+  }
+  return `${evidence.path} exists with ${duration}s ffprobe-validated draft video (${evidence.mediaProbe.video.width}x${evidence.mediaProbe.video.height}, audio stream present).`;
 }

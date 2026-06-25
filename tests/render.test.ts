@@ -174,6 +174,14 @@ describe("draft render", () => {
     expect(review).toContain("assets/intro/episode_title_card_1920x1080.jpg");
     expect(review).toContain("assets/outro/youtube_end_screen_1920x1080.jpg");
     expect(review).toContain("Upload remains disabled");
+
+    const readiness = await runReadiness(runId);
+    expect(readiness.checks.find((check) => check.name === "draft render available")).toMatchObject(
+      {
+        message: expect.stringContaining("ffprobe-validated draft video (1280x720"),
+        status: "pass",
+      },
+    );
   });
 
   it("blocks draft render completion when media probing cannot validate the output", async () => {
