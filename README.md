@@ -258,9 +258,10 @@ Analytics imports accept operator-provided CSV or JSON records with fields such 
 `avg_percentage_viewed`, `subscribers_gained`, `likes`, `comments`, and `notes`. The report includes
 overall metrics, top videos, run-linked summaries, unmapped record counts, and operator review
 prompts, including non-causal repeat / avoid-without-revision / test-next recommendations. The
-importer writes ignored local artifacts under `analytics/`; Studio can display a read-only overview
-at `/analytics`. Neither path calls YouTube APIs, uploads media, publishes content, mutates workflow
-state, or claims causality from performance changes.
+recommendations include simple confidence/missingness framing based on the fields present in the
+import. The importer writes ignored local artifacts under `analytics/`; Studio can display a
+read-only overview at `/analytics`. Neither path calls YouTube APIs, uploads media, publishes
+content, mutates workflow state, or claims causality from performance changes.
 
 Do not edit `runs/<run_id>/script.md` directly. Use `producer revise script` before production
 packaging. Revisions are blocked after the production package exists. Each revision stores the old

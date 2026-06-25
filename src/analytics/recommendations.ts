@@ -5,6 +5,11 @@ type Recommendation = {
   record: AnalyticsRecord;
 };
 
+type Confidence = {
+  details: string;
+  level: "high" | "low" | "medium";
+};
+
 export function renderAnalyticsRecommendations(records: AnalyticsRecord[]): string[] {
   const repeatCandidates = records.map(repeatRecommendation).filter(isRecommendation);
   const avoidCandidates = records.map(avoidRecommendation).filter(isRecommendation);
@@ -57,10 +62,38 @@ function recommendationLines(recommendations: Recommendation[], emptyText: strin
   if (recommendations.length === 0) {
     return [`- ${emptyText}`];
   }
-  return recommendations.map(
-    ({ reasons, record }) =>
-      `- ${inlineText(record.title ?? record.videoId)} (${record.runId ?? "unmapped"}): ${reasons.join(", ")}.`,
-  );
+  return recommendations.map(({ reasons, record }) => {
+    const confidence = confidenceFor(record);
+    return `- ${inlineText(record.title ?? record.videoId)} (${record.runId ?? "unmapped"}): ${reasons.join(", ")} (confidence: ${confidence.level}; ${confidence.details}).`;
+  });
+}
+
+function confidenceFor(record: AnalyticsRecord): Confidence {
+  const missing = [
+    record.runId ? null : "run link",
+    record.views !== undefined ? null : "views",
+    record.impressions !== undefined ? null : "impressions",
+    record.ctr !== undefined ? null : "CTR",
+    record.averagePercentageViewed !== undefined ? null : "retention",
+  ].filter(isString);
+  const presentCount = 5 - missing.length;
+  return {
+    details:
+      missing.length === 0
+        ? "run-linked with views, impressions, CTR, and retention"
+        : `missing ${missing.join(", ")}`,
+    level: confidenceLevel(presentCount),
+  };
+}
+
+function confidenceLevel(presentCount: number): Confidence["level"] {
+  if (presentCount >= 5) {
+    return "high";
+  }
+  if (presentCount >= 3) {
+    return "medium";
+  }
+  return "low";
 }
 
 function isRecommendation(value: Recommendation | null): value is Recommendation {

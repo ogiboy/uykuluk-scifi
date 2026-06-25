@@ -139,7 +139,7 @@ future generated release notes can be inserted predictably.
 - Read-only Studio analytics feedback page for local manual analytics artifacts, including imported
   totals, mapped/unmapped run visibility, top videos, report preview, and safe next action guidance.
 - Non-causal repeat / avoid-without-revision / test-next recommendations in the local manual
-  analytics report.
+  analytics report, with simple confidence/missingness framing for imported performance fields.
 - Basic type-safe `next-intl` foundation for English and Turkish Studio locales.
 - Unit and browser coverage for locale normalization and cookie-based document language.
 - Typed runtime loading for tracked idea, scriptwriter, and production-package prompt defaults.

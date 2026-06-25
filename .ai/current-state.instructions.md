@@ -275,8 +275,9 @@
   `analytics/performance.json` plus `analytics/performance_report.md`. `producer analytics report`
   prints the current report. Reports now include overall metrics, top videos, run-linked summaries,
   unmapped record counts, and non-causal repeat / avoid-without-revision / test-next operator
-  planning prompts. Studio has a read-only `/analytics` overview over those ignored local artifacts.
-  No YouTube API, workflow mutation, upload, publish, or causal claim is introduced.
+  planning prompts with simple confidence/missingness framing. Studio has a read-only `/analytics`
+  overview over those ignored local artifacts. No YouTube API, workflow mutation, upload, publish,
+  or causal claim is introduced.
 - Roadmap and `.ai` guidance now include future Next.js Producer Studio, prompt editing, revision
   tracking, design direction, development preferences, versioning expectations, and Computer Use QA
   boundaries.
@@ -382,8 +383,8 @@ Corepack/PATH before treating failures as product failures.
   Render-ready intro/outro MP4 clips and broader visual polish remain follow-up work.
 - Upload and publish are intentionally disabled scaffolds.
 - Manual analytics import/reporting and the basic read-only Studio analytics overview are local-only
-  and operator-provided. Richer analytics comparisons, confidence scoring, and YouTube Analytics API
-  integration are not implemented.
+  and operator-provided. Richer analytics comparisons, cohort-level confidence scoring, and YouTube
+  Analytics API integration are not implemented.
 - Run-path containment blocks pre-existing symbolic links. Hostile concurrent path replacement
   remains a local TOCTOU limitation because portable Node APIs do not expose directory-handle
   `openat` semantics.

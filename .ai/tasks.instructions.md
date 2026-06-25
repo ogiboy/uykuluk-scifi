@@ -94,10 +94,10 @@
 - Keep Studio read-only artifact previews useful as new artifact types are added. Current previews
   include operator-phase grouping, media-specific metadata, and per-artifact review wording while
   keeping the surface non-mutating.
-- Harden manual analytics feedback with import edge cases, richer comparisons, and better confidence
-  framing while keeping data operator-provided and local-only. Run-linked summaries, unmapped-record
-  visibility, non-causal repeat / avoid-without-revision / test-next prompts, and the basic
-  read-only Studio analytics overview are implemented.
+- Harden manual analytics feedback with import edge cases and richer comparisons while keeping data
+  operator-provided and local-only. Run-linked summaries, unmapped-record visibility, non-causal
+  repeat / avoid-without-revision / test-next prompts, simple confidence/missingness framing, and
+  the basic read-only Studio analytics overview are implemented.
 - Define typed read/write service contracts that both CLI and web can use before adding Studio
   mutations.
 - Define local prompt override storage and revision events before adding a prompt editor; typed
