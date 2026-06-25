@@ -62,7 +62,7 @@ export type VoiceoverAudioEvidence =
       digest: string;
       durationSeconds: number;
       mode: VoiceoverAudioMeta["mode"];
-      provider?: VoiceoverAudioMeta["provider"];
+      provider?: NonNullable<VoiceoverAudioMeta["provider"]>;
       reviewPath: string;
       sourceWordCount: number;
     }

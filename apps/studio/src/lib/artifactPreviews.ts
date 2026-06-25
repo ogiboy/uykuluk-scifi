@@ -21,7 +21,7 @@ type ReviewArtifactDefinition = {
   path: string;
 };
 
-const REVIEW_ARTIFACTS = parseArtifactTable(String.raw`
+const REVIEW_ARTIFACTS = parseArtifactTable(`
 script.md	Script draft	markdown	Script Review	Operator-readable episode script generated from the approved idea.	Review script warnings and approve by digest from the CLI.
 reviews/script_review.md	Script review	markdown	Script Review	Safety, quality, and approval guidance for the current script digest.	Resolve blockers or acknowledge non-blocking warnings before approval.
 production/production_package.md	Production package	markdown	Production Package	Voiceover, scenes, subtitles, popup cards, and YouTube metadata package.	Inspect package completeness before render planning.

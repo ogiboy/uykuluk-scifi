@@ -18,6 +18,10 @@ future generated release notes can be inserted predictably.
 - show render plan, voiceover, and draft render status in the CLI run status summary
 - validate local draft renders with `ffprobe` media evidence before recording render completion
 
+### Fixes
+
+- clear Sonar quality-gate findings for local media evidence changes
+
 ## v0.7.2 (2026-06-25)
 
 ### Tooling

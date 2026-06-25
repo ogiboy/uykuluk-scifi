@@ -78,6 +78,35 @@ describe("Piper provider evidence", () => {
       }),
     ).rejects.toThrow(/Piper model is missing/);
   });
+
+  it("fails closed when local Piper model path is not configured", async () => {
+    await expect(readPiperProviderEvidence({ binary: "piper" })).rejects.toThrow(/piperModelPath/);
+  });
+
+  it("records model digest without optional config evidence", async () => {
+    const modelPath = path.join(tempDir, "model-only.onnx");
+    const modelContent = "fake piper model without config";
+    await writeFile(modelPath, modelContent, "utf8");
+
+    await expect(readPiperProviderEvidence({ binary: "piper", modelPath })).resolves.toEqual({
+      binary: "piper",
+      modelPath,
+      modelSha256: sha256(modelContent),
+    });
+  });
+
+  it("fails closed when configured Piper config evidence is missing", async () => {
+    const modelPath = path.join(tempDir, "model-with-missing-config.onnx");
+    await writeFile(modelPath, "fake piper model", "utf8");
+
+    await expect(
+      readPiperProviderEvidence({
+        binary: "piper",
+        configPath: path.join(tempDir, "missing.onnx.json"),
+        modelPath,
+      }),
+    ).rejects.toThrow(/Piper model config is missing/);
+  });
 });
 
 function sha256(value: string): string {

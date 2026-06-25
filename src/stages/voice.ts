@@ -33,7 +33,7 @@ type SynthesizedAudio = {
   buffer: Buffer;
   channels: number;
   durationSeconds: number;
-  provider?: VoiceoverAudioMeta["provider"];
+  provider?: NonNullable<VoiceoverAudioMeta["provider"]>;
   quality: VoiceoverAudioMeta["quality"];
   sampleRateHz: number;
 };
