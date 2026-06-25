@@ -11,6 +11,12 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.5.1 (2026-06-25)
+
+### CI
+
+- retry stale main publish (cdccc48)
+
 ## v0.5.0 (2026-06-25)
 
 ### Features
