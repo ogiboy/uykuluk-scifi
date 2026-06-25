@@ -81,8 +81,8 @@ Next Real Production Loop slices:
   deterministic reference WAV metadata, can call a configured local Piper binary/model path, and
   surfaces Piper setup/remediation next actions through `producer doctor`;
 - harden FFmpeg draft render quality and visual composition. Current foundation renders local review
-  MP4 from the current render plan, voiceover audio, subtitles, background plate, and watermark, and
-  writes a render manifest;
+  MP4 from the current render plan, scene-timed background plates, voiceover audio, subtitles, and
+  watermark, then writes a render manifest with the exact timeline;
 - manual final review/approval before any private upload work.
 
 ## Phase C - Operator Studio
@@ -121,7 +121,8 @@ Minimum loop:
 
 - import operator-provided CSV/JSON performance data - implemented locally through
   `producer analytics import`;
-- map performance records back to runs/videos;
+- map performance records back to runs/videos with run-linked summaries and unmapped-record
+  visibility;
 - summarize CTR, views, average view duration, retention notes, subscriber deltas, and qualitative
   comments where provided - implemented in `analytics/performance_report.md`;
 - produce “repeat / avoid / test next” recommendations for future ideas, titles, formats, and

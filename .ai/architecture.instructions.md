@@ -44,7 +44,9 @@ The next product phase should extend the existing CLI/core flow toward a local v
   production-package integrity, and render-plan evidence. Deterministic reference audio is for
   pipeline timing; Piper remains an optional local binary/model-path adapter with ignored models;
 - FFmpeg render is owned by the workflow stages and runs only after render planning, exact render
-  approval, voiceover evidence, production-package integrity, and local artifact checks;
+  approval, voiceover evidence, production-package integrity, and local artifact checks. Draft
+  render manifests must record the exact scene-timed background timeline used for the local review
+  MP4;
 - analytics import/reporting consumes operator-provided CSV/JSON files, writes ignored local
   analytics artifacts, and links records back to runs when `runId` is present.
 

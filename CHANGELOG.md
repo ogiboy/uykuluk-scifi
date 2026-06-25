@@ -11,6 +11,14 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.4.0 (2026-06-25)
+
+### Features
+
+- add run-linked performance summaries (d1ef948)
+- use scene-timed draft render timeline (960c3c4)
+- group run artifact previews (061395b)
+
 ## v0.3.1 (2026-06-25)
 
 ### Chores
