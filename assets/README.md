@@ -115,10 +115,18 @@ approve, or change the provenance of committed production assets.
 Script revisions snapshot text artifacts and invalidate script review/approval only. They do not
 modify or reclassify files in the tracked asset inventory.
 
+## Current Render Use
+
+The local render planner records `intro/frames/*` and `outro/frames/*` as source-frame provenance
+when present. The draft FFmpeg renderer can expand those committed frames into local intro/outro
+bookend inputs for review MP4s. These frame sources remain tracked inputs, not generated run output
+or upload approval.
+
 ## Still Useful To Create Later
 
 - Editable Figma, PSD, SVG, or layered source files for thumbnail and overlay text changes.
-- Render-ready intro/outro MP4 clips generated from the committed source frames.
+- Render-ready intro/outro MP4 clips generated from the committed source frames for reuse by editors
+  outside the local draft renderer.
 - Font files and license notes for recurring title, thumbnail, lower-third, and subtitle typography.
 - Additional series-specific background plates once recurring episode categories are defined.
 - Storyboard/contact-sheet refinements after the MVP markdown contact sheet is used on real runs.

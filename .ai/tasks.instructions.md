@@ -56,10 +56,10 @@
   provider model/config digest provenance, local smoke evidence, and `producer doctor`
   setup/remediation next actions.
 - Harden FFmpeg draft render visual polish; the current foundation is exact-approval-gated local MP4
-  with intro/outro source-card bookends, scene-timed background plates, subtitle burn-in,
-  lower-third, popup-card, waveform, watermark overlays, render manifest evidence, fail-closed
-  `ffprobe` media validation, and an operator-readable `production/render/draft_review.md`
-  checklist.
+  with intro/outro source-card bookends or source-frame sequences, scene-timed background plates,
+  subtitle burn-in, lower-third, popup-card, waveform, watermark overlays, render manifest evidence,
+  fail-closed `ffprobe` media validation, and an operator-readable
+  `production/render/draft_review.md` checklist.
 - Harden the idea repair prompt and idea-quality constraints with live qwen3 feedback. The
   implemented two-attempt retry loop either recovers to `IDEAS_GENERATED` or fails closed without
   idea artifacts while persisting a safe diagnostic summary. Live qwen3 QA now rejects repeated fit

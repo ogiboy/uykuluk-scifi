@@ -63,10 +63,12 @@ export async function generateRenderPlan(runId: string): Promise<RenderPlan> {
       intro: {
         durationSeconds: 2,
         asset: assets.introSource,
+        ...(assets.introFrames.length > 0 ? { frameAssets: assets.introFrames } : {}),
       },
       outro: {
         durationSeconds: 3,
         asset: assets.outroSource,
+        ...(assets.outroFrames.length > 0 ? { frameAssets: assets.outroFrames } : {}),
       },
     },
     scenes: scenes.map((scene, index) => ({
@@ -97,7 +99,9 @@ export async function generateRenderPlan(runId: string): Promise<RenderPlan> {
       assets.lowerThird,
       assets.popupCard,
       assets.introSource,
+      ...assets.introFrames,
       assets.outroSource,
+      ...assets.outroFrames,
       assets.factCheckIcon,
       assets.waveform,
       ...assets.backgrounds,

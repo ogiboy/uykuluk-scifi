@@ -32,6 +32,7 @@ const renderTimelineItemSchema = z
     sceneIndex: z.int().positive().optional(),
     durationSeconds: z.number().positive(),
     backgroundAsset: assetRefSchema,
+    sourceFrameAssets: z.array(assetRefSchema).min(1).optional(),
   })
   .refine(
     (item) => item.segment === "intro" || item.segment === "outro" || item.sceneIndex !== undefined,

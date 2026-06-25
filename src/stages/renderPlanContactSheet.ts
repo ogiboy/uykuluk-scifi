@@ -1,5 +1,5 @@
 import { bulletList } from "../utils/markdown.js";
-import { AssetProvenance, RenderPlan } from "./renderPlanSchemas.js";
+import { AssetProvenance, AssetRef, RenderPlan } from "./renderPlanSchemas.js";
 
 export function renderContactSheet(plan: RenderPlan, provenance: AssetProvenance): string {
   return [
@@ -53,9 +53,18 @@ function renderBookends(plan: RenderPlan): string[] {
     "## Intro And Outro Bookends",
     "",
     `- Intro: ${plan.bookends.intro.asset.path} for ${plan.bookends.intro.durationSeconds}s`,
+    ...frameBullets("Intro source frames", plan.bookends.intro.frameAssets),
     `- Outro: ${plan.bookends.outro.asset.path} for ${plan.bookends.outro.durationSeconds}s`,
+    ...frameBullets("Outro source frames", plan.bookends.outro.frameAssets),
     "",
     "> These committed source assets are included in the local draft render timeline for review; they do not imply upload or publish approval.",
     "",
   ];
+}
+
+function frameBullets(label: string, frames: AssetRef[] | undefined): string[] {
+  if (!frames || frames.length === 0) {
+    return [];
+  }
+  return [`- ${label}: ${frames.length} committed frames`];
 }

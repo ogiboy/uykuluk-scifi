@@ -9,6 +9,7 @@ import {
   type DraftRenderOverlay,
 } from "./renderComposition.js";
 import { buildDraftRenderTimeline, type DraftRenderTimeline } from "./renderTimeline.js";
+import type { AssetRef } from "./renderPlanSchemas.js";
 
 export { buildDraftRenderTimeline, clampRenderDuration } from "./renderTimeline.js";
 export type { DraftRenderTimeline } from "./renderTimeline.js";
@@ -29,31 +30,32 @@ export function buildFfmpegArgs(input: {
     throw new SafeExitError("Draft render requires at least one render-plan scene.");
   }
   const composition = input.composition ?? buildDraftRenderComposition(input.renderPlan);
+  const ffmpegInputs = expandTimelineInputs(timeline);
   const audio = artifactPath(input.runId, voiceoverAudioPath);
   const subtitles = artifactPath(input.runId, "production/subtitles.srt");
-  const audioInputIndex = timeline.length;
-  const sceneFilters = timeline.map(
+  const audioInputIndex = ffmpegInputs.length;
+  const sceneFilters = ffmpegInputs.map(
     (item, index) =>
       `[${index}:v]scale=1280:720,setsar=1,trim=duration=${item.durationSeconds},setpts=PTS-STARTPTS[s${index}]`,
   );
-  const concatInputs = timeline.map((_, index) => `[s${index}]`).join("");
+  const concatInputs = ffmpegInputs.map((_, index) => `[s${index}]`).join("");
   const filter = buildVideoFilter({
     concatInputs,
     firstOverlayInputIndex: audioInputIndex + 1,
     overlays: composition.overlays,
-    sceneCount: timeline.length,
+    sceneCount: ffmpegInputs.length,
     sceneFilters,
     subtitles,
   });
   const args = ["-y"];
-  for (const item of timeline) {
+  for (const item of ffmpegInputs) {
     args.push(
       "-loop",
       "1",
       "-t",
       String(item.durationSeconds),
       "-i",
-      path.join(process.cwd(), item.backgroundAsset.path),
+      path.join(process.cwd(), item.asset.path),
     );
   }
   args.push("-i", audio);
@@ -84,6 +86,48 @@ export function buildFfmpegArgs(input: {
     input.ffmpegOutputPath,
   );
   return args;
+}
+
+type FfmpegTimelineInput = {
+  asset: AssetRef;
+  durationSeconds: number;
+};
+
+function expandTimelineInputs(timeline: DraftRenderTimeline): FfmpegTimelineInput[] {
+  return timeline.flatMap((item) => {
+    const assets = timelineInputAssets(item);
+    const durations = distributeDuration(item.durationSeconds, assets.length);
+    return assets.map((asset, index) => ({
+      asset,
+      durationSeconds: durations[index]!,
+    }));
+  });
+}
+
+function timelineInputAssets(item: DraftRenderTimeline[number]): AssetRef[] {
+  const frameAssets = item.sourceFrameAssets ?? [];
+  if (frameAssets.length <= 1) {
+    return [item.backgroundAsset];
+  }
+  if (item.durationSeconds / frameAssets.length < 0.1) {
+    return [item.backgroundAsset];
+  }
+  return frameAssets;
+}
+
+function distributeDuration(durationSeconds: number, itemCount: number): number[] {
+  if (itemCount <= 1) {
+    return [roundSeconds(durationSeconds)];
+  }
+  const baseDuration = roundSeconds(durationSeconds / itemCount);
+  const durations = Array.from({ length: itemCount }, () => baseDuration);
+  const usedDuration = roundSeconds(baseDuration * (itemCount - 1));
+  durations[itemCount - 1] = roundSeconds(durationSeconds - usedDuration);
+  return durations;
+}
+
+function roundSeconds(seconds: number): number {
+  return Math.round(seconds * 100) / 100;
 }
 
 function buildSubtitleConcatFilter(input: {

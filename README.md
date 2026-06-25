@@ -84,13 +84,13 @@ agent-tracking state only; runtime code must not require it.
   timeout/unknown outcomes, cost ledger, content/clickbait review, full asset readiness, and
   evidence bundles.
 - Render Plan + Contact Sheet MVP that maps generated scenes to tracked visual assets and records
-  per-run asset provenance.
+  per-run asset provenance, including committed intro/outro source-frame sequences when present.
 - Disabled-by-default local voiceover generation with deterministic reference WAV output, operator
   review Markdown, and an optional Piper binary/model-path adapter.
 - Approval-gated local FFmpeg draft render that writes a review MP4, manifest, operator review
   Markdown, and `ffprobe` media-validation evidence from the current render plan, intro/outro source
-  cards, scene-timed background plates, voiceover audio, subtitles, lower-third, popup, waveform,
-  and watermark overlays.
+  cards or source-frame sequences, scene-timed background plates, voiceover audio, subtitles,
+  lower-third, popup, waveform, and watermark overlays.
 - Manual analytics import/report commands for operator-provided CSV/JSON performance exports, plus a
   read-only Studio view over the ignored local analytics artifacts and import data-quality summary.
 - Typed Studio route-security contract covering current read-only routes and disabled future action
@@ -197,9 +197,10 @@ agent-tracking state only; runtime code must not require it.
   file existence never grants render approval.
 - Draft render runs only after explicit render approval for the exact current render-plan and
   voiceover digests. The manifest records the intro-to-outro timeline, composed overlay roles,
-  placements used by FFmpeg, and `ffprobe`-validated media duration, video resolution, and audio
-  stream evidence; `production/render/draft_review.md` gives the operator the final local review
-  checklist. Render output is local review media, not upload or publish authority.
+  intro/outro source-frame counts when available, placements used by FFmpeg, and `ffprobe`-validated
+  media duration, video resolution, and audio stream evidence; `production/render/draft_review.md`
+  gives the operator the final local review checklist. Render output is local review media, not
+  upload or publish authority.
 - Upload and publish remain intentionally blocked scaffolds.
 - Upload and public/scheduled publish require future explicit config and separate approval gates.
 - Studio must call typed local service contracts; it must not duplicate workflow state.

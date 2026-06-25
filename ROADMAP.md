@@ -82,9 +82,10 @@ Next Real Production Loop slices:
   configured local Piper binary/model path, records model/config digest provenance, and surfaces
   Piper setup/remediation next actions through `producer doctor`;
 - harden FFmpeg draft render quality and visual composition. Current foundation renders local review
-  MP4 from the current render plan, intro/outro source cards, scene-timed background plates,
-  voiceover audio, subtitles, lower-third, popup, waveform, and watermark overlays, then writes a
-  render manifest with the exact timeline plus an operator-readable draft review checklist;
+  MP4 from the current render plan, intro/outro source cards or committed source-frame sequences,
+  scene-timed background plates, voiceover audio, subtitles, lower-third, popup, waveform, and
+  watermark overlays, then writes a render manifest with the exact timeline plus an
+  operator-readable draft review checklist;
 - define separate private-upload approval only after local final review is reliable.
 
 ## Phase C - Operator Studio
@@ -178,7 +179,9 @@ intro/outro render source frames.
 Useful additions before render work focus on editability and licensing:
 
 - editable source files for thumbnail and overlay variants;
-- render-ready intro/outro clips generated from committed source frames;
+- render-ready intro/outro MP4 clips generated from committed source frames for reuse outside the
+  draft renderer; source-frame sequences are already consumed by local draft render planning when
+  present;
 - font files and license notes for recurring title, thumbnail, lower-third, and subtitle typography;
 - additional series-specific background plates once recurring episode categories are defined;
 - storyboard/contact-sheet template refinements after the MVP render-plan artifact exists.

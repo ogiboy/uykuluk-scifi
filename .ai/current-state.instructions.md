@@ -46,7 +46,8 @@
 - Render Plan + Contact Sheet MVP that consumes the verified production-package manifest and tracked
   assets, then writes `production/render_plan.json`, `production/storyboard_contact_sheet.md`, and
   `production/asset_provenance.json` without FFmpeg render, upload, paid provider, or public publish
-  execution.
+  execution. Intro/outro source-frame sequences under tracked asset directories are recorded in
+  render-plan bookend provenance when present.
 - Evidence and readiness now surface render-plan presence; missing render plans warn, while partial
   or malformed render-plan artifacts block readiness.
 - Disabled-by-default local voiceover generation. `producer voice` requires local TTS config,
@@ -65,10 +66,11 @@
   current render-plan and voiceover digests, then `producer render` requires `RENDER_APPROVED`
   before writing `production/render/draft.mp4`, `production/render/render_manifest.json`, and
   `production/render/draft_review.md`. The draft render now builds an FFmpeg concat timeline from
-  render-plan intro/outro bookends and scenes, composes lower-third, popup-card, waveform, and
-  watermark overlays when available, records the exact intro-to-outro timeline and overlay
-  roles/placements in the manifest, validates the output with `ffprobe` media stream evidence, and
-  writes an operator-readable final local review checklist.
+  render-plan intro/outro bookends and scenes, expands committed intro/outro source-frame sequences
+  into FFmpeg inputs when enough review time exists, composes lower-third, popup-card, waveform, and
+  watermark overlays when available, records the exact intro-to-outro timeline, source-frame counts,
+  and overlay roles/placements in the manifest, validates the output with `ffprobe` media stream
+  evidence, and writes an operator-readable final local review checklist.
 - Provider-backed idea and production-package stages schema-validate and normalize common Ollama
   JSON variants before artifact writes, while rejecting malformed or English operator-facing
   payloads fail-closed.
@@ -393,10 +395,11 @@ Corepack/PATH before treating failures as product failures.
   does not commit voice models, approve render execution, upload, or publish. A 2026-06-25 local
   Piper smoke generated WAV evidence successfully; subjective voice quality, pacing, and
   pronunciation still require operator listening before production use.
-- FFmpeg draft render currently focuses on a local review MP4 using intro/outro source-card
-  bookends, scene-timed background plates, subtitle burn-in, lower-third, popup-card, waveform,
-  watermark overlays, voiceover audio, render manifest evidence, and an operator review checklist.
-  Render-ready intro/outro MP4 clips and broader visual polish remain follow-up work.
+- FFmpeg draft render currently focuses on a local review MP4 using intro/outro source-card bookends
+  or source-frame sequences, scene-timed background plates, subtitle burn-in, lower-third,
+  popup-card, waveform, watermark overlays, voiceover audio, render manifest evidence, and an
+  operator review checklist. Render-ready intro/outro MP4 clips for reuse outside the draft renderer
+  and broader visual polish remain follow-up work.
 - Upload and publish are intentionally disabled scaffolds.
 - Manual analytics import/reporting and the basic read-only Studio analytics overview are local-only
   and operator-provided. Richer analytics comparisons, cohort-level confidence scoring, and YouTube
@@ -405,8 +408,9 @@ Corepack/PATH before treating failures as product failures.
   remains a local TOCTOU limitation because portable Node APIs do not expose directory-handle
   `openat` semantics.
 - Brand, overlay, thumbnail, background, transition, icon, waveform, intro-frame, and outro-frame
-  assets are present. Editable source files, rendered intro/outro clips, and font licensing notes
-  remain useful additions.
+  assets are present. The local draft renderer consumes intro/outro source frames when present.
+  Editable source files, reusable rendered intro/outro clips, and font licensing notes remain useful
+  additions.
 - Sonar scan upload requires a local or cloud token through `SONAR_TOKEN` or Keychain; tokens must
   never be tracked.
 - Stable git tags are present through `v0.7.1`. Release automation treats the latest reachable

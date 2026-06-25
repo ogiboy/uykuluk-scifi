@@ -22,6 +22,7 @@ export const productionSceneSchema = z.strictObject({
 const renderBookendSchema = z.strictObject({
   durationSeconds: z.number().positive(),
   asset: assetRefSchema,
+  frameAssets: z.array(assetRefSchema).min(1).optional(),
 });
 export const renderPlanSchema = z.strictObject({
   schemaVersion: z.literal(1),

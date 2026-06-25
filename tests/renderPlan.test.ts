@@ -43,8 +43,16 @@ describe("render plan", () => {
       runId: string;
       productionPackageManifestPath: string;
       bookends: {
-        intro: { durationSeconds: number; asset: { path: string; digest: string } };
-        outro: { durationSeconds: number; asset: { path: string; digest: string } };
+        intro: {
+          durationSeconds: number;
+          asset: { path: string; digest: string };
+          frameAssets?: Array<{ path: string; digest: string }>;
+        };
+        outro: {
+          durationSeconds: number;
+          asset: { path: string; digest: string };
+          frameAssets?: Array<{ path: string; digest: string }>;
+        };
       };
       scenes: Array<{
         sceneIndex: number;
@@ -61,10 +69,18 @@ describe("render plan", () => {
       intro: {
         durationSeconds: 2,
         asset: { path: "assets/intro/episode_title_card_1920x1080.jpg" },
+        frameAssets: [
+          { path: "assets/intro/frames/intro_frame_00.jpg" },
+          { path: "assets/intro/frames/intro_frame_01.jpg" },
+        ],
       },
       outro: {
         durationSeconds: 3,
         asset: { path: "assets/outro/youtube_end_screen_1920x1080.jpg" },
+        frameAssets: [
+          { path: "assets/outro/frames/outro_frame_00.jpg" },
+          { path: "assets/outro/frames/outro_frame_01.jpg" },
+        ],
       },
     });
     expect(plan.scenes.length).toBeGreaterThan(0);
@@ -85,7 +101,9 @@ describe("render plan", () => {
         expect.objectContaining({ role: "subtitle-panel" }),
         expect.objectContaining({ role: "background-plate" }),
         expect.objectContaining({ role: "intro-source" }),
+        expect.objectContaining({ role: "intro-source-frame" }),
         expect.objectContaining({ role: "outro-source" }),
+        expect.objectContaining({ role: "outro-source-frame" }),
       ]),
     );
     const contactSheet = await readFile(
@@ -94,7 +112,9 @@ describe("render plan", () => {
     );
     expect(contactSheet).toContain("## Intro And Outro Bookends");
     expect(contactSheet).toContain("assets/intro/episode_title_card_1920x1080.jpg");
+    expect(contactSheet).toContain("Intro source frames: 2 committed frames");
     expect(contactSheet).toContain("assets/outro/youtube_end_screen_1920x1080.jpg");
+    expect(contactSheet).toContain("Outro source frames: 2 committed frames");
 
     await estimateCost(runId);
     const evidence = (await generateEvidenceBundle(runId)) as {
@@ -152,7 +172,11 @@ async function createMinimalRenderAssets(): Promise<void> {
     ["assets/overlays/video_lower_third_banner_1920x240.png", "lower third"],
     ["assets/overlays/popup_info_card_900x520.png", "popup card"],
     ["assets/intro/episode_title_card_1920x1080.jpg", "intro"],
+    ["assets/intro/frames/intro_frame_00.jpg", "intro frame 0"],
+    ["assets/intro/frames/intro_frame_01.jpg", "intro frame 1"],
     ["assets/outro/youtube_end_screen_1920x1080.jpg", "outro"],
+    ["assets/outro/frames/outro_frame_00.jpg", "outro frame 0"],
+    ["assets/outro/frames/outro_frame_01.jpg", "outro frame 1"],
     ["assets/backgrounds/plate_test_1920x1080.jpg", "background"],
     ["assets/icons/icon_fact_check_512.png", "fact icon"],
     ["assets/waveforms/waveform_overlay_thin_panel_transparent_1920x240.png", "waveform"],

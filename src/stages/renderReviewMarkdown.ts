@@ -59,12 +59,13 @@ export function renderDraftReviewMarkdown(manifest: DraftRenderManifest): string
     "## Timeline",
     "",
     table(
-      ["Segment", "Scene", "Duration", "Asset"],
+      ["Segment", "Scene", "Duration", "Asset", "Source frames"],
       manifest.timeline.map((item) => [
         item.segment ?? "scene",
         item.sceneIndex ? String(item.sceneIndex) : "-",
         `${item.durationSeconds}s`,
         item.backgroundAsset.path,
+        item.sourceFrameAssets ? String(item.sourceFrameAssets.length) : "-",
       ]),
     ),
     "",

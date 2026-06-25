@@ -8,6 +8,7 @@ export type DraftRenderTimeline = Array<{
   sceneIndex?: number;
   durationSeconds: number;
   backgroundAsset: AssetRef;
+  sourceFrameAssets?: AssetRef[];
 }>;
 
 export function buildDraftRenderTimeline(
@@ -26,6 +27,7 @@ export function buildDraftRenderTimeline(
       segment: "intro",
       durationSeconds: bookendDurations.intro,
       backgroundAsset: renderPlan.bookends.intro.asset,
+      sourceFrameAssets: renderPlan.bookends.intro.frameAssets,
     });
   }
   let remainingSeconds = bookendDurations.scenes;
@@ -52,6 +54,7 @@ export function buildDraftRenderTimeline(
       segment: "outro",
       durationSeconds: bookendDurations.outro,
       backgroundAsset: renderPlan.bookends.outro.asset,
+      sourceFrameAssets: renderPlan.bookends.outro.frameAssets,
     });
   }
   return timeline;

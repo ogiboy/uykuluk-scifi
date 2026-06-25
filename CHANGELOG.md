@@ -148,6 +148,7 @@ future generated release notes can be inserted predictably.
   actions without enabling web mutations.
 - Read-only Studio mutation-service status panel showing disabled future actions and route-security
   findings.
+- Render-plan and FFmpeg draft-render provenance for committed intro/outro source-frame sequences.
 - Basic type-safe `next-intl` foundation for English and Turkish Studio locales.
 - Unit and browser coverage for locale normalization and cookie-based document language.
 - Typed runtime loading for tracked idea, scriptwriter, and production-package prompt defaults.
