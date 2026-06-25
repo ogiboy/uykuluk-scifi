@@ -134,7 +134,8 @@ Minimum loop:
 - review the imported local dataset and report preview in Studio without YouTube API calls, workflow
   mutation, upload, publish, or causal claims;
 - produce “repeat / avoid / test next” recommendations for future ideas, titles, formats, and
-  thumbnail directions.
+  thumbnail directions - implemented as non-causal operator planning prompts in
+  `analytics/performance_report.md`.
 
 This phase must not invent metrics or claim causality from weak data. YouTube Analytics API work is
 optional later and requires its own credentials, privacy, cost, and approval design.

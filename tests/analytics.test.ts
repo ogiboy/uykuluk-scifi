@@ -51,7 +51,20 @@ describe("manual analytics import", () => {
     expect(report).toContain("Mapped runs");
     expect(report).toContain("Unmapped records");
     expect(report).toContain("| run_20260624010101_abcd12 | 2 | 1,450 |");
+    expect(report).toContain("Non-Causal Recommendations");
+    expect(report).toContain("Repeat candidates");
+    expect(report).toContain(
+      "- Ay Üssünde İlk Temas (run_20260624010101_abcd12): strong CTR, strong retention, subscriber gain.",
+    );
+    expect(report).toContain("Avoid without revision");
+    expect(report).toContain(
+      "- Kayıp Sonda (run_20260624010101_abcd12): weak CTR, weak retention.",
+    );
+    expect(report).toContain("- Haritasız Uydu (unmapped): weak CTR, weak retention.");
+    expect(report).toContain("Test next");
+    expect(report).toContain("one topic/title/thumbnail hypothesis");
     expect(report).toContain("No causal claims are made from this import.");
+    expect(report).toContain("not proof that one variable caused the result");
   });
 
   it("imports JSON records and rejects malformed rows without writing artifacts", async () => {

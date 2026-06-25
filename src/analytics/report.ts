@@ -1,4 +1,5 @@
 import { table } from "../utils/markdown.js";
+import { renderAnalyticsRecommendations } from "./recommendations.js";
 import type { AnalyticsDataset, AnalyticsRecord } from "./schema.js";
 
 export function renderAnalyticsReport(dataset: AnalyticsDataset): string {
@@ -53,9 +54,9 @@ export function renderAnalyticsReport(dataset: AnalyticsDataset): string {
         ]),
     ),
     "",
-    "## Operator Notes",
+    "## Non-Causal Recommendations",
     "",
-    ...operatorNotes(dataset.records),
+    ...renderAnalyticsRecommendations(dataset.records),
   ].join("\n");
 }
 
@@ -87,17 +88,6 @@ function summarize(records: AnalyticsRecord[]): {
     weightedAverageViewed: weightedAverage(records, "averagePercentageViewed", "views"),
     weightedCtr: weightedAverage(records, "ctr", "impressions"),
   };
-}
-
-function operatorNotes(records: AnalyticsRecord[]): string[] {
-  const highCtr = records.filter((record) => (record.ctr ?? 0) >= 0.06);
-  const weakRetention = records.filter((record) => (record.averagePercentageViewed ?? 1) < 0.25);
-  return [
-    `- Repeat candidates: ${formatRecordList(highCtr)}.`,
-    `- Review retention risks: ${formatRecordList(weakRetention)}.`,
-    "- Test next: compare topic, title, thumbnail promise, and first-minute hook before changing the production format.",
-    "- Evidence limit: treat these as review prompts, not proof that one variable caused the result.",
-  ];
 }
 
 function summarizeRuns(records: AnalyticsRecord[]): RunSummary[] {
@@ -171,13 +161,6 @@ function sum(records: AnalyticsRecord[], key: keyof AnalyticsRecord): number {
     const value = record[key];
     return total + (typeof value === "number" ? value : 0);
   }, 0);
-}
-
-function formatRecordList(records: AnalyticsRecord[]): string {
-  if (records.length === 0) {
-    return "none yet";
-  }
-  return records.map((record) => inlineText(record.title ?? record.videoId)).join(", ");
 }
 
 function formatInteger(value: number | undefined): string {
