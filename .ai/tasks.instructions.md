@@ -53,9 +53,9 @@
 - Harden local TTS with real Piper voice-quality QA and operator guidance. Keep models and generated
   audio ignored; the current implemented foundation is deterministic reference WAV, optional
   configured `local-piper` shell-out, and pinned Turkish model setup into ignored `models/`.
-- Harden FFmpeg draft render composition with scene timing, popup cards, waveform overlays,
-  intro/outro usage, and operator preview checks; the current foundation is exact-approval-gated
-  local MP4 plus render manifest.
+- Harden FFmpeg draft render composition with popup cards, waveform overlays, intro/outro usage, and
+  operator preview checks; the current foundation is exact-approval-gated local MP4 with scene-timed
+  background plates plus render manifest timeline evidence.
 - Harden the idea repair prompt and idea-quality constraints with live qwen3 feedback. The
   implemented two-attempt retry loop now recovers to `IDEAS_GENERATED` in live qwen3 tests after
   repair warnings, but manual review still found weak/awkward ideas. Continue tightening prompt and
