@@ -11,6 +11,12 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.2.1 (2026-06-25)
+
+### Chores
+
+- bump the github-actions group with 3 updates (97e10ff)
+
 ## v0.2.0 (2026-06-24)
 
 ### Added
