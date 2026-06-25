@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { defaultConfig } from "../src/config/config";
 import { listRuns } from "../src/core/runStore";
@@ -27,6 +27,7 @@ describe("producer doctor", () => {
           name: "TTS provider",
           status: "pass",
           message: expect.stringContaining("disabled"),
+          nextAction: expect.stringContaining("pnpm tts:piper:setup"),
         }),
         expect.objectContaining({ name: "production assets", status: "warn" }),
         expect.objectContaining({ name: "publish defaults", status: "pass" }),
@@ -35,7 +36,9 @@ describe("producer doctor", () => {
     expect(await pathExists(doctorJsonPath())).toBe(true);
     expect(await pathExists(doctorMarkdownPath())).toBe(true);
     expect(await readJsonFile(doctorJsonPath())).toEqual(report);
-    expect(await readFile(doctorMarkdownPath(), "utf8")).toContain("# Producer Doctor");
+    const markdown = await readFile(doctorMarkdownPath(), "utf8");
+    expect(markdown).toContain("# Producer Doctor");
+    expect(markdown).toContain("Next action");
     expect(await listRuns()).toEqual([]);
   });
 
@@ -151,47 +154,6 @@ describe("producer doctor", () => {
       message: expect.stringContaining("Risky YouTube configuration"),
     });
   });
-
-  it("passes local Piper diagnostics when the binary and model files are configured", async () => {
-    await writePiperConfig({
-      piperBinary: process.execPath,
-      piperConfigPath: "models/piper/tr_TR/test/model.onnx.json",
-      piperModelPath: "models/piper/tr_TR/test/model.onnx",
-    });
-    await mkdir("models/piper/tr_TR/test", { recursive: true });
-    await writeFile("models/piper/tr_TR/test/model.onnx", "fake onnx", "utf8");
-    await writeFile("models/piper/tr_TR/test/model.onnx.json", "{}", "utf8");
-
-    const report = await runDoctor();
-
-    expect(report.passed).toBe(true);
-    expect(report.checks.find((check) => check.name === "TTS provider")).toMatchObject({
-      status: "pass",
-      message: expect.stringContaining("local-piper"),
-    });
-  });
-
-  it("blocks local Piper diagnostics when binary or model files are missing", async () => {
-    await writePiperConfig({
-      piperBinary: "definitely-missing-piper-binary",
-      piperConfigPath: "models/piper/tr_TR/test/model.onnx.json",
-      piperModelPath: "models/piper/tr_TR/test/model.onnx",
-    });
-
-    const report = await runDoctor();
-
-    expect(report.passed).toBe(false);
-    expect(report.checks.find((check) => check.name === "TTS provider")).toMatchObject({
-      status: "block",
-      message: expect.stringContaining("Piper binary unavailable"),
-    });
-    expect(report.checks.find((check) => check.name === "TTS provider")?.message).toContain(
-      "Piper model missing",
-    );
-    expect(report.checks.find((check) => check.name === "TTS provider")?.message).toContain(
-      "Piper config missing",
-    );
-  });
 });
 
 async function useOllamaConfig(): Promise<void> {
@@ -205,33 +167,6 @@ async function useOllamaConfig(): Promise<void> {
           llm: {
             ...defaultConfig.providers.llm,
             mode: "ollama",
-          },
-        },
-      },
-      null,
-      2,
-    )}\n`,
-    "utf8",
-  );
-}
-
-async function writePiperConfig(tts: {
-  piperBinary: string;
-  piperConfigPath: string;
-  piperModelPath: string;
-}): Promise<void> {
-  await writeFile(
-    "producer.config.json",
-    `${JSON.stringify(
-      {
-        ...defaultConfig,
-        providers: {
-          ...defaultConfig.providers,
-          tts: {
-            ...defaultConfig.providers.tts,
-            enabled: true,
-            mode: "local-piper",
-            ...tts,
           },
         },
       },

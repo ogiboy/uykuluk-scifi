@@ -419,8 +419,10 @@ writing `script.md`; provider failure diagnostics are persisted under the run wh
 
 Run `pnpm producer doctor` before starting production work. Mock mode passes without network access.
 Ollama mode checks `/api/tags` with a bounded timeout and blocks when the server is unavailable or
-the configured model is not installed. The command writes ignored local evidence to
-`diagnostics/doctor.json` and `diagnostics/doctor.md`; it does not create a run or grant approval.
+the configured model is not installed. TTS diagnostics include next-action guidance for disabled
+TTS, deterministic reference audio, and local Piper setup/remediation. The command writes ignored
+local evidence to `diagnostics/doctor.json` and `diagnostics/doctor.md`; it does not create a run or
+grant approval.
 
 Tracked runtime prompt defaults:
 
