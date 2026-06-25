@@ -3,6 +3,11 @@ import { artifactPath } from "../core/artifacts.js";
 import { SafeExitError } from "../core/errors.js";
 import { voiceoverAudioPath } from "./voiceoverEvidence.js";
 import { AssetRef, RenderPlan } from "./renderPlanSchemas.js";
+import {
+  buildDraftRenderComposition,
+  type DraftRenderComposition,
+  type DraftRenderOverlay,
+} from "./renderComposition.js";
 
 type DraftRenderTimeline = Array<{
   sceneIndex: number;
@@ -11,6 +16,7 @@ type DraftRenderTimeline = Array<{
 }>;
 
 export function buildFfmpegArgs(input: {
+  composition?: DraftRenderComposition;
   durationSeconds: number;
   ffmpegOutputPath: string;
   renderPlan: RenderPlan;
@@ -24,36 +30,23 @@ export function buildFfmpegArgs(input: {
   if (!firstScene || !firstTimelineItem) {
     throw new SafeExitError("Draft render requires at least one render-plan scene.");
   }
+  const composition = input.composition ?? buildDraftRenderComposition(input.renderPlan);
   const audio = artifactPath(input.runId, voiceoverAudioPath);
   const subtitles = artifactPath(input.runId, "production/subtitles.srt");
-  const watermark = firstScene.overlayAssets.find((asset) => asset.role === "watermark");
   const audioInputIndex = timeline.length;
-  const watermarkInputIndex = audioInputIndex + 1;
   const sceneFilters = timeline.map(
     (item, index) =>
       `[${index}:v]scale=1280:720,setsar=1,trim=duration=${item.durationSeconds},setpts=PTS-STARTPTS[s${index}]`,
   );
   const concatInputs = timeline.map((_, index) => `[s${index}]`).join("");
-  const subtitleBaseFilter = buildSubtitleConcatFilter({
+  const filter = buildVideoFilter({
     concatInputs,
-    outputLabel: "base",
+    firstOverlayInputIndex: audioInputIndex + 1,
+    overlays: composition.overlays,
     sceneCount: timeline.length,
+    sceneFilters,
     subtitles,
   });
-  const subtitleVideoFilter = buildSubtitleConcatFilter({
-    concatInputs,
-    outputLabel: "v",
-    sceneCount: timeline.length,
-    subtitles,
-  });
-  const filter = watermark
-    ? [
-        ...sceneFilters,
-        subtitleBaseFilter,
-        `[${watermarkInputIndex}:v]scale=120:-1[wm]`,
-        "[base][wm]overlay=W-w-24:24[v]",
-      ].join(";")
-    : [...sceneFilters, subtitleVideoFilter].join(";");
   const args = ["-y"];
   for (const item of timeline) {
     args.push(
@@ -66,8 +59,8 @@ export function buildFfmpegArgs(input: {
     );
   }
   args.push("-i", audio);
-  if (watermark) {
-    args.push("-i", path.join(process.cwd(), watermark.path));
+  for (const overlay of composition.overlays) {
+    args.push("-i", path.join(process.cwd(), overlay.asset.path));
   }
   args.push(
     "-filter_complex",
@@ -141,6 +134,49 @@ function buildSubtitleConcatFilter(input: {
   return `${input.concatInputs}concat=n=${input.sceneCount}:v=1:a=0,subtitles=${escapeFilterPath(
     input.subtitles,
   )}[${input.outputLabel}]`;
+}
+
+function buildVideoFilter(input: {
+  concatInputs: string;
+  firstOverlayInputIndex: number;
+  overlays: DraftRenderOverlay[];
+  sceneCount: number;
+  sceneFilters: string[];
+  subtitles: string;
+}): string {
+  const outputLabel = input.overlays.length > 0 ? "base0" : "v";
+  const filters = [
+    ...input.sceneFilters,
+    buildSubtitleConcatFilter({
+      concatInputs: input.concatInputs,
+      outputLabel,
+      sceneCount: input.sceneCount,
+      subtitles: input.subtitles,
+    }),
+  ];
+  return [
+    ...filters,
+    ...overlayFilters(input.overlays, input.firstOverlayInputIndex, outputLabel),
+  ].join(";");
+}
+
+function overlayFilters(
+  overlays: DraftRenderOverlay[],
+  firstOverlayInputIndex: number,
+  firstInputLabel: string,
+): string[] {
+  let inputLabel = firstInputLabel;
+  return overlays.flatMap((overlay, index) => {
+    const scaledLabel = `ov${index}`;
+    const outputLabel = index === overlays.length - 1 ? "v" : `base${index + 1}`;
+    const inputIndex = firstOverlayInputIndex + index;
+    const filters = [
+      `[${inputIndex}:v]scale=${overlay.width}:-1[${scaledLabel}]`,
+      `[${inputLabel}][${scaledLabel}]overlay=${overlay.x}:${overlay.y}[${outputLabel}]`,
+    ];
+    inputLabel = outputLabel;
+    return filters;
+  });
 }
 
 function extendLastTimelineScene(

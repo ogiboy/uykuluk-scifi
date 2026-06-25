@@ -59,7 +59,7 @@ describe("render plan", () => {
       digest: expect.stringMatching(/^[a-f0-9]{64}$/),
     });
     expect(plan.scenes[0].overlayAssets.map((asset) => asset.role)).toEqual(
-      expect.arrayContaining(["subtitle-panel", "watermark"]),
+      expect.arrayContaining(["subtitle-panel", "watermark", "popup-card", "waveform-overlay"]),
     );
 
     const provenance = await readJsonFile<{

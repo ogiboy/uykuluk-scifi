@@ -17,6 +17,7 @@ import {
   draftRenderManifestSchema,
   draftRenderPath,
 } from "./renderEvidence.js";
+import { buildDraftRenderComposition } from "./renderComposition.js";
 import { readRenderPlanEvidence } from "./renderPlan.js";
 import {
   buildDraftRenderTimeline,
@@ -65,6 +66,7 @@ export async function renderDraft(
       options.maxDurationSeconds,
     );
     const timeline = buildDraftRenderTimeline(renderPlan, durationSeconds);
+    const composition = buildDraftRenderComposition(renderPlan);
     const output = artifactPath(run.runId, draftRenderPath);
     const temporaryOutput = path.join(
       path.dirname(output),
@@ -79,6 +81,7 @@ export async function renderDraft(
       renderPlan,
       runId: run.runId,
       timeline,
+      composition,
       durationSeconds,
     });
     await runFfmpeg(ffmpegBinary, args);
@@ -90,7 +93,7 @@ export async function renderDraft(
     const outputBytes = await readFile(output);
     run = await recordRunArtifact(run, "render", draftRenderPath);
     const manifest = draftRenderManifestSchema.parse({
-      schemaVersion: 1,
+      schemaVersion: 2,
       runId: run.runId,
       createdAt: nowIso(),
       renderPlan: {
@@ -102,6 +105,15 @@ export async function renderDraft(
         digest: voiceoverAudio.digest,
       },
       timeline,
+      composition: {
+        overlays: composition.overlays.map((overlay) => ({
+          role: overlay.asset.role,
+          path: overlay.asset.path,
+          digest: overlay.asset.digest,
+          placement: overlay.placement,
+        })),
+        reviewChecklist: composition.reviewChecklist,
+      },
       output: {
         path: draftRenderPath,
         sha256: createHash("sha256").update(outputBytes).digest("hex"),

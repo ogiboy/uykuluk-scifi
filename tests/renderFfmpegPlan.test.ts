@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { buildDraftRenderComposition } from "../src/stages/renderComposition";
 import { buildDraftRenderTimeline, buildFfmpegArgs } from "../src/stages/renderFfmpegPlan";
 
 describe("draft render FFmpeg planning", () => {
@@ -21,16 +22,24 @@ describe("draft render FFmpeg planning", () => {
     });
     const renderedArgs = args.join("\n");
 
+    expect(
+      buildDraftRenderComposition(renderPlan).overlays.map((overlay) => overlay.asset.role),
+    ).toEqual(["lower-third", "waveform-overlay", "popup-card", "watermark"]);
     expect(renderedArgs).toContain("assets/backgrounds/plate_a.jpg");
     expect(renderedArgs).toContain("assets/backgrounds/plate_b.jpg");
+    expect(renderedArgs).toContain("assets/overlays/lower_third.png");
+    expect(renderedArgs).toContain("assets/waveforms/waveform.png");
+    expect(renderedArgs).toContain("assets/overlays/popup_card.png");
     expect(renderedArgs).toContain("concat=n=2:v=1:a=0");
     expect(args).toContain("2:a");
-    expect(renderedArgs).toContain("[3:v]scale=120:-1[wm]");
+    expect(renderedArgs).toContain("[3:v]scale=1280:-1[ov0]");
+    expect(renderedArgs).toContain("[6:v]scale=120:-1[ov3]");
+    expect(renderedArgs).toContain("overlay=W-w-24:24[v]");
     expect(args).toContain("30");
   });
 
-  it("derives a short no-watermark FFmpeg timeline when one is not supplied", () => {
-    const renderPlan = createTwoSceneRenderPlan({ watermark: false });
+  it("derives a short no-overlay FFmpeg timeline when one is not supplied", () => {
+    const renderPlan = createTwoSceneRenderPlan({ overlays: false });
 
     const args = buildFfmpegArgs({
       durationSeconds: 2,
@@ -44,7 +53,7 @@ describe("draft render FFmpeg planning", () => {
     expect(renderedArgs).not.toContain("assets/backgrounds/plate_b.jpg");
     expect(renderedArgs).toContain("concat=n=1:v=1:a=0");
     expect(renderedArgs).toContain("subtitles=");
-    expect(renderedArgs).not.toContain("[wm]");
+    expect(renderedArgs).not.toContain("[ov0]");
     expect(args).toContain("1:a");
   });
 
@@ -64,13 +73,28 @@ describe("draft render FFmpeg planning", () => {
 });
 
 function createTwoSceneRenderPlan(
-  options: { watermark?: boolean } = {},
+  options: { overlays?: boolean } = {},
 ): Parameters<typeof buildDraftRenderTimeline>[0] {
   const digest = "a".repeat(64);
   const overlayAssets =
-    options.watermark === false
+    options.overlays === false
       ? []
       : [
+          {
+            role: "lower-third",
+            path: "assets/overlays/lower_third.png",
+            digest,
+          },
+          {
+            role: "waveform-overlay",
+            path: "assets/waveforms/waveform.png",
+            digest,
+          },
+          {
+            role: "popup-card",
+            path: "assets/overlays/popup_card.png",
+            digest,
+          },
           {
             role: "watermark",
             path: "assets/brand/watermark.png",

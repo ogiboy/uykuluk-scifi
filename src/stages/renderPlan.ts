@@ -70,6 +70,7 @@ export async function generateRenderPlan(runId: string): Promise<RenderPlan> {
         assets.watermark,
         assets.lowerThird,
         assets.popupCard,
+        assets.waveform,
       ].filter((asset): asset is AssetRef => Boolean(asset)),
       subtitleSource: "production/subtitles.srt",
       voiceoverSource: "production/voiceover.txt",
