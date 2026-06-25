@@ -430,7 +430,9 @@ run persists draft/expansion receipts before it can advance. If a local model re
 JSON, English operator-facing text, or an incomplete script section, the stage fails closed before
 writing `script.md`; provider failure diagnostics are persisted under the run when safe to record.
 Repeated sentence or label blockers get bounded raw-output-free repair retries, and a later
-successful script run clears stale failure diagnostics before advancing.
+successful script run clears stale failure diagnostics before advancing. `producer status` and the
+read-only Studio run detail surface safe script failure diagnostic summaries so the next blocker is
+visible without opening JSON artifacts by hand.
 
 Run `pnpm producer doctor` before starting production work. Mock mode passes without network access.
 Ollama mode checks `/api/tags` with a bounded timeout and blocks when the server is unavailable or

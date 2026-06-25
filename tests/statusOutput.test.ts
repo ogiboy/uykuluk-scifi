@@ -1,4 +1,4 @@
-import { writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { artifactPath } from "../src/core/artifacts";
 import { createRun, loadRun, saveRun } from "../src/core/runStore";
@@ -79,6 +79,22 @@ describe("operator status output", () => {
 
   it("recommends script retry after an approved idea when evidence is missing", async () => {
     const run = await createRun();
+    await mkdir(`runs/${run.runId}/diagnostics`, { recursive: true });
+    await writeFile(
+      artifactPath(run.runId, "diagnostics/script_generation_failure.json"),
+      JSON.stringify({
+        runId: run.runId,
+        stage: "script",
+        state: "IDEA_APPROVED",
+        providerMode: "ollama",
+        model: "qwen3:8b",
+        thinkingMode: "no_think",
+        message:
+          "Invalid script continuation chunk 1 provider response: continuation has no complete sentence.",
+        createdAt: "2026-06-25T00:00:00.000Z",
+      }),
+      "utf8",
+    );
     await saveRun({
       ...run,
       approvedIdeaId: "idea_001",
@@ -89,6 +105,10 @@ describe("operator status output", () => {
     const output = formatRunStatus(await readRunStatus(run.runId));
 
     expect(output).toContain("Next safe action: pnpm producer script --run <run_id>");
+    expect(output).toContain("Diagnostics:");
+    expect(output).toContain(
+      "- diagnostics/script_generation_failure.json [script]: Invalid script continuation chunk 1 provider response: continuation has no complete sentence.",
+    );
     expect(output).toContain("Evidence: missing");
   });
 });

@@ -179,20 +179,45 @@ describe("Studio read-only run summaries", () => {
 
   it("shows canonical early next actions before evidence exists", async () => {
     const run = await createRun();
+    await mkdir(`runs/${run.runId}/diagnostics`, { recursive: true });
+    await writeFile(
+      artifactPath(run.runId, "diagnostics/script_generation_failure.json"),
+      JSON.stringify({
+        runId: run.runId,
+        stage: "script",
+        state: "IDEA_APPROVED",
+        providerMode: "ollama",
+        model: "qwen3:8b",
+        thinkingMode: "no_think",
+        message:
+          "Invalid script continuation chunk 1 provider response: continuation has no complete sentence.",
+        createdAt: "2026-06-25T00:00:00.000Z",
+      }),
+      "utf8",
+    );
     await saveRun({
       ...run,
-      artifacts: ["ideas.json"],
-      state: "IDEAS_GENERATED",
+      approvedIdeaId: "idea_001",
+      artifacts: ["ideas.json", "diagnostics/script_generation_failure.json"],
+      state: "IDEA_APPROVED",
     });
 
     const detail = await getStudioRunDetail(run.runId);
 
     expect(detail).toMatchObject({
-      nextRecommendedCommand: "pnpm producer approve idea --run <run_id> --idea <idea_id>",
-      state: "IDEAS_GENERATED",
+      diagnostics: [
+        {
+          message:
+            "Invalid script continuation chunk 1 provider response: continuation has no complete sentence.",
+          path: "diagnostics/script_generation_failure.json",
+          stage: "script",
+        },
+      ],
+      nextRecommendedCommand: "pnpm producer script --run <run_id>",
+      state: "IDEA_APPROVED",
     });
     expect(detail?.evidence).toBeNull();
-    expect((await loadRun(run.runId)).state).toBe("IDEAS_GENERATED");
+    expect((await loadRun(run.runId)).state).toBe("IDEA_APPROVED");
   });
 });
 

@@ -4,6 +4,8 @@ import type { RunRecord, RunState } from "../core/state.js";
 import { pathExists } from "../utils/fs.js";
 import { readJsonFile } from "../utils/json.js";
 import { staticEvidenceNextCommand } from "./evidenceNextCommand.js";
+import type { RunDiagnosticSummary } from "./runDiagnosticSummaryContracts.js";
+import { readRunDiagnosticSummaries } from "./runDiagnosticSummaries.js";
 
 type EvidenceStatus = {
   blockedActions?: unknown[];
@@ -20,6 +22,7 @@ export type RunStatusSummary = {
   artifactCount: number;
   blockedActionCount: number | null;
   evidencePresent: boolean;
+  diagnostics: RunDiagnosticSummary[];
   nextRecommendedCommand: string;
   recentArtifacts: string[];
   run: RunRecord;
@@ -28,7 +31,10 @@ export type RunStatusSummary = {
 
 export async function readRunStatus(runId: string): Promise<RunStatusSummary> {
   const run = await loadRun(runId);
-  const evidenceResult = await readEvidenceStatus(run.runId);
+  const [evidenceResult, diagnostics] = await Promise.all([
+    readEvidenceStatus(run.runId),
+    readRunDiagnosticSummaries(run.runId, run.artifacts),
+  ]);
   const evidence = evidenceResult.kind === "present" ? evidenceResult.evidence : null;
   return {
     approvalCount: run.approvals.length,
@@ -36,6 +42,7 @@ export async function readRunStatus(runId: string): Promise<RunStatusSummary> {
     blockedActionCount: Array.isArray(evidence?.blockedActions)
       ? evidence.blockedActions.length
       : null,
+    diagnostics,
     evidencePresent: Boolean(evidence),
     nextRecommendedCommand: statusNextRecommendedCommand(run.state, evidenceResult),
     recentArtifacts: run.artifacts.slice(-5).reverse(),
@@ -55,12 +62,26 @@ export function formatRunStatus(status: RunStatusSummary): string {
     `Evidence: ${status.evidencePresent ? "available" : "missing"}`,
     `Blocked actions: ${status.blockedActionCount ?? "unknown"}`,
     `Next safe action: ${status.nextRecommendedCommand}`,
+    ...formatDiagnostics(status.diagnostics),
     "",
     "Recent artifacts:",
     ...(status.recentArtifacts.length > 0
       ? status.recentArtifacts.map((artifact) => `- ${artifact}`)
       : ["- none"]),
   ].join("\n");
+}
+
+function formatDiagnostics(diagnostics: readonly RunDiagnosticSummary[]): string[] {
+  if (diagnostics.length === 0) {
+    return [];
+  }
+  return [
+    "",
+    "Diagnostics:",
+    ...diagnostics.map(
+      (diagnostic) => `- ${diagnostic.path} [${diagnostic.stage}]: ${diagnostic.message}`,
+    ),
+  ];
 }
 
 function statusNextRecommendedCommand(state: RunState, evidenceResult: EvidenceReadResult): string {

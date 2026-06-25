@@ -122,7 +122,9 @@
   visual directions across the draft and already-written chunks.
 - Script provider parse/transport failures and content-blocker failures persist safe run diagnostics
   without advancing state or storing raw provider output. Section content blockers include the
-  section id, pass, and expansion chunk when available.
+  section id, pass, and expansion chunk when available. `producer status` and Studio run detail
+  surface these safe diagnostic summaries so operators can see the blocker without opening JSON
+  artifacts by hand.
 - Live local Ollama qwen3:8b smoke tests on 2026-06-23 verified safe idea generation, explicit idea
   approval, chunked section script generation, receipt persistence, and script review in both
   `no_think` and `think` modes without upload, render, or publish actions. Follow-up smoke after

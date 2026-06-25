@@ -39,6 +39,23 @@ export function RunDetailView({ run }: Readonly<{ run: StudioRunDetail }>) {
         </p>
       </section>
 
+      <section className='panel' aria-labelledby='diagnostics-heading'>
+        <h2 id='diagnostics-heading'>Diagnostics</h2>
+        {run.diagnostics.length > 0 ? (
+          <ul>
+            {run.diagnostics.map((diagnostic) => (
+              <li key={diagnostic.path}>
+                <strong>{diagnostic.stage}</strong>: {diagnostic.message}
+                <br />
+                <span>{diagnostic.path}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>No run diagnostics recorded.</p>
+        )}
+      </section>
+
       <section className='panel' aria-labelledby='artifact-heading'>
         <h2 id='artifact-heading'>Artifact Previews</h2>
         <p>
