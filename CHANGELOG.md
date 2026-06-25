@@ -23,6 +23,7 @@ future generated release notes can be inserted predictably.
 
 - clear Sonar quality-gate findings for local media evidence changes
 - make usage smoke prove the safe local render-plan, voiceover, and draft-render loop
+- suppress the known Studio local asset-inventory Turbopack tracing warning
 
 ## v0.7.2 (2026-06-25)
 

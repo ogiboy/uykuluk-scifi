@@ -27,7 +27,7 @@ type ConfigReadResult = {
 };
 
 export async function getStudioAssetInventory(): Promise<StudioAssetInventory> {
-  const root = await projectRoot();
+  const root = projectRoot();
   const configRead = await readStudioProducerConfig(root);
   const assetWarnings = await readAssetGuardWarnings(root, configRead.assets);
   const categories = await Promise.all(

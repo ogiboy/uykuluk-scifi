@@ -72,7 +72,7 @@ type ReadinessSnapshot = {
 };
 
 export async function listStudioRuns(): Promise<StudioRunSummary[]> {
-  const root = await projectRoot();
+  const root = projectRoot();
   const runsDir = path.join(root, "runs");
   const entries = await safeReaddir(runsDir);
   const summaries = await Promise.all(
@@ -89,7 +89,7 @@ export async function getStudioRunDetail(runId: string): Promise<StudioRunDetail
   if (!isRunId(runId)) {
     return null;
   }
-  const root = await projectRoot();
+  const root = projectRoot();
   const record = await readRunRecord(root, runId);
   if (!record) {
     return null;

@@ -22,6 +22,13 @@ const nextConfig: NextConfig = {
     ],
   },
   turbopack: {
+    ignoreIssue: [
+      {
+        path: "**/apps/studio/next.config.ts",
+        title: "Encountered unexpected file in NFT list",
+        description: /whole project was traced unintentionally/,
+      },
+    ],
     root: repoRoot,
   },
 };

@@ -2,6 +2,8 @@ import { AssetInventoryView } from "@/components/assets/AssetInventoryView";
 import { getStudioAssetInventory } from "@/lib/assetInventory";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+
 export default async function AssetsPage() {
   const inventory = await getStudioAssetInventory();
 

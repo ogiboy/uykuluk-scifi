@@ -5,6 +5,8 @@ import { StudioTabs } from "@/components/studio/StudioTabs";
 import { getStudioAssetInventory } from "@/lib/assetInventory";
 import { studioSections } from "@/lib/studioData";
 
+export const dynamic = "force-dynamic";
+
 export default async function StudioHomePage() {
   const assetInventory = await getStudioAssetInventory();
 
