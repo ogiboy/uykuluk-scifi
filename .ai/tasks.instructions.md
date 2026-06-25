@@ -59,15 +59,17 @@
   lower-third, popup-card, waveform, watermark overlays, render manifest evidence, and an
   operator-readable `production/render/draft_review.md` checklist.
 - Harden the idea repair prompt and idea-quality constraints with live qwen3 feedback. The
-  implemented two-attempt retry loop now recovers to `IDEAS_GENERATED` in live qwen3 tests after
-  repair warnings, but manual review still found weak/awkward ideas. Continue tightening prompt and
-  quality checks before treating qwen3 ideas as production-ready.
+  implemented two-attempt retry loop either recovers to `IDEAS_GENERATED` or fails closed without
+  artifacts. Live qwen3 QA now rejects repeated fit frames, generic fit boilerplate, repeated
+  uncertainty openers, generic unknown-species phrases, and weak premise action frames. Continue
+  tightening prompt and quality checks before treating qwen3 ideas as production-ready.
 - Tune idea and script prompts so qwen3 avoids near-duplicate ideas, English style text, unsupported
   science framing, malformed labels, and repeated sentence loops. The parser now rejects exact
   duplicate idea titles/premises, duplicate `fit` explanations, repeated generic title motifs,
-  repeated premise frames, repeated idea sentence loops, malformed brand fragments, and copied
-  English lane terms; script expansion prompts now show previous chunks from the same section to
-  reduce repeated sentence loops; prompt quality still needs to produce a reviewable idea list.
+  repeated premise frames, repeated fit frames, repeated idea sentence loops, malformed brand
+  fragments, copied English lane terms, and repeated local-model boilerplate; script expansion
+  prompts now show previous chunks from the same section to reduce repeated sentence loops; prompt
+  quality still needs to produce a consistently reviewable idea list.
 - Harden script continuation and expansion quality for live qwen3. Malformed local-model `"text"`
   wrappers now have regression coverage for raw text, fences, trailing commas, missing closing
   quotes, and short external notes. Section and continuation blockers now get up to two bounded

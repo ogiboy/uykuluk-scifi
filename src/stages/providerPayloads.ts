@@ -1,10 +1,7 @@
 import { z } from "zod";
 import { SafeExitError } from "../core/errors.js";
-import {
-  normalizeIdeaBrandSpelling,
-  validateIdeaListQuality,
-  validateIdeaQuality,
-} from "./providerIdeaQuality.js";
+import { normalizeIdeaBrandSpelling, validateIdeaQuality } from "./providerIdeaQuality.js";
+import { validateIdeaListQuality } from "./providerIdeaListQuality.js";
 import { parseProviderJson } from "./providerJson.js";
 import { VideoIdea } from "./types.js";
 

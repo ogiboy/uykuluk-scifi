@@ -15,6 +15,7 @@ future generated release notes can be inserted predictably.
 
 ### Fixes
 
+- fail closed on repeated qwen3 idea fit/premise boilerplate after bounded repairs
 - surface safe script failure diagnostics in CLI status and Studio run detail
 - keep Studio read-only next-action guidance aligned with CLI status before evidence exists
 - keep early `producer status` next-action guidance useful before evidence exists

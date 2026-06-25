@@ -167,6 +167,9 @@ agent-tracking state only; runtime code must not require it.
   local provider returns a malformed or weak idea slate. Rejected raw outputs are not persisted;
   `ideas.json` records repair metadata and the ledger records each retry warning. A third invalid
   response still fails closed without idea artifacts.
+- Idea slate validation rejects repeated local-model boilerplate in `fit` explanations, uncertainty
+  openers, unknown-species phrases, and weak premise action frames before ideas can reach operator
+  approval.
 - Idea, script, and production-package generation re-check existing per-video, daily, and weekly
   budgets, using the stage pricing estimate, before calling a provider or writing generated
   artifacts.

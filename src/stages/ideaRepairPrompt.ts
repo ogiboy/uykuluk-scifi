@@ -29,14 +29,19 @@ export function renderIdeaRepairPrompt(
     "Every title must be anchored to a lane-specific artifact, place, or dilemma; do not use generic astronomy titles.",
     "Every premise must use a different protagonist, setting, central object, conflict, and discovery pattern.",
     "Every fit explanation must be unique and slot-specific; mention that slot's concrete title anchor or visual promise instead of reusing a generic UykulukSciFi sentence.",
+    "Do not repeat four-word sentence frames across three or more `fit` explanations.",
+    "Do not repeat generic fit boilerplate such as `bilimsel soruları`, `doğasıyla uyumludur`, `etik dilemleri`, or `bilimsel sınırı aşan`; state a concrete channel value for each slot.",
     "Do not begin more than one premise with the same first three words; especially avoid repeating `Bir uzay gemisindeki bilim insanları`, `Uzak bir`, or `Gelecekte`.",
+    "Do not use `Belki bu` in more than one premise; vary uncertainty with `varsayalım`, `henüz açıklanmamış`, `kesin kanıt değildir`, or a direct cautious question.",
+    "Do not repeat generic unknown-species boilerplate such as `bilinmeyen bir tür`, `izlerini saklıyor`, or `varlığına dair ipucu`; make each uncertainty specific to the forced slot.",
+    "Do not repeat weak action boilerplate such as `bilgiyi bulduktan sonra` or `anlamaya çalışır`; each premise needs a different concrete action.",
     "no five-word phrase may appear in three or more premises.",
     "Keep UykulukSciFi spelling exact and keep every operator-facing value Turkish.",
     "Do not include markdown, commentary, raw analysis, <think> blocks, or the rejected draft.",
     "## Base planner contract",
     originalPrompt,
     "## Final repair checklist",
-    "Before returning JSON, internally verify: 8 ideas; 8 forced slots; no forbidden title roots; no repeated title motif; no repeated premise frame; Turkish-only fields; scientific caution; exact UykulukSciFi spelling.",
+    "Before returning JSON, internally verify: 8 ideas; 8 forced slots; no forbidden title roots; no repeated title motif; no repeated premise frame; no repeated fit frame; no repeated `Belki bu`; no repeated unknown-species boilerplate; no repeated weak action boilerplate; Turkish-only fields; scientific caution; exact UykulukSciFi spelling.",
   ].join("\n\n");
 }
 

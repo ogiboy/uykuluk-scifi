@@ -69,10 +69,20 @@ describe("idea provider retry and repair", () => {
     expect(prompt).toContain("Paslı Android Mezarlığı");
     expect(prompt).toContain("Nötrino Gecikmesi");
     expect(prompt).toContain("Sonda Günlüğü");
+    expect(prompt).toContain(
+      "Do not repeat four-word sentence frames across three or more `fit` explanations",
+    );
+    expect(prompt).toContain("Do not repeat generic fit boilerplate");
     expect(prompt).toContain("Do not begin more than one premise with the same first three words");
+    expect(prompt).toContain("Do not use `Belki bu` in more than one premise");
+    expect(prompt).toContain("Do not repeat generic unknown-species boilerplate");
+    expect(prompt).toContain("Do not repeat weak action boilerplate");
     expect(prompt).toContain("buzaltı okyanusu anomalisi");
     expect(prompt).toContain("insan-sonrası arkeoloji");
     expect(prompt).toContain("no five-word phrase may appear in three or more premises");
+    expect(prompt).toContain("no repeated fit frame");
+    expect(prompt).toContain("no repeated unknown-species boilerplate");
+    expect(prompt).toContain("no repeated weak action boilerplate");
   });
 
   it("retries one invalid local-model idea slate with validation feedback", async () => {

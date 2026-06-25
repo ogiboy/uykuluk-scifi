@@ -159,6 +159,14 @@
   brand fragments, English scientific lane terms such as `exoplanet`, and repeated generic `fit`
   explanations across a slate. Planner and repair prompts now ask for Turkish lane terms and
   slot-specific `fit` explanations.
+- Idea parsing now rejects repeated local-model boilerplate in `fit` explanations, repeated
+  uncertainty openers such as `Belki bu`, generic unknown-species/trace phrases, and weak premise
+  action frames such as `bilgiyi bulduktan sonra` or `anlamaya çalışır`.
+- Live qwen3:8b `no_think` QA on 2026-06-25 used
+  `/private/tmp/uykuluk-live-qwen-weak-guard-20260625-MsGC8N` and proved the tightened idea guards
+  remain fail-closed: qwen3 exhausted two repair attempts, the run stayed `NEW`, no `ideas.json` or
+  `ideas.md` artifacts were written, and the ledger recorded two retry warnings plus the final
+  repeated-fit-frame error.
 - Live local Ollama qwen3:8b `think` QA after the retry loop on 2026-06-24 verified that the retry
   path is exercised and remains fail-closed: the initial response failed on a repeated premise
   frame, the repair response failed on repeated `yıldız` title motifs, the run stayed `NEW`, no

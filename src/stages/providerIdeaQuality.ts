@@ -74,30 +74,6 @@ export function normalizeIdeaBrandSpelling(idea: NormalizedProviderIdea): Normal
   };
 }
 
-export function validateIdeaListQuality(ideas: NormalizedProviderIdea[]): string | undefined {
-  const duplicateTitle = firstDuplicateField(ideas, "title");
-  if (duplicateTitle) {
-    return `ideas.${duplicateTitle.index}.title: Ideas must be meaningfully distinct.`;
-  }
-  const duplicatePremise = firstDuplicateField(ideas, "premise");
-  if (duplicatePremise) {
-    return `ideas.${duplicatePremise.index}.premise: Ideas must be meaningfully distinct.`;
-  }
-  const duplicateFit = firstDuplicateField(ideas, "fit");
-  if (duplicateFit) {
-    return `ideas.${duplicateFit.index}.fit: Fit explanations must be slot-specific and distinct.`;
-  }
-  const repeatedTitleMotif = repeatedTitleMotifIssue(ideas);
-  if (repeatedTitleMotif) {
-    return repeatedTitleMotif;
-  }
-  const repeatedPremiseFrame = repeatedPremiseFrameIssue(ideas);
-  if (repeatedPremiseFrame) {
-    return repeatedPremiseFrame;
-  }
-  return undefined;
-}
-
 function normalizeBrandText(value: string): string {
   return value.replaceAll(/\bUykulukSci(?:y?Fi)?\b/gu, "UykulukSciFi");
 }
@@ -158,6 +134,13 @@ function normalizedSentences(text: string): string[] {
     .filter((sentence) => sentence.length >= 20);
 }
 
+export function ideaSignature(value: string): string {
+  return value
+    .toLocaleLowerCase("tr")
+    .replaceAll(/[^\p{L}\p{N}]+/gu, " ")
+    .trim();
+}
+
 function hasMalformedBrandFragment(text: string): boolean {
   return /\bUykulukSci(?!Fi)\p{L}*/u.test(text) || /\bUykul(?!ukSciFi)\p{L}*/u.test(text);
 }
@@ -165,80 +148,3 @@ function hasMalformedBrandFragment(text: string): boolean {
 function containsEnglishIdeaText(text: string): boolean {
   return containsEnglishOperatorMarkers(text) || /\b(?:exoplanet|terraforming)\p{L}*/iu.test(text);
 }
-
-function firstDuplicateField(
-  ideas: NormalizedProviderIdea[],
-  field: "fit" | "premise" | "title",
-): { index: number } | undefined {
-  const seen = new Set<string>();
-  for (const [index, idea] of ideas.entries()) {
-    const signature = ideaSignature(idea[field]);
-    if (seen.has(signature)) {
-      return { index };
-    }
-    seen.add(signature);
-  }
-  return undefined;
-}
-
-function repeatedTitleMotifIssue(ideas: NormalizedProviderIdea[]): string | undefined {
-  const seen = new Map<string, number>();
-  for (const [index, idea] of ideas.entries()) {
-    for (const motif of genericTitleMotifs(idea.title)) {
-      if (seen.has(motif)) {
-        return `ideas.${index}.title: Repeated title motif "${motif}" weakens idea diversity.`;
-      }
-      seen.set(motif, index);
-    }
-  }
-  return undefined;
-}
-
-function genericTitleMotifs(title: string): string[] {
-  const words = ideaSignature(title).split(" ").filter(Boolean);
-  return titleMotifs.filter((motif) => words.some((word) => word.startsWith(motif)));
-}
-
-function ideaSignature(value: string): string {
-  return value
-    .toLocaleLowerCase("tr")
-    .replaceAll(/[^\p{L}\p{N}]+/gu, " ")
-    .trim();
-}
-
-const titleMotifs = ["karanlık", "karanlik", "mesaj", "uyku", "yıldız", "yildiz", "gezegen"];
-
-function repeatedPremiseFrameIssue(ideas: NormalizedProviderIdea[]): string | undefined {
-  const phraseOwners = new Map<string, Set<number>>();
-  for (const [index, idea] of ideas.entries()) {
-    for (const phrase of premiseFramePhrases(idea.premise)) {
-      const owners = phraseOwners.get(phrase) ?? new Set<number>();
-      owners.add(index);
-      phraseOwners.set(phrase, owners);
-      if (owners.size >= 3) {
-        return `ideas.${index}.premise: Ideas reuse a repeated premise frame.`;
-      }
-    }
-  }
-  return undefined;
-}
-
-function premiseFramePhrases(premise: string): Set<string> {
-  const words = ideaSignature(premise).split(" ").filter(Boolean);
-  const phrases = new Set<string>();
-  for (let index = 0; index <= words.length - 5; index += 1) {
-    const phraseWords = words.slice(index, index + 5);
-    if (contentWordCount(phraseWords) >= 3) {
-      phrases.add(phraseWords.join(" "));
-    }
-  }
-  return phrases;
-}
-
-function contentWordCount(words: string[]): number {
-  return words.filter((word) => !premiseFrameStopWords.has(word)).length;
-}
-
-const premiseFrameStopWords = new Set(
-  "acaba ama belki bir bu da de diye gibi için ile mi mı mu mü ve veya ya".split(" "),
-);
