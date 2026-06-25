@@ -15,6 +15,8 @@ future generated release notes can be inserted predictably.
 
 ### Fixes
 
+- reject English scientific leftovers and repeated qwen3 inspection verbs in ideas
+- reject repeated weak qwen3 idea journey and clue boilerplate
 - surface safe idea failure diagnostics in CLI status and Studio run detail
 - fail closed on repeated qwen3 idea fit/premise boilerplate after bounded repairs
 - surface safe script failure diagnostics in CLI status and Studio run detail

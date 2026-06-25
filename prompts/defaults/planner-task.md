@@ -26,6 +26,8 @@ Requirements:
   `UykulukSciyFi`, or any other variant.
 - Use Turkish style phrases such as `sakin sinematik bilimkurgu anlatısı`; do not use words like
   `calm`, `cinematic`, `science fiction`, `surreal`, or `imagery`.
+- Do not use English scientific leftovers with Turkish suffixes, such as `anomaly’sı`; use Turkish
+  terms like `anomali`, `sapma`, or `belirsiz ölçüm`.
 - Use scientific caution.
 - Avoid overclaiming, clickbait, and unsupported certainty.
 - Do not present invented mechanisms as established science. If the premise is fictional, make the
@@ -55,6 +57,10 @@ Requirements:
   lane-specific.
 - Do not reuse weak action boilerplate such as `bilgiyi bulduktan sonra` or `anlamaya çalışır`
   across multiple premises; give each premise a concrete different action.
+- Do not reuse weak journey or clue boilerplate such as `anlamak için yola çıkar`,
+  `hakkında ipuçları içeriyor`, `incelemeyi öngörür`, `inceleyerek`, `yansıtmakta`, or repeated
+  `gösteriyor olabilir mi`; state the concrete observation, experiment, dilemma, or visual review
+  value for that slot.
 - Prefer calm cinematic science-fiction premises.
 - The story should target at least 20 minutes of estimated narration time.
 - Return only the final JSON payload. Do not include markdown fences, commentary, or thinking

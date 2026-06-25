@@ -62,15 +62,16 @@
   implemented two-attempt retry loop either recovers to `IDEAS_GENERATED` or fails closed without
   idea artifacts while persisting a safe diagnostic summary. Live qwen3 QA now rejects repeated fit
   frames, generic fit boilerplate, repeated uncertainty openers, generic unknown-species phrases,
-  and weak premise action frames. Continue tightening prompt and quality checks before treating
-  qwen3 ideas as production-ready.
+  weak premise action frames, English scientific leftovers, and repeated weak inspection/clue verbs.
+  Continue tightening prompt and quality checks before treating qwen3 ideas as production-ready.
 - Tune idea and script prompts so qwen3 avoids near-duplicate ideas, English style text, unsupported
   science framing, malformed labels, and repeated sentence loops. The parser now rejects exact
   duplicate idea titles/premises, duplicate `fit` explanations, repeated generic title motifs,
   repeated premise frames, repeated fit frames, repeated idea sentence loops, malformed brand
-  fragments, copied English lane terms, and repeated local-model boilerplate; script expansion
-  prompts now show previous chunks from the same section to reduce repeated sentence loops; prompt
-  quality still needs to produce a consistently reviewable idea list.
+  fragments, copied English lane terms, repeated local-model boilerplate, English scientific
+  leftovers such as `anomaly’sı`, and weak verbs such as `inceleyerek`/`yansıtmakta`; script
+  expansion prompts now show previous chunks from the same section to reduce repeated sentence
+  loops; prompt quality still needs to produce a consistently reviewable idea list.
 - Harden script continuation and expansion quality for live qwen3. Malformed local-model `"text"`
   wrappers now have regression coverage for raw text, fences, trailing commas, missing closing
   quotes, and short external notes. Section and continuation blockers now get up to two bounded

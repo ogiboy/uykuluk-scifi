@@ -168,8 +168,8 @@ agent-tracking state only; runtime code must not require it.
   `ideas.json` records repair metadata and the ledger records each retry warning. A third invalid
   response still fails closed without idea artifacts.
 - Idea slate validation rejects repeated local-model boilerplate in `fit` explanations, uncertainty
-  openers, unknown-species phrases, and weak premise action frames before ideas can reach operator
-  approval.
+  openers, unknown-species phrases, weak premise action frames, English scientific leftovers, and
+  repeated weak inspection/clue verbs before ideas can reach operator approval.
 - Idea, script, and production-package generation re-check existing per-video, daily, and weekly
   budgets, using the stage pricing estimate, before calling a provider or writing generated
   artifacts.

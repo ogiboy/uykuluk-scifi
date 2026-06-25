@@ -340,10 +340,15 @@ Corepack/PATH before treating failures as product failures.
   added. Follow-up `think` runs still produced weak duplicated or repeated-frame ideas and are now
   blocked by distinct-title, distinct-premise, repeated-title-motif, and repeated-premise-frame
   guards. A bounded two-attempt idea retry/repair loop now exists and live qwen3 QA proved the first
-  repair path fails closed, but the repaired qwen3 idea slate is still not production quality.
-  Script content blockers now have two bounded retries and can recover some no_think repeated-loop
-  failures to `SCRIPT_GENERATED`, but scripts may still be short, repetitive, or carry review
-  warnings such as fact-check needs, weak intro hooks, or unsupported speculative framing.
+  repair path fails closed. Live qwen3:8b `no_think` QA on 2026-06-25 then recovered to
+  `IDEAS_GENERATED` after repair warnings, but manual review found the accepted slate still below
+  production quality: English scientific leftovers such as `anomaly’sı`, repeated weak inspection
+  verbs such as `inceleyerek`/`incelemeyi öngörür`, and repeated clue/journey phrasing. The parser
+  and prompts now reject those observed patterns; repeat live qwen QA is still needed before
+  treating repaired local ideas as production-ready. Script content blockers now have two bounded
+  retries and can recover some no_think repeated-loop failures to `SCRIPT_GENERATED`, but scripts
+  may still be short, repetitive, or carry review warnings such as fact-check needs, weak intro
+  hooks, or unsupported speculative framing.
 - No paid provider adapter is implemented. Exact cost quote approval remains separate from spend
   authorization. The internal execution boundary is ready for a future approved adapter, but no SDK,
   credential, network integration, or CLI mutation command exposes it.

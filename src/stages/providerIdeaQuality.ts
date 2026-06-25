@@ -146,5 +146,8 @@ function hasMalformedBrandFragment(text: string): boolean {
 }
 
 function containsEnglishIdeaText(text: string): boolean {
-  return containsEnglishOperatorMarkers(text) || /\b(?:exoplanet|terraforming)\p{L}*/iu.test(text);
+  return (
+    containsEnglishOperatorMarkers(text) ||
+    /\b(?:anomaly|exoplanet|terraforming)\p{L}*/iu.test(text)
+  );
 }

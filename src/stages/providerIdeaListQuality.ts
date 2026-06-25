@@ -106,6 +106,12 @@ function uncertaintyOpeners(premise: string): string[] {
   return repeatedUncertaintyOpeners.filter((opener) => signature.includes(opener));
 }
 
+type WeakMotif = {
+  label: string;
+  pattern: RegExp;
+  triggerCount?: number;
+};
+
 function repeatedWeakPremiseMotifIssue(ideas: NormalizedProviderIdea[]): string | undefined {
   const motifOwners = new Map<string, Set<number>>();
   for (const [index, idea] of ideas.entries()) {
@@ -117,7 +123,7 @@ function repeatedWeakPremiseMotifIssue(ideas: NormalizedProviderIdea[]): string 
       const owners = motifOwners.get(motif.label) ?? new Set<number>();
       owners.add(index);
       motifOwners.set(motif.label, owners);
-      if (owners.size >= 3) {
+      if (owners.size >= (motif.triggerCount ?? 3)) {
         return `ideas.${index}.premise: Ideas reuse generic "${motif.label}" boilerplate instead of slot-specific uncertainty.`;
       }
     }
@@ -136,7 +142,7 @@ function repeatedWeakFitMotifIssue(ideas: NormalizedProviderIdea[]): string | un
       const owners = motifOwners.get(motif.label) ?? new Set<number>();
       owners.add(index);
       motifOwners.set(motif.label, owners);
-      if (owners.size >= 3) {
+      if (owners.size >= (motif.triggerCount ?? 3)) {
         return `ideas.${index}.fit: Fit explanations reuse generic "${motif.label}" boilerplate instead of slot-specific channel value.`;
       }
     }
@@ -167,17 +173,44 @@ const premiseFrameStopWords = new Set(
   "acaba ama belki bir bu da de diye gibi için ile mi mı mu mü ve veya ya".split(" "),
 );
 
-const weakPremiseMotifs: ReadonlyArray<{ label: string; pattern: RegExp }> = [
+const weakPremiseMotifs: readonly WeakMotif[] = [
   { label: "bilinmeyen bir tür", pattern: /\bbilinmeyen bir (?:yaşam )?tür\p{L}*/u },
   { label: "izlerini saklamak", pattern: /\bizler?ini sakla\p{L}*/u },
   { label: "varlığına dair ipucu", pattern: /\bvarlığ\p{L}* dair bir ipucu\b/u },
   { label: "bilgiyi bulduktan sonra", pattern: /\bbilgiyi bulduktan sonra\b/u },
   { label: "anlamaya çalışmak", pattern: /\banlamaya çalış\p{L}*/u },
+  {
+    label: "anlamak için yola çıkmak",
+    pattern: /\banlamak için yola çık\p{L}*/u,
+    triggerCount: 2,
+  },
+  {
+    label: "hakkında ipuçları içeriyor",
+    pattern: /\bhakkında ipuçlar\p{L}* içer\p{L}*/u,
+    triggerCount: 2,
+  },
+  { label: "yansıtmakta", pattern: /\byansıtmakta\b/u },
+  {
+    label: "gösteriyor olabilir mi",
+    pattern: /\bgöster\p{L}* olabilir mi\b/u,
+    triggerCount: 2,
+  },
 ];
 
-const weakFitMotifs: ReadonlyArray<{ label: string; pattern: RegExp }> = [
+const weakFitMotifs: readonly WeakMotif[] = [
   { label: "bilimsel soruları", pattern: /\bbilimsel sorular\p{L}*/u },
   { label: "doğasıyla uyumludur", pattern: /\bdoğas\p{L}* uyumlu\p{L}*/u },
   { label: "etik dilemleri", pattern: /\betik dilemler\p{L}*/u },
   { label: "bilimsel sınırı aşan", pattern: /\bbilimsel sınırı aşan\b/u },
+  {
+    label: "incelemeyi öngörmek",
+    pattern: /\bincelemeyi öngör\p{L}*/u,
+    triggerCount: 2,
+  },
+  {
+    label: "hakkında ipuçları içeriyor",
+    pattern: /\bhakkında ipuçlar\p{L}* içer\p{L}*/u,
+    triggerCount: 2,
+  },
+  { label: "inceleyerek", pattern: /\binceleyerek\b/u },
 ];
