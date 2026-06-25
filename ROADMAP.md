@@ -78,7 +78,8 @@ Constraints:
 Next Real Production Loop slices:
 
 - harden local TTS with real Piper voice QA and better operator guidance; current foundation writes
-  deterministic reference WAV metadata and can call a configured local Piper binary/model path;
+  deterministic reference WAV metadata, can call a configured local Piper binary/model path, and
+  surfaces Piper setup/remediation next actions through `producer doctor`;
 - harden FFmpeg draft render quality and visual composition. Current foundation renders local review
   MP4 from the current render plan, scene-timed background plates, voiceover audio, subtitles, and
   watermark, then writes a render manifest with the exact timeline;

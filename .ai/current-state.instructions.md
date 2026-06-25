@@ -57,6 +57,8 @@
 - `pnpm tts:piper:setup` downloads the pinned CPU-friendly Turkish
   `speaches-ai/piper-tr_TR-fahrettin-medium` model into ignored `models/` and prints the matching
   local config override for `local-piper`.
+- `producer doctor` TTS diagnostics persist a next-action field in JSON and Markdown for disabled
+  TTS, deterministic reference audio, valid local Piper config, and local Piper remediation.
 - Approval-gated local FFmpeg draft render. `producer approve render` records approval for the exact
   current render-plan and voiceover digests, then `producer render` requires `RENDER_APPROVED`
   before writing `production/render/draft.mp4` and `production/render/render_manifest.json`. The
@@ -202,7 +204,8 @@
   starts and can initialize a fresh project from an arbitrary working directory.
 - Direct mock/Ollama provider diagnostics and upload/publish safeguard tests.
 - `producer doctor` project diagnostics with durable local JSON/Markdown evidence for config,
-  provider/model availability, local TTS/Piper readiness, assets, and publish defaults.
+  provider/model availability, local TTS/Piper readiness with next actions, assets, and publish
+  defaults.
 - Project-local capability inventory and routing for engineering, product, design, marketing, data,
   security, testing, research, release, browser QA, and swarm orchestration.
 - Explicit frontend taste routing for public pages, cinematic landing pages, Google Stitch design
