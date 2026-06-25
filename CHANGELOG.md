@@ -21,6 +21,7 @@ future generated release notes can be inserted predictably.
 ### Fixes
 
 - clear Sonar quality-gate findings for local media evidence changes
+- make usage smoke prove the safe local render-plan, voiceover, and draft-render loop
 
 ## v0.7.2 (2026-06-25)
 

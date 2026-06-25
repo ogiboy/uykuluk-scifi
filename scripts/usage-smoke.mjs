@@ -3,6 +3,7 @@ import { existsSync } from "node:fs";
 import { cp, mkdir, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { enableDeterministicTts, runLocalMediaSmoke } from "./qa/usage-smoke-media.mjs";
 import {
   assertReviewEvidenceRecommendsWarningAcknowledgement,
   runDoctorSmoke,
@@ -119,6 +120,13 @@ try {
     label: "approve script with warning acknowledgement",
   });
   run([pnpm, "producer", "package", "--run", runId], { label: "package" });
+  run([pnpm, "producer", "render-plan", "--run", runId], { label: "render plan" });
+  run([pnpm, "producer", "voice", "--run", runId], {
+    label: "voice disabled",
+    expectFailure: true,
+    expectOutput: "Voice/TTS is disabled",
+  });
+  await enableDeterministicTts({ workdir });
   run([pnpm, "producer", "estimate", "--run", runId], { label: "estimate" });
   run([pnpm, "producer", "approve", "cost", "--run", runId], {
     label: "zero-cost quote rejects unnecessary cost approval",
@@ -219,26 +227,7 @@ try {
     );
   }
 
-  run([pnpm, "producer", "voice", "--run", runId], {
-    label: "voice disabled",
-    expectFailure: true,
-    expectOutput: "Voice/TTS is disabled",
-  });
-  run([pnpm, "producer", "render", "--run", runId], {
-    label: "render blocked without approval",
-    expectFailure: true,
-    expectOutput: "requires explicit render approval",
-  });
-  run([pnpm, "producer", "upload", "private", "--run", runId], {
-    label: "upload blocked without approval",
-    expectFailure: true,
-    expectOutput: "requires explicit upload approval",
-  });
-  run([pnpm, "producer", "publish", "schedule", "--run", runId], {
-    label: "publish blocked without approval",
-    expectFailure: true,
-    expectOutput: "requires explicit publish approval",
-  });
+  await runLocalMediaSmoke({ run, pnpm, workdir, runId, assertFile, assert });
 
   await writeReports({ runId, passed: true });
   console.log(
@@ -256,11 +245,11 @@ try {
 }
 
 function run(args, options = {}) {
-  const { label = args.join(" "), expectFailure = false, expectOutput } = options;
+  const { label = args.join(" "), expectFailure = false, expectOutput, env } = options;
   const result = spawnSync(args[0], args.slice(1), {
     cwd: workdir,
     encoding: "utf8",
-    env: process.env,
+    env: env ? { ...process.env, ...env } : process.env,
   });
   const output = `${result.stdout ?? ""}${result.stderr ?? ""}`;
   const passedExit = expectFailure ? result.status !== 0 : result.status === 0;
