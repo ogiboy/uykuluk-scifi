@@ -1,7 +1,8 @@
 import { z } from "zod";
-import { isValidRunId } from "../core/runPaths.js";
 
-const runIdSchema = z.string().refine((value) => isValidRunId(value), {
+const RUN_ID_PATTERN = /^run_[A-Za-z0-9][A-Za-z0-9_-]{0,123}$/;
+
+const runIdSchema = z.string().regex(RUN_ID_PATTERN, {
   message: "Invalid run id.",
 });
 
@@ -39,7 +40,7 @@ type StudioActionRequestById = {
   "upload.private": z.infer<typeof runOnlyRequestSchema>;
 };
 
-type StudioMutationAvailability = "disabled-external" | "disabled-placeholder" | "ready-for-cli";
+type StudioMutationAvailability = "disabled-external" | "ready-for-cli";
 
 export type StudioMutationServiceContract = {
   actionId: StudioMutationActionId;

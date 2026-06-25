@@ -146,6 +146,8 @@ future generated release notes can be inserted predictably.
   action routes.
 - Shared Studio mutation service contract foundations for future guarded approval/upload/publish
   actions without enabling web mutations.
+- Read-only Studio mutation-service status panel showing disabled future actions and route-security
+  findings.
 - Basic type-safe `next-intl` foundation for English and Turkish Studio locales.
 - Unit and browser coverage for locale normalization and cookie-based document language.
 - Typed runtime loading for tracked idea, scriptwriter, and production-package prompt defaults.

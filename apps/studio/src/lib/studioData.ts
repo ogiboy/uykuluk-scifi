@@ -1,6 +1,7 @@
 export const studioSections = [
   { id: "runs", label: "Runs", href: "/runs" },
   { id: "workflow", label: "Workflow" },
+  { id: "actions", label: "Actions" },
   { id: "assets", label: "Assets", href: "/assets" },
   { id: "analytics", label: "Analytics", href: "/analytics" },
   { id: "prompts", label: "Prompts" },

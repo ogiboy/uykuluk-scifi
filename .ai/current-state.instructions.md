@@ -280,6 +280,9 @@
   bind each action to the CLI/core module/export, require CSRF protection, durable evidence, and
   explicit approval, and remain non-routable until guarded Studio action routes are intentionally
   implemented.
+- Studio home renders a read-only mutation-service status panel showing disabled future action
+  routes, CLI-ready approval contracts, route-security findings, and upload/publish risk boundaries
+  without exposing web mutations.
 - Manual analytics feedback foundation. `producer analytics import --file <path>` accepts
   operator-provided CSV/JSON performance exports and writes ignored local
   `analytics/performance.json` plus `analytics/performance_report.md`. `producer analytics report`

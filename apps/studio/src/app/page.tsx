@@ -1,5 +1,6 @@
 import { AssetInventory } from "@/components/AssetInventory";
 import { CommandPanel } from "@/components/CommandPanel";
+import { ServiceContractPanel } from "@/components/ServiceContractPanel";
 import { StatusGrid } from "@/components/StatusGrid";
 import { StudioTabs } from "@/components/studio/StudioTabs";
 import { getStudioAssetInventory } from "@/lib/assetInventory";
@@ -46,6 +47,7 @@ export default async function StudioHomePage() {
 
         <StatusGrid />
         <CommandPanel />
+        <ServiceContractPanel />
         <AssetInventory inventory={assetInventory} />
         <StudioTabs />
       </section>

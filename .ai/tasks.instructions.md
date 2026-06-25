@@ -94,6 +94,8 @@
 - Keep Studio read-only artifact previews useful as new artifact types are added. Current previews
   include operator-phase grouping, media-specific metadata, and per-artifact review wording while
   keeping the surface non-mutating.
+- Keep the read-only Studio mutation-service status panel aligned with route-security and service
+  contract changes; it must not become an approval form or route handler.
 - Harden manual analytics feedback with import edge cases and richer comparisons while keeping data
   operator-provided and local-only. Run-linked summaries, unmapped-record visibility, non-causal
   repeat / avoid-without-revision / test-next prompts, simple confidence/missingness framing, and
