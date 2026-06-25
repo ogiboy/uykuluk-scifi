@@ -1,5 +1,6 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
+import { staticEvidenceNextCommand } from "../../../../src/stages/evidenceNextCommand";
 import { readReviewArtifactPreviews, type StudioArtifactPreview } from "./artifactPreviews";
 
 export type StudioRunState =
@@ -126,7 +127,9 @@ function summarizeRun(
       : 0,
     createdAt: record.createdAt ?? "",
     nextRecommendedCommand:
-      typeof evidence?.nextRecommendedCommand === "string" ? evidence.nextRecommendedCommand : null,
+      typeof evidence?.nextRecommendedCommand === "string"
+        ? evidence.nextRecommendedCommand
+        : (staticEvidenceNextCommand(record.state ?? "FAILED") ?? null),
     readinessPassed: typeof readiness?.passed === "boolean" ? readiness.passed : null,
     runId: record.runId ?? "unknown",
     state: record.state ?? "FAILED",

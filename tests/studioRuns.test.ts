@@ -38,6 +38,10 @@ describe("Studio read-only run summaries", () => {
     const summaries = await listStudioRuns();
 
     expect(summaries.map((run) => run.runId)).toEqual([second.runId, first.runId]);
+    expect(summaries[0]).toMatchObject({
+      nextRecommendedCommand: "pnpm producer ideas",
+      state: "NEW",
+    });
     expect(summaries[1]).toMatchObject({
       approvalCount: 1,
       artifactCount: 2,
@@ -171,6 +175,24 @@ describe("Studio read-only run summaries", () => {
       ]),
     );
     expect((await loadRun(run.runId)).state).toBe("RENDERED");
+  });
+
+  it("shows canonical early next actions before evidence exists", async () => {
+    const run = await createRun();
+    await saveRun({
+      ...run,
+      artifacts: ["ideas.json"],
+      state: "IDEAS_GENERATED",
+    });
+
+    const detail = await getStudioRunDetail(run.runId);
+
+    expect(detail).toMatchObject({
+      nextRecommendedCommand: "pnpm producer approve idea --run <run_id> --idea <idea_id>",
+      state: "IDEAS_GENERATED",
+    });
+    expect(detail?.evidence).toBeNull();
+    expect((await loadRun(run.runId)).state).toBe("IDEAS_GENERATED");
   });
 });
 
