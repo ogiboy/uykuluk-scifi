@@ -9,7 +9,9 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Features
+
+- record local Piper model and config provenance in voiceover evidence and review artifacts
 
 ## v0.7.2 (2026-06-25)
 

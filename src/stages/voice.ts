@@ -14,8 +14,9 @@ import { SafeExitError } from "../core/errors.js";
 import { appendLedgerEvent } from "../core/ledger.js";
 import { loadRun, saveRun } from "../core/runStore.js";
 import { requireApproval, requireState } from "../safeguards/approvalGuard.js";
-import { ensureDir, pathExists } from "../utils/fs.js";
+import { ensureDir } from "../utils/fs.js";
 import { nowIso } from "../utils/time.js";
+import { readPiperProviderEvidence } from "./piperProviderEvidence.js";
 import { verifyProductionPackage } from "./productionPackageIntegrity.js";
 import { readRenderPlanEvidence } from "./renderPlan.js";
 import { readWavInfo, wavFromPcm16 } from "./voiceWav.js";
@@ -157,12 +158,7 @@ async function synthesizePiperAudio(options: {
   if (!options.modelPath) {
     throw new SafeExitError("local-piper TTS requires providers.tts.piperModelPath.");
   }
-  if (!(await pathExists(options.modelPath))) {
-    throw new SafeExitError(`Piper model is missing: ${options.modelPath}.`);
-  }
-  if (options.configPath && !(await pathExists(options.configPath))) {
-    throw new SafeExitError(`Piper model config is missing: ${options.configPath}.`);
-  }
+  const provider = await readPiperProviderEvidence(options);
 
   const output = artifactPath(options.runId, voiceoverAudioPath);
   await ensureDir(path.dirname(output));
@@ -178,11 +174,7 @@ async function synthesizePiperAudio(options: {
     buffer,
     channels: wav.channels,
     durationSeconds: wav.durationSeconds,
-    provider: {
-      binary: options.binary,
-      modelPath: options.modelPath,
-      configPath: options.configPath,
-    },
+    provider,
     quality: "local-piper",
     sampleRateHz: wav.sampleRateHz,
   };

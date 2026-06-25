@@ -77,10 +77,10 @@ Constraints:
 
 Next Real Production Loop slices:
 
-- harden local TTS with real Piper voice QA and better operator guidance; current foundation writes
-  deterministic reference WAV metadata and an operator audio review checklist, can call a configured
-  local Piper binary/model path, and surfaces Piper setup/remediation next actions through
-  `producer doctor`;
+- harden local TTS with continued Piper voice QA and better operator guidance; current foundation
+  writes deterministic reference WAV metadata and an operator audio review checklist, can call a
+  configured local Piper binary/model path, records model/config digest provenance, and surfaces
+  Piper setup/remediation next actions through `producer doctor`;
 - harden FFmpeg draft render quality and visual composition. Current foundation renders local review
   MP4 from the current render plan, intro/outro source cards, scene-timed background plates,
   voiceover audio, subtitles, lower-third, popup, waveform, and watermark overlays, then writes a

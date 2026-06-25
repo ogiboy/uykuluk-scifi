@@ -415,9 +415,11 @@ production-quality voice. `pnpm tts:piper:setup` downloads the default pinned Tu
 `speaches-ai/piper-tr_TR-fahrettin-medium` model into ignored `models/` and prints the matching
 ignored `producer.config.json` override. The helper keeps Hugging Face `config.json` and also writes
 the Piper-compatible `model.onnx.json` alias. `local-piper` requires a local `piper` binary and
-ignored model files configured with `piperModelPath` and `piperConfigPath`. Do not commit downloaded
-voice models or generated audio. `producer voice` also writes `production/audio/voiceover_review.md`
-so the operator can check timing, pacing, pronunciation, and source binding before render approval.
+ignored model files configured with `piperModelPath` and `piperConfigPath`. Local Piper voiceover
+metadata and review Markdown record the model/config SHA-256 digests used for the WAV. Do not commit
+downloaded voice models or generated audio. `producer voice` also writes
+`production/audio/voiceover_review.md` so the operator can check timing, pacing, pronunciation,
+source binding, and provider provenance before render approval.
 
 `producer render` requires `ffmpeg` on `PATH` unless called through a test harness with an explicit
 binary. The draft render is a local review artifact and may be regenerated after approval; its

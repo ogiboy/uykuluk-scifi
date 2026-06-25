@@ -152,7 +152,9 @@ async function enableDeterministicTts(): Promise<void> {
   await configureTts({ enabled: true, mode: "deterministic-local" });
 }
 
-async function configureTts(tts: { enabled: boolean; mode: string }): Promise<void> {
+async function configureTts(
+  tts: Record<string, unknown> & { enabled: boolean; mode: string },
+): Promise<void> {
   const config = JSON.parse(await readFile("producer.config.json", "utf8")) as {
     providers: { tts: Record<string, unknown> };
   };

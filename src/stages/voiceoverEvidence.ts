@@ -45,7 +45,9 @@ export const voiceoverAudioMetaSchema = z.strictObject({
     .strictObject({
       binary: z.string().min(1).optional(),
       modelPath: z.string().min(1).optional(),
+      modelSha256: digestSchema.optional(),
       configPath: z.string().min(1).optional(),
+      configSha256: digestSchema.optional(),
     })
     .optional(),
 });
@@ -60,6 +62,7 @@ export type VoiceoverAudioEvidence =
       digest: string;
       durationSeconds: number;
       mode: VoiceoverAudioMeta["mode"];
+      provider?: VoiceoverAudioMeta["provider"];
       reviewPath: string;
       sourceWordCount: number;
     }
@@ -101,6 +104,7 @@ export async function readVoiceoverAudioEvidence(run: RunRecord): Promise<Voiceo
       digest,
       durationSeconds: meta.output.durationSeconds,
       mode: meta.mode,
+      provider: meta.provider,
       reviewPath: voiceoverAudioReviewPath,
       sourceWordCount: meta.source.wordCount,
     };

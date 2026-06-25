@@ -36,6 +36,7 @@ export function renderVoiceoverReviewMarkdown(meta: VoiceoverAudioMeta): string 
         [meta.renderPlan.path, meta.renderPlan.digest],
       ],
     ),
+    ...providerSection(meta),
     "",
     "## Operator Checklist",
     "",
@@ -45,6 +46,28 @@ export function renderVoiceoverReviewMarkdown(meta: VoiceoverAudioMeta): string 
     "",
     "Listen to the WAV locally. If pacing, pronunciation, clipping, or source binding is unacceptable, revise the upstream package or TTS configuration and regenerate voiceover audio before render approval.",
   ].join("\n");
+}
+
+function providerSection(meta: VoiceoverAudioMeta): string[] {
+  if (!meta.provider) {
+    return [];
+  }
+
+  return [
+    "",
+    "## Local TTS Provider Provenance",
+    "",
+    table(
+      ["Provider input", "Value"],
+      [
+        ["Binary", meta.provider.binary ?? "n/a"],
+        ["Piper model", meta.provider.modelPath ?? "n/a"],
+        ["Piper model SHA-256", meta.provider.modelSha256 ?? "n/a"],
+        ["Piper config", meta.provider.configPath ?? "n/a"],
+        ["Piper config SHA-256", meta.provider.configSha256 ?? "n/a"],
+      ],
+    ),
+  ];
 }
 
 function reviewChecklist(meta: VoiceoverAudioMeta): string[] {
