@@ -3,6 +3,8 @@ import type { AnalyticsDataset, AnalyticsRecord } from "./schema.js";
 
 export function renderAnalyticsReport(dataset: AnalyticsDataset): string {
   const totals = summarize(dataset.records);
+  const runSummaries = summarizeRuns(dataset.records);
+  const unmappedCount = dataset.records.filter((record) => !record.runId).length;
   return [
     "# Manual Analytics Report",
     "",
@@ -23,7 +25,16 @@ export function renderAnalyticsReport(dataset: AnalyticsDataset): string {
         ["Weighted average viewed", formatPercent(totals.weightedAverageViewed)],
         ["Average view duration", formatSeconds(totals.averageViewDurationSeconds)],
         ["Subscribers gained", formatInteger(totals.subscribersGained)],
+        ["Mapped runs", formatInteger(runSummaries.length)],
+        ["Unmapped records", formatInteger(unmappedCount)],
       ],
+    ),
+    "",
+    "## Run Link Summary",
+    "",
+    table(
+      ["Run", "Videos", "Views", "Weighted CTR", "Avg viewed", "Latest publish", "Top title"],
+      runSummaryRows(runSummaries),
     ),
     "",
     "## Top Videos By Views",
@@ -47,6 +58,16 @@ export function renderAnalyticsReport(dataset: AnalyticsDataset): string {
     ...operatorNotes(dataset.records),
   ].join("\n");
 }
+
+type RunSummary = {
+  latestPublishedAt: string | undefined;
+  recordCount: number;
+  runId: string;
+  topTitle: string;
+  views: number;
+  weightedAverageViewed: number | undefined;
+  weightedCtr: number | undefined;
+};
 
 function summarize(records: AnalyticsRecord[]): {
   averageViewDurationSeconds: number | undefined;
@@ -77,6 +98,54 @@ function operatorNotes(records: AnalyticsRecord[]): string[] {
     "- Test next: compare topic, title, thumbnail promise, and first-minute hook before changing the production format.",
     "- Evidence limit: treat these as review prompts, not proof that one variable caused the result.",
   ];
+}
+
+function summarizeRuns(records: AnalyticsRecord[]): RunSummary[] {
+  const groups = new Map<string, AnalyticsRecord[]>();
+  for (const record of records) {
+    if (!record.runId) {
+      continue;
+    }
+    groups.set(record.runId, [...(groups.get(record.runId) ?? []), record]);
+  }
+  return [...groups.entries()]
+    .map(([runId, runRecords]) => {
+      const topRecord = [...runRecords].sort(
+        (left, right) => (right.views ?? 0) - (left.views ?? 0),
+      )[0];
+      return {
+        latestPublishedAt: latestPublishedAt(runRecords),
+        recordCount: runRecords.length,
+        runId,
+        topTitle: topRecord?.title ?? topRecord?.videoId ?? "unknown",
+        views: sum(runRecords, "views"),
+        weightedAverageViewed: weightedAverage(runRecords, "averagePercentageViewed", "views"),
+        weightedCtr: weightedAverage(runRecords, "ctr", "impressions"),
+      };
+    })
+    .sort((left, right) => right.views - left.views);
+}
+
+function runSummaryRows(summaries: RunSummary[]): string[][] {
+  if (summaries.length === 0) {
+    return [["unmapped", "0", "0", "unknown", "unknown", "unknown", "No run IDs imported"]];
+  }
+  return summaries.map((summary) => [
+    tableCell(summary.runId),
+    formatInteger(summary.recordCount),
+    formatInteger(summary.views),
+    formatPercent(summary.weightedCtr),
+    formatPercent(summary.weightedAverageViewed),
+    tableCell(summary.latestPublishedAt ?? "unknown"),
+    tableCell(summary.topTitle),
+  ]);
+}
+
+function latestPublishedAt(records: AnalyticsRecord[]): string | undefined {
+  return records
+    .map((record) => record.publishedAt)
+    .filter((value): value is string => Boolean(value))
+    .sort((left, right) => right.localeCompare(left))[0];
 }
 
 function weightedAverage(

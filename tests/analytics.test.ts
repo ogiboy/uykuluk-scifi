@@ -12,7 +12,8 @@ describe("manual analytics import", () => {
       [
         "run_id,video_id,title,published_at,impressions,views,ctr,avg_view_duration_seconds,avg_percentage_viewed,subscribers_gained,likes,comments,notes",
         'run_20260624010101_abcd12,yt_001,"Ay Üssünde İlk Temas",2026-06-20T12:00:00.000Z,10000,1200,7.5%,181,42%,12,90,8,"Strong hook"',
-        'run_20260624010202_abcd13,yt_002,"Kayıp Sonda",2026-06-21T12:00:00.000Z,5000,250,2.1%,73,19%,1,12,2,"Weak retention"',
+        'run_20260624010101_abcd12,yt_002,"Kayıp Sonda",2026-06-21T12:00:00.000Z,5000,250,2.1%,73,19%,1,12,2,"Weak retention"',
+        ',yt_003,"Haritasız Uydu",2026-06-22T12:00:00.000Z,4000,100,1.8%,40,12%,0,6,1,"No run link yet"',
       ].join("\n"),
       "utf8",
     );
@@ -23,7 +24,7 @@ describe("manual analytics import", () => {
 
     expect(result).toMatchObject({
       format: "csv",
-      recordCount: 2,
+      recordCount: 3,
       outputPath: "analytics/performance.json",
       reportPath: "analytics/performance_report.md",
     });
@@ -44,8 +45,12 @@ describe("manual analytics import", () => {
       ]),
     );
     expect(report).toContain("Manual Analytics Report");
-    expect(report).toContain("2 performance record(s)");
+    expect(report).toContain("3 performance record(s)");
     expect(report).toContain("Weighted CTR");
+    expect(report).toContain("Run Link Summary");
+    expect(report).toContain("Mapped runs");
+    expect(report).toContain("Unmapped records");
+    expect(report).toContain("| run_20260624010101_abcd12 | 2 | 1,450 |");
     expect(report).toContain("No causal claims are made from this import.");
   });
 

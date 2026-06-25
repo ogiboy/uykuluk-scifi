@@ -120,7 +120,8 @@ Minimum loop:
 
 - import operator-provided CSV/JSON performance data - implemented locally through
   `producer analytics import`;
-- map performance records back to runs/videos;
+- map performance records back to runs/videos with run-linked summaries and unmapped-record
+  visibility;
 - summarize CTR, views, average view duration, retention notes, subscriber deltas, and qualitative
   comments where provided - implemented in `analytics/performance_report.md`;
 - produce “repeat / avoid / test next” recommendations for future ideas, titles, formats, and

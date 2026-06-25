@@ -82,8 +82,9 @@
 - Keep `producer doctor` config/provider/model/TTS/asset/publish diagnostics and evidence passing.
 - Harden Studio read-only artifact previews with better grouping, media-specific metadata, and
   operator review wording while keeping the surface non-mutating.
-- Harden manual analytics feedback with import edge cases, run-link summaries, and future Studio
-  read-only views while keeping data operator-provided and local-only.
+- Harden manual analytics feedback with import edge cases, richer comparisons, and future Studio
+  read-only views while keeping data operator-provided and local-only. Run-linked summaries and
+  unmapped-record visibility are implemented in the local Markdown report.
 - Define typed read/write service contracts that both CLI and web can use before adding Studio
   mutations.
 - Define local prompt override storage and revision events before adding a prompt editor; typed
