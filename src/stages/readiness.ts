@@ -210,6 +210,7 @@ async function budgetEstimateCheck(
         name: "budget not exceeded",
         status: "block",
         message: `Cost estimate is stale or invalid. ${validationReasons.join(" ")}`,
+        nextAction: `pnpm producer estimate --run ${run.runId}`,
       };
     }
     if (!estimate.budgetAllowed || estimate.hardBlockedReasons.length > 0) {
@@ -251,6 +252,7 @@ async function budgetEstimateCheck(
       name: "budget not exceeded",
       status: "block",
       message: `Cost estimate could not be read: ${(error as Error).message}`,
+      nextAction: `pnpm producer estimate --run ${run.runId}`,
     };
   }
 }

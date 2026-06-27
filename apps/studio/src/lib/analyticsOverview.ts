@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
+import { ZodError } from "zod";
 import { analyticsDatasetSchema, type AnalyticsRecord } from "../../../../src/analytics/schema";
 import {
   currentReportStatus,
@@ -59,7 +60,7 @@ export async function getStudioAnalyticsOverview(): Promise<StudioAnalyticsOverv
 
   try {
     const rawDataset = await readFile(datasetPath, "utf8");
-    const dataset = analyticsDatasetSchema.parse(JSON.parse(rawDataset));
+    const dataset = analyticsDatasetSchema.parse(parseAnalyticsDatasetJson(rawDataset));
     const reportStatus = currentReportStatus(dataset, report.text);
     const mappedRunIds = new Set(
       dataset.records
@@ -132,7 +133,7 @@ function missingOrInvalidOverview(
   const missingDataset = (error as NodeJS.ErrnoException).code === "ENOENT";
   return {
     datasetPath: ANALYTICS_DATASET_PATH,
-    error: missingDataset ? null : "analytics/performance.json is missing required fields.",
+    error: missingDataset ? null : invalidDatasetMessage(error),
     generatedAt: null,
     mappedRunCount: 0,
     nextCommand: "pnpm producer analytics import --file performance.csv",
@@ -153,6 +154,34 @@ function missingOrInvalidOverview(
     totalViews: 0,
     unmappedRecordCount: 0,
   };
+}
+
+function parseAnalyticsDatasetJson(rawDataset: string): unknown {
+  try {
+    return JSON.parse(rawDataset) as unknown;
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      throw new AnalyticsJsonParseError(error.message);
+    }
+    throw error;
+  }
+}
+
+function invalidDatasetMessage(error: unknown): string {
+  if (error instanceof AnalyticsJsonParseError) {
+    return "analytics/performance.json contains malformed JSON or a truncated write.";
+  }
+  if (error instanceof ZodError) {
+    return "analytics/performance.json is missing required fields.";
+  }
+  return "analytics/performance.json could not be read.";
+}
+
+class AnalyticsJsonParseError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "AnalyticsJsonParseError";
+  }
 }
 
 /**

@@ -13,8 +13,13 @@ type Recommendation = {
  * @returns Markdown lines for the recommendations report
  */
 export function renderAnalyticsRecommendations(records: AnalyticsRecord[]): string[] {
-  const repeatCandidates = records.map(repeatRecommendation).filter(isRecommendation);
-  const avoidCandidates = records.map(avoidRecommendation).filter(isRecommendation);
+  const classified = records.map(classifyRecommendation);
+  const repeatCandidates = classified.flatMap((recommendation) =>
+    recommendation.kind === "repeat" ? [recommendation.value] : [],
+  );
+  const avoidCandidates = classified.flatMap((recommendation) =>
+    recommendation.kind === "avoid" ? [recommendation.value] : [],
+  );
   return [
     "### Repeat candidates",
     "",
@@ -35,6 +40,26 @@ export function renderAnalyticsRecommendations(records: AnalyticsRecord[]): stri
     "- Treat these as operator planning prompts, not proof that one variable caused the result.",
     "- Missing impressions, retention, or run links reduce confidence; prefer better imports before large format changes.",
   ];
+}
+
+type ClassifiedRecommendation =
+  | { kind: "avoid"; value: Recommendation }
+  | { kind: "mixed" | "none" }
+  | { kind: "repeat"; value: Recommendation };
+
+function classifyRecommendation(record: AnalyticsRecord): ClassifiedRecommendation {
+  const repeat = repeatRecommendation(record);
+  const avoid = avoidRecommendation(record);
+  if (repeat && avoid) {
+    return { kind: "mixed" };
+  }
+  if (repeat) {
+    return { kind: "repeat", value: repeat };
+  }
+  if (avoid) {
+    return { kind: "avoid", value: avoid };
+  }
+  return { kind: "none" };
 }
 
 /**
@@ -86,16 +111,6 @@ function recommendationLines(recommendations: Recommendation[], emptyText: strin
     const confidence = analyticsRecordConfidence(record);
     return `- ${inlineText(record.title ?? record.videoId)} (${record.runId ?? "unmapped"}): ${reasons.join(", ")} (confidence: ${confidence.level}; ${confidence.details}).`;
   });
-}
-
-/**
- * Determines whether a recommendation value is present.
- *
- * @param value - The candidate recommendation value
- * @returns `true` if `value` is present, `false` otherwise.
- */
-function isRecommendation(value: Recommendation | null): value is Recommendation {
-  return value !== null;
 }
 
 /**

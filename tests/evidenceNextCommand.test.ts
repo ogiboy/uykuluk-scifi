@@ -36,7 +36,7 @@ describe("evidence next command", () => {
 
     expect(evidence.warnings).toEqual(expect.arrayContaining([expect.stringMatching(/short/i)]));
     expect(evidence.nextRecommendedCommand).toBe(
-      "pnpm producer approve script --run <run_id> --acknowledge-warnings",
+      `pnpm producer approve script --run ${runId} --acknowledge-warnings`,
     );
   });
 

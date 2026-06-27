@@ -162,17 +162,14 @@ async function synthesizePiperAudio(options: {
   runId: string;
   text: string;
 }): Promise<SynthesizedAudio> {
-  if (!options.modelPath) {
-    throw new SafeExitError("local-piper TTS requires providers.tts.piperModelPath.");
-  }
   const provider = await readPiperProviderEvidence(options);
 
   const output = artifactPath(options.runId, voiceoverAudioPath);
   await ensureDir(path.dirname(output));
   await rm(output, { force: true }).catch(() => undefined);
-  const args = ["--model", options.modelPath, "--output_file", output];
-  if (options.configPath) {
-    args.push("--config", options.configPath);
+  const args = ["--model", provider.modelPath, "--output_file", output];
+  if (provider.configPath) {
+    args.push("--config", provider.configPath);
   }
   await runPiper(options.binary, args, options.text);
   const buffer = await readFile(output);

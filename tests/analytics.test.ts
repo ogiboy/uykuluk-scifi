@@ -5,6 +5,7 @@ import {
   loadAnalyticsDataset,
   refreshSavedAnalyticsReport,
 } from "../src/analytics/import";
+import { renderAnalyticsRecommendations } from "../src/analytics/recommendations";
 import { useTempProject } from "./helpers";
 
 describe("manual analytics import", () => {
@@ -70,7 +71,7 @@ describe("manual analytics import", () => {
       "- Ay Üssünde İlk Temas (run_20260624010101_abcd12): strong CTR, strong retention, subscriber gain (confidence: high; run-linked with views, impressions, CTR, and retention).",
     );
     expect(report).toContain("Avoid without revision");
-    expect(report).toContain(
+    expect(report).not.toContain(
       "- Kayıp Sonda (run_20260624010101_abcd12): weak CTR, weak retention (confidence: high; run-linked with views, impressions, CTR, and retention).",
     );
     expect(report).toContain(
@@ -147,5 +148,21 @@ describe("manual analytics import", () => {
     expect(report).toContain(dataset.generatedAt);
     expect(report).toContain(dataset.source.sha256);
     expect(report).toContain("Non-Causal Recommendations");
+  });
+
+  it("does not classify mixed-signal records as both repeat and avoid", () => {
+    const recommendations = renderAnalyticsRecommendations([
+      {
+        averagePercentageViewed: 0.18,
+        ctr: 0.071,
+        runId: "run_20260624010303_abcd14",
+        title: "Kararsız Sinyal",
+        videoId: "yt_mixed",
+      },
+    ]).join("\n");
+
+    expect(recommendations).not.toContain("Kararsız Sinyal");
+    expect(recommendations).toContain("No repeat candidate yet.");
+    expect(recommendations).toContain("No avoid candidate yet.");
   });
 });

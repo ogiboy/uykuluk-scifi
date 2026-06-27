@@ -8,33 +8,34 @@ import type { readDraftRenderEvidence } from "./renderEvidence.js";
 import type { readRenderPlanEvidence } from "./renderPlan.js";
 import type { readVoiceoverAudioEvidence } from "./voiceoverEvidence.js";
 
+export type EvidenceMarkdownBundle = {
+  runId: string;
+  generatedAt: string;
+  currentState: string;
+  approvedIdea: { title?: string } | null;
+  approvals: unknown[];
+  costs: unknown[];
+  costReservations: unknown[];
+  costQuote: Awaited<ReturnType<typeof readCostQuoteEvidence>>;
+  productionPackageIntegrity: Awaited<ReturnType<typeof readProductionPackageIntegrityEvidence>>;
+  renderPlan: Awaited<ReturnType<typeof readRenderPlanEvidence>>;
+  voiceoverAudio: Awaited<ReturnType<typeof readVoiceoverAudioEvidence>>;
+  draftRender: Awaited<ReturnType<typeof readDraftRenderEvidence>>;
+  generatedArtifacts: string[];
+  warnings: string[];
+  promptProvenance: PromptProvenance[];
+  revisions: string[];
+  blockedActions: string[];
+  nextRecommendedCommand: string;
+};
+
 /**
  * Renders an evidence bundle as Markdown.
  *
- * @param bundle - The evidence bundle to format.
+ * @param data - The evidence bundle to format.
  * @returns The rendered Markdown report.
  */
-export function renderEvidenceMarkdown(bundle: unknown): string {
-  const data = bundle as {
-    runId: string;
-    generatedAt: string;
-    currentState: string;
-    approvedIdea: { title?: string } | null;
-    approvals: unknown[];
-    costs: unknown[];
-    costReservations: unknown[];
-    costQuote: Awaited<ReturnType<typeof readCostQuoteEvidence>>;
-    productionPackageIntegrity: Awaited<ReturnType<typeof readProductionPackageIntegrityEvidence>>;
-    renderPlan: Awaited<ReturnType<typeof readRenderPlanEvidence>>;
-    voiceoverAudio: Awaited<ReturnType<typeof readVoiceoverAudioEvidence>>;
-    draftRender: Awaited<ReturnType<typeof readDraftRenderEvidence>>;
-    generatedArtifacts: string[];
-    warnings: string[];
-    promptProvenance: PromptProvenance[];
-    revisions: string[];
-    blockedActions: string[];
-    nextRecommendedCommand: string;
-  };
+export function renderEvidenceMarkdown(data: EvidenceMarkdownBundle): string {
   return [
     "# Evidence Bundle",
     "",

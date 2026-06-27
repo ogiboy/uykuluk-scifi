@@ -103,6 +103,26 @@ describe("draft render FFmpeg planning", () => {
     expect(args).toContain("6:a");
   });
 
+  it("honors a single source frame instead of falling back to the bookend background", () => {
+    const renderPlan = createTwoSceneRenderPlan({ frames: true, overlays: false });
+    const timeline = buildDraftRenderTimeline(renderPlan, 10).map((item) =>
+      item.segment === "intro"
+        ? { ...item, sourceFrameAssets: item.sourceFrameAssets?.slice(0, 1) }
+        : item,
+    );
+
+    const renderedArgs = buildFfmpegArgs({
+      durationSeconds: 10,
+      ffmpegOutputPath: "draft.mp4",
+      renderPlan,
+      runId: "run_test",
+      timeline,
+    }).join("\n");
+
+    expect(renderedArgs).toContain("assets/intro/frames/intro_frame_00.jpg");
+    expect(renderedArgs).not.toContain("assets/intro/title_card.jpg");
+  });
+
   it("extends the last scene when no bookends are present and scenes are shorter than target", () => {
     const renderPlan = createTwoSceneRenderPlan({ bookends: false, overlays: false });
     const timeline = buildDraftRenderTimeline(renderPlan, 10);

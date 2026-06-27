@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { renderEvidenceMarkdown } from "../src/stages/evidenceMarkdown";
+import {
+  renderEvidenceMarkdown,
+  type EvidenceMarkdownBundle,
+} from "../src/stages/evidenceMarkdown";
 
 describe("evidence Markdown media summary", () => {
   it("summarizes blocked production media evidence", () => {
@@ -81,7 +84,7 @@ describe("evidence Markdown media summary", () => {
   });
 });
 
-function baseBundle(): Record<string, unknown> {
+function baseBundle(): EvidenceMarkdownBundle {
   return {
     runId: "run_media_summary",
     generatedAt: "2026-06-25T13:00:00.000Z",

@@ -208,7 +208,7 @@ h3 {
   background: #0b0f14;
   color: var(--accent-strong);
   padding: 10px;
-  font-family: var(--font-mono), "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-family: var(--font-mono), SFMono-Regular, Consolas, "Liberation Mono", monospace;
   font-size: 12px;
 }
 
@@ -392,7 +392,7 @@ h3 {
   padding: 10px;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-  font-family: var(--font-mono), "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-family: var(--font-mono), SFMono-Regular, Consolas, "Liberation Mono", monospace;
   font-size: 12px;
   line-height: 1.5;
 }

@@ -175,4 +175,16 @@ describe("Studio analytics overview", () => {
       status: "invalid",
     });
   });
+
+  it("distinguishes malformed analytics JSON from schema validation failures", async () => {
+    await mkdir("analytics", { recursive: true });
+    await writeFile("analytics/performance.json", "{", "utf8");
+
+    const overview = await getStudioAnalyticsOverview();
+
+    expect(overview).toMatchObject({
+      error: "analytics/performance.json contains malformed JSON or a truncated write.",
+      status: "invalid",
+    });
+  });
 });

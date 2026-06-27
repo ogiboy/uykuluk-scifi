@@ -69,6 +69,21 @@ describe("render media probe", () => {
       /failed to start/i,
     );
   });
+
+  it("preserves valid ffprobe JSON larger than the old rolling buffer", async () => {
+    const ffprobe = await createJsonFfprobe({
+      format: { duration: "4.5", format_name: "x".repeat(25_000) },
+      streams: [
+        { codec_type: "video", codec_name: "h264", width: 1280, height: 720 },
+        { codec_type: "audio", codec_name: "aac", sample_rate: "48000", channels: 2 },
+      ],
+    });
+
+    await expect(probeDraftRender(ffprobe, "draft.mp4")).resolves.toMatchObject({
+      durationSeconds: 4.5,
+      video: { width: 1280, height: 720 },
+    });
+  });
 });
 
 async function createJsonFfprobe(payload: unknown): Promise<string> {

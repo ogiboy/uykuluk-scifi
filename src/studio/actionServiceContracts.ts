@@ -1,10 +1,16 @@
 import { z } from "zod";
+import { validateRunId } from "../core/runPaths.js";
 
-const RUN_ID_PATTERN = /^run_[A-Za-z0-9][A-Za-z0-9_-]{0,123}$/;
+const runIdSchema = z.string().refine(isStudioRunId, { message: "Invalid run id." });
 
-const runIdSchema = z.string().regex(RUN_ID_PATTERN, {
-  message: "Invalid run id.",
-});
+function isStudioRunId(runId: string): boolean {
+  try {
+    validateRunId(runId);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 const ideaApprovalRequestSchema = z.strictObject({
   ideaId: z.string().min(1),

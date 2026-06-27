@@ -28,6 +28,19 @@ future generated release notes can be inserted predictably.
 - show render plan, voiceover, and draft render status in the CLI run status summary
 - add a read-only Studio visual asset inventory page backed by configured asset guard checks
 - validate local draft renders with `ffprobe` media evidence before recording render completion
+- add a read-only Studio analytics feedback page for local manual analytics artifacts, including
+  imported totals, mapped/unmapped run visibility, top videos, report preview, and safe next action
+  guidance
+- add non-causal repeat / avoid-without-revision / test-next recommendations in the local manual
+  analytics report, with simple confidence/missingness framing for imported performance fields
+- add import data-quality summary on the read-only Studio analytics page
+- add analytics report refresh and Studio stale/missing/current report preview status
+- add typed Studio route-security contract and negative tests for read-only pages plus disabled
+  future action routes
+- add shared Studio mutation service contract foundations for future guarded approval/upload/publish
+  actions without enabling web mutations
+- add read-only Studio mutation-service status panel showing disabled future actions and
+  route-security findings
 
 ### Fixes
 
@@ -165,18 +178,6 @@ future generated release notes can be inserted predictably.
   render media limited to metadata.
 - `producer analytics import` and `producer analytics report` for local operator-provided CSV/JSON
   performance feedback, with ignored dataset/report artifacts and non-causal summary guidance.
-- Read-only Studio analytics feedback page for local manual analytics artifacts, including imported
-  totals, mapped/unmapped run visibility, top videos, report preview, and safe next action guidance.
-- Non-causal repeat / avoid-without-revision / test-next recommendations in the local manual
-  analytics report, with simple confidence/missingness framing for imported performance fields.
-- Import data-quality summary on the read-only Studio analytics page.
-- Analytics report refresh and Studio stale/missing/current report preview status.
-- Typed Studio route-security contract and negative tests for read-only pages plus disabled future
-  action routes.
-- Shared Studio mutation service contract foundations for future guarded approval/upload/publish
-  actions without enabling web mutations.
-- Read-only Studio mutation-service status panel showing disabled future actions and route-security
-  findings.
 - Render-plan and FFmpeg draft-render provenance for committed intro/outro source-frame sequences.
 - Basic type-safe `next-intl` foundation for English and Turkish Studio locales.
 - Unit and browser coverage for locale normalization and cookie-based document language.

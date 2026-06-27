@@ -1,5 +1,6 @@
 import { productionMediaIntro, shouldShowEvidenceRemediation } from "@/lib/runEvidenceCopy";
 import type { StudioRunDetail } from "@/lib/runSummaries";
+import type { ProductionMediaStatus } from "../../../../../src/stages/statusMedia";
 
 type RunProductionMediaPanelProps = Readonly<{
   evidenceMessage: string;
@@ -68,6 +69,13 @@ function EvidenceRemediation({
  * @param status - The artifact status value.
  * @returns The CSS class name for the status pill.
  */
-function mediaStatusClassName(status: string): string {
-  return status === "pass" ? "status-pill small" : "status-pill small blocked";
+function mediaStatusClassName(status: ProductionMediaStatus["status"]): string {
+  switch (status) {
+    case "block":
+      return "status-pill small blocked";
+    case "missing":
+    case "pass":
+    case "recorded":
+      return "status-pill small";
+  }
 }

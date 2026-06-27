@@ -4,6 +4,8 @@ import {
   materializeRunCommand,
   staticEvidenceNextCommand,
 } from "../../../../src/stages/evidenceNextCommand";
+import { validateRunId } from "../../../../src/core/runPaths";
+import { validateEvidenceStatus } from "../../../../src/stages/statusEvidence";
 import type { EvidenceStatus } from "../../../../src/stages/statusMedia";
 
 export type StudioEvidenceSummary = {
@@ -27,8 +29,13 @@ export async function readStudioEvidenceSummary(
   state: string,
 ): Promise<StudioEvidenceSummary> {
   try {
-    const file = path.join(root, "runs", runId, "evidence_bundle.json");
-    return summarizeEvidenceSnapshot(JSON.parse(await readFile(file, "utf8")), runId, state);
+    const validatedRunId = validateRunId(runId);
+    const file = path.join(root, "runs", validatedRunId, "evidence_bundle.json");
+    return summarizeEvidenceSnapshot(
+      JSON.parse(await readFile(file, "utf8")),
+      validatedRunId,
+      state,
+    );
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") {
       return {
@@ -76,24 +83,21 @@ function summarizeEvidenceSnapshot(
   runId: string,
   state: string,
 ): StudioEvidenceSummary {
-  if (!evidence || typeof evidence !== "object") {
-    return invalidEvidence(runId, "Evidence bundle is not an object.");
+  const result = validateEvidenceStatus(evidence as EvidenceStatus, runId, state);
+  if (result.kind === "invalid") {
+    return invalidEvidence(runId, studioEvidenceMessage(result.message));
   }
-  const snapshot = evidence as EvidenceStatus;
-  if (snapshot.runId !== runId) {
-    return staleEvidence(runId, "Evidence bundle belongs to a different run.");
+  if (result.kind === "stale") {
+    return staleEvidence(runId, studioEvidenceMessage(result.message));
   }
-  if (snapshot.currentState !== state) {
-    return staleEvidence(
-      runId,
-      `Evidence bundle was generated for ${String(snapshot.currentState)}, but the run is ${state}.`,
-    );
+  if (result.kind === "missing") {
+    return invalidEvidence(runId, "Evidence bundle has not been generated.");
   }
-  return {
-    message: "Evidence bundle is current.",
-    snapshot,
-    status: "available",
-  };
+  return { message: "Evidence bundle is current.", snapshot: result.evidence, status: "available" };
+}
+
+function studioEvidenceMessage(message: string): string {
+  return message.replaceAll("evidence_bundle.json", "Evidence bundle");
 }
 
 /**

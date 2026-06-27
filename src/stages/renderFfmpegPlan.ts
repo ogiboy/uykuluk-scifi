@@ -127,7 +127,7 @@ function expandTimelineInputs(timeline: DraftRenderTimeline): FfmpegTimelineInpu
  */
 function timelineInputAssets(item: DraftRenderTimeline[number]): AssetRef[] {
   const frameAssets = item.sourceFrameAssets ?? [];
-  if (frameAssets.length <= 1) {
+  if (frameAssets.length === 0) {
     return [item.backgroundAsset];
   }
   if (item.durationSeconds / frameAssets.length < 0.1) {

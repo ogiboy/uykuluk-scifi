@@ -61,6 +61,15 @@ describe("Studio mutation service contracts", () => {
     expect(() => parseStudioMutationRequest("render.approve", { runId: "../run_escape" })).toThrow(
       /Invalid run id/,
     );
+    for (const runId of [
+      "/tmp/run_escape",
+      "run_escape/child",
+      "run_escape child",
+      "bad_operator_review",
+      `run_${"a".repeat(125)}`,
+    ]) {
+      expect(() => parseStudioMutationRequest("cost.approve", { runId })).toThrow(/Invalid run id/);
+    }
     expect(() =>
       parseStudioMutationRequest("cost.approve", {
         extra: true,

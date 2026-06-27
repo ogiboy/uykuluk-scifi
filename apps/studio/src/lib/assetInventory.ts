@@ -1,5 +1,6 @@
 import { readdir, readFile, stat } from "node:fs/promises";
 import path from "node:path";
+import { checkAssets } from "../../../../src/safeguards/assetGuard";
 import { producerConfigSchema } from "../../../../src/config/schema";
 import {
   ASSET_CATEGORY_DEFINITIONS,
@@ -115,43 +116,7 @@ async function fileExists(target: string): Promise<boolean> {
  * @returns Warning messages for any missing expected assets
  */
 async function readAssetGuardWarnings(root: string, assets: StudioAssetConfig): Promise<string[]> {
-  const [brand, overlays, intro, outro] = await Promise.all([
-    listDirectoryEntryNames(root, assets.brandDir),
-    listDirectoryEntryNames(root, assets.overlayDir),
-    listDirectoryEntryNames(root, assets.introDir),
-    listDirectoryEntryNames(root, assets.outroDir),
-  ]);
-  const warnings: string[] = [];
-  if (!brand.some((file) => /logo/i.test(file))) {
-    warnings.push("Missing brand logo asset in assets/brand.");
-  }
-  if (!brand.some((file) => /watermark/i.test(file))) {
-    warnings.push("Missing watermark asset in assets/brand.");
-  }
-  if (!overlays.some((file) => /(subtitle|lower|third|panel)/i.test(file))) {
-    warnings.push("Missing subtitle panel or lower-third asset in assets/overlays.");
-  }
-  if (intro.length === 0) {
-    warnings.push("Missing intro asset in assets/intro.");
-  }
-  if (outro.length === 0) {
-    warnings.push("Missing outro asset in assets/outro.");
-  }
-  return warnings;
-}
-
-/**
- * Lists the entry names in a project directory.
- *
- * @param root - The project root path.
- * @param directory - The directory path relative to `root`.
- * @returns The names of the entries in the directory.
- */
-async function listDirectoryEntryNames(root: string, directory: string): Promise<string[]> {
-  const entries = await readDirectoryEntries(
-    path.join(/* turbopackIgnore: true */ root, directory),
-  );
-  return entries.map((entry) => entry.name);
+  return (await checkAssets({ assets }, root)).warnings;
 }
 
 /**

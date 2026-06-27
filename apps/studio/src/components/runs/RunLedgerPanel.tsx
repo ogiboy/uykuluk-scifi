@@ -34,8 +34,8 @@ export function RunLedgerPanel({ approvals, warnings }: RunLedgerPanelProps) {
       <h3>Warnings</h3>
       {warnings.length > 0 ? (
         <ul>
-          {warnings.map((warning) => (
-            <li key={warning}>{warning}</li>
+          {warnings.map((warning, index) => (
+            <li key={`warning-${index}-${warning}`}>{warning}</li>
           ))}
         </ul>
       ) : (

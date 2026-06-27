@@ -37,11 +37,6 @@ export function evidenceBlockedActions(
   if (voiceoverAudio.status === "block") {
     blockedActions.push(`Voiceover audio evidence is blocked: ${voiceoverAudio.message}`);
   }
-  if (voiceoverAudio.status === "pass" && !voiceoverAudio.productionVoiceCandidate) {
-    blockedActions.push(
-      "Production voice candidate is not available; deterministic local audio is timing/reference only until reviewed local Piper audio exists.",
-    );
-  }
   if (draftRender.status === "block") {
     blockedActions.push(`Draft render evidence is blocked: ${draftRender.message}`);
   }

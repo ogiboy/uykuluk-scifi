@@ -13,6 +13,7 @@ import { runReadiness } from "../src/stages/readiness";
 import { reviewScript } from "../src/stages/reviewScript";
 import { generateScript } from "../src/stages/script";
 import { generateVoiceoverAudio } from "../src/stages/voice";
+import { voiceoverAudioMetaSchema } from "../src/stages/voiceoverEvidence";
 import { pathExists } from "../src/utils/fs";
 import { readJsonFile } from "../src/utils/json";
 import { useTempProject } from "./helpers";
@@ -101,11 +102,11 @@ describe("voiceover audio", () => {
       quality: "deterministic-local-reference",
       reviewPath: "production/audio/voiceover_review.md",
     });
-    expect(evidence.blockedActions).toContain(
+    expect(evidence.blockedActions).not.toContain(
       "Production voice candidate is not available; deterministic local audio is timing/reference only until reviewed local Piper audio exists.",
     );
     expect(evidence.nextRecommendedCommand).toBe(
-      "Review deterministic reference audio; approve render only for a local timing draft with pnpm producer approve render --run <run_id>",
+      `Review deterministic reference audio; approve render only for a local timing draft with pnpm producer approve render --run ${runId}`,
     );
     const postVoiceReadiness = await runReadiness(runId);
     expect(postVoiceReadiness.passed).toBe(true);
@@ -149,7 +150,45 @@ describe("voiceover audio", () => {
     await expect(generateVoiceoverAudio(runId)).rejects.toThrow(/piperModelPath/i);
     expect(await pathExists(artifactPath(runId, "production/audio/voiceover.wav"))).toBe(false);
   });
+
+  it("rejects local Piper metadata without model provenance digests", () => {
+    expect(() =>
+      voiceoverAudioMetaSchema.parse({
+        ...voiceoverMetaFixture(),
+        mode: "local-piper",
+        quality: "local-piper",
+        provider: { binary: "piper", modelPath: "models/piper/model.onnx" },
+      }),
+    ).toThrow(/modelSha256/);
+  });
 });
+
+function voiceoverMetaFixture() {
+  return {
+    schemaVersion: 1,
+    runId: "run_voiceover_meta",
+    createdAt: "2026-06-25T13:00:00.000Z",
+    mode: "deterministic-local",
+    quality: "deterministic-local-reference",
+    source: {
+      path: "production/voiceover.txt",
+      sha256: "a".repeat(64),
+      wordCount: 10,
+    },
+    renderPlan: {
+      path: "production/render_plan.json",
+      digest: "b".repeat(64),
+    },
+    output: {
+      path: "production/audio/voiceover.wav",
+      sha256: "c".repeat(64),
+      bytes: 100,
+      durationSeconds: 4,
+      sampleRateHz: 16_000,
+      channels: 1,
+    },
+  };
+}
 
 async function prepareReadyRun(options: { renderPlan: boolean }): Promise<string> {
   await createMinimalRenderAssets();

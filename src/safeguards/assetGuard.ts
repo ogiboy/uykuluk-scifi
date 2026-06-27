@@ -19,7 +19,7 @@ export type AssetCheck = {
  * @returns An `AssetCheck` object with the check result, warning messages, and discovered files by category.
  */
 export async function checkAssets(
-  config: ProducerConfig,
+  config: Pick<ProducerConfig, "assets">,
   root: string = process.cwd(),
 ): Promise<AssetCheck> {
   const brand = await listFilesIfExists(path.join(root, config.assets.brandDir));

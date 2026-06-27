@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { artifactPath } from "../src/core/artifacts";
 import { loadRun } from "../src/core/runStore";
@@ -36,7 +36,7 @@ describe("draft render", () => {
     const evidence = (await generateEvidenceBundle(runId)) as { nextRecommendedCommand: string };
 
     expect(evidence.nextRecommendedCommand).toBe(
-      "Review deterministic reference audio; approve render only for a local timing draft with pnpm producer approve render --run <run_id>",
+      `Review deterministic reference audio; approve render only for a local timing draft with pnpm producer approve render --run ${runId}`,
     );
 
     await expect(
@@ -194,6 +194,21 @@ describe("draft render", () => {
     await expect(
       renderDraft(runId, { ffmpegBinary: ffmpeg, ffprobeBinary: ffprobe, maxDurationSeconds: 1 }),
     ).rejects.toThrow(/ffprobe exited/i);
+
+    const run = await loadRun(runId);
+    expect(run.state).toBe("RENDER_APPROVED");
+    expect(run.artifacts).not.toContain("production/render/draft.mp4");
+    expect(await pathExists(artifactPath(runId, "production/render/draft.mp4"))).toBe(false);
+  });
+
+  it("rejects stale render approval after voiceover classification changes", async () => {
+    const runId = await prepareVoiceoverReadyRun();
+    await approveRender(runId);
+    const metaPath = artifactPath(runId, "production/audio/voiceover.meta.json");
+    const meta = await readJsonFile<Record<string, unknown>>(metaPath);
+    await writeFile(metaPath, `${JSON.stringify({ ...meta, quality: "local-piper" }, null, 2)}\n`);
+
+    await expect(renderDraft(runId, { ffprobeBinary: false })).rejects.toThrow(/stale/i);
 
     const run = await loadRun(runId);
     expect(run.state).toBe("RENDER_APPROVED");

@@ -111,9 +111,9 @@ describe("readiness and disabled public actions", () => {
     const output = formatReadinessConsole(runId, await runReadiness(runId));
 
     expect(output).toContain("Readiness blocked.");
-    expect(output).toContain("Next action: pnpm producer render-plan --run");
-    expect(output).toContain("Next action: pnpm producer estimate --run");
-    expect(output).toContain("Next action: pnpm producer evidence --run");
+    expect(output).toContain(`Next action: pnpm producer render-plan --run ${runId}`);
+    expect(output).toContain(`Next action: pnpm producer estimate --run ${runId}`);
+    expect(output).toContain(`Next action: pnpm producer evidence --run ${runId}`);
   });
 
   it("prints local production-loop next actions after readiness milestones", async () => {

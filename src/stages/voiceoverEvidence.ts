@@ -18,39 +18,70 @@ export const voiceoverAudioArtifactPaths = [
   voiceoverAudioReviewPath,
 ] as const;
 
-export const voiceoverAudioMetaSchema = z.strictObject({
-  schemaVersion: z.literal(1),
-  runId: z.string().min(1),
-  createdAt: z.iso.datetime(),
-  mode: z.enum(["deterministic-local", "local-piper"]),
-  quality: z.enum(["deterministic-local-reference", "local-piper"]),
-  source: z.strictObject({
-    path: z.literal("production/voiceover.txt"),
-    sha256: digestSchema,
-    wordCount: z.int().positive(),
-  }),
-  renderPlan: z.strictObject({
-    path: z.literal("production/render_plan.json"),
-    digest: digestSchema,
-  }),
-  output: z.strictObject({
-    path: z.literal(voiceoverAudioPath),
-    sha256: digestSchema,
-    bytes: z.int().positive(),
-    durationSeconds: z.number().positive(),
-    sampleRateHz: z.int().positive(),
-    channels: z.int().positive(),
-  }),
-  provider: z
-    .strictObject({
-      binary: z.string().min(1).optional(),
-      modelPath: z.string().min(1).optional(),
-      modelSha256: digestSchema.optional(),
-      configPath: z.string().min(1).optional(),
-      configSha256: digestSchema.optional(),
-    })
-    .optional(),
-});
+export const voiceoverAudioMetaSchema = z
+  .strictObject({
+    schemaVersion: z.literal(1),
+    runId: z.string().min(1),
+    createdAt: z.iso.datetime(),
+    mode: z.enum(["deterministic-local", "local-piper"]),
+    quality: z.enum(["deterministic-local-reference", "local-piper"]),
+    source: z.strictObject({
+      path: z.literal("production/voiceover.txt"),
+      sha256: digestSchema,
+      wordCount: z.int().positive(),
+    }),
+    renderPlan: z.strictObject({
+      path: z.literal("production/render_plan.json"),
+      digest: digestSchema,
+    }),
+    output: z.strictObject({
+      path: z.literal(voiceoverAudioPath),
+      sha256: digestSchema,
+      bytes: z.int().positive(),
+      durationSeconds: z.number().positive(),
+      sampleRateHz: z.int().positive(),
+      channels: z.int().positive(),
+    }),
+    provider: z
+      .strictObject({
+        binary: z.string().min(1).optional(),
+        modelPath: z.string().min(1).optional(),
+        modelSha256: digestSchema.optional(),
+        configPath: z.string().min(1).optional(),
+        configSha256: digestSchema.optional(),
+      })
+      .optional(),
+  })
+  .superRefine((meta, context) => {
+    if (meta.mode !== "local-piper") {
+      return;
+    }
+    if (!meta.provider) {
+      context.addIssue({
+        code: "custom",
+        message: "Local Piper voiceover metadata requires provider provenance.",
+        path: ["provider"],
+      });
+      return;
+    }
+    for (const field of ["modelPath", "modelSha256"] as const) {
+      if (!meta.provider[field]) {
+        context.addIssue({
+          code: "custom",
+          message: `Local Piper voiceover metadata requires provider.${field}.`,
+          path: ["provider", field],
+        });
+      }
+    }
+    if (meta.provider.configPath && !meta.provider.configSha256) {
+      context.addIssue({
+        code: "custom",
+        message:
+          "Local Piper voiceover metadata requires provider.configSha256 when configPath is present.",
+        path: ["provider", "configSha256"],
+      });
+    }
+  });
 
 export type VoiceoverAudioMeta = z.infer<typeof voiceoverAudioMetaSchema>;
 

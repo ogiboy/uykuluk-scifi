@@ -22,6 +22,8 @@ const ffprobeOutputSchema = z.looseObject({
   streams: z.array(ffprobeStreamSchema).default([]),
 });
 
+const FFPROBE_STDOUT_LIMIT_BYTES = 2_000_000;
+
 export const renderMediaProbeSchema = z.strictObject({
   binary: z.string().min(1),
   durationSeconds: z.number().positive(),
@@ -174,8 +176,16 @@ async function runFfprobe(binary: string, outputPath: string): Promise<string> {
     );
     let stdout = "";
     let stderr = "";
+    let failed = false;
     child.stdout.on("data", (chunk: Buffer) => {
-      stdout = `${stdout}${chunk.toString("utf8")}`.slice(-20_000);
+      const nextStdout = `${stdout}${chunk.toString("utf8")}`;
+      if (Buffer.byteLength(nextStdout, "utf8") > FFPROBE_STDOUT_LIMIT_BYTES) {
+        failed = true;
+        child.kill();
+        reject(new SafeExitError("FFprobe output exceeded the JSON size limit."));
+        return;
+      }
+      stdout = nextStdout;
     });
     child.stderr.on("data", (chunk: Buffer) => {
       stderr = `${stderr}${chunk.toString("utf8")}`.slice(-4_000);
@@ -184,6 +194,9 @@ async function runFfprobe(binary: string, outputPath: string): Promise<string> {
       reject(new SafeExitError(`FFprobe failed to start: ${error.message}`)),
     );
     child.on("close", (code) => {
+      if (failed) {
+        return;
+      }
       if (code === 0) {
         resolve(stdout);
         return;

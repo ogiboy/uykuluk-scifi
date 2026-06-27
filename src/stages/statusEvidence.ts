@@ -40,10 +40,10 @@ export async function readEvidenceStatus(
  * @param currentState - Expected run state
  * @returns `{ kind: "present" }` when the evidence matches, `{ kind: "stale" }` when it belongs to a different run or state, or `{ kind: "invalid" }` when the value is not an object
  */
-function validateEvidenceStatus(
+export function validateEvidenceStatus(
   evidence: EvidenceStatus,
   runId: string,
-  currentState: RunState,
+  currentState: RunState | string,
 ): EvidenceReadResult {
   if (!evidence || typeof evidence !== "object") {
     return { kind: "invalid", message: "evidence_bundle.json is not an object." };

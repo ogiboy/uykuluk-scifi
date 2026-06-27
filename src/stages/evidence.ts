@@ -12,7 +12,7 @@ import { PromptProvenance } from "../prompts/provenance.js";
 import { pathExists } from "../utils/fs.js";
 import { readJsonFile } from "../utils/json.js";
 import { nowIso } from "../utils/time.js";
-import { evidenceNextCommand } from "./evidenceNextCommand.js";
+import { evidenceNextCommand, materializeRunCommand } from "./evidenceNextCommand.js";
 import { evidenceBlockedActions } from "./evidenceBlockedActions.js";
 import { renderEvidenceMarkdown } from "./evidenceMarkdown.js";
 import { readProductionPackageIntegrityEvidence } from "./productionPackageIntegrity.js";
@@ -84,16 +84,19 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
       (item) => item.startsWith("revisions/") && item.endsWith("/revision.json"),
     ),
     blockedActions,
-    nextRecommendedCommand: evidenceNextCommand({
-      costQuote,
-      draftRender,
-      hasUnresolvedCostReservation: unresolvedCostReservations.length > 0,
-      renderPlan,
-      scriptReview,
-      state: run.state,
-      ttsEnabled: config.providers.tts.enabled,
-      voiceoverAudio,
-    }),
+    nextRecommendedCommand: materializeRunCommand(
+      evidenceNextCommand({
+        costQuote,
+        draftRender,
+        hasUnresolvedCostReservation: unresolvedCostReservations.length > 0,
+        renderPlan,
+        scriptReview,
+        state: run.state,
+        ttsEnabled: config.providers.tts.enabled,
+        voiceoverAudio,
+      }),
+      run.runId,
+    ),
     ledgerEventCount: ledger.length,
   };
   run = await writeRunJson(run, "evidence", "evidence_bundle.json", bundle);
