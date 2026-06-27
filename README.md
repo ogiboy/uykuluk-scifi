@@ -256,6 +256,7 @@ pnpm producer approve script --run <run_id>
 pnpm producer approve script --run <run_id> --acknowledge-warnings # when review warnings remain
 pnpm producer package --run <run_id>
 pnpm producer render-plan --run <run_id>
+pnpm producer render-plan --run <run_id> --json
 pnpm producer estimate --run <run_id>
 pnpm producer estimate --run <run_id> --json
 pnpm producer approve cost --run <run_id> # only when the quote requires it

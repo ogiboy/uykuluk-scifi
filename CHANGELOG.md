@@ -9,7 +9,9 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Features
+
+- add `producer render-plan --json` for automation-friendly render-plan inspection
 
 ## v0.24.0 (2026-06-27)
 

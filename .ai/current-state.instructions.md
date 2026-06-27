@@ -371,7 +371,7 @@ pnpm producer approve script --run <run_id>
 pnpm producer approve script --run <run_id> --acknowledge-warnings # when review warnings remain
 pnpm producer package --run <run_id>
 pnpm producer revise package-artifact --run <run_id> --artifact subtitles --file <path> --reason "<reason>" --editor <name>
-pnpm producer render-plan --run <run_id>
+pnpm producer render-plan --run <run_id> [--json]
 pnpm producer estimate --run <run_id> [--json]
 pnpm producer approve cost --run <run_id>
 pnpm producer evidence --run <run_id> [--json]

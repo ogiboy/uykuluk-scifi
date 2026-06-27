@@ -118,11 +118,12 @@ program
 program
   .command("render-plan")
   .requiredOption("--run <run_id>")
+  .option("--json", "Print the raw render plan JSON for automation.")
   .description("Generate a deterministic render plan and storyboard contact sheet.")
   .action(
-    wrap(async (options: { run: string }) => {
-      await generateRenderPlan(options.run);
-      console.log("Render plan generated.");
+    wrap(async (options: { json?: boolean; run: string }) => {
+      const plan = await generateRenderPlan(options.run);
+      console.log(options.json ? JSON.stringify(plan, null, 2) : "Render plan generated.");
     }),
   );
 
