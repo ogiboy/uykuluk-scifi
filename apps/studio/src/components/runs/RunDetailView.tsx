@@ -141,6 +141,9 @@ export function RunDetailView({ run }: Readonly<{ run: StudioRunDetail }>) {
                 <span className={readinessStatusClassName(check.status)}>{check.status}</span>
                 <br />
                 <span>{check.message}</span>
+                {check.nextAction ? (
+                  <p className='artifact-action'>Next action: {check.nextAction}</p>
+                ) : null}
               </li>
             ))}
           </ul>

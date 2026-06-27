@@ -308,8 +308,8 @@ Current Studio scope:
 - production desk shell;
 - read-only `/runs` index over persisted local run state;
 - read-only `/runs/<run_id>` detail view with next action, readiness status, and review artifact
-  availability plus production media evidence details and readiness check messages from CLI/core
-  artifacts;
+  availability plus production media evidence details, readiness check messages, and readiness
+  next-action commands from CLI/core artifacts;
 - read-only artifact preview excerpts for scripts, reviews, production packages, render plans,
   contact sheets, asset provenance, evidence, readiness, voiceover metadata, and render manifests,
   grouped by operator review phase, with binary media limited to metadata;

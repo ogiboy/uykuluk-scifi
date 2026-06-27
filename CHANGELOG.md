@@ -25,6 +25,7 @@ future generated release notes can be inserted predictably.
 
 ### Fixes
 
+- show readiness next-action commands in Studio run detail
 - print `producer readiness` next-action guidance in terminal and Markdown output
 - print `producer doctor` next-action guidance in terminal output
 - fail release planning when `package.json` drifts from the latest stable tag

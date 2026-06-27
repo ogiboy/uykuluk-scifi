@@ -268,9 +268,10 @@
   selection through a local cookie. Existing operator copy has not been migrated yet.
 - Studio can list local persisted runs and show a read-only run detail page with next safe action,
   readiness status, readiness check messages, warning/approval counts, production media evidence
-  details, and review artifact availability. It does not mutate run state or call providers. Early
-  states without an evidence bundle reuse the CLI/core next-action contract instead of presenting
-  evidence generation as the only possible step.
+  details, and review artifact availability. Readiness check next-action commands are shown when the
+  CLI/core diagnostics provide them. It does not mutate run state or call providers. Early states
+  without an evidence bundle reuse the CLI/core next-action contract instead of presenting evidence
+  generation as the only possible step.
 - Studio run detail includes read-only artifact preview excerpts for scripts, reviews, production
   packages, render plans, contact sheets, asset provenance, evidence, readiness, voiceover metadata,
   and render manifests. Previews are grouped by operator review phase with per-artifact review

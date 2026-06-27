@@ -177,6 +177,34 @@ describe("Studio read-only run summaries", () => {
     expect((await loadRun(runId)).state).toBe("RENDERED");
   });
 
+  it("shows readiness remediation commands from CLI diagnostics", async () => {
+    const run = await createRun();
+    await saveRun({
+      ...run,
+      state: "PRODUCTION_PACKAGE_GENERATED",
+      artifacts: ["diagnostics/readiness.json"],
+    });
+    await writeReadiness(run.runId, false, [
+      {
+        message: "costs/estimate.json is missing.",
+        name: "budget not exceeded",
+        nextAction: `pnpm producer estimate --run ${run.runId}`,
+        status: "block",
+      },
+    ]);
+
+    const detail = await getStudioRunDetail(run.runId);
+
+    expect(detail?.readinessChecks).toEqual([
+      {
+        message: "costs/estimate.json is missing.",
+        name: "budget not exceeded",
+        nextAction: `pnpm producer estimate --run ${run.runId}`,
+        status: "block",
+      },
+    ]);
+  });
+
   it("shows canonical early next actions before evidence exists", async () => {
     const run = await createRun();
     await mkdir(`runs/${run.runId}/diagnostics`, { recursive: true });

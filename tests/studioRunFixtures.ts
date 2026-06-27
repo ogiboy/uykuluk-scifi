@@ -103,6 +103,7 @@ export async function writeEvidence(
 export type StudioReadinessFixtureCheck = {
   message: string;
   name: string;
+  nextAction?: string;
   status: "block" | "pass" | "warn";
 };
 
