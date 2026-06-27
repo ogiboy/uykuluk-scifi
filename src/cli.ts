@@ -95,11 +95,14 @@ registerRevisionCommands(program, wrap);
 program
   .command("package")
   .requiredOption("--run <run_id>")
+  .option("--json", "Print the raw production package manifest JSON for automation.")
   .description("Generate voiceover, subtitles, scenes, and YouTube metadata drafts.")
   .action(
-    wrap(async (options: { run: string }) => {
-      await generateProductionPackage(options.run);
-      console.log("Production package generated.");
+    wrap(async (options: { json?: boolean; run: string }) => {
+      const manifest = await generateProductionPackage(options.run);
+      console.log(
+        options.json ? JSON.stringify(manifest, null, 2) : "Production package generated.",
+      );
     }),
   );
 

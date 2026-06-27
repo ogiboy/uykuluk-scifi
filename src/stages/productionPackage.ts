@@ -17,7 +17,10 @@ import {
   parseProductionPackageProviderPayload,
 } from "./providerPayloads.js";
 import { productionPackageResponseFormat } from "./providerResponseFormats.js";
-import { createProductionPackageManifest } from "./productionPackageIntegrity.js";
+import {
+  createProductionPackageManifest,
+  type ProductionPackageManifest,
+} from "./productionPackageIntegrity.js";
 import { ProductionScene } from "./types.js";
 
 /**
@@ -26,9 +29,10 @@ import { ProductionScene } from "./types.js";
  * Verifies that the current script matches the approved script by hash comparison, enforces budget constraints before and after LLM generation, and persists generated voiceover, subtitles, scenes, YouTube metadata, and production package documentation. Records a run state transition to "PRODUCTION_PACKAGE_GENERATED" upon completion.
  *
  * @param runId - The run identifier
+ * @returns The persisted production package manifest.
  * @throws Throws if the script content has changed since approval or if budget limits are exceeded.
  */
-export async function generateProductionPackage(runId: string): Promise<void> {
+export async function generateProductionPackage(runId: string): Promise<ProductionPackageManifest> {
   const config = await loadConfig();
   let run = await loadRun(runId);
   await requireState(run, "SCRIPT_APPROVED", "package");
@@ -109,6 +113,7 @@ export async function generateProductionPackage(runId: string): Promise<void> {
     });
     run = await writeRunJson(run, "package", "production/production_package.meta.json", manifest);
     await setRunState(run, "PRODUCTION_PACKAGE_GENERATED", "package");
+    return manifest;
   } catch (error) {
     await appendLedgerEvent({
       runId: run.runId,
