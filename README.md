@@ -236,15 +236,17 @@ execution is not allowed. No paid adapter, SDK, credential, or operator command 
 pnpm install
 pnpm producer init
 pnpm producer doctor
+pnpm producer doctor --json
 ```
 
 If your shell cannot find `pnpm` or `node`, restore Node 22/Corepack first. The repository declares
-`pnpm@11.5.2` and `node >=22`.
+`pnpm@11.9.0` and `node >=22`.
 
 ## CLI MVP Workflow
 
 ```bash
 pnpm producer doctor
+pnpm producer doctor --json
 pnpm producer ideas
 pnpm producer approve idea --run <run_id> --idea <idea_id>
 pnpm producer script --run <run_id>

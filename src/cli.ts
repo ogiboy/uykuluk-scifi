@@ -52,11 +52,12 @@ program
 
 program
   .command("doctor")
+  .option("--json", "Print the raw doctor report JSON for automation.")
   .description("Diagnose local config, provider, assets, and publish safety.")
   .action(
-    wrap(async () => {
+    wrap(async (options: { json?: boolean }) => {
       const report = await runDoctor();
-      console.log(formatDoctorConsole(report));
+      console.log(options.json ? JSON.stringify(report, null, 2) : formatDoctorConsole(report));
       if (!report.passed) {
         throw new SafeExitError("Doctor blocked.", 1);
       }

@@ -361,6 +361,7 @@
 ```bash
 pnpm producer init
 pnpm producer doctor
+pnpm producer doctor --json
 pnpm producer ideas
 pnpm producer approve idea --run <run_id> --idea <idea_id>
 pnpm producer script --run <run_id>
