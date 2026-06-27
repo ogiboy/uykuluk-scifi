@@ -40,7 +40,7 @@ export async function runLocalMediaSmoke({ run, pnpm, workdir, runId, assertFile
   await assertEvidenceNextCommand({
     workdir,
     runId,
-    expected: "pnpm producer voice --run <run_id>",
+    expected: `pnpm producer voice --run ${runId}`,
     message: "evidence recommends voice after deterministic TTS is enabled",
     assert,
   });
@@ -59,8 +59,7 @@ export async function runLocalMediaSmoke({ run, pnpm, workdir, runId, assertFile
   await assertEvidenceNextCommand({
     workdir,
     runId,
-    expected:
-      "Review deterministic reference audio; approve render only for a local timing draft with pnpm producer approve render --run <run_id>",
+    expected: `Review deterministic reference audio; approve render only for a local timing draft with pnpm producer approve render --run ${runId}`,
     message: "evidence keeps reference audio explicit before render approval",
     assert,
   });
