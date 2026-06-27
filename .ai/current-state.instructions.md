@@ -223,11 +223,11 @@
   acknowledgement before script approval. Evidence JSON keeps portable command templates while
   evidence Markdown renders the current run id for direct operator use.
 - `producer status` now defaults to an operator-readable summary with state,
-  approval/warning/artifact counts, evidence availability, blocked-action details, production media
-  evidence details, recent artifacts, and a concrete next safe action with the current run id filled
-  in; early workflow states still show the actionable stage command before evidence exists, while
-  invalid evidence keeps pointing operators back to evidence regeneration. `--json` preserves raw
-  persisted state output for automation.
+  approval/warning/artifact counts, evidence availability, readiness summary/attention checks,
+  blocked-action details, production media evidence details, recent artifacts, and a concrete next
+  safe action with the current run id filled in; early workflow states still show the actionable
+  stage command before evidence exists, while invalid evidence keeps pointing operators back to
+  evidence regeneration. `--json` preserves raw persisted state output for automation.
 - Readiness diagnostics that strictly parse and revalidate persisted cost quotes, live hard budgets,
   complete production-package integrity, and exact paid-generation cost approval when required.
 - Final readiness diagnostics agree with the post-transition run state.

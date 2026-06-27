@@ -25,6 +25,7 @@ future generated release notes can be inserted predictably.
 
 ### Fixes
 
+- show readiness check summaries and next actions in CLI status output
 - show blocked-action evidence details in CLI status and Studio run detail
 - show concrete run ids in evidence Markdown next-action commands
 - show concrete run ids in CLI status and Studio next-action commands

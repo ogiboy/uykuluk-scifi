@@ -13,6 +13,11 @@ import {
   type ProductionMediaStatus,
 } from "./statusMedia.js";
 import { evidenceBlockedActionMessages } from "./statusBlockedActions.js";
+import {
+  formatStatusReadiness,
+  readStatusReadiness,
+  type StatusReadinessSummary,
+} from "./statusReadiness.js";
 
 type EvidenceReadResult =
   | { kind: "present"; evidence: EvidenceStatus }
@@ -28,6 +33,7 @@ export type RunStatusSummary = {
   mediaArtifacts: ProductionMediaStatus[];
   diagnostics: RunDiagnosticSummary[];
   nextRecommendedCommand: string;
+  readiness: StatusReadinessSummary;
   recentArtifacts: string[];
   run: RunRecord;
   warningCount: number;
@@ -35,9 +41,10 @@ export type RunStatusSummary = {
 
 export async function readRunStatus(runId: string): Promise<RunStatusSummary> {
   const run = await loadRun(runId);
-  const [evidenceResult, diagnostics] = await Promise.all([
+  const [evidenceResult, diagnostics, readiness] = await Promise.all([
     readEvidenceStatus(run.runId),
     readRunDiagnosticSummaries(run.runId, run.artifacts),
+    readStatusReadiness(run.runId),
   ]);
   const evidence = evidenceResult.kind === "present" ? evidenceResult.evidence : null;
   const blockedActions = evidenceBlockedActionMessages(evidence, run.runId);
@@ -50,6 +57,7 @@ export async function readRunStatus(runId: string): Promise<RunStatusSummary> {
     evidencePresent: Boolean(evidence),
     mediaArtifacts: productionMediaStatus(run, evidence),
     nextRecommendedCommand: statusNextRecommendedCommand(run.runId, run.state, evidenceResult),
+    readiness,
     recentArtifacts: run.artifacts.slice(-5).reverse(),
     run,
     warningCount: run.warnings.length,
@@ -67,6 +75,7 @@ export function formatRunStatus(status: RunStatusSummary): string {
     `Evidence: ${status.evidencePresent ? "available" : "missing"}`,
     `Blocked actions: ${status.blockedActionCount ?? "unknown"}`,
     `Next safe action: ${status.nextRecommendedCommand}`,
+    ...formatStatusReadiness(status.readiness),
     ...formatBlockedActions(status.blockedActions),
     ...formatDiagnostics(status.diagnostics),
     "",
