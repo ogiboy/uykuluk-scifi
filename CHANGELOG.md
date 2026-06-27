@@ -9,6 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
+_No unreleased changes yet._
+
+## v0.16.0 (2026-06-27)
+
 ### Features
 
 - warn in `producer doctor` when local FFmpeg/ffprobe tools are unavailable for draft render
