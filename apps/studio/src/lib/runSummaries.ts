@@ -18,9 +18,11 @@ import { evidenceBlockedActionMessages } from "../../../../src/stages/statusBloc
 import { readReviewArtifactPreviews, type StudioArtifactPreview } from "./artifactPreviews";
 import { projectRoot } from "./projectRoot";
 import {
-  summarizeReadinessChecks,
+  readStudioReadinessSnapshot,
   type ReadinessSnapshot,
   type StudioReadinessCheck,
+  type StudioReadinessSummary,
+  summarizeReadinessSnapshot,
 } from "./readinessSummaries";
 
 export type StudioRunState =
@@ -51,6 +53,9 @@ export type StudioRunSummary = {
   createdAt: string;
   nextRecommendedCommand: string | null;
   readinessPassed: boolean | null;
+  readinessMessage: string;
+  readinessNextAction?: string;
+  readinessStatus: StudioReadinessSummary["status"];
   runId: string;
   state: StudioRunState;
   updatedAt: string;
@@ -63,7 +68,7 @@ export type StudioRunDetail = StudioRunSummary & {
   diagnostics: RunDiagnosticSummary[];
   evidence: Record<string, unknown> | null;
   productionMedia: ProductionMediaStatus[];
-  readiness: { checks?: unknown[]; passed?: boolean } | null;
+  readiness: ReadinessSnapshot | null;
   readinessChecks: StudioReadinessCheck[];
   warnings: string[];
 };
@@ -76,6 +81,11 @@ type RunRecord = {
   state?: StudioRunState;
   updatedAt?: string;
   warnings?: string[];
+};
+
+type ValidRunRecord = RunRecord & {
+  runId: string;
+  state: StudioRunState;
 };
 
 type EvidenceSnapshot = EvidenceStatus;
@@ -105,9 +115,15 @@ export async function getStudioRunDetail(runId: string): Promise<StudioRunDetail
   }
   const [evidence, readiness] = await Promise.all([
     readOptionalJson<EvidenceSnapshot>(root, runId, "evidence_bundle.json"),
-    readOptionalJson<ReadinessSnapshot>(root, runId, "diagnostics/readiness.json"),
+    readStudioReadinessSnapshot(root, runId),
   ]);
-  const summary = summarizeRun(record, evidence, readiness);
+  const readinessSummary = summarizeReadinessSnapshot(
+    readiness.snapshot,
+    record.runId,
+    record.state,
+    readiness.malformed,
+  );
+  const summary = summarizeRun(record, evidence, readinessSummary);
   return {
     ...summary,
     approvals: record.approvals ?? [],
@@ -115,8 +131,8 @@ export async function getStudioRunDetail(runId: string): Promise<StudioRunDetail
     diagnostics: await readStudioRunDiagnostics(root, runId, record.artifacts ?? []),
     evidence: evidence ?? null,
     productionMedia: productionMediaStatus({ artifacts: record.artifacts ?? [] }, evidence),
-    readiness: readiness ?? null,
-    readinessChecks: summarizeReadinessChecks(readiness),
+    readiness: readiness.snapshot,
+    readinessChecks: readinessSummary.checks,
     warnings: record.warnings ?? [],
   };
 }
@@ -128,15 +144,19 @@ async function readRunSummary(root: string, runId: string): Promise<StudioRunSum
   }
   const [evidence, readiness] = await Promise.all([
     readOptionalJson<EvidenceSnapshot>(root, runId, "evidence_bundle.json"),
-    readOptionalJson<ReadinessSnapshot>(root, runId, "diagnostics/readiness.json"),
+    readStudioReadinessSnapshot(root, runId),
   ]);
-  return summarizeRun(record, evidence, readiness);
+  return summarizeRun(
+    record,
+    evidence,
+    summarizeReadinessSnapshot(readiness.snapshot, record.runId, record.state, readiness.malformed),
+  );
 }
 
 function summarizeRun(
   record: RunRecord,
   evidence: EvidenceSnapshot | null,
-  readiness: ReadinessSnapshot | null,
+  readiness: StudioReadinessSummary,
 ): StudioRunSummary {
   const runId = record.runId ?? "unknown";
   const blockedActions = evidenceBlockedActionMessages(evidence, runId);
@@ -150,7 +170,10 @@ function summarizeRun(
       typeof evidence?.nextRecommendedCommand === "string"
         ? materializeRunCommand(evidence.nextRecommendedCommand, runId)
         : materializeStaticNextCommand(record.state ?? "FAILED", runId),
-    readinessPassed: typeof readiness?.passed === "boolean" ? readiness.passed : null,
+    readinessMessage: readiness.message,
+    readinessNextAction: readiness.nextAction,
+    readinessPassed: readiness.passed,
+    readinessStatus: readiness.status,
     runId,
     state: record.state ?? "FAILED",
     updatedAt: record.updatedAt ?? record.createdAt ?? "",
@@ -185,12 +208,12 @@ async function readStudioRunDiagnostics(
   return summaries;
 }
 
-async function readRunRecord(root: string, runId: string): Promise<RunRecord | null> {
+async function readRunRecord(root: string, runId: string): Promise<ValidRunRecord | null> {
   const record = await readOptionalJson<RunRecord>(root, runId, "state.json");
   if (record?.runId !== runId || !record.state) {
     return null;
   }
-  return record;
+  return { ...record, runId: record.runId, state: record.state };
 }
 
 async function readOptionalJson<T>(

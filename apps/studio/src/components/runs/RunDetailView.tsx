@@ -23,7 +23,7 @@ export function RunDetailView({ run }: Readonly<{ run: StudioRunDetail }>) {
           </div>
           <div>
             <dt>Readiness</dt>
-            <dd>{formatReadiness(run.readinessPassed)}</dd>
+            <dd>{run.readinessStatus}</dd>
           </div>
         </dl>
       </section>
@@ -142,9 +142,10 @@ export function RunDetailView({ run }: Readonly<{ run: StudioRunDetail }>) {
 
       <section className='panel' aria-labelledby='readiness-heading'>
         <h2 id='readiness-heading'>Readiness Checks</h2>
-        <p>
-          {run.readiness?.passed === true ? "Readiness passed." : "Readiness has not passed yet."}
-        </p>
+        <p>{run.readinessMessage}</p>
+        {run.readinessNextAction ? (
+          <p className='artifact-action'>Next action: {run.readinessNextAction}</p>
+        ) : null}
         <p>
           {run.readinessChecks.length > 0
             ? `${run.readinessChecks.length} check(s) recorded.`
@@ -181,16 +182,6 @@ function groupedArtifactPreviews(
     artifacts: groupedArtifacts,
     label,
   }));
-}
-
-function formatReadiness(value: boolean | null): string {
-  if (value === true) {
-    return "passed";
-  }
-  if (value === false) {
-    return "blocked";
-  }
-  return "not generated";
 }
 
 function mediaStatusClassName(status: string): string {

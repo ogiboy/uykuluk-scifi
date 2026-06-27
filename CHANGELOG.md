@@ -25,6 +25,7 @@ future generated release notes can be inserted predictably.
 
 ### Fixes
 
+- mark missing, malformed, or stale Studio readiness diagnostics with a regeneration command
 - mark missing, malformed, or stale CLI status readiness diagnostics with a regeneration command
 - show readiness check summaries and next actions in CLI status output
 - show blocked-action evidence details in CLI status and Studio run detail

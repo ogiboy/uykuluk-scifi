@@ -1,6 +1,6 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { artifactPath } from "../src/core/artifacts";
-import { createRun, saveRun } from "../src/core/runStore";
+import { createRun, loadRun, saveRun } from "../src/core/runStore";
 
 export async function createRenderedStudioRunFixture(): Promise<string> {
   const run = await createRun();
@@ -112,10 +112,11 @@ export async function writeReadiness(
   passed: boolean,
   checks: readonly StudioReadinessFixtureCheck[] = [],
 ): Promise<void> {
+  const run = await loadRun(runId);
   await mkdir(`runs/${runId}/diagnostics`, { recursive: true });
   await writeFile(
     artifactPath(runId, "diagnostics/readiness.json"),
-    JSON.stringify({ runId, passed, checks }),
+    JSON.stringify({ runId, currentState: run.state, passed, checks }),
     "utf8",
   );
 }
