@@ -9,6 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
+_No unreleased changes yet._
+
+## v0.32.0 (2026-06-27)
+
 ### Features
 
 - add analytics command JSON output for automation-friendly manual feedback reports
