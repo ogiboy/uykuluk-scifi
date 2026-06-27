@@ -1,8 +1,10 @@
 export type EvidenceStatus = {
   blockedActions?: unknown[];
+  currentState?: unknown;
   draftRender?: EvidenceMediaStatus;
   nextRecommendedCommand?: unknown;
   renderPlan?: EvidenceMediaStatus;
+  runId?: unknown;
   voiceoverAudio?: EvidenceMediaStatus;
 };
 

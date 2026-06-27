@@ -163,8 +163,9 @@ agent-tracking state only; runtime code must not require it.
 - `producer status` shows an operator-readable run summary with current state, counts, evidence
   availability, readiness summary/attention checks, blocked-action details, production media
   evidence details, recent artifacts, and a concrete next safe action with the current run id filled
-  in. Missing, malformed, or stale readiness diagnostics point back to
-  `producer readiness --run <run_id>`; use `--json` for the raw persisted state.
+  in. Malformed or stale evidence points back to `producer evidence --run <run_id>`, while missing,
+  malformed, or stale readiness diagnostics point back to `producer readiness --run <run_id>`; use
+  `--json` for the raw persisted state.
 - Script edits use an attributable revision command with before/after snapshots; reviewed or
   approved scripts return to `SCRIPT_GENERATED` and require review/approval again.
 - Production packaging requires explicit script approval for the unchanged reviewed content.

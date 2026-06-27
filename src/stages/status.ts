@@ -1,35 +1,29 @@
-import { artifactPath } from "../core/artifacts.js";
 import { loadRun } from "../core/runStore.js";
 import type { RunRecord, RunState } from "../core/state.js";
-import { pathExists } from "../utils/fs.js";
-import { readJsonFile } from "../utils/json.js";
 import { materializeRunCommand, staticEvidenceNextCommand } from "./evidenceNextCommand.js";
 import type { RunDiagnosticSummary } from "./runDiagnosticSummaryContracts.js";
 import { readRunDiagnosticSummaries } from "./runDiagnosticSummaries.js";
 import {
   formatProductionMediaStatus,
   productionMediaStatus,
-  type EvidenceStatus,
   type ProductionMediaStatus,
 } from "./statusMedia.js";
 import { evidenceBlockedActionMessages } from "./statusBlockedActions.js";
+import { readEvidenceStatus, type EvidenceReadResult } from "./statusEvidence.js";
 import {
   formatStatusReadiness,
   readStatusReadiness,
   type StatusReadinessSummary,
 } from "./statusReadiness.js";
 
-type EvidenceReadResult =
-  | { kind: "present"; evidence: EvidenceStatus }
-  | { kind: "missing" }
-  | { kind: "invalid" };
-
 export type RunStatusSummary = {
   approvalCount: number;
   artifactCount: number;
   blockedActions: string[];
   blockedActionCount: number | null;
+  evidenceMessage: string | null;
   evidencePresent: boolean;
+  evidenceStatus: EvidenceReadResult["kind"];
   mediaArtifacts: ProductionMediaStatus[];
   diagnostics: RunDiagnosticSummary[];
   nextRecommendedCommand: string;
@@ -42,7 +36,7 @@ export type RunStatusSummary = {
 export async function readRunStatus(runId: string): Promise<RunStatusSummary> {
   const run = await loadRun(runId);
   const [evidenceResult, diagnostics, readiness] = await Promise.all([
-    readEvidenceStatus(run.runId),
+    readEvidenceStatus(run.runId, run.state),
     readRunDiagnosticSummaries(run.runId, run.artifacts),
     readStatusReadiness(run.runId, run.state),
   ]);
@@ -54,7 +48,9 @@ export async function readRunStatus(runId: string): Promise<RunStatusSummary> {
     blockedActionCount: evidence ? blockedActions.length : null,
     blockedActions,
     diagnostics,
+    evidenceMessage: "message" in evidenceResult ? evidenceResult.message : null,
     evidencePresent: Boolean(evidence),
+    evidenceStatus: evidenceResult.kind,
     mediaArtifacts: productionMediaStatus(run, evidence),
     nextRecommendedCommand: statusNextRecommendedCommand(run.runId, run.state, evidenceResult),
     readiness,
@@ -72,7 +68,7 @@ export function formatRunStatus(status: RunStatusSummary): string {
     `Approvals: ${status.approvalCount}`,
     `Warnings: ${status.warningCount}`,
     `Artifacts: ${status.artifactCount}`,
-    `Evidence: ${status.evidencePresent ? "available" : "missing"}`,
+    ...formatEvidenceStatusForRun(status),
     `Blocked actions: ${status.blockedActionCount ?? "unknown"}`,
     `Next safe action: ${status.nextRecommendedCommand}`,
     ...formatStatusReadiness(status.readiness),
@@ -87,6 +83,19 @@ export function formatRunStatus(status: RunStatusSummary): string {
       ? status.recentArtifacts.map((artifact) => `- ${artifact}`)
       : ["- none"]),
   ].join("\n");
+}
+
+function formatEvidenceStatusForRun(status: RunStatusSummary): string[] {
+  if (status.evidenceStatus === "present") {
+    return ["Evidence: available"];
+  }
+  if (status.evidenceStatus === "missing") {
+    return ["Evidence: missing"];
+  }
+  return [
+    `Evidence: ${status.evidenceStatus} (${status.evidenceMessage ?? "evidence_bundle.json is unavailable."})`,
+    `Evidence next action: pnpm producer evidence --run ${status.run.runId}`,
+  ];
 }
 
 function formatBlockedActions(blockedActions: readonly string[]): string[] {
@@ -127,16 +136,4 @@ function statusNextRecommendedCommand(
     );
   }
   return `pnpm producer evidence --run ${runId}`;
-}
-
-async function readEvidenceStatus(runId: string): Promise<EvidenceReadResult> {
-  const target = artifactPath(runId, "evidence_bundle.json");
-  if (!(await pathExists(target))) {
-    return { kind: "missing" };
-  }
-  try {
-    return { kind: "present", evidence: await readJsonFile<EvidenceStatus>(target) };
-  } catch {
-    return { kind: "invalid" };
-  }
 }
