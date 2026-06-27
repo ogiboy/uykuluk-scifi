@@ -129,11 +129,12 @@ program
 program
   .command("evidence")
   .requiredOption("--run <run_id>")
+  .option("--json", "Print the raw evidence bundle JSON for automation.")
   .description("Generate evidence bundle.")
   .action(
-    wrap(async (options: { run: string }) => {
-      await generateEvidenceBundle(options.run);
-      console.log("Evidence bundle generated.");
+    wrap(async (options: { json?: boolean; run: string }) => {
+      const bundle = await generateEvidenceBundle(options.run);
+      console.log(options.json ? JSON.stringify(bundle, null, 2) : "Evidence bundle generated.");
     }),
   );
 

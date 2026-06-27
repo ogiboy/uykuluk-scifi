@@ -11,6 +11,7 @@ future generated release notes can be inserted predictably.
 
 ### Features
 
+- add `producer evidence --json` for automation-friendly evidence bundle inspection
 - add `producer estimate --json` for automation-friendly cost quote inspection
 
 ## v0.22.0 (2026-06-27)
