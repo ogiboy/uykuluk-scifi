@@ -2,6 +2,7 @@
 import { Command } from "commander";
 import { registerAnalyticsCommands } from "./cli/analyticsCommands.js";
 import { registerApprovalCommands } from "./cli/approvalCommands.js";
+import { registerGenerationCommands } from "./cli/generationCommands.js";
 import { registerRevisionCommands } from "./cli/revisionCommands.js";
 import { resolveStatusRunId } from "./cli/statusRunSelector.js";
 import { initProject } from "./config/config.js";
@@ -9,16 +10,10 @@ import { SafeExitError } from "./core/errors.js";
 import { listRuns, loadRun } from "./core/runStore.js";
 import { formatDoctorConsole, runDoctor } from "./diagnostics/doctor.js";
 import { publishSchedulePlaceholder, uploadPrivatePlaceholder } from "./stages/disabled.js";
-import { estimateCost } from "./stages/estimate.js";
-import { generateEvidenceBundle } from "./stages/evidence.js";
-import { runIdeas } from "./stages/ideas.js";
-import { generateProductionPackage } from "./stages/productionPackage.js";
 import { runReadiness } from "./stages/readiness.js";
 import { formatReadinessConsole } from "./stages/readinessConsole.js";
 import { renderDraft } from "./stages/render.js";
-import { generateRenderPlan } from "./stages/renderPlan.js";
 import { reviewScript } from "./stages/reviewScript.js";
-import { generateScript } from "./stages/script.js";
 import { formatRunStatus, readRunStatus } from "./stages/status.js";
 import { generateVoiceoverAudio } from "./stages/voice.js";
 
@@ -40,17 +35,6 @@ program
   );
 
 program
-  .command("ideas")
-  .description("Generate Turkish UykulukSciFi video ideas.")
-  .action(
-    wrap(async () => {
-      const result = await runIdeas();
-      console.log(`Run created: ${result.runId}`);
-      console.log(`Ideas generated: ${result.ideas.map((idea) => idea.id).join(", ")}`);
-    }),
-  );
-
-program
   .command("doctor")
   .option("--json", "Print the raw doctor report JSON for automation.")
   .description("Diagnose local config, provider, assets, and publish safety.")
@@ -66,17 +50,7 @@ program
 
 registerApprovalCommands(program, wrap);
 registerAnalyticsCommands(program, wrap);
-
-program
-  .command("script")
-  .requiredOption("--run <run_id>")
-  .description("Generate script for an approved idea.")
-  .action(
-    wrap(async (options: { run: string }) => {
-      const meta = await generateScript(options.run);
-      console.log(`Script generated. Words: ${meta.wordCount}`);
-    }),
-  );
+registerGenerationCommands(program, wrap);
 
 const review = program.command("review").description("Run local reviews.");
 review
@@ -91,56 +65,6 @@ review
   );
 
 registerRevisionCommands(program, wrap);
-
-program
-  .command("package")
-  .requiredOption("--run <run_id>")
-  .option("--json", "Print the raw production package manifest JSON for automation.")
-  .description("Generate voiceover, subtitles, scenes, and YouTube metadata drafts.")
-  .action(
-    wrap(async (options: { json?: boolean; run: string }) => {
-      const manifest = await generateProductionPackage(options.run);
-      console.log(
-        options.json ? JSON.stringify(manifest, null, 2) : "Production package generated.",
-      );
-    }),
-  );
-
-program
-  .command("estimate")
-  .requiredOption("--run <run_id>")
-  .option("--json", "Print the raw cost estimate JSON for automation.")
-  .description("Estimate next-step costs.")
-  .action(
-    wrap(async (options: { json?: boolean; run: string }) => {
-      const estimate = await estimateCost(options.run);
-      console.log(options.json ? JSON.stringify(estimate, null, 2) : "Cost estimate generated.");
-    }),
-  );
-
-program
-  .command("render-plan")
-  .requiredOption("--run <run_id>")
-  .option("--json", "Print the raw render plan JSON for automation.")
-  .description("Generate a deterministic render plan and storyboard contact sheet.")
-  .action(
-    wrap(async (options: { json?: boolean; run: string }) => {
-      const plan = await generateRenderPlan(options.run);
-      console.log(options.json ? JSON.stringify(plan, null, 2) : "Render plan generated.");
-    }),
-  );
-
-program
-  .command("evidence")
-  .requiredOption("--run <run_id>")
-  .option("--json", "Print the raw evidence bundle JSON for automation.")
-  .description("Generate evidence bundle.")
-  .action(
-    wrap(async (options: { json?: boolean; run: string }) => {
-      const bundle = await generateEvidenceBundle(options.run);
-      console.log(options.json ? JSON.stringify(bundle, null, 2) : "Evidence bundle generated.");
-    }),
-  );
 
 program
   .command("readiness")

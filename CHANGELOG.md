@@ -15,6 +15,8 @@ _No unreleased changes yet._
 
 ### Features
 
+- add `producer ideas --json` and `producer script --json` for automation-friendly generation
+  inspection
 - add `producer package --json` for automation-friendly production manifest inspection
 - add `producer render-plan --json` for automation-friendly render-plan inspection
 
