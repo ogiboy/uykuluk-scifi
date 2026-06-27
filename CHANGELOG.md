@@ -16,6 +16,7 @@ _No unreleased changes yet._
 ### Features
 
 - add explicit ignored local prompt overrides with prompt provenance for provider-backed stages
+- report missing, empty, or unsafe local prompt overrides in `producer doctor`
 - add bounded package artifact revision events for subtitles, scenes, popup-card package Markdown,
   and YouTube metadata before cost/render work starts
 
