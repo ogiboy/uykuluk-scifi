@@ -260,6 +260,7 @@ pnpm producer estimate --run <run_id>
 pnpm producer estimate --run <run_id> --json
 pnpm producer approve cost --run <run_id> # only when the quote requires it
 pnpm producer evidence --run <run_id>
+pnpm producer evidence --run <run_id> --json
 pnpm producer readiness --run <run_id>
 pnpm producer readiness --run <run_id> --json
 pnpm producer voice --run <run_id> # optional, only after local TTS is explicitly enabled

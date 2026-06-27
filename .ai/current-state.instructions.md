@@ -374,7 +374,7 @@ pnpm producer revise package-artifact --run <run_id> --artifact subtitles --file
 pnpm producer render-plan --run <run_id>
 pnpm producer estimate --run <run_id> [--json]
 pnpm producer approve cost --run <run_id>
-pnpm producer evidence --run <run_id>
+pnpm producer evidence --run <run_id> [--json]
 pnpm producer readiness --run <run_id>
 pnpm producer readiness --run <run_id> --json
 pnpm producer status --run <run_id>
