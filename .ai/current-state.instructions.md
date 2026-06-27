@@ -316,6 +316,9 @@
   `prompts/defaults/` sources and configured ignored `prompts/local/*.md` overrides, including
   source paths, hashes, warnings, and doctor remediation. They do not edit prompts, call providers,
   approve prompt changes, or read `.ai/` as runtime state.
+- Studio home and `/analytics` surface read-only manual analytics feedback from ignored local
+  analytics artifacts. They show import/report status, data-quality guidance, and the next safe CLI
+  command without calling YouTube APIs or mutating run state.
 - Studio has a typed route-security contract for current read-only pages and disabled future action
   routes. Tests assert that all current App Router pages are covered as read-only, no Studio
   `route.ts` handlers exist, disabled actions require shared CLI/core service contracts, CSRF
