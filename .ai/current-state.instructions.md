@@ -66,8 +66,9 @@
 - `pnpm tts:piper:setup` downloads the pinned CPU-friendly Turkish
   `speaches-ai/piper-tr_TR-fahrettin-medium` model into ignored `models/` and prints the matching
   local config override for `local-piper`.
-- `producer doctor` TTS diagnostics persist a next-action field in JSON and Markdown for disabled
-  TTS, deterministic reference audio, valid local Piper config, and local Piper remediation.
+- `producer doctor` diagnostics persist next-action fields in JSON and Markdown for prompt override
+  path/content problems, disabled TTS, deterministic reference audio, valid local Piper config, and
+  local Piper remediation.
 - Approval-gated local FFmpeg draft render. `producer approve render` records approval for the exact
   current render-plan digest, voiceover digest, and voiceover mode/quality/candidate classification,
   then `producer render` requires `RENDER_APPROVED` before writing `production/render/draft.mp4`,

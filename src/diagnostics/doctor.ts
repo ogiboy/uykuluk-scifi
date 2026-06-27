@@ -7,6 +7,7 @@ import { writeTextFile } from "../utils/fs.js";
 import { writeJsonFile } from "../utils/json.js";
 import { table } from "../utils/markdown.js";
 import { nowIso } from "../utils/time.js";
+import { promptOverridesCheck } from "./promptOverrideDoctor.js";
 import { ttsProviderCheck } from "./ttsDoctor.js";
 
 export type DoctorCheck = {
@@ -79,6 +80,7 @@ export async function runDoctor(): Promise<DoctorReport> {
   }
 
   const diagnosticChecks = [
+    await promptOverridesCheck(config),
     await providerCheck(config),
     await ttsProviderCheck(config),
     await assetCheck(config),

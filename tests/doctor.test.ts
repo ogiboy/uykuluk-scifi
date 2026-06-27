@@ -27,6 +27,11 @@ describe("producer doctor", () => {
     expect(report.checks).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ name: "project config", status: "pass" }),
+        expect.objectContaining({
+          name: "prompt overrides",
+          status: "pass",
+          message: "No local prompt overrides configured.",
+        }),
         expect.objectContaining({ name: "LLM provider", status: "pass" }),
         expect.objectContaining({
           name: "TTS provider",
