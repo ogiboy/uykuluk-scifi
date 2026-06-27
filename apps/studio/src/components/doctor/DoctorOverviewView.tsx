@@ -3,6 +3,7 @@ import type {
   StudioDoctorOverview,
   StudioDoctorStatus,
 } from "@/lib/doctorOverview";
+import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
 
 type DoctorOverviewViewProps = Readonly<{
   overview: StudioDoctorOverview;
@@ -19,19 +20,21 @@ export function DoctorOverviewView({ overview }: DoctorOverviewViewProps) {
     <div className='analytics-detail-grid'>
       <section className='panel' aria-labelledby='doctor-overview-heading'>
         <h2 id='doctor-overview-heading'>Doctor Overview</h2>
-        <dl className='run-metadata'>
-          <Metric label='Status' value={overview.status} />
-          <Metric label='Checks' value={formatInteger(overview.checkCount)} />
-          <Metric label='Passing' value={formatInteger(overview.passCount)} />
-          <Metric label='Warnings' value={formatInteger(overview.warnCount)} />
-          <Metric label='Blocks' value={formatInteger(overview.blockCount)} />
-          <Metric label='Generated' value={overview.createdAt ?? "not generated"} />
-          <Metric
-            label='Duration'
-            value={overview.durationMs === null ? "not generated" : `${overview.durationMs} ms`}
-          />
-          <Metric label='Source' value={overview.jsonPath} />
-        </dl>
+        <MetricGrid
+          metrics={[
+            { label: "Status", value: overview.status },
+            { label: "Checks", value: formatStudioInteger(overview.checkCount) },
+            { label: "Passing", value: formatStudioInteger(overview.passCount) },
+            { label: "Warnings", value: formatStudioInteger(overview.warnCount) },
+            { label: "Blocks", value: formatStudioInteger(overview.blockCount) },
+            { label: "Generated", value: overview.createdAt ?? "not generated" },
+            {
+              label: "Duration",
+              value: overview.durationMs === null ? "not generated" : `${overview.durationMs} ms`,
+            },
+            { label: "Source", value: overview.jsonPath },
+          ]}
+        />
       </section>
 
       <section className='panel' aria-labelledby='doctor-action-heading'>
@@ -96,21 +99,6 @@ function DoctorCheckCard({ check }: Readonly<{ check: StudioDoctorCheckSummary }
 }
 
 /**
- * Displays a label and value pair.
- *
- * @param label - The term to show.
- * @param value - The value to show.
- */
-function Metric({ label, value }: Readonly<{ label: string; value: string }>) {
-  return (
-    <div>
-      <dt>{label}</dt>
-      <dd>{value}</dd>
-    </div>
-  );
-}
-
-/**
  * Selects the status pill class for a doctor check.
  *
  * @param status - The doctor check status.
@@ -132,14 +120,4 @@ function doctorStatusClassName(
     case "passing":
       return "status-pill small";
   }
-}
-
-/**
- * Formats a number as a rounded US locale integer.
- *
- * @param value - The number to format.
- * @returns The rounded number formatted with US digit separators.
- */
-function formatInteger(value: number): string {
-  return Math.round(value).toLocaleString("en-US");
 }

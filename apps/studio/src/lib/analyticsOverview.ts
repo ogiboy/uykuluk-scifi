@@ -10,6 +10,7 @@ import {
   type StudioAnalyticsDataQuality,
   type StudioAnalyticsReportStatus,
 } from "./analyticsQuality";
+import { ArtifactJsonParseError, parseArtifactJson, readOptionalText } from "./localArtifactReads";
 import { projectRoot } from "./projectRoot";
 
 const ANALYTICS_DATASET_PATH = "analytics/performance.json";
@@ -60,7 +61,9 @@ export async function getStudioAnalyticsOverview(): Promise<StudioAnalyticsOverv
 
   try {
     const rawDataset = await readFile(datasetPath, "utf8");
-    const dataset = analyticsDatasetSchema.parse(parseAnalyticsDatasetJson(rawDataset));
+    const dataset = analyticsDatasetSchema.parse(
+      parseArtifactJson(rawDataset, ANALYTICS_DATASET_PATH),
+    );
     const reportStatus = currentReportStatus(dataset, report.text);
     const mappedRunIds = new Set(
       dataset.records
@@ -91,31 +94,6 @@ export async function getStudioAnalyticsOverview(): Promise<StudioAnalyticsOverv
     };
   } catch (error) {
     return missingOrInvalidOverview(error, report);
-  }
-}
-
-/**
- * Reads a text file and truncates the returned content to a character limit.
- *
- * @param target - The file path to read
- * @param characterLimit - The maximum number of characters to return
- * @returns An object containing the truncated text, or `null` if the file does not exist, and whether truncation occurred
- */
-async function readOptionalText(
-  target: string,
-  characterLimit: number,
-): Promise<{ text: string | null; truncated: boolean }> {
-  try {
-    const content = await readFile(target, "utf8");
-    return {
-      text: content.slice(0, characterLimit),
-      truncated: content.length > characterLimit,
-    };
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-      return { text: null, truncated: false };
-    }
-    throw error;
   }
 }
 
@@ -156,32 +134,14 @@ function missingOrInvalidOverview(
   };
 }
 
-function parseAnalyticsDatasetJson(rawDataset: string): unknown {
-  try {
-    return JSON.parse(rawDataset) as unknown;
-  } catch (error) {
-    if (error instanceof SyntaxError) {
-      throw new AnalyticsJsonParseError(error.message);
-    }
-    throw error;
-  }
-}
-
 function invalidDatasetMessage(error: unknown): string {
-  if (error instanceof AnalyticsJsonParseError) {
+  if (error instanceof ArtifactJsonParseError) {
     return "analytics/performance.json contains malformed JSON or a truncated write.";
   }
   if (error instanceof ZodError) {
     return "analytics/performance.json is missing required fields.";
   }
   return "analytics/performance.json could not be read.";
-}
-
-class AnalyticsJsonParseError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "AnalyticsJsonParseError";
-  }
 }
 
 /**

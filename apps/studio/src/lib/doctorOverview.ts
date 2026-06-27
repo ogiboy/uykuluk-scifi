@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { ZodError } from "zod";
 import { doctorReportSchema, type DoctorCheck } from "../../../../src/diagnostics/doctorSchema";
+import { ArtifactJsonParseError, parseArtifactJson, readOptionalText } from "./localArtifactReads";
 import { projectRoot } from "./projectRoot";
 
 const DOCTOR_JSON_PATH = "diagnostics/doctor.json";
@@ -47,7 +48,7 @@ export async function getStudioDoctorOverview(): Promise<StudioDoctorOverview> {
 
   try {
     const rawReport = await readFile(jsonTarget, "utf8");
-    const parsedReport = doctorReportSchema.parse(parseDoctorJson(rawReport));
+    const parsedReport = doctorReportSchema.parse(parseArtifactJson(rawReport, DOCTOR_JSON_PATH));
     const checks = parsedReport.checks.map(summarizeCheck);
     const blockCount = countChecks(parsedReport.checks, "block");
     const warnCount = countChecks(parsedReport.checks, "warn");
@@ -70,31 +71,6 @@ export async function getStudioDoctorOverview(): Promise<StudioDoctorOverview> {
     };
   } catch (error) {
     return missingOrInvalidDoctorOverview(error, report);
-  }
-}
-
-/**
- * Reads a text file and truncates the returned content to a character limit.
- *
- * @param target - The file path to read
- * @param characterLimit - The maximum number of characters to return
- * @returns The optional text payload plus truncation metadata
- */
-async function readOptionalText(
-  target: string,
-  characterLimit: number,
-): Promise<{ text: string | null; truncated: boolean }> {
-  try {
-    const content = await readFile(target, "utf8");
-    return {
-      text: content.slice(0, characterLimit),
-      truncated: content.length > characterLimit,
-    };
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-      return { text: null, truncated: false };
-    }
-    throw error;
   }
 }
 
@@ -126,23 +102,6 @@ function missingOrInvalidDoctorOverview(
     status: missingReport ? "missing" : "invalid",
     warnCount: 0,
   };
-}
-
-/**
- * Parses doctor JSON while preserving a specific malformed-JSON error type.
- *
- * @param rawReport - Raw persisted doctor JSON.
- * @returns Parsed JSON value.
- */
-function parseDoctorJson(rawReport: string): unknown {
-  try {
-    return JSON.parse(rawReport) as unknown;
-  } catch (error) {
-    if (error instanceof SyntaxError) {
-      throw new DoctorJsonParseError(error.message);
-    }
-    throw error;
-  }
 }
 
 /**
@@ -207,18 +166,11 @@ function doctorStatus(passed: boolean, blockCount: number, warnCount: number): S
  * @returns A safe remediation-oriented error string.
  */
 function invalidDoctorMessage(error: unknown): string {
-  if (error instanceof DoctorJsonParseError) {
+  if (error instanceof ArtifactJsonParseError) {
     return "diagnostics/doctor.json contains malformed JSON or a truncated write.";
   }
   if (error instanceof ZodError) {
     return "diagnostics/doctor.json is missing required fields.";
   }
   return "diagnostics/doctor.json could not be read.";
-}
-
-class DoctorJsonParseError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "DoctorJsonParseError";
-  }
 }
