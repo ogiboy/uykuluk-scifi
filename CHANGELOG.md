@@ -9,7 +9,9 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Features
+
+- add `producer status --latest` for quick inspection of the newest run
 
 ## v0.18.0 (2026-06-27)
 

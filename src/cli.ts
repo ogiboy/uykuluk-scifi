@@ -3,6 +3,7 @@ import { Command } from "commander";
 import { registerAnalyticsCommands } from "./cli/analyticsCommands.js";
 import { registerApprovalCommands } from "./cli/approvalCommands.js";
 import { registerRevisionCommands } from "./cli/revisionCommands.js";
+import { resolveStatusRunId } from "./cli/statusRunSelector.js";
 import { initProject } from "./config/config.js";
 import { SafeExitError } from "./core/errors.js";
 import { listRuns, loadRun } from "./core/runStore.js";
@@ -150,15 +151,17 @@ program
 
 program
   .command("status")
-  .requiredOption("--run <run_id>")
+  .option("--run <run_id>")
+  .option("--latest", "Show the most recently created run.")
   .option("--json", "Print the raw run state JSON for automation.")
   .description("Show run state and artifacts.")
   .action(
-    wrap(async (options: { json?: boolean; run: string }) => {
+    wrap(async (options: { json?: boolean; latest?: boolean; run?: string }) => {
+      const runId = await resolveStatusRunId(options);
       console.log(
         options.json
-          ? JSON.stringify(await loadRun(options.run), null, 2)
-          : formatRunStatus(await readRunStatus(options.run)),
+          ? JSON.stringify(await loadRun(runId), null, 2)
+          : formatRunStatus(await readRunStatus(runId)),
       );
     }),
   );

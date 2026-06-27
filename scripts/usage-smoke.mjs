@@ -142,6 +142,10 @@ try {
     label: "status",
     expectOutput: "READY_FOR_MANUAL_PRODUCTION",
   });
+  run([pnpm, "producer", "status", "--latest"], {
+    label: "status latest",
+    expectOutput: runId,
+  });
   run([pnpm, "producer", "list-runs"], {
     label: "list-runs",
     expectOutput: runId,
@@ -243,7 +247,6 @@ try {
 } finally {
   await rm(tempRoot, { recursive: true, force: true });
 }
-
 /**
  * Runs a CLI command and records the result as a QA step.
  * @param {string[]} args - The command and arguments to execute.
@@ -351,7 +354,6 @@ function renderMarkdown(report) {
     .filter(Boolean)
     .join("\n");
 }
-
 function escapeCell(value) {
   return String(value).replaceAll("|", "/").replaceAll("\n", "<br>");
 }

@@ -4,7 +4,7 @@ import { spawnSync } from "node:child_process";
 import { describe, expect, it } from "vitest";
 import { artifactPath } from "../src/core/artifacts";
 import { ledgerPath } from "../src/core/ledger";
-import { createRun, listRuns, runDir, statePath } from "../src/core/runStore";
+import { createRun, listRuns, runDir, saveRun, statePath } from "../src/core/runStore";
 import { costLedgerPath, readAllCostEvents } from "../src/costs/costLedger";
 import {
   costReservationLedgerPath,
@@ -74,16 +74,51 @@ describe("run id validation", () => {
 
   it("makes the CLI reject a traversal-shaped run id", () => {
     const unsafeRunId = pathSegments(parentPathSegment, "outside");
-    const result = spawnSync(
-      path.join(repoRoot, "node_modules", ".bin", "tsx"),
-      [path.join(repoRoot, "src", "cli.ts"), "status", "--run", unsafeRunId],
-      { cwd: process.cwd(), encoding: "utf8" },
-    );
+    const result = runCli(["status", "--run", unsafeRunId]);
 
     expect(result.status).not.toBe(0);
     expect(`${result.stdout}${result.stderr}`).toMatch(/invalid run id/i);
   });
+
+  it("makes the CLI status command require exactly one run selector", async () => {
+    const run = await createRun();
+
+    const missing = runCli(["status"]);
+    const duplicate = runCli(["status", "--run", run.runId, "--latest"]);
+
+    expect(missing.status).not.toBe(0);
+    expect(`${missing.stdout}${missing.stderr}`).toContain("Provide --run <run_id> or --latest.");
+    expect(duplicate.status).not.toBe(0);
+    expect(`${duplicate.stdout}${duplicate.stderr}`).toContain(
+      "Use either --run <run_id> or --latest, not both.",
+    );
+  });
+
+  it("makes the CLI status command select the latest run when requested", async () => {
+    const older = await createRun();
+    await saveRun({ ...older, createdAt: "2026-06-01T00:00:00.000Z" });
+    const latest = await createRun();
+    await saveRun({ ...latest, createdAt: "2026-06-02T00:00:00.000Z" });
+
+    const result = runCli(["status", "--latest", "--json"]);
+
+    expect(result.status).toBe(0);
+    expect(JSON.parse(result.stdout) as unknown).toMatchObject({ runId: latest.runId });
+  });
 });
+
+function runCli(args: string[]): { status: number | null; stderr: string; stdout: string } {
+  const result = spawnSync(
+    path.join(repoRoot, "node_modules", ".bin", "tsx"),
+    [path.join(repoRoot, "src", "cli.ts"), ...args],
+    { cwd: process.cwd(), encoding: "utf8" },
+  );
+  return {
+    status: result.status,
+    stderr: result.stderr.toString(),
+    stdout: result.stdout.toString(),
+  };
+}
 
 function posixAbsolutePath(...segments: string[]): string {
   return `${posixPathSeparator}${segments.join(posixPathSeparator)}`;
