@@ -311,7 +311,8 @@ pnpm studio:build
 Current Studio scope:
 
 - production desk shell;
-- read-only `/runs` index over persisted local run state;
+- read-only `/runs` index over persisted local run state with readiness, evidence status, and next
+  safe action visibility;
 - read-only `/runs/<run_id>` detail view with next action, readiness status, and review artifact
   availability plus production media evidence details, readiness check messages, and readiness
   next-action commands from CLI/core artifacts. Malformed or stale evidence artifacts stay

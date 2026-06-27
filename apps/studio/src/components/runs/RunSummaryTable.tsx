@@ -21,6 +21,7 @@ export function RunSummaryTable({ runs }: RunSummaryTableProps) {
           <span role='columnheader'>Run</span>
           <span role='columnheader'>State</span>
           <span role='columnheader'>Readiness</span>
+          <span role='columnheader'>Evidence</span>
           <span role='columnheader'>Next action</span>
         </div>
         {runs.map((run) => (
@@ -28,6 +29,10 @@ export function RunSummaryTable({ runs }: RunSummaryTableProps) {
             <span role='cell'>{run.runId}</span>
             <span role='cell'>{run.state}</span>
             <span role='cell'>{formatReadiness(run.readinessPassed)}</span>
+            <span className='run-cell-stack' role='cell'>
+              <strong>{run.evidenceStatus}</strong>
+              {run.evidenceStatus === "available" ? null : <small>{run.evidenceMessage}</small>}
+            </span>
             <span role='cell'>{run.nextRecommendedCommand ?? "Generate evidence from CLI"}</span>
           </Link>
         ))}

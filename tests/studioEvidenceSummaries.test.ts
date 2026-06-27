@@ -1,6 +1,6 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
-import { getStudioRunDetail } from "../apps/studio/src/lib/runSummaries";
+import { getStudioRunDetail, listStudioRuns } from "../apps/studio/src/lib/runSummaries";
 import { artifactPath } from "../src/core/artifacts";
 import { createRun, saveRun } from "../src/core/runStore";
 import { useTempProject } from "./helpers";
@@ -72,6 +72,31 @@ describe("Studio evidence summary validity", () => {
       evidenceNextAction: `pnpm producer evidence --run ${run.runId}`,
       evidenceStatus: "missing",
       nextRecommendedCommand: "pnpm producer ideas",
+    });
+  });
+
+  it("surfaces stale evidence status in run index summaries", async () => {
+    const run = await createRun();
+    await saveRun({ ...run, artifacts: ["evidence_bundle.json"], state: "SCRIPT_APPROVED" });
+    await writeFile(
+      artifactPath(run.runId, "evidence_bundle.json"),
+      JSON.stringify({
+        currentState: "SCRIPT_REVIEWED",
+        nextRecommendedCommand: "pnpm producer approve script --run <run_id>",
+        runId: run.runId,
+      }),
+      "utf8",
+    );
+
+    const summaries = await listStudioRuns();
+
+    expect(summaries[0]).toMatchObject({
+      blockedActionCount: 0,
+      evidenceMessage:
+        "Evidence bundle was generated for SCRIPT_REVIEWED, but the run is SCRIPT_APPROVED.",
+      evidenceNextAction: `pnpm producer evidence --run ${run.runId}`,
+      evidenceStatus: "stale",
+      nextRecommendedCommand: `pnpm producer evidence --run ${run.runId}`,
     });
   });
 });

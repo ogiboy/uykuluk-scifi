@@ -272,15 +272,16 @@
   `next/font` wired for the initial shell.
 - Studio has a type-safe `next-intl` request/provider foundation with English and Turkish locale
   selection through a local cookie. Existing operator copy has not been migrated yet.
-- Studio can list local persisted runs and show a read-only run detail page with a concrete next
-  safe action, readiness status, readiness check messages, warning/approval counts, blocked-action
-  details, production media evidence details, and review artifact availability. Readiness check
-  next-action commands are shown when the CLI/core diagnostics provide them. Missing, malformed, or
-  stale readiness diagnostics point operators back to `producer readiness --run <run_id>`. Malformed
-  or stale evidence bundles point operators back to `producer evidence --run <run_id>` and are not
-  used for blocked-action, production-media, or next-action summaries. It does not mutate run state
-  or call providers. Early states without an evidence bundle reuse the CLI/core next-action contract
-  instead of presenting evidence generation as the only possible step.
+- Studio can list local persisted runs with readiness, evidence status, and next-action visibility,
+  then show a read-only run detail page with a concrete next safe action, readiness status,
+  readiness check messages, warning/approval counts, blocked-action details, production media
+  evidence details, and review artifact availability. Readiness check next-action commands are shown
+  when the CLI/core diagnostics provide them. Missing, malformed, or stale readiness diagnostics
+  point operators back to `producer readiness --run <run_id>`. Malformed or stale evidence bundles
+  point operators back to `producer evidence --run <run_id>` and are not used for blocked-action,
+  production-media, or next-action summaries. It does not mutate run state or call providers. Early
+  states without an evidence bundle reuse the CLI/core next-action contract instead of presenting
+  evidence generation as the only possible step.
 - Studio run detail includes read-only artifact preview excerpts for scripts, reviews, production
   packages, render plans, contact sheets, asset provenance, evidence, readiness, voiceover metadata,
   and render manifests. Previews are grouped by operator review phase with per-artifact review
