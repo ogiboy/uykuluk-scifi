@@ -3,10 +3,12 @@ import { CommandPanel } from "@/components/CommandPanel";
 import { ServiceContractPanel } from "@/components/ServiceContractPanel";
 import { StatusGrid } from "@/components/StatusGrid";
 import { DoctorStatusPanel } from "@/components/doctor/DoctorStatusPanel";
+import { LatestRunReadinessPanel } from "@/components/runs/LatestRunReadinessPanel";
 import { StudioTabs } from "@/components/studio/StudioTabs";
 import { getStudioAssetInventory } from "@/lib/assetInventory";
 import { getStudioDoctorOverview } from "@/lib/doctorOverview";
 import { getStudioPromptInventory } from "@/lib/promptInventory";
+import { listStudioRuns } from "@/lib/runSummaries";
 import { studioSections } from "@/lib/studioData";
 
 export const dynamic = "force-dynamic";
@@ -17,10 +19,11 @@ export const dynamic = "force-dynamic";
  * @returns The Studio page layout with navigation, status panels, and the current asset inventory.
  */
 export default async function StudioHomePage() {
-  const [assetInventory, doctorOverview, promptInventory] = await Promise.all([
+  const [assetInventory, doctorOverview, promptInventory, runs] = await Promise.all([
     getStudioAssetInventory(),
     getStudioDoctorOverview(),
     getStudioPromptInventory(),
+    listStudioRuns(),
   ]);
 
   return (
@@ -59,6 +62,7 @@ export default async function StudioHomePage() {
 
         <StatusGrid />
         <DoctorStatusPanel overview={doctorOverview} />
+        <LatestRunReadinessPanel latestRun={runs[0] ?? null} />
         <CommandPanel />
         <ServiceContractPanel />
         <AssetInventory inventory={assetInventory} />

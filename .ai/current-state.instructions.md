@@ -307,10 +307,11 @@
   missing guarded assets as operator warnings without approving assets, rendering media, or mutating
   run state.
 - Studio home and `/doctor` surface read-only producer diagnostics backed by ignored
-  `diagnostics/doctor.json` and `diagnostics/doctor.md`. They surface persisted
+  `diagnostics/doctor.json` and `diagnostics/doctor.md`. Studio home also surfaces latest-run
+  readiness/evidence status from existing run summaries. These views surface persisted
   config/provider/TTS/asset/publish checks, summary counts, Markdown preview, malformed or missing
-  diagnostic states, and the next safe remediation. They do not run doctor, edit config, start
-  providers, download models, upload, publish, or mutate workflow state.
+  diagnostic states, readiness state, and the next safe remediation. They do not run doctor, edit
+  config, start providers, download models, upload, publish, or mutate workflow state.
 - Studio home and `/prompts` have read-only runtime prompt inventory visibility for tracked
   `prompts/defaults/` sources and configured ignored `prompts/local/*.md` overrides, including
   source paths, hashes, warnings, and doctor remediation. They do not edit prompts, call providers,
