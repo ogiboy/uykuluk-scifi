@@ -109,6 +109,7 @@ async function providerCheck(config: ProducerConfig | undefined): Promise<Doctor
       name: "LLM provider",
       status: "block",
       message: "Provider diagnostics require valid project config.",
+      nextAction: "Fix producer.config.json, then rerun pnpm producer doctor.",
     };
   }
   if (config.providers.llm.mode === "mock") {
@@ -126,6 +127,9 @@ async function providerCheck(config: ProducerConfig | undefined): Promise<Doctor
     name: "LLM provider",
     status: diagnostic.available ? "pass" : "block",
     message: diagnostic.message,
+    nextAction: diagnostic.available
+      ? undefined
+      : "Start Ollama, install the configured model, or switch providers.llm.mode to mock before rerunning pnpm producer doctor.",
   };
 }
 
@@ -161,6 +165,7 @@ function publishDefaultsCheck(config: ProducerConfig | undefined): DoctorCheck {
       name: "publish defaults",
       status: "block",
       message: "Publish diagnostics require valid project config.",
+      nextAction: "Fix producer.config.json, then rerun pnpm producer doctor.",
     };
   }
   const youtube = config.providers.youtube;
@@ -175,6 +180,9 @@ function publishDefaultsCheck(config: ProducerConfig | undefined): DoctorCheck {
     message: locked
       ? "YouTube upload and public/scheduled publish remain disabled."
       : "Risky YouTube configuration detected; keep upload and public publish disabled.",
+    nextAction: locked
+      ? undefined
+      : "Set providers.youtube.enabled, allowPrivateUpload, and allowPublicPublish to false unless a future upload/publish approval workflow is explicitly enabled.",
   };
 }
 

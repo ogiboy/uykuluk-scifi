@@ -52,6 +52,8 @@ describe("producer doctor", () => {
     expect(report.checks.find((check) => check.name === "LLM provider")).toMatchObject({
       status: "block",
       message: expect.stringContaining("Ollama unavailable at http://localhost:11434"),
+      nextAction:
+        "Start Ollama, install the configured model, or switch providers.llm.mode to mock before rerunning pnpm producer doctor.",
     });
     expect(await readJsonFile(doctorJsonPath())).toEqual(report);
   });
@@ -152,6 +154,8 @@ describe("producer doctor", () => {
     expect(report.checks.find((check) => check.name === "publish defaults")).toMatchObject({
       status: "block",
       message: expect.stringContaining("Risky YouTube configuration"),
+      nextAction:
+        "Set providers.youtube.enabled, allowPrivateUpload, and allowPublicPublish to false unless a future upload/publish approval workflow is explicitly enabled.",
     });
   });
 });

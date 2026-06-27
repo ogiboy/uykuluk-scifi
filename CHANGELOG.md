@@ -25,6 +25,7 @@ future generated release notes can be inserted predictably.
 
 ### Fixes
 
+- add next-action guidance for blocked Ollama and publish-default doctor diagnostics
 - clear Sonar quality-gate findings for local media evidence changes
 - make usage smoke prove the safe local render-plan, voiceover, and draft-render loop
 - suppress the known Studio local asset-inventory Turbopack tracing warning
