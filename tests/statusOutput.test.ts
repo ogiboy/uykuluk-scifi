@@ -147,6 +147,7 @@ describe("operator status output", () => {
           status: "pass",
           durationSeconds: 8.2,
           mode: "local-piper",
+          productionVoiceCandidate: true,
           sourceWordCount: 42,
         },
       }),
@@ -156,7 +157,9 @@ describe("operator status output", () => {
     const output = formatRunStatus(await readRunStatus(run.runId));
 
     expect(output).toContain("- Render plan: pass (11 assets, 3 artifacts)");
-    expect(output).toContain("- Voiceover audio: pass (8s, local-piper, 42 source words)");
+    expect(output).toContain(
+      "- Voiceover audio: pass (8s, local-piper, production voice candidate, 42 source words)",
+    );
     expect(output).toContain(
       "- Draft render: pass (8s, intro -> scene -> outro, source frames intro:2/outro:2, ffprobe 1280x720 audio)",
     );

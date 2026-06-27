@@ -82,7 +82,10 @@ describe("voiceover audio", () => {
     );
 
     const evidence = (await generateEvidenceBundle(runId)) as {
+      blockedActions: string[];
       voiceoverAudio: {
+        productionVoiceCandidate: boolean;
+        quality: string;
         status: string;
         path: string;
         durationSeconds: number;
@@ -93,7 +96,20 @@ describe("voiceover audio", () => {
       status: "pass",
       path: "production/audio/voiceover.wav",
       durationSeconds: meta.output.durationSeconds,
+      productionVoiceCandidate: false,
+      quality: "deterministic-local-reference",
       reviewPath: "production/audio/voiceover_review.md",
+    });
+    expect(evidence.blockedActions).toContain(
+      "Production voice candidate is not available; deterministic local audio is timing/reference only until reviewed local Piper audio exists.",
+    );
+    const postVoiceReadiness = await runReadiness(runId);
+    expect(postVoiceReadiness.passed).toBe(true);
+    expect(
+      postVoiceReadiness.checks.find((check) => check.name === "voiceover audio available"),
+    ).toMatchObject({
+      status: "warn",
+      message: expect.stringContaining("timing/reference audio only"),
     });
   });
 

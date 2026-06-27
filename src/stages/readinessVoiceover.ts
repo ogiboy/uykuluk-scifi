@@ -6,10 +6,14 @@ import type { ReadinessCheck } from "./readiness.js";
 export async function voiceoverReadinessCheck(run: RunRecord): Promise<ReadinessCheck> {
   const evidence = await readVoiceoverAudioEvidence(run);
   if (evidence.status === "pass") {
+    const referenceOnly =
+      evidence.productionVoiceCandidate === false
+        ? " This is timing/reference audio only; use reviewed local Piper audio before final production voice."
+        : "";
     return {
       name: "voiceover audio available",
-      status: "pass",
-      message: `${evidence.path} exists with ${Math.round(evidence.durationSeconds)}s ${evidence.mode} audio.`,
+      status: evidence.productionVoiceCandidate ? "pass" : "warn",
+      message: `${evidence.path} exists with ${Math.round(evidence.durationSeconds)}s ${evidence.mode} audio.${referenceOnly}`,
     };
   }
   if (evidence.status === "missing") {

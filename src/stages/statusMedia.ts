@@ -15,6 +15,7 @@ type EvidenceMediaStatus = {
   mediaProbe?: unknown;
   message?: unknown;
   mode?: unknown;
+  productionVoiceCandidate?: unknown;
   sourceFrameCount?: unknown;
   sourceFrameSegments?: unknown;
   sourceWordCount?: unknown;
@@ -112,9 +113,20 @@ function voiceoverDetail(evidence: EvidenceMediaStatus): string | undefined {
   const parts = [
     durationDetail(evidence.durationSeconds),
     typeof evidence.mode === "string" ? evidence.mode : undefined,
+    voiceoverQualityDetail(evidence.productionVoiceCandidate),
     sourceWordCountDetail(evidence.sourceWordCount),
   ].filter((part): part is string => Boolean(part));
   return parts.length > 0 ? parts.join(", ") : undefined;
+}
+
+function voiceoverQualityDetail(value: unknown): string | undefined {
+  if (value === true) {
+    return "production voice candidate";
+  }
+  if (value === false) {
+    return "timing/reference only";
+  }
+  return undefined;
 }
 
 function draftRenderDetail(evidence: EvidenceMediaStatus): string | undefined {

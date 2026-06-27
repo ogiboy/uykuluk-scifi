@@ -39,6 +39,8 @@ describe("evidence Markdown media summary", () => {
         digest: digest(),
         durationSeconds: 2.4,
         mode: "deterministic-local",
+        productionVoiceCandidate: false,
+        quality: "deterministic-local-reference",
         reviewPath: "production/audio/voiceover_review.md",
         sourceWordCount: 12,
       },
@@ -58,6 +60,9 @@ describe("evidence Markdown media summary", () => {
     });
 
     expect(markdown).toContain("Draft render: pass (3s, scene).");
+    expect(markdown).toContain(
+      "Voiceover audio: pass (2s, deterministic-local, timing/reference only, 12 source words).",
+    );
   });
 
   it("materializes the run id in the operator-facing next command", () => {

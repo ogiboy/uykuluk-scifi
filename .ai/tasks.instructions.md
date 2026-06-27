@@ -61,7 +61,8 @@
   the current implemented foundation is deterministic reference WAV, operator audio review Markdown,
   optional configured `local-piper` shell-out, pinned Turkish model setup into ignored `models/`,
   provider model/config digest provenance, local smoke evidence, and `producer doctor`
-  setup/remediation next actions. Keep the listen-before-render decision boundary explicit.
+  setup/remediation next actions. Evidence/readiness/status now mark deterministic-local WAVs as
+  timing/reference only; keep the listen-before-render decision boundary explicit.
 - Harden FFmpeg draft render visual polish; the current foundation is exact-approval-gated local MP4
   with intro/outro source-card bookends or source-frame sequences, scene-timed background plates,
   subtitle burn-in, lower-third, popup-card, waveform, watermark overlays, render manifest evidence,

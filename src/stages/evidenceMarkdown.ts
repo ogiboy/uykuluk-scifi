@@ -132,12 +132,24 @@ function voiceoverAudioSummary(
   voiceoverAudio: Awaited<ReturnType<typeof readVoiceoverAudioEvidence>>,
 ): string {
   if (voiceoverAudio.status === "pass") {
-    return `Voiceover audio: pass (${Math.round(voiceoverAudio.durationSeconds)}s, ${voiceoverAudio.mode}, ${voiceoverAudio.sourceWordCount} source words).`;
+    return `Voiceover audio: pass (${Math.round(voiceoverAudio.durationSeconds)}s, ${voiceoverQualitySummary(voiceoverAudio)}, ${voiceoverAudio.sourceWordCount} source words).`;
   }
   if (voiceoverAudio.status === "block") {
     return `Voiceover audio: block (${voiceoverAudio.message}).`;
   }
   return `Voiceover audio: missing (${voiceoverAudio.requiredArtifacts.join(", ")}).`;
+}
+
+function voiceoverQualitySummary(
+  voiceoverAudio: Extract<
+    Awaited<ReturnType<typeof readVoiceoverAudioEvidence>>,
+    { status: "pass" }
+  >,
+): string {
+  if (voiceoverAudio.productionVoiceCandidate) {
+    return `${voiceoverAudio.mode}, production voice candidate, operator listening still required`;
+  }
+  return `${voiceoverAudio.mode}, timing/reference only`;
 }
 
 function draftRenderSummary(

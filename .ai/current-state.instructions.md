@@ -58,7 +58,9 @@
   `deterministic-local` is a timing/reference adapter; `local-piper` shells out to a configured
   local Piper binary and ignored model path. Local Piper metadata, evidence, and review Markdown now
   record the model/config SHA-256 digests used for the generated WAV. The review Markdown includes
-  an explicit listen-before-render decision boundary and exact next safe commands.
+  an explicit listen-before-render decision boundary and exact next safe commands. Evidence,
+  readiness, status, and blocked-action summaries mark deterministic-local WAVs as timing/reference
+  only until reviewed local Piper audio exists.
 - `pnpm tts:piper:setup` downloads the pinned CPU-friendly Turkish
   `speaches-ai/piper-tr_TR-fahrettin-medium` model into ignored `models/` and prints the matching
   local config override for `local-piper`.
@@ -422,9 +424,10 @@ Corepack/PATH before treating failures as product failures.
   review/planning artifact only.
 - Local TTS currently provides a deterministic timing/reference WAV, a configured Piper shell-out,
   ignored-model setup helper, model/config digest provenance, and operator audio review Markdown. It
-  does not commit voice models, approve render execution, upload, or publish. A 2026-06-25 local
-  Piper smoke generated WAV evidence successfully; subjective voice quality, pacing, and
-  pronunciation still require operator listening before production use.
+  does not commit voice models, approve render execution, upload, or publish. Deterministic-local
+  evidence remains valid for timing/pipeline proof but is explicitly not a production voice
+  candidate. A 2026-06-25 local Piper smoke generated WAV evidence successfully; subjective voice
+  quality, pacing, and pronunciation still require operator listening before production use.
 - FFmpeg draft render currently focuses on a local review MP4 using intro/outro source-card bookends
   or source-frame sequences, scene-timed background plates, subtitle burn-in, lower-third,
   popup-card, waveform, watermark overlays, voiceover audio, render manifest evidence, source-frame

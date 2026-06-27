@@ -85,8 +85,9 @@ agent-tracking state only; runtime code must not require it.
   evidence bundles.
 - Render Plan + Contact Sheet MVP that maps generated scenes to tracked visual assets and records
   per-run asset provenance, including committed intro/outro source-frame sequences when present.
-- Disabled-by-default local voiceover generation with deterministic reference WAV output, operator
-  review Markdown, and an optional Piper binary/model-path adapter.
+- Disabled-by-default local voiceover generation with deterministic reference WAV output,
+  production-readiness warnings, operator review Markdown, and an optional Piper binary/model-path
+  adapter.
 - Approval-gated local FFmpeg draft render that writes a review MP4, manifest, operator review
   Markdown, and `ffprobe` media-validation evidence from the current render plan, intro/outro source
   cards or source-frame sequences, scene-timed background plates, voiceover audio, subtitles,
@@ -203,7 +204,8 @@ agent-tracking state only; runtime code must not require it.
   approval, production-package integrity, and render-plan evidence.
   `production/audio/voiceover_review.md` gives the operator the local audio review checklist,
   required decision boundary, and next safe commands; audio file existence never grants render
-  approval.
+  approval. Evidence, readiness, and status label deterministic-local WAVs as timing/reference
+  artifacts until reviewed local Piper audio exists.
 - Draft render runs only after explicit render approval for the exact current render-plan and
   voiceover digests. The manifest records the intro-to-outro timeline, composed overlay roles,
   intro/outro source-frame counts when available, placements used by FFmpeg, and `ffprobe`-validated
@@ -454,15 +456,16 @@ pnpm tts:piper:setup
 ```
 
 `deterministic-local` writes a reference WAV for timing and pipeline validation; it is not a
-production-quality voice. `pnpm tts:piper:setup` downloads the default pinned Turkish
-`speaches-ai/piper-tr_TR-fahrettin-medium` model into ignored `models/` and prints the matching
-ignored `producer.config.json` override. The helper keeps Hugging Face `config.json` and also writes
-the Piper-compatible `model.onnx.json` alias. `local-piper` requires a local `piper` binary and
-ignored model files configured with `piperModelPath` and `piperConfigPath`. Local Piper voiceover
-metadata and review Markdown record the model/config SHA-256 digests used for the WAV. Do not commit
-downloaded voice models or generated audio. `producer voice` also writes
-`production/audio/voiceover_review.md` so the operator can check timing, pacing, pronunciation,
-source binding, and provider provenance before render approval.
+production-quality voice. Evidence/readiness/status keep this distinction visible and add a
+production-voice candidate warning until reviewed local Piper audio exists. `pnpm tts:piper:setup`
+downloads the default pinned Turkish `speaches-ai/piper-tr_TR-fahrettin-medium` model into ignored
+`models/` and prints the matching ignored `producer.config.json` override. The helper keeps Hugging
+Face `config.json` and also writes the Piper-compatible `model.onnx.json` alias. `local-piper`
+requires a local `piper` binary and ignored model files configured with `piperModelPath` and
+`piperConfigPath`. Local Piper voiceover metadata and review Markdown record the model/config
+SHA-256 digests used for the WAV. Do not commit downloaded voice models or generated audio.
+`producer voice` also writes `production/audio/voiceover_review.md` so the operator can check
+timing, pacing, pronunciation, source binding, and provider provenance before render approval.
 
 `producer render` requires `ffmpeg` on `PATH` unless called through a test harness with an explicit
 binary. The draft render is a local review artifact and may be regenerated after approval; its

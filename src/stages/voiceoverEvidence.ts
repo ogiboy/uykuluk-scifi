@@ -62,7 +62,9 @@ export type VoiceoverAudioEvidence =
       digest: string;
       durationSeconds: number;
       mode: VoiceoverAudioMeta["mode"];
+      productionVoiceCandidate: boolean;
       provider?: NonNullable<VoiceoverAudioMeta["provider"]>;
+      quality: VoiceoverAudioMeta["quality"];
       reviewPath: string;
       sourceWordCount: number;
     }
@@ -104,7 +106,9 @@ export async function readVoiceoverAudioEvidence(run: RunRecord): Promise<Voiceo
       digest,
       durationSeconds: meta.output.durationSeconds,
       mode: meta.mode,
+      productionVoiceCandidate: meta.quality === "local-piper",
       provider: meta.provider,
+      quality: meta.quality,
       reviewPath: voiceoverAudioReviewPath,
       sourceWordCount: meta.source.wordCount,
     };
