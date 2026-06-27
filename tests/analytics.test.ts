@@ -55,6 +55,15 @@ describe("manual analytics import", () => {
     expect(report).toContain("Mapped runs");
     expect(report).toContain("Unmapped records");
     expect(report).toContain("| run_20260624010101_abcd12 | 2 | 1,450 |");
+    expect(report).toContain("Import Data Quality");
+    expect(report).toContain("| High confidence records | 2 |");
+    expect(report).toContain("| Medium confidence records | 1 |");
+    expect(report).toContain("| Missing run links | 1 |");
+    expect(report).toContain("| Missing CTR | 0 |");
+    expect(report).toContain("| Missing retention | 0 |");
+    expect(report).toContain(
+      "Next data-quality action: Add run_id values before comparing imported videos back to producer runs.",
+    );
     expect(report).toContain("Non-Causal Recommendations");
     expect(report).toContain("Repeat candidates");
     expect(report).toContain(

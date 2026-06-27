@@ -280,10 +280,11 @@ Analytics imports accept operator-provided CSV or JSON records with fields such 
 overall metrics, top videos, run-linked summaries, unmapped record counts, and operator review
 prompts, including non-causal repeat / avoid-without-revision / test-next recommendations. The
 recommendations include simple confidence/missingness framing based on the fields present in the
-import. The importer writes ignored local artifacts under `analytics/`; Studio can display a
-read-only overview and import data-quality summary at `/analytics`. Neither path calls YouTube APIs,
-uploads media, publishes content, mutates workflow state, or claims causality from performance
-changes.
+import. The report also prints import data-quality counts for confidence levels and missing run
+links, views, impressions, CTR, or retention fields. The importer writes ignored local artifacts
+under `analytics/`; Studio can display the same read-only import data-quality summary at
+`/analytics`. Neither path calls YouTube APIs, uploads media, publishes content, mutates workflow
+state, or claims causality from performance changes.
 
 `producer analytics report` refreshes `analytics/performance_report.md` from the saved local dataset
 before printing it. Studio marks the report preview as missing, stale, or current by checking it

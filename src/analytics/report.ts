@@ -1,10 +1,12 @@
 import { table } from "../utils/markdown.js";
+import { summarizeAnalyticsDataQuality } from "./dataQuality.js";
 import { renderAnalyticsRecommendations } from "./recommendations.js";
 import type { AnalyticsDataset, AnalyticsRecord } from "./schema.js";
 
 export function renderAnalyticsReport(dataset: AnalyticsDataset): string {
   const totals = summarize(dataset.records);
   const runSummaries = summarizeRuns(dataset.records);
+  const dataQuality = summarizeAnalyticsDataQuality(dataset.records);
   const unmappedCount = dataset.records.filter((record) => !record.runId).length;
   return [
     "# Manual Analytics Report",
@@ -53,6 +55,24 @@ export function renderAnalyticsReport(dataset: AnalyticsDataset): string {
           formatPercent(record.averagePercentageViewed),
         ]),
     ),
+    "",
+    "## Import Data Quality",
+    "",
+    table(
+      ["Check", "Value"],
+      [
+        ["High confidence records", formatInteger(dataQuality.highConfidenceRecordCount)],
+        ["Medium confidence records", formatInteger(dataQuality.mediumConfidenceRecordCount)],
+        ["Low confidence records", formatInteger(dataQuality.lowConfidenceRecordCount)],
+        ["Missing run links", formatInteger(dataQuality.missingRunLinkCount)],
+        ["Missing views", formatInteger(dataQuality.missingViewsCount)],
+        ["Missing impressions", formatInteger(dataQuality.missingImpressionsCount)],
+        ["Missing CTR", formatInteger(dataQuality.missingCtrCount)],
+        ["Missing retention", formatInteger(dataQuality.missingRetentionCount)],
+      ],
+    ),
+    "",
+    `Next data-quality action: ${dataQuality.nextDataQualityAction}`,
     "",
     "## Non-Causal Recommendations",
     "",

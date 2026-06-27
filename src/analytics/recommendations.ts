@@ -1,13 +1,9 @@
+import { analyticsRecordConfidence } from "./dataQuality.js";
 import type { AnalyticsRecord } from "./schema.js";
 
 type Recommendation = {
   reasons: string[];
   record: AnalyticsRecord;
-};
-
-export type AnalyticsRecordConfidence = {
-  details: string;
-  level: "high" | "low" | "medium";
 };
 
 export function renderAnalyticsRecommendations(records: AnalyticsRecord[]): string[] {
@@ -66,34 +62,6 @@ function recommendationLines(recommendations: Recommendation[], emptyText: strin
     const confidence = analyticsRecordConfidence(record);
     return `- ${inlineText(record.title ?? record.videoId)} (${record.runId ?? "unmapped"}): ${reasons.join(", ")} (confidence: ${confidence.level}; ${confidence.details}).`;
   });
-}
-
-export function analyticsRecordConfidence(record: AnalyticsRecord): AnalyticsRecordConfidence {
-  const missing = [
-    record.runId ? null : "run link",
-    record.views !== undefined ? null : "views",
-    record.impressions !== undefined ? null : "impressions",
-    record.ctr !== undefined ? null : "CTR",
-    record.averagePercentageViewed !== undefined ? null : "retention",
-  ].filter(isString);
-  const presentCount = 5 - missing.length;
-  return {
-    details:
-      missing.length === 0
-        ? "run-linked with views, impressions, CTR, and retention"
-        : `missing ${missing.join(", ")}`,
-    level: confidenceLevel(presentCount),
-  };
-}
-
-function confidenceLevel(presentCount: number): AnalyticsRecordConfidence["level"] {
-  if (presentCount >= 5) {
-    return "high";
-  }
-  if (presentCount >= 3) {
-    return "medium";
-  }
-  return "low";
 }
 
 function isRecommendation(value: Recommendation | null): value is Recommendation {
