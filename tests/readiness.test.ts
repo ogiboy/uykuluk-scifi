@@ -5,16 +5,20 @@ import { loadRun } from "../src/core/runStore";
 import { readJsonFile } from "../src/utils/json";
 import { uploadPrivatePlaceholder, publishSchedulePlaceholder } from "../src/stages/disabled";
 import { approveIdea } from "../src/stages/approveIdea";
+import { approveRender } from "../src/stages/approveRender";
 import { approveScript } from "../src/stages/approveScript";
 import { generateEvidenceBundle } from "../src/stages/evidence";
 import { estimateCost } from "../src/stages/estimate";
 import { runIdeas } from "../src/stages/ideas";
 import { generateProductionPackage } from "../src/stages/productionPackage";
+import { generateRenderPlan } from "../src/stages/renderPlan";
 import { runReadiness } from "../src/stages/readiness";
 import { formatReadinessConsole } from "../src/stages/readinessConsole";
 import { reviewScript } from "../src/stages/reviewScript";
 import { generateScript } from "../src/stages/script";
+import { generateVoiceoverAudio } from "../src/stages/voice";
 import { useTempProject } from "./helpers";
+import { createMinimalRenderAssets, enableDeterministicTts } from "./renderTestHelpers";
 
 describe("readiness and disabled public actions", () => {
   useTempProject();
@@ -107,7 +111,36 @@ describe("readiness and disabled public actions", () => {
     const output = formatReadinessConsole(runId, await runReadiness(runId));
 
     expect(output).toContain("Readiness blocked.");
+    expect(output).toContain("Next action: pnpm producer render-plan --run");
     expect(output).toContain("Next action: pnpm producer estimate --run");
     expect(output).toContain("Next action: pnpm producer evidence --run");
+  });
+
+  it("prints local production-loop next actions after readiness milestones", async () => {
+    await enableDeterministicTts();
+    await createMinimalRenderAssets();
+    const { runId, ideas } = await runIdeas();
+    await approveIdea(runId, ideas[0].id);
+    await generateScript(runId);
+    await reviewScript(runId);
+    await approveScript(runId, { acknowledgeWarnings: true });
+    await generateProductionPackage(runId);
+    await generateRenderPlan(runId);
+    await estimateCost(runId);
+    await generateEvidenceBundle(runId);
+
+    const voiceOutput = formatReadinessConsole(runId, await runReadiness(runId));
+
+    expect(voiceOutput).toContain(`Next action: pnpm producer voice --run ${runId}`);
+
+    await generateVoiceoverAudio(runId);
+    const approvalOutput = formatReadinessConsole(runId, await runReadiness(runId));
+
+    expect(approvalOutput).toContain(`Next action: pnpm producer approve render --run ${runId}`);
+
+    await approveRender(runId);
+    const renderOutput = formatReadinessConsole(runId, await runReadiness(runId));
+
+    expect(renderOutput).toContain(`Next action: pnpm producer render --run ${runId}`);
   });
 });

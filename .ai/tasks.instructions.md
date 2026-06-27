@@ -33,7 +33,8 @@
 - Keep idea and script provider failure diagnostics safe, raw-output-free, and state-preserving.
 - Keep chunked Ollama script diagnostics and receipts complete enough to diagnose which draft or
   expansion chunk failed.
-- Keep readiness diagnostics and evidence synchronized with persisted run state.
+- Keep readiness diagnostics, production-loop next actions, and evidence synchronized with persisted
+  run state.
 - Keep evidence next-command guidance synchronized with current approval gates and review blockers.
 - Keep `producer status` operator-readable while preserving `--json` for automation.
 - Keep all run-root filesystem access behind canonical bounded run-ID validation.

@@ -1,3 +1,4 @@
+import { loadConfig } from "../config/config.js";
 import { RunRecord } from "../core/state.js";
 import { readVoiceoverAudioEvidence } from "./voiceoverEvidence.js";
 import type { ReadinessCheck } from "./readiness.js";
@@ -12,10 +13,14 @@ export async function voiceoverReadinessCheck(run: RunRecord): Promise<Readiness
     };
   }
   if (evidence.status === "missing") {
+    const config = await loadConfig();
     return {
       name: "voiceover audio available",
       status: "warn",
       message: "Voiceover audio is not generated yet; generate it before FFmpeg render work.",
+      nextAction: config.providers.tts.enabled
+        ? `pnpm producer voice --run ${run.runId}`
+        : `Enable local TTS in producer.config.json, then pnpm producer voice --run ${run.runId}`,
     };
   }
   return {

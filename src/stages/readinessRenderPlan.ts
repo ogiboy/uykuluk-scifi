@@ -16,6 +16,7 @@ export async function renderPlanReadinessCheck(run: RunRecord): Promise<Readines
       name: "render plan available",
       status: "warn",
       message: "Render plan is not generated yet; generate it before TTS or FFmpeg render work.",
+      nextAction: `pnpm producer render-plan --run ${run.runId}`,
     };
   }
   return {

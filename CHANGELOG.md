@@ -25,6 +25,8 @@ future generated release notes can be inserted predictably.
 
 ### Fixes
 
+- add readiness next-action guidance for render planning, voiceover, render approval, and local
+  draft render
 - show readiness next-action commands in Studio run detail
 - print `producer readiness` next-action guidance in terminal and Markdown output
 - print `producer doctor` next-action guidance in terminal output

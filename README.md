@@ -250,7 +250,8 @@ pnpm producer render --run <run_id>
 ```
 
 Blocked readiness checks print and persist next-action guidance for common operator steps such as
-generating the cost estimate, approving an exact quote, or refreshing the evidence bundle.
+generating the render plan, cost estimate, local voiceover, render approval, local draft render,
+exact quote approval, or refreshed evidence bundle.
 
 Inspection:
 

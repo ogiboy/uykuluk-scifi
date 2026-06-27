@@ -1,5 +1,6 @@
 import { RunRecord } from "../core/state.js";
 import { readDraftRenderEvidence } from "./renderEvidence.js";
+import { readVoiceoverAudioEvidence } from "./voiceoverEvidence.js";
 import type { ReadinessCheck } from "./readiness.js";
 
 export async function draftRenderReadinessCheck(run: RunRecord): Promise<ReadinessCheck> {
@@ -12,10 +13,15 @@ export async function draftRenderReadinessCheck(run: RunRecord): Promise<Readine
     };
   }
   if (evidence.status === "missing") {
+    const voiceover = await readVoiceoverAudioEvidence(run);
     return {
       name: "draft render available",
       status: "warn",
-      message: "Draft render is not generated yet; render remains behind explicit approval.",
+      message:
+        voiceover.status === "pass"
+          ? "Draft render is not generated yet; render remains behind explicit approval."
+          : "Draft render is not generated yet; generate voiceover audio before render approval.",
+      nextAction: draftRenderNextAction(run, voiceover.status),
     };
   }
   return {
@@ -23,6 +29,19 @@ export async function draftRenderReadinessCheck(run: RunRecord): Promise<Readine
     status: "block",
     message: evidence.message,
   };
+}
+
+function draftRenderNextAction(
+  run: RunRecord,
+  voiceoverStatus: Awaited<ReturnType<typeof readVoiceoverAudioEvidence>>["status"],
+): string | undefined {
+  if (voiceoverStatus !== "pass") {
+    return undefined;
+  }
+  if (run.state === "RENDER_APPROVED") {
+    return `pnpm producer render --run ${run.runId}`;
+  }
+  return `pnpm producer approve render --run ${run.runId}`;
 }
 
 function draftRenderReadyMessage(
