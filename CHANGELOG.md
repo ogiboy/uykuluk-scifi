@@ -11,6 +11,12 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.10.0 (2026-06-27)
+
+### Features
+
+- add local prompt overrides (301052f)
+
 ## v0.9.0 (2026-06-27)
 
 ### Features
