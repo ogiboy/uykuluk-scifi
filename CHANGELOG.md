@@ -9,6 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
+_No unreleased changes yet._
+
+## v0.18.0 (2026-06-27)
+
 ### Features
 
 - show manual analytics feedback status on the Studio home page
