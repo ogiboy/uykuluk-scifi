@@ -1,0 +1,82 @@
+import path from "node:path";
+import { spawnSync } from "node:child_process";
+import { describe, expect, it } from "vitest";
+import { loadRun } from "../src/core/runStore";
+import { approveIdea } from "../src/stages/approveIdea";
+import { approveScript } from "../src/stages/approveScript";
+import { generateEvidenceBundle } from "../src/stages/evidence";
+import { estimateCost } from "../src/stages/estimate";
+import { runIdeas } from "../src/stages/ideas";
+import { generateProductionPackage } from "../src/stages/productionPackage";
+import { generateRenderPlan } from "../src/stages/renderPlan";
+import { runReadiness } from "../src/stages/readiness";
+import { reviewScript } from "../src/stages/reviewScript";
+import { generateScript } from "../src/stages/script";
+import { useTempProject } from "./helpers";
+import { createMinimalRenderAssets, enableDeterministicTts } from "./renderTestHelpers";
+
+const repoRoot = process.cwd();
+
+describe("producer voice CLI", () => {
+  useTempProject();
+
+  it("prints parseable JSON voiceover metadata for automation", async () => {
+    await enableDeterministicTts(process.cwd());
+    const runId = await prepareReadyRun();
+
+    const result = runCli(["voice", "--run", runId, "--json"]);
+
+    expect(result.status).toBe(0);
+    expect(JSON.parse(result.stdout) as unknown).toMatchObject({
+      schemaVersion: 1,
+      runId,
+      mode: "deterministic-local",
+      quality: "deterministic-local-reference",
+      output: {
+        path: "production/audio/voiceover.wav",
+        sha256: expect.stringMatching(/^[a-f0-9]{64}$/),
+      },
+      renderPlan: {
+        path: "production/render_plan.json",
+        digest: expect.stringMatching(/^[a-f0-9]{64}$/),
+      },
+      source: {
+        path: "production/voiceover.txt",
+        sha256: expect.stringMatching(/^[a-f0-9]{64}$/),
+      },
+    });
+    await expect(loadRun(runId)).resolves.toMatchObject({
+      artifacts: expect.arrayContaining(["production/audio/voiceover.meta.json"]),
+      state: "READY_FOR_MANUAL_PRODUCTION",
+    });
+  });
+});
+
+function runCli(args: string[]): { status: number | null; stderr: string; stdout: string } {
+  const result = spawnSync(
+    path.join(repoRoot, "node_modules", ".bin", "tsx"),
+    [path.join(repoRoot, "src", "cli.ts"), ...args],
+    { cwd: process.cwd(), encoding: "utf8" },
+  );
+  return {
+    status: result.status,
+    stderr: result.stderr.toString(),
+    stdout: result.stdout.toString(),
+  };
+}
+
+async function prepareReadyRun(): Promise<string> {
+  await createMinimalRenderAssets();
+  const { runId, ideas } = await runIdeas();
+  await approveIdea(runId, ideas[0].id);
+  await generateScript(runId);
+  await reviewScript(runId);
+  await approveScript(runId, { acknowledgeWarnings: true });
+  await generateProductionPackage(runId);
+  await generateRenderPlan(runId);
+  await estimateCost(runId);
+  await generateEvidenceBundle(runId);
+  const readiness = await runReadiness(runId);
+  expect(readiness.passed).toBe(true);
+  return runId;
+}
