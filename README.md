@@ -301,6 +301,19 @@ packaging. Revisions are blocked after the production package exists. Each revis
 and new script, attribution, reason, hashes, invalidated review/approval references, and a ledger
 event under `revisions/script/<revision_id>/`.
 
+After packaging, use `producer revise package-artifact` for bounded operator edits to generated
+subtitles, scene prompts, popup-card package Markdown, or YouTube metadata before cost estimation or
+render work starts:
+
+```bash
+pnpm producer revise package-artifact --run <run_id> --artifact subtitles --file subtitles.srt --reason "<reason>" --editor <name>
+```
+
+Package artifact revisions are blocked once the run leaves `PRODUCTION_PACKAGE_GENERATED`. Each
+revision snapshots the previous and revised artifact, refreshes the production-package manifest
+digests, removes stale evidence/readiness/render-plan artifacts, and records a ledger event under
+`revisions/package/<revision_id>/`.
+
 Blocked future actions:
 
 ```bash
@@ -515,6 +528,7 @@ Each run can write:
 - `script.md`, `script.sections.json`, and `script.meta.json`;
 - `revisions/script/<revision_id>/before.md`, `after.md`, invalidated review snapshots, and
   `revision.json`;
+- `revisions/package/<revision_id>/before/<artifact>`, `after/<artifact>`, and `revision.json`;
 - `reviews/script_review.json` and `reviews/script_review.md`;
 - `production/voiceover.txt`, `production/subtitles.srt`, `production/scenes.json`,
   `production/youtube_metadata.json`, `production/production_package.md`,

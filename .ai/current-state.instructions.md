@@ -354,6 +354,7 @@ pnpm producer review script --run <run_id>
 pnpm producer approve script --run <run_id>
 pnpm producer approve script --run <run_id> --acknowledge-warnings # when review warnings remain
 pnpm producer package --run <run_id>
+pnpm producer revise package-artifact --run <run_id> --artifact subtitles --file <path> --reason "<reason>" --editor <name>
 pnpm producer render-plan --run <run_id>
 pnpm producer estimate --run <run_id>
 pnpm producer approve cost --run <run_id>
@@ -421,7 +422,11 @@ Corepack/PATH before treating failures as product failures.
 - Prompt editing UI is planned but not implemented.
 - Local prompt overrides and revision history are not implemented; tracked defaults are read-only
   runtime inputs.
-- Revision contracts for subtitles, scenes, popup cards, and YouTube metadata are not implemented.
+- Initial package artifact revision contracts are implemented for subtitles, scenes, popup-card
+  package Markdown, and YouTube metadata. They are intentionally limited to
+  `PRODUCTION_PACKAGE_GENERATED` before cost estimation or render work, refresh the
+  production-package manifest, and invalidate stale evidence/readiness/render-plan artifacts. Richer
+  per-field editing UX and post-estimate repair flows remain future work.
 - Render planning does not render media, approve render execution, or reserve spend. It is a local
   review/planning artifact only.
 - Local TTS currently provides a deterministic timing/reference WAV, a configured Piper shell-out,

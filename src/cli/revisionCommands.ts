@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { Command } from "commander";
+import { revisePackageArtifact } from "../revisions/packageArtifactRevision.js";
 import { reviseScript } from "../revisions/scriptRevision.js";
 
 type RevisionOptions = {
@@ -7,6 +8,7 @@ type RevisionOptions = {
   file: string;
   reason: string;
   editor: string;
+  artifact?: string;
 };
 
 type WrapRevisionAction = (
@@ -39,6 +41,29 @@ export function registerRevisionCommands(program: Command, wrap: WrapRevisionAct
         });
         console.log(`Script revision recorded: ${revision.revisionId}`);
         console.log("Script review and approval are required again.");
+      }),
+    );
+  revise
+    .command("package-artifact")
+    .requiredOption("--run <run_id>")
+    .requiredOption("--artifact <target>")
+    .requiredOption("--file <path>")
+    .requiredOption("--reason <reason>")
+    .option("--editor <editor>", "Revision author.", "operator")
+    .description(
+      "Replace a generated production-package artifact with durable before/after revision evidence.",
+    )
+    .action(
+      wrap(async (options) => {
+        const revision = await revisePackageArtifact({
+          runId: options.run,
+          artifactKey: options.artifact ?? "",
+          content: await readFile(options.file, "utf8"),
+          reason: options.reason,
+          editor: options.editor,
+        });
+        console.log(`Package artifact revision recorded: ${revision.revisionId}`);
+        console.log("Regenerate evidence/readiness before using downstream artifacts.");
       }),
     );
 }
