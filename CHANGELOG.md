@@ -11,6 +11,12 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.8.1 (2026-06-27)
+
+### Fixes
+
+- clarify recorded media evidence (4a02623)
+
 ## v0.8.0 (2026-06-27)
 
 ### Features
