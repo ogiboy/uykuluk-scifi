@@ -12,6 +12,8 @@
 - Keep direct provider/publish guard coverage and CI dependency audit passing.
 - Keep release planning, changelog, package version, and stable git tag automation passing on
   `main`; feature branches should not manually bump `package.json`.
+- Keep release workflow contract tests aligned with the main-only bot guard, dependency audit,
+  release validation, version planning, changelog mutation, and atomic tag push wiring.
 - Keep roadmap priority focused on the real local production loop, not additional unused
   infrastructure abstractions.
 - Keep script review, warning acknowledgement, approval, and packaging bound to one exact content

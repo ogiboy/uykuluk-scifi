@@ -30,6 +30,7 @@ future generated release notes can be inserted predictably.
 
 ### Fixes
 
+- harden release workflow contract tests for main-only version, changelog, and tag automation
 - label CLI status production media rows as artifact-record fallback until evidence is current
 - keep Studio asset inventory directory definitions precise for static analysis
 - avoid treating unavailable Studio evidence as no blocked actions or media proof

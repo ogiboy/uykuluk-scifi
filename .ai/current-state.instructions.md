@@ -267,6 +267,9 @@
   refreshes `origin/main` before planning and retries the atomic push when main advances during
   rapid consecutive merges. `pnpm version:plan` now exposes the pending tag, changelog note source,
   and main-only release-file ownership so PRs do not look like missing package bumps.
+- Release workflow contract tests assert the main-only bot guard, high-severity dependency audit,
+  release validation, version planning, release application, annotated tag creation, atomic push,
+  and failed-tag cleanup wiring.
 - CodeRabbit, GitHub Actions, CodeQL, Dependabot, SonarQube, Prettier, ESLint,
   eslint-config-prettier, Vitest, Playwright, TypeScript, modularity, secret-scan, changelog, and
   release hygiene gates.
