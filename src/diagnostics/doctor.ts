@@ -98,6 +98,16 @@ export async function runDoctor(): Promise<DoctorReport> {
   return report;
 }
 
+export function formatDoctorConsole(report: DoctorReport): string {
+  return [
+    `Doctor ${report.passed ? "passed" : "blocked"}.`,
+    ...report.checks.flatMap((check) => {
+      const line = `[${check.status}] ${check.name}: ${check.message}`;
+      return check.nextAction ? [line, `  Next action: ${check.nextAction}`] : [line];
+    }),
+  ].join("\n");
+}
+
 /**
  * Diagnoses the availability and readiness of the LLM provider.
  *

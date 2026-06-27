@@ -467,10 +467,10 @@ failure diagnostic summaries so the next blocker is visible without opening JSON
 
 Run `pnpm producer doctor` before starting production work. Mock mode passes without network access.
 Ollama mode checks `/api/tags` with a bounded timeout and blocks when the server is unavailable or
-the configured model is not installed. Provider, TTS, and publish-default blockers include
-next-action guidance so the operator can repair local config without treating unsafe defaults as
-approval. The command writes ignored local evidence to `diagnostics/doctor.json` and
-`diagnostics/doctor.md`; it does not create a run or grant approval.
+the configured model is not installed. Provider, TTS, and publish-default blockers print next-action
+guidance and persist the same guidance so the operator can repair local config without treating
+unsafe defaults as approval. The command writes ignored local evidence to `diagnostics/doctor.json`
+and `diagnostics/doctor.md`; it does not create a run or grant approval.
 
 Tracked runtime prompt defaults:
 

@@ -241,7 +241,8 @@
   provider/model availability, local TTS/Piper readiness with next actions, assets, and publish
   defaults.
 - Blocked `producer doctor` provider and publish-default diagnostics include operator-facing
-  `nextAction` remediation guidance; risky upload/private/public publish config still blocks.
+  `nextAction` remediation guidance in terminal, JSON, and Markdown output; risky
+  upload/private/public publish config still blocks.
 - Project-local capability inventory and routing for engineering, product, design, marketing, data,
   security, testing, research, release, browser QA, and swarm orchestration.
 - Explicit frontend taste routing for public pages, cinematic landing pages, Google Stitch design
