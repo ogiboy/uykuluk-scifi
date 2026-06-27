@@ -255,6 +255,7 @@ pnpm producer review script --run <run_id>
 pnpm producer approve script --run <run_id>
 pnpm producer approve script --run <run_id> --acknowledge-warnings # when review warnings remain
 pnpm producer package --run <run_id>
+pnpm producer package --run <run_id> --json
 pnpm producer render-plan --run <run_id>
 pnpm producer render-plan --run <run_id> --json
 pnpm producer estimate --run <run_id>

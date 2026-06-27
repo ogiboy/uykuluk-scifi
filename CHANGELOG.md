@@ -15,6 +15,7 @@ _No unreleased changes yet._
 
 ### Features
 
+- add `producer package --json` for automation-friendly production manifest inspection
 - add `producer render-plan --json` for automation-friendly render-plan inspection
 
 ## v0.24.0 (2026-06-27)
