@@ -9,6 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
+_No unreleased changes yet._
+
+## v0.8.0 (2026-06-27)
+
 ### Features
 
 - share manual analytics data-quality summaries between CLI reports and Studio overview
