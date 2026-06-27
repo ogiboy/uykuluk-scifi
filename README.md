@@ -69,8 +69,9 @@ agent-tracking state only; runtime code must not require it.
 
 - TypeScript CLI workflow under `src/`.
 - Basic Next.js App Router Studio under `apps/studio/` with read-only run index/detail, visual asset
-  inventory, producer doctor diagnostics on the home page and `/doctor`, runtime prompt inventory,
-  mutation-service status, and manual analytics feedback routes.
+  inventory, producer doctor diagnostics on the home page and `/doctor`, latest-run readiness
+  visibility on the home page, runtime prompt inventory, mutation-service status, and manual
+  analytics feedback routes.
 - Studio foundation with Tailwind CSS v4, shadcn-style primitives, Radix UI, lucide icons, GSAP, and
   `next/font`.
 - Mock-first provider layer with Ollama adapter scaffold.
@@ -100,8 +101,8 @@ agent-tracking state only; runtime code must not require it.
   routes.
 - Typed Studio mutation service contracts for future approval/upload/publish actions, including
   request validation and CLI/core binding metadata, without enabling web mutations.
-- Read-only Studio home visibility for disabled future action routes, CLI-ready approval contracts,
-  and upload/publish risk boundaries.
+- Read-only Studio home visibility for disabled future action routes, latest-run readiness,
+  CLI-ready approval contracts, and upload/publish risk boundaries.
 - Disabled private upload and public/scheduled publish placeholders.
 - UykulukSciFi visual assets under `assets/`.
 - `.ai/` operating contract for agents, workflows, design, QA, security, and roadmap state.

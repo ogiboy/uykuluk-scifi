@@ -91,10 +91,10 @@ Next Real Production Loop slices:
 
 ## Phase C - Operator Studio
 
-Status: read-only run review, artifact preview, asset inventory, home-page and `/doctor` producer
-doctor diagnostics, runtime prompt inventory, mutation-service status, manual analytics overview,
-route-security contract foundations, and shared mutation service contract foundations exist. Guarded
-route implementation still comes later.
+Status: read-only run review, artifact preview, asset inventory, home-page latest-run readiness,
+home-page and `/doctor` producer doctor diagnostics, runtime prompt inventory, mutation-service
+status, manual analytics overview, route-security contract foundations, and shared mutation service
+contract foundations exist. Guarded route implementation still comes later.
 
 The Studio should be a local operator surface over CLI/core contracts.
 
@@ -103,6 +103,8 @@ Priority order:
 - maintain the read-only run index with state, warnings, approvals, readiness, and next action;
 - maintain the read-only run detail with evidence, readiness, warning counts, approvals, and review
   artifact availability;
+- maintain the read-only home latest-run readiness panel over existing run summaries without
+  triggering CLI work;
 - maintain artifact previews for scripts, production packages, render plans, contact sheets, audio,
   render evidence, and readiness artifacts;
 - maintain the read-only visual asset inventory page backed by configured guard checks;

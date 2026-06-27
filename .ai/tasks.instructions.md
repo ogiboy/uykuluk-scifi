@@ -106,6 +106,8 @@
   `producer doctor` JSON/Markdown artifacts, including malformed or missing diagnostics states and
   safe remediation commands. They must not run doctor, edit config, start providers, download
   models, or mutate workflow state.
+- Keep the read-only Studio home latest-run readiness summary aligned with `listStudioRuns()` and
+  persisted readiness/evidence artifacts. It must not duplicate workflow state or trigger CLI work.
 - Keep Studio read-only artifact previews useful as new artifact types are added. Current previews
   include operator-phase grouping, media-specific metadata, and per-artifact review wording while
   keeping the surface non-mutating.
