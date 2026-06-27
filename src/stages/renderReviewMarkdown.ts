@@ -1,4 +1,5 @@
 import { bulletList, table } from "../utils/markdown.js";
+import { renderOperatorDecisionSection } from "./operatorReviewMarkdown.js";
 import type { DraftRenderManifest } from "./renderEvidence.js";
 
 export function renderDraftReviewMarkdown(manifest: DraftRenderManifest): string {
@@ -87,8 +88,33 @@ export function renderDraftReviewMarkdown(manifest: DraftRenderManifest): string
     "## Required Decision",
     "",
     "Review the MP4 locally. If it is not acceptable, revise upstream artifacts and regenerate the render. Upload remains disabled until a separate future upload approval exists.",
+    "",
+    ...renderDraftDecision(manifest.runId),
   );
   return sections.join("\n");
+}
+
+function renderDraftDecision(runId: string): string[] {
+  return renderOperatorDecisionSection({
+    reviewGates: [
+      "Watch the complete MP4 locally and verify audio, subtitles, popup cards, overlays, watermark, intro/outro, and timing.",
+      "Confirm media probe evidence matches the expected local review output before treating the draft as ready for manual channel review.",
+      "Confirm render output is local review media only; it does not grant upload or publish authority.",
+    ],
+    acceptableNextSteps: [
+      `Keep the local draft with run ${runId} for manual review or external editing.`,
+      "Wait for a future private-upload feature with separate config and approval before any YouTube upload.",
+    ],
+    revisionSteps: [
+      "Revise the production package, render plan, voiceover, subtitles, or visual assets, then regenerate evidence/readiness and the draft render.",
+      "Do not upload, schedule, or publish an unacceptable local draft.",
+    ],
+    blockedActions: [
+      "Private upload remains disabled until a separate future upload approval and configuration exist.",
+      "Scheduled/public publish remains disabled and requires a separate future risk review.",
+      "Paid/generative media providers remain outside the deterministic local render path.",
+    ],
+  });
 }
 
 function audioProbeSummary(audio: NonNullable<DraftRenderManifest["mediaProbe"]>["audio"]): string {

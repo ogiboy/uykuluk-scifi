@@ -74,6 +74,12 @@ describe("voiceover audio", () => {
     expect(review).toContain(
       "render approval has not been granted from audio file existence alone",
     );
+    expect(review).toContain("## Operator Decision");
+    expect(review).toContain(`pnpm producer approve render --run ${runId}`);
+    expect(review).toContain(`pnpm producer render --run ${runId}`);
+    expect(review).toContain(
+      "Private upload, scheduled publish, public publish, and paid provider execution remain unavailable",
+    );
 
     const evidence = (await generateEvidenceBundle(runId)) as {
       voiceoverAudio: {

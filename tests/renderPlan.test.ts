@@ -115,6 +115,13 @@ describe("render plan", () => {
     expect(contactSheet).toContain("Intro source frames: 2 committed frames");
     expect(contactSheet).toContain("assets/outro/youtube_end_screen_1920x1080.jpg");
     expect(contactSheet).toContain("Outro source frames: 2 committed frames");
+    expect(contactSheet).toContain("## Operator Decision");
+    expect(contactSheet).toContain(`pnpm producer readiness --run ${runId}`);
+    expect(contactSheet).toContain(`pnpm producer voice --run ${runId}`);
+    expect(contactSheet).toContain(
+      "file existence does not approve TTS, render, upload, or publish",
+    );
+    expect(contactSheet).toContain("public publish");
 
     await estimateCost(runId);
     const evidence = (await generateEvidenceBundle(runId)) as {

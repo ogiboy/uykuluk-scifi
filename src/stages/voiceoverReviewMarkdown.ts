@@ -1,4 +1,5 @@
 import { bulletList, table } from "../utils/markdown.js";
+import { renderOperatorDecisionSection } from "./operatorReviewMarkdown.js";
 import type { VoiceoverAudioMeta } from "./voiceoverEvidence.js";
 
 export function renderVoiceoverReviewMarkdown(meta: VoiceoverAudioMeta): string {
@@ -45,7 +46,31 @@ export function renderVoiceoverReviewMarkdown(meta: VoiceoverAudioMeta): string 
     "## Required Decision",
     "",
     "Listen to the WAV locally. If pacing, pronunciation, clipping, or source binding is unacceptable, revise the upstream package or TTS configuration and regenerate voiceover audio before render approval.",
+    "",
+    ...renderVoiceoverDecision(meta),
   ].join("\n");
+}
+
+function renderVoiceoverDecision(meta: VoiceoverAudioMeta): string[] {
+  return renderOperatorDecisionSection({
+    reviewGates: [
+      "Listen to the complete WAV locally before approving render.",
+      "Confirm pronunciation, pacing, silence, clipping, duration, and source binding against the approved script and render plan.",
+      "Confirm render approval has not been granted from audio file existence alone.",
+    ],
+    acceptableNextSteps: [
+      `Run \`pnpm producer approve render --run ${meta.runId}\` only after audio and render-plan review both pass.`,
+      `Run \`pnpm producer render --run ${meta.runId}\` only after exact render approval is recorded.`,
+    ],
+    revisionSteps: [
+      "Revise the script package, TTS configuration, or local voice model, then regenerate voiceover audio.",
+      "Regenerate evidence/readiness before render approval if upstream artifacts changed.",
+    ],
+    blockedActions: [
+      "Draft render remains blocked until explicit render approval exists for the current render plan and voiceover audio.",
+      "Private upload, scheduled publish, public publish, and paid provider execution remain unavailable from this review artifact.",
+    ],
+  });
 }
 
 function providerSection(meta: VoiceoverAudioMeta): string[] {

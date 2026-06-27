@@ -55,17 +55,18 @@
 ## Next
 
 - Harden the Render Plan + Contact Sheet MVP with operator review refinements only where real use
-  exposes gaps; do not turn it into render execution.
+  exposes gaps; the current contact sheet already includes review gates, safe next commands,
+  revision guidance, and blocked upload/publish actions. Do not turn it into render execution.
 - Harden local TTS with continued Piper voice-quality QA. Keep models and generated audio ignored;
   the current implemented foundation is deterministic reference WAV, operator audio review Markdown,
   optional configured `local-piper` shell-out, pinned Turkish model setup into ignored `models/`,
   provider model/config digest provenance, local smoke evidence, and `producer doctor`
-  setup/remediation next actions.
+  setup/remediation next actions. Keep the listen-before-render decision boundary explicit.
 - Harden FFmpeg draft render visual polish; the current foundation is exact-approval-gated local MP4
   with intro/outro source-card bookends or source-frame sequences, scene-timed background plates,
   subtitle burn-in, lower-third, popup-card, waveform, watermark overlays, render manifest evidence,
   fail-closed `ffprobe` media validation, and an operator-readable
-  `production/render/draft_review.md` checklist.
+  `production/render/draft_review.md` checklist with local-only decision guidance.
 - Harden the idea repair prompt and idea-quality constraints with live qwen3 feedback. The
   implemented two-attempt retry loop either recovers to `IDEAS_GENERATED` or fails closed without
   idea artifacts while persisting a safe diagnostic summary. Live qwen3 QA now rejects repeated fit

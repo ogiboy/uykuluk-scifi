@@ -47,7 +47,8 @@
   assets, then writes `production/render_plan.json`, `production/storyboard_contact_sheet.md`, and
   `production/asset_provenance.json` without FFmpeg render, upload, paid provider, or public publish
   execution. Intro/outro source-frame sequences under tracked asset directories are recorded in
-  render-plan bookend provenance when present.
+  render-plan bookend provenance when present. The contact sheet includes an operator decision
+  section with review gates, safe next commands, revision path, and blocked upload/publish actions.
 - Evidence and readiness now surface render-plan presence; missing render plans warn, while partial
   or malformed render-plan artifacts block readiness.
 - Disabled-by-default local voiceover generation. `producer voice` requires local TTS config,
@@ -56,7 +57,8 @@
   `production/audio/voiceover.meta.json`, and `production/audio/voiceover_review.md`.
   `deterministic-local` is a timing/reference adapter; `local-piper` shells out to a configured
   local Piper binary and ignored model path. Local Piper metadata, evidence, and review Markdown now
-  record the model/config SHA-256 digests used for the generated WAV.
+  record the model/config SHA-256 digests used for the generated WAV. The review Markdown includes
+  an explicit listen-before-render decision boundary and exact next safe commands.
 - `pnpm tts:piper:setup` downloads the pinned CPU-friendly Turkish
   `speaches-ai/piper-tr_TR-fahrettin-medium` model into ignored `models/` and prints the matching
   local config override for `local-piper`.
@@ -71,7 +73,8 @@
   watermark overlays when available, records the exact intro-to-outro timeline, source-frame counts,
   and overlay roles/placements in the manifest, evidence, and readiness summaries, validates the
   output with `ffprobe` media stream evidence, and writes an operator-readable final local review
-  checklist.
+  checklist with a local-only decision boundary that keeps upload and public/scheduled publish
+  disabled.
 - Provider-backed idea and production-package stages schema-validate and normalize common Ollama
   JSON variants before artifact writes, while rejecting malformed or English operator-facing
   payloads fail-closed.

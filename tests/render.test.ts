@@ -191,7 +191,10 @@ describe("draft render", () => {
     expect(review).toContain("Local review artifact only");
     expect(review).toContain("assets/intro/episode_title_card_1920x1080.jpg");
     expect(review).toContain("assets/outro/youtube_end_screen_1920x1080.jpg");
+    expect(review).toContain("## Operator Decision");
+    expect(review).toContain(`Keep the local draft with run ${runId} for manual review`);
     expect(review).toContain("Upload remains disabled");
+    expect(review).toContain("Scheduled/public publish remains disabled");
 
     const readiness = await runReadiness(runId);
     expect(readiness.checks.find((check) => check.name === "draft render available")).toMatchObject(

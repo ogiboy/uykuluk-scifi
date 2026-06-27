@@ -201,14 +201,15 @@ agent-tracking state only; runtime code must not require it.
 - Successful readiness diagnostics and evidence reflect the final transitioned run state.
 - TTS is disabled by default and only runs after readiness with explicit local configuration, script
   approval, production-package integrity, and render-plan evidence.
-  `production/audio/voiceover_review.md` gives the operator the local audio review checklist; audio
-  file existence never grants render approval.
+  `production/audio/voiceover_review.md` gives the operator the local audio review checklist,
+  required decision boundary, and next safe commands; audio file existence never grants render
+  approval.
 - Draft render runs only after explicit render approval for the exact current render-plan and
   voiceover digests. The manifest records the intro-to-outro timeline, composed overlay roles,
   intro/outro source-frame counts when available, placements used by FFmpeg, and `ffprobe`-validated
   media duration, video resolution, and audio stream evidence; `production/render/draft_review.md`
-  gives the operator the final local review checklist. Render output is local review media, not
-  upload or publish authority.
+  gives the operator the final local review checklist and blocked-action boundary. Render output is
+  local review media, not upload or publish authority.
 - Upload and publish remain intentionally blocked scaffolds.
 - Upload and public/scheduled publish require future explicit config and separate approval gates.
 - Studio must call typed local service contracts; it must not duplicate workflow state.

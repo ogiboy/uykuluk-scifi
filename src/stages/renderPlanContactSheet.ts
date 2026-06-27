@@ -1,4 +1,5 @@
 import { bulletList } from "../utils/markdown.js";
+import { renderOperatorDecisionSection } from "./operatorReviewMarkdown.js";
 import { AssetProvenance, AssetRef, RenderPlan } from "./renderPlanSchemas.js";
 
 export function renderContactSheet(plan: RenderPlan, provenance: AssetProvenance): string {
@@ -25,6 +26,7 @@ export function renderContactSheet(plan: RenderPlan, provenance: AssetProvenance
       ),
     ),
     "",
+    ...renderContactSheetDecision(plan.runId),
     "## Scenes",
     "",
     ...plan.scenes.map((scene) =>
@@ -43,6 +45,29 @@ export function renderContactSheet(plan: RenderPlan, provenance: AssetProvenance
       ].join("\n"),
     ),
   ].join("\n");
+}
+
+function renderContactSheetDecision(runId: string): string[] {
+  return renderOperatorDecisionSection({
+    reviewGates: [
+      "Confirm scene-to-asset mapping matches the approved package and channel visual style.",
+      "Confirm intro/outro bookends, subtitle panel, popup card, watermark, and waveform roles are suitable for a local draft.",
+      "Confirm this contact sheet is review evidence only; file existence does not approve TTS, render, upload, or publish.",
+    ],
+    acceptableNextSteps: [
+      `Run \`pnpm producer estimate --run ${runId}\` if the current package still needs a cost estimate.`,
+      `Run \`pnpm producer evidence --run ${runId}\` and \`pnpm producer readiness --run ${runId}\` before local voiceover generation.`,
+      `Run \`pnpm producer voice --run ${runId}\` only after readiness passes and local TTS is explicitly enabled.`,
+    ],
+    revisionSteps: [
+      "Revise the production package, subtitles, popup cards, or tracked assets, then regenerate the render plan.",
+      "Do not advance to voiceover or render approval from an unacceptable contact sheet.",
+    ],
+    blockedActions: [
+      "Local draft render still requires voiceover evidence and explicit render approval.",
+      "Private upload, scheduled publish, public publish, and paid/generative media providers remain unavailable in this artifact.",
+    ],
+  });
 }
 
 function renderBookends(plan: RenderPlan): string[] {
