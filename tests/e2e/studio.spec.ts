@@ -66,9 +66,11 @@ test("studio exposes the read-only manual analytics feedback route", async ({ pa
 test("studio exposes the read-only runtime prompt inventory route", async ({ page }) => {
   await page.goto("/prompts");
 
-  await expect(page.getByRole("heading", { name: /runtime prompt inventory/i })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { level: 1, name: /runtime prompt inventory/i }),
+  ).toBeVisible();
   await expect(page.getByText("Studio does not edit prompts")).toBeVisible();
   await expect(page.getByText("No prompt inventory warnings")).toBeVisible();
-  await expect(page.getByText("prompts/defaults/planner-task.md")).toBeVisible();
+  await expect(page.getByText("prompts/defaults/planner-task.md").first()).toBeVisible();
   await expect(page.getByRole("link", { name: "Studio home" })).toBeVisible();
 });
