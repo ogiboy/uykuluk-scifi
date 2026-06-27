@@ -11,6 +11,12 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.20.0 (2026-06-27)
+
+### Features
+
+- add json run listing (fd955eb)
+
 ## v0.19.0 (2026-06-27)
 
 ### Features
