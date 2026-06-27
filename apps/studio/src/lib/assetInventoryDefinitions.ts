@@ -10,43 +10,54 @@ export const DEFAULT_ASSET_CONFIG: StudioAssetConfig = {
   overlayDir: "assets/overlays",
 };
 
-export type AssetCategoryDefinition = {
+type AssetCategoryDefinitionBase = {
   description: string;
-  directory: string;
   guardedWarningPattern?: RegExp;
   id: string;
   label: string;
   requiredFor: string;
 };
 
+export type AssetCategoryDefinition = AssetCategoryDefinitionBase &
+  (
+    | {
+        configuredDirectory: ConfiguredAssetDirectory;
+        directory?: never;
+      }
+    | {
+        configuredDirectory?: never;
+        directory: string;
+      }
+  );
+
 export const ASSET_CATEGORY_DEFINITIONS = [
   {
+    configuredDirectory: "brandDir",
     description: "Channel logo, watermark, banner, and corner logo bug.",
-    directory: "brandDir",
     guardedWarningPattern: /brand|logo|watermark/i,
     id: "brand",
     label: "Brand",
     requiredFor: "Watermarking, channel identity, and render-plan provenance.",
   },
   {
+    configuredDirectory: "overlayDir",
     description: "Subtitle panels, lower-third banner, name panel, and popup card.",
-    directory: "overlayDir",
     guardedWarningPattern: /overlay|subtitle|lower|third|panel/i,
     id: "overlays",
     label: "Overlays",
     requiredFor: "Subtitle, lower-third, popup, and information-card overlays.",
   },
   {
+    configuredDirectory: "introDir",
     description: "Episode title card and source frames for the opening bookend.",
-    directory: "introDir",
     guardedWarningPattern: /intro/i,
     id: "intro",
     label: "Intro",
     requiredFor: "Draft-render opening bookend and episode title card.",
   },
   {
+    configuredDirectory: "outroDir",
     description: "YouTube end screen and source frames for the closing bookend.",
-    directory: "outroDir",
     guardedWarningPattern: /outro/i,
     id: "outro",
     label: "Outro",

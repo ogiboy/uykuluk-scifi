@@ -5,7 +5,6 @@ import {
   ASSET_CATEGORY_DEFINITIONS,
   DEFAULT_ASSET_CONFIG,
   type AssetCategoryDefinition,
-  type ConfiguredAssetDirectory,
   type StudioAssetCategory,
   type StudioAssetCategoryStatus,
   type StudioAssetConfig,
@@ -139,7 +138,7 @@ async function readAssetCategory(
   definition: AssetCategoryDefinition,
   guardWarnings: readonly string[],
 ): Promise<StudioAssetCategory> {
-  const directory = resolveAssetDirectory(assets, definition.directory);
+  const directory = resolveAssetDirectory(assets, definition);
   const warnings = warningsForCategory(definition, guardWarnings);
   const files = await listAssetFiles(root, directory);
 
@@ -166,17 +165,14 @@ function warningsForCategory(
   return guardWarnings.filter((warning) => definition.guardedWarningPattern?.test(warning));
 }
 
-function resolveAssetDirectory(assets: StudioAssetConfig, directory: string): string {
-  if (isConfiguredAssetDirectory(directory)) {
-    return assets[directory];
+function resolveAssetDirectory(
+  assets: StudioAssetConfig,
+  definition: AssetCategoryDefinition,
+): string {
+  if (definition.configuredDirectory) {
+    return assets[definition.configuredDirectory];
   }
-  return directory;
-}
-
-function isConfiguredAssetDirectory(value: string): value is ConfiguredAssetDirectory {
-  return (
-    value === "brandDir" || value === "overlayDir" || value === "introDir" || value === "outroDir"
-  );
+  return definition.directory;
 }
 
 function categoryStatus(

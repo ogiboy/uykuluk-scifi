@@ -29,6 +29,7 @@ future generated release notes can be inserted predictably.
 
 ### Fixes
 
+- keep Studio asset inventory directory definitions precise for static analysis
 - avoid treating unavailable Studio evidence as no blocked actions or media proof
 - mark malformed or stale Studio evidence bundles with a regeneration command
 - mark malformed or stale CLI status evidence with a regeneration command
