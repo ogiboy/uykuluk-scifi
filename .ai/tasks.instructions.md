@@ -100,7 +100,8 @@
   showed larger chunks can destabilize JSON parse reliability.
 - Keep continuation request schemas compatible with Ollama grammar limits; large accepted-text
   bounds belong in parser validation, not provider grammar schemas.
-- Keep `producer doctor` config/provider/model/TTS/asset/publish diagnostics and evidence passing.
+- Keep `producer doctor` config/provider/model/TTS/render-toolchain/asset/publish diagnostics and
+  evidence passing.
 - Keep the read-only Studio home doctor summary and `/doctor` route aligned with persisted
   `producer doctor` JSON/Markdown artifacts, including malformed or missing diagnostics states and
   safe remediation commands. They must not run doctor, edit config, start providers, download

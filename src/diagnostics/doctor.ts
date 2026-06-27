@@ -9,6 +9,7 @@ import { table } from "../utils/markdown.js";
 import { nowIso } from "../utils/time.js";
 import type { DoctorCheck, DoctorReport } from "./doctorSchema.js";
 import { promptOverridesCheck } from "./promptOverrideDoctor.js";
+import { renderToolchainCheck } from "./renderToolchainDoctor.js";
 import { ttsProviderCheck } from "./ttsDoctor.js";
 export type { DoctorCheck, DoctorReport } from "./doctorSchema.js";
 
@@ -33,7 +34,7 @@ export function doctorMarkdownPath(): string {
 /**
  * Runs the project doctor and writes the resulting report to disk.
  *
- * The report includes configuration, provider, asset, and publish-default checks.
+ * The report includes configuration, provider, local media-toolchain, asset, and publish-default checks.
  *
  * @returns The completed diagnostic report.
  */
@@ -71,6 +72,7 @@ export async function runDoctor(): Promise<DoctorReport> {
     await promptOverridesCheck(config),
     await providerCheck(config),
     await ttsProviderCheck(config),
+    renderToolchainCheck(),
     await assetCheck(config),
     publishDefaultsCheck(config),
   ];

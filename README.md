@@ -75,7 +75,7 @@ agent-tracking state only; runtime code must not require it.
   `next/font`.
 - Mock-first provider layer with Ollama adapter scaffold.
 - Project-level `producer doctor` diagnostics for config, mock/Ollama readiness, local TTS/Piper
-  readiness, assets, and publish defaults.
+  readiness, local FFmpeg/ffprobe toolchain availability, assets, and publish defaults.
 - Runtime prompt defaults under `prompts/defaults/`; `.ai/` is development and agent-tracking
   guidance, not a runtime dependency.
 - Strict run state machine and explicit approval ledger.
@@ -512,12 +512,12 @@ failure diagnostic summaries so the next blocker is visible without opening JSON
 
 Run `pnpm producer doctor` before starting production work. Mock mode passes without network access.
 Ollama mode checks `/api/tags` with a bounded timeout and blocks when the server is unavailable or
-the configured model is not installed. Provider, TTS, and publish-default blockers print next-action
-guidance and persist the same guidance so the operator can repair local config without treating
-unsafe defaults as approval. Configured local prompt overrides are also checked for safe
-`prompts/local/*.md` paths, file presence, and non-empty content before generation starts. The
-command writes ignored local evidence to `diagnostics/doctor.json` and `diagnostics/doctor.md`; it
-does not create a run or grant approval.
+the configured model is not installed. Provider, local render toolchain, TTS, and publish-default
+blockers print next-action guidance and persist the same guidance so the operator can repair local
+config without treating unsafe defaults as approval. Configured local prompt overrides are also
+checked for safe `prompts/local/*.md` paths, file presence, and non-empty content before generation
+starts. The command writes ignored local evidence to `diagnostics/doctor.json` and
+`diagnostics/doctor.md`; it does not create a run or grant approval.
 
 Tracked runtime prompt defaults:
 

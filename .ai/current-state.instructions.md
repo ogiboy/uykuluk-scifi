@@ -257,8 +257,8 @@
   starts and can initialize a fresh project from an arbitrary working directory.
 - Direct mock/Ollama provider diagnostics and upload/publish safeguard tests.
 - `producer doctor` project diagnostics with durable local JSON/Markdown evidence for config,
-  provider/model availability, local TTS/Piper readiness with next actions, assets, and publish
-  defaults.
+  provider/model availability, local TTS/Piper readiness with next actions, local FFmpeg/ffprobe
+  toolchain availability, assets, and publish defaults.
 - Blocked `producer doctor` provider and publish-default diagnostics include operator-facing
   `nextAction` remediation guidance in terminal, JSON, and Markdown output; risky
   upload/private/public publish config still blocks.

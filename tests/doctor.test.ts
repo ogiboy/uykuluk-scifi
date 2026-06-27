@@ -1,4 +1,5 @@
-import { readFile, writeFile } from "node:fs/promises";
+import path from "node:path";
+import { chmod, mkdir, readFile, writeFile } from "node:fs/promises";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { defaultConfig } from "../src/config/config";
 import { listRuns } from "../src/core/runStore";
@@ -17,6 +18,7 @@ describe("producer doctor", () => {
 
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
   });
 
   it("passes mock mode, warns on missing assets, and writes durable diagnostics", async () => {
@@ -38,6 +40,10 @@ describe("producer doctor", () => {
           status: "pass",
           message: expect.stringContaining("disabled"),
           nextAction: expect.stringContaining("pnpm tts:piper:setup"),
+        }),
+        expect.objectContaining({
+          name: "render toolchain",
+          status: expect.stringMatching(/^(pass|warn)$/),
         }),
         expect.objectContaining({ name: "production assets", status: "warn" }),
         expect.objectContaining({ name: "publish defaults", status: "pass" }),
@@ -126,6 +132,34 @@ describe("producer doctor", () => {
     expect(JSON.stringify(report)).not.toContain("local-secret-response");
   });
 
+  it("passes render toolchain diagnostics when FFmpeg and ffprobe are on PATH", async () => {
+    const binDir = await writeFakeRenderTools();
+    vi.stubEnv("PATH", binDir);
+
+    const report = await runDoctor();
+
+    expect(report.passed).toBe(true);
+    expect(report.checks.find((check) => check.name === "render toolchain")).toMatchObject({
+      status: "pass",
+      message: "FFmpeg and ffprobe are available for local draft render.",
+    });
+  });
+
+  it("warns when draft-render tools are unavailable", async () => {
+    await mkdir("empty-bin", { recursive: true });
+    vi.stubEnv("PATH", path.join(process.cwd(), "empty-bin"));
+
+    const report = await runDoctor();
+
+    expect(report.passed).toBe(true);
+    expect(report.checks.find((check) => check.name === "render toolchain")).toMatchObject({
+      status: "warn",
+      message: expect.stringContaining("FFmpeg, ffprobe unavailable"),
+      nextAction:
+        "Install FFmpeg/ffprobe, ensure both commands are on PATH, then rerun pnpm producer doctor.",
+    });
+  });
+
   it("blocks invalid config and still persists the diagnostic", async () => {
     await writeFile("producer.config.json", '{"providers":', "utf8");
 
@@ -202,4 +236,17 @@ async function useOllamaConfig(): Promise<void> {
     )}\n`,
     "utf8",
   );
+}
+
+async function writeFakeRenderTools(): Promise<string> {
+  const binDir = path.join(process.cwd(), "fake-render-bin");
+  await mkdir(binDir, { recursive: true });
+  await writeFakeExecutable(path.join(binDir, "ffmpeg"));
+  await writeFakeExecutable(path.join(binDir, "ffprobe"));
+  return binDir;
+}
+
+async function writeFakeExecutable(target: string): Promise<void> {
+  await writeFile(target, "#!/bin/sh\nprintf '%s\\n' fake-tool\n", "utf8");
+  await chmod(target, 0o755);
 }
