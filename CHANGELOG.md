@@ -12,6 +12,7 @@ future generated release notes can be inserted predictably.
 ### Features
 
 - record local Piper model and config provenance in voiceover evidence and review artifacts
+- show approval ledger entries and warnings in Studio run detail
 - show approval, warning, and artifact counts in the Studio run index
 - show readiness remediation in the Studio run index
 - show evidence status in the Studio run index

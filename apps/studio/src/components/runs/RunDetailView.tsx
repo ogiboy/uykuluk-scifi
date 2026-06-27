@@ -1,5 +1,6 @@
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import type { StudioArtifactPreview } from "@/lib/artifactPreviews";
+import { RunLedgerPanel } from "./RunLedgerPanel";
 
 export function RunDetailView({ run }: Readonly<{ run: StudioRunDetail }>) {
   const artifactGroups = groupedArtifactPreviews(run.artifacts);
@@ -80,6 +81,8 @@ export function RunDetailView({ run }: Readonly<{ run: StudioRunDetail }>) {
           <p>No run diagnostics recorded.</p>
         )}
       </section>
+
+      <RunLedgerPanel approvals={run.approvals} warnings={run.warnings} />
 
       <section className='panel' aria-labelledby='production-media-heading'>
         <h2 id='production-media-heading'>Production Media Evidence</h2>

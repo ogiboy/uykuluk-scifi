@@ -314,11 +314,11 @@ Current Studio scope:
 - read-only `/runs` index over persisted local run state with approval/warning/artifact counts,
   readiness/evidence status, stale or invalid artifact remediation, and next safe action visibility;
 - read-only `/runs/<run_id>` detail view with next action, readiness status, and review artifact
-  availability plus production media evidence details, readiness check messages, and readiness
-  next-action commands from CLI/core artifacts. Malformed or stale evidence artifacts stay
-  read-only, are not used for blocked actions, media status, or next-action guidance, and point back
-  to the CLI evidence command. Missing, malformed, or stale readiness artifacts stay read-only and
-  point back to the CLI readiness command;
+  availability plus approval ledger entries, warning lists, production media evidence details,
+  readiness check messages, and readiness next-action commands from CLI/core artifacts. Malformed or
+  stale evidence artifacts stay read-only, are not used for blocked actions, media status, or
+  next-action guidance, and point back to the CLI evidence command. Missing, malformed, or stale
+  readiness artifacts stay read-only and point back to the CLI readiness command;
 - read-only artifact preview excerpts for scripts, reviews, production packages, render plans,
   contact sheets, asset provenance, evidence, readiness, voiceover metadata, and render manifests,
   grouped by operator review phase, with binary media limited to metadata;
