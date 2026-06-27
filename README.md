@@ -250,6 +250,7 @@ pnpm producer doctor --json
 pnpm producer ideas
 pnpm producer ideas --json
 pnpm producer approve idea --run <run_id> --idea <idea_id>
+pnpm producer approve idea --run <run_id> --idea <idea_id> --json
 pnpm producer script --run <run_id>
 pnpm producer script --run <run_id> --json
 pnpm producer revise script --run <run_id> --file <path> --reason "<reason>" --editor <name>
@@ -257,6 +258,7 @@ pnpm producer review script --run <run_id>
 pnpm producer review script --run <run_id> --json
 pnpm producer approve script --run <run_id>
 pnpm producer approve script --run <run_id> --acknowledge-warnings # when review warnings remain
+pnpm producer approve script --run <run_id> --acknowledge-warnings --json
 pnpm producer package --run <run_id>
 pnpm producer package --run <run_id> --json
 pnpm producer render-plan --run <run_id>
@@ -264,6 +266,7 @@ pnpm producer render-plan --run <run_id> --json
 pnpm producer estimate --run <run_id>
 pnpm producer estimate --run <run_id> --json
 pnpm producer approve cost --run <run_id> # only when the quote requires it
+pnpm producer approve cost --run <run_id> --json # only when the quote requires it
 pnpm producer evidence --run <run_id>
 pnpm producer evidence --run <run_id> --json
 pnpm producer readiness --run <run_id>
@@ -271,6 +274,7 @@ pnpm producer readiness --run <run_id> --json
 pnpm producer voice --run <run_id> # optional, only after local TTS is explicitly enabled
 pnpm producer voice --run <run_id> --json
 pnpm producer approve render --run <run_id>
+pnpm producer approve render --run <run_id> --json
 pnpm producer render --run <run_id>
 pnpm producer render --run <run_id> --json
 ```

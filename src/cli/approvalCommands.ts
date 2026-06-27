@@ -3,6 +3,7 @@ import { approvePaidGenerationCost } from "../stages/approveCost.js";
 import { approveIdea } from "../stages/approveIdea.js";
 import { approveRender } from "../stages/approveRender.js";
 import { approveScript } from "../stages/approveScript.js";
+import type { ApprovalRecord } from "../core/state.js";
 
 type AsyncActionWrapper = <T extends unknown[]>(
   handler: (...args: T) => Promise<void>,
@@ -11,7 +12,7 @@ type AsyncActionWrapper = <T extends unknown[]>(
 /**
  * Registers CLI commands for recording explicit approvals.
  *
- * Registers three subcommands under `approve`: `idea`, `script`, and `cost`.
+ * Registers four subcommands under `approve`: `idea`, `script`, `cost`, and `render`.
  *
  * @param program - The commander `Command` instance to register the approval commands on
  * @param wrap - An async action wrapper that adapts async handlers to synchronous callback signatures
@@ -23,11 +24,12 @@ export function registerApprovalCommands(program: Command, wrap: AsyncActionWrap
     .command("idea")
     .requiredOption("--run <run_id>")
     .requiredOption("--idea <idea_id>")
+    .option("--json", "Print the raw approval record JSON for automation.")
     .description("Approve one generated idea.")
     .action(
-      wrap(async (options: { run: string; idea: string }) => {
+      wrap(async (options: { json?: boolean; run: string; idea: string }) => {
         const approval = await approveIdea(options.run, options.idea);
-        console.log(`Idea approval recorded: ${approval.approvalId}`);
+        printApproval(approval, options.json, "Idea");
       }),
     );
 
@@ -35,24 +37,26 @@ export function registerApprovalCommands(program: Command, wrap: AsyncActionWrap
     .command("script")
     .requiredOption("--run <run_id>")
     .option("--acknowledge-warnings", "Confirm non-blocking script review warnings are accepted.")
+    .option("--json", "Print the raw approval record JSON for automation.")
     .description("Approve reviewed script.")
     .action(
-      wrap(async (options: { run: string; acknowledgeWarnings?: boolean }) => {
+      wrap(async (options: { acknowledgeWarnings?: boolean; json?: boolean; run: string }) => {
         const approval = await approveScript(options.run, {
           acknowledgeWarnings: Boolean(options.acknowledgeWarnings),
         });
-        console.log(`Script approval recorded: ${approval.approvalId}`);
+        printApproval(approval, options.json, "Script");
       }),
     );
 
   approve
     .command("cost")
     .requiredOption("--run <run_id>")
+    .option("--json", "Print the raw approval record JSON for automation.")
     .description("Approve the exact persisted future paid-generation cost quote.")
     .action(
-      wrap(async (options: { run: string }) => {
+      wrap(async (options: { json?: boolean; run: string }) => {
         const approval = await approvePaidGenerationCost(options.run);
-        console.log(`Paid-generation cost approval recorded: ${approval.approvalId}`);
+        printApproval(approval, options.json, "Paid-generation cost");
       }),
     );
 
@@ -62,10 +66,17 @@ export function registerApprovalCommands(program: Command, wrap: AsyncActionWrap
     .description(
       "Approve the exact current render plan and voiceover audio for local draft render.",
     )
+    .option("--json", "Print the raw approval record JSON for automation.")
     .action(
-      wrap(async (options: { run: string }) => {
+      wrap(async (options: { json?: boolean; run: string }) => {
         const approval = await approveRender(options.run);
-        console.log(`Render approval recorded: ${approval.approvalId}`);
+        printApproval(approval, options.json, "Render");
       }),
     );
+}
+
+function printApproval(approval: ApprovalRecord, json: boolean | undefined, label: string): void {
+  console.log(
+    json ? JSON.stringify(approval, null, 2) : `${label} approval recorded: ${approval.approvalId}`,
+  );
 }
