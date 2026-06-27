@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { StudioRunSummary } from "@/lib/runSummaries";
+import { formatRunReviewCounts } from "@/lib/runSummaryCopy";
 
 type RunSummaryTableProps = Readonly<{ runs: readonly StudioRunSummary[] }>;
 
@@ -27,7 +28,10 @@ export function RunSummaryTable({ runs }: RunSummaryTableProps) {
         {runs.map((run) => (
           <Link className='run-row' href={`/runs/${run.runId}`} key={run.runId} role='row'>
             <span role='cell'>{run.runId}</span>
-            <span role='cell'>{run.state}</span>
+            <span className='run-cell-stack' role='cell'>
+              <strong>{run.state}</strong>
+              <small>{formatRunReviewCounts(run)}</small>
+            </span>
             <span className='run-cell-stack' role='cell'>
               <strong>{run.readinessStatus}</strong>
               {run.readinessStatus === "passed" ? null : <small>{run.readinessMessage}</small>}
