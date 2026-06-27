@@ -3,6 +3,7 @@ import { Command } from "commander";
 import { registerAnalyticsCommands } from "./cli/analyticsCommands.js";
 import { registerApprovalCommands } from "./cli/approvalCommands.js";
 import { registerRevisionCommands } from "./cli/revisionCommands.js";
+import { resolveStatusRunId } from "./cli/statusRunSelector.js";
 import { initProject } from "./config/config.js";
 import { SafeExitError } from "./core/errors.js";
 import { listRuns, loadRun } from "./core/runStore.js";
@@ -229,23 +230,6 @@ function wrap<T extends unknown[]>(handler: (...args: T) => Promise<void>): (...
       process.exitCode = code;
     });
   };
-}
-
-async function resolveStatusRunId(options: { latest?: boolean; run?: string }): Promise<string> {
-  if (options.run && options.latest) {
-    throw new SafeExitError("Use either --run <run_id> or --latest, not both.");
-  }
-  if (options.run) {
-    return options.run;
-  }
-  if (!options.latest) {
-    throw new SafeExitError("Provide --run <run_id> or --latest.");
-  }
-  const runs = await listRuns();
-  if (runs.length === 0) {
-    throw new SafeExitError("No runs found. Start with pnpm producer ideas.");
-  }
-  return runs[0].runId;
 }
 
 try {
