@@ -16,10 +16,15 @@ export function registerAnalyticsCommands(program: Command, wrap: AsyncActionWra
   analytics
     .command("import")
     .requiredOption("--file <path>")
+    .option("--json", "Print the raw analytics import result JSON for automation.")
     .description("Import operator-provided YouTube performance CSV/JSON into local analytics.")
     .action(
-      wrap(async (options: { file: string }) => {
+      wrap(async (options: { file: string; json?: boolean }) => {
         const result = await importAnalyticsFile(options.file);
+        if (options.json) {
+          console.log(JSON.stringify(result, null, 2));
+          return;
+        }
         console.log(`Analytics imported. Records: ${result.recordCount}`);
         console.log(`Dataset: ${result.outputPath}`);
         console.log(`Report: ${result.reportPath}`);
@@ -28,10 +33,15 @@ export function registerAnalyticsCommands(program: Command, wrap: AsyncActionWra
 
   analytics
     .command("report")
+    .option("--json", "Print the raw analytics report refresh result JSON for automation.")
     .description("Refresh and print the current local manual analytics report.")
     .action(
-      wrap(async () => {
+      wrap(async (options: { json?: boolean }) => {
         const result = await refreshSavedAnalyticsReport();
+        if (options.json) {
+          console.log(JSON.stringify(result, null, 2));
+          return;
+        }
         console.log(result.report);
         console.log(`\nReport refreshed: ${result.reportPath}`);
       }),
