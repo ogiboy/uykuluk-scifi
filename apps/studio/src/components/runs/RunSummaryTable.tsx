@@ -28,7 +28,11 @@ export function RunSummaryTable({ runs }: RunSummaryTableProps) {
           <Link className='run-row' href={`/runs/${run.runId}`} key={run.runId} role='row'>
             <span role='cell'>{run.runId}</span>
             <span role='cell'>{run.state}</span>
-            <span role='cell'>{formatReadiness(run.readinessPassed)}</span>
+            <span className='run-cell-stack' role='cell'>
+              <strong>{run.readinessStatus}</strong>
+              {run.readinessStatus === "passed" ? null : <small>{run.readinessMessage}</small>}
+              {run.readinessNextAction ? <small>{run.readinessNextAction}</small> : null}
+            </span>
             <span className='run-cell-stack' role='cell'>
               <strong>{run.evidenceStatus}</strong>
               {run.evidenceStatus === "available" ? null : <small>{run.evidenceMessage}</small>}
@@ -39,14 +43,4 @@ export function RunSummaryTable({ runs }: RunSummaryTableProps) {
       </div>
     </section>
   );
-}
-
-function formatReadiness(value: boolean | null): string {
-  if (value === true) {
-    return "passed";
-  }
-  if (value === false) {
-    return "blocked";
-  }
-  return "not generated";
 }
