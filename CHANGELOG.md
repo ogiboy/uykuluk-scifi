@@ -11,6 +11,12 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.11.0 (2026-06-27)
+
+### Features
+
+- check prompt overrides (ca80ab7)
+
 ## v0.10.0 (2026-06-27)
 
 ### Features
