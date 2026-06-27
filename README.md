@@ -272,6 +272,7 @@ Inspection:
 ```bash
 pnpm producer status --run <run_id>
 pnpm producer status --run <run_id> --json
+pnpm producer status --latest
 pnpm producer list-runs
 ```
 

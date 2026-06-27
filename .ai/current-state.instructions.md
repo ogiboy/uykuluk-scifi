@@ -377,6 +377,7 @@ pnpm producer evidence --run <run_id>
 pnpm producer readiness --run <run_id>
 pnpm producer status --run <run_id>
 pnpm producer status --run <run_id> --json
+pnpm producer status --latest
 pnpm producer list-runs
 pnpm producer voice --run <run_id>
 pnpm producer render --run <run_id>

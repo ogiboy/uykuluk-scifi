@@ -142,6 +142,10 @@ try {
     label: "status",
     expectOutput: "READY_FOR_MANUAL_PRODUCTION",
   });
+  run([pnpm, "producer", "status", "--latest"], {
+    label: "status latest",
+    expectOutput: runId,
+  });
   run([pnpm, "producer", "list-runs"], {
     label: "list-runs",
     expectOutput: runId,

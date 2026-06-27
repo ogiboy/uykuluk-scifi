@@ -150,15 +150,17 @@ program
 
 program
   .command("status")
-  .requiredOption("--run <run_id>")
+  .option("--run <run_id>")
+  .option("--latest", "Show the most recently created run.")
   .option("--json", "Print the raw run state JSON for automation.")
   .description("Show run state and artifacts.")
   .action(
-    wrap(async (options: { json?: boolean; run: string }) => {
+    wrap(async (options: { json?: boolean; latest?: boolean; run?: string }) => {
+      const runId = await resolveStatusRunId(options);
       console.log(
         options.json
-          ? JSON.stringify(await loadRun(options.run), null, 2)
-          : formatRunStatus(await readRunStatus(options.run)),
+          ? JSON.stringify(await loadRun(runId), null, 2)
+          : formatRunStatus(await readRunStatus(runId)),
       );
     }),
   );
@@ -227,6 +229,23 @@ function wrap<T extends unknown[]>(handler: (...args: T) => Promise<void>): (...
       process.exitCode = code;
     });
   };
+}
+
+async function resolveStatusRunId(options: { latest?: boolean; run?: string }): Promise<string> {
+  if (options.run && options.latest) {
+    throw new SafeExitError("Use either --run <run_id> or --latest, not both.");
+  }
+  if (options.run) {
+    return options.run;
+  }
+  if (!options.latest) {
+    throw new SafeExitError("Provide --run <run_id> or --latest.");
+  }
+  const runs = await listRuns();
+  if (runs.length === 0) {
+    throw new SafeExitError("No runs found. Start with pnpm producer ideas.");
+  }
+  return runs[0].runId;
 }
 
 try {
