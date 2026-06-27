@@ -4,6 +4,7 @@ import { getStudioRunDetail, listStudioRuns } from "../apps/studio/src/lib/runSu
 import { artifactPath } from "../src/core/artifacts";
 import { createRun, saveRun } from "../src/core/runStore";
 import { useTempProject } from "./helpers";
+import { studioEvidenceFixture } from "./studioRunFixtures";
 
 describe("Studio evidence summary validity", () => {
   useTempProject();
@@ -17,13 +18,19 @@ describe("Studio evidence summary validity", () => {
     });
     await writeFile(
       artifactPath(run.runId, "evidence_bundle.json"),
-      JSON.stringify({
-        blockedActions: ["TTS disabled until configured and approved."],
-        currentState: "SCRIPT_REVIEWED",
-        nextRecommendedCommand: "pnpm producer approve script --run <run_id>",
-        renderPlan: { artifactCount: 3, assetCount: 11, status: "pass" },
-        runId: run.runId,
-      }),
+      JSON.stringify(
+        studioEvidenceFixture(run.runId, "SCRIPT_REVIEWED", {
+          blockedActions: ["TTS disabled until configured and approved."],
+          nextRecommendedCommand: "pnpm producer approve script --run <run_id>",
+          renderPlan: {
+            artifactCount: 3,
+            assetCount: 11,
+            digest: "a".repeat(64),
+            path: "production/render_plan.json",
+            status: "pass",
+          },
+        }),
+      ),
       "utf8",
     );
 
@@ -71,7 +78,7 @@ describe("Studio evidence summary validity", () => {
       evidenceMessage: "Evidence bundle has not been generated.",
       evidenceNextAction: `pnpm producer evidence --run ${run.runId}`,
       evidenceStatus: "missing",
-      nextRecommendedCommand: "pnpm producer ideas",
+      nextRecommendedCommand: `pnpm producer evidence --run ${run.runId}`,
     });
   });
 
@@ -80,11 +87,11 @@ describe("Studio evidence summary validity", () => {
     await saveRun({ ...run, artifacts: ["evidence_bundle.json"], state: "SCRIPT_APPROVED" });
     await writeFile(
       artifactPath(run.runId, "evidence_bundle.json"),
-      JSON.stringify({
-        currentState: "SCRIPT_REVIEWED",
-        nextRecommendedCommand: "pnpm producer approve script --run <run_id>",
-        runId: run.runId,
-      }),
+      JSON.stringify(
+        studioEvidenceFixture(run.runId, "SCRIPT_REVIEWED", {
+          nextRecommendedCommand: "pnpm producer approve script --run <run_id>",
+        }),
+      ),
       "utf8",
     );
 

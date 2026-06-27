@@ -2,13 +2,12 @@ import { artifactPath } from "../core/artifacts.js";
 import type { RunState } from "../core/state.js";
 import { pathExists } from "../utils/fs.js";
 import { readJsonFile } from "../utils/json.js";
-import type { EvidenceStatus } from "./statusMedia.js";
+import {
+  validateEvidenceStatusSnapshot,
+  type EvidenceStatusValidationResult,
+} from "./statusEvidenceSchema.js";
 
-export type EvidenceReadResult =
-  | { evidence: EvidenceStatus; kind: "present" }
-  | { kind: "missing" }
-  | { kind: "invalid"; message: string }
-  | { kind: "stale"; message: string };
+export type EvidenceReadResult = EvidenceStatusValidationResult;
 
 /**
  * Reads and validates the evidence bundle for a run.
@@ -26,7 +25,7 @@ export async function readEvidenceStatus(
     return { kind: "missing" };
   }
   try {
-    return validateEvidenceStatus(await readJsonFile<EvidenceStatus>(target), runId, currentState);
+    return validateEvidenceStatus(await readJsonFile<unknown>(target), runId, currentState);
   } catch {
     return { kind: "invalid", message: "evidence_bundle.json could not be parsed." };
   }
@@ -41,23 +40,9 @@ export async function readEvidenceStatus(
  * @returns `{ kind: "present" }` when the evidence matches, `{ kind: "stale" }` when it belongs to a different run or state, or `{ kind: "invalid" }` when the value is not an object
  */
 export function validateEvidenceStatus(
-  evidence: EvidenceStatus,
+  evidence: unknown,
   runId: string,
   currentState: string,
 ): EvidenceReadResult {
-  if (!evidence || typeof evidence !== "object") {
-    return { kind: "invalid", message: "evidence_bundle.json is not an object." };
-  }
-  if (evidence.runId !== runId) {
-    return { kind: "stale", message: "evidence_bundle.json belongs to a different run." };
-  }
-  if (evidence.currentState !== currentState) {
-    return {
-      kind: "stale",
-      message: `evidence_bundle.json was generated for ${String(
-        evidence.currentState,
-      )}, but the run is ${currentState}.`,
-    };
-  }
-  return { evidence, kind: "present" };
+  return validateEvidenceStatusSnapshot(evidence, runId, currentState);
 }

@@ -101,10 +101,10 @@ export async function renderDraft(
     if (outputInfo.size <= 0) {
       throw new SafeExitError("FFmpeg produced an empty draft render output.");
     }
-    const mediaProbe =
-      options.ffprobeBinary === false
-        ? undefined
-        : await probeDraftRender(options.ffprobeBinary ?? "ffprobe", temporaryOutput);
+    if (options.ffprobeBinary === false) {
+      throw new SafeExitError("Draft render requires ffprobe media validation.");
+    }
+    const mediaProbe = await probeDraftRender(options.ffprobeBinary ?? "ffprobe", temporaryOutput);
     await rename(temporaryOutput, output);
     temporaryOutput = undefined;
     const outputBytes = await readFile(output);

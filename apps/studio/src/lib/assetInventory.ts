@@ -1,16 +1,15 @@
-import { readdir, readFile, stat } from "node:fs/promises";
+import { readdir } from "node:fs/promises";
 import path from "node:path";
 import { checkAssets } from "../../../../src/safeguards/assetGuard";
-import { producerConfigSchema } from "../../../../src/config/schema";
 import {
   ASSET_CATEGORY_DEFINITIONS,
-  DEFAULT_ASSET_CONFIG,
   type AssetCategoryDefinition,
   type StudioAssetCategory,
   type StudioAssetCategoryStatus,
   type StudioAssetConfig,
   type StudioAssetInventory,
 } from "./assetInventoryDefinitions";
+import { formatProjectPath, readStudioProducerConfig } from "./assetInventoryConfig";
 import { projectRoot } from "./projectRoot";
 
 export type {
@@ -18,13 +17,6 @@ export type {
   StudioAssetCategoryStatus,
   StudioAssetInventory,
 } from "./assetInventoryDefinitions";
-
-type ConfigReadResult = {
-  assets: StudioAssetConfig;
-  source: string;
-  valid: boolean;
-  warning: string | null;
-};
 
 /**
  * Builds an inventory of the studio asset configuration and directory contents.
@@ -55,60 +47,6 @@ export async function getStudioAssetInventory(): Promise<StudioAssetInventory> {
 }
 
 /**
- * Reads the producer asset configuration for a project.
- *
- * @param root - The project root directory
- * @returns The resolved asset configuration, its source, validity, and any warning message
- */
-async function readStudioProducerConfig(root: string): Promise<ConfigReadResult> {
-  const target = resolveProducerConfigPath(root);
-  const source = formatProjectPath(root, target);
-  if (!(await fileExists(target))) {
-    return {
-      assets: DEFAULT_ASSET_CONFIG,
-      source: "default config",
-      valid: true,
-      warning: null,
-    };
-  }
-
-  try {
-    const raw = JSON.parse(await readFile(target, "utf8")) as unknown;
-    return {
-      assets: producerConfigSchema.parse(raw).assets,
-      source,
-      valid: true,
-      warning: null,
-    };
-  } catch {
-    return {
-      assets: DEFAULT_ASSET_CONFIG,
-      source,
-      valid: false,
-      warning:
-        "Producer config is invalid. Asset inventory is shown from default asset paths only; run pnpm producer doctor before relying on readiness.",
-    };
-  }
-}
-
-/**
- * Checks whether a path exists.
- *
- * @returns `true` if the path exists, `false` if it does not.
- */
-async function fileExists(target: string): Promise<boolean> {
-  try {
-    await stat(target);
-    return true;
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-      return false;
-    }
-    throw error;
-  }
-}
-
-/**
  * Checks the expected asset directories for missing brand and intro/outro assets.
  *
  * @param root - Project root used to resolve asset directories
@@ -117,20 +55,6 @@ async function fileExists(target: string): Promise<boolean> {
  */
 async function readAssetGuardWarnings(root: string, assets: StudioAssetConfig): Promise<string[]> {
   return (await checkAssets({ assets }, root)).warnings;
-}
-
-/**
- * Resolves the producer config path for the project.
- *
- * @param root - The project root directory
- * @returns The absolute config path from `PRODUCER_CONFIG`, or the path to `producer.config.json` under `root`
- */
-function resolveProducerConfigPath(root: string): string {
-  const configuredPath = process.env.PRODUCER_CONFIG ?? "producer.config.json";
-  if (path.isAbsolute(configuredPath)) {
-    return configuredPath;
-  }
-  return path.join(/* turbopackIgnore: true */ root, configuredPath);
 }
 
 /**
@@ -272,19 +196,4 @@ async function readDirectoryEntries(directory: string) {
     }
     throw error;
   }
-}
-
-/**
- * Formats a path relative to the project root.
- *
- * @param root - Project root used as the reference point
- * @param target - Path to format
- * @returns A project-relative path with `/` separators, or `target` when it is outside `root`
- */
-function formatProjectPath(root: string, target: string): string {
-  const relativePath = path.relative(root, target);
-  if (!relativePath || relativePath.startsWith("..")) {
-    return target;
-  }
-  return relativePath.replaceAll(path.sep, "/");
 }

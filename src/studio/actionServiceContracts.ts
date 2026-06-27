@@ -1,16 +1,14 @@
 import { z } from "zod";
-import { validateRunId } from "../core/runPaths.js";
+import { isValidRunId } from "../core/runId.js";
+import {
+  studioMutationServiceMetadata,
+  type StudioMutationActionId,
+  type StudioMutationAvailability,
+} from "./actionServiceMetadata.js";
 
-const runIdSchema = z.string().refine(isStudioRunId, { message: "Invalid run id." });
+export { studioMutationActionIds } from "./actionServiceMetadata.js";
 
-function isStudioRunId(runId: string): boolean {
-  try {
-    validateRunId(runId);
-    return true;
-  } catch {
-    return false;
-  }
-}
+const runIdSchema = z.string().refine(isValidRunId, { message: "Invalid run id." });
 
 const ideaApprovalRequestSchema = z.strictObject({
   ideaId: z.string().min(1),
@@ -26,17 +24,6 @@ const runOnlyRequestSchema = z.strictObject({
   runId: runIdSchema,
 });
 
-export const studioMutationActionIds = [
-  "idea.approve",
-  "script.approve",
-  "cost.approve",
-  "render.approve",
-  "upload.private",
-  "publish.schedule",
-] as const;
-
-export type StudioMutationActionId = (typeof studioMutationActionIds)[number];
-
 type StudioActionRequestById = {
   "cost.approve": z.infer<typeof runOnlyRequestSchema>;
   "idea.approve": z.infer<typeof ideaApprovalRequestSchema>;
@@ -45,8 +32,6 @@ type StudioActionRequestById = {
   "script.approve": z.infer<typeof scriptApprovalRequestSchema>;
   "upload.private": z.infer<typeof runOnlyRequestSchema>;
 };
-
-type StudioMutationAvailability = "disabled-external" | "ready-for-cli";
 
 export type StudioMutationServiceContract = {
   actionId: StudioMutationActionId;
@@ -61,58 +46,15 @@ export type StudioMutationServiceContract = {
   requestSchema: z.ZodType;
 };
 
-export const studioMutationServiceContracts = [
-  approvalContract({
-    actionId: "idea.approve",
-    cliCommand: "pnpm producer approve idea --run <run_id> --idea <idea_id>",
-    coreExport: "approveIdea",
-    coreModule: "src/stages/approveIdea.ts",
-    description: "Approve one generated idea for the current run.",
-    requestSchema: ideaApprovalRequestSchema,
-  }),
-  approvalContract({
-    actionId: "script.approve",
-    cliCommand: "pnpm producer approve script --run <run_id>",
-    coreExport: "approveScript",
-    coreModule: "src/stages/approveScript.ts",
-    description: "Approve the currently reviewed script digest, optionally acknowledging warnings.",
-    requestSchema: scriptApprovalRequestSchema,
-  }),
-  approvalContract({
-    actionId: "cost.approve",
-    cliCommand: "pnpm producer approve cost --run <run_id>",
-    coreExport: "approvePaidGenerationCost",
-    coreModule: "src/stages/approveCost.ts",
-    description: "Approve the exact current paid-generation cost quote digest.",
-    requestSchema: runOnlyRequestSchema,
-  }),
-  approvalContract({
-    actionId: "render.approve",
-    cliCommand: "pnpm producer approve render --run <run_id>",
-    coreExport: "approveRender",
-    coreModule: "src/stages/approveRender.ts",
-    description: "Approve render execution for the current render-plan and voiceover digests.",
-    requestSchema: runOnlyRequestSchema,
-  }),
-  disabledExternalContract({
-    actionId: "upload.private",
-    cliCommand: "pnpm producer upload private --run <run_id>",
-    coreExport: "runPrivateUploadPlaceholder",
-    coreModule: "src/youtube/uploadDisabled.ts",
-    description:
-      "Future private-upload action; currently disabled until upload approval/config exist.",
-  }),
-  disabledExternalContract({
-    actionId: "publish.schedule",
-    cliCommand: "pnpm producer publish schedule --run <run_id>",
-    coreExport: "runPublishPlaceholder",
-    coreModule: "src/youtube/uploadDisabled.ts",
-    description: "Future scheduled/public publish action; explicitly out of scope for v1.",
-  }),
-] as const satisfies readonly StudioMutationServiceContract[];
+export const studioMutationServiceContracts = studioMutationServiceMetadata.map((metadata) => ({
+  ...metadata,
+  requiresCsrfProtection: true,
+  requiresDurableEvidence: true,
+  requiresExplicitApproval: true,
+  requestSchema: requestSchemaForAction(metadata.actionId),
+})) as readonly StudioMutationServiceContract[];
 
-export type StudioMutationServiceContractId =
-  (typeof studioMutationServiceContracts)[number]["actionId"];
+export type StudioMutationServiceContractId = StudioMutationActionId;
 
 /**
  * Parses a Studio mutation request for the given action.
@@ -157,51 +99,17 @@ export function hasStudioMutationServiceContract(actionId: string): boolean {
 }
 
 /**
- * Creates a ready-for-cli studio mutation contract.
+ * Resolves the request schema for a mutation action.
  *
- * @param contract - The base contract fields to include
- * @returns A contract with CLI availability and the required approval flags enabled
+ * @param actionId - The mutation action identifier.
+ * @returns The schema that validates the action payload.
  */
-function approvalContract(
-  contract: Omit<
-    StudioMutationServiceContract,
-    | "availability"
-    | "requiresCsrfProtection"
-    | "requiresDurableEvidence"
-    | "requiresExplicitApproval"
-  >,
-): StudioMutationServiceContract {
-  return {
-    ...contract,
-    availability: "ready-for-cli",
-    requiresCsrfProtection: true,
-    requiresDurableEvidence: true,
-    requiresExplicitApproval: true,
-  };
-}
-
-/**
- * Builds a contract for a mutation action that is disabled for external use.
- *
- * @param contract - The base contract fields to include
- * @returns A contract marked as disabled externally with the run-only request schema and required approval flags
- */
-function disabledExternalContract(
-  contract: Omit<
-    StudioMutationServiceContract,
-    | "availability"
-    | "requiresCsrfProtection"
-    | "requiresDurableEvidence"
-    | "requiresExplicitApproval"
-    | "requestSchema"
-  >,
-): StudioMutationServiceContract {
-  return {
-    ...contract,
-    availability: "disabled-external",
-    requestSchema: runOnlyRequestSchema,
-    requiresCsrfProtection: true,
-    requiresDurableEvidence: true,
-    requiresExplicitApproval: true,
-  };
+function requestSchemaForAction(actionId: StudioMutationActionId): z.ZodType {
+  if (actionId === "idea.approve") {
+    return ideaApprovalRequestSchema;
+  }
+  if (actionId === "script.approve") {
+    return scriptApprovalRequestSchema;
+  }
+  return runOnlyRequestSchema;
 }

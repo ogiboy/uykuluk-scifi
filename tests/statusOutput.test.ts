@@ -4,6 +4,11 @@ import { artifactPath } from "../src/core/artifacts";
 import { createRun, loadRun, saveRun } from "../src/core/runStore";
 import { formatRunStatus, readRunStatus } from "../src/stages/status";
 import { useTempProject } from "./helpers";
+import {
+  blockedRenderedEvidence,
+  manualProductionEvidence,
+  passingRenderedEvidence,
+} from "./statusOutputEvidenceFixtures";
 
 describe("operator status output", () => {
   useTempProject();
@@ -30,15 +35,7 @@ describe("operator status output", () => {
     });
     await writeFile(
       artifactPath(run.runId, "evidence_bundle.json"),
-      JSON.stringify({
-        currentState: "READY_FOR_MANUAL_PRODUCTION",
-        runId: run.runId,
-        nextRecommendedCommand: "pnpm producer approve render --run <run_id>",
-        blockedActions: [
-          "Render plan not generated; run pnpm producer render-plan --run <run_id> before TTS/render work.",
-          "TTS disabled until configured and approved.",
-        ],
-      }),
+      JSON.stringify(manualProductionEvidence(run.runId)),
       "utf8",
     );
 
@@ -58,7 +55,7 @@ describe("operator status output", () => {
     expect(output).toContain("- TTS disabled until configured and approved.");
     expect(output).toContain(`Next safe action: pnpm producer approve render --run ${run.runId}`);
     expect(output).toContain("Production media:");
-    expect(output).toContain("- Render plan: recorded");
+    expect(output).toContain("- Render plan: pass");
     expect(output).toContain("- Voiceover audio: missing");
     expect(output).toContain("- Draft render: missing");
     expect(output).toContain("Recent artifacts:");
@@ -89,15 +86,7 @@ describe("operator status output", () => {
     });
     await writeFile(
       artifactPath(run.runId, "evidence_bundle.json"),
-      JSON.stringify({
-        currentState: "RENDERED",
-        draftRender: { status: "block", message: "Draft render output does not match manifest." },
-        nextRecommendedCommand:
-          "Regenerate evidence; draft render artifacts are missing or blocked.",
-        renderPlan: { status: "pass" },
-        runId: run.runId,
-        voiceoverAudio: { status: "pass" },
-      }),
+      JSON.stringify(blockedRenderedEvidence(run.runId)),
       "utf8",
     );
 
@@ -126,33 +115,7 @@ describe("operator status output", () => {
     });
     await writeFile(
       artifactPath(run.runId, "evidence_bundle.json"),
-      JSON.stringify({
-        blockedActions: [],
-        currentState: "RENDERED",
-        draftRender: {
-          status: "pass",
-          durationSeconds: 8.2,
-          mediaProbe: {
-            audio: { codecName: "aac" },
-            video: { height: 720, width: 1280 },
-          },
-          sourceFrameCount: 4,
-          sourceFrameSegments: ["intro:2", "outro:2"],
-          timelineSegments: ["intro", "scene", "outro"],
-          voiceoverMode: "local-piper",
-          voiceoverProductionVoiceCandidate: true,
-        },
-        nextRecommendedCommand: "Manual final draft review. Upload remains approval-gated.",
-        renderPlan: { status: "pass", artifactCount: 3, assetCount: 11 },
-        runId: run.runId,
-        voiceoverAudio: {
-          status: "pass",
-          durationSeconds: 8.2,
-          mode: "local-piper",
-          productionVoiceCandidate: true,
-          sourceWordCount: 42,
-        },
-      }),
+      JSON.stringify(passingRenderedEvidence(run.runId)),
       "utf8",
     );
 

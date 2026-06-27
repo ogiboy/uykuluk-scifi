@@ -1,6 +1,6 @@
 import { productionMediaIntro, shouldShowEvidenceRemediation } from "@/lib/runEvidenceCopy";
 import type { StudioRunDetail } from "@/lib/runSummaries";
-import type { ProductionMediaStatus } from "../../../../../src/stages/statusMedia";
+import type { ProductionMediaStatus } from "../../../../../src/stages/statusMediaSummary";
 
 type RunProductionMediaPanelProps = Readonly<{
   evidenceMessage: string;

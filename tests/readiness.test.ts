@@ -117,7 +117,7 @@ describe("readiness and disabled public actions", () => {
   });
 
   it("prints local production-loop next actions after readiness milestones", async () => {
-    await enableDeterministicTts();
+    await enableDeterministicTts(process.cwd());
     await createMinimalRenderAssets();
     const { runId, ideas } = await runIdeas();
     await approveIdea(runId, ideas[0].id);

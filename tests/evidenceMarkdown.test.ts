@@ -26,7 +26,7 @@ describe("evidence Markdown media summary", () => {
     expect(markdown).toContain("Draft render: block (bad render).");
   });
 
-  it("summarizes draft render evidence when media probing was not recorded", () => {
+  it("summarizes draft render evidence with required media probe data", () => {
     const markdown = renderEvidenceMarkdown({
       ...baseBundle(),
       renderPlan: {
@@ -62,11 +62,17 @@ describe("evidence Markdown media summary", () => {
         voiceoverMode: "deterministic-local",
         voiceoverProductionVoiceCandidate: false,
         voiceoverQuality: "deterministic-local-reference",
+        mediaProbe: {
+          binary: "ffprobe",
+          durationSeconds: 3.1,
+          audio: { codecName: "aac" },
+          video: { height: 720, width: 1280 },
+        },
       },
     });
 
     expect(markdown).toContain(
-      "Draft render: pass (3s, scene, voiceover deterministic-local timing/reference only).",
+      "Draft render: pass (3s, scene, voiceover deterministic-local timing/reference only, ffprobe 1280x720 audio).",
     );
     expect(markdown).toContain(
       "Voiceover audio: pass (2s, deterministic-local, timing/reference only, 12 source words).",

@@ -73,7 +73,7 @@ export const draftRenderManifestSchema = z.strictObject({
     binary: z.string().min(1),
     args: z.array(z.string()),
   }),
-  mediaProbe: renderMediaProbeSchema.optional(),
+  mediaProbe: renderMediaProbeSchema,
 });
 
 export type DraftRenderManifest = z.infer<typeof draftRenderManifestSchema>;
@@ -95,7 +95,7 @@ export type DraftRenderEvidence =
       voiceoverMode: z.infer<typeof voiceoverModeSchema>;
       voiceoverProductionVoiceCandidate: boolean;
       voiceoverQuality: z.infer<typeof voiceoverQualitySchema>;
-      mediaProbe?: RenderMediaProbe;
+      mediaProbe: RenderMediaProbe;
     }
   | { status: "block"; path: string; message: string };
 

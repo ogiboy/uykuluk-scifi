@@ -4,6 +4,7 @@ import { artifactPath } from "../src/core/artifacts";
 import { createRun, saveRun } from "../src/core/runStore";
 import { formatRunStatus, readRunStatus } from "../src/stages/status";
 import { useTempProject } from "./helpers";
+import { studioEvidenceFixture } from "./studioRunFixtures";
 
 describe("status evidence validity", () => {
   useTempProject();
@@ -40,12 +41,18 @@ describe("status evidence validity", () => {
     });
     await writeFile(
       artifactPath(run.runId, "evidence_bundle.json"),
-      JSON.stringify({
-        currentState: "PRODUCTION_PACKAGE_GENERATED",
-        nextRecommendedCommand: "pnpm producer estimate --run <run_id>",
-        renderPlan: { artifactCount: 3, assetCount: 11, status: "pass" },
-        runId: run.runId,
-      }),
+      JSON.stringify(
+        studioEvidenceFixture(run.runId, "PRODUCTION_PACKAGE_GENERATED", {
+          nextRecommendedCommand: "pnpm producer estimate --run <run_id>",
+          renderPlan: {
+            artifactCount: 3,
+            assetCount: 11,
+            digest: "a".repeat(64),
+            path: "production/render_plan.json",
+            status: "pass",
+          },
+        }),
+      ),
       "utf8",
     );
 
@@ -66,11 +73,11 @@ describe("status evidence validity", () => {
     });
     await writeFile(
       artifactPath(run.runId, "evidence_bundle.json"),
-      JSON.stringify({
-        currentState: "SCRIPT_REVIEWED",
-        nextRecommendedCommand: "pnpm producer approve script --run <run_id>",
-        runId: run.runId,
-      }),
+      JSON.stringify(
+        studioEvidenceFixture(run.runId, "SCRIPT_REVIEWED", {
+          nextRecommendedCommand: "pnpm producer approve script --run <run_id>",
+        }),
+      ),
       "utf8",
     );
 

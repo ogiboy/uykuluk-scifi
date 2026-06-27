@@ -63,8 +63,12 @@ export async function createRenderedStudioRunFixture(): Promise<string> {
     currentState: "RENDERED",
     draftRender: {
       status: "pass",
+      digest: "a".repeat(64),
+      bytes: 1024,
       durationSeconds: 8.2,
       mediaProbe: {
+        binary: "ffprobe",
+        durationSeconds: 8.2,
         audio: { codecName: "aac" },
         video: { height: 720, width: 1280 },
       },
@@ -72,16 +76,30 @@ export async function createRenderedStudioRunFixture(): Promise<string> {
       sourceFrameCount: 4,
       sourceFrameSegments: ["intro:2", "outro:2"],
       timelineSegments: ["intro", "scene", "outro"],
+      overlayRoles: ["watermark", "popup-card"],
+      reviewPath: "production/render/draft_review.md",
+      reviewChecklist: ["Review local draft only."],
       voiceoverMode: "local-piper",
       voiceoverProductionVoiceCandidate: true,
+      voiceoverQuality: "local-piper",
     },
     nextRecommendedCommand: "Manual final draft review. Upload remains approval-gated.",
-    renderPlan: { status: "pass", artifactCount: 3, assetCount: 11 },
+    renderPlan: {
+      status: "pass",
+      path: "production/render_plan.json",
+      digest: "b".repeat(64),
+      artifactCount: 3,
+      assetCount: 11,
+    },
     voiceoverAudio: {
       status: "pass",
+      path: "production/audio/voiceover.wav",
+      digest: "c".repeat(64),
       durationSeconds: 8.2,
       mode: "local-piper",
       productionVoiceCandidate: true,
+      quality: "local-piper",
+      reviewPath: "production/audio/voiceover_review.md",
       sourceWordCount: 42,
     },
   });
@@ -114,9 +132,83 @@ export async function writeEvidence(
   const run = await loadRun(runId);
   await writeFile(
     artifactPath(runId, "evidence_bundle.json"),
-    JSON.stringify({ runId, currentState: run.state, ...evidence }),
+    JSON.stringify(studioEvidenceFixture(run.runId, run.state, evidence)),
     "utf8",
   );
+}
+
+/**
+ * Builds a schema-current evidence fixture for Studio tests.
+ *
+ * @param runId - The run identifier.
+ * @param currentState - The current run state.
+ * @param evidence - Additional evidence fields to merge into the fixture.
+ * @returns A persisted evidence bundle shape suitable for status validation.
+ */
+export function studioEvidenceFixture(
+  runId: string,
+  currentState: string,
+  evidence: Record<string, unknown> = {},
+): Record<string, unknown> {
+  const base = {
+    runId,
+    generatedAt: "2026-06-27T00:00:00.000Z",
+    currentState,
+    approvedIdea: null,
+    scriptPath: "script.md",
+    reviews: [],
+    approvals: [],
+    costs: [],
+    costReservations: [],
+    costQuote: null,
+    productionPackageIntegrity: null,
+    renderPlan: {
+      status: "missing",
+      requiredArtifacts: [
+        "production/render_plan.json",
+        "production/storyboard_contact_sheet.md",
+        "production/asset_provenance.json",
+      ],
+    },
+    voiceoverAudio: {
+      status: "missing",
+      requiredArtifacts: [
+        "production/audio/voiceover.wav",
+        "production/audio/voiceover.meta.json",
+        "production/audio/voiceover_review.md",
+      ],
+    },
+    draftRender: {
+      status: "missing",
+      requiredArtifacts: [
+        "production/render/draft.mp4",
+        "production/render/render_manifest.json",
+        "production/render/draft_review.md",
+      ],
+    },
+    costEstimatePath: null,
+    generatedArtifacts: [],
+    warnings: [],
+    promptProvenance: [],
+    revisions: [],
+    blockedActions: [],
+    nextRecommendedCommand: `pnpm producer evidence --run ${runId}`,
+    ledgerEventCount: 0,
+  };
+  return {
+    ...base,
+    ...evidence,
+    runId,
+    renderPlan: mergeObject(base.renderPlan, evidence.renderPlan),
+    voiceoverAudio: mergeObject(base.voiceoverAudio, evidence.voiceoverAudio),
+    draftRender: mergeObject(base.draftRender, evidence.draftRender),
+  };
+}
+
+function mergeObject(base: Record<string, unknown>, override: unknown): Record<string, unknown> {
+  return override && typeof override === "object" && !Array.isArray(override)
+    ? { ...base, ...(override as Record<string, unknown>) }
+    : base;
 }
 
 export type StudioReadinessFixtureCheck = {

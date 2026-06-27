@@ -32,7 +32,7 @@ describe("draft render", () => {
 
   it("requires explicit render approval before generating a draft video", async () => {
     const runId = await prepareVoiceoverReadyRun();
-    const ffmpeg = await createFakeFfmpeg();
+    const ffmpeg = await createFakeFfmpeg(process.cwd());
     const evidence = (await generateEvidenceBundle(runId)) as { nextRecommendedCommand: string };
 
     expect(evidence.nextRecommendedCommand).toBe(
@@ -48,8 +48,8 @@ describe("draft render", () => {
   it("records render approval and writes a draft video manifest through FFmpeg", async () => {
     const runId = await prepareVoiceoverReadyRun();
     const approval = await approveRender(runId);
-    const ffmpeg = await createFakeFfmpeg();
-    const ffprobe = await createFakeFfprobe();
+    const ffmpeg = await createFakeFfmpeg(process.cwd());
+    const ffprobe = await createFakeFfprobe(process.cwd());
 
     await renderDraft(runId, {
       ffmpegBinary: ffmpeg,
@@ -188,8 +188,8 @@ describe("draft render", () => {
   it("blocks draft render completion when media probing cannot validate the output", async () => {
     const runId = await prepareVoiceoverReadyRun();
     await approveRender(runId);
-    const ffmpeg = await createFakeFfmpeg();
-    const ffprobe = await createFailingFakeFfprobe();
+    const ffmpeg = await createFakeFfmpeg(process.cwd());
+    const ffprobe = await createFailingFakeFfprobe(process.cwd());
 
     await expect(
       renderDraft(runId, { ffmpegBinary: ffmpeg, ffprobeBinary: ffprobe, maxDurationSeconds: 1 }),
@@ -231,7 +231,7 @@ async function prepareVoiceoverReadyRun(): Promise<string> {
 }
 
 async function prepareReadyRunWithoutVoiceover(): Promise<string> {
-  await enableDeterministicTts();
+  await enableDeterministicTts(process.cwd());
   await createMinimalRenderAssets();
   const { runId, ideas } = await runIdeas();
   await approveIdea(runId, ideas[0].id);

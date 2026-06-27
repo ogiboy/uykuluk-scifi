@@ -4,9 +4,9 @@ import {
   materializeRunCommand,
   staticEvidenceNextCommand,
 } from "../../../../src/stages/evidenceNextCommand";
-import { validateRunId } from "../../../../src/core/runPaths";
-import { validateEvidenceStatus } from "../../../../src/stages/statusEvidence";
-import type { EvidenceStatus } from "../../../../src/stages/statusMedia";
+import { isValidRunId } from "../../../../src/core/runId";
+import type { EvidenceStatus } from "../../../../src/stages/statusMediaSummary";
+import { validateEvidenceStatusSnapshot } from "../../../../src/stages/statusEvidenceSchema";
 
 export type StudioEvidenceSummary = {
   message: string;
@@ -29,7 +29,7 @@ export async function readStudioEvidenceSummary(
   state: string,
 ): Promise<StudioEvidenceSummary> {
   try {
-    const validatedRunId = validateRunId(runId);
+    const validatedRunId = validStudioRunId(runId);
     const file = path.join(root, "runs", validatedRunId, "evidence_bundle.json");
     return summarizeEvidenceSnapshot(
       JSON.parse(await readFile(file, "utf8")),
@@ -49,6 +49,13 @@ export async function readStudioEvidenceSummary(
   }
 }
 
+function validStudioRunId(runId: string): string {
+  if (!isValidRunId(runId)) {
+    throw new Error("Invalid run id.");
+  }
+  return runId;
+}
+
 /**
  * Determines the next recommended command for a studio evidence summary.
  *
@@ -62,7 +69,11 @@ export function evidenceNextRecommendedCommand(
   state: string,
   runId: string,
 ): string | null {
-  if (evidence.status === "invalid" || evidence.status === "stale") {
+  if (
+    evidence.status === "missing" ||
+    evidence.status === "invalid" ||
+    evidence.status === "stale"
+  ) {
     return evidence.nextAction ?? null;
   }
   return typeof evidence.snapshot?.nextRecommendedCommand === "string"
@@ -83,7 +94,7 @@ function summarizeEvidenceSnapshot(
   runId: string,
   state: string,
 ): StudioEvidenceSummary {
-  const result = validateEvidenceStatus(evidence as EvidenceStatus, runId, state);
+  const result = validateEvidenceStatusSnapshot(evidence, runId, state);
   if (result.kind === "invalid") {
     return invalidEvidence(runId, studioEvidenceMessage(result.message));
   }

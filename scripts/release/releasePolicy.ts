@@ -3,6 +3,7 @@ import {
   normalizeUnreleasedNotes,
   splitUnreleasedSection,
 } from "./changelogPolicy.js";
+import { isLegacyAllowed, isReleaseCommit } from "./releaseCommitFilters.js";
 
 export { changelogMarker, changelogReleaseSource } from "./changelogPolicy.js";
 
@@ -54,17 +55,6 @@ type BuildReleasePlanInput = {
 
 const conventionalSubjectPattern = /^([a-z]+)(?:\(([^)]+)\))?(!)?:\s+(\S.+)$/;
 
-const legacyNonConventionalSubjects = new Map([
-  [
-    "ec58978101438e9c02b548d92ac4d1a3e7aceadf",
-    "📝 Add docstrings to `fix/core-script-approval-integrity`",
-  ],
-  [
-    "88a2c3bb5744daaccdb46e115a2facc92bc14bbf",
-    "📝 Add docstrings to `fix/core-production-package-integrity`",
-  ],
-]);
-
 const sectionByType: Record<ReleaseCommitType, string> = {
   build: "Build",
   chore: "Chores",
@@ -96,13 +86,6 @@ export function parseConventionalSubject(commit: GitCommit): ParsedCommit | null
     scope: scope ?? null,
     type: type as ReleaseCommitType,
   };
-}
-
-export function isReleaseCommit(commit: GitCommit): boolean {
-  return commit.subject.startsWith("chore(release):");
-}
-export function isLegacyAllowed(commit: GitCommit): boolean {
-  return legacyNonConventionalSubjects.get(commit.hash) === commit.subject;
 }
 
 /**

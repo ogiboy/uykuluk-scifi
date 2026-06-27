@@ -6,9 +6,9 @@ import { RunRecord } from "../core/state.js";
 import { canTransition } from "../core/transitions.js";
 import { checkAssets } from "../safeguards/assetGuard.js";
 import { pathExists } from "../utils/fs.js";
-import { bulletList, table } from "../utils/markdown.js";
 import { generateEvidenceBundle } from "./evidence.js";
-import { verifyProductionPackage } from "./productionPackageIntegrity.js";
+import { renderReadinessMarkdown } from "./readinessMarkdown.js";
+import { productionPackageIntegrityCheck } from "./readinessProductionPackage.js";
 import { draftRenderReadinessCheck } from "./readinessRenderDraft.js";
 import { renderPlanReadinessCheck } from "./readinessRenderPlan.js";
 import { voiceoverReadinessCheck } from "./readinessVoiceover.js";
@@ -98,30 +98,7 @@ export async function runReadiness(
     run,
     "readiness",
     "diagnostics/readiness.md",
-    [
-      "# Readiness",
-      "",
-      `Run: ${run.runId}`,
-      `Passed: ${passed}`,
-      "",
-      table(
-        ["Check", "Status", "Message", "Next action"],
-        checks.map((check) => [
-          check.name,
-          check.status,
-          check.message.replaceAll("|", "/"),
-          check.nextAction?.replaceAll("|", "/") ?? "None",
-        ]),
-      ),
-      "",
-      "## Warnings",
-      "",
-      bulletList(
-        checks
-          .filter((check) => check.status === "warn")
-          .map((check) => `${check.name}: ${check.message}`),
-      ),
-    ].join("\n"),
+    renderReadinessMarkdown(run.runId, passed, checks),
   );
   if (
     passed &&
@@ -162,23 +139,6 @@ async function artifactCheck(
     `${relativePath} is missing.`,
     nextAction,
   );
-}
-
-async function productionPackageIntegrityCheck(run: RunRecord): Promise<ReadinessCheck> {
-  try {
-    const { digest } = await verifyProductionPackage(run);
-    return {
-      name: "production package integrity",
-      status: "pass",
-      message: `Complete production package matches manifest ${digest}.`,
-    };
-  } catch (error) {
-    return {
-      name: "production package integrity",
-      status: "block",
-      message: error instanceof Error ? error.message : String(error),
-    };
-  }
 }
 
 /**

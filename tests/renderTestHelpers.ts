@@ -3,22 +3,26 @@ import path from "node:path";
 
 /**
  * Enables deterministic local text-to-speech in the producer configuration.
+ *
+ * @param root - The temp project root containing `producer.config.json`.
  */
-export async function enableDeterministicTts(): Promise<void> {
-  const config = JSON.parse(await readFile("producer.config.json", "utf8")) as {
+export async function enableDeterministicTts(root: string): Promise<void> {
+  const target = path.join(root, "producer.config.json");
+  const config = JSON.parse(await readFile(target, "utf8")) as {
     providers: { tts: Record<string, unknown> };
   };
   config.providers.tts = { enabled: true, mode: "deterministic-local" };
-  await writeFile("producer.config.json", `${JSON.stringify(config, null, 2)}\n`, "utf8");
+  await writeFile(target, `${JSON.stringify(config, null, 2)}\n`, "utf8");
 }
 
 /**
- * Creates a fake FFmpeg executable in the current working directory.
+ * Creates a fake FFmpeg executable in the temp project root.
  *
+ * @param root - The temp project root where the script should be written.
  * @returns The path to the generated script.
  */
-export async function createFakeFfmpeg(): Promise<string> {
-  const target = path.join(process.cwd(), "fake-ffmpeg.mjs");
+export async function createFakeFfmpeg(root: string): Promise<string> {
+  const target = path.join(root, "fake-ffmpeg.mjs");
   await writeFile(
     target,
     [
@@ -36,10 +40,11 @@ export async function createFakeFfmpeg(): Promise<string> {
 /**
  * Creates a fake FFprobe executable that prints fixed media metadata.
  *
+ * @param root - The temp project root where the script should be written.
  * @returns The path to the generated script.
  */
-export async function createFakeFfprobe(): Promise<string> {
-  const target = path.join(process.cwd(), "fake-ffprobe.mjs");
+export async function createFakeFfprobe(root: string): Promise<string> {
+  const target = path.join(root, "fake-ffprobe.mjs");
   await writeFile(
     target,
     [
@@ -61,10 +66,11 @@ export async function createFakeFfprobe(): Promise<string> {
 /**
  * Creates a failing fake FFprobe script.
  *
+ * @param root - The temp project root where the script should be written.
  * @returns The path to the generated script.
  */
-export async function createFailingFakeFfprobe(): Promise<string> {
-  const target = path.join(process.cwd(), "fake-failing-ffprobe.mjs");
+export async function createFailingFakeFfprobe(root: string): Promise<string> {
+  const target = path.join(root, "fake-failing-ffprobe.mjs");
   await writeFile(
     target,
     ["#!/usr/bin/env node", 'console.error("invalid media");', "process.exit(1);"].join("\n"),

@@ -1,6 +1,6 @@
+import { readdir } from "node:fs/promises";
 import path from "node:path";
-import { ProducerConfig } from "../config/schema.js";
-import { listFilesIfExists } from "../utils/fs.js";
+import type { ProducerConfig } from "../config/schema.js";
 
 export type AssetCheck = {
   passed: boolean;
@@ -20,12 +20,13 @@ export type AssetCheck = {
  */
 export async function checkAssets(
   config: Pick<ProducerConfig, "assets">,
-  root: string = process.cwd(),
+  root?: string,
 ): Promise<AssetCheck> {
-  const brand = await listFilesIfExists(path.join(root, config.assets.brandDir));
-  const overlays = await listFilesIfExists(path.join(root, config.assets.overlayDir));
-  const intro = await listFilesIfExists(path.join(root, config.assets.introDir));
-  const outro = await listFilesIfExists(path.join(root, config.assets.outroDir));
+  const baseRoot = root ?? process.cwd();
+  const brand = await listFilesIfExists(path.join(baseRoot, config.assets.brandDir));
+  const overlays = await listFilesIfExists(path.join(baseRoot, config.assets.overlayDir));
+  const intro = await listFilesIfExists(path.join(baseRoot, config.assets.introDir));
+  const outro = await listFilesIfExists(path.join(baseRoot, config.assets.outroDir));
   const warnings: string[] = [];
   if (!brand.some((file) => /logo/i.test(file))) {
     warnings.push("Missing brand logo asset in assets/brand.");
@@ -52,4 +53,15 @@ export async function checkAssets(
       outro,
     },
   };
+}
+
+async function listFilesIfExists(directory: string): Promise<string[]> {
+  try {
+    return await readdir(directory);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+      return [];
+    }
+    throw error;
+  }
 }

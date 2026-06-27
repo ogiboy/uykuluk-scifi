@@ -43,7 +43,7 @@ describe("Studio read-only run summaries", () => {
 
     expect(summaries.map((run) => run.runId)).toEqual([second.runId, first.runId]);
     expect(summaries[0]).toMatchObject({
-      nextRecommendedCommand: "pnpm producer ideas",
+      nextRecommendedCommand: `pnpm producer evidence --run ${second.runId}`,
       state: "NEW",
     });
     expect(summaries[1]).toMatchObject({
@@ -249,7 +249,7 @@ describe("Studio read-only run summaries", () => {
           stage: "script",
         },
       ],
-      nextRecommendedCommand: `pnpm producer script --run ${run.runId}`,
+      nextRecommendedCommand: `pnpm producer evidence --run ${run.runId}`,
       state: "IDEA_APPROVED",
     });
     expect(detail?.evidence).toBeNull();

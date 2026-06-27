@@ -14,7 +14,7 @@ type RenderPlanNextStep = {
 } | null;
 
 type VoiceoverNextStep = {
-  productionVoiceCandidate?: boolean;
+  productionVoiceCandidate?: boolean | null;
   status?: string;
 } | null;
 
@@ -157,10 +157,13 @@ function manualProductionNextCommand(
   ttsEnabled: boolean,
 ): string {
   if (voiceoverAudio?.status === "pass") {
+    if (voiceoverAudio.productionVoiceCandidate === true) {
+      return "pnpm producer approve render --run <run_id>";
+    }
     if (voiceoverAudio.productionVoiceCandidate === false) {
       return "Review deterministic reference audio; approve render only for a local timing draft with pnpm producer approve render --run <run_id>";
     }
-    return "pnpm producer approve render --run <run_id>";
+    return "Regenerate voiceover evidence or review deterministic reference audio before render approval.";
   }
   if (ttsEnabled) {
     return "pnpm producer voice --run <run_id>";

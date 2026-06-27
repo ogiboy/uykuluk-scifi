@@ -31,6 +31,7 @@ describe("release policy", () => {
           "ec58978101438e9c02b548d92ac4d1a3e7aceadf",
           "📝 Add docstrings to `fix/core-script-approval-integrity`",
         ),
+        commit("1".repeat(40), "📝 Add docstrings to `feat/tts-operator-proof`"),
       ],
     });
 
@@ -38,7 +39,7 @@ describe("release policy", () => {
     expect(plan.bump).toBe("minor");
     expect(plan.nextVersion).toBe("0.2.0");
     expect(plan.invalidCommits).toEqual([]);
-    expect(plan.ignoredCommits).toHaveLength(6);
+    expect(plan.ignoredCommits).toHaveLength(7);
   });
 
   it("reports invalid release-range commit subjects", () => {

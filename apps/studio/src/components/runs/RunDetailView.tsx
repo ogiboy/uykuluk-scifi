@@ -193,7 +193,10 @@ function groupedArtifactPreviews(
  * @returns The CSS class name for the corresponding status pill
  */
 function readinessStatusClassName(status: string): string {
-  return status === "pass" ? "status-pill small" : "status-pill small blocked";
+  if (status === "block") {
+    return "status-pill small blocked";
+  }
+  return "status-pill small";
 }
 
 /**

@@ -1,4 +1,4 @@
-import { studioMutationServiceContracts } from "../../../../src/studio/actionServiceContracts";
+import { studioMutationServiceMetadata } from "../../../../src/studio/actionServiceMetadata";
 import { disabledStudioActionRoutes, routeSecurityFindings } from "./routeSecurity";
 
 export type StudioActionServiceStatus = {
@@ -25,7 +25,7 @@ export type StudioActionServiceSummary = {
  * @returns The current action counts, security findings, route summaries, and web mutation status.
  */
 export function getStudioActionServiceStatus(): StudioActionServiceStatus {
-  const summaries = studioMutationServiceContracts
+  const summaries = studioMutationServiceMetadata
     .map((contract) => {
       const route = disabledStudioActionRoutes.find(
         (candidate) => candidate.serviceContractId === contract.actionId,

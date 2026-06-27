@@ -1,7 +1,7 @@
 import {
-  hasStudioMutationServiceContract,
-  type StudioMutationServiceContractId,
-} from "../../../../src/studio/actionServiceContracts";
+  studioMutationActionIds,
+  type StudioMutationActionId,
+} from "../../../../src/studio/actionServiceMetadata";
 
 export type StudioRouteMethod = "DELETE" | "GET" | "PATCH" | "POST" | "PUT";
 export type StudioRouteRisk =
@@ -21,7 +21,7 @@ export type StudioRouteSecurityContract = {
   requiresCsrfProtection: boolean;
   requiresEvidenceWrite: boolean;
   risk: StudioRouteRisk;
-  serviceContractId: StudioMutationServiceContractId | null;
+  serviceContractId: StudioMutationActionId | null;
 };
 
 export const readOnlyStudioRoutes = [
@@ -91,7 +91,7 @@ function route(id: string, path: string): StudioRouteSecurityContract {
  * @returns The configured Studio route security contract
  */
 function action(
-  id: StudioMutationServiceContractId,
+  id: StudioMutationActionId,
   path: string,
   requiredApproval: StudioRouteSecurityContract["requiredApproval"],
   risk: Exclude<StudioRouteRisk, "read-only">,
@@ -148,7 +148,7 @@ function disabledActionFindings(contract: StudioRouteSecurityContract): string[]
   }
   if (
     !contract.serviceContractId ||
-    !hasStudioMutationServiceContract(contract.serviceContractId)
+    !studioMutationActionIds.includes(contract.serviceContractId)
   ) {
     findings.push(`${contract.id} needs a valid Studio mutation service contract.`);
   }
