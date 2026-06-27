@@ -11,6 +11,7 @@ import { estimateCost } from "../src/stages/estimate";
 import { runIdeas } from "../src/stages/ideas";
 import { generateProductionPackage } from "../src/stages/productionPackage";
 import { runReadiness } from "../src/stages/readiness";
+import { formatReadinessConsole } from "../src/stages/readinessConsole";
 import { reviewScript } from "../src/stages/reviewScript";
 import { generateScript } from "../src/stages/script";
 import { useTempProject } from "./helpers";
@@ -93,5 +94,20 @@ describe("readiness and disabled public actions", () => {
       message: expect.stringMatching(/could not be read|invalid/i),
     });
     expect((await loadRun(runId)).state).toBe("COST_ESTIMATED");
+  });
+
+  it("prints readiness next actions for missing operator artifacts", async () => {
+    const { runId, ideas } = await runIdeas();
+    await approveIdea(runId, ideas[0].id);
+    await generateScript(runId);
+    await reviewScript(runId);
+    await approveScript(runId, { acknowledgeWarnings: true });
+    await generateProductionPackage(runId);
+
+    const output = formatReadinessConsole(runId, await runReadiness(runId));
+
+    expect(output).toContain("Readiness blocked.");
+    expect(output).toContain("Next action: pnpm producer estimate --run");
+    expect(output).toContain("Next action: pnpm producer evidence --run");
   });
 });

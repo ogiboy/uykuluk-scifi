@@ -229,6 +229,8 @@
 - Readiness diagnostics that strictly parse and revalidate persisted cost quotes, live hard budgets,
   complete production-package integrity, and exact paid-generation cost approval when required.
 - Final readiness diagnostics agree with the post-transition run state.
+- Blocked `producer readiness` checks print and persist next-action guidance for common operator
+  steps such as cost estimation, exact quote approval, and evidence refresh.
 - Disabled upload and publish placeholders.
 - Basic Next.js Producer Studio shell under `apps/studio` with read-only run index and run detail
   routes backed by local run/evidence/readiness service contracts.

@@ -15,6 +15,7 @@ import { voiceoverReadinessCheck } from "./readinessVoiceover.js";
 
 export type ReadinessCheck = {
   name: string;
+  nextAction?: string;
   status: "pass" | "warn" | "block";
   message: string;
 };
@@ -73,7 +74,12 @@ export async function runReadiness(
         ? "Public publish is enabled; verify explicit approval controls before continuing."
         : "Public/scheduled publish remains disabled by default.",
     },
-    await artifactCheck(run.runId, "evidence bundle available", "evidence_bundle.json"),
+    await artifactCheck(
+      run.runId,
+      "evidence bundle available",
+      "evidence_bundle.json",
+      `pnpm producer evidence --run ${run.runId}`,
+    ),
   ];
   const passed = checks.every((check) => check.status !== "block");
   run = await writeRunJson(run, "readiness", "diagnostics/readiness.json", {
@@ -93,8 +99,13 @@ export async function runReadiness(
       `Passed: ${passed}`,
       "",
       table(
-        ["Check", "Status", "Message"],
-        checks.map((check) => [check.name, check.status, check.message.replaceAll("|", "/")]),
+        ["Check", "Status", "Message", "Next action"],
+        checks.map((check) => [
+          check.name,
+          check.status,
+          check.message.replaceAll("|", "/"),
+          check.nextAction?.replaceAll("|", "/") ?? "None",
+        ]),
       ),
       "",
       "## Warnings",
@@ -127,12 +138,14 @@ async function artifactCheck(
   runId: string,
   name: string,
   relativePath: string,
+  nextAction?: string,
 ): Promise<ReadinessCheck> {
   return fileCheck(
     name,
     await pathExists(artifactPath(runId, relativePath)),
     `${relativePath} exists.`,
     `${relativePath} is missing.`,
+    nextAction,
   );
 }
 
@@ -164,6 +177,7 @@ async function budgetEstimateCheck(
       name: "budget not exceeded",
       status: "block",
       message: `${relativePath} is missing.`,
+      nextAction: `pnpm producer estimate --run ${run.runId}`,
     };
   }
   try {
@@ -196,6 +210,7 @@ async function budgetEstimateCheck(
           name: "budget not exceeded",
           status: "block",
           message: "The exact quote requires explicit paid-generation cost approval.",
+          nextAction: `pnpm producer approve cost --run ${run.runId}`,
         };
       }
       return {
@@ -223,10 +238,12 @@ async function fileCheck(
   ok: boolean,
   passMessage: string,
   failMessage: string,
+  nextAction?: string,
 ): Promise<ReadinessCheck> {
   return {
     name,
     status: ok ? "pass" : "block",
     message: ok ? passMessage : failMessage,
+    nextAction: ok ? undefined : nextAction,
   };
 }

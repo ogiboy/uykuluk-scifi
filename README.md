@@ -249,6 +249,9 @@ pnpm producer approve render --run <run_id>
 pnpm producer render --run <run_id>
 ```
 
+Blocked readiness checks print and persist next-action guidance for common operator steps such as
+generating the cost estimate, approving an exact quote, or refreshing the evidence bundle.
+
 Inspection:
 
 ```bash

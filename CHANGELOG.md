@@ -25,6 +25,7 @@ future generated release notes can be inserted predictably.
 
 ### Fixes
 
+- print `producer readiness` next-action guidance in terminal and Markdown output
 - print `producer doctor` next-action guidance in terminal output
 - fail release planning when `package.json` drifts from the latest stable tag
 - add next-action guidance for blocked Ollama and publish-default doctor diagnostics
