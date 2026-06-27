@@ -116,6 +116,8 @@ export function isMergeCommit(commit: GitCommit): boolean {
 }
 
 export function buildReleasePlan(input: BuildReleasePlanInput): ReleasePlan {
+  assertPackageVersionMatchesLatestTag(input.currentVersion, input.latestTag);
+
   const parsed: ParsedCommit[] = [];
   const ignoredCommits: GitCommit[] = [];
   const invalidCommits: GitCommit[] = [];
@@ -148,6 +150,19 @@ export function buildReleasePlan(input: BuildReleasePlanInput): ReleasePlan {
     ignoredCommits,
     invalidCommits,
   };
+}
+
+function assertPackageVersionMatchesLatestTag(currentVersion: string, latestTag: string | null) {
+  if (!latestTag) {
+    return;
+  }
+  const tagVersion = latestTag.replace(/^v/, "");
+  if (currentVersion === tagVersion) {
+    return;
+  }
+  throw new Error(
+    `package.json version ${currentVersion} does not match latest stable tag ${latestTag}. Run the main release workflow or restore package.json before planning the next release.`,
+  );
 }
 
 export function highestBump(commits: ParsedCommit[]): ReleasePlan["bump"] {

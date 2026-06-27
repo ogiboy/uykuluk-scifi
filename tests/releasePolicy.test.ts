@@ -52,6 +52,16 @@ describe("release policy", () => {
     expect(plan.invalidCommits.map((entry) => entry.subject)).toEqual(["Update stuff"]);
   });
 
+  it("fails release planning when package version drifts from the latest stable tag", () => {
+    expect(() =>
+      buildReleasePlan({
+        currentVersion: "0.7.1",
+        latestTag: "v0.7.2",
+        commits: [commit("1".repeat(40), "fix(release): keep release state aligned")],
+      }),
+    ).toThrow(/package\.json version 0\.7\.1 does not match latest stable tag v0\.7\.2/i);
+  });
+
   it("parses breaking zero-major changes as a minor release", () => {
     const parsed = parseConventionalSubject(
       commit("1".repeat(40), "feat(core)!: change state file"),

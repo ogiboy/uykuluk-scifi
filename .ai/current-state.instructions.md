@@ -417,6 +417,6 @@ Corepack/PATH before treating failures as product failures.
   additions.
 - Sonar scan upload requires a local or cloud token through `SONAR_TOKEN` or Keychain; tokens must
   never be tracked.
-- Stable git tags are present through `v0.7.1`. Release automation treats the latest reachable
-  stable tag as the release base and uses exact-SHA legacy allowlist entries for the two historical
-  non-conventional docstring commits.
+- Stable git tags are present and release automation treats the latest reachable stable tag as the
+  release base. Release planning fails if `package.json` drifts from that latest stable tag and uses
+  exact-SHA legacy allowlist entries for the two historical non-conventional docstring commits.
