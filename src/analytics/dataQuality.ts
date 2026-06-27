@@ -23,6 +23,14 @@ type AnalyticsDataQualityRecord = {
   views?: number;
 };
 
+/**
+ * Summarizes analytics data quality across a set of records.
+ *
+ * Counts record confidence levels, missing-field totals, and the next recommended data-quality action.
+ *
+ * @param records - The analytics records to summarize
+ * @returns The aggregated data-quality summary
+ */
 export function summarizeAnalyticsDataQuality(
   records: readonly AnalyticsDataQualityRecord[],
 ): AnalyticsDataQualitySummary {
@@ -55,6 +63,12 @@ export function summarizeAnalyticsDataQuality(
   };
 }
 
+/**
+ * Determines the confidence level for an analytics record.
+ *
+ * @param record - The analytics record to assess
+ * @returns The record confidence details and level
+ */
 export function analyticsRecordConfidence(
   record: AnalyticsDataQualityRecord,
 ): AnalyticsRecordConfidence {
@@ -75,6 +89,11 @@ export function analyticsRecordConfidence(
   };
 }
 
+/**
+ * Creates an empty analytics data-quality summary.
+ *
+ * @returns A summary with all counts set to `0` and a default next-step instruction.
+ */
 export function emptyAnalyticsDataQuality(): AnalyticsDataQualitySummary {
   return {
     highConfidenceRecordCount: 0,
@@ -90,6 +109,12 @@ export function emptyAnalyticsDataQuality(): AnalyticsDataQualitySummary {
   };
 }
 
+/**
+ * Chooses the next data-quality action from the current record and missing-field counts.
+ *
+ * @param counts - Aggregated counts for missing analytics fields and total records.
+ * @returns A guidance message for the next data-quality step.
+ */
 function nextDataQualityAction(counts: {
   missingCtrCount: number;
   missingImpressionsCount: number;
@@ -115,6 +140,12 @@ function nextDataQualityAction(counts: {
   return "Review recommendations as non-causal prompts and keep the next experiment small.";
 }
 
+/**
+ * Maps a present-field count to a confidence level.
+ *
+ * @param presentCount - The number of required fields that are present.
+ * @returns `"high"` for five or more present fields, `"medium"` for three or four, and `"low"` otherwise.
+ */
 function confidenceLevel(presentCount: number): AnalyticsRecordConfidence["level"] {
   if (presentCount >= 5) {
     return "high";
@@ -125,10 +156,23 @@ function confidenceLevel(presentCount: number): AnalyticsRecordConfidence["level
   return "low";
 }
 
+/**
+ * Determines whether a value is a string.
+ *
+ * @param value - The value to test.
+ * @returns `true` if `value` is a string, `false` otherwise.
+ */
 function isString(value: string | null): value is string {
   return value !== null;
 }
 
+/**
+ * Counts records missing a specific field.
+ *
+ * @param records - The records to inspect
+ * @param key - The field to check for `undefined`
+ * @returns The number of records whose value for `key` is `undefined`
+ */
 function missingCount(
   records: readonly AnalyticsDataQualityRecord[],
   key: keyof AnalyticsDataQualityRecord,

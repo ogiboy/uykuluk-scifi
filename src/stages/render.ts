@@ -38,6 +38,13 @@ export type RenderDraftOptions = {
   maxDurationSeconds?: number;
 };
 
+/**
+ * Generates and stores a draft render for a run.
+ *
+ * @param runId - The run identifier.
+ * @param options - Render binary and duration settings.
+ * @returns The draft render manifest.
+ */
 export async function renderDraft(
   runId: string,
   options: RenderDraftOptions = {},

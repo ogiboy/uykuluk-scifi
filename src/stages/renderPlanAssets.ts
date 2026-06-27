@@ -21,6 +21,12 @@ export type SelectedRenderAssets = {
   waveform?: AssetRef;
 };
 
+/**
+ * Selects the render assets used to build a render plan.
+ *
+ * @param configAssets - Asset directories from the producer configuration
+ * @returns The selected render assets, including required single assets, optional overlays, frame sequences, and background plates
+ */
 export async function selectRenderAssets(
   configAssets: ProducerConfig["assets"],
 ): Promise<SelectedRenderAssets> {
@@ -64,6 +70,15 @@ export function uniqueAssets(assets: Array<AssetRef | undefined>): AssetRef[] {
   });
 }
 
+/**
+ * Lists asset references for files in a directory.
+ *
+ * Returns an empty array when the directory does not exist.
+ *
+ * @param relativeDir - Directory path relative to the current working directory
+ * @param role - Role assigned to each asset reference
+ * @returns The asset references for files in the directory
+ */
 async function listAssetRefs(relativeDir: string, role = "asset"): Promise<AssetRef[]> {
   const absoluteDir = path.join(process.cwd(), relativeDir);
   if (!(await pathExists(absoluteDir))) {

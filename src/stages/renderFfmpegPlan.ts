@@ -14,6 +14,15 @@ import type { AssetRef } from "./renderPlanSchemas.js";
 export { buildDraftRenderTimeline, clampRenderDuration } from "./renderTimeline.js";
 export type { DraftRenderTimeline } from "./renderTimeline.js";
 
+/**
+ * Builds FFmpeg arguments for rendering a draft video.
+ *
+ * Uses the provided timeline or derives one from the render plan, then assembles the inputs,
+ * filters, stream mappings, and output settings needed to write the final file.
+ *
+ * @throws {SafeExitError} Thrown when the render plan does not contain at least one scene.
+ * @returns The FFmpeg command-line arguments.
+ */
 export function buildFfmpegArgs(input: {
   composition?: DraftRenderComposition;
   durationSeconds: number;
@@ -93,6 +102,12 @@ type FfmpegTimelineInput = {
   durationSeconds: number;
 };
 
+/**
+ * Expands a draft render timeline into FFmpeg input segments.
+ *
+ * @param timeline - The timeline to convert.
+ * @returns A flattened list of assets with per-segment durations.
+ */
 function expandTimelineInputs(timeline: DraftRenderTimeline): FfmpegTimelineInput[] {
   return timeline.flatMap((item) => {
     const assets = timelineInputAssets(item);
@@ -104,6 +119,12 @@ function expandTimelineInputs(timeline: DraftRenderTimeline): FfmpegTimelineInpu
   });
 }
 
+/**
+ * Selects the assets used to represent a timeline item in FFmpeg input expansion.
+ *
+ * @param item - The timeline item to inspect.
+ * @returns The source frame assets when there is more than one and each receives at least 0.1 seconds; otherwise the background asset.
+ */
 function timelineInputAssets(item: DraftRenderTimeline[number]): AssetRef[] {
   const frameAssets = item.sourceFrameAssets ?? [];
   if (frameAssets.length <= 1) {
@@ -115,6 +136,13 @@ function timelineInputAssets(item: DraftRenderTimeline[number]): AssetRef[] {
   return frameAssets;
 }
 
+/**
+ * Splits a duration across a number of segments.
+ *
+ * @param durationSeconds - The total duration to distribute.
+ * @param itemCount - The number of segments to produce.
+ * @returns An array of durations whose sum matches `durationSeconds` after rounding.
+ */
 function distributeDuration(durationSeconds: number, itemCount: number): number[] {
   if (itemCount <= 1) {
     return [roundSeconds(durationSeconds)];
@@ -126,10 +154,25 @@ function distributeDuration(durationSeconds: number, itemCount: number): number[
   return durations;
 }
 
+/**
+ * Rounds a duration to two decimal places.
+ *
+ * @param seconds - The duration in seconds.
+ * @returns The duration rounded to the nearest hundredth.
+ */
 function roundSeconds(seconds: number): number {
   return Math.round(seconds * 100) / 100;
 }
 
+/**
+ * Creates a concat and subtitles filter chain for a single labeled output.
+ *
+ * @param input.concatInputs - The FFmpeg input label sequence for the concat filter.
+ * @param input.outputLabel - The label assigned to the filter output.
+ * @param input.sceneCount - The number of concatenated video segments.
+ * @param input.subtitles - The subtitles file path.
+ * @returns The FFmpeg filter expression.
+ */
 function buildSubtitleConcatFilter(input: {
   concatInputs: string;
   outputLabel: string;

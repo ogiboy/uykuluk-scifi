@@ -3,6 +3,16 @@ import type { DraftRenderEvidence } from "./renderEvidence.js";
 import type { RenderPlanEvidence } from "./renderPlan.js";
 import type { VoiceoverAudioEvidence } from "./voiceoverEvidence.js";
 
+/**
+ * Builds the list of blocked-action messages for producer evidence and capability settings.
+ *
+ * @param config - Producer configuration used to check provider enablement.
+ * @param renderPlan - Render plan evidence state.
+ * @param voiceoverAudio - Voiceover audio evidence state.
+ * @param draftRender - Draft render evidence state.
+ * @param unresolvedCostReservationCount - Number of active or uncertain cost reservation outcomes.
+ * @returns The blocked-action messages.
+ */
 export function evidenceBlockedActions(
   config: ProducerConfig,
   renderPlan: RenderPlanEvidence,

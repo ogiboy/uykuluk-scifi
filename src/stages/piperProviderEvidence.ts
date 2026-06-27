@@ -6,6 +6,12 @@ import type { VoiceoverAudioMeta } from "./voiceoverEvidence.js";
 
 export type PiperProviderEvidence = NonNullable<VoiceoverAudioMeta["provider"]>;
 
+/**
+ * Builds Piper provider evidence from the model and optional config files.
+ *
+ * @param options - Piper provider paths and binary identifier
+ * @returns Provider evidence containing the model hash and, when provided, the config hash
+ */
 export async function readPiperProviderEvidence(options: {
   binary: string;
   configPath?: string;

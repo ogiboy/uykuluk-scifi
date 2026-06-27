@@ -3,6 +3,12 @@ import { RunRecord } from "../core/state.js";
 import { readVoiceoverAudioEvidence } from "./voiceoverEvidence.js";
 import type { ReadinessCheck } from "./readiness.js";
 
+/**
+ * Checks whether voiceover audio is available and suitable for rendering.
+ *
+ * @param run - The run record to inspect.
+ * @returns A readiness check for voiceover audio availability.
+ */
 export async function voiceoverReadinessCheck(run: RunRecord): Promise<ReadinessCheck> {
   const evidence = await readVoiceoverAudioEvidence(run);
   if (evidence.status === "pass") {

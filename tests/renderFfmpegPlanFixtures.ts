@@ -1,5 +1,11 @@
 import { buildDraftRenderTimeline } from "../src/stages/renderFfmpegPlan";
 
+/**
+ * Creates a two-scene render plan fixture.
+ *
+ * @param options - Controls whether bookends, frame assets, and overlay assets are included.
+ * @returns A render plan configured with two scenes and deterministic metadata.
+ */
 export function createTwoSceneRenderPlan(
   options: { bookends?: boolean; frames?: boolean; overlays?: boolean } = {},
 ): Parameters<typeof buildDraftRenderTimeline>[0] {
@@ -59,6 +65,13 @@ export function createTwoSceneRenderPlan(
   };
 }
 
+/**
+ * Builds the optional intro and outro bookend configuration.
+ *
+ * @param options - Controls whether bookends are included and whether frame assets are attached.
+ * @param digest - The digest applied to the bookend assets.
+ * @returns The bookend configuration, or `undefined` when bookends are disabled.
+ */
 function bookends(
   options: { bookends?: boolean; frames?: boolean },
   digest: string,
@@ -80,6 +93,13 @@ function bookends(
   };
 }
 
+/**
+ * Builds frame asset descriptors for a bookend source.
+ *
+ * @param kind - The bookend type to build frames for.
+ * @param digest - The digest to assign to each frame asset.
+ * @returns The frame asset descriptors for the requested bookend source.
+ */
 function sourceFrames(kind: "intro" | "outro", digest: string) {
   return [
     {

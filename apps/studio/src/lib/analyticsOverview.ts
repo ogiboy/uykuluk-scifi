@@ -46,6 +46,11 @@ export type StudioAnalyticsOverview = {
   unmappedRecordCount: number;
 };
 
+/**
+ * Loads the studio analytics dataset and report preview, then builds a summary overview.
+ *
+ * @returns The analytics overview, or a fallback overview when the dataset is missing or invalid.
+ */
 export async function getStudioAnalyticsOverview(): Promise<StudioAnalyticsOverview> {
   const root = projectRoot();
   const datasetPath = path.join(root, ...ANALYTICS_DATASET_PATH.split("/"));
@@ -88,6 +93,13 @@ export async function getStudioAnalyticsOverview(): Promise<StudioAnalyticsOverv
   }
 }
 
+/**
+ * Reads a text file and truncates the returned content to a character limit.
+ *
+ * @param target - The file path to read
+ * @param characterLimit - The maximum number of characters to return
+ * @returns An object containing the truncated text, or `null` if the file does not exist, and whether truncation occurred
+ */
 async function readOptionalText(
   target: string,
   characterLimit: number,
@@ -106,6 +118,13 @@ async function readOptionalText(
   }
 }
 
+/**
+ * Builds an analytics overview for a missing or invalid dataset.
+ *
+ * @param error - The error raised while reading or parsing the dataset
+ * @param report - The optional report preview and truncation state
+ * @returns A fallback overview with dataset-derived fields cleared and status set from the dataset error
+ */
 function missingOrInvalidOverview(
   error: unknown,
   report: { text: string | null; truncated: boolean },
@@ -136,6 +155,12 @@ function missingOrInvalidOverview(
   };
 }
 
+/**
+ * Computes the top five videos by view count.
+ *
+ * @param records - Analytics records to rank
+ * @returns The five videos with the highest view counts, ordered from highest to lowest
+ */
 function topVideos(records: readonly AnalyticsRecord[]): StudioAnalyticsTopVideo[] {
   return [...records]
     .sort((first, second) => (second.views ?? 0) - (first.views ?? 0))
@@ -148,6 +173,13 @@ function topVideos(records: readonly AnalyticsRecord[]): StudioAnalyticsTopVideo
     }));
 }
 
+/**
+ * Sums a numeric field across a set of records.
+ *
+ * @param records - The records to aggregate
+ * @param key - The record field to sum
+ * @returns The sum of numeric values in `records` for `key`
+ */
 function sum(records: readonly AnalyticsRecord[], key: keyof AnalyticsRecord): number {
   return records.reduce((total, record) => {
     const value = record[key];

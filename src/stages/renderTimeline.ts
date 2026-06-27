@@ -11,6 +11,14 @@ export type DraftRenderTimeline = Array<{
   sourceFrameAssets?: AssetRef[];
 }>;
 
+/**
+ * Builds a draft render timeline from a render plan and target duration.
+ *
+ * @param renderPlan - The render plan to convert into timeline segments
+ * @param targetDurationSeconds - The desired total timeline duration
+ * @returns The constructed draft render timeline
+ * @throws SafeExitError - Thrown when the render plan does not contain any scenes
+ */
 export function buildDraftRenderTimeline(
   renderPlan: RenderPlan,
   targetDurationSeconds: number,

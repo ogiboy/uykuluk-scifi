@@ -148,6 +148,13 @@ function synthesizeDeterministicReferenceAudio(text: string): SynthesizedAudio {
   };
 }
 
+/**
+ * Synthesizes voiceover audio with the local Piper TTS provider.
+ *
+ * @param options - Piper execution settings and source text.
+ * @returns The synthesized WAV buffer and its audio metadata.
+ * @throws {SafeExitError} If `options.modelPath` is missing.
+ */
 async function synthesizePiperAudio(options: {
   binary: string;
   configPath?: string;

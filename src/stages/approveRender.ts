@@ -10,6 +10,14 @@ import { renderApprovalRef } from "./renderApproval.js";
 import { readRenderPlanEvidence } from "./renderPlan.js";
 import { readVoiceoverAudioEvidence } from "./voiceoverEvidence.js";
 
+/**
+ * Approves render for a run after required production evidence is verified.
+ *
+ * Replaces any existing approval for the `render` target on the run, records the approval, and advances the run to `RENDER_APPROVED`.
+ *
+ * @param runId - The run identifier
+ * @returns The recorded render approval
+ */
 export async function approveRender(runId: string): Promise<ApprovalRecord> {
   let run = await loadRun(runId);
   await requireState(run, "READY_FOR_MANUAL_PRODUCTION", "approve-render");

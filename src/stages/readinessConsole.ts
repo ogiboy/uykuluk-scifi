@@ -5,6 +5,13 @@ export type ReadinessResult = {
   checks: readonly ReadinessCheck[];
 };
 
+/**
+ * Formats a readiness report for console output.
+ *
+ * @param runId - The run identifier used in the diagnostics path
+ * @param result - The readiness result to format
+ * @returns A multiline console string with the overall status, each check, and the diagnostics path
+ */
 export function formatReadinessConsole(runId: string, result: ReadinessResult): string {
   return [
     `Readiness ${result.passed ? "passed" : "blocked"}.`,

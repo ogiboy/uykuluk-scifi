@@ -11,13 +11,12 @@ export type AssetCheck = {
 /**
  * Verifies the availability of required asset files in configured directories.
  *
- * Checks that the brand directory contains files matching "logo" and "watermark",
- * the overlays directory contains files with subtitle, lower-third, or panel patterns,
- * and that the intro and outro directories are not empty.
+ * Searches the configured brand, overlay, intro, and outro asset directories under `root`
+ * and reports any missing required asset categories.
  *
- * @param config - Producer configuration containing asset directory paths
- * @returns An `AssetCheck` object containing the check result, any warnings about missing
- * assets, and lists of discovered files by category.
+ * @param config - Producer configuration containing asset directory paths.
+ * @param root - Base directory used to resolve the configured asset paths.
+ * @returns An `AssetCheck` object with the check result, warning messages, and discovered files by category.
  */
 export async function checkAssets(
   config: ProducerConfig,

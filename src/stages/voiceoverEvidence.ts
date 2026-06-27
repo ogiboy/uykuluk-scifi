@@ -70,6 +70,12 @@ export type VoiceoverAudioEvidence =
     }
   | { status: "block"; path: string; message: string };
 
+/**
+ * Reads evidence for the generated voiceover audio artifact.
+ *
+ * @param run - The run record to inspect.
+ * @returns The voiceover evidence status, including a pass record when the audio and metadata validate, a missing record when no required artifacts are present, or a block record when validation fails.
+ */
 export async function readVoiceoverAudioEvidence(run: RunRecord): Promise<VoiceoverAudioEvidence> {
   const registered = voiceoverAudioArtifactPaths.some((relativePath) =>
     run.artifacts.includes(relativePath),

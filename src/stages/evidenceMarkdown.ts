@@ -8,6 +8,12 @@ import type { readDraftRenderEvidence } from "./renderEvidence.js";
 import type { readRenderPlanEvidence } from "./renderPlan.js";
 import type { readVoiceoverAudioEvidence } from "./voiceoverEvidence.js";
 
+/**
+ * Renders an evidence bundle as Markdown.
+ *
+ * @param bundle - The evidence bundle to format.
+ * @returns The rendered Markdown report.
+ */
 export function renderEvidenceMarkdown(bundle: unknown): string {
   const data = bundle as {
     runId: string;
@@ -106,6 +112,14 @@ export function renderEvidenceMarkdown(bundle: unknown): string {
   ].join("\n");
 }
 
+/**
+ * Builds summary strings for the render plan, voiceover audio, and draft render evidence.
+ *
+ * @param renderPlan - Parsed render plan evidence
+ * @param voiceoverAudio - Parsed voiceover audio evidence
+ * @param draftRender - Parsed draft render evidence
+ * @returns Three summary strings, one for each evidence object
+ */
 function productionMediaSummary(
   renderPlan: Awaited<ReturnType<typeof readRenderPlanEvidence>>,
   voiceoverAudio: Awaited<ReturnType<typeof readVoiceoverAudioEvidence>>,
@@ -118,6 +132,11 @@ function productionMediaSummary(
   ];
 }
 
+/**
+ * Summarizes the render plan evidence.
+ *
+ * @returns A status-specific summary of the render plan evidence, including asset and artifact counts for a passing plan, the blocking message for a blocked plan, or the required artifacts for missing evidence.
+ */
 function renderPlanSummary(renderPlan: Awaited<ReturnType<typeof readRenderPlanEvidence>>): string {
   if (renderPlan.status === "pass") {
     return `Render plan: pass (${renderPlan.assetCount} assets, ${renderPlan.artifactCount} artifacts, ${renderPlan.path}).`;
@@ -128,6 +147,12 @@ function renderPlanSummary(renderPlan: Awaited<ReturnType<typeof readRenderPlanE
   return `Render plan: missing (${renderPlan.requiredArtifacts.join(", ")}).`;
 }
 
+/**
+ * Summarizes the voiceover audio evidence.
+ *
+ * @param voiceoverAudio - The voiceover audio evidence to summarize
+ * @returns A status-based summary of the voiceover audio evidence
+ */
 function voiceoverAudioSummary(
   voiceoverAudio: Awaited<ReturnType<typeof readVoiceoverAudioEvidence>>,
 ): string {
@@ -140,6 +165,12 @@ function voiceoverAudioSummary(
   return `Voiceover audio: missing (${voiceoverAudio.requiredArtifacts.join(", ")}).`;
 }
 
+/**
+ * Summarizes the voiceover quality evidence.
+ *
+ * @param voiceoverAudio - The passed voiceover audio evidence
+ * @returns A short description of the voiceover mode and whether it includes a production voice candidate
+ */
 function voiceoverQualitySummary(
   voiceoverAudio: Extract<
     Awaited<ReturnType<typeof readVoiceoverAudioEvidence>>,
@@ -152,6 +183,12 @@ function voiceoverQualitySummary(
   return `${voiceoverAudio.mode}, timing/reference only`;
 }
 
+/**
+ * Summarizes the draft render evidence.
+ *
+ * @param draftRender - The draft render evidence record
+ * @returns A status summary for the draft render evidence
+ */
 function draftRenderSummary(
   draftRender: Awaited<ReturnType<typeof readDraftRenderEvidence>>,
 ): string {
@@ -164,6 +201,12 @@ function draftRenderSummary(
   return `Draft render: missing (${draftRender.requiredArtifacts.join(", ")}).`;
 }
 
+/**
+ * Summarizes the voiceover details for a passed draft render.
+ *
+ * @param draftRender - The draft render evidence with pass status
+ * @returns A voiceover summary fragment for the draft render
+ */
 function draftRenderVoiceoverSummary(
   draftRender: Extract<Awaited<ReturnType<typeof readDraftRenderEvidence>>, { status: "pass" }>,
 ): string {
@@ -173,6 +216,12 @@ function draftRenderVoiceoverSummary(
   return `, voiceover ${draftRender.voiceoverMode} timing/reference only`;
 }
 
+/**
+ * Summarizes the source frame segments in a draft render.
+ *
+ * @param draftRender - Passed draft render evidence
+ * @returns A source frame summary when segments are available, or an empty string otherwise
+ */
 function sourceFrameSummary(
   draftRender: Extract<Awaited<ReturnType<typeof readDraftRenderEvidence>>, { status: "pass" }>,
 ): string {
@@ -186,6 +235,12 @@ function sourceFrameSummary(
   return `, source frames ${draftRender.sourceFrameSegments.join("/")}`;
 }
 
+/**
+ * Summarizes the media probe dimensions for a draft render.
+ *
+ * @param mediaProbe - The media probe data for a passed draft render.
+ * @returns A summary string with the probed video dimensions, or an empty string when no probe is available.
+ */
 function mediaProbeSummary(
   mediaProbe: Extract<
     Awaited<ReturnType<typeof readDraftRenderEvidence>>,

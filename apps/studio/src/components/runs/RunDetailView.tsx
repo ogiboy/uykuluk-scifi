@@ -4,6 +4,11 @@ import { RunBlockedActionsPanel } from "./RunBlockedActionsPanel";
 import { RunLedgerPanel } from "./RunLedgerPanel";
 import { RunProductionMediaPanel } from "./RunProductionMediaPanel";
 
+/**
+ * Renders a read-only detail view for a run.
+ *
+ * @param run - The run data to display.
+ */
 export function RunDetailView({ run }: Readonly<{ run: StudioRunDetail }>) {
   const artifactGroups = groupedArtifactPreviews(run.artifacts);
 
@@ -162,6 +167,12 @@ export function RunDetailView({ run }: Readonly<{ run: StudioRunDetail }>) {
   );
 }
 
+/**
+ * Groups artifact previews by group label.
+ *
+ * @param artifacts - The artifact previews to group.
+ * @returns The grouped artifact previews, ordered by first occurrence of each group.
+ */
 function groupedArtifactPreviews(
   artifacts: StudioArtifactPreview[],
 ): Array<{ artifacts: StudioArtifactPreview[]; label: string }> {
@@ -175,10 +186,22 @@ function groupedArtifactPreviews(
   }));
 }
 
+/**
+ * Maps a readiness status to its status pill class name.
+ *
+ * @param status - The readiness status value
+ * @returns The CSS class name for the corresponding status pill
+ */
 function readinessStatusClassName(status: string): string {
   return status === "pass" ? "status-pill small" : "status-pill small blocked";
 }
 
+/**
+ * Provides a fallback message for an artifact preview.
+ *
+ * @param artifact - The artifact preview metadata
+ * @returns A message explaining why the preview is unavailable
+ */
 function artifactPreviewFallback(artifact: StudioArtifactPreview): string {
   if (!artifact.exists) {
     return "Artifact is not generated yet.";

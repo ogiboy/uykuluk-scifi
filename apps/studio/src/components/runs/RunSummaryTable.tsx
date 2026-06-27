@@ -4,6 +4,11 @@ import { formatRunReviewCounts } from "@/lib/runSummaryCopy";
 
 type RunSummaryTableProps = Readonly<{ runs: readonly StudioRunSummary[] }>;
 
+/**
+ * Displays a summary table of saved producer runs.
+ *
+ * @param runs - The runs to display
+ */
 export function RunSummaryTable({ runs }: RunSummaryTableProps) {
   if (runs.length === 0) {
     return (

@@ -4,6 +4,11 @@ import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
+/**
+ * Renders the analytics feedback page.
+ *
+ * @returns The analytics feedback page.
+ */
 export default async function AnalyticsPage() {
   const overview = await getStudioAnalyticsOverview();
 

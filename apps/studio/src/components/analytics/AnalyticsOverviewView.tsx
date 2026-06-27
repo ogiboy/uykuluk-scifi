@@ -4,6 +4,12 @@ type AnalyticsOverviewViewProps = Readonly<{
   overview: StudioAnalyticsOverview;
 }>;
 
+/**
+ * Renders a read-only analytics overview dashboard.
+ *
+ * @param overview - Analytics data used to populate the overview panels.
+ * @returns The analytics overview layout.
+ */
 export function AnalyticsOverviewView({ overview }: AnalyticsOverviewViewProps) {
   return (
     <div className='analytics-detail-grid'>
@@ -98,6 +104,12 @@ export function AnalyticsOverviewView({ overview }: AnalyticsOverviewViewProps) 
   );
 }
 
+/**
+ * Displays a label and value pair.
+ *
+ * @param label - The term to show.
+ * @param value - The value to show.
+ */
 function Metric({ label, value }: Readonly<{ label: string; value: string }>) {
   return (
     <div>
@@ -107,6 +119,12 @@ function Metric({ label, value }: Readonly<{ label: string; value: string }>) {
   );
 }
 
+/**
+ * Formats a number as a rounded US locale integer.
+ *
+ * @param value - The number to format.
+ * @returns The rounded number formatted with US digit separators.
+ */
 function formatInteger(value: number): string {
   return Math.round(value).toLocaleString("en-US");
 }

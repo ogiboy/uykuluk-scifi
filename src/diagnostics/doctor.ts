@@ -42,12 +42,11 @@ export function doctorMarkdownPath(): string {
 }
 
 /**
- * Generates and writes a diagnostic report of the project's health.
+ * Runs the project doctor and writes the resulting report to disk.
  *
- * Performs checks on project configuration validity, provider availability, production assets, and publish settings.
- * Writes the report in JSON and Markdown formats to the diagnostics directory.
+ * The report includes configuration, provider, asset, and publish-default checks.
  *
- * @returns The diagnostic report with all checks and overall pass/fail status.
+ * @returns The completed diagnostic report.
  */
 export async function runDoctor(): Promise<DoctorReport> {
   const startedAt = Date.now();
@@ -98,6 +97,12 @@ export async function runDoctor(): Promise<DoctorReport> {
   return report;
 }
 
+/**
+ * Formats a doctor report for console output.
+ *
+ * @param report - The diagnostic report to render
+ * @returns A newline-separated console summary of the report
+ */
 export function formatDoctorConsole(report: DoctorReport): string {
   return [
     `Doctor ${report.passed ? "passed" : "blocked"}.`,
@@ -109,9 +114,10 @@ export function formatDoctorConsole(report: DoctorReport): string {
 }
 
 /**
- * Diagnoses the availability and readiness of the LLM provider.
+ * Checks whether the configured LLM provider is ready for use.
  *
- * @returns A diagnostic check with the provider's current status and configuration message.
+ * @param config - The project configuration to inspect.
+ * @returns A diagnostic check describing the provider's status and message.
  */
 async function providerCheck(config: ProducerConfig | undefined): Promise<DoctorCheck> {
   if (!config) {
@@ -165,9 +171,10 @@ async function assetCheck(config: ProducerConfig | undefined): Promise<DoctorChe
 }
 
 /**
- * Determines if YouTube publish defaults are safely locked.
+ * Checks whether YouTube publish defaults are locked down safely.
  *
- * @returns A diagnostic check with `pass` status if YouTube upload and public publish are disabled with explicit approval required, `block` status otherwise.
+ * @param config - Project configuration to inspect.
+ * @returns A diagnostic check with `pass` status when YouTube upload and public publish are disabled and explicit approval is required, `block` otherwise.
  */
 function publishDefaultsCheck(config: ProducerConfig | undefined): DoctorCheck {
   if (!config) {

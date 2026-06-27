@@ -25,6 +25,11 @@ type ConfigReadResult = {
   warning: string | null;
 };
 
+/**
+ * Builds an inventory of the studio asset configuration and directory contents.
+ *
+ * @returns The computed asset inventory, including category results, warnings, timestamps, and overall status.
+ */
 export async function getStudioAssetInventory(): Promise<StudioAssetInventory> {
   const root = projectRoot();
   const configRead = await readStudioProducerConfig(root);
@@ -48,6 +53,12 @@ export async function getStudioAssetInventory(): Promise<StudioAssetInventory> {
   };
 }
 
+/**
+ * Reads the producer asset configuration for a project.
+ *
+ * @param root - The project root directory
+ * @returns The resolved asset configuration, its source, validity, and any warning message
+ */
 async function readStudioProducerConfig(root: string): Promise<ConfigReadResult> {
   const target = resolveProducerConfigPath(root);
   const source = formatProjectPath(root, target);
@@ -79,6 +90,11 @@ async function readStudioProducerConfig(root: string): Promise<ConfigReadResult>
   }
 }
 
+/**
+ * Checks whether a path exists.
+ *
+ * @returns `true` if the path exists, `false` if it does not.
+ */
 async function fileExists(target: string): Promise<boolean> {
   try {
     await stat(target);
@@ -91,6 +107,13 @@ async function fileExists(target: string): Promise<boolean> {
   }
 }
 
+/**
+ * Checks the expected asset directories for missing brand and intro/outro assets.
+ *
+ * @param root - Project root used to resolve asset directories
+ * @param assets - Asset directory configuration
+ * @returns Warning messages for any missing expected assets
+ */
 async function readAssetGuardWarnings(root: string, assets: StudioAssetConfig): Promise<string[]> {
   const [brand, overlays, intro, outro] = await Promise.all([
     listDirectoryEntryNames(root, assets.brandDir),
@@ -117,6 +140,13 @@ async function readAssetGuardWarnings(root: string, assets: StudioAssetConfig): 
   return warnings;
 }
 
+/**
+ * Lists the entry names in a project directory.
+ *
+ * @param root - The project root path.
+ * @param directory - The directory path relative to `root`.
+ * @returns The names of the entries in the directory.
+ */
 async function listDirectoryEntryNames(root: string, directory: string): Promise<string[]> {
   const entries = await readDirectoryEntries(
     path.join(/* turbopackIgnore: true */ root, directory),
@@ -124,6 +154,12 @@ async function listDirectoryEntryNames(root: string, directory: string): Promise
   return entries.map((entry) => entry.name);
 }
 
+/**
+ * Resolves the producer config path for the project.
+ *
+ * @param root - The project root directory
+ * @returns The absolute config path from `PRODUCER_CONFIG`, or the path to `producer.config.json` under `root`
+ */
 function resolveProducerConfigPath(root: string): string {
   const configuredPath = process.env.PRODUCER_CONFIG ?? "producer.config.json";
   if (path.isAbsolute(configuredPath)) {
@@ -132,6 +168,15 @@ function resolveProducerConfigPath(root: string): string {
   return path.join(/* turbopackIgnore: true */ root, configuredPath);
 }
 
+/**
+ * Builds the inventory entry for a single asset category.
+ *
+ * @param root - Project root used to resolve and format file paths
+ * @param assets - Studio asset configuration
+ * @param definition - Category metadata and directory definition
+ * @param guardWarnings - Guard warnings collected for the project
+ * @returns The completed asset category inventory entry
+ */
 async function readAssetCategory(
   root: string,
   assets: StudioAssetConfig,
@@ -155,6 +200,13 @@ async function readAssetCategory(
   };
 }
 
+/**
+ * Filters guard warnings for a specific asset category.
+ *
+ * @param definition - The category definition to match against
+ * @param guardWarnings - The guard warnings to filter
+ * @returns The warnings that match the category's guarded warning pattern
+ */
 function warningsForCategory(
   definition: AssetCategoryDefinition,
   guardWarnings: readonly string[],
@@ -165,6 +217,12 @@ function warningsForCategory(
   return guardWarnings.filter((warning) => definition.guardedWarningPattern?.test(warning));
 }
 
+/**
+ * Resolves the directory for an asset category.
+ *
+ * @param definition - The category definition that may point to a configured asset directory
+ * @returns The configured directory for the category, or the default directory from the definition
+ */
 function resolveAssetDirectory(
   assets: StudioAssetConfig,
   definition: AssetCategoryDefinition,
@@ -175,6 +233,13 @@ function resolveAssetDirectory(
   return definition.directory;
 }
 
+/**
+ * Determines the status of an asset category.
+ *
+ * @param files - The discovered files for the category
+ * @param warnings - The warnings associated with the category
+ * @returns `"needs-action"` if any warnings exist, `"empty"` if no files are found, otherwise `"ready"`
+ */
 function categoryStatus(
   files: readonly string[],
   warnings: readonly string[],
@@ -188,6 +253,13 @@ function categoryStatus(
   return "ready";
 }
 
+/**
+ * Lists all files under a directory and returns project-relative paths.
+ *
+ * @param root - Project root used to normalize returned paths
+ * @param directory - Directory to scan
+ * @returns Sorted file paths relative to `root`
+ */
 async function listAssetFiles(root: string, directory: string): Promise<string[]> {
   const fullDirectory = path.join(/* turbopackIgnore: true */ root, directory);
   const files = await listFilesRecursively(fullDirectory);
@@ -196,6 +268,12 @@ async function listAssetFiles(root: string, directory: string): Promise<string[]
     .sort((first, second) => first.localeCompare(second));
 }
 
+/**
+ * Lists all files under a directory.
+ *
+ * @param directory - The directory to scan
+ * @returns The full paths of all files found under `directory`
+ */
 async function listFilesRecursively(directory: string): Promise<string[]> {
   const entries = await readDirectoryEntries(directory);
   const files: string[] = [];
@@ -212,6 +290,14 @@ async function listFilesRecursively(directory: string): Promise<string[]> {
   return files;
 }
 
+/**
+ * Reads the entries in a directory.
+ *
+ * Returns an empty array when the directory does not exist.
+ *
+ * @param directory - The directory to read
+ * @returns The directory entries, or an empty array if the directory is missing
+ */
 async function readDirectoryEntries(directory: string) {
   try {
     return await readdir(directory, { withFileTypes: true });
@@ -223,6 +309,13 @@ async function readDirectoryEntries(directory: string) {
   }
 }
 
+/**
+ * Formats a path relative to the project root.
+ *
+ * @param root - Project root used as the reference point
+ * @param target - Path to format
+ * @returns A project-relative path with `/` separators, or `target` when it is outside `root`
+ */
 function formatProjectPath(root: string, target: string): string {
   const relativePath = path.relative(root, target);
   if (!relativePath || relativePath.startsWith("..")) {

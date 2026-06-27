@@ -8,6 +8,12 @@ type AssetInventoryViewProps = Readonly<{
   inventory: StudioAssetInventory;
 }>;
 
+/**
+ * Renders a read-only overview of an asset inventory.
+ *
+ * @param inventory - The asset inventory data to display.
+ * @returns The inventory overview, guard warnings, and asset category cards.
+ */
 export function AssetInventoryView({ inventory }: AssetInventoryViewProps) {
   return (
     <div className='asset-detail-grid'>
@@ -59,6 +65,11 @@ export function AssetInventoryView({ inventory }: AssetInventoryViewProps) {
   );
 }
 
+/**
+ * Renders an asset category card with its metadata, warnings, and file list.
+ *
+ * @param category - The category to display.
+ */
 function AssetCategoryCard({ category }: Readonly<{ category: StudioAssetCategory }>) {
   return (
     <article className='panel asset-category-card'>
@@ -91,6 +102,12 @@ function AssetCategoryCard({ category }: Readonly<{ category: StudioAssetCategor
   );
 }
 
+/**
+ * Maps a category status to its CSS class name.
+ *
+ * @param status - The category status.
+ * @returns The CSS class name for the status pill.
+ */
 function statusClassName(status: StudioAssetCategoryStatus): string {
   if (status === "ready") {
     return "status-pill small";
@@ -98,6 +115,12 @@ function statusClassName(status: StudioAssetCategoryStatus): string {
   return "status-pill small blocked";
 }
 
+/**
+ * Formats a category status for display.
+ *
+ * @param status - The category status value.
+ * @returns The user-facing status label.
+ */
 function statusLabel(status: StudioAssetCategoryStatus): string {
   if (status === "needs-action") {
     return "needs action";

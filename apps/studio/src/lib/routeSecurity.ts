@@ -46,12 +46,25 @@ export const studioRouteSecurityContracts = [
   ...disabledStudioActionRoutes,
 ] as const satisfies readonly StudioRouteSecurityContract[];
 
+/**
+ * Collects route security findings for the provided contracts.
+ *
+ * @param contracts - The contracts to evaluate.
+ * @returns The combined findings for all contracts.
+ */
 export function routeSecurityFindings(
   contracts: readonly StudioRouteSecurityContract[] = studioRouteSecurityContracts,
 ): string[] {
   return contracts.flatMap((contract) => routeFindings(contract));
 }
 
+/**
+ * Creates a read-only Studio route security contract.
+ *
+ * @param id - The route identifier
+ * @param path - The route path
+ * @returns A contract configured for an enabled GET-only route with read-only risk
+ */
 function route(id: string, path: string): StudioRouteSecurityContract {
   return {
     allowedMethods: ["GET"],
@@ -68,6 +81,15 @@ function route(id: string, path: string): StudioRouteSecurityContract {
   };
 }
 
+/**
+ * Creates a disabled Studio mutation route contract.
+ *
+ * @param id - The mutation service contract identifier
+ * @param path - The route path
+ * @param requiredApproval - The approval level required for the route
+ * @param risk - The route risk classification
+ * @returns The configured Studio route security contract
+ */
 function action(
   id: StudioMutationServiceContractId,
   path: string,
@@ -90,6 +112,12 @@ function action(
   };
 }
 
+/**
+ * Collects route-security findings for a single contract.
+ *
+ * @param contract - The route contract to evaluate
+ * @returns The findings generated for `contract`
+ */
 function routeFindings(contract: StudioRouteSecurityContract): string[] {
   const findings: string[] = [];
   if (contract.enabled && contract.risk !== "read-only") {
@@ -107,6 +135,12 @@ function routeFindings(contract: StudioRouteSecurityContract): string[] {
   return findings;
 }
 
+/**
+ * Collects route-security findings for a disabled Studio mutation action.
+ *
+ * @param contract - The route security contract to evaluate
+ * @returns A list of findings describing missing mutation-route requirements
+ */
 function disabledActionFindings(contract: StudioRouteSecurityContract): string[] {
   const findings: string[] = [];
   if (!contract.requiresCoreServiceContract) {

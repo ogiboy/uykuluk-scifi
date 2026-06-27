@@ -4,6 +4,11 @@ import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
+/**
+ * Renders the studio asset inventory page.
+ *
+ * @returns The asset inventory page content.
+ */
 export default async function AssetsPage() {
   const inventory = await getStudioAssetInventory();
 

@@ -1,6 +1,9 @@
 import { chmod, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
+/**
+ * Enables deterministic local text-to-speech in the producer configuration.
+ */
 export async function enableDeterministicTts(): Promise<void> {
   const config = JSON.parse(await readFile("producer.config.json", "utf8")) as {
     providers: { tts: Record<string, unknown> };
@@ -9,6 +12,11 @@ export async function enableDeterministicTts(): Promise<void> {
   await writeFile("producer.config.json", `${JSON.stringify(config, null, 2)}\n`, "utf8");
 }
 
+/**
+ * Creates a fake FFmpeg executable in the current working directory.
+ *
+ * @returns The path to the generated script.
+ */
 export async function createFakeFfmpeg(): Promise<string> {
   const target = path.join(process.cwd(), "fake-ffmpeg.mjs");
   await writeFile(
@@ -25,6 +33,11 @@ export async function createFakeFfmpeg(): Promise<string> {
   return target;
 }
 
+/**
+ * Creates a fake FFprobe executable that prints fixed media metadata.
+ *
+ * @returns The path to the generated script.
+ */
 export async function createFakeFfprobe(): Promise<string> {
   const target = path.join(process.cwd(), "fake-ffprobe.mjs");
   await writeFile(
@@ -45,6 +58,11 @@ export async function createFakeFfprobe(): Promise<string> {
   return target;
 }
 
+/**
+ * Creates a failing fake FFprobe script.
+ *
+ * @returns The path to the generated script.
+ */
 export async function createFailingFakeFfprobe(): Promise<string> {
   const target = path.join(process.cwd(), "fake-failing-ffprobe.mjs");
   await writeFile(
@@ -56,6 +74,9 @@ export async function createFailingFakeFfprobe(): Promise<string> {
   return target;
 }
 
+/**
+ * Creates a minimal set of render asset files on disk.
+ */
 export async function createMinimalRenderAssets(): Promise<void> {
   const files = new Map([
     ["assets/brand/uykulukscifi_channel_logo_square_1024.png", "logo"],

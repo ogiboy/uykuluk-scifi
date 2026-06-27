@@ -34,6 +34,12 @@ export type RunStatusSummary = {
   warningCount: number;
 };
 
+/**
+ * Loads a run and compiles its status summary.
+ *
+ * @param runId - The run identifier
+ * @returns The combined status summary for the run
+ */
 export async function readRunStatus(runId: string): Promise<RunStatusSummary> {
   const run = await loadRun(runId);
   const [evidenceResult, diagnostics, readiness] = await Promise.all([
@@ -61,6 +67,12 @@ export async function readRunStatus(runId: string): Promise<RunStatusSummary> {
   };
 }
 
+/**
+ * Renders a run status summary as a human-readable report.
+ *
+ * @param status - The run status summary to format
+ * @returns A newline-delimited report
+ */
 export function formatRunStatus(status: RunStatusSummary): string {
   return [
     `Run: ${status.run.runId}`,
@@ -87,6 +99,12 @@ export function formatRunStatus(status: RunStatusSummary): string {
   ].join("\n");
 }
 
+/**
+ * Formats the production media evidence section for a run status report.
+ *
+ * @param status - The run status summary to render.
+ * @returns The production media evidence lines.
+ */
 function formatProductionMediaEvidenceForRun(status: RunStatusSummary): string[] {
   if (status.evidenceStatus === "present") {
     return ["", "Production media evidence: current evidence bundle.", "Production media:"];
@@ -100,6 +118,12 @@ function formatProductionMediaEvidenceForRun(status: RunStatusSummary): string[]
   ];
 }
 
+/**
+ * Formats the evidence status and next action for a run.
+ *
+ * @param status - The run status summary to format
+ * @returns Lines describing evidence availability or the current evidence status and next action
+ */
 function formatEvidenceStatusForRun(status: RunStatusSummary): string[] {
   if (status.evidenceStatus === "present") {
     return ["Evidence: available"];
@@ -113,6 +137,12 @@ function formatEvidenceStatusForRun(status: RunStatusSummary): string[] {
   ];
 }
 
+/**
+ * Formats blocked actions for display.
+ *
+ * @param blockedActions - The blocked action messages to render
+ * @returns Section lines for the blocked actions list, or an empty array when there are no blocked actions
+ */
 function formatBlockedActions(blockedActions: readonly string[]): string[] {
   if (blockedActions.length === 0) {
     return [];
@@ -120,6 +150,12 @@ function formatBlockedActions(blockedActions: readonly string[]): string[] {
   return ["", "Blocked action details:", ...blockedActions.map((item) => `- ${item}`)];
 }
 
+/**
+ * Renders a diagnostics section for a run.
+ *
+ * @param diagnostics - Diagnostic entries to include
+ * @returns Formatted lines for the diagnostics section, or an empty array when there are no diagnostics
+ */
 function formatDiagnostics(diagnostics: readonly RunDiagnosticSummary[]): string[] {
   if (diagnostics.length === 0) {
     return [];
@@ -133,6 +169,14 @@ function formatDiagnostics(diagnostics: readonly RunDiagnosticSummary[]): string
   ];
 }
 
+/**
+ * Chooses the next recommended command for a run.
+ *
+ * @param runId - The run identifier used to fill the command template
+ * @param state - The current run state used when evidence is missing
+ * @param evidenceResult - The resolved evidence status for the run
+ * @returns A command string for the next recommended action
+ */
 function statusNextRecommendedCommand(
   runId: string,
   state: RunState,

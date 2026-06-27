@@ -3,6 +3,12 @@ import { summarizeAnalyticsDataQuality } from "./dataQuality.js";
 import { renderAnalyticsRecommendations } from "./recommendations.js";
 import type { AnalyticsDataset, AnalyticsRecord } from "./schema.js";
 
+/**
+ * Builds a Markdown analytics report from an import dataset.
+ *
+ * @param dataset - The analytics dataset to summarize and render
+ * @returns A Markdown report string
+ */
 export function renderAnalyticsReport(dataset: AnalyticsDataset): string {
   const totals = summarize(dataset.records);
   const runSummaries = summarizeRuns(dataset.records);
@@ -90,6 +96,11 @@ type RunSummary = {
   weightedCtr: number | undefined;
 };
 
+/**
+ * Aggregates overall metrics across all records.
+ *
+ * @returns The total views, impressions, and subscribers gained, along with weighted averages for view duration, viewed percentage, and CTR.
+ */
 function summarize(records: AnalyticsRecord[]): {
   averageViewDurationSeconds: number | undefined;
   impressions: number;
@@ -110,6 +121,12 @@ function summarize(records: AnalyticsRecord[]): {
   };
 }
 
+/**
+ * Summarizes records by run ID.
+ *
+ * @param records - Analytics records to group and summarize
+ * @returns Per-run summaries sorted by total views in descending order
+ */
 function summarizeRuns(records: AnalyticsRecord[]): RunSummary[] {
   const groups = new Map<string, AnalyticsRecord[]>();
   for (const record of records) {
@@ -176,6 +193,13 @@ function weightedAverage(
   return denominator > 0 ? numerator / denominator : undefined;
 }
 
+/**
+ * Adds numeric values for a record field across all records.
+ *
+ * @param records - The records to aggregate
+ * @param key - The field to total
+ * @returns The sum of all numeric values for `key`
+ */
 function sum(records: AnalyticsRecord[], key: keyof AnalyticsRecord): number {
   return records.reduce((total, record) => {
     const value = record[key];
@@ -183,6 +207,12 @@ function sum(records: AnalyticsRecord[], key: keyof AnalyticsRecord): number {
   }, 0);
 }
 
+/**
+ * Formats a whole number for display.
+ *
+ * @param value - The number to format
+ * @returns The rounded value formatted with US locale separators, or `"unknown"` when no value is available
+ */
 function formatInteger(value: number | undefined): string {
   return typeof value === "number" ? Math.round(value).toLocaleString("en-US") : "unknown";
 }

@@ -1,5 +1,10 @@
 import type { StudioAssetInventory } from "@/lib/assetInventory";
 
+/**
+ * Renders a summary of the asset inventory and its first six categories.
+ *
+ * @param inventory - The asset inventory data to display.
+ */
 export function AssetInventory({ inventory }: Readonly<{ inventory: StudioAssetInventory }>) {
   return (
     <section id='assets' aria-labelledby='asset-heading'>

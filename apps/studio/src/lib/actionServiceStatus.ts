@@ -19,6 +19,11 @@ export type StudioActionServiceSummary = {
   routePath: string;
 };
 
+/**
+ * Summarizes the studio action service status.
+ *
+ * @returns The current action counts, security findings, route summaries, and web mutation status.
+ */
 export function getStudioActionServiceStatus(): StudioActionServiceStatus {
   const summaries = studioMutationServiceContracts
     .map((contract) => {

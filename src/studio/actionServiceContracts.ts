@@ -108,6 +108,13 @@ export const studioMutationServiceContracts = [
 export type StudioMutationServiceContractId =
   (typeof studioMutationServiceContracts)[number]["actionId"];
 
+/**
+ * Parses a Studio mutation request for the given action.
+ *
+ * @param actionId - The Studio mutation action to use for validation
+ * @param input - The value to validate and parse
+ * @returns The parsed request for the specified action
+ */
 export function parseStudioMutationRequest<ActionId extends StudioMutationActionId>(
   actionId: ActionId,
   input: unknown,
@@ -117,6 +124,12 @@ export function parseStudioMutationRequest<ActionId extends StudioMutationAction
   ) as StudioActionRequestById[ActionId];
 }
 
+/**
+ * Gets the Studio mutation service contract for an action.
+ *
+ * @param actionId - The action identifier
+ * @returns The matching Studio mutation service contract
+ */
 export function getStudioMutationServiceContract(
   actionId: StudioMutationActionId,
 ): StudioMutationServiceContract {
@@ -127,10 +140,22 @@ export function getStudioMutationServiceContract(
   return contract;
 }
 
+/**
+ * Checks whether a Studio mutation service contract exists for an action ID.
+ *
+ * @param actionId - The action ID to look up
+ * @returns `true` if a matching contract exists, `false` otherwise
+ */
 export function hasStudioMutationServiceContract(actionId: string): boolean {
   return studioMutationServiceContracts.some((item) => item.actionId === actionId);
 }
 
+/**
+ * Creates a ready-for-cli studio mutation contract.
+ *
+ * @param contract - The base contract fields to include
+ * @returns A contract with CLI availability and the required approval flags enabled
+ */
 function approvalContract(
   contract: Omit<
     StudioMutationServiceContract,
@@ -149,6 +174,12 @@ function approvalContract(
   };
 }
 
+/**
+ * Builds a contract for a mutation action that is disabled for external use.
+ *
+ * @param contract - The base contract fields to include
+ * @returns A contract marked as disabled externally with the run-only request schema and required approval flags
+ */
 function disabledExternalContract(
   contract: Omit<
     StudioMutationServiceContract,

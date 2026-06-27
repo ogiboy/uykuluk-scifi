@@ -2,6 +2,12 @@ import { bulletList, table } from "../utils/markdown.js";
 import { renderOperatorDecisionSection } from "./operatorReviewMarkdown.js";
 import type { DraftRenderManifest } from "./renderEvidence.js";
 
+/**
+ * Builds the draft render review markdown document.
+ *
+ * @param manifest - The draft render manifest to format.
+ * @returns The rendered markdown review document.
+ */
 export function renderDraftReviewMarkdown(manifest: DraftRenderManifest): string {
   const sections = [
     "# Draft Render Review",
@@ -98,6 +104,12 @@ export function renderDraftReviewMarkdown(manifest: DraftRenderManifest): string
   return sections.join("\n");
 }
 
+/**
+ * Builds the operator decision section for a draft render review.
+ *
+ * @param manifest - The draft render manifest.
+ * @returns The markdown lines for the decision section.
+ */
 function renderDraftDecision(manifest: DraftRenderManifest): string[] {
   const timingDraftGate = manifest.voiceoverAudio.productionVoiceCandidate
     ? []
@@ -133,6 +145,12 @@ function renderDraftDecision(manifest: DraftRenderManifest): string[] {
   });
 }
 
+/**
+ * Describes the voiceover review status.
+ *
+ * @param manifest - The draft render manifest.
+ * @returns A detail string containing the voiceover mode, quality, and review label.
+ */
 function voiceoverReviewDetail(manifest: DraftRenderManifest): string {
   const candidateLabel = manifest.voiceoverAudio.productionVoiceCandidate
     ? "production voice candidate; operator listening still required"
@@ -140,6 +158,12 @@ function voiceoverReviewDetail(manifest: DraftRenderManifest): string {
   return `${manifest.voiceoverAudio.mode}; ${manifest.voiceoverAudio.quality}; ${candidateLabel}`;
 }
 
+/**
+ * Summarizes audio probe details.
+ *
+ * @param audio - The probed audio stream metadata.
+ * @returns A summary string containing the codec name, optional sample rate, and optional channel count.
+ */
 function audioProbeSummary(audio: NonNullable<DraftRenderManifest["mediaProbe"]>["audio"]): string {
   const details = [audio.codecName, audio.sampleRateHz ? `${audio.sampleRateHz}Hz` : undefined]
     .filter((item): item is string => item !== undefined)

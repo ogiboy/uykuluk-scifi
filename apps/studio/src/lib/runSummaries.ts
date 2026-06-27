@@ -91,6 +91,11 @@ type ValidRunRecord = RunRecord & {
   state: StudioRunState;
 };
 
+/**
+ * Lists the available studio runs.
+ *
+ * @returns The studio run summaries, sorted by most recently updated first.
+ */
 export async function listStudioRuns(): Promise<StudioRunSummary[]> {
   const root = projectRoot();
   const runsDir = path.join(root, "runs");
@@ -105,6 +110,12 @@ export async function listStudioRuns(): Promise<StudioRunSummary[]> {
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 }
 
+/**
+ * Loads detailed information for a studio run.
+ *
+ * @param runId - The run identifier to load.
+ * @returns The run detail, or `null` if the run ID is invalid or the run record cannot be found.
+ */
 export async function getStudioRunDetail(runId: string): Promise<StudioRunDetail | null> {
   if (!isRunId(runId)) {
     return null;
@@ -141,6 +152,13 @@ export async function getStudioRunDetail(runId: string): Promise<StudioRunDetail
   };
 }
 
+/**
+ * Builds a summary for a studio run.
+ *
+ * @param root - The project root directory
+ * @param runId - The run identifier
+ * @returns The run summary, or `null` if the run record cannot be read
+ */
 async function readRunSummary(root: string, runId: string): Promise<StudioRunSummary | null> {
   const record = await readRunRecord(root, runId);
   if (!record) {
@@ -157,6 +175,14 @@ async function readRunSummary(root: string, runId: string): Promise<StudioRunSum
   );
 }
 
+/**
+ * Builds a compact summary for a studio run.
+ *
+ * @param record - The stored run record.
+ * @param evidence - The evidence summary for the run.
+ * @param readiness - The readiness summary for the run.
+ * @returns The combined run summary.
+ */
 function summarizeRun(
   record: RunRecord,
   evidence: StudioEvidenceSummary,
@@ -189,6 +215,14 @@ function summarizeRun(
   };
 }
 
+/**
+ * Loads diagnostic summaries for the available artifacts in a run.
+ *
+ * @param root - The project root directory
+ * @param runId - The run identifier
+ * @param artifacts - Artifact paths present for the run
+ * @returns The diagnostic summaries that could be read and summarized
+ */
 async function readStudioRunDiagnostics(
   root: string,
   runId: string,
@@ -211,6 +245,13 @@ async function readStudioRunDiagnostics(
   return summaries;
 }
 
+/**
+ * Reads a validated run record from `state.json`.
+ *
+ * @param root - The project root directory
+ * @param runId - The run identifier to load
+ * @returns The validated run record, or `null` if the file is missing or invalid
+ */
 async function readRunRecord(root: string, runId: string): Promise<ValidRunRecord | null> {
   const record = await readOptionalJson<RunRecord>(root, runId, "state.json");
   if (record?.runId !== runId || !record.state) {
@@ -219,6 +260,14 @@ async function readRunRecord(root: string, runId: string): Promise<ValidRunRecor
   return { ...record, runId: record.runId, state: record.state };
 }
 
+/**
+ * Reads and parses an optional JSON artifact from a run directory.
+ *
+ * @param root - The project root directory
+ * @param runId - The run directory name
+ * @param relativePath - The JSON file path relative to the run directory
+ * @returns The parsed JSON value, or `null` if the file cannot be read or parsed
+ */
 async function readOptionalJson<T>(
   root: string,
   runId: string,
@@ -235,6 +284,12 @@ async function readOptionalJson<T>(
   }
 }
 
+/**
+ * Reads directory entries and returns an empty list when the directory is missing.
+ *
+ * @param target - The directory path to read
+ * @returns The directory entries, or an empty array if the directory does not exist
+ */
 async function safeReaddir(
   target: string,
 ): Promise<Array<{ isDirectory: () => boolean; name: string }>> {

@@ -10,10 +10,22 @@ export type StudioAnalyticsDataQuality = AnalyticsDataQualitySummary;
 
 export { summarizeAnalyticsDataQuality };
 
+/**
+ * Returns an empty studio analytics data quality summary.
+ *
+ * @returns An empty `StudioAnalyticsDataQuality` value
+ */
 export function emptyDataQuality(): StudioAnalyticsDataQuality {
   return emptyAnalyticsDataQuality();
 }
 
+/**
+ * Determines the status of an analytics report for a dataset.
+ *
+ * @param dataset - The dataset metadata to compare against.
+ * @param reportText - The report content to inspect.
+ * @returns `"missing"` if `reportText` is empty or null, `"current"` if it matches the dataset, `"stale"` otherwise.
+ */
 export function currentReportStatus(
   dataset: { generatedAt: string; source: { sha256: string } },
   reportText: string | null,
@@ -27,6 +39,12 @@ export function currentReportStatus(
     : "stale";
 }
 
+/**
+ * Gets the review warning for a report status.
+ *
+ * @param status - The report status
+ * @returns `null` when the report is current; otherwise, a warning message for a missing or stale report
+ */
 export function reportWarning(status: StudioAnalyticsReportStatus): string | null {
   if (status === "current") {
     return null;

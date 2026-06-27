@@ -244,6 +244,16 @@ try {
   await rm(tempRoot, { recursive: true, force: true });
 }
 
+/**
+ * Runs a CLI command and records the result as a QA step.
+ * @param {string[]} args - The command and arguments to execute.
+ * @param {Object} [options]
+ * @param {string} [options.label] - The step label to record.
+ * @param {boolean} [options.expectFailure=false] - Whether a non-zero exit status is expected.
+ * @param {string} [options.expectOutput] - A substring that must appear in the combined output.
+ * @param {Object} [options.env] - Environment variables to merge into the spawned process environment.
+ * @return {{stdout: string, stderr: string}} The captured standard output and standard error.
+ */
 function run(args, options = {}) {
   const { label = args.join(" "), expectFailure = false, expectOutput, env } = options;
   const result = spawnSync(args[0], args.slice(1), {

@@ -23,6 +23,13 @@ export type StudioReadinessSummary = {
   status: "blocked" | "invalid" | "missing" | "passed" | "stale";
 };
 
+/**
+ * Reads a readiness snapshot from disk.
+ *
+ * @param root - The workspace root directory
+ * @param runId - The readiness run identifier
+ * @returns An object containing the parsed snapshot and whether it could be parsed
+ */
 export async function readStudioReadinessSnapshot(
   root: string,
   runId: string,
@@ -41,6 +48,17 @@ export async function readStudioReadinessSnapshot(
   }
 }
 
+/**
+ * Summarizes a readiness snapshot for the current run and state.
+ *
+ * Produces a normalized readiness summary, marking the result as missing, stale, invalid, passed, or blocked depending on the snapshot contents and validation outcome.
+ *
+ * @param readiness - The parsed readiness snapshot, or `null` when the file is missing.
+ * @param runId - The run identifier used to validate the snapshot and build the next action.
+ * @param state - The current run state used to validate snapshot freshness.
+ * @param malformed - Whether the snapshot file could not be parsed.
+ * @returns The summarized readiness status and checks.
+ */
 export function summarizeReadinessSnapshot(
   readiness: ReadinessSnapshot | null,
   runId: string,
@@ -95,6 +113,13 @@ export function summarizeReadinessSnapshot(
   };
 }
 
+/**
+ * Validates and normalizes a readiness check.
+ *
+ * @param check - The raw readiness check value.
+ * @param runId - The run identifier used to rewrite `nextAction` placeholders.
+ * @returns The normalized readiness check, or `null` when the input is invalid.
+ */
 function summarizeReadinessCheck(check: unknown, runId: string): StudioReadinessCheck | null {
   if (!check || typeof check !== "object") {
     return null;
@@ -108,6 +133,12 @@ function summarizeReadinessCheck(check: unknown, runId: string): StudioReadiness
     : null;
 }
 
+/**
+ * Builds a readiness check and substitutes the run ID in its next action.
+ *
+ * @param input - The normalized check data to convert.
+ * @returns The readiness check, including `nextAction` when a string is provided.
+ */
 function readinessCheck(input: {
   message: string;
   name: string;
@@ -129,14 +160,33 @@ function readinessCheck(input: {
       };
 }
 
+/**
+ * Determines whether a value is a valid readiness status.
+ *
+ * @param value - The value to check.
+ * @returns `true` if the value is `"block"`, `"pass"`, or `"warn"`, `false` otherwise.
+ */
 function isReadinessStatus(value: unknown): value is StudioReadinessCheck["status"] {
   return value === "block" || value === "pass" || value === "warn";
 }
 
+/**
+ * Creates an invalid readiness summary.
+ *
+ * @param nextAction - The command to rerun readiness production
+ * @param message - The validation message to report
+ * @returns A summary with no checks, `passed` set to `null`, and status `"invalid"`
+ */
 function invalidReadiness(nextAction: string, message: string): StudioReadinessSummary {
   return { checks: [], message, nextAction, passed: null, status: "invalid" };
 }
 
+/**
+ * Builds the command used to rerun readiness production for a run.
+ *
+ * @param runId - The run identifier to include in the command
+ * @returns The readiness production command for `runId`
+ */
 function readinessNextAction(runId: string): string {
   return `pnpm producer readiness --run ${runId}`;
 }

@@ -20,6 +20,12 @@ export type ReadinessCheck = {
   message: string;
 };
 
+/**
+ * Runs readiness checks for a run and writes readiness diagnostics.
+ *
+ * @param runId - The run to evaluate.
+ * @returns The readiness result and the checks that were performed.
+ */
 export async function runReadiness(
   runId: string,
 ): Promise<{ passed: boolean; checks: ReadinessCheck[] }> {
@@ -134,6 +140,15 @@ export async function runReadiness(
   return { passed, checks };
 }
 
+/**
+ * Checks whether a run artifact exists.
+ *
+ * @param runId - The run identifier used to locate the artifact
+ * @param name - The readiness check name
+ * @param relativePath - The artifact path relative to the run's artifact directory
+ * @param nextAction - The command to suggest when the artifact is missing
+ * @returns A readiness check describing whether the artifact exists
+ */
 async function artifactCheck(
   runId: string,
   name: string,
@@ -166,6 +181,13 @@ async function productionPackageIntegrityCheck(run: RunRecord): Promise<Readines
   }
 }
 
+/**
+ * Checks whether the run's cost estimate satisfies readiness requirements.
+ *
+ * @param run - The run being evaluated
+ * @param config - The loaded configuration used to validate the estimate
+ * @returns A readiness check for the cost estimate
+ */
 async function budgetEstimateCheck(
   run: RunRecord,
   config: Awaited<ReturnType<typeof loadConfig>>,
@@ -233,6 +255,16 @@ async function budgetEstimateCheck(
   }
 }
 
+/**
+ * Builds a readiness check result from a boolean condition.
+ *
+ * @param name - The check name
+ * @param ok - Whether the condition passed
+ * @param passMessage - The message to use when the check passes
+ * @param failMessage - The message to use when the check fails
+ * @param nextAction - The follow-up command to include when the check fails
+ * @returns The readiness check result
+ */
 async function fileCheck(
   name: string,
   ok: boolean,

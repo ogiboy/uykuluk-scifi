@@ -37,6 +37,12 @@ export type RenderPlanEvidence =
   | { status: "pass"; path: string; digest: string; artifactCount: number; assetCount: number }
   | { status: "block"; path: string; message: string };
 
+/**
+ * Generates the render plan and related production artifacts for a run.
+ *
+ * @param runId - The run identifier.
+ * @returns The generated render plan.
+ */
 export async function generateRenderPlan(runId: string): Promise<RenderPlan> {
   const config = await loadConfig();
   let run = await loadRun(runId);

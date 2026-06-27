@@ -7,6 +7,12 @@ type OperatorDecisionSection = {
   blockedActions: string[];
 };
 
+/**
+ * Builds the Markdown lines for an operator decision section.
+ *
+ * @param section - The section content to render
+ * @returns The Markdown lines for the operator decision section
+ */
 export function renderOperatorDecisionSection(section: OperatorDecisionSection): string[] {
   return [
     "## Operator Decision",

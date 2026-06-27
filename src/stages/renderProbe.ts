@@ -43,6 +43,13 @@ export type RenderMediaProbe = z.infer<typeof renderMediaProbeSchema>;
 type FfprobeStream = z.infer<typeof ffprobeStreamSchema>;
 type FfprobeOutput = z.infer<typeof ffprobeOutputSchema>;
 
+/**
+ * Probes a draft render with FFprobe and returns validated media metadata.
+ *
+ * @param binary - Path to the FFprobe executable.
+ * @param outputPath - Path to the rendered media file to probe.
+ * @returns The validated probe result.
+ */
 export async function probeDraftRender(
   binary: string,
   outputPath: string,
@@ -74,6 +81,13 @@ export async function probeDraftRender(
   });
 }
 
+/**
+ * Parses and validates FFprobe JSON output.
+ *
+ * @param stdout - The raw JSON output from FFprobe.
+ * @returns The validated FFprobe output.
+ * @throws SafeExitError When the output is invalid JSON or does not match the expected schema.
+ */
 function parseFfprobeOutput(stdout: string): FfprobeOutput {
   try {
     return ffprobeOutputSchema.parse(JSON.parse(stdout));
@@ -84,6 +98,16 @@ function parseFfprobeOutput(stdout: string): FfprobeOutput {
   }
 }
 
+/**
+ * Resolves the draft render duration from FFprobe output.
+ *
+ * Uses the first positive duration reported in the format, video stream, or audio stream.
+ *
+ * @param parsed - Validated FFprobe output.
+ * @param video - The video stream.
+ * @param audio - The audio stream.
+ * @returns The resolved duration in seconds.
+ */
 function parseDuration(parsed: FfprobeOutput, video: FfprobeStream, audio: FfprobeStream): number {
   const duration =
     positiveNumber(parsed.format?.duration) ??
@@ -95,6 +119,13 @@ function parseDuration(parsed: FfprobeOutput, video: FfprobeStream, audio: Ffpro
   return duration;
 }
 
+/**
+ * Finds a stream of the requested type.
+ *
+ * @param streams - The FFprobe streams to search.
+ * @param type - The stream type to locate.
+ * @returns The first stream whose `codec_type` matches `type`.
+ */
 function requiredStream(streams: FfprobeStream[], type: "audio" | "video"): FfprobeStream {
   const stream = streams.find((item) => item.codec_type === type);
   if (!stream) {
@@ -103,10 +134,22 @@ function requiredStream(streams: FfprobeStream[], type: "audio" | "video"): Ffpr
   return stream;
 }
 
+/**
+ * Accepts a positive integer value.
+ *
+ * @param value - The input number
+ * @returns The input value if it is a finite integer greater than zero, `undefined` otherwise
+ */
 function positiveInteger(value: number | undefined): number | undefined {
   return value !== undefined && Number.isInteger(value) && value > 0 ? value : undefined;
 }
 
+/**
+ * Converts a string to a positive number.
+ *
+ * @param value - The string to convert.
+ * @returns The parsed number if it is finite and greater than zero; otherwise `undefined`.
+ */
 function positiveNumber(value: string | undefined): number | undefined {
   if (value === undefined) {
     return undefined;
@@ -115,6 +158,13 @@ function positiveNumber(value: string | undefined): number | undefined {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
 }
 
+/**
+ * Executes FFprobe and collects its JSON output.
+ *
+ * @param binary - Path to the FFprobe executable
+ * @param outputPath - Path to the file to probe
+ * @returns The captured standard output from FFprobe
+ */
 async function runFfprobe(binary: string, outputPath: string): Promise<string> {
   return new Promise<string>((resolve, reject) => {
     const child = spawn(

@@ -5,6 +5,12 @@ type RunLedgerPanelProps = Readonly<{
   warnings: readonly string[];
 }>;
 
+/**
+ * Renders the approval ledger and warning list for a run.
+ *
+ * @param approvals - Recorded approval entries to display
+ * @param warnings - Recorded warning messages to display
+ */
 export function RunLedgerPanel({ approvals, warnings }: RunLedgerPanelProps) {
   return (
     <section className='panel' aria-labelledby='run-ledger-heading'>
@@ -39,6 +45,13 @@ export function RunLedgerPanel({ approvals, warnings }: RunLedgerPanelProps) {
   );
 }
 
+/**
+ * Generates a React key for an approval entry.
+ *
+ * @param approval - The approval value to inspect
+ * @param index - The list index used as a fallback
+ * @returns The approval ID when present and non-empty, otherwise a fallback key based on `index`
+ */
 function approvalKey(approval: unknown, index: number): string {
   if (approval && typeof approval === "object" && "approvalId" in approval) {
     const approvalId = approval.approvalId;

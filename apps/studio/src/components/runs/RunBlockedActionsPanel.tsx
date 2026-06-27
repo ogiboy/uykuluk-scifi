@@ -12,6 +12,14 @@ type RunBlockedActionsPanelProps = Readonly<{
   evidenceStatus: StudioRunDetail["evidenceStatus"];
 }>;
 
+/**
+ * Renders the blocked-actions panel for a run.
+ *
+ * @param blockedActions - The blocked action messages to display when evidence is available.
+ * @param evidenceMessage - The evidence message shown in the remediation section.
+ * @param evidenceNextAction - The next action shown in the remediation section, when provided.
+ * @param evidenceStatus - The current evidence status used to choose the displayed content.
+ */
 export function RunBlockedActionsPanel({
   blockedActions,
   evidenceMessage,
@@ -38,6 +46,12 @@ export function RunBlockedActionsPanel({
   );
 }
 
+/**
+ * Displays evidence details and an optional next action.
+ *
+ * @param message - The evidence message to display.
+ * @param nextAction - The follow-up action to display with the evidence.
+ */
 function EvidenceRemediation({
   message,
   nextAction,

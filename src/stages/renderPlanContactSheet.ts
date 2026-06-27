@@ -2,6 +2,13 @@ import { bulletList } from "../utils/markdown.js";
 import { renderOperatorDecisionSection } from "./operatorReviewMarkdown.js";
 import { AssetProvenance, AssetRef, RenderPlan } from "./renderPlanSchemas.js";
 
+/**
+ * Builds a Markdown contact sheet for a storyboard render plan.
+ *
+ * @param plan - The render plan to summarize.
+ * @param provenance - The asset provenance data to include.
+ * @returns A Markdown string containing the contact sheet.
+ */
 export function renderContactSheet(plan: RenderPlan, provenance: AssetProvenance): string {
   return [
     "# Storyboard Contact Sheet",
@@ -47,6 +54,12 @@ export function renderContactSheet(plan: RenderPlan, provenance: AssetProvenance
   ].join("\n");
 }
 
+/**
+ * Builds the operator decision section for the contact sheet.
+ *
+ * @param runId - The render run identifier used in the follow-up commands.
+ * @returns The markdown lines for the decision section.
+ */
 function renderContactSheetDecision(runId: string): string[] {
   return renderOperatorDecisionSection({
     reviewGates: [
@@ -70,6 +83,12 @@ function renderContactSheetDecision(runId: string): string[] {
   });
 }
 
+/**
+ * Renders the intro and outro bookend section for a contact sheet.
+ *
+ * @param plan - The render plan that may include bookend assets.
+ * @returns An array of Markdown lines for the bookend section, or an empty array when no bookends are present.
+ */
 function renderBookends(plan: RenderPlan): string[] {
   if (!plan.bookends) {
     return [];
@@ -87,6 +106,13 @@ function renderBookends(plan: RenderPlan): string[] {
   ];
 }
 
+/**
+ * Builds a bullet for the number of committed frames in a bookend asset set.
+ *
+ * @param label - The frame set label to include in the bullet text
+ * @param frames - The frames to count
+ * @returns A single bullet describing the frame count, or an empty array when no frames are provided
+ */
 function frameBullets(label: string, frames: AssetRef[] | undefined): string[] {
   if (!frames || frames.length === 0) {
     return [];

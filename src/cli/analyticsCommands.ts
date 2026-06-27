@@ -5,6 +5,12 @@ type AsyncActionWrapper = <T extends unknown[]>(
   handler: (...args: T) => Promise<void>,
 ) => (...args: T) => void;
 
+/**
+ * Registers the local analytics CLI commands.
+ *
+ * @param program - The Commander program to extend
+ * @param wrap - Wraps async command handlers for Commander
+ */
 export function registerAnalyticsCommands(program: Command, wrap: AsyncActionWrapper): void {
   const analytics = program.command("analytics").description("Manual local analytics commands.");
   analytics

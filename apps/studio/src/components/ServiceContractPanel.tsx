@@ -1,5 +1,10 @@
 import { getStudioActionServiceStatus } from "@/lib/actionServiceStatus";
 
+/**
+ * Displays the Studio mutation service contract status panel.
+ *
+ * @returns The rendered service contract status section.
+ */
 export function ServiceContractPanel() {
   const status = getStudioActionServiceStatus();
   const safetyLabel = status.webMutationsEnabled ? "Review required" : "Web mutations disabled";

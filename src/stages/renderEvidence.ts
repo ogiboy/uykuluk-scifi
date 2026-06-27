@@ -99,6 +99,12 @@ export type DraftRenderEvidence =
     }
   | { status: "block"; path: string; message: string };
 
+/**
+ * Reads and validates draft render evidence for a run.
+ *
+ * @param run - The run record whose draft render artifacts should be checked
+ * @returns A draft render evidence result describing whether the draft render is missing, valid, or blocked by a validation failure
+ */
 export async function readDraftRenderEvidence(run: RunRecord): Promise<DraftRenderEvidence> {
   const registered = draftRenderArtifactPaths.some((relativePath) =>
     run.artifacts.includes(relativePath),
@@ -165,10 +171,22 @@ export async function readDraftRenderEvidence(run: RunRecord): Promise<DraftRend
   }
 }
 
+/**
+ * Counts the source frame assets used across a timeline.
+ *
+ * @param timeline - The draft render timeline to inspect
+ * @returns The total number of source frame assets across all timeline items
+ */
 function sourceFrameCount(timeline: DraftRenderManifest["timeline"]): number {
   return timeline.reduce((total, item) => total + (item.sourceFrameAssets?.length ?? 0), 0);
 }
 
+/**
+ * Builds source-frame segment labels for a timeline.
+ *
+ * @param timeline - The draft render timeline to inspect
+ * @returns Labels in the form `segment:count` for timeline items that include source-frame assets
+ */
 function sourceFrameSegments(timeline: DraftRenderManifest["timeline"]): string[] {
   return timeline.flatMap((item) => {
     const count = item.sourceFrameAssets?.length ?? 0;
@@ -176,6 +194,12 @@ function sourceFrameSegments(timeline: DraftRenderManifest["timeline"]): string[
   });
 }
 
+/**
+ * Labels a timeline item by segment.
+ *
+ * @param item - The timeline item to label
+ * @returns A segment label, using `scene-<index>` for scene items
+ */
 function timelineSegmentLabel(item: DraftRenderManifest["timeline"][number]): string {
   if (item.segment === "scene") {
     return `scene-${item.sceneIndex ?? "unknown"}`;
@@ -183,6 +207,11 @@ function timelineSegmentLabel(item: DraftRenderManifest["timeline"][number]): st
   return item.segment ?? "scene";
 }
 
+/**
+ * Verifies that all draft render artifacts are registered and present on disk.
+ *
+ * @param run - The run record whose draft render artifacts are checked
+ */
 async function assertDraftRenderArtifacts(run: RunRecord): Promise<void> {
   for (const relativePath of draftRenderArtifactPaths) {
     if (!run.artifacts.includes(relativePath)) {

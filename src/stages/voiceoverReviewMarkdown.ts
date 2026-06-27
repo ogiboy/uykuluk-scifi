@@ -2,6 +2,11 @@ import { bulletList, table } from "../utils/markdown.js";
 import { renderOperatorDecisionSection } from "./operatorReviewMarkdown.js";
 import type { VoiceoverAudioMeta } from "./voiceoverEvidence.js";
 
+/**
+ * Builds the local voiceover review markdown artifact.
+ *
+ * @returns The rendered markdown string.
+ */
 export function renderVoiceoverReviewMarkdown(meta: VoiceoverAudioMeta): string {
   return [
     "# Voiceover Review",
@@ -51,6 +56,12 @@ export function renderVoiceoverReviewMarkdown(meta: VoiceoverAudioMeta): string 
   ].join("\n");
 }
 
+/**
+ * Builds the operator decision section for a voiceover review.
+ *
+ * @param meta - Voiceover review metadata used to populate run-specific instructions.
+ * @returns The markdown lines for the required decision section.
+ */
 function renderVoiceoverDecision(meta: VoiceoverAudioMeta): string[] {
   return renderOperatorDecisionSection({
     reviewGates: [
@@ -73,6 +84,12 @@ function renderVoiceoverDecision(meta: VoiceoverAudioMeta): string[] {
   });
 }
 
+/**
+ * Builds the local TTS provider provenance section.
+ *
+ * @param meta - Voiceover audio metadata
+ * @returns A provenance section when provider details are present; otherwise an empty array.
+ */
 function providerSection(meta: VoiceoverAudioMeta): string[] {
   if (!meta.provider) {
     return [];
@@ -95,6 +112,12 @@ function providerSection(meta: VoiceoverAudioMeta): string[] {
   ];
 }
 
+/**
+ * Builds the operator review checklist for a voiceover render.
+ *
+ * @param meta - Voiceover audio metadata used to choose the mode-specific checklist item
+ * @returns An ordered list of checklist items for local audio review
+ */
 function reviewChecklist(meta: VoiceoverAudioMeta): string[] {
   return [
     modeSpecificChecklistItem(meta),

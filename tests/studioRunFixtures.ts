@@ -2,6 +2,11 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { artifactPath } from "../src/core/artifacts";
 import { createRun, loadRun, saveRun } from "../src/core/runStore";
 
+/**
+ * Creates a rendered studio run fixture and persists its artifacts.
+ *
+ * @returns The generated run ID.
+ */
 export async function createRenderedStudioRunFixture(): Promise<string> {
   const run = await createRun();
   await mkdir(`runs/${run.runId}/production/render`, { recursive: true });
@@ -96,6 +101,12 @@ export async function createRenderedStudioRunFixture(): Promise<string> {
   return run.runId;
 }
 
+/**
+ * Writes the evidence bundle for a run.
+ *
+ * @param runId - The run identifier
+ * @param evidence - Additional evidence fields to include in the bundle
+ */
 export async function writeEvidence(
   runId: string,
   evidence: Record<string, unknown>,
@@ -115,6 +126,13 @@ export type StudioReadinessFixtureCheck = {
   status: "block" | "pass" | "warn";
 };
 
+/**
+ * Writes a studio readiness report for a run.
+ *
+ * @param runId - The run identifier
+ * @param passed - Whether the readiness check passed
+ * @param checks - The readiness checks to include in the report
+ */
 export async function writeReadiness(
   runId: string,
   passed: boolean,

@@ -8,6 +8,11 @@ import { studioSections } from "@/lib/studioData";
 
 export const dynamic = "force-dynamic";
 
+/**
+ * Renders the Studio home page.
+ *
+ * @returns The Studio page layout with navigation, status panels, and the current asset inventory.
+ */
 export default async function StudioHomePage() {
   const assetInventory = await getStudioAssetInventory();
 
