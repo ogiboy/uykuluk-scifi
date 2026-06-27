@@ -95,6 +95,9 @@
 - Keep Studio read-only artifact previews useful as new artifact types are added. Current previews
   include operator-phase grouping, media-specific metadata, and per-artifact review wording while
   keeping the surface non-mutating.
+- Keep Studio evidence panels conservative: missing, malformed, or stale evidence must point back to
+  `producer evidence --run <run_id>` and must not imply blocked actions are absent or media is
+  review-proof.
 - Keep the read-only Studio mutation-service status panel aligned with route-security and service
   contract changes; it must not become an approval form or route handler.
 - Harden manual analytics feedback with import edge cases and richer comparisons while keeping data

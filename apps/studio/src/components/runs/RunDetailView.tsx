@@ -1,6 +1,8 @@
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import type { StudioArtifactPreview } from "@/lib/artifactPreviews";
+import { RunBlockedActionsPanel } from "./RunBlockedActionsPanel";
 import { RunLedgerPanel } from "./RunLedgerPanel";
+import { RunProductionMediaPanel } from "./RunProductionMediaPanel";
 
 export function RunDetailView({ run }: Readonly<{ run: StudioRunDetail }>) {
   const artifactGroups = groupedArtifactPreviews(run.artifacts);
@@ -48,22 +50,12 @@ export function RunDetailView({ run }: Readonly<{ run: StudioRunDetail }>) {
         ) : null}
       </section>
 
-      <section className='panel' aria-labelledby='blocked-actions-heading'>
-        <h2 id='blocked-actions-heading'>Blocked Actions</h2>
-        <p>
-          Read-only evidence from CLI/core safeguards. These are not approvals and do not unblock
-          upload, render, or publish.
-        </p>
-        {run.blockedActions.length > 0 ? (
-          <ul>
-            {run.blockedActions.map((action) => (
-              <li key={action}>{action}</li>
-            ))}
-          </ul>
-        ) : (
-          <p>No blocked actions recorded in the latest evidence bundle.</p>
-        )}
-      </section>
+      <RunBlockedActionsPanel
+        blockedActions={run.blockedActions}
+        evidenceMessage={run.evidenceMessage}
+        evidenceNextAction={run.evidenceNextAction}
+        evidenceStatus={run.evidenceStatus}
+      />
 
       <section className='panel' aria-labelledby='diagnostics-heading'>
         <h2 id='diagnostics-heading'>Diagnostics</h2>
@@ -84,24 +76,12 @@ export function RunDetailView({ run }: Readonly<{ run: StudioRunDetail }>) {
 
       <RunLedgerPanel approvals={run.approvals} warnings={run.warnings} />
 
-      <section className='panel' aria-labelledby='production-media-heading'>
-        <h2 id='production-media-heading'>Production Media Evidence</h2>
-        <p>
-          Read-only summary from the CLI evidence bundle. Missing or blocked media remains a CLI
-          workflow issue; Studio does not approve, render, upload, or publish.
-        </p>
-        <ul>
-          {run.productionMedia.map((artifact) => (
-            <li key={artifact.artifactPath}>
-              <strong>{artifact.label}</strong>:{" "}
-              <span className={mediaStatusClassName(artifact.status)}>{artifact.status}</span>
-              {artifact.detail ? ` — ${artifact.detail}` : ""}
-              <br />
-              <span>{artifact.artifactPath}</span>
-            </li>
-          ))}
-        </ul>
-      </section>
+      <RunProductionMediaPanel
+        evidenceMessage={run.evidenceMessage}
+        evidenceNextAction={run.evidenceNextAction}
+        evidenceStatus={run.evidenceStatus}
+        productionMedia={run.productionMedia}
+      />
 
       <section className='panel' aria-labelledby='artifact-heading'>
         <h2 id='artifact-heading'>Artifact Previews</h2>
@@ -193,10 +173,6 @@ function groupedArtifactPreviews(
     artifacts: groupedArtifacts,
     label,
   }));
-}
-
-function mediaStatusClassName(status: string): string {
-  return status === "pass" ? "status-pill small" : "status-pill small blocked";
 }
 
 function readinessStatusClassName(status: string): string {

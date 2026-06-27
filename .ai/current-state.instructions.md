@@ -280,9 +280,10 @@
   commands are shown when the CLI/core diagnostics provide them. Missing, malformed, or stale
   readiness diagnostics point operators back to `producer readiness --run <run_id>`. Malformed or
   stale evidence bundles point operators back to `producer evidence --run <run_id>` and are not used
-  for blocked-action, production-media, or next-action summaries. It does not mutate run state or
-  call providers. Early states without an evidence bundle reuse the CLI/core next-action contract
-  instead of presenting evidence generation as the only possible step.
+  as proof for blocked-action, production-media readiness, or next-action summaries; Studio labels
+  media rows as persisted artifact-record fallback until evidence is current. It does not mutate run
+  state or call providers. Early states without an evidence bundle reuse the CLI/core next-action
+  contract instead of presenting evidence generation as the only possible step.
 - Studio run detail includes read-only artifact preview excerpts for scripts, reviews, production
   packages, render plans, contact sheets, asset provenance, evidence, readiness, voiceover metadata,
   and render manifests. Previews are grouped by operator review phase with per-artifact review

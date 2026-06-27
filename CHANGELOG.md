@@ -29,6 +29,7 @@ future generated release notes can be inserted predictably.
 
 ### Fixes
 
+- avoid treating unavailable Studio evidence as no blocked actions or media proof
 - mark malformed or stale Studio evidence bundles with a regeneration command
 - mark malformed or stale CLI status evidence with a regeneration command
 - mark missing, malformed, or stale Studio readiness diagnostics with a regeneration command
