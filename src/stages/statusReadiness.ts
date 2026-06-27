@@ -1,4 +1,5 @@
 import { artifactPath } from "../core/artifacts.js";
+import type { RunState } from "../core/state.js";
 import { pathExists } from "../utils/fs.js";
 import { readJsonFile } from "../utils/json.js";
 
@@ -12,8 +13,8 @@ export type StatusReadinessAttention = {
 };
 
 export type StatusReadinessSummary =
-  | { status: "missing" }
-  | { message: string; status: "invalid" }
+  | { nextAction: string; status: "missing" }
+  | { message: string; nextAction: string; status: "invalid" | "stale" }
   | {
       attention: StatusReadinessAttention[];
       blockCount: number;
@@ -29,37 +30,79 @@ type PersistedReadinessCheck = {
   status: ReadinessCheckStatus;
 };
 
-export async function readStatusReadiness(runId: string): Promise<StatusReadinessSummary> {
+export async function readStatusReadiness(
+  runId: string,
+  currentState: RunState,
+): Promise<StatusReadinessSummary> {
   const target = artifactPath(runId, "diagnostics/readiness.json");
+  const nextAction = readinessNextAction(runId);
   if (!(await pathExists(target))) {
-    return { status: "missing" };
+    return { nextAction, status: "missing" };
   }
   try {
-    return summarizeReadinessArtifact(await readJsonFile<unknown>(target), runId);
+    return summarizeReadinessArtifact(await readJsonFile<unknown>(target), runId, currentState);
   } catch {
-    return { message: "diagnostics/readiness.json could not be parsed.", status: "invalid" };
+    return {
+      message: "diagnostics/readiness.json could not be parsed.",
+      nextAction,
+      status: "invalid",
+    };
   }
 }
 
 export function formatStatusReadiness(readiness: StatusReadinessSummary): string[] {
-  if (readiness.status === "missing") {
-    return ["Readiness: not generated"];
+  switch (readiness.status) {
+    case "missing":
+      return ["Readiness: not generated", `Readiness next action: ${readiness.nextAction}`];
+    case "invalid":
+    case "stale":
+      return [
+        `Readiness: ${readiness.status} (${readiness.message})`,
+        `Readiness next action: ${readiness.nextAction}`,
+      ];
+    default:
+      return [
+        `Readiness: ${readiness.status} (${readiness.checkCount} checks, ${readiness.blockCount} block, ${readiness.warnCount} warn)`,
+        ...formatReadinessAttention(readiness.attention),
+      ];
   }
-  if (readiness.status === "invalid") {
-    return [`Readiness: invalid (${readiness.message})`];
-  }
-  return [
-    `Readiness: ${readiness.status} (${readiness.checkCount} checks, ${readiness.blockCount} block, ${readiness.warnCount} warn)`,
-    ...formatReadinessAttention(readiness.attention),
-  ];
 }
 
-function summarizeReadinessArtifact(artifact: unknown, runId: string): StatusReadinessSummary {
+function summarizeReadinessArtifact(
+  artifact: unknown,
+  runId: string,
+  currentState: RunState,
+): StatusReadinessSummary {
+  const nextAction = readinessNextAction(runId);
   if (!isRecord(artifact) || !Array.isArray(artifact.checks)) {
-    return { message: "diagnostics/readiness.json is missing a checks array.", status: "invalid" };
+    return {
+      message: "diagnostics/readiness.json is missing a checks array.",
+      nextAction,
+      status: "invalid",
+    };
+  }
+  if (artifact.runId !== runId) {
+    return {
+      message: "diagnostics/readiness.json belongs to a different run.",
+      nextAction,
+      status: "stale",
+    };
+  }
+  if (artifact.currentState !== currentState) {
+    return {
+      message: `diagnostics/readiness.json was generated for ${String(
+        artifact.currentState,
+      )}, but the run is ${currentState}.`,
+      nextAction,
+      status: "stale",
+    };
   }
   if (!artifact.checks.every(isPersistedReadinessCheck)) {
-    return { message: "diagnostics/readiness.json contains an invalid check.", status: "invalid" };
+    return {
+      message: "diagnostics/readiness.json contains an invalid check.",
+      nextAction,
+      status: "invalid",
+    };
   }
   const checks = artifact.checks;
   const attention = checks.filter(isAttentionCheck).map((check) => ({
@@ -118,4 +161,8 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function materializeRunCommand(command: string | undefined, runId: string): string | undefined {
   return command?.replaceAll("<run_id>", runId);
+}
+
+function readinessNextAction(runId: string): string {
+  return `pnpm producer readiness --run ${runId}`;
 }

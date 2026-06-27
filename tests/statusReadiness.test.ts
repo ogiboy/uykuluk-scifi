@@ -33,6 +33,7 @@ describe("status readiness summary", () => {
             status: "block",
           },
         ],
+        currentState: "NEW",
         passed: false,
         runId: run.runId,
       }),
@@ -57,6 +58,7 @@ describe("status readiness summary", () => {
     const output = formatRunStatus(await readRunStatus(run.runId));
 
     expect(output).toContain("Readiness: not generated");
+    expect(output).toContain(`Readiness next action: pnpm producer readiness --run ${run.runId}`);
   });
 
   it("marks malformed readiness checks as invalid instead of ignoring them", async () => {
@@ -64,7 +66,12 @@ describe("status readiness summary", () => {
     await mkdir(`runs/${run.runId}/diagnostics`, { recursive: true });
     await writeFile(
       artifactPath(run.runId, "diagnostics/readiness.json"),
-      JSON.stringify({ checks: [{ name: "budget not exceeded", status: "block" }], passed: true }),
+      JSON.stringify({
+        checks: [{ name: "budget not exceeded", status: "block" }],
+        currentState: "NEW",
+        passed: true,
+        runId: run.runId,
+      }),
       "utf8",
     );
 
@@ -73,5 +80,28 @@ describe("status readiness summary", () => {
     expect(output).toContain(
       "Readiness: invalid (diagnostics/readiness.json contains an invalid check.)",
     );
+    expect(output).toContain(`Readiness next action: pnpm producer readiness --run ${run.runId}`);
+  });
+
+  it("marks readiness generated for a previous run state as stale", async () => {
+    const run = await createRun();
+    await mkdir(`runs/${run.runId}/diagnostics`, { recursive: true });
+    await writeFile(
+      artifactPath(run.runId, "diagnostics/readiness.json"),
+      JSON.stringify({
+        checks: [{ message: "Config exists.", name: "project config exists", status: "pass" }],
+        currentState: "SCRIPT_APPROVED",
+        passed: true,
+        runId: run.runId,
+      }),
+      "utf8",
+    );
+
+    const output = formatRunStatus(await readRunStatus(run.runId));
+
+    expect(output).toContain(
+      "Readiness: stale (diagnostics/readiness.json was generated for SCRIPT_APPROVED, but the run is NEW.)",
+    );
+    expect(output).toContain(`Readiness next action: pnpm producer readiness --run ${run.runId}`);
   });
 });

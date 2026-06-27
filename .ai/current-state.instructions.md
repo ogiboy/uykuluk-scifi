@@ -227,7 +227,8 @@
   blocked-action details, production media evidence details, recent artifacts, and a concrete next
   safe action with the current run id filled in; early workflow states still show the actionable
   stage command before evidence exists, while invalid evidence keeps pointing operators back to
-  evidence regeneration. `--json` preserves raw persisted state output for automation.
+  evidence regeneration. Missing, malformed, or stale readiness diagnostics point operators back to
+  `producer readiness --run <run_id>`. `--json` preserves raw persisted state output for automation.
 - Readiness diagnostics that strictly parse and revalidate persisted cost quotes, live hard budgets,
   complete production-package integrity, and exact paid-generation cost approval when required.
 - Final readiness diagnostics agree with the post-transition run state.

@@ -44,7 +44,7 @@ export async function readRunStatus(runId: string): Promise<RunStatusSummary> {
   const [evidenceResult, diagnostics, readiness] = await Promise.all([
     readEvidenceStatus(run.runId),
     readRunDiagnosticSummaries(run.runId, run.artifacts),
-    readStatusReadiness(run.runId),
+    readStatusReadiness(run.runId, run.state),
   ]);
   const evidence = evidenceResult.kind === "present" ? evidenceResult.evidence : null;
   const blockedActions = evidenceBlockedActionMessages(evidence, run.runId);
