@@ -248,8 +248,10 @@ If your shell cannot find `pnpm` or `node`, restore Node 22/Corepack first. The 
 pnpm producer doctor
 pnpm producer doctor --json
 pnpm producer ideas
+pnpm producer ideas --json
 pnpm producer approve idea --run <run_id> --idea <idea_id>
 pnpm producer script --run <run_id>
+pnpm producer script --run <run_id> --json
 pnpm producer revise script --run <run_id> --file <path> --reason "<reason>" --editor <name>
 pnpm producer review script --run <run_id>
 pnpm producer approve script --run <run_id>
