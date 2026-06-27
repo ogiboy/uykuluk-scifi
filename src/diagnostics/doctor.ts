@@ -7,22 +7,10 @@ import { writeTextFile } from "../utils/fs.js";
 import { writeJsonFile } from "../utils/json.js";
 import { table } from "../utils/markdown.js";
 import { nowIso } from "../utils/time.js";
+import type { DoctorCheck, DoctorReport } from "./doctorSchema.js";
 import { promptOverridesCheck } from "./promptOverrideDoctor.js";
 import { ttsProviderCheck } from "./ttsDoctor.js";
-
-export type DoctorCheck = {
-  name: string;
-  nextAction?: string;
-  status: "pass" | "warn" | "block";
-  message: string;
-};
-
-export type DoctorReport = {
-  createdAt: string;
-  durationMs: number;
-  passed: boolean;
-  checks: DoctorCheck[];
-};
+export type { DoctorCheck, DoctorReport } from "./doctorSchema.js";
 
 /**
  * Gets the absolute path to the doctor JSON diagnostics file.

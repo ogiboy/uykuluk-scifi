@@ -1,4 +1,5 @@
 import type { StudioAnalyticsOverview } from "@/lib/analyticsOverview";
+import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
 
 type AnalyticsOverviewViewProps = Readonly<{
   overview: StudioAnalyticsOverview;
@@ -15,16 +16,21 @@ export function AnalyticsOverviewView({ overview }: AnalyticsOverviewViewProps) 
     <div className='analytics-detail-grid'>
       <section className='panel' aria-labelledby='analytics-overview-heading'>
         <h2 id='analytics-overview-heading'>Manual Analytics Overview</h2>
-        <dl className='run-metadata'>
-          <Metric label='Status' value={overview.status} />
-          <Metric label='Records' value={formatInteger(overview.recordCount)} />
-          <Metric label='Mapped runs' value={formatInteger(overview.mappedRunCount)} />
-          <Metric label='Unmapped records' value={formatInteger(overview.unmappedRecordCount)} />
-          <Metric label='Views' value={formatInteger(overview.totalViews)} />
-          <Metric label='Impressions' value={formatInteger(overview.totalImpressions)} />
-          <Metric label='Source' value={overview.sourceFileName ?? "not imported"} />
-          <Metric label='Generated' value={overview.generatedAt ?? "not generated"} />
-        </dl>
+        <MetricGrid
+          metrics={[
+            { label: "Status", value: overview.status },
+            { label: "Records", value: formatStudioInteger(overview.recordCount) },
+            { label: "Mapped runs", value: formatStudioInteger(overview.mappedRunCount) },
+            {
+              label: "Unmapped records",
+              value: formatStudioInteger(overview.unmappedRecordCount),
+            },
+            { label: "Views", value: formatStudioInteger(overview.totalViews) },
+            { label: "Impressions", value: formatStudioInteger(overview.totalImpressions) },
+            { label: "Source", value: overview.sourceFileName ?? "not imported" },
+            { label: "Generated", value: overview.generatedAt ?? "not generated" },
+          ]}
+        />
       </section>
 
       <section className='panel' aria-labelledby='analytics-action-heading'>
@@ -39,29 +45,34 @@ export function AnalyticsOverviewView({ overview }: AnalyticsOverviewViewProps) 
 
       <section className='panel' aria-labelledby='analytics-quality-heading'>
         <h2 id='analytics-quality-heading'>Import Data Quality</h2>
-        <dl className='run-metadata'>
-          <Metric
-            label='High confidence'
-            value={formatInteger(overview.dataQuality.highConfidenceRecordCount)}
-          />
-          <Metric
-            label='Medium confidence'
-            value={formatInteger(overview.dataQuality.mediumConfidenceRecordCount)}
-          />
-          <Metric
-            label='Low confidence'
-            value={formatInteger(overview.dataQuality.lowConfidenceRecordCount)}
-          />
-          <Metric
-            label='Missing run links'
-            value={formatInteger(overview.dataQuality.missingRunLinkCount)}
-          />
-          <Metric label='Missing CTR' value={formatInteger(overview.dataQuality.missingCtrCount)} />
-          <Metric
-            label='Missing retention'
-            value={formatInteger(overview.dataQuality.missingRetentionCount)}
-          />
-        </dl>
+        <MetricGrid
+          metrics={[
+            {
+              label: "High confidence",
+              value: formatStudioInteger(overview.dataQuality.highConfidenceRecordCount),
+            },
+            {
+              label: "Medium confidence",
+              value: formatStudioInteger(overview.dataQuality.mediumConfidenceRecordCount),
+            },
+            {
+              label: "Low confidence",
+              value: formatStudioInteger(overview.dataQuality.lowConfidenceRecordCount),
+            },
+            {
+              label: "Missing run links",
+              value: formatStudioInteger(overview.dataQuality.missingRunLinkCount),
+            },
+            {
+              label: "Missing CTR",
+              value: formatStudioInteger(overview.dataQuality.missingCtrCount),
+            },
+            {
+              label: "Missing retention",
+              value: formatStudioInteger(overview.dataQuality.missingRetentionCount),
+            },
+          ]}
+        />
         <p>{overview.dataQuality.nextDataQualityAction}</p>
       </section>
 
@@ -76,7 +87,9 @@ export function AnalyticsOverviewView({ overview }: AnalyticsOverviewViewProps) 
                     <strong>{video.title}</strong>
                     <span>{video.videoId}</span>
                   </div>
-                  <span className='status-pill small'>{formatInteger(video.views)} views</span>
+                  <span className='status-pill small'>
+                    {formatStudioInteger(video.views)} views
+                  </span>
                 </div>
                 <p className='artifact-meta'>{video.runId ?? "unmapped run"}</p>
               </li>
@@ -102,29 +115,4 @@ export function AnalyticsOverviewView({ overview }: AnalyticsOverviewViewProps) 
       </section>
     </div>
   );
-}
-
-/**
- * Displays a label and value pair.
- *
- * @param label - The term to show.
- * @param value - The value to show.
- */
-function Metric({ label, value }: Readonly<{ label: string; value: string }>) {
-  return (
-    <div>
-      <dt>{label}</dt>
-      <dd>{value}</dd>
-    </div>
-  );
-}
-
-/**
- * Formats a number as a rounded US locale integer.
- *
- * @param value - The number to format.
- * @returns The rounded number formatted with US digit separators.
- */
-function formatInteger(value: number): string {
-  return Math.round(value).toLocaleString("en-US");
 }
