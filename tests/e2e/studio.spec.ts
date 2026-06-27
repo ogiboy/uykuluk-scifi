@@ -7,6 +7,9 @@ test("studio shell renders operator surfaces", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Run Control" })).toBeVisible();
   await expect(page.getByText("CLI/Core", { exact: true })).toBeVisible();
   await expect(page.getByText("Blocked", { exact: true })).toBeVisible();
+  const doctorRegion = page.getByRole("region", { name: "Doctor Diagnostics" });
+  await expect(doctorRegion).toBeVisible();
+  await expect(doctorRegion.getByText("Next safe action")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Mutation Service Contracts" })).toBeVisible();
   await expect(page.getByText("Web mutations disabled")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Asset Inventory" })).toBeVisible();

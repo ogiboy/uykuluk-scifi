@@ -306,11 +306,11 @@
   directories and committed render-support asset categories. It surfaces invalid producer config and
   missing guarded assets as operator warnings without approving assets, rendering media, or mutating
   run state.
-- Studio has a read-only `/doctor` diagnostics page backed by ignored `diagnostics/doctor.json` and
-  `diagnostics/doctor.md`. It surfaces persisted config/provider/TTS/asset/publish checks, summary
-  counts, Markdown preview, malformed or missing diagnostic states, and the next safe remediation.
-  It does not run doctor, edit config, start providers, download models, upload, publish, or mutate
-  workflow state.
+- Studio home and `/doctor` surface read-only producer diagnostics backed by ignored
+  `diagnostics/doctor.json` and `diagnostics/doctor.md`. They surface persisted
+  config/provider/TTS/asset/publish checks, summary counts, Markdown preview, malformed or missing
+  diagnostic states, and the next safe remediation. They do not run doctor, edit config, start
+  providers, download models, upload, publish, or mutate workflow state.
 - Studio home and `/prompts` have read-only runtime prompt inventory visibility for tracked
   `prompts/defaults/` sources and configured ignored `prompts/local/*.md` overrides, including
   source paths, hashes, warnings, and doctor remediation. They do not edit prompts, call providers,

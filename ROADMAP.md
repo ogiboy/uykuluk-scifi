@@ -90,10 +90,10 @@ Next Real Production Loop slices:
 
 ## Phase C - Operator Studio
 
-Status: read-only run review, artifact preview, asset inventory, producer doctor diagnostics,
-runtime prompt inventory, mutation-service status, manual analytics overview, route-security
-contract foundations, and shared mutation service contract foundations exist. Guarded route
-implementation still comes later.
+Status: read-only run review, artifact preview, asset inventory, home-page and `/doctor` producer
+doctor diagnostics, runtime prompt inventory, mutation-service status, manual analytics overview,
+route-security contract foundations, and shared mutation service contract foundations exist. Guarded
+route implementation still comes later.
 
 The Studio should be a local operator surface over CLI/core contracts.
 

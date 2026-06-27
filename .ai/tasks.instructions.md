@@ -101,9 +101,10 @@
 - Keep continuation request schemas compatible with Ollama grammar limits; large accepted-text
   bounds belong in parser validation, not provider grammar schemas.
 - Keep `producer doctor` config/provider/model/TTS/asset/publish diagnostics and evidence passing.
-- Keep the read-only Studio `/doctor` route aligned with persisted `producer doctor` JSON/Markdown
-  artifacts, including malformed or missing diagnostics states and safe remediation commands. It
-  must not run doctor, edit config, start providers, download models, or mutate workflow state.
+- Keep the read-only Studio home doctor summary and `/doctor` route aligned with persisted
+  `producer doctor` JSON/Markdown artifacts, including malformed or missing diagnostics states and
+  safe remediation commands. They must not run doctor, edit config, start providers, download
+  models, or mutate workflow state.
 - Keep Studio read-only artifact previews useful as new artifact types are added. Current previews
   include operator-phase grouping, media-specific metadata, and per-artifact review wording while
   keeping the surface non-mutating.
