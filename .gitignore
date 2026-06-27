@@ -28,6 +28,8 @@ runs/*
 /diagnostics/
 /analytics/
 /models/
+/prompts/local/*
+!/prompts/local/.gitkeep
 
 *.log
 *.tsbuildinfo

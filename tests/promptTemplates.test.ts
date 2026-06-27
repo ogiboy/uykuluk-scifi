@@ -1,6 +1,7 @@
-import { readFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { artifactPath } from "../src/core/artifacts";
+import { defaultConfig } from "../src/config/config";
 import { sha256 } from "../src/utils/hash";
 import { readJsonFile } from "../src/utils/json";
 import { pathExists } from "../src/utils/fs";
@@ -8,6 +9,7 @@ import { approveIdea } from "../src/stages/approveIdea";
 import { approveScript } from "../src/stages/approveScript";
 import { runIdeas } from "../src/stages/ideas";
 import { generateProductionPackage } from "../src/stages/productionPackage";
+import { renderIdeasPrompt } from "../src/prompts/templates";
 import { reviewScript } from "../src/stages/reviewScript";
 import { generateScript } from "../src/stages/script";
 import { renderScriptSectionPrompt, scriptSectionPlans } from "../src/stages/scriptSections";
@@ -104,10 +106,51 @@ describe("runtime prompt defaults", () => {
       source: "prompts/defaults/production-package-task.md",
     });
   });
+
+  it("uses explicit ignored local prompt overrides without requiring .ai files", async () => {
+    const localPrompt = "Return exactly 8 sharply distinct local override ideas.";
+    await writeFile("prompts/local/planner.md", `${localPrompt}\n`, "utf8");
+    await writeConfig({
+      ...defaultConfig,
+      prompts: { overrides: { ideas: "prompts/local/planner.md" } },
+    });
+
+    expect(await pathExists(".ai")).toBe(false);
+    const rendered = await renderIdeasPrompt();
+    expect(rendered).toEqual({
+      key: "ideas",
+      source: "prompts/local/planner.md",
+      text: ["IDEAS_JSON", localPrompt].join("\n\n"),
+    });
+
+    const { runId } = await runIdeas();
+    const ideasArtifact = await readJsonFile<{
+      prompt: { hash: string; source: string };
+    }>(artifactPath(runId, "ideas.json"));
+    expect(ideasArtifact.prompt).toEqual({
+      key: "ideas",
+      hash: sha256(["IDEAS_JSON", localPrompt].join("\n\n")),
+      artifact: "ideas.json",
+      source: "prompts/local/planner.md",
+    });
+  });
+
+  it("rejects prompt override paths outside ignored local prompt storage", async () => {
+    await writeConfig({
+      ...defaultConfig,
+      prompts: { overrides: { ideas: "prompts/defaults/planner-task.md" } },
+    });
+
+    await expect(renderIdeasPrompt()).rejects.toThrow(/prompts\/local/i);
+  });
 });
 
 async function defaultPrompt(filename: string): Promise<string> {
   return (
     await readFile(new URL(`../prompts/defaults/${filename}`, import.meta.url), "utf8")
   ).trim();
+}
+
+async function writeConfig(config: typeof defaultConfig): Promise<void> {
+  await writeFile("producer.config.json", `${JSON.stringify(config, null, 2)}\n`, "utf8");
 }

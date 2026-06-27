@@ -6,6 +6,17 @@ export const producerConfigSchema = z.object({
     language: z.string(),
     defaultTone: z.string(),
   }),
+  prompts: z
+    .object({
+      overrides: z
+        .object({
+          ideas: z.string().min(1).optional(),
+          script: z.string().min(1).optional(),
+          productionPackage: z.string().min(1).optional(),
+        })
+        .default({}),
+    })
+    .default({ overrides: {} }),
   providers: z.object({
     llm: z.object({
       mode: z.enum(["mock", "ollama"]).default("mock"),

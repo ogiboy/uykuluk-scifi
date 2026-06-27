@@ -519,6 +519,23 @@ Editing a runtime default prompt changes future generation only. It does not rer
 an existing artifact, or grant approval. Files under `.ai/` are for development guidance, QA
 evidence, checkpoints, and agent coordination; the CLI must not require them to run.
 
+Local prompt experiments belong under ignored `prompts/local/` and must be explicitly referenced
+from `producer.config.json`:
+
+```json
+{
+  "prompts": {
+    "overrides": {
+      "ideas": "prompts/local/planner-experiment.md"
+    }
+  }
+}
+```
+
+Override paths are fail-closed to Markdown files under `prompts/local/`. Prompt provenance records
+the override source path and hash so generated ideas, scripts, and production packages remain
+auditable without making `.ai/` part of runtime.
+
 ## Run Artifacts
 
 Each run can write:

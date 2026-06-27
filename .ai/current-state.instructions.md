@@ -4,8 +4,9 @@
 
 - TypeScript CLI project.
 - Mock-first provider layer with Ollama adapter scaffold.
-- Typed runtime loading of tracked `prompts/defaults/` product prompt defaults for ideas, scripts,
-  and production packages, with prompt key/source/hash provenance.
+- Typed runtime loading of tracked `prompts/defaults/` product prompt defaults plus explicit ignored
+  `prompts/local/*.md` overrides for ideas, scripts, and production packages, with prompt
+  key/source/hash provenance.
 - Strict run state machine.
 - Schema-validated run records with atomic JSON replacement.
 - Zod 4-native runtime schemas with strict persisted objects, ISO timestamp validation, current
@@ -420,8 +421,9 @@ Corepack/PATH before treating failures as product failures.
 - Locale infrastructure is ready, but full translation catalogs and a language selector are
   intentionally deferred.
 - Prompt editing UI is planned but not implemented.
-- Local prompt overrides and revision history are not implemented; tracked defaults are read-only
-  runtime inputs.
+- Local prompt overrides are implemented as explicit ignored `prompts/local/*.md` paths configured
+  in `producer.config.json` and recorded in prompt provenance. Prompt editing UI and prompt revision
+  history remain future work; tracked defaults stay read-only runtime inputs.
 - Initial package artifact revision contracts are implemented for subtitles, scenes, popup-card
   package Markdown, and YouTube metadata. They are intentionally limited to
   `PRODUCTION_PACKAGE_GENERATED` before cost estimation or render work, refresh the

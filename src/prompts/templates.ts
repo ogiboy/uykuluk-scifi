@@ -1,4 +1,7 @@
 import { readFile } from "node:fs/promises";
+import path from "node:path";
+import { loadConfig } from "../config/config.js";
+import { validateArtifactRelativePath } from "../core/artifactPaths.js";
 import { SafeExitError } from "../core/errors.js";
 import { PromptKey } from "./provenance.js";
 
@@ -22,6 +25,12 @@ const promptSources = {
     url: new URL("../../prompts/defaults/production-package-task.md", import.meta.url),
   },
 } as const satisfies Record<PromptKey, { path: string; url: URL }>;
+
+const promptOverrideConfigKeys = {
+  ideas: "ideas",
+  script: "script",
+  "production-package": "productionPackage",
+} as const satisfies Record<PromptKey, "ideas" | "script" | "productionPackage">;
 
 /**
  * Renders the ideas prompt template.
@@ -69,8 +78,37 @@ async function renderDefaultPrompt(
   contractMarker: string,
   context: string[] = [],
 ): Promise<RenderedPrompt> {
-  const source = promptSources[key];
+  const source = await readPromptTemplateSource(key);
+  return {
+    key,
+    source: source.path,
+    text: [contractMarker, source.template, ...context].join("\n\n"),
+  };
+}
+
+async function readPromptTemplateSource(key: PromptKey): Promise<{
+  path: string;
+  template: string;
+}> {
   let template: string;
+  const overridePath = promptOverridePath(key, (await loadConfig()).prompts.overrides);
+  if (overridePath) {
+    try {
+      template = (await readFile(path.join(process.cwd(), overridePath), "utf8")).trim();
+    } catch (error) {
+      throw new SafeExitError(
+        `Runtime prompt override unavailable: ${overridePath}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    }
+    if (!template) {
+      throw new SafeExitError(`Runtime prompt override is empty: ${overridePath}`);
+    }
+    return { path: overridePath, template };
+  }
+
+  const source = promptSources[key];
   try {
     template = (await readFile(source.url, "utf8")).trim();
   } catch (error) {
@@ -83,9 +121,22 @@ async function renderDefaultPrompt(
   if (!template) {
     throw new SafeExitError(`Runtime prompt default is empty: ${source.path}`);
   }
-  return {
-    key,
-    source: source.path,
-    text: [contractMarker, template, ...context].join("\n\n"),
-  };
+  return { path: source.path, template };
+}
+
+function promptOverridePath(
+  key: PromptKey,
+  overrides: Partial<Record<"ideas" | "script" | "productionPackage", string>>,
+): string | undefined {
+  const configured = overrides[promptOverrideConfigKeys[key]];
+  if (!configured) {
+    return undefined;
+  }
+  const relativePath = validateArtifactRelativePath(configured);
+  if (!relativePath.startsWith("prompts/local/") || !relativePath.endsWith(".md")) {
+    throw new SafeExitError(
+      "Runtime prompt overrides must be Markdown files under prompts/local/.",
+    );
+  }
+  return relativePath;
 }
