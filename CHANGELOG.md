@@ -9,6 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
+_No unreleased changes yet._
+
+## v0.31.0 (2026-06-27)
+
 ### Features
 
 - add approval command JSON output for automation-friendly approval records
