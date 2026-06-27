@@ -9,6 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
+_No unreleased changes yet._
+
+## v0.28.0 (2026-06-27)
+
 ### Features
 
 - add `producer review script --json` for automation-friendly review inspection
