@@ -15,6 +15,7 @@ _No unreleased changes yet._
 
 ### Features
 
+- add explicit ignored local prompt overrides with prompt provenance for provider-backed stages
 - add bounded package artifact revision events for subtitles, scenes, popup-card package Markdown,
   and YouTube metadata before cost/render work starts
 

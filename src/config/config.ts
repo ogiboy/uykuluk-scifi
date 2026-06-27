@@ -12,6 +12,9 @@ export const defaultConfig: ProducerConfig = {
     language: "tr",
     defaultTone: "cinematic, scientifically careful, accessible Turkish narration",
   },
+  prompts: {
+    overrides: {},
+  },
   providers: {
     llm: {
       mode: "mock",
@@ -81,7 +84,14 @@ export async function projectConfigExists(): Promise<boolean> {
 
 export async function initProject(): Promise<string[]> {
   const created: string[] = [];
-  const dirs = ["assets/brand", "assets/overlays", "assets/intro", "assets/outro", "runs"];
+  const dirs = [
+    "assets/brand",
+    "assets/overlays",
+    "assets/intro",
+    "assets/outro",
+    "prompts/local",
+    "runs",
+  ];
   for (const dir of dirs) {
     await ensureDir(path.join(process.cwd(), dir));
     created.push(dir);

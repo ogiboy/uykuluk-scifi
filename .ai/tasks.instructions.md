@@ -119,9 +119,10 @@
 - Maintain typed Studio mutation service contracts that both CLI and web can use before adding
   Studio mutations. Current contracts cover future idea/script/cost/render approvals plus disabled
   upload/publish actions; concrete CSRF/session handling and route implementations remain deferred.
-- Define local prompt override storage and revision events before adding a prompt editor; typed
-  keys, tracked `prompts/defaults/` runtime defaults, source paths, and prompt hashes are
-  implemented.
+- Keep local prompt overrides safe before adding a prompt editor. Tracked `prompts/defaults/`
+  runtime defaults, typed keys, source paths, and prompt hashes are implemented; ignored
+  `prompts/local/*.md` overrides are now explicit `producer.config.json` inputs and must remain
+  provenance-recorded, local-only, and fail-closed outside `.ai/`.
 - Keep package artifact revision events safe. `producer revise package-artifact` now supports
   bounded edits to subtitles, scenes, popup-card package Markdown, and YouTube metadata only while
   the run is still `PRODUCTION_PACKAGE_GENERATED`; it snapshots before/after content, refreshes the

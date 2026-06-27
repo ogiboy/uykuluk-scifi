@@ -4,6 +4,9 @@
     "language": "tr",
     "defaultTone": "cinematic, scientifically careful, accessible Turkish narration"
   },
+  "prompts": {
+    "overrides": {}
+  },
   "providers": {
     "llm": {
       "mode": "mock",
