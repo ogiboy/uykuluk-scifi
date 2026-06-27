@@ -9,7 +9,9 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Features
+
+- add a read-only Studio `/doctor` route for persisted producer diagnostics
 
 ## v0.13.0 (2026-06-27)
 

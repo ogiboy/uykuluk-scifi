@@ -69,8 +69,8 @@ agent-tracking state only; runtime code must not require it.
 
 - TypeScript CLI workflow under `src/`.
 - Basic Next.js App Router Studio under `apps/studio/` with read-only run index/detail, visual asset
-  inventory, runtime prompt inventory, mutation-service status, and manual analytics feedback
-  routes.
+  inventory, producer doctor diagnostics, runtime prompt inventory, mutation-service status, and
+  manual analytics feedback routes.
 - Studio foundation with Tailwind CSS v4, shadcn-style primitives, Radix UI, lucide icons, GSAP, and
   `next/font`.
 - Mock-first provider layer with Ollama adapter scaffold.
@@ -347,6 +347,9 @@ Current Studio scope:
   contact sheets, asset provenance, evidence, readiness, voiceover metadata, and render manifests,
   grouped by operator review phase, with binary media limited to metadata;
 - run/workflow command overview;
+- read-only `/doctor` page over ignored `diagnostics/doctor.json` and `diagnostics/doctor.md`,
+  showing local config/provider/TTS/asset/publish checks and next safe remediation without running
+  doctor, editing config, starting providers, downloading models, or mutating workflow state;
 - current asset inventory summary and read-only `/assets` detail page backed by configured asset
   guard checks;
 - read-only runtime prompt inventory and `/prompts` detail page for tracked defaults and configured

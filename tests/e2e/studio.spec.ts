@@ -74,3 +74,13 @@ test("studio exposes the read-only runtime prompt inventory route", async ({ pag
   await expect(page.getByText("prompts/defaults/planner-task.md").first()).toBeVisible();
   await expect(page.getByRole("link", { name: "Studio home" })).toBeVisible();
 });
+
+test("studio exposes the read-only producer doctor diagnostics route", async ({ page }) => {
+  await page.goto("/doctor");
+
+  await expect(page.getByRole("heading", { name: /producer doctor diagnostics/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Doctor Overview" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Next Safe Action" })).toBeVisible();
+  await expect(page.getByText("Studio does not run doctor")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Studio home" })).toBeVisible();
+});

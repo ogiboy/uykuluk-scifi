@@ -1,12 +1,13 @@
 export const studioSections = [
   { id: "runs", label: "Runs", href: "/runs" },
   { id: "workflow", label: "Workflow" },
+  { id: "doctor", label: "Doctor", href: "/doctor" },
   { id: "actions", label: "Actions" },
   { id: "assets", label: "Assets", href: "/assets" },
   { id: "analytics", label: "Analytics", href: "/analytics" },
   { id: "prompts", label: "Prompts", href: "/prompts" },
 ] as const satisfies ReadonlyArray<{
-  href?: "/analytics" | "/assets" | "/prompts" | "/runs";
+  href?: "/analytics" | "/assets" | "/doctor" | "/prompts" | "/runs";
   id: string;
   label: string;
 }>;
