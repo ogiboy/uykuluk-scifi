@@ -59,6 +59,16 @@ describe("evidence Markdown media summary", () => {
 
     expect(markdown).toContain("Draft render: pass (3s, scene).");
   });
+
+  it("materializes the run id in the operator-facing next command", () => {
+    const markdown = renderEvidenceMarkdown({
+      ...baseBundle(),
+      nextRecommendedCommand: "pnpm producer approve render --run <run_id>",
+    });
+
+    expect(markdown).toContain("pnpm producer approve render --run run_media_summary");
+    expect(markdown).not.toContain("approve render --run <run_id>");
+  });
 });
 
 function baseBundle(): Record<string, unknown> {

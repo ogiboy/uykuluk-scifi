@@ -2,6 +2,7 @@ import path from "node:path";
 import type { PromptProvenance } from "../prompts/provenance.js";
 import { bulletList } from "../utils/markdown.js";
 import type { readCostQuoteEvidence } from "./evidence.js";
+import { materializeRunCommand } from "./evidenceNextCommand.js";
 import type { readProductionPackageIntegrityEvidence } from "./productionPackageIntegrity.js";
 import type { readDraftRenderEvidence } from "./renderEvidence.js";
 import type { readRenderPlanEvidence } from "./renderPlan.js";
@@ -101,7 +102,7 @@ export function renderEvidenceMarkdown(bundle: unknown): string {
     "",
     "## Next Recommended Command",
     "",
-    data.nextRecommendedCommand,
+    materializeRunCommand(data.nextRecommendedCommand, data.runId),
   ].join("\n");
 }
 

@@ -220,7 +220,8 @@
   second-retry evidence but remained below the long-form quality target.
 - Evidence bundle generation with production-package integrity status and manifest digest.
 - Evidence next-command guidance reflects script review blockers and required warning
-  acknowledgement before script approval.
+  acknowledgement before script approval. Evidence JSON keeps portable command templates while
+  evidence Markdown renders the current run id for direct operator use.
 - `producer status` now defaults to an operator-readable summary with state,
   approval/warning/artifact counts, evidence availability, production media evidence details, recent
   artifacts, and a concrete next safe action with the current run id filled in; early workflow

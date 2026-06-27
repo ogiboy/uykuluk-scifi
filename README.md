@@ -158,7 +158,8 @@ agent-tracking state only; runtime code must not require it.
 - Script review and approval are bound to the exact `script.md` SHA-256 digest.
 - Script approval requires `--acknowledge-warnings` when the review contains non-blocking warnings.
 - Script review Markdown shows the next safe approval command or blocker remediation guidance.
-- Evidence next-command guidance reflects script review blockers and warning acknowledgement needs.
+- Evidence next-command guidance reflects script review blockers and warning acknowledgement needs;
+  the operator Markdown renders the current run id while JSON keeps portable command templates.
 - `producer status` shows an operator-readable run summary with current state, counts, evidence
   availability, production media evidence details, recent artifacts, and a concrete next safe action
   with the current run id filled in; use `--json` for the raw persisted state.
