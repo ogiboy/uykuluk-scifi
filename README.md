@@ -274,6 +274,7 @@ pnpm producer status --run <run_id>
 pnpm producer status --run <run_id> --json
 pnpm producer status --latest
 pnpm producer list-runs
+pnpm producer list-runs --json
 ```
 
 Manual analytics feedback:
