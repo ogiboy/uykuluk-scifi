@@ -36,7 +36,7 @@ describe("evidence next command", () => {
 
     expect(evidence.warnings).toEqual(expect.arrayContaining([expect.stringMatching(/short/i)]));
     expect(evidence.nextRecommendedCommand).toBe(
-      "pnpm producer approve script --run <run_id> --acknowledge-warnings",
+      `pnpm producer approve script --run ${runId} --acknowledge-warnings`,
     );
   });
 
@@ -52,5 +52,38 @@ describe("evidence next command", () => {
         state: "SCRIPT_REVIEWED",
       }),
     ).not.toContain("approve script");
+  });
+
+  it("keeps reference voiceover audio explicit before render approval", () => {
+    expect(
+      evidenceNextCommand({
+        costQuote: null,
+        hasUnresolvedCostReservation: false,
+        state: "READY_FOR_MANUAL_PRODUCTION",
+        ttsEnabled: true,
+        voiceoverAudio: {
+          productionVoiceCandidate: false,
+          status: "pass",
+        },
+      }),
+    ).toBe(
+      "Review deterministic reference audio; approve render only for a local timing draft with pnpm producer approve render --run <run_id>",
+    );
+  });
+
+  it("keeps rendered timing drafts separate from final production review", () => {
+    expect(
+      evidenceNextCommand({
+        costQuote: null,
+        draftRender: {
+          status: "pass",
+          voiceoverProductionVoiceCandidate: false,
+        },
+        hasUnresolvedCostReservation: false,
+        state: "RENDERED",
+      }),
+    ).toBe(
+      "Review local timing draft; regenerate voiceover with reviewed local Piper audio before final production review.",
+    );
   });
 });

@@ -9,9 +9,11 @@ import { AssetRef } from "./renderPlanSchemas.js";
 export type SelectedRenderAssets = {
   backgrounds: AssetRef[];
   factCheckIcon?: AssetRef;
+  introFrames: AssetRef[];
   introSource: AssetRef;
   logo: AssetRef;
   lowerThird?: AssetRef;
+  outroFrames: AssetRef[];
   outroSource: AssetRef;
   popupCard?: AssetRef;
   subtitlePanel: AssetRef;
@@ -19,20 +21,36 @@ export type SelectedRenderAssets = {
   waveform?: AssetRef;
 };
 
+/**
+ * Selects the render assets used to build a render plan.
+ *
+ * @param configAssets - Asset directories from the producer configuration
+ * @returns The selected render assets, including required single assets, optional overlays, frame sequences, and background plates
+ */
 export async function selectRenderAssets(
   configAssets: ProducerConfig["assets"],
 ): Promise<SelectedRenderAssets> {
   const brand = await listAssetRefs(configAssets.brandDir);
   const overlays = await listAssetRefs(configAssets.overlayDir);
   const intro = await listAssetRefs(configAssets.introDir);
+  const introFrames = await listAssetRefs(
+    path.posix.join(toPosix(configAssets.introDir), "frames"),
+    "intro-source-frame",
+  );
   const outro = await listAssetRefs(configAssets.outroDir);
+  const outroFrames = await listAssetRefs(
+    path.posix.join(toPosix(configAssets.outroDir), "frames"),
+    "outro-source-frame",
+  );
   const backgrounds = await listAssetRefs("assets/backgrounds", "background-plate");
   return {
     backgrounds: requireSome(backgrounds, "background-plate"),
     factCheckIcon: await firstAsset("assets/icons", /fact|check/i, "fact-check-icon"),
+    introFrames,
     introSource: requireOne(intro, /./, "intro-source"),
     logo: requireOne(brand, /logo/i, "logo"),
     lowerThird: findAsset(overlays, /lower|third/i, "lower-third"),
+    outroFrames,
     outroSource: requireOne(outro, /./, "outro-source"),
     popupCard: findAsset(overlays, /popup|card/i, "popup-card"),
     subtitlePanel: requireOne(overlays, /subtitle|panel/i, "subtitle-panel"),
@@ -52,6 +70,15 @@ export function uniqueAssets(assets: Array<AssetRef | undefined>): AssetRef[] {
   });
 }
 
+/**
+ * Lists asset references for files in a directory.
+ *
+ * Returns an empty array when the directory does not exist.
+ *
+ * @param relativeDir - Directory path relative to the current working directory
+ * @param role - Role assigned to each asset reference
+ * @returns The asset references for files in the directory
+ */
 async function listAssetRefs(relativeDir: string, role = "asset"): Promise<AssetRef[]> {
   const absoluteDir = path.join(process.cwd(), relativeDir);
   if (!(await pathExists(absoluteDir))) {
@@ -61,6 +88,7 @@ async function listAssetRefs(relativeDir: string, role = "asset"): Promise<Asset
   return Promise.all(
     entries
       .filter((entry) => entry.isFile())
+      .sort((left, right) => left.name.localeCompare(right.name))
       .map((entry) => assetRef(role, path.posix.join(toPosix(relativeDir), entry.name))),
   );
 }

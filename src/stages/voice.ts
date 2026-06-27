@@ -14,8 +14,9 @@ import { SafeExitError } from "../core/errors.js";
 import { appendLedgerEvent } from "../core/ledger.js";
 import { loadRun, saveRun } from "../core/runStore.js";
 import { requireApproval, requireState } from "../safeguards/approvalGuard.js";
-import { ensureDir, pathExists } from "../utils/fs.js";
+import { ensureDir } from "../utils/fs.js";
 import { nowIso } from "../utils/time.js";
+import { readPiperProviderEvidence } from "./piperProviderEvidence.js";
 import { verifyProductionPackage } from "./productionPackageIntegrity.js";
 import { readRenderPlanEvidence } from "./renderPlan.js";
 import { readWavInfo, wavFromPcm16 } from "./voiceWav.js";
@@ -32,7 +33,7 @@ type SynthesizedAudio = {
   buffer: Buffer;
   channels: number;
   durationSeconds: number;
-  provider?: VoiceoverAudioMeta["provider"];
+  provider?: NonNullable<VoiceoverAudioMeta["provider"]>;
   quality: VoiceoverAudioMeta["quality"];
   sampleRateHz: number;
 };
@@ -147,6 +148,13 @@ function synthesizeDeterministicReferenceAudio(text: string): SynthesizedAudio {
   };
 }
 
+/**
+ * Synthesizes voiceover audio with the local Piper TTS provider.
+ *
+ * @param options - Piper execution settings and source text.
+ * @returns The synthesized WAV buffer and its audio metadata.
+ * @throws {SafeExitError} If `options.modelPath` is missing.
+ */
 async function synthesizePiperAudio(options: {
   binary: string;
   configPath?: string;
@@ -154,22 +162,14 @@ async function synthesizePiperAudio(options: {
   runId: string;
   text: string;
 }): Promise<SynthesizedAudio> {
-  if (!options.modelPath) {
-    throw new SafeExitError("local-piper TTS requires providers.tts.piperModelPath.");
-  }
-  if (!(await pathExists(options.modelPath))) {
-    throw new SafeExitError(`Piper model is missing: ${options.modelPath}.`);
-  }
-  if (options.configPath && !(await pathExists(options.configPath))) {
-    throw new SafeExitError(`Piper model config is missing: ${options.configPath}.`);
-  }
+  const provider = await readPiperProviderEvidence(options);
 
   const output = artifactPath(options.runId, voiceoverAudioPath);
   await ensureDir(path.dirname(output));
   await rm(output, { force: true }).catch(() => undefined);
-  const args = ["--model", options.modelPath, "--output_file", output];
-  if (options.configPath) {
-    args.push("--config", options.configPath);
+  const args = ["--model", provider.modelPath, "--output_file", output];
+  if (provider.configPath) {
+    args.push("--config", provider.configPath);
   }
   await runPiper(options.binary, args, options.text);
   const buffer = await readFile(output);
@@ -178,11 +178,7 @@ async function synthesizePiperAudio(options: {
     buffer,
     channels: wav.channels,
     durationSeconds: wav.durationSeconds,
-    provider: {
-      binary: options.binary,
-      modelPath: options.modelPath,
-      configPath: options.configPath,
-    },
+    provider,
     quality: "local-piper",
     sampleRateHz: wav.sampleRateHz,
   };

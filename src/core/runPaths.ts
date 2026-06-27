@@ -1,17 +1,9 @@
 import { lstatSync } from "node:fs";
 import path from "node:path";
 import { SafeExitError } from "./errors.js";
+import { isValidRunId, RUN_ID_ERROR_MESSAGE } from "./runId.js";
 
-const RUN_ID_PATTERN = /^run_[A-Za-z0-9][A-Za-z0-9_-]{0,123}$/;
-
-/**
- * Determines if a run ID is valid.
- *
- * @returns `true` if the run ID matches the required format, `false` otherwise.
- */
-export function isValidRunId(runId: string): boolean {
-  return RUN_ID_PATTERN.test(runId);
-}
+export { isValidRunId } from "./runId.js";
 
 /**
  * Validates that a run ID matches the expected format.
@@ -22,9 +14,7 @@ export function isValidRunId(runId: string): boolean {
  */
 export function validateRunId(runId: string): string {
   if (!isValidRunId(runId)) {
-    throw new SafeExitError(
-      "Invalid run id. Expected run_ followed by 1-124 ASCII letters, digits, underscores, or hyphens.",
-    );
+    throw new SafeExitError(RUN_ID_ERROR_MESSAGE);
   }
   return runId;
 }

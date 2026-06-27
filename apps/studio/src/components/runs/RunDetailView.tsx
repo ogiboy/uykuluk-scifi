@@ -1,6 +1,14 @@
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import type { StudioArtifactPreview } from "@/lib/artifactPreviews";
+import { RunBlockedActionsPanel } from "./RunBlockedActionsPanel";
+import { RunLedgerPanel } from "./RunLedgerPanel";
+import { RunProductionMediaPanel } from "./RunProductionMediaPanel";
 
+/**
+ * Renders a read-only detail view for a run.
+ *
+ * @param run - The run data to display.
+ */
 export function RunDetailView({ run }: Readonly<{ run: StudioRunDetail }>) {
   const artifactGroups = groupedArtifactPreviews(run.artifacts);
 
@@ -23,7 +31,11 @@ export function RunDetailView({ run }: Readonly<{ run: StudioRunDetail }>) {
           </div>
           <div>
             <dt>Readiness</dt>
-            <dd>{formatReadiness(run.readinessPassed)}</dd>
+            <dd>{run.readinessStatus}</dd>
+          </div>
+          <div>
+            <dt>Evidence</dt>
+            <dd>{run.evidenceStatus}</dd>
           </div>
         </dl>
       </section>
@@ -31,13 +43,24 @@ export function RunDetailView({ run }: Readonly<{ run: StudioRunDetail }>) {
       <section className='panel' aria-labelledby='next-action-heading'>
         <h2 id='next-action-heading'>Next Safe Action</h2>
         <code className='command'>
-          {run.nextRecommendedCommand ?? "Run pnpm producer evidence --run <run_id>"}
+          {run.nextRecommendedCommand ?? `Run pnpm producer evidence --run ${run.runId}`}
         </code>
         <p>
           Read-only display. Use the CLI to mutate approvals, artifacts, render, upload, or publish
           state.
         </p>
+        <p>Evidence: {run.evidenceMessage}</p>
+        {run.evidenceNextAction ? (
+          <p className='artifact-action'>Evidence action: {run.evidenceNextAction}</p>
+        ) : null}
       </section>
+
+      <RunBlockedActionsPanel
+        blockedActions={run.blockedActions}
+        evidenceMessage={run.evidenceMessage}
+        evidenceNextAction={run.evidenceNextAction}
+        evidenceStatus={run.evidenceStatus}
+      />
 
       <section className='panel' aria-labelledby='diagnostics-heading'>
         <h2 id='diagnostics-heading'>Diagnostics</h2>
@@ -55,6 +78,15 @@ export function RunDetailView({ run }: Readonly<{ run: StudioRunDetail }>) {
           <p>No run diagnostics recorded.</p>
         )}
       </section>
+
+      <RunLedgerPanel approvals={run.approvals} warnings={run.warnings} />
+
+      <RunProductionMediaPanel
+        evidenceMessage={run.evidenceMessage}
+        evidenceNextAction={run.evidenceNextAction}
+        evidenceStatus={run.evidenceStatus}
+        productionMedia={run.productionMedia}
+      />
 
       <section className='panel' aria-labelledby='artifact-heading'>
         <h2 id='artifact-heading'>Artifact Previews</h2>
@@ -106,19 +138,41 @@ export function RunDetailView({ run }: Readonly<{ run: StudioRunDetail }>) {
 
       <section className='panel' aria-labelledby='readiness-heading'>
         <h2 id='readiness-heading'>Readiness Checks</h2>
+        <p>{run.readinessMessage}</p>
+        {run.readinessNextAction ? (
+          <p className='artifact-action'>Next action: {run.readinessNextAction}</p>
+        ) : null}
         <p>
-          {run.readiness?.passed === true ? "Readiness passed." : "Readiness has not passed yet."}
-        </p>
-        <p>
-          {Array.isArray(run.readiness?.checks)
-            ? `${run.readiness.checks.length} check(s) recorded.`
+          {run.readinessChecks.length > 0
+            ? `${run.readinessChecks.length} check(s) recorded.`
             : "No readiness checks recorded."}
         </p>
+        {run.readinessChecks.length > 0 ? (
+          <ul>
+            {run.readinessChecks.map((check) => (
+              <li key={check.name}>
+                <strong>{check.name}</strong>:{" "}
+                <span className={readinessStatusClassName(check.status)}>{check.status}</span>
+                <br />
+                <span>{check.message}</span>
+                {check.nextAction ? (
+                  <p className='artifact-action'>Next action: {check.nextAction}</p>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        ) : null}
       </section>
     </div>
   );
 }
 
+/**
+ * Groups artifact previews by group label.
+ *
+ * @param artifacts - The artifact previews to group.
+ * @returns The grouped artifact previews, ordered by first occurrence of each group.
+ */
 function groupedArtifactPreviews(
   artifacts: StudioArtifactPreview[],
 ): Array<{ artifacts: StudioArtifactPreview[]; label: string }> {
@@ -132,16 +186,25 @@ function groupedArtifactPreviews(
   }));
 }
 
-function formatReadiness(value: boolean | null): string {
-  if (value === true) {
-    return "passed";
+/**
+ * Maps a readiness status to its status pill class name.
+ *
+ * @param status - The readiness status value
+ * @returns The CSS class name for the corresponding status pill
+ */
+function readinessStatusClassName(status: string): string {
+  if (status === "block") {
+    return "status-pill small blocked";
   }
-  if (value === false) {
-    return "blocked";
-  }
-  return "not generated";
+  return "status-pill small";
 }
 
+/**
+ * Provides a fallback message for an artifact preview.
+ *
+ * @param artifact - The artifact preview metadata
+ * @returns A message explaining why the preview is unavailable
+ */
 function artifactPreviewFallback(artifact: StudioArtifactPreview): string {
   if (!artifact.exists) {
     return "Artifact is not generated yet.";

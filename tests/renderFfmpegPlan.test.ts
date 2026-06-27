@@ -5,6 +5,7 @@ import {
   buildFfmpegArgs,
   clampRenderDuration,
 } from "../src/stages/renderFfmpegPlan";
+import { createTwoSceneRenderPlan } from "./renderFfmpegPlanFixtures";
 
 describe("draft render FFmpeg planning", () => {
   it("builds an intro-to-outro FFmpeg plan from all render-plan backgrounds", () => {
@@ -66,6 +67,62 @@ describe("draft render FFmpeg planning", () => {
     expect(args).toContain("1:a");
   });
 
+  it("expands intro and outro source frames into FFmpeg inputs when enough review time exists", () => {
+    const renderPlan = createTwoSceneRenderPlan({ frames: true, overlays: false });
+    const timeline = buildDraftRenderTimeline(renderPlan, 10);
+
+    expect(timeline[0]).toMatchObject({
+      segment: "intro",
+      sourceFrameAssets: [
+        { path: "assets/intro/frames/intro_frame_00.jpg" },
+        { path: "assets/intro/frames/intro_frame_01.jpg" },
+      ],
+    });
+    expect(timeline.at(-1)).toMatchObject({
+      segment: "outro",
+      sourceFrameAssets: [
+        { path: "assets/outro/frames/outro_frame_00.jpg" },
+        { path: "assets/outro/frames/outro_frame_01.jpg" },
+      ],
+    });
+
+    const args = buildFfmpegArgs({
+      durationSeconds: 10,
+      ffmpegOutputPath: "draft.mp4",
+      renderPlan,
+      runId: "run_test",
+      timeline,
+    });
+    const renderedArgs = args.join("\n");
+
+    expect(renderedArgs).toContain("assets/intro/frames/intro_frame_00.jpg");
+    expect(renderedArgs).toContain("assets/intro/frames/intro_frame_01.jpg");
+    expect(renderedArgs).toContain("assets/outro/frames/outro_frame_00.jpg");
+    expect(renderedArgs).toContain("assets/outro/frames/outro_frame_01.jpg");
+    expect(renderedArgs).toContain("concat=n=6:v=1:a=0");
+    expect(args).toContain("6:a");
+  });
+
+  it("honors a single source frame instead of falling back to the bookend background", () => {
+    const renderPlan = createTwoSceneRenderPlan({ frames: true, overlays: false });
+    const timeline = buildDraftRenderTimeline(renderPlan, 10).map((item) =>
+      item.segment === "intro"
+        ? { ...item, sourceFrameAssets: item.sourceFrameAssets?.slice(0, 1) }
+        : item,
+    );
+
+    const renderedArgs = buildFfmpegArgs({
+      durationSeconds: 10,
+      ffmpegOutputPath: "draft.mp4",
+      renderPlan,
+      runId: "run_test",
+      timeline,
+    }).join("\n");
+
+    expect(renderedArgs).toContain("assets/intro/frames/intro_frame_00.jpg");
+    expect(renderedArgs).not.toContain("assets/intro/title_card.jpg");
+  });
+
   it("extends the last scene when no bookends are present and scenes are shorter than target", () => {
     const renderPlan = createTwoSceneRenderPlan({ bookends: false, overlays: false });
     const timeline = buildDraftRenderTimeline(renderPlan, 10);
@@ -122,98 +179,3 @@ describe("draft render FFmpeg planning", () => {
     ).toThrow(/at least one/i);
   });
 });
-
-function createTwoSceneRenderPlan(
-  options: { bookends?: boolean; overlays?: boolean } = {},
-): Parameters<typeof buildDraftRenderTimeline>[0] {
-  const digest = "a".repeat(64);
-  const overlayAssets =
-    options.overlays === false
-      ? []
-      : [
-          {
-            role: "lower-third",
-            path: "assets/overlays/lower_third.png",
-            digest,
-          },
-          {
-            role: "waveform-overlay",
-            path: "assets/waveforms/waveform.png",
-            digest,
-          },
-          {
-            role: "popup-card",
-            path: "assets/overlays/popup_card.png",
-            digest,
-          },
-          {
-            role: "watermark",
-            path: "assets/brand/watermark.png",
-            digest,
-          },
-        ];
-  return {
-    schemaVersion: 1,
-    runId: "run_test",
-    createdAt: "2026-06-25T00:00:00.000Z",
-    productionPackageManifestPath: "production/production_package.meta.json",
-    productionPackageManifestDigest: digest,
-    format: {
-      resolution: "1920x1080",
-      fps: 30,
-      aspectRatio: "16:9",
-      draftRenderer: "ffmpeg-local-draft",
-    },
-    bookends:
-      options.bookends === false
-        ? undefined
-        : {
-            intro: {
-              durationSeconds: 2,
-              asset: {
-                role: "intro-source",
-                path: "assets/intro/title_card.jpg",
-                digest,
-              },
-            },
-            outro: {
-              durationSeconds: 3,
-              asset: {
-                role: "outro-source",
-                path: "assets/outro/end_screen.jpg",
-                digest,
-              },
-            },
-          },
-    scenes: [
-      {
-        sceneIndex: 1,
-        narrationPreview: "Birinci sahne",
-        durationSeconds: 3,
-        visualPrompt: "A",
-        backgroundAsset: {
-          role: "background-plate",
-          path: "assets/backgrounds/plate_a.jpg",
-          digest,
-        },
-        overlayAssets,
-        subtitleSource: "production/subtitles.srt",
-        voiceoverSource: "production/voiceover.txt",
-      },
-      {
-        sceneIndex: 2,
-        narrationPreview: "İkinci sahne",
-        durationSeconds: 4,
-        visualPrompt: "B",
-        backgroundAsset: {
-          role: "background-plate",
-          path: "assets/backgrounds/plate_b.jpg",
-          digest,
-        },
-        overlayAssets: [],
-        subtitleSource: "production/subtitles.srt",
-        voiceoverSource: "production/voiceover.txt",
-      },
-    ],
-  };
-}

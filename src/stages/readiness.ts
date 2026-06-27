@@ -6,19 +6,26 @@ import { RunRecord } from "../core/state.js";
 import { canTransition } from "../core/transitions.js";
 import { checkAssets } from "../safeguards/assetGuard.js";
 import { pathExists } from "../utils/fs.js";
-import { bulletList, table } from "../utils/markdown.js";
 import { generateEvidenceBundle } from "./evidence.js";
-import { verifyProductionPackage } from "./productionPackageIntegrity.js";
+import { renderReadinessMarkdown } from "./readinessMarkdown.js";
+import { productionPackageIntegrityCheck } from "./readinessProductionPackage.js";
 import { draftRenderReadinessCheck } from "./readinessRenderDraft.js";
 import { renderPlanReadinessCheck } from "./readinessRenderPlan.js";
 import { voiceoverReadinessCheck } from "./readinessVoiceover.js";
 
 export type ReadinessCheck = {
   name: string;
+  nextAction?: string;
   status: "pass" | "warn" | "block";
   message: string;
 };
 
+/**
+ * Runs readiness checks for a run and writes readiness diagnostics.
+ *
+ * @param runId - The run to evaluate.
+ * @returns The readiness result and the checks that were performed.
+ */
 export async function runReadiness(
   runId: string,
 ): Promise<{ passed: boolean; checks: ReadinessCheck[] }> {
@@ -73,7 +80,12 @@ export async function runReadiness(
         ? "Public publish is enabled; verify explicit approval controls before continuing."
         : "Public/scheduled publish remains disabled by default.",
     },
-    await artifactCheck(run.runId, "evidence bundle available", "evidence_bundle.json"),
+    await artifactCheck(
+      run.runId,
+      "evidence bundle available",
+      "evidence_bundle.json",
+      `pnpm producer evidence --run ${run.runId}`,
+    ),
   ];
   const passed = checks.every((check) => check.status !== "block");
   run = await writeRunJson(run, "readiness", "diagnostics/readiness.json", {
@@ -86,25 +98,7 @@ export async function runReadiness(
     run,
     "readiness",
     "diagnostics/readiness.md",
-    [
-      "# Readiness",
-      "",
-      `Run: ${run.runId}`,
-      `Passed: ${passed}`,
-      "",
-      table(
-        ["Check", "Status", "Message"],
-        checks.map((check) => [check.name, check.status, check.message.replaceAll("|", "/")]),
-      ),
-      "",
-      "## Warnings",
-      "",
-      bulletList(
-        checks
-          .filter((check) => check.status === "warn")
-          .map((check) => `${check.name}: ${check.message}`),
-      ),
-    ].join("\n"),
+    renderReadinessMarkdown(run.runId, passed, checks),
   );
   if (
     passed &&
@@ -123,36 +117,37 @@ export async function runReadiness(
   return { passed, checks };
 }
 
+/**
+ * Checks whether a run artifact exists.
+ *
+ * @param runId - The run identifier used to locate the artifact
+ * @param name - The readiness check name
+ * @param relativePath - The artifact path relative to the run's artifact directory
+ * @param nextAction - The command to suggest when the artifact is missing
+ * @returns A readiness check describing whether the artifact exists
+ */
 async function artifactCheck(
   runId: string,
   name: string,
   relativePath: string,
+  nextAction?: string,
 ): Promise<ReadinessCheck> {
   return fileCheck(
     name,
     await pathExists(artifactPath(runId, relativePath)),
     `${relativePath} exists.`,
     `${relativePath} is missing.`,
+    nextAction,
   );
 }
 
-async function productionPackageIntegrityCheck(run: RunRecord): Promise<ReadinessCheck> {
-  try {
-    const { digest } = await verifyProductionPackage(run);
-    return {
-      name: "production package integrity",
-      status: "pass",
-      message: `Complete production package matches manifest ${digest}.`,
-    };
-  } catch (error) {
-    return {
-      name: "production package integrity",
-      status: "block",
-      message: error instanceof Error ? error.message : String(error),
-    };
-  }
-}
-
+/**
+ * Checks whether the run's cost estimate satisfies readiness requirements.
+ *
+ * @param run - The run being evaluated
+ * @param config - The loaded configuration used to validate the estimate
+ * @returns A readiness check for the cost estimate
+ */
 async function budgetEstimateCheck(
   run: RunRecord,
   config: Awaited<ReturnType<typeof loadConfig>>,
@@ -164,6 +159,7 @@ async function budgetEstimateCheck(
       name: "budget not exceeded",
       status: "block",
       message: `${relativePath} is missing.`,
+      nextAction: `pnpm producer estimate --run ${run.runId}`,
     };
   }
   try {
@@ -174,6 +170,7 @@ async function budgetEstimateCheck(
         name: "budget not exceeded",
         status: "block",
         message: `Cost estimate is stale or invalid. ${validationReasons.join(" ")}`,
+        nextAction: `pnpm producer estimate --run ${run.runId}`,
       };
     }
     if (!estimate.budgetAllowed || estimate.hardBlockedReasons.length > 0) {
@@ -196,6 +193,7 @@ async function budgetEstimateCheck(
           name: "budget not exceeded",
           status: "block",
           message: "The exact quote requires explicit paid-generation cost approval.",
+          nextAction: `pnpm producer approve cost --run ${run.runId}`,
         };
       }
       return {
@@ -214,19 +212,32 @@ async function budgetEstimateCheck(
       name: "budget not exceeded",
       status: "block",
       message: `Cost estimate could not be read: ${(error as Error).message}`,
+      nextAction: `pnpm producer estimate --run ${run.runId}`,
     };
   }
 }
 
+/**
+ * Builds a readiness check result from a boolean condition.
+ *
+ * @param name - The check name
+ * @param ok - Whether the condition passed
+ * @param passMessage - The message to use when the check passes
+ * @param failMessage - The message to use when the check fails
+ * @param nextAction - The follow-up command to include when the check fails
+ * @returns The readiness check result
+ */
 async function fileCheck(
   name: string,
   ok: boolean,
   passMessage: string,
   failMessage: string,
+  nextAction?: string,
 ): Promise<ReadinessCheck> {
   return {
     name,
     status: ok ? "pass" : "block",
     message: ok ? passMessage : failMessage,
+    nextAction: ok ? undefined : nextAction,
   };
 }

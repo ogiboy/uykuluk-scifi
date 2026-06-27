@@ -1,6 +1,14 @@
 import { bulletList } from "../utils/markdown.js";
-import { AssetProvenance, RenderPlan } from "./renderPlanSchemas.js";
+import { renderOperatorDecisionSection } from "./operatorReviewMarkdown.js";
+import { AssetProvenance, AssetRef, RenderPlan } from "./renderPlanSchemas.js";
 
+/**
+ * Builds a Markdown contact sheet for a storyboard render plan.
+ *
+ * @param plan - The render plan to summarize.
+ * @param provenance - The asset provenance data to include.
+ * @returns A Markdown string containing the contact sheet.
+ */
 export function renderContactSheet(plan: RenderPlan, provenance: AssetProvenance): string {
   return [
     "# Storyboard Contact Sheet",
@@ -25,6 +33,7 @@ export function renderContactSheet(plan: RenderPlan, provenance: AssetProvenance
       ),
     ),
     "",
+    ...renderContactSheetDecision(plan.runId),
     "## Scenes",
     "",
     ...plan.scenes.map((scene) =>
@@ -45,6 +54,41 @@ export function renderContactSheet(plan: RenderPlan, provenance: AssetProvenance
   ].join("\n");
 }
 
+/**
+ * Builds the operator decision section for the contact sheet.
+ *
+ * @param runId - The render run identifier used in the follow-up commands.
+ * @returns The markdown lines for the decision section.
+ */
+function renderContactSheetDecision(runId: string): string[] {
+  return renderOperatorDecisionSection({
+    reviewGates: [
+      "Confirm scene-to-asset mapping matches the approved package and channel visual style.",
+      "Confirm intro/outro bookends, subtitle panel, popup card, watermark, and waveform roles are suitable for a local draft.",
+      "Confirm this contact sheet is review evidence only; file existence does not approve TTS, render, upload, or publish.",
+    ],
+    acceptableNextSteps: [
+      `Run \`pnpm producer estimate --run ${runId}\` if the current package still needs a cost estimate.`,
+      `Run \`pnpm producer evidence --run ${runId}\` and \`pnpm producer readiness --run ${runId}\` before local voiceover generation.`,
+      `Run \`pnpm producer voice --run ${runId}\` only after readiness passes and local TTS is explicitly enabled.`,
+    ],
+    revisionSteps: [
+      "Revise the production package, subtitles, popup cards, or tracked assets, then regenerate the render plan.",
+      "Do not advance to voiceover or render approval from an unacceptable contact sheet.",
+    ],
+    blockedActions: [
+      "Local draft render still requires voiceover evidence and explicit render approval.",
+      "Private upload, scheduled publish, public publish, and paid/generative media providers remain unavailable in this artifact.",
+    ],
+  });
+}
+
+/**
+ * Renders the intro and outro bookend section for a contact sheet.
+ *
+ * @param plan - The render plan that may include bookend assets.
+ * @returns An array of Markdown lines for the bookend section, or an empty array when no bookends are present.
+ */
 function renderBookends(plan: RenderPlan): string[] {
   if (!plan.bookends) {
     return [];
@@ -53,9 +97,25 @@ function renderBookends(plan: RenderPlan): string[] {
     "## Intro And Outro Bookends",
     "",
     `- Intro: ${plan.bookends.intro.asset.path} for ${plan.bookends.intro.durationSeconds}s`,
+    ...frameBullets("Intro source frames", plan.bookends.intro.frameAssets),
     `- Outro: ${plan.bookends.outro.asset.path} for ${plan.bookends.outro.durationSeconds}s`,
+    ...frameBullets("Outro source frames", plan.bookends.outro.frameAssets),
     "",
     "> These committed source assets are included in the local draft render timeline for review; they do not imply upload or publish approval.",
     "",
   ];
+}
+
+/**
+ * Builds a bullet for the number of committed frames in a bookend asset set.
+ *
+ * @param label - The frame set label to include in the bullet text
+ * @param frames - The frames to count
+ * @returns A single bullet describing the frame count, or an empty array when no frames are provided
+ */
+function frameBullets(label: string, frames: AssetRef[] | undefined): string[] {
+  if (!frames || frames.length === 0) {
+    return [];
+  }
+  return [`- ${label}: ${frames.length} committed frames`];
 }

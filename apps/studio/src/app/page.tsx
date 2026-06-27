@@ -1,11 +1,21 @@
 import { AssetInventory } from "@/components/AssetInventory";
 import { CommandPanel } from "@/components/CommandPanel";
+import { ServiceContractPanel } from "@/components/ServiceContractPanel";
 import { StatusGrid } from "@/components/StatusGrid";
 import { StudioTabs } from "@/components/studio/StudioTabs";
+import { getStudioAssetInventory } from "@/lib/assetInventory";
 import { studioSections } from "@/lib/studioData";
-import Link from "next/link";
 
-export default function StudioHomePage() {
+export const dynamic = "force-dynamic";
+
+/**
+ * Renders the Studio home page.
+ *
+ * @returns The Studio page layout with navigation, status panels, and the current asset inventory.
+ */
+export default async function StudioHomePage() {
+  const assetInventory = await getStudioAssetInventory();
+
   return (
     <main className='studio-shell'>
       <aside className='studio-rail' aria-label='Studio navigation'>
@@ -19,9 +29,9 @@ export default function StudioHomePage() {
         <nav>
           {studioSections.map((section) =>
             "href" in section ? (
-              <Link key={section.id} href={section.href}>
+              <a key={section.id} href={section.href}>
                 {section.label}
-              </Link>
+              </a>
             ) : (
               <a key={section.id} href={`#${section.id}`}>
                 {section.label}
@@ -42,7 +52,8 @@ export default function StudioHomePage() {
 
         <StatusGrid />
         <CommandPanel />
-        <AssetInventory />
+        <ServiceContractPanel />
+        <AssetInventory inventory={assetInventory} />
         <StudioTabs />
       </section>
     </main>

@@ -26,6 +26,7 @@ import {
   buildFfmpegArgs,
   clampRenderDuration,
 } from "./renderFfmpegPlan.js";
+import { probeDraftRender } from "./renderProbe.js";
 import { RenderPlan, renderPlanSchema } from "./renderPlanSchemas.js";
 import { readVoiceoverAudioEvidence, voiceoverAudioPath } from "./voiceoverEvidence.js";
 
@@ -33,14 +34,23 @@ export { buildDraftRenderTimeline, buildFfmpegArgs } from "./renderFfmpegPlan.js
 
 export type RenderDraftOptions = {
   ffmpegBinary?: string;
+  ffprobeBinary?: string | false;
   maxDurationSeconds?: number;
 };
 
+/**
+ * Generates and stores a draft render for a run.
+ *
+ * @param runId - The run identifier.
+ * @param options - Render binary and duration settings.
+ * @returns The draft render manifest.
+ */
 export async function renderDraft(
   runId: string,
   options: RenderDraftOptions = {},
 ): Promise<DraftRenderManifest> {
   let run = await loadRun(runId);
+  let temporaryOutput: string | undefined;
   await requireApproval(run, "render", "render");
   await requireState(run, "RENDER_APPROVED", "render");
   try {
@@ -57,6 +67,9 @@ export async function renderDraft(
     const currentApprovalRef = renderApprovalRef({
       renderPlanDigest: renderPlanEvidence.digest,
       voiceoverAudioDigest: voiceoverAudio.digest,
+      voiceoverMode: voiceoverAudio.mode,
+      voiceoverProductionVoiceCandidate: voiceoverAudio.productionVoiceCandidate,
+      voiceoverQuality: voiceoverAudio.quality,
     });
     if (approval?.approvedRef !== currentApprovalRef) {
       throw new SafeExitError("Draft render approval is stale for current render inputs.");
@@ -70,10 +83,7 @@ export async function renderDraft(
     const timeline = buildDraftRenderTimeline(renderPlan, durationSeconds);
     const composition = buildDraftRenderComposition(renderPlan);
     const output = artifactPath(run.runId, draftRenderPath);
-    const temporaryOutput = path.join(
-      path.dirname(output),
-      `.draft.${process.pid}.${randomUUID()}.mp4`,
-    );
+    temporaryOutput = path.join(path.dirname(output), `.draft.${process.pid}.${randomUUID()}.mp4`);
     await ensureDir(path.dirname(output));
     await rm(temporaryOutput, { force: true }).catch(() => undefined);
     await rm(output, { force: true }).catch(() => undefined);
@@ -91,11 +101,16 @@ export async function renderDraft(
     if (outputInfo.size <= 0) {
       throw new SafeExitError("FFmpeg produced an empty draft render output.");
     }
+    if (options.ffprobeBinary === false) {
+      throw new SafeExitError("Draft render requires ffprobe media validation.");
+    }
+    const mediaProbe = await probeDraftRender(options.ffprobeBinary ?? "ffprobe", temporaryOutput);
     await rename(temporaryOutput, output);
+    temporaryOutput = undefined;
     const outputBytes = await readFile(output);
     run = await recordRunArtifact(run, "render", draftRenderPath);
     const manifest = draftRenderManifestSchema.parse({
-      schemaVersion: 2,
+      schemaVersion: 3,
       runId: run.runId,
       createdAt: nowIso(),
       renderPlan: {
@@ -105,6 +120,9 @@ export async function renderDraft(
       voiceoverAudio: {
         path: voiceoverAudioPath,
         digest: voiceoverAudio.digest,
+        mode: voiceoverAudio.mode,
+        productionVoiceCandidate: voiceoverAudio.productionVoiceCandidate,
+        quality: voiceoverAudio.quality,
       },
       timeline,
       composition: {
@@ -126,6 +144,7 @@ export async function renderDraft(
         binary: ffmpegBinary,
         args,
       },
+      mediaProbe,
     });
     run = await writeRunJson(run, "render", draftRenderManifestPath, manifest);
     run = await writeRunText(
@@ -138,6 +157,9 @@ export async function renderDraft(
     await setRunState(run, "RENDERED", "render");
     return manifest;
   } catch (error) {
+    if (temporaryOutput) {
+      await rm(temporaryOutput, { force: true }).catch(() => undefined);
+    }
     await appendLedgerEvent({
       runId: run.runId,
       type: "ERROR",

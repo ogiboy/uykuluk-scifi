@@ -1,8 +1,14 @@
 import Link from "next/link";
 import type { StudioRunSummary } from "@/lib/runSummaries";
+import { formatRunReviewCounts } from "@/lib/runSummaryCopy";
 
 type RunSummaryTableProps = Readonly<{ runs: readonly StudioRunSummary[] }>;
 
+/**
+ * Displays a summary table of saved producer runs.
+ *
+ * @param runs - The runs to display
+ */
 export function RunSummaryTable({ runs }: RunSummaryTableProps) {
   if (runs.length === 0) {
     return (
@@ -21,27 +27,29 @@ export function RunSummaryTable({ runs }: RunSummaryTableProps) {
           <span role='columnheader'>Run</span>
           <span role='columnheader'>State</span>
           <span role='columnheader'>Readiness</span>
+          <span role='columnheader'>Evidence</span>
           <span role='columnheader'>Next action</span>
         </div>
         {runs.map((run) => (
           <Link className='run-row' href={`/runs/${run.runId}`} key={run.runId} role='row'>
             <span role='cell'>{run.runId}</span>
-            <span role='cell'>{run.state}</span>
-            <span role='cell'>{formatReadiness(run.readinessPassed)}</span>
+            <span className='run-cell-stack' role='cell'>
+              <strong>{run.state}</strong>
+              <small>{formatRunReviewCounts(run)}</small>
+            </span>
+            <span className='run-cell-stack' role='cell'>
+              <strong>{run.readinessStatus}</strong>
+              {run.readinessStatus === "passed" ? null : <small>{run.readinessMessage}</small>}
+              {run.readinessNextAction ? <small>{run.readinessNextAction}</small> : null}
+            </span>
+            <span className='run-cell-stack' role='cell'>
+              <strong>{run.evidenceStatus}</strong>
+              {run.evidenceStatus === "available" ? null : <small>{run.evidenceMessage}</small>}
+            </span>
             <span role='cell'>{run.nextRecommendedCommand ?? "Generate evidence from CLI"}</span>
           </Link>
         ))}
       </div>
     </section>
   );
-}
-
-function formatReadiness(value: boolean | null): string {
-  if (value === true) {
-    return "passed";
-  }
-  if (value === false) {
-    return "blocked";
-  }
-  return "not generated";
 }

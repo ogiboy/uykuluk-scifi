@@ -77,19 +77,22 @@ Constraints:
 
 Next Real Production Loop slices:
 
-- harden local TTS with real Piper voice QA and better operator guidance; current foundation writes
-  deterministic reference WAV metadata and an operator audio review checklist, can call a configured
-  local Piper binary/model path, and surfaces Piper setup/remediation next actions through
-  `producer doctor`;
+- harden local TTS with continued Piper voice QA and better operator guidance; current foundation
+  writes deterministic reference WAV metadata and an operator audio review checklist, can call a
+  configured local Piper binary/model path, records model/config digest provenance, and surfaces
+  Piper setup/remediation next actions through `producer doctor`;
 - harden FFmpeg draft render quality and visual composition. Current foundation renders local review
-  MP4 from the current render plan, intro/outro source cards, scene-timed background plates,
-  voiceover audio, subtitles, lower-third, popup, waveform, and watermark overlays, then writes a
-  render manifest with the exact timeline plus an operator-readable draft review checklist;
+  MP4 from the current render plan, intro/outro source cards or committed source-frame sequences,
+  scene-timed background plates, voiceover audio, subtitles, lower-third, popup, waveform, and
+  watermark overlays, then writes a render manifest with the exact timeline plus an
+  operator-readable draft review checklist;
 - define separate private-upload approval only after local final review is reliable.
 
 ## Phase C - Operator Studio
 
-Status: read-only run review foundation exists; artifact previews and safety contracts come next.
+Status: read-only run review, artifact preview, asset inventory, mutation-service status, manual
+analytics overview, route-security contract foundations, and shared mutation service contract
+foundations exist. Guarded route implementation still comes later.
 
 The Studio should be a local operator surface over CLI/core contracts.
 
@@ -98,11 +101,18 @@ Priority order:
 - maintain the read-only run index with state, warnings, approvals, readiness, and next action;
 - maintain the read-only run detail with evidence, readiness, warning counts, approvals, and review
   artifact availability;
-- artifact previews for scripts, production packages, render plans, contact sheets, and assets;
-- asset inventory page;
-- shared service contracts for any future Studio read/write operation;
-- route security requirements and negative tests;
-- only after those contracts exist: approval forms and guarded mutations.
+- maintain artifact previews for scripts, production packages, render plans, contact sheets, audio,
+  render evidence, and readiness artifacts;
+- maintain the read-only visual asset inventory page backed by configured guard checks;
+- maintain read-only mutation-service status so operators can see that future
+  approval/upload/publish actions are contract-defined but not routable;
+- maintain the read-only manual analytics overview and import data-quality summary backed by ignored
+  local CLI analytics artifacts;
+- maintain shared service contracts for any future Studio read/write operation;
+- maintain route security requirements and negative tests for current read-only routes and disabled
+  future action routes;
+- only after the contracts have concrete CSRF/session handling and negative route tests: approval
+  forms and guarded mutations.
 
 Frontend constraints:
 
@@ -114,7 +124,8 @@ Frontend constraints:
 
 ## Phase D - Monetization Feedback Loop
 
-Status: initial local CLI import/report foundation implemented; API integrations remain deferred.
+Status: initial local CLI import/report foundation and read-only Studio overview implemented; API
+integrations remain deferred.
 
 The product should eventually learn from channel performance, but manual import comes before API
 integrations.
@@ -127,8 +138,11 @@ Minimum loop:
   visibility;
 - summarize CTR, views, average view duration, retention notes, subscriber deltas, and qualitative
   comments where provided - implemented in `analytics/performance_report.md`;
+- review the imported local dataset and report preview in Studio without YouTube API calls, workflow
+  mutation, upload, publish, or causal claims, including stale/missing report visibility;
 - produce “repeat / avoid / test next” recommendations for future ideas, titles, formats, and
-  thumbnail directions.
+  thumbnail directions - implemented as non-causal operator planning prompts with
+  confidence/missingness framing in `analytics/performance_report.md`.
 
 This phase must not invent metrics or claim causality from weak data. YouTube Analytics API work is
 optional later and requires its own credentials, privacy, cost, and approval design.
@@ -165,7 +179,9 @@ intro/outro render source frames.
 Useful additions before render work focus on editability and licensing:
 
 - editable source files for thumbnail and overlay variants;
-- render-ready intro/outro clips generated from committed source frames;
+- render-ready intro/outro MP4 clips generated from committed source frames for reuse outside the
+  draft renderer; source-frame sequences are already consumed by local draft render planning when
+  present;
 - font files and license notes for recurring title, thumbnail, lower-third, and subtitle typography;
 - additional series-specific background plates once recurring episode categories are defined;
 - storyboard/contact-sheet template refinements after the MVP render-plan artifact exists.

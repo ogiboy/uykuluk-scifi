@@ -53,10 +53,36 @@ export async function loadAnalyticsDataset(): Promise<AnalyticsDataset> {
   return analyticsDatasetSchema.parse(await readJsonFile<unknown>(analyticsDatasetPath));
 }
 
+/**
+ * Renders the saved analytics dataset as a Markdown report.
+ *
+ * @returns The rendered Markdown report.
+ */
 export async function renderSavedAnalyticsReport(): Promise<string> {
   return renderAnalyticsReport(await loadAnalyticsDataset());
 }
 
+/**
+ * Regenerates the saved analytics report and writes it to disk.
+ *
+ * @returns An object containing the rendered `report` and its `reportPath`.
+ */
+export async function refreshSavedAnalyticsReport(): Promise<{
+  report: string;
+  reportPath: string;
+}> {
+  const report = await renderSavedAnalyticsReport();
+  await ensureDir(ANALYTICS_DIR);
+  await writeTextFile(analyticsReportPath, report);
+  return { report, reportPath: analyticsReportPath };
+}
+
+/**
+ * Determines the analytics file format from its extension.
+ *
+ * @param inputPath - The input file path
+ * @returns `"json"` for `.json` files, `"csv"` otherwise
+ */
 function inferFormat(inputPath: string): "csv" | "json" {
   return path.extname(inputPath).toLowerCase() === ".json" ? "json" : "csv";
 }

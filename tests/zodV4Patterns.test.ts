@@ -34,7 +34,7 @@ const deprecatedChainedStringMethods = [
 const deprecatedPatterns = [
   ...deprecatedChainedStringMethods.map((method) => ({
     name: `deprecated chained string format: ${method}`,
-    pattern: new RegExp(`z\\.string\\(\\)\\.${method}\\s*\\(`, "g"),
+    pattern: new RegExp(String.raw`z\.string\(\)\.${method}\s*\(`, "g"),
   })),
   { name: "deprecated object strict method", pattern: /\.strict\(\)/g },
   { name: "deprecated object passthrough method", pattern: /\.passthrough\(\)/g },

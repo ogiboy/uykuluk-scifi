@@ -1,9 +1,18 @@
 import { table } from "../utils/markdown.js";
+import { summarizeAnalyticsDataQuality } from "./dataQuality.js";
+import { renderAnalyticsRecommendations } from "./recommendations.js";
 import type { AnalyticsDataset, AnalyticsRecord } from "./schema.js";
 
+/**
+ * Builds a Markdown analytics report from an import dataset.
+ *
+ * @param dataset - The analytics dataset to summarize and render
+ * @returns A Markdown report string
+ */
 export function renderAnalyticsReport(dataset: AnalyticsDataset): string {
   const totals = summarize(dataset.records);
   const runSummaries = summarizeRuns(dataset.records);
+  const dataQuality = summarizeAnalyticsDataQuality(dataset.records);
   const unmappedCount = dataset.records.filter((record) => !record.runId).length;
   return [
     "# Manual Analytics Report",
@@ -53,9 +62,27 @@ export function renderAnalyticsReport(dataset: AnalyticsDataset): string {
         ]),
     ),
     "",
-    "## Operator Notes",
+    "## Import Data Quality",
     "",
-    ...operatorNotes(dataset.records),
+    table(
+      ["Check", "Value"],
+      [
+        ["High confidence records", formatInteger(dataQuality.highConfidenceRecordCount)],
+        ["Medium confidence records", formatInteger(dataQuality.mediumConfidenceRecordCount)],
+        ["Low confidence records", formatInteger(dataQuality.lowConfidenceRecordCount)],
+        ["Missing run links", formatInteger(dataQuality.missingRunLinkCount)],
+        ["Missing views", formatInteger(dataQuality.missingViewsCount)],
+        ["Missing impressions", formatInteger(dataQuality.missingImpressionsCount)],
+        ["Missing CTR", formatInteger(dataQuality.missingCtrCount)],
+        ["Missing retention", formatInteger(dataQuality.missingRetentionCount)],
+      ],
+    ),
+    "",
+    `Next data-quality action: ${dataQuality.nextDataQualityAction}`,
+    "",
+    "## Non-Causal Recommendations",
+    "",
+    ...renderAnalyticsRecommendations(dataset.records),
   ].join("\n");
 }
 
@@ -69,6 +96,11 @@ type RunSummary = {
   weightedCtr: number | undefined;
 };
 
+/**
+ * Aggregates overall metrics across all records.
+ *
+ * @returns The total views, impressions, and subscribers gained, along with weighted averages for view duration, viewed percentage, and CTR.
+ */
 function summarize(records: AnalyticsRecord[]): {
   averageViewDurationSeconds: number | undefined;
   impressions: number;
@@ -89,17 +121,12 @@ function summarize(records: AnalyticsRecord[]): {
   };
 }
 
-function operatorNotes(records: AnalyticsRecord[]): string[] {
-  const highCtr = records.filter((record) => (record.ctr ?? 0) >= 0.06);
-  const weakRetention = records.filter((record) => (record.averagePercentageViewed ?? 1) < 0.25);
-  return [
-    `- Repeat candidates: ${formatRecordList(highCtr)}.`,
-    `- Review retention risks: ${formatRecordList(weakRetention)}.`,
-    "- Test next: compare topic, title, thumbnail promise, and first-minute hook before changing the production format.",
-    "- Evidence limit: treat these as review prompts, not proof that one variable caused the result.",
-  ];
-}
-
+/**
+ * Summarizes records by run ID.
+ *
+ * @param records - Analytics records to group and summarize
+ * @returns Per-run summaries sorted by total views in descending order
+ */
 function summarizeRuns(records: AnalyticsRecord[]): RunSummary[] {
   const groups = new Map<string, AnalyticsRecord[]>();
   for (const record of records) {
@@ -166,6 +193,13 @@ function weightedAverage(
   return denominator > 0 ? numerator / denominator : undefined;
 }
 
+/**
+ * Adds numeric values for a record field across all records.
+ *
+ * @param records - The records to aggregate
+ * @param key - The field to total
+ * @returns The sum of all numeric values for `key`
+ */
 function sum(records: AnalyticsRecord[], key: keyof AnalyticsRecord): number {
   return records.reduce((total, record) => {
     const value = record[key];
@@ -173,13 +207,12 @@ function sum(records: AnalyticsRecord[], key: keyof AnalyticsRecord): number {
   }, 0);
 }
 
-function formatRecordList(records: AnalyticsRecord[]): string {
-  if (records.length === 0) {
-    return "none yet";
-  }
-  return records.map((record) => inlineText(record.title ?? record.videoId)).join(", ");
-}
-
+/**
+ * Formats a whole number for display.
+ *
+ * @param value - The number to format
+ * @returns The rounded value formatted with US locale separators, or `"unknown"` when no value is available
+ */
 function formatInteger(value: number | undefined): string {
   return typeof value === "number" ? Math.round(value).toLocaleString("en-US") : "unknown";
 }

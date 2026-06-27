@@ -14,11 +14,13 @@ type RenderPlanNextStep = {
 } | null;
 
 type VoiceoverNextStep = {
+  productionVoiceCandidate?: boolean | null;
   status?: string;
 } | null;
 
 type DraftRenderNextStep = {
   status?: string;
+  voiceoverProductionVoiceCandidate?: boolean;
 } | null;
 
 type EvidenceNextCommandInput = {
@@ -41,11 +43,33 @@ const STATIC_NEXT_COMMANDS: Record<string, string> = {
   SCRIPT_GENERATED: "pnpm producer review script --run <run_id>",
 };
 
+/**
+ * Looks up the fixed operator command for a state.
+ *
+ * @param state - The evidence state name
+ * @returns The matching command template, or `undefined` if no fixed command exists for the state
+ */
 export function staticEvidenceNextCommand(state: string): string | undefined {
   return STATIC_NEXT_COMMANDS[state];
 }
 
-/** Returns the next safe operator action represented by an evidence snapshot. */
+/**
+ * Replaces run ID placeholders in a command string.
+ *
+ * @param command - The command template containing `<run_id>` placeholders
+ * @param runId - The run ID to insert into the command
+ * @returns The command with every `<run_id>` placeholder replaced by `runId`
+ */
+export function materializeRunCommand(command: string, runId: string): string {
+  return command.replaceAll("<run_id>", runId);
+}
+
+/**
+ * Determines the next operator command or review message for an evidence snapshot.
+ *
+ * @param input - Evidence snapshot data used to choose the next step
+ * @returns A command or instruction for the next safe operator action
+ */
 export function evidenceNextCommand(input: EvidenceNextCommandInput): string {
   const {
     costQuote,
@@ -121,12 +145,25 @@ function costEstimatedNextCommand(costQuote: CostQuoteNextStep): string {
   return "pnpm producer readiness --run <run_id>";
 }
 
+/**
+ * Selects the next manual production command.
+ *
+ * @param voiceoverAudio - Voiceover evidence used to determine whether render approval is available
+ * @param ttsEnabled - Whether local TTS is enabled for generating voice output
+ * @returns A command or instruction for the next manual production step
+ */
 function manualProductionNextCommand(
   voiceoverAudio: VoiceoverNextStep,
   ttsEnabled: boolean,
 ): string {
   if (voiceoverAudio?.status === "pass") {
-    return "pnpm producer approve render --run <run_id>";
+    if (voiceoverAudio.productionVoiceCandidate === true) {
+      return "pnpm producer approve render --run <run_id>";
+    }
+    if (voiceoverAudio.productionVoiceCandidate === false) {
+      return "Review deterministic reference audio; approve render only for a local timing draft with pnpm producer approve render --run <run_id>";
+    }
+    return "Regenerate voiceover evidence or review deterministic reference audio before render approval.";
   }
   if (ttsEnabled) {
     return "pnpm producer voice --run <run_id>";
@@ -134,16 +171,41 @@ function manualProductionNextCommand(
   return "Manual production review. Enable local TTS before draft render.";
 }
 
+/**
+ * Chooses the next command after render approval.
+ *
+ * @param draftRender - The current draft render state
+ * @returns The next operator command for render approval or draft review
+ */
 function renderApprovedNextCommand(draftRender: DraftRenderNextStep): string {
   if (draftRender?.status === "pass") {
-    return "Manual draft render review. Upload remains approval-gated.";
+    return renderedDraftReviewCommand(draftRender);
   }
   return "pnpm producer render --run <run_id>";
 }
 
+/**
+ * Chooses the next draft render command or review message.
+ *
+ * @param draftRender - Draft render evidence used to determine the next step
+ * @returns The next operator command or review instruction for the rendered draft
+ */
 function renderedNextCommand(draftRender: DraftRenderNextStep): string {
   if (draftRender?.status === "pass") {
-    return "Manual final draft review. Upload remains approval-gated.";
+    return renderedDraftReviewCommand(draftRender);
   }
   return "Regenerate evidence; draft render artifacts are missing or blocked.";
+}
+
+/**
+ * Chooses the final draft review instruction for a rendered draft.
+ *
+ * @param draftRender - The draft render state used to determine the review message.
+ * @returns A command or instruction for the final draft review step.
+ */
+function renderedDraftReviewCommand(draftRender: DraftRenderNextStep): string {
+  if (draftRender?.voiceoverProductionVoiceCandidate === false) {
+    return "Review local timing draft; regenerate voiceover with reviewed local Piper audio before final production review.";
+  }
+  return "Manual final draft review. Upload remains approval-gated.";
 }

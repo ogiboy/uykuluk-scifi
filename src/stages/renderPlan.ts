@@ -37,6 +37,12 @@ export type RenderPlanEvidence =
   | { status: "pass"; path: string; digest: string; artifactCount: number; assetCount: number }
   | { status: "block"; path: string; message: string };
 
+/**
+ * Generates the render plan and related production artifacts for a run.
+ *
+ * @param runId - The run identifier.
+ * @returns The generated render plan.
+ */
 export async function generateRenderPlan(runId: string): Promise<RenderPlan> {
   const config = await loadConfig();
   let run = await loadRun(runId);
@@ -63,10 +69,12 @@ export async function generateRenderPlan(runId: string): Promise<RenderPlan> {
       intro: {
         durationSeconds: 2,
         asset: assets.introSource,
+        ...(assets.introFrames.length > 0 ? { frameAssets: assets.introFrames } : {}),
       },
       outro: {
         durationSeconds: 3,
         asset: assets.outroSource,
+        ...(assets.outroFrames.length > 0 ? { frameAssets: assets.outroFrames } : {}),
       },
     },
     scenes: scenes.map((scene, index) => ({
@@ -97,7 +105,9 @@ export async function generateRenderPlan(runId: string): Promise<RenderPlan> {
       assets.lowerThird,
       assets.popupCard,
       assets.introSource,
+      ...assets.introFrames,
       assets.outroSource,
+      ...assets.outroFrames,
       assets.factCheckIcon,
       assets.waveform,
       ...assets.backgrounds,

@@ -1,56 +1,78 @@
-import { artifactPath } from "../core/artifacts.js";
 import { loadRun } from "../core/runStore.js";
 import type { RunRecord, RunState } from "../core/state.js";
-import { pathExists } from "../utils/fs.js";
-import { readJsonFile } from "../utils/json.js";
-import { staticEvidenceNextCommand } from "./evidenceNextCommand.js";
+import { materializeRunCommand, staticEvidenceNextCommand } from "./evidenceNextCommand.js";
 import type { RunDiagnosticSummary } from "./runDiagnosticSummaryContracts.js";
 import { readRunDiagnosticSummaries } from "./runDiagnosticSummaries.js";
-
-type EvidenceStatus = {
-  blockedActions?: unknown[];
-  nextRecommendedCommand?: unknown;
-};
-
-type EvidenceReadResult =
-  | { kind: "present"; evidence: EvidenceStatus }
-  | { kind: "missing" }
-  | { kind: "invalid" };
+import {
+  formatProductionMediaStatus,
+  productionMediaStatus,
+  type ProductionMediaStatus,
+} from "./statusMedia.js";
+import { evidenceBlockedActionMessages } from "./statusBlockedActions.js";
+import { readEvidenceStatus, type EvidenceReadResult } from "./statusEvidence.js";
+import {
+  formatStatusReadiness,
+  readStatusReadiness,
+  type StatusReadinessSummary,
+} from "./statusReadiness.js";
+import { formatApprovalLedger, formatWarningDetails } from "./statusLedger.js";
 
 export type RunStatusSummary = {
   approvalCount: number;
   artifactCount: number;
+  blockedActions: string[];
   blockedActionCount: number | null;
+  evidenceMessage: string | null;
   evidencePresent: boolean;
+  evidenceStatus: EvidenceReadResult["kind"];
+  mediaArtifacts: ProductionMediaStatus[];
   diagnostics: RunDiagnosticSummary[];
   nextRecommendedCommand: string;
+  readiness: StatusReadinessSummary;
   recentArtifacts: string[];
   run: RunRecord;
   warningCount: number;
 };
 
+/**
+ * Loads a run and compiles its status summary.
+ *
+ * @param runId - The run identifier
+ * @returns The combined status summary for the run
+ */
 export async function readRunStatus(runId: string): Promise<RunStatusSummary> {
   const run = await loadRun(runId);
-  const [evidenceResult, diagnostics] = await Promise.all([
-    readEvidenceStatus(run.runId),
+  const [evidenceResult, diagnostics, readiness] = await Promise.all([
+    readEvidenceStatus(run.runId, run.state),
     readRunDiagnosticSummaries(run.runId, run.artifacts),
+    readStatusReadiness(run.runId, run.state),
   ]);
   const evidence = evidenceResult.kind === "present" ? evidenceResult.evidence : null;
+  const blockedActions = evidenceBlockedActionMessages(evidence, run.runId);
   return {
     approvalCount: run.approvals.length,
     artifactCount: run.artifacts.length,
-    blockedActionCount: Array.isArray(evidence?.blockedActions)
-      ? evidence.blockedActions.length
-      : null,
+    blockedActionCount: evidence ? blockedActions.length : null,
+    blockedActions,
     diagnostics,
+    evidenceMessage: "message" in evidenceResult ? evidenceResult.message : null,
     evidencePresent: Boolean(evidence),
-    nextRecommendedCommand: statusNextRecommendedCommand(run.state, evidenceResult),
+    evidenceStatus: evidenceResult.kind,
+    mediaArtifacts: productionMediaStatus(run, evidence),
+    nextRecommendedCommand: statusNextRecommendedCommand(run.runId, run.state, evidenceResult),
+    readiness,
     recentArtifacts: run.artifacts.slice(-5).reverse(),
     run,
     warningCount: run.warnings.length,
   };
 }
 
+/**
+ * Renders a run status summary as a human-readable report.
+ *
+ * @param status - The run status summary to format
+ * @returns A newline-delimited report
+ */
 export function formatRunStatus(status: RunStatusSummary): string {
   return [
     `Run: ${status.run.runId}`,
@@ -59,10 +81,16 @@ export function formatRunStatus(status: RunStatusSummary): string {
     `Approvals: ${status.approvalCount}`,
     `Warnings: ${status.warningCount}`,
     `Artifacts: ${status.artifactCount}`,
-    `Evidence: ${status.evidencePresent ? "available" : "missing"}`,
+    ...formatApprovalLedger(status.run.approvals),
+    ...formatWarningDetails(status.run.warnings),
+    ...formatEvidenceStatusForRun(status),
     `Blocked actions: ${status.blockedActionCount ?? "unknown"}`,
     `Next safe action: ${status.nextRecommendedCommand}`,
+    ...formatStatusReadiness(status.readiness),
+    ...formatBlockedActions(status.blockedActions),
     ...formatDiagnostics(status.diagnostics),
+    ...formatProductionMediaEvidenceForRun(status),
+    ...status.mediaArtifacts.map(formatProductionMediaStatus),
     "",
     "Recent artifacts:",
     ...(status.recentArtifacts.length > 0
@@ -71,6 +99,63 @@ export function formatRunStatus(status: RunStatusSummary): string {
   ].join("\n");
 }
 
+/**
+ * Formats the production media evidence section for a run status report.
+ *
+ * @param status - The run status summary to render.
+ * @returns The production media evidence lines.
+ */
+function formatProductionMediaEvidenceForRun(status: RunStatusSummary): string[] {
+  if (status.evidenceStatus === "present") {
+    return ["", "Production media evidence: current evidence bundle.", "Production media:"];
+  }
+  return [
+    "",
+    `Production media evidence: artifact-record fallback because evidence is ${status.evidenceStatus}.`,
+    "Regenerate evidence before treating production media rows as review proof.",
+    `Production media evidence action: pnpm producer evidence --run ${status.run.runId}`,
+    "Production media:",
+  ];
+}
+
+/**
+ * Formats the evidence status and next action for a run.
+ *
+ * @param status - The run status summary to format
+ * @returns Lines describing evidence availability or the current evidence status and next action
+ */
+function formatEvidenceStatusForRun(status: RunStatusSummary): string[] {
+  if (status.evidenceStatus === "present") {
+    return ["Evidence: available"];
+  }
+  if (status.evidenceStatus === "missing") {
+    return ["Evidence: missing"];
+  }
+  return [
+    `Evidence: ${status.evidenceStatus} (${status.evidenceMessage ?? "evidence_bundle.json is unavailable."})`,
+    `Evidence next action: pnpm producer evidence --run ${status.run.runId}`,
+  ];
+}
+
+/**
+ * Formats blocked actions for display.
+ *
+ * @param blockedActions - The blocked action messages to render
+ * @returns Section lines for the blocked actions list, or an empty array when there are no blocked actions
+ */
+function formatBlockedActions(blockedActions: readonly string[]): string[] {
+  if (blockedActions.length === 0) {
+    return [];
+  }
+  return ["", "Blocked action details:", ...blockedActions.map((item) => `- ${item}`)];
+}
+
+/**
+ * Renders a diagnostics section for a run.
+ *
+ * @param diagnostics - Diagnostic entries to include
+ * @returns Formatted lines for the diagnostics section, or an empty array when there are no diagnostics
+ */
 function formatDiagnostics(diagnostics: readonly RunDiagnosticSummary[]): string[] {
   if (diagnostics.length === 0) {
     return [];
@@ -84,27 +169,30 @@ function formatDiagnostics(diagnostics: readonly RunDiagnosticSummary[]): string
   ];
 }
 
-function statusNextRecommendedCommand(state: RunState, evidenceResult: EvidenceReadResult): string {
+/**
+ * Chooses the next recommended command for a run.
+ *
+ * @param runId - The run identifier used to fill the command template
+ * @param state - The current run state used when evidence is missing
+ * @param evidenceResult - The resolved evidence status for the run
+ * @returns A command string for the next recommended action
+ */
+function statusNextRecommendedCommand(
+  runId: string,
+  state: RunState,
+  evidenceResult: EvidenceReadResult,
+): string {
   if (
     evidenceResult.kind === "present" &&
     typeof evidenceResult.evidence.nextRecommendedCommand === "string"
   ) {
-    return evidenceResult.evidence.nextRecommendedCommand;
+    return materializeRunCommand(evidenceResult.evidence.nextRecommendedCommand, runId);
   }
   if (evidenceResult.kind === "missing") {
-    return staticEvidenceNextCommand(state) ?? "pnpm producer evidence --run <run_id>";
+    return materializeRunCommand(
+      staticEvidenceNextCommand(state) ?? "pnpm producer evidence --run <run_id>",
+      runId,
+    );
   }
-  return "pnpm producer evidence --run <run_id>";
-}
-
-async function readEvidenceStatus(runId: string): Promise<EvidenceReadResult> {
-  const target = artifactPath(runId, "evidence_bundle.json");
-  if (!(await pathExists(target))) {
-    return { kind: "missing" };
-  }
-  try {
-    return { kind: "present", evidence: await readJsonFile<EvidenceStatus>(target) };
-  } catch {
-    return { kind: "invalid" };
-  }
+  return `pnpm producer evidence --run ${runId}`;
 }

@@ -8,8 +8,17 @@ export type DraftRenderTimeline = Array<{
   sceneIndex?: number;
   durationSeconds: number;
   backgroundAsset: AssetRef;
+  sourceFrameAssets?: AssetRef[];
 }>;
 
+/**
+ * Builds a draft render timeline from a render plan and target duration.
+ *
+ * @param renderPlan - The render plan to convert into timeline segments
+ * @param targetDurationSeconds - The desired total timeline duration
+ * @returns The constructed draft render timeline
+ * @throws SafeExitError - Thrown when the render plan does not contain any scenes
+ */
 export function buildDraftRenderTimeline(
   renderPlan: RenderPlan,
   targetDurationSeconds: number,
@@ -26,6 +35,7 @@ export function buildDraftRenderTimeline(
       segment: "intro",
       durationSeconds: bookendDurations.intro,
       backgroundAsset: renderPlan.bookends.intro.asset,
+      sourceFrameAssets: renderPlan.bookends.intro.frameAssets,
     });
   }
   let remainingSeconds = bookendDurations.scenes;
@@ -52,6 +62,7 @@ export function buildDraftRenderTimeline(
       segment: "outro",
       durationSeconds: bookendDurations.outro,
       backgroundAsset: renderPlan.bookends.outro.asset,
+      sourceFrameAssets: renderPlan.bookends.outro.frameAssets,
     });
   }
   return timeline;

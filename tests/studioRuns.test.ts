@@ -4,6 +4,7 @@ import { getStudioRunDetail, listStudioRuns } from "../apps/studio/src/lib/runSu
 import { artifactPath } from "../src/core/artifacts";
 import { createRun, loadRun, saveRun } from "../src/core/runStore";
 import { useTempProject } from "./helpers";
+import { createRenderedStudioRunFixture, writeEvidence, writeReadiness } from "./studioRunFixtures";
 
 describe("Studio read-only run summaries", () => {
   useTempProject();
@@ -30,7 +31,10 @@ describe("Studio read-only run summaries", () => {
     });
     await writeEvidence(first.runId, {
       nextRecommendedCommand: "pnpm producer approve render --run <run_id>",
-      blockedActions: ["Public/scheduled publish disabled by default."],
+      blockedActions: [
+        "Render plan not generated; run pnpm producer render-plan --run <run_id> before TTS/render work.",
+        "Public/scheduled publish disabled by default.",
+      ],
     });
     await writeReadiness(first.runId, true);
     const second = await createRun();
@@ -39,13 +43,18 @@ describe("Studio read-only run summaries", () => {
 
     expect(summaries.map((run) => run.runId)).toEqual([second.runId, first.runId]);
     expect(summaries[0]).toMatchObject({
-      nextRecommendedCommand: "pnpm producer ideas",
+      nextRecommendedCommand: `pnpm producer evidence --run ${second.runId}`,
       state: "NEW",
     });
     expect(summaries[1]).toMatchObject({
       approvalCount: 1,
       artifactCount: 2,
-      nextRecommendedCommand: "pnpm producer approve render --run <run_id>",
+      blockedActionCount: 2,
+      blockedActions: [
+        `Render plan not generated; run pnpm producer render-plan --run ${first.runId} before TTS/render work.`,
+        "Public/scheduled publish disabled by default.",
+      ],
+      nextRecommendedCommand: `pnpm producer approve render --run ${first.runId}`,
       readinessPassed: true,
       state: "READY_FOR_MANUAL_PRODUCTION",
       warningCount: 1,
@@ -54,66 +63,12 @@ describe("Studio read-only run summaries", () => {
   });
 
   it("reads run detail with reviewable evidence and artifact flags", async () => {
-    const run = await createRun();
-    await mkdir(`runs/${run.runId}/production/render`, { recursive: true });
-    await writeFile(
-      artifactPath(run.runId, "script.md"),
-      "# Bölüm Taslağı\n\nİlk sahne hazır.",
-      "utf8",
-    );
-    await writeFile(
-      artifactPath(run.runId, "production/render_plan.json"),
-      JSON.stringify({ scenes: [{ id: "scene-1", background: "assets/backgrounds/nebula.png" }] }),
-      "utf8",
-    );
-    await writeFile(
-      artifactPath(run.runId, "production/asset_provenance.json"),
-      JSON.stringify({
-        assets: [{ path: "assets/backgrounds/nebula.png", role: "background" }],
-      }),
-      "utf8",
-    );
-    await mkdir(`runs/${run.runId}/production/audio`, { recursive: true });
-    await writeFile(
-      artifactPath(run.runId, "production/audio/voiceover_review.md"),
-      "# Voiceover Review\n\nConfirm pacing before render approval.",
-      "utf8",
-    );
-    await writeFile(
-      artifactPath(run.runId, "production/render/draft.mp4"),
-      Buffer.from([0, 1, 2, 3]),
-    );
-    await writeFile(
-      artifactPath(run.runId, "production/render/draft_review.md"),
-      "# Draft Render Review\n\nUpload remains disabled.",
-      "utf8",
-    );
-    await saveRun({
-      ...run,
-      state: "RENDERED",
-      artifacts: [
-        "script.md",
-        "production/render_plan.json",
-        "production/asset_provenance.json",
-        "production/audio/voiceover_review.md",
-        "production/render/draft.mp4",
-        "production/render/render_manifest.json",
-        "production/render/draft_review.md",
-        "evidence_bundle.json",
-        "diagnostics/readiness.json",
-      ],
-    });
-    await writeEvidence(run.runId, {
-      currentState: "RENDERED",
-      draftRender: { status: "pass", path: "production/render/draft.mp4" },
-      nextRecommendedCommand: "Manual final draft review. Upload remains approval-gated.",
-    });
-    await writeReadiness(run.runId, true);
+    const runId = await createRenderedStudioRunFixture();
 
-    const detail = await getStudioRunDetail(run.runId);
+    const detail = await getStudioRunDetail(runId);
 
     expect(detail).toMatchObject({
-      runId: run.runId,
+      runId,
       state: "RENDERED",
       evidence: {
         currentState: "RENDERED",
@@ -121,6 +76,43 @@ describe("Studio read-only run summaries", () => {
       },
       readiness: { passed: true },
     });
+    expect((detail as { readinessChecks?: unknown })?.readinessChecks).toEqual([
+      {
+        message:
+          "production/render/draft.mp4 exists with 8s ffprobe-validated draft video (1280x720, audio stream present, voiceover local-piper production voice candidate).",
+        name: "draft render available",
+        status: "pass",
+      },
+      {
+        message: "Public/scheduled publish remains disabled by default.",
+        name: "public upload disabled without explicit config",
+        status: "pass",
+      },
+    ]);
+    expect(detail?.productionMedia).toEqual([
+      {
+        artifactPath: "production/render_plan.json",
+        detail: "11 assets, 3 artifacts",
+        evidenceKey: "renderPlan",
+        label: "Render plan",
+        status: "pass",
+      },
+      {
+        artifactPath: "production/audio/voiceover.wav",
+        detail: "8s, local-piper, production voice candidate, 42 source words",
+        evidenceKey: "voiceoverAudio",
+        label: "Voiceover audio",
+        status: "pass",
+      },
+      {
+        artifactPath: "production/render/draft.mp4",
+        detail:
+          "8s, intro -> scene -> outro, source frames intro:2/outro:2, voiceover local-piper production candidate, ffprobe 1280x720 audio",
+        evidenceKey: "draftRender",
+        label: "Draft render",
+        status: "pass",
+      },
+    ]);
     expect(detail?.artifacts).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -147,6 +139,16 @@ describe("Studio read-only run summaries", () => {
           preview: expect.stringContaining("assets/backgrounds/nebula.png"),
         }),
         expect.objectContaining({
+          path: "production/audio/voiceover.wav",
+          description: expect.stringContaining("Local TTS WAV"),
+          exists: true,
+          group: "Audio And Render",
+          kind: "binary",
+          operatorAction: expect.stringContaining("Listen locally outside Studio"),
+          preview: null,
+          sizeBytes: 2,
+        }),
+        expect.objectContaining({
           path: "production/audio/voiceover_review.md",
           exists: true,
           group: "Audio And Render",
@@ -163,6 +165,12 @@ describe("Studio read-only run summaries", () => {
           preview: expect.stringContaining("Upload remains disabled"),
         }),
         expect.objectContaining({
+          path: "production/render/render_manifest.json",
+          description: expect.stringContaining("ffprobe media evidence"),
+          group: "Audio And Render",
+          kind: "json",
+        }),
+        expect.objectContaining({
           path: "production/render/draft.mp4",
           exists: true,
           group: "Audio And Render",
@@ -174,7 +182,35 @@ describe("Studio read-only run summaries", () => {
         expect.objectContaining({ path: "evidence_bundle.json", exists: true }),
       ]),
     );
-    expect((await loadRun(run.runId)).state).toBe("RENDERED");
+    expect((await loadRun(runId)).state).toBe("RENDERED");
+  });
+
+  it("shows readiness remediation commands from CLI diagnostics", async () => {
+    const run = await createRun();
+    await saveRun({
+      ...run,
+      state: "PRODUCTION_PACKAGE_GENERATED",
+      artifacts: ["diagnostics/readiness.json"],
+    });
+    await writeReadiness(run.runId, false, [
+      {
+        message: "costs/estimate.json is missing.",
+        name: "budget not exceeded",
+        nextAction: `pnpm producer estimate --run ${run.runId}`,
+        status: "block",
+      },
+    ]);
+
+    const detail = await getStudioRunDetail(run.runId);
+
+    expect(detail?.readinessChecks).toEqual([
+      {
+        message: "costs/estimate.json is missing.",
+        name: "budget not exceeded",
+        nextAction: `pnpm producer estimate --run ${run.runId}`,
+        status: "block",
+      },
+    ]);
   });
 
   it("shows canonical early next actions before evidence exists", async () => {
@@ -213,23 +249,10 @@ describe("Studio read-only run summaries", () => {
           stage: "script",
         },
       ],
-      nextRecommendedCommand: "pnpm producer script --run <run_id>",
+      nextRecommendedCommand: `pnpm producer evidence --run ${run.runId}`,
       state: "IDEA_APPROVED",
     });
     expect(detail?.evidence).toBeNull();
     expect((await loadRun(run.runId)).state).toBe("IDEA_APPROVED");
   });
 });
-
-async function writeEvidence(runId: string, evidence: Record<string, unknown>): Promise<void> {
-  await writeFile(artifactPath(runId, "evidence_bundle.json"), JSON.stringify(evidence), "utf8");
-}
-
-async function writeReadiness(runId: string, passed: boolean): Promise<void> {
-  await mkdir(`runs/${runId}/diagnostics`, { recursive: true });
-  await writeFile(
-    artifactPath(runId, "diagnostics/readiness.json"),
-    JSON.stringify({ runId, passed, checks: [] }),
-    "utf8",
-  );
-}

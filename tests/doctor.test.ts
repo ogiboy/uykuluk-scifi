@@ -2,7 +2,12 @@ import { readFile, writeFile } from "node:fs/promises";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { defaultConfig } from "../src/config/config";
 import { listRuns } from "../src/core/runStore";
-import { doctorJsonPath, doctorMarkdownPath, runDoctor } from "../src/diagnostics/doctor";
+import {
+  doctorJsonPath,
+  doctorMarkdownPath,
+  formatDoctorConsole,
+  runDoctor,
+} from "../src/diagnostics/doctor";
 import { pathExists } from "../src/utils/fs";
 import { readJsonFile } from "../src/utils/json";
 import { useTempProject } from "./helpers";
@@ -52,8 +57,23 @@ describe("producer doctor", () => {
     expect(report.checks.find((check) => check.name === "LLM provider")).toMatchObject({
       status: "block",
       message: expect.stringContaining("Ollama unavailable at http://localhost:11434"),
+      nextAction:
+        "Start Ollama, install the configured model, or switch providers.llm.mode to mock before rerunning pnpm producer doctor.",
     });
     expect(await readJsonFile(doctorJsonPath())).toEqual(report);
+  });
+
+  it("surfaces diagnostic next actions in terminal output", async () => {
+    await useOllamaConfig();
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("ECONNREFUSED")));
+
+    const output = formatDoctorConsole(await runDoctor());
+
+    expect(output).toContain("Doctor blocked.");
+    expect(output).toContain("[block] LLM provider: Ollama unavailable at http://localhost:11434");
+    expect(output).toContain(
+      "Next action: Start Ollama, install the configured model, or switch providers.llm.mode to mock before rerunning pnpm producer doctor.",
+    );
   });
 
   it("blocks when the configured Ollama model is not installed", async () => {
@@ -152,6 +172,8 @@ describe("producer doctor", () => {
     expect(report.checks.find((check) => check.name === "publish defaults")).toMatchObject({
       status: "block",
       message: expect.stringContaining("Risky YouTube configuration"),
+      nextAction:
+        "Set providers.youtube.enabled, allowPrivateUpload, and allowPublicPublish to false unless a future upload/publish approval workflow is explicitly enabled.",
     });
   });
 });

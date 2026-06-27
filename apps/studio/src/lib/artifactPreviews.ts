@@ -21,16 +21,17 @@ type ReviewArtifactDefinition = {
   path: string;
 };
 
-const REVIEW_ARTIFACTS = parseArtifactTable(String.raw`
+const REVIEW_ARTIFACTS = parseArtifactTable(`
 script.md	Script draft	markdown	Script Review	Operator-readable episode script generated from the approved idea.	Review script warnings and approve by digest from the CLI.
 reviews/script_review.md	Script review	markdown	Script Review	Safety, quality, and approval guidance for the current script digest.	Resolve blockers or acknowledge non-blocking warnings before approval.
 production/production_package.md	Production package	markdown	Production Package	Voiceover, scenes, subtitles, popup cards, and YouTube metadata package.	Inspect package completeness before render planning.
 production/render_plan.json	Render plan	json	Render Planning	Deterministic intro/outro and scene-to-asset mapping for the local draft render.	Review bookend timing, scene timing, and asset choices before voice/render work.
 production/storyboard_contact_sheet.md	Storyboard contact sheet	markdown	Render Planning	Operator contact sheet summarizing visual rhythm and selected assets.	Use this as review evidence; it is not render approval.
 production/asset_provenance.json	Asset provenance	json	Render Planning	Exact committed asset paths and roles used by the render plan.	Confirm assets are tracked, licensed, and visually appropriate.
+production/audio/voiceover.wav	Voiceover audio	binary	Audio And Render	Local TTS WAV generated after readiness, script approval, and render-plan evidence.	Listen locally outside Studio; binary preview is metadata-only.
 production/audio/voiceover.meta.json	Voiceover metadata	json	Audio And Render	Local TTS metadata, source digest, duration, and render-plan binding.	Confirm voiceover source and duration before render approval.
 production/audio/voiceover_review.md	Voiceover review	markdown	Audio And Render	Operator-readable local TTS review checklist generated with the WAV.	Listen locally and confirm pacing/pronunciation before render approval.
-production/render/render_manifest.json	Render manifest	json	Audio And Render	Local FFmpeg draft-render manifest with input digests, intro-to-outro timeline, overlays, and review checklist.	Use with the MP4 for local final review; upload remains disabled.
+production/render/render_manifest.json	Render manifest	json	Audio And Render	Local FFmpeg draft-render manifest with input digests, voiceover classification, intro-to-outro timeline, overlays, ffprobe media evidence, and review checklist.	Use with the MP4 for local final review; upload remains disabled.
 production/render/draft_review.md	Draft render review	markdown	Audio And Render	Operator-readable final draft review checklist generated with the local MP4.	Review this before any future private upload approval; upload remains disabled.
 production/render/draft.mp4	Draft render video	binary	Audio And Render	Local MP4 review draft generated after exact render approval.	Review locally outside Studio; binary preview is metadata-only.
 evidence_bundle.json	Evidence bundle	json	Evidence And Readiness	Current run evidence, blocked actions, and next safe command.	Use evidence as the review handoff before any next CLI action.

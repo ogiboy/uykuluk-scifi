@@ -3,6 +3,7 @@ import {
   normalizeUnreleasedNotes,
   splitUnreleasedSection,
 } from "./changelogPolicy.js";
+import { isLegacyAllowed, isReleaseCommit } from "./releaseCommitFilters.js";
 
 export { changelogMarker, changelogReleaseSource } from "./changelogPolicy.js";
 
@@ -54,17 +55,6 @@ type BuildReleasePlanInput = {
 
 const conventionalSubjectPattern = /^([a-z]+)(?:\(([^)]+)\))?(!)?:\s+(\S.+)$/;
 
-const legacyNonConventionalSubjects = new Map([
-  [
-    "ec58978101438e9c02b548d92ac4d1a3e7aceadf",
-    "📝 Add docstrings to `fix/core-script-approval-integrity`",
-  ],
-  [
-    "88a2c3bb5744daaccdb46e115a2facc92bc14bbf",
-    "📝 Add docstrings to `fix/core-production-package-integrity`",
-  ],
-]);
-
 const sectionByType: Record<ReleaseCommitType, string> = {
   build: "Build",
   chore: "Chores",
@@ -98,13 +88,12 @@ export function parseConventionalSubject(commit: GitCommit): ParsedCommit | null
   };
 }
 
-export function isReleaseCommit(commit: GitCommit): boolean {
-  return commit.subject.startsWith("chore(release):");
-}
-export function isLegacyAllowed(commit: GitCommit): boolean {
-  return legacyNonConventionalSubjects.get(commit.hash) === commit.subject;
-}
-
+/**
+ * Determines whether a commit is a merge commit.
+ *
+ * @param commit - The commit to check
+ * @returns `true` if the commit has multiple parents or matches a merge commit subject, `false` otherwise
+ */
 export function isMergeCommit(commit: GitCommit): boolean {
   const subject = commit.subject;
   return (
@@ -115,7 +104,17 @@ export function isMergeCommit(commit: GitCommit): boolean {
   );
 }
 
+/**
+ * Builds the release plan from a commit range.
+ *
+ * The plan includes parsed release commits, ignored commits, invalid commits, the required version bump, and the next version when a release is needed.
+ *
+ * @param input - Release planning input
+ * @returns The computed release plan
+ */
 export function buildReleasePlan(input: BuildReleasePlanInput): ReleasePlan {
+  assertPackageVersionMatchesLatestTag(input.currentVersion, input.latestTag);
+
   const parsed: ParsedCommit[] = [];
   const ignoredCommits: GitCommit[] = [];
   const invalidCommits: GitCommit[] = [];
@@ -150,6 +149,32 @@ export function buildReleasePlan(input: BuildReleasePlanInput): ReleasePlan {
   };
 }
 
+/**
+ * Verifies that the package version matches the latest stable tag.
+ *
+ * @param currentVersion - The version from `package.json`
+ * @param latestTag - The latest stable tag, if available
+ * @throws Error when `latestTag` is present and its version does not match `currentVersion`
+ */
+function assertPackageVersionMatchesLatestTag(currentVersion: string, latestTag: string | null) {
+  if (!latestTag) {
+    return;
+  }
+  const tagVersion = latestTag.replace(/^v/, "");
+  if (currentVersion === tagVersion) {
+    return;
+  }
+  throw new Error(
+    `package.json version ${currentVersion} does not match latest stable tag ${latestTag}. Run the main release workflow or restore package.json before planning the next release.`,
+  );
+}
+
+/**
+ * Determines the highest version bump required by a set of commits.
+ *
+ * @param commits - Parsed commits to evaluate
+ * @returns `"major"` for any breaking change, `"minor"` for feature commits when no higher bump is needed, `"patch"` for other changes, or `"none"` when no release is required
+ */
 export function highestBump(commits: ParsedCommit[]): ReleasePlan["bump"] {
   let bump: ReleasePlan["bump"] = "none";
   for (const commit of commits) {

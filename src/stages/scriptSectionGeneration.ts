@@ -211,7 +211,7 @@ function withBlockerRetry<T extends object>(
   receipt: T,
   blockerRetry?: ScriptContentBlockerRetryEvidence,
 ): T {
-  return blockerRetry ? ({ ...receipt, blockerRetry } as T) : receipt;
+  return blockerRetry ? { ...receipt, blockerRetry } : receipt;
 }
 
 function sumOptionalNumbers(values: Array<number | undefined>): number | undefined {

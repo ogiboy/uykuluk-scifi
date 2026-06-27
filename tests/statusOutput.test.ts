@@ -4,6 +4,11 @@ import { artifactPath } from "../src/core/artifacts";
 import { createRun, loadRun, saveRun } from "../src/core/runStore";
 import { formatRunStatus, readRunStatus } from "../src/stages/status";
 import { useTempProject } from "./helpers";
+import {
+  blockedRenderedEvidence,
+  manualProductionEvidence,
+  passingRenderedEvidence,
+} from "./statusOutputEvidenceFixtures";
 
 describe("operator status output", () => {
   useTempProject();
@@ -30,10 +35,7 @@ describe("operator status output", () => {
     });
     await writeFile(
       artifactPath(run.runId, "evidence_bundle.json"),
-      JSON.stringify({
-        nextRecommendedCommand: "pnpm producer approve render --run <run_id>",
-        blockedActions: ["TTS disabled until configured and approved."],
-      }),
+      JSON.stringify(manualProductionEvidence(run.runId)),
       "utf8",
     );
 
@@ -45,8 +47,17 @@ describe("operator status output", () => {
     expect(output).toContain("Approvals: 1");
     expect(output).toContain("Warnings: 1");
     expect(output).toContain("Artifacts: 2");
-    expect(output).toContain("Blocked actions: 1");
-    expect(output).toContain("Next safe action: pnpm producer approve render --run <run_id>");
+    expect(output).toContain("Blocked actions: 2");
+    expect(output).toContain("Blocked action details:");
+    expect(output).toContain(
+      `- Render plan not generated; run pnpm producer render-plan --run ${run.runId} before TTS/render work.`,
+    );
+    expect(output).toContain("- TTS disabled until configured and approved.");
+    expect(output).toContain(`Next safe action: pnpm producer approve render --run ${run.runId}`);
+    expect(output).toContain("Production media:");
+    expect(output).toContain("- Render plan: pass");
+    expect(output).toContain("- Voiceover audio: missing");
+    expect(output).toContain("- Draft render: missing");
     expect(output).toContain("Recent artifacts:");
     expect(output).toContain("- evidence_bundle.json");
     expect((await loadRun(run.runId)).state).toBe("READY_FOR_MANUAL_PRODUCTION");
@@ -61,6 +72,67 @@ describe("operator status output", () => {
     expect(output).toContain("Evidence: missing");
   });
 
+  it("uses evidence statuses for production media when evidence is available", async () => {
+    const run = await createRun();
+    await saveRun({
+      ...run,
+      artifacts: [
+        "production/render_plan.json",
+        "production/audio/voiceover.wav",
+        "production/render/draft.mp4",
+        "evidence_bundle.json",
+      ],
+      state: "RENDERED",
+    });
+    await writeFile(
+      artifactPath(run.runId, "evidence_bundle.json"),
+      JSON.stringify(blockedRenderedEvidence(run.runId)),
+      "utf8",
+    );
+
+    const output = formatRunStatus(await readRunStatus(run.runId));
+
+    expect(output).toContain("Production media:");
+    expect(output).toContain("- Render plan: pass");
+    expect(output).toContain("- Voiceover audio: pass");
+    expect(output).toContain("- Draft render: block");
+    expect(output).toContain(
+      "Next safe action: Regenerate evidence; draft render artifacts are missing or blocked.",
+    );
+  });
+
+  it("includes production media evidence details when artifacts pass", async () => {
+    const run = await createRun();
+    await saveRun({
+      ...run,
+      artifacts: [
+        "production/render_plan.json",
+        "production/audio/voiceover.wav",
+        "production/render/draft.mp4",
+        "evidence_bundle.json",
+      ],
+      state: "RENDERED",
+    });
+    await writeFile(
+      artifactPath(run.runId, "evidence_bundle.json"),
+      JSON.stringify(passingRenderedEvidence(run.runId)),
+      "utf8",
+    );
+
+    const output = formatRunStatus(await readRunStatus(run.runId));
+
+    expect(output).toContain("- Render plan: pass (11 assets, 3 artifacts)");
+    expect(output).toContain(
+      "- Voiceover audio: pass (8s, local-piper, production voice candidate, 42 source words)",
+    );
+    expect(output).toContain(
+      "- Draft render: pass (8s, intro -> scene -> outro, source frames intro:2/outro:2, voiceover local-piper production candidate, ffprobe 1280x720 audio)",
+    );
+    expect(output).toContain(
+      "Next safe action: Manual final draft review. Upload remains approval-gated.",
+    );
+  });
+
   it("recommends idea approval before evidence exists", async () => {
     const run = await createRun();
     await saveRun({
@@ -72,7 +144,7 @@ describe("operator status output", () => {
     const output = formatRunStatus(await readRunStatus(run.runId));
 
     expect(output).toContain(
-      "Next safe action: pnpm producer approve idea --run <run_id> --idea <idea_id>",
+      `Next safe action: pnpm producer approve idea --run ${run.runId} --idea <idea_id>`,
     );
     expect(output).toContain("Evidence: missing");
   });
@@ -104,7 +176,7 @@ describe("operator status output", () => {
 
     const output = formatRunStatus(await readRunStatus(run.runId));
 
-    expect(output).toContain("Next safe action: pnpm producer script --run <run_id>");
+    expect(output).toContain(`Next safe action: pnpm producer script --run ${run.runId}`);
     expect(output).toContain("Diagnostics:");
     expect(output).toContain(
       "- diagnostics/script_generation_failure.json [script]: Invalid script continuation chunk 1 provider response: continuation has no complete sentence.",

@@ -68,7 +68,8 @@ agent-tracking state only; runtime code must not require it.
 ## What Exists
 
 - TypeScript CLI workflow under `src/`.
-- Basic Next.js App Router Studio under `apps/studio/` with read-only run index/detail routes.
+- Basic Next.js App Router Studio under `apps/studio/` with read-only run index/detail, visual asset
+  inventory, mutation-service status, and manual analytics feedback routes.
 - Studio foundation with Tailwind CSS v4, shadcn-style primitives, Radix UI, lucide icons, GSAP, and
   `next/font`.
 - Mock-first provider layer with Ollama adapter scaffold.
@@ -83,13 +84,23 @@ agent-tracking state only; runtime code must not require it.
   timeout/unknown outcomes, cost ledger, content/clickbait review, full asset readiness, and
   evidence bundles.
 - Render Plan + Contact Sheet MVP that maps generated scenes to tracked visual assets and records
-  per-run asset provenance.
-- Disabled-by-default local voiceover generation with deterministic reference WAV output, operator
-  review Markdown, and an optional Piper binary/model-path adapter.
-- Approval-gated local FFmpeg draft render that writes a review MP4, manifest, and operator review
-  Markdown from the current render plan, intro/outro source cards, scene-timed background plates,
-  voiceover audio, subtitles, lower-third, popup, waveform, and watermark overlays.
-- Manual analytics import/report commands for operator-provided CSV/JSON performance exports.
+  per-run asset provenance, including committed intro/outro source-frame sequences when present.
+- Disabled-by-default local voiceover generation with deterministic reference WAV output,
+  production-readiness warnings, operator review Markdown, and an optional Piper binary/model-path
+  adapter.
+- Approval-gated local FFmpeg draft render that writes a review MP4, manifest, operator review
+  Markdown, and `ffprobe` media-validation evidence from the current render plan, intro/outro source
+  cards or source-frame sequences, scene-timed background plates, voiceover audio, subtitles,
+  lower-third, popup, waveform, watermark overlays, source-frame counts, and voiceover
+  mode/quality/candidate classification surfaced in evidence/readiness summaries.
+- Manual analytics import/report commands for operator-provided CSV/JSON performance exports, plus a
+  read-only Studio view over the ignored local analytics artifacts and import data-quality summary.
+- Typed Studio route-security contract covering current read-only routes and disabled future action
+  routes.
+- Typed Studio mutation service contracts for future approval/upload/publish actions, including
+  request validation and CLI/core binding metadata, without enabling web mutations.
+- Read-only Studio home visibility for disabled future action routes, CLI-ready approval contracts,
+  and upload/publish risk boundaries.
 - Disabled private upload and public/scheduled publish placeholders.
 - UykulukSciFi visual assets under `assets/`.
 - `.ai/` operating contract for agents, workflows, design, QA, security, and roadmap state.
@@ -148,9 +159,16 @@ agent-tracking state only; runtime code must not require it.
 - Script review and approval are bound to the exact `script.md` SHA-256 digest.
 - Script approval requires `--acknowledge-warnings` when the review contains non-blocking warnings.
 - Script review Markdown shows the next safe approval command or blocker remediation guidance.
-- Evidence next-command guidance reflects script review blockers and warning acknowledgement needs.
-- `producer status` shows an operator-readable run summary with current state, counts, evidence
-  availability, recent artifacts, and next safe action; use `--json` for the raw persisted state.
+- Evidence next-command guidance reflects script review blockers and warning acknowledgement needs;
+  the operator Markdown renders the current run id while JSON keeps portable command templates.
+- `producer status` shows an operator-readable run summary with current state, counts, approval
+  ledger entries, warning details, evidence availability, readiness summary/attention checks,
+  blocked-action details, production media evidence details, recent artifacts, and a concrete next
+  safe action with the current run id filled in. Malformed or stale evidence points back to
+  `producer evidence --run <run_id>`. Missing, malformed, or stale evidence labels production media
+  rows as artifact-record fallback until evidence is regenerated, while missing, malformed, or stale
+  readiness diagnostics point back to `producer readiness --run <run_id>`; use `--json` for the raw
+  persisted state.
 - Script edits use an attributable revision command with before/after snapshots; reviewed or
   approved scripts return to `SCRIPT_GENERATED` and require review/approval again.
 - Production packaging requires explicit script approval for the unchanged reviewed content.
@@ -184,15 +202,24 @@ agent-tracking state only; runtime code must not require it.
 - Successful readiness diagnostics and evidence reflect the final transitioned run state.
 - TTS is disabled by default and only runs after readiness with explicit local configuration, script
   approval, production-package integrity, and render-plan evidence.
-  `production/audio/voiceover_review.md` gives the operator the local audio review checklist; audio
-  file existence never grants render approval.
-- Draft render runs only after explicit render approval for the exact current render-plan and
-  voiceover digests. The manifest records the intro-to-outro timeline, composed overlay roles, and
-  placements used by FFmpeg; `production/render/draft_review.md` gives the operator the final local
-  review checklist. Render output is local review media, not upload or publish authority.
+  `production/audio/voiceover_review.md` gives the operator the local audio review checklist,
+  required decision boundary, and next safe commands; audio file existence never grants render
+  approval. Evidence, readiness, and status label deterministic-local WAVs as timing/reference
+  artifacts until reviewed local Piper audio exists, and next-action guidance calls out reference
+  audio before suggesting render approval for a local timing draft.
+- Draft render runs only after explicit render approval for the exact current render-plan digest,
+  voiceover digest, and voiceover mode/quality/candidate classification. The manifest records those
+  input classifications, the intro-to-outro timeline, composed overlay roles, intro/outro
+  source-frame counts when available, placements used by FFmpeg, and `ffprobe`-validated media
+  duration, video resolution, and audio stream evidence; `production/render/draft_review.md` labels
+  deterministic audio renders as local timing drafts and gives the operator the final local review
+  checklist and blocked-action boundary. Render output is local review media, not upload or publish
+  authority.
 - Upload and publish remain intentionally blocked scaffolds.
 - Upload and public/scheduled publish require future explicit config and separate approval gates.
 - Studio must call typed local service contracts; it must not duplicate workflow state.
+- Studio mutation service contracts exist for future guarded actions, but no Studio action route is
+  enabled yet.
 
 Paid generation providers are not implemented. `producer approve cost` approves one exact future
 paid-production quote; it does not authorize or execute spending. The internal reservation and
@@ -234,6 +261,10 @@ pnpm producer approve render --run <run_id>
 pnpm producer render --run <run_id>
 ```
 
+Blocked readiness checks print and persist next-action guidance for common operator steps such as
+generating the render plan, cost estimate, local voiceover, render approval, local draft render,
+exact quote approval, or refreshed evidence bundle.
+
 Inspection:
 
 ```bash
@@ -253,8 +284,17 @@ Analytics imports accept operator-provided CSV or JSON records with fields such 
 `video_id`, `title`, `published_at`, `impressions`, `views`, `ctr`, `avg_view_duration_seconds`,
 `avg_percentage_viewed`, `subscribers_gained`, `likes`, `comments`, and `notes`. The report includes
 overall metrics, top videos, run-linked summaries, unmapped record counts, and operator review
-prompts. The importer writes ignored local artifacts under `analytics/`; it does not call YouTube
-APIs, upload media, publish content, or claim causality from performance changes.
+prompts, including non-causal repeat / avoid-without-revision / test-next recommendations. The
+recommendations include simple confidence/missingness framing based on the fields present in the
+import. The report also prints import data-quality counts for confidence levels and missing run
+links, views, impressions, CTR, or retention fields. The importer writes ignored local artifacts
+under `analytics/`; Studio can display the same read-only import data-quality summary at
+`/analytics`. Neither path calls YouTube APIs, uploads media, publishes content, mutates workflow
+state, or claims causality from performance changes.
+
+`producer analytics report` refreshes `analytics/performance_report.md` from the saved local dataset
+before printing it. Studio marks the report preview as missing, stale, or current by checking it
+against the dataset timestamp and source digest.
 
 Do not edit `runs/<run_id>/script.md` directly. Use `producer revise script` before production
 packaging. Revisions are blocked after the production package exists. Each revision stores the old
@@ -280,20 +320,28 @@ pnpm studio:build
 Current Studio scope:
 
 - production desk shell;
-- read-only `/runs` index over persisted local run state;
+- read-only `/runs` index over persisted local run state with approval/warning/artifact counts,
+  readiness/evidence status, stale or invalid artifact remediation, and next safe action visibility;
 - read-only `/runs/<run_id>` detail view with next action, readiness status, and review artifact
-  availability;
+  availability plus approval ledger entries, warning lists, production media evidence details,
+  readiness check messages, and readiness next-action commands from CLI/core artifacts. Malformed or
+  stale evidence artifacts stay read-only, are not used as proof for blocked actions, media
+  readiness, or next-action guidance, and point back to the CLI evidence command; media rows fall
+  back to persisted artifact-record visibility until evidence is current. Missing, malformed, or
+  stale readiness artifacts stay read-only and point back to the CLI readiness command;
 - read-only artifact preview excerpts for scripts, reviews, production packages, render plans,
   contact sheets, asset provenance, evidence, readiness, voiceover metadata, and render manifests,
   grouped by operator review phase, with binary media limited to metadata;
 - run/workflow command overview;
-- current asset inventory summary;
+- current asset inventory summary and read-only `/assets` detail page backed by configured asset
+  guard checks;
 - Radix module tabs for planned run, prompt, asset, and safety surfaces;
 - type-safe `next-intl` request/provider foundation for English and Turkish locales;
 - visible reminder that CLI/core remains the workflow source of truth.
 
-Next Studio work should refine artifact previews, add shared read/write service contracts, and
-define route security requirements before any mutating route handlers.
+Next Studio work should keep artifact and asset previews aligned with new production artifacts, add
+shared read/write service contracts, and define route security requirements before any mutating
+route handlers.
 
 ## Visual Assets
 
@@ -411,19 +459,23 @@ pnpm tts:piper:setup
 ```
 
 `deterministic-local` writes a reference WAV for timing and pipeline validation; it is not a
-production-quality voice. `pnpm tts:piper:setup` downloads the default pinned Turkish
-`speaches-ai/piper-tr_TR-fahrettin-medium` model into ignored `models/` and prints the matching
-ignored `producer.config.json` override. The helper keeps Hugging Face `config.json` and also writes
-the Piper-compatible `model.onnx.json` alias. `local-piper` requires a local `piper` binary and
-ignored model files configured with `piperModelPath` and `piperConfigPath`. Do not commit downloaded
-voice models or generated audio. `producer voice` also writes `production/audio/voiceover_review.md`
-so the operator can check timing, pacing, pronunciation, and source binding before render approval.
+production-quality voice. Evidence/readiness/status keep this distinction visible and add a
+production-voice candidate warning until reviewed local Piper audio exists. `pnpm tts:piper:setup`
+downloads the default pinned Turkish `speaches-ai/piper-tr_TR-fahrettin-medium` model into ignored
+`models/` and prints the matching ignored `producer.config.json` override. The helper keeps Hugging
+Face `config.json` and also writes the Piper-compatible `model.onnx.json` alias. `local-piper`
+requires a local `piper` binary and ignored model files configured with `piperModelPath` and
+`piperConfigPath`. Local Piper voiceover metadata and review Markdown record the model/config
+SHA-256 digests used for the WAV. Do not commit downloaded voice models or generated audio.
+`producer voice` also writes `production/audio/voiceover_review.md` so the operator can check
+timing, pacing, pronunciation, source binding, and provider provenance before render approval.
 
 `producer render` requires `ffmpeg` on `PATH` unless called through a test harness with an explicit
 binary. The draft render is a local review artifact and may be regenerated after approval; its
-manifest records intro/outro source-card segments, scene timing, and overlay roles, while
-`production/render/draft_review.md` summarizes the final operator checklist. It does not upload,
-schedule, or publish anything.
+manifest records intro/outro source-card segments, scene timing, overlay roles, and the voiceover
+mode/quality/candidate classification bound to the approval. `production/render/draft_review.md`
+summarizes the final operator checklist and labels deterministic-reference audio renders as local
+timing drafts. It does not upload, schedule, or publish anything.
 
 `thinkingMode` can be `default`, `think`, or `no_think`. Token caps are sent to Ollama as
 `num_predict` so local generation cannot run unbounded. Script generation splits the approved idea
@@ -439,10 +491,10 @@ failure diagnostic summaries so the next blocker is visible without opening JSON
 
 Run `pnpm producer doctor` before starting production work. Mock mode passes without network access.
 Ollama mode checks `/api/tags` with a bounded timeout and blocks when the server is unavailable or
-the configured model is not installed. TTS diagnostics include next-action guidance for disabled
-TTS, deterministic reference audio, and local Piper setup/remediation. The command writes ignored
-local evidence to `diagnostics/doctor.json` and `diagnostics/doctor.md`; it does not create a run or
-grant approval.
+the configured model is not installed. Provider, TTS, and publish-default blockers print next-action
+guidance and persist the same guidance so the operator can repair local config without treating
+unsafe defaults as approval. The command writes ignored local evidence to `diagnostics/doctor.json`
+and `diagnostics/doctor.md`; it does not create a run or grant approval.
 
 Tracked runtime prompt defaults:
 
@@ -503,6 +555,9 @@ operator data.
 - Pushes to `main` run the release workflow. When releaseable commits exist, it updates
   `package.json`, moves `CHANGELOG.md` Unreleased notes into a versioned section, creates
   `chore(release): vX.Y.Z`, and tags `vX.Y.Z`.
+- Release workflow contract tests keep the main-only bot guard, high-severity dependency audit,
+  release validation, `version:plan`, `release:apply`, changelog mutation, and atomic tag push wired
+  together.
 - The release publish step refreshes `origin/main` before planning and retries atomic push if main
   advances while earlier release jobs are running.
 - Release phase `0.1.x` covers CLI MVP hardening, Studio foundation, browser QA, docs, and tooling.

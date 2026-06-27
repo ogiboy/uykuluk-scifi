@@ -9,7 +9,63 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Features
+
+- share manual analytics data-quality summaries between CLI reports and Studio overview
+- show approval ledger entries and warning details in CLI status output
+- record local Piper model and config provenance in voiceover evidence and review artifacts
+- show approval ledger entries and warnings in Studio run detail
+- show approval, warning, and artifact counts in the Studio run index
+- show readiness remediation in the Studio run index
+- show evidence status in the Studio run index
+- show readiness check messages in Studio run detail
+- show production media evidence details in Studio run detail
+- show production media evidence details in operator status output
+- add an operator-readable production media summary to evidence Markdown
+- summarize draft-render source-frame usage in evidence and readiness output
+- report ffprobe-validated draft render media details in readiness output
+- show voiceover WAV and ffprobe render evidence in Studio read-only artifact previews
+- show render plan, voiceover, and draft render status in the CLI run status summary
+- add a read-only Studio visual asset inventory page backed by configured asset guard checks
+- validate local draft renders with `ffprobe` media evidence before recording render completion
+- add a read-only Studio analytics feedback page for local manual analytics artifacts, including
+  imported totals, mapped/unmapped run visibility, top videos, report preview, and safe next action
+  guidance
+- add non-causal repeat / avoid-without-revision / test-next recommendations in the local manual
+  analytics report, with simple confidence/missingness framing for imported performance fields
+- add import data-quality summary on the read-only Studio analytics page
+- add analytics report refresh and Studio stale/missing/current report preview status
+- add typed Studio route-security contract and negative tests for read-only pages plus disabled
+  future action routes
+- add shared Studio mutation service contract foundations for future guarded approval/upload/publish
+  actions without enabling web mutations
+- add read-only Studio mutation-service status panel showing disabled future actions and
+  route-security findings
+
+### Fixes
+
+- harden release workflow contract tests for main-only version, changelog, and tag automation
+- label CLI status production media rows as artifact-record fallback until evidence is current
+- keep Studio asset inventory directory definitions precise for static analysis
+- avoid treating unavailable Studio evidence as no blocked actions or media proof
+- mark malformed or stale Studio evidence bundles with a regeneration command
+- mark malformed or stale CLI status evidence with a regeneration command
+- mark missing, malformed, or stale Studio readiness diagnostics with a regeneration command
+- mark missing, malformed, or stale CLI status readiness diagnostics with a regeneration command
+- show readiness check summaries and next actions in CLI status output
+- show blocked-action evidence details in CLI status and Studio run detail
+- show concrete run ids in evidence Markdown next-action commands
+- show concrete run ids in CLI status and Studio next-action commands
+- add readiness next-action guidance for render planning, voiceover, render approval, and local
+  draft render
+- show readiness next-action commands in Studio run detail
+- print `producer readiness` next-action guidance in terminal and Markdown output
+- print `producer doctor` next-action guidance in terminal output
+- fail release planning when `package.json` drifts from the latest stable tag
+- add next-action guidance for blocked Ollama and publish-default doctor diagnostics
+- clear Sonar quality-gate findings for local media evidence changes
+- make usage smoke prove the safe local render-plan, voiceover, and draft-render loop
+- suppress the known Studio local asset-inventory Turbopack tracing warning
 
 ## v0.7.2 (2026-06-25)
 
@@ -122,6 +178,7 @@ _No unreleased changes yet._
   render media limited to metadata.
 - `producer analytics import` and `producer analytics report` for local operator-provided CSV/JSON
   performance feedback, with ignored dataset/report artifacts and non-causal summary guidance.
+- Render-plan and FFmpeg draft-render provenance for committed intro/outro source-frame sequences.
 - Basic type-safe `next-intl` foundation for English and Turkish Studio locales.
 - Unit and browser coverage for locale normalization and cookie-based document language.
 - Typed runtime loading for tracked idea, scriptwriter, and production-package prompt defaults.

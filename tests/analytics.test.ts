@@ -1,6 +1,11 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
-import { importAnalyticsFile, loadAnalyticsDataset } from "../src/analytics/import";
+import {
+  importAnalyticsFile,
+  loadAnalyticsDataset,
+  refreshSavedAnalyticsReport,
+} from "../src/analytics/import";
+import { renderAnalyticsRecommendations } from "../src/analytics/recommendations";
 import { useTempProject } from "./helpers";
 
 describe("manual analytics import", () => {
@@ -51,7 +56,32 @@ describe("manual analytics import", () => {
     expect(report).toContain("Mapped runs");
     expect(report).toContain("Unmapped records");
     expect(report).toContain("| run_20260624010101_abcd12 | 2 | 1,450 |");
+    expect(report).toContain("Import Data Quality");
+    expect(report).toContain("| High confidence records | 2 |");
+    expect(report).toContain("| Medium confidence records | 1 |");
+    expect(report).toContain("| Missing run links | 1 |");
+    expect(report).toContain("| Missing CTR | 0 |");
+    expect(report).toContain("| Missing retention | 0 |");
+    expect(report).toContain(
+      "Next data-quality action: Add run_id values before comparing imported videos back to producer runs.",
+    );
+    expect(report).toContain("Non-Causal Recommendations");
+    expect(report).toContain("Repeat candidates");
+    expect(report).toContain(
+      "- Ay Üssünde İlk Temas (run_20260624010101_abcd12): strong CTR, strong retention, subscriber gain (confidence: high; run-linked with views, impressions, CTR, and retention).",
+    );
+    expect(report).toContain("Avoid without revision");
+    expect(report).not.toContain(
+      "- Kayıp Sonda (run_20260624010101_abcd12): weak CTR, weak retention (confidence: high; run-linked with views, impressions, CTR, and retention).",
+    );
+    expect(report).toContain(
+      "- Haritasız Uydu (unmapped): weak CTR, weak retention (confidence: medium; missing run link).",
+    );
+    expect(report).toContain("Test next");
+    expect(report).toContain("one topic/title/thumbnail hypothesis");
+    expect(report).toContain("Missing impressions, retention, or run links reduce confidence");
     expect(report).toContain("No causal claims are made from this import.");
+    expect(report).toContain("not proof that one variable caused the result");
   });
 
   it("imports JSON records and rejects malformed rows without writing artifacts", async () => {
@@ -85,5 +115,54 @@ describe("manual analytics import", () => {
       videoId: "yt_003",
       ctr: 0.061,
     });
+  });
+
+  it("refreshes the local report artifact from the saved dataset", async () => {
+    await writeFile(
+      "performance.json",
+      JSON.stringify({
+        records: [
+          {
+            runId: "run_20260624010303_abcd14",
+            videoId: "yt_003",
+            title: "Sessiz Gezegen",
+            views: 800,
+            impressions: 9000,
+            ctr: 0.061,
+            averagePercentageViewed: 0.38,
+          },
+        ],
+      }),
+      "utf8",
+    );
+
+    await importAnalyticsFile("performance.json");
+    await writeFile("analytics/performance_report.md", "# stale report\n", "utf8");
+
+    const result = await refreshSavedAnalyticsReport();
+    const report = await readFile("analytics/performance_report.md", "utf8");
+    const dataset = await loadAnalyticsDataset();
+
+    expect(result.reportPath).toBe("analytics/performance_report.md");
+    expect(result.report).toBe(report);
+    expect(report).toContain(dataset.generatedAt);
+    expect(report).toContain(dataset.source.sha256);
+    expect(report).toContain("Non-Causal Recommendations");
+  });
+
+  it("does not classify mixed-signal records as both repeat and avoid", () => {
+    const recommendations = renderAnalyticsRecommendations([
+      {
+        averagePercentageViewed: 0.18,
+        ctr: 0.071,
+        runId: "run_20260624010303_abcd14",
+        title: "Kararsız Sinyal",
+        videoId: "yt_mixed",
+      },
+    ]).join("\n");
+
+    expect(recommendations).not.toContain("Kararsız Sinyal");
+    expect(recommendations).toContain("No repeat candidate yet.");
+    expect(recommendations).toContain("No avoid candidate yet.");
   });
 });

@@ -6,13 +6,14 @@ import { registerRevisionCommands } from "./cli/revisionCommands.js";
 import { initProject } from "./config/config.js";
 import { SafeExitError } from "./core/errors.js";
 import { listRuns, loadRun } from "./core/runStore.js";
-import { runDoctor } from "./diagnostics/doctor.js";
+import { formatDoctorConsole, runDoctor } from "./diagnostics/doctor.js";
 import { publishSchedulePlaceholder, uploadPrivatePlaceholder } from "./stages/disabled.js";
 import { estimateCost } from "./stages/estimate.js";
 import { generateEvidenceBundle } from "./stages/evidence.js";
 import { runIdeas } from "./stages/ideas.js";
 import { generateProductionPackage } from "./stages/productionPackage.js";
 import { runReadiness } from "./stages/readiness.js";
+import { formatReadinessConsole } from "./stages/readinessConsole.js";
 import { renderDraft } from "./stages/render.js";
 import { generateRenderPlan } from "./stages/renderPlan.js";
 import { reviewScript } from "./stages/reviewScript.js";
@@ -54,10 +55,7 @@ program
   .action(
     wrap(async () => {
       const report = await runDoctor();
-      console.log(`Doctor ${report.passed ? "passed" : "blocked"}.`);
-      for (const check of report.checks) {
-        console.log(`[${check.status}] ${check.name}: ${check.message}`);
-      }
+      console.log(formatDoctorConsole(report));
       if (!report.passed) {
         throw new SafeExitError("Doctor blocked.", 1);
       }
@@ -143,10 +141,7 @@ program
   .action(
     wrap(async (options: { run: string }) => {
       const result = await runReadiness(options.run);
-      console.log(`Readiness ${result.passed ? "passed" : "blocked"}.`);
-      for (const check of result.checks) {
-        console.log(`[${check.status}] ${check.name}: ${check.message}`);
-      }
+      console.log(formatReadinessConsole(options.run, result));
       if (!result.passed) {
         throw new SafeExitError("Readiness blocked.", 1);
       }
