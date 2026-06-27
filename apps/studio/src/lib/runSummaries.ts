@@ -14,6 +14,7 @@ import {
   type EvidenceStatus,
   type ProductionMediaStatus,
 } from "../../../../src/stages/statusMedia";
+import { evidenceBlockedActionMessages } from "../../../../src/stages/statusBlockedActions";
 import { readReviewArtifactPreviews, type StudioArtifactPreview } from "./artifactPreviews";
 import { projectRoot } from "./projectRoot";
 import {
@@ -45,6 +46,7 @@ export type StudioRunState =
 export type StudioRunSummary = {
   approvalCount: number;
   artifactCount: number;
+  blockedActions: string[];
   blockedActionCount: number;
   createdAt: string;
   nextRecommendedCommand: string | null;
@@ -137,12 +139,12 @@ function summarizeRun(
   readiness: ReadinessSnapshot | null,
 ): StudioRunSummary {
   const runId = record.runId ?? "unknown";
+  const blockedActions = evidenceBlockedActionMessages(evidence, runId);
   return {
     approvalCount: record.approvals?.length ?? 0,
     artifactCount: record.artifacts?.length ?? 0,
-    blockedActionCount: Array.isArray(evidence?.blockedActions)
-      ? evidence.blockedActions.length
-      : 0,
+    blockedActionCount: blockedActions.length,
+    blockedActions,
     createdAt: record.createdAt ?? "",
     nextRecommendedCommand:
       typeof evidence?.nextRecommendedCommand === "string"

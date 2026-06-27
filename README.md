@@ -161,8 +161,9 @@ agent-tracking state only; runtime code must not require it.
 - Evidence next-command guidance reflects script review blockers and warning acknowledgement needs;
   the operator Markdown renders the current run id while JSON keeps portable command templates.
 - `producer status` shows an operator-readable run summary with current state, counts, evidence
-  availability, production media evidence details, recent artifacts, and a concrete next safe action
-  with the current run id filled in; use `--json` for the raw persisted state.
+  availability, blocked-action details, production media evidence details, recent artifacts, and a
+  concrete next safe action with the current run id filled in; use `--json` for the raw persisted
+  state.
 - Script edits use an attributable revision command with before/after snapshots; reviewed or
   approved scripts return to `SCRIPT_GENERATED` and require review/approval again.
 - Production packaging requires explicit script approval for the unchanged reviewed content.

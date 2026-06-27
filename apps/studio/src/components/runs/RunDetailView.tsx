@@ -39,6 +39,23 @@ export function RunDetailView({ run }: Readonly<{ run: StudioRunDetail }>) {
         </p>
       </section>
 
+      <section className='panel' aria-labelledby='blocked-actions-heading'>
+        <h2 id='blocked-actions-heading'>Blocked Actions</h2>
+        <p>
+          Read-only evidence from CLI/core safeguards. These are not approvals and do not unblock
+          upload, render, or publish.
+        </p>
+        {run.blockedActions.length > 0 ? (
+          <ul>
+            {run.blockedActions.map((action) => (
+              <li key={action}>{action}</li>
+            ))}
+          </ul>
+        ) : (
+          <p>No blocked actions recorded in the latest evidence bundle.</p>
+        )}
+      </section>
+
       <section className='panel' aria-labelledby='diagnostics-heading'>
         <h2 id='diagnostics-heading'>Diagnostics</h2>
         {run.diagnostics.length > 0 ? (

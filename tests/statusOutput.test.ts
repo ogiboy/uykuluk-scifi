@@ -32,7 +32,10 @@ describe("operator status output", () => {
       artifactPath(run.runId, "evidence_bundle.json"),
       JSON.stringify({
         nextRecommendedCommand: "pnpm producer approve render --run <run_id>",
-        blockedActions: ["TTS disabled until configured and approved."],
+        blockedActions: [
+          "Render plan not generated; run pnpm producer render-plan --run <run_id> before TTS/render work.",
+          "TTS disabled until configured and approved.",
+        ],
       }),
       "utf8",
     );
@@ -45,7 +48,12 @@ describe("operator status output", () => {
     expect(output).toContain("Approvals: 1");
     expect(output).toContain("Warnings: 1");
     expect(output).toContain("Artifacts: 2");
-    expect(output).toContain("Blocked actions: 1");
+    expect(output).toContain("Blocked actions: 2");
+    expect(output).toContain("Blocked action details:");
+    expect(output).toContain(
+      `- Render plan not generated; run pnpm producer render-plan --run ${run.runId} before TTS/render work.`,
+    );
+    expect(output).toContain("- TTS disabled until configured and approved.");
     expect(output).toContain(`Next safe action: pnpm producer approve render --run ${run.runId}`);
     expect(output).toContain("Production media:");
     expect(output).toContain("- Render plan: recorded");

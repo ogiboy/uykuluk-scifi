@@ -31,7 +31,10 @@ describe("Studio read-only run summaries", () => {
     });
     await writeEvidence(first.runId, {
       nextRecommendedCommand: "pnpm producer approve render --run <run_id>",
-      blockedActions: ["Public/scheduled publish disabled by default."],
+      blockedActions: [
+        "Render plan not generated; run pnpm producer render-plan --run <run_id> before TTS/render work.",
+        "Public/scheduled publish disabled by default.",
+      ],
     });
     await writeReadiness(first.runId, true);
     const second = await createRun();
@@ -46,6 +49,11 @@ describe("Studio read-only run summaries", () => {
     expect(summaries[1]).toMatchObject({
       approvalCount: 1,
       artifactCount: 2,
+      blockedActionCount: 2,
+      blockedActions: [
+        `Render plan not generated; run pnpm producer render-plan --run ${first.runId} before TTS/render work.`,
+        "Public/scheduled publish disabled by default.",
+      ],
       nextRecommendedCommand: `pnpm producer approve render --run ${first.runId}`,
       readinessPassed: true,
       state: "READY_FOR_MANUAL_PRODUCTION",

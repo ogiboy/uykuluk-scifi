@@ -12,6 +12,7 @@ import {
   type EvidenceStatus,
   type ProductionMediaStatus,
 } from "./statusMedia.js";
+import { evidenceBlockedActionMessages } from "./statusBlockedActions.js";
 
 type EvidenceReadResult =
   | { kind: "present"; evidence: EvidenceStatus }
@@ -21,6 +22,7 @@ type EvidenceReadResult =
 export type RunStatusSummary = {
   approvalCount: number;
   artifactCount: number;
+  blockedActions: string[];
   blockedActionCount: number | null;
   evidencePresent: boolean;
   mediaArtifacts: ProductionMediaStatus[];
@@ -38,12 +40,12 @@ export async function readRunStatus(runId: string): Promise<RunStatusSummary> {
     readRunDiagnosticSummaries(run.runId, run.artifacts),
   ]);
   const evidence = evidenceResult.kind === "present" ? evidenceResult.evidence : null;
+  const blockedActions = evidenceBlockedActionMessages(evidence, run.runId);
   return {
     approvalCount: run.approvals.length,
     artifactCount: run.artifacts.length,
-    blockedActionCount: Array.isArray(evidence?.blockedActions)
-      ? evidence.blockedActions.length
-      : null,
+    blockedActionCount: evidence ? blockedActions.length : null,
+    blockedActions,
     diagnostics,
     evidencePresent: Boolean(evidence),
     mediaArtifacts: productionMediaStatus(run, evidence),
@@ -65,6 +67,7 @@ export function formatRunStatus(status: RunStatusSummary): string {
     `Evidence: ${status.evidencePresent ? "available" : "missing"}`,
     `Blocked actions: ${status.blockedActionCount ?? "unknown"}`,
     `Next safe action: ${status.nextRecommendedCommand}`,
+    ...formatBlockedActions(status.blockedActions),
     ...formatDiagnostics(status.diagnostics),
     "",
     "Production media:",
@@ -75,6 +78,13 @@ export function formatRunStatus(status: RunStatusSummary): string {
       ? status.recentArtifacts.map((artifact) => `- ${artifact}`)
       : ["- none"]),
   ].join("\n");
+}
+
+function formatBlockedActions(blockedActions: readonly string[]): string[] {
+  if (blockedActions.length === 0) {
+    return [];
+  }
+  return ["", "Blocked action details:", ...blockedActions.map((item) => `- ${item}`)];
 }
 
 function formatDiagnostics(diagnostics: readonly RunDiagnosticSummary[]): string[] {
