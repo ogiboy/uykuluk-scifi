@@ -9,6 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
+_No unreleased changes yet._
+
+## v0.15.0 (2026-06-27)
+
 ### Features
 
 - show persisted producer doctor status on the Studio home page
