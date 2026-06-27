@@ -1,36 +1,15 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { loadConfig } from "../config/config.js";
-import { validateArtifactRelativePath } from "../core/artifactPaths.js";
 import { SafeExitError } from "../core/errors.js";
-import { PromptKey } from "./provenance.js";
+import { promptOverridePath } from "./catalog.js";
+import { PROMPT_TEMPLATE_DEFINITIONS, type PromptKey } from "./definitions.js";
 
 export type RenderedPrompt = {
   key: PromptKey;
   source: string;
   text: string;
 };
-
-const promptSources = {
-  ideas: {
-    path: "prompts/defaults/planner-task.md",
-    url: new URL("../../prompts/defaults/planner-task.md", import.meta.url),
-  },
-  script: {
-    path: "prompts/defaults/scriptwriter-task.md",
-    url: new URL("../../prompts/defaults/scriptwriter-task.md", import.meta.url),
-  },
-  "production-package": {
-    path: "prompts/defaults/production-package-task.md",
-    url: new URL("../../prompts/defaults/production-package-task.md", import.meta.url),
-  },
-} as const satisfies Record<PromptKey, { path: string; url: URL }>;
-
-const promptOverrideConfigKeys = {
-  ideas: "ideas",
-  script: "script",
-  "production-package": "productionPackage",
-} as const satisfies Record<PromptKey, "ideas" | "script" | "productionPackage">;
 
 /**
  * Renders the ideas prompt template.
@@ -108,35 +87,18 @@ async function readPromptTemplateSource(key: PromptKey): Promise<{
     return { path: overridePath, template };
   }
 
-  const source = promptSources[key];
+  const source = PROMPT_TEMPLATE_DEFINITIONS[key];
   try {
-    template = (await readFile(source.url, "utf8")).trim();
+    template = (await readFile(source.defaultUrl, "utf8")).trim();
   } catch (error) {
     throw new SafeExitError(
-      `Runtime prompt default unavailable: ${source.path}: ${
+      `Runtime prompt default unavailable: ${source.defaultPath}: ${
         error instanceof Error ? error.message : String(error)
       }`,
     );
   }
   if (!template) {
-    throw new SafeExitError(`Runtime prompt default is empty: ${source.path}`);
+    throw new SafeExitError(`Runtime prompt default is empty: ${source.defaultPath}`);
   }
-  return { path: source.path, template };
-}
-
-function promptOverridePath(
-  key: PromptKey,
-  overrides: Partial<Record<"ideas" | "script" | "productionPackage", string>>,
-): string | undefined {
-  const configured = overrides[promptOverrideConfigKeys[key]];
-  if (!configured) {
-    return undefined;
-  }
-  const relativePath = validateArtifactRelativePath(configured);
-  if (!relativePath.startsWith("prompts/local/") || !relativePath.endsWith(".md")) {
-    throw new SafeExitError(
-      "Runtime prompt overrides must be Markdown files under prompts/local/.",
-    );
-  }
-  return relativePath;
+  return { path: source.defaultPath, template };
 }

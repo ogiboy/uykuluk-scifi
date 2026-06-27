@@ -306,6 +306,10 @@
   directories and committed render-support asset categories. It surfaces invalid producer config and
   missing guarded assets as operator warnings without approving assets, rendering media, or mutating
   run state.
+- Studio home has read-only runtime prompt inventory visibility for tracked `prompts/defaults/`
+  sources and configured ignored `prompts/local/*.md` overrides, including source paths, hashes,
+  warnings, and doctor remediation. It does not edit prompts, call providers, approve prompt
+  changes, or read `.ai/` as runtime state.
 - Studio has a typed route-security contract for current read-only pages and disabled future action
   routes. Tests assert that all current App Router pages are covered as read-only, no Studio
   `route.ts` handlers exist, disabled actions require shared CLI/core service contracts, CSRF
@@ -424,7 +428,8 @@ Corepack/PATH before treating failures as product failures.
 - Prompt editing UI is planned but not implemented.
 - Local prompt overrides are implemented as explicit ignored `prompts/local/*.md` paths configured
   in `producer.config.json` and recorded in prompt provenance. Prompt editing UI and prompt revision
-  history remain future work; tracked defaults stay read-only runtime inputs.
+  history remain future work; tracked defaults stay read-only runtime inputs, and Studio visibility
+  remains read-only.
 - Initial package artifact revision contracts are implemented for subtitles, scenes, popup-card
   package Markdown, and YouTube metadata. They are intentionally limited to
   `PRODUCTION_PACKAGE_GENERATED` before cost estimation or render work, refresh the

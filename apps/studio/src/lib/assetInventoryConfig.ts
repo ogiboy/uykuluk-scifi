@@ -51,7 +51,7 @@ async function fileExists(target: string): Promise<boolean> {
   }
 }
 
-function resolveProducerConfigPath(root: string): string {
+export function resolveProducerConfigPath(root: string): string {
   const configuredPath = process.env.PRODUCER_CONFIG ?? "producer.config.json";
   if (path.isAbsolute(configuredPath)) {
     return configuredPath;
