@@ -297,7 +297,9 @@ Manual analytics feedback:
 
 ```bash
 pnpm producer analytics import --file performance.csv
+pnpm producer analytics import --file performance.csv --json
 pnpm producer analytics report
+pnpm producer analytics report --json
 ```
 
 Analytics imports accept operator-provided CSV or JSON records with fields such as `run_id`,
