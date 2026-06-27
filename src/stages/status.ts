@@ -15,6 +15,7 @@ import {
   readStatusReadiness,
   type StatusReadinessSummary,
 } from "./statusReadiness.js";
+import { formatApprovalLedger, formatWarningDetails } from "./statusLedger.js";
 
 export type RunStatusSummary = {
   approvalCount: number;
@@ -68,6 +69,8 @@ export function formatRunStatus(status: RunStatusSummary): string {
     `Approvals: ${status.approvalCount}`,
     `Warnings: ${status.warningCount}`,
     `Artifacts: ${status.artifactCount}`,
+    ...formatApprovalLedger(status.run.approvals),
+    ...formatWarningDetails(status.run.warnings),
     ...formatEvidenceStatusForRun(status),
     `Blocked actions: ${status.blockedActionCount ?? "unknown"}`,
     `Next safe action: ${status.nextRecommendedCommand}`,

@@ -36,7 +36,8 @@
 - Keep readiness diagnostics, production-loop next actions, and evidence synchronized with persisted
   run state.
 - Keep evidence next-command guidance synchronized with current approval gates and review blockers.
-- Keep `producer status` operator-readable while preserving `--json` for automation.
+- Keep `producer status` operator-readable while preserving `--json` for automation; approval ledger
+  and warning details should stay visible in the default operator output.
 - Keep all run-root filesystem access behind canonical bounded run-ID validation.
 - Keep run artifact reads, writes, and persisted lists behind canonical relative-path validation.
 - Keep state, ledger, cost, reservation, lock, and artifact access behind canonical
