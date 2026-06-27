@@ -77,8 +77,7 @@ export function formatRunStatus(status: RunStatusSummary): string {
     ...formatStatusReadiness(status.readiness),
     ...formatBlockedActions(status.blockedActions),
     ...formatDiagnostics(status.diagnostics),
-    "",
-    "Production media:",
+    ...formatProductionMediaEvidenceForRun(status),
     ...status.mediaArtifacts.map(formatProductionMediaStatus),
     "",
     "Recent artifacts:",
@@ -86,6 +85,19 @@ export function formatRunStatus(status: RunStatusSummary): string {
       ? status.recentArtifacts.map((artifact) => `- ${artifact}`)
       : ["- none"]),
   ].join("\n");
+}
+
+function formatProductionMediaEvidenceForRun(status: RunStatusSummary): string[] {
+  if (status.evidenceStatus === "present") {
+    return ["", "Production media evidence: current evidence bundle.", "Production media:"];
+  }
+  return [
+    "",
+    `Production media evidence: artifact-record fallback because evidence is ${status.evidenceStatus}.`,
+    "Regenerate evidence before treating production media rows as review proof.",
+    `Production media evidence action: pnpm producer evidence --run ${status.run.runId}`,
+    "Production media:",
+  ];
 }
 
 function formatEvidenceStatusForRun(status: RunStatusSummary): string[] {

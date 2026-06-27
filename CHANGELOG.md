@@ -30,6 +30,7 @@ future generated release notes can be inserted predictably.
 
 ### Fixes
 
+- label CLI status production media rows as artifact-record fallback until evidence is current
 - keep Studio asset inventory directory definitions precise for static analysis
 - avoid treating unavailable Studio evidence as no blocked actions or media proof
 - mark malformed or stale Studio evidence bundles with a regeneration command
