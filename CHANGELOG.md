@@ -11,6 +11,7 @@ future generated release notes can be inserted predictably.
 
 ### Features
 
+- add `producer voice --json` for automation-friendly voiceover metadata inspection
 - add `producer review script --json` for automation-friendly review inspection
 
 ## v0.27.0 (2026-06-27)

@@ -127,11 +127,16 @@ program
 program
   .command("voice")
   .requiredOption("--run <run_id>")
+  .option("--json", "Print the raw voiceover metadata JSON for automation.")
   .description("Generate local voiceover audio after readiness and render planning.")
   .action(
-    wrap(async (options: { run: string }) => {
+    wrap(async (options: { json?: boolean; run: string }) => {
       const meta = await generateVoiceoverAudio(options.run);
-      console.log(`Voiceover generated. Duration: ${Math.round(meta.output.durationSeconds)}s`);
+      console.log(
+        options.json
+          ? JSON.stringify(meta, null, 2)
+          : `Voiceover generated. Duration: ${Math.round(meta.output.durationSeconds)}s`,
+      );
     }),
   );
 

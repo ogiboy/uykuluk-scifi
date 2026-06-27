@@ -269,6 +269,7 @@ pnpm producer evidence --run <run_id> --json
 pnpm producer readiness --run <run_id>
 pnpm producer readiness --run <run_id> --json
 pnpm producer voice --run <run_id> # optional, only after local TTS is explicitly enabled
+pnpm producer voice --run <run_id> --json
 pnpm producer approve render --run <run_id>
 pnpm producer render --run <run_id>
 ```
