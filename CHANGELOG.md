@@ -11,6 +11,12 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.27.0 (2026-06-27)
+
+### Features
+
+- add generation json output (a3441fe)
+
 ## v0.26.0 (2026-06-27)
 
 ### Features
