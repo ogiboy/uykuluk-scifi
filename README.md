@@ -272,6 +272,7 @@ pnpm producer voice --run <run_id> # optional, only after local TTS is explicitl
 pnpm producer voice --run <run_id> --json
 pnpm producer approve render --run <run_id>
 pnpm producer render --run <run_id>
+pnpm producer render --run <run_id> --json
 ```
 
 Blocked readiness checks print and persist next-action guidance for common operator steps such as
