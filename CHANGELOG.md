@@ -9,6 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
+_No unreleased changes yet._
+
+## v0.12.0 (2026-06-27)
+
 ### Features
 
 - add read-only Studio runtime prompt inventory for tracked defaults and local overrides
