@@ -1,6 +1,7 @@
 import { sha256 } from "../utils/hash.js";
+import type { PromptKey } from "./definitions.js";
 
-export type PromptKey = "ideas" | "script" | "production-package";
+export type { PromptKey } from "./definitions.js";
 
 export type PromptProvenance = {
   key: PromptKey;

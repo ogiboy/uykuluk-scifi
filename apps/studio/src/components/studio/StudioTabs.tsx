@@ -4,7 +4,9 @@ import { useEffect, useRef } from "react";
 import * as Tabs from "@radix-ui/react-tabs";
 import gsap from "gsap";
 import { FileText, Image, LockKeyhole, Terminal } from "lucide-react";
+import { PromptInventoryView } from "@/components/prompts/PromptInventoryView";
 import { Button } from "@/components/ui/button";
+import type { StudioPromptInventory } from "@/lib/promptInventory";
 
 const tabItems = [
   {
@@ -33,7 +35,9 @@ const tabItems = [
   },
 ];
 
-export function StudioTabs() {
+export function StudioTabs({
+  promptInventory,
+}: Readonly<{ promptInventory: StudioPromptInventory }>) {
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -64,13 +68,17 @@ export function StudioTabs() {
         </Tabs.List>
         {tabItems.map((item) => (
           <Tabs.Content className='tabs-content' key={item.value} value={item.value}>
-            <div ref={item.value === "runs" ? panelRef : undefined}>
-              <h3>{item.label}</h3>
-              <p>{item.summary}</p>
-              <Button type='button' variant='secondary' disabled>
-                Planned
-              </Button>
-            </div>
+            {item.value === "prompts" ? (
+              <PromptInventoryView inventory={promptInventory} />
+            ) : (
+              <div ref={item.value === "runs" ? panelRef : undefined}>
+                <h3>{item.label}</h3>
+                <p>{item.summary}</p>
+                <Button type='button' variant='secondary' disabled>
+                  Planned
+                </Button>
+              </div>
+            )}
           </Tabs.Content>
         ))}
       </Tabs.Root>

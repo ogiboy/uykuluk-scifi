@@ -4,6 +4,7 @@ import { ServiceContractPanel } from "@/components/ServiceContractPanel";
 import { StatusGrid } from "@/components/StatusGrid";
 import { StudioTabs } from "@/components/studio/StudioTabs";
 import { getStudioAssetInventory } from "@/lib/assetInventory";
+import { getStudioPromptInventory } from "@/lib/promptInventory";
 import { studioSections } from "@/lib/studioData";
 
 export const dynamic = "force-dynamic";
@@ -14,7 +15,10 @@ export const dynamic = "force-dynamic";
  * @returns The Studio page layout with navigation, status panels, and the current asset inventory.
  */
 export default async function StudioHomePage() {
-  const assetInventory = await getStudioAssetInventory();
+  const [assetInventory, promptInventory] = await Promise.all([
+    getStudioAssetInventory(),
+    getStudioPromptInventory(),
+  ]);
 
   return (
     <main className='studio-shell'>
@@ -54,7 +58,7 @@ export default async function StudioHomePage() {
         <CommandPanel />
         <ServiceContractPanel />
         <AssetInventory inventory={assetInventory} />
-        <StudioTabs />
+        <StudioTabs promptInventory={promptInventory} />
       </section>
     </main>
   );

@@ -16,7 +16,8 @@ test("studio module tabs are keyboard reachable", async ({ page }) => {
   await page.goto("/");
 
   await page.getByRole("tab", { name: /prompts/i }).click();
-  await expect(page.getByRole("tabpanel")).toContainText("Prompt edits will need diff");
+  await expect(page.getByRole("tabpanel")).toContainText("Runtime prompt inventory");
+  await expect(page.getByRole("tabpanel")).toContainText("Studio does not edit prompts");
 });
 
 test("studio locale cookie configures the document language", async ({ context, page }) => {

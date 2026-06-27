@@ -69,7 +69,8 @@ agent-tracking state only; runtime code must not require it.
 
 - TypeScript CLI workflow under `src/`.
 - Basic Next.js App Router Studio under `apps/studio/` with read-only run index/detail, visual asset
-  inventory, mutation-service status, and manual analytics feedback routes.
+  inventory, runtime prompt inventory, mutation-service status, and manual analytics feedback
+  routes.
 - Studio foundation with Tailwind CSS v4, shadcn-style primitives, Radix UI, lucide icons, GSAP, and
   `next/font`.
 - Mock-first provider layer with Ollama adapter scaffold.
@@ -348,13 +349,15 @@ Current Studio scope:
 - run/workflow command overview;
 - current asset inventory summary and read-only `/assets` detail page backed by configured asset
   guard checks;
+- read-only runtime prompt inventory for tracked defaults and configured ignored
+  `prompts/local/*.md` overrides, with source paths, hashes, and doctor remediation but no editing;
 - Radix module tabs for planned run, prompt, asset, and safety surfaces;
 - type-safe `next-intl` request/provider foundation for English and Turkish locales;
 - visible reminder that CLI/core remains the workflow source of truth.
 
-Next Studio work should keep artifact and asset previews aligned with new production artifacts, add
-shared read/write service contracts, and define route security requirements before any mutating
-route handlers.
+Next Studio work should keep artifact, asset, and prompt visibility aligned with new production
+artifacts, add shared read/write service contracts, and define route security requirements before
+any mutating route handlers.
 
 ## Visual Assets
 
