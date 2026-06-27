@@ -3,7 +3,7 @@ import { loadRun } from "../core/runStore.js";
 import type { RunRecord, RunState } from "../core/state.js";
 import { pathExists } from "../utils/fs.js";
 import { readJsonFile } from "../utils/json.js";
-import { staticEvidenceNextCommand } from "./evidenceNextCommand.js";
+import { materializeRunCommand, staticEvidenceNextCommand } from "./evidenceNextCommand.js";
 import type { RunDiagnosticSummary } from "./runDiagnosticSummaryContracts.js";
 import { readRunDiagnosticSummaries } from "./runDiagnosticSummaries.js";
 import {
@@ -47,7 +47,7 @@ export async function readRunStatus(runId: string): Promise<RunStatusSummary> {
     diagnostics,
     evidencePresent: Boolean(evidence),
     mediaArtifacts: productionMediaStatus(run, evidence),
-    nextRecommendedCommand: statusNextRecommendedCommand(run.state, evidenceResult),
+    nextRecommendedCommand: statusNextRecommendedCommand(run.runId, run.state, evidenceResult),
     recentArtifacts: run.artifacts.slice(-5).reverse(),
     run,
     warningCount: run.warnings.length,
@@ -90,17 +90,24 @@ function formatDiagnostics(diagnostics: readonly RunDiagnosticSummary[]): string
   ];
 }
 
-function statusNextRecommendedCommand(state: RunState, evidenceResult: EvidenceReadResult): string {
+function statusNextRecommendedCommand(
+  runId: string,
+  state: RunState,
+  evidenceResult: EvidenceReadResult,
+): string {
   if (
     evidenceResult.kind === "present" &&
     typeof evidenceResult.evidence.nextRecommendedCommand === "string"
   ) {
-    return evidenceResult.evidence.nextRecommendedCommand;
+    return materializeRunCommand(evidenceResult.evidence.nextRecommendedCommand, runId);
   }
   if (evidenceResult.kind === "missing") {
-    return staticEvidenceNextCommand(state) ?? "pnpm producer evidence --run <run_id>";
+    return materializeRunCommand(
+      staticEvidenceNextCommand(state) ?? "pnpm producer evidence --run <run_id>",
+      runId,
+    );
   }
-  return "pnpm producer evidence --run <run_id>";
+  return `pnpm producer evidence --run ${runId}`;
 }
 
 async function readEvidenceStatus(runId: string): Promise<EvidenceReadResult> {

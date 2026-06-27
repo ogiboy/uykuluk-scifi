@@ -25,6 +25,7 @@ future generated release notes can be inserted predictably.
 
 ### Fixes
 
+- show concrete run ids in CLI status and Studio next-action commands
 - add readiness next-action guidance for render planning, voiceover, render approval, and local
   draft render
 - show readiness next-action commands in Studio run detail

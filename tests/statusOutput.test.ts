@@ -46,7 +46,7 @@ describe("operator status output", () => {
     expect(output).toContain("Warnings: 1");
     expect(output).toContain("Artifacts: 2");
     expect(output).toContain("Blocked actions: 1");
-    expect(output).toContain("Next safe action: pnpm producer approve render --run <run_id>");
+    expect(output).toContain(`Next safe action: pnpm producer approve render --run ${run.runId}`);
     expect(output).toContain("Production media:");
     expect(output).toContain("- Render plan: recorded");
     expect(output).toContain("- Voiceover audio: missing");
@@ -162,7 +162,7 @@ describe("operator status output", () => {
     const output = formatRunStatus(await readRunStatus(run.runId));
 
     expect(output).toContain(
-      "Next safe action: pnpm producer approve idea --run <run_id> --idea <idea_id>",
+      `Next safe action: pnpm producer approve idea --run ${run.runId} --idea <idea_id>`,
     );
     expect(output).toContain("Evidence: missing");
   });
@@ -194,7 +194,7 @@ describe("operator status output", () => {
 
     const output = formatRunStatus(await readRunStatus(run.runId));
 
-    expect(output).toContain("Next safe action: pnpm producer script --run <run_id>");
+    expect(output).toContain(`Next safe action: pnpm producer script --run ${run.runId}`);
     expect(output).toContain("Diagnostics:");
     expect(output).toContain(
       "- diagnostics/script_generation_failure.json [script]: Invalid script continuation chunk 1 provider response: continuation has no complete sentence.",

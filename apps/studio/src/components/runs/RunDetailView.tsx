@@ -31,7 +31,7 @@ export function RunDetailView({ run }: Readonly<{ run: StudioRunDetail }>) {
       <section className='panel' aria-labelledby='next-action-heading'>
         <h2 id='next-action-heading'>Next Safe Action</h2>
         <code className='command'>
-          {run.nextRecommendedCommand ?? "Run pnpm producer evidence --run <run_id>"}
+          {run.nextRecommendedCommand ?? `Run pnpm producer evidence --run ${run.runId}`}
         </code>
         <p>
           Read-only display. Use the CLI to mutate approvals, artifacts, render, upload, or publish

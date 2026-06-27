@@ -1,6 +1,9 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
-import { staticEvidenceNextCommand } from "../../../../src/stages/evidenceNextCommand";
+import {
+  materializeRunCommand,
+  staticEvidenceNextCommand,
+} from "../../../../src/stages/evidenceNextCommand";
 import {
   diagnosticSummaryArtifactPaths,
   summarizeRunDiagnosticArtifact,
@@ -133,6 +136,7 @@ function summarizeRun(
   evidence: EvidenceSnapshot | null,
   readiness: ReadinessSnapshot | null,
 ): StudioRunSummary {
+  const runId = record.runId ?? "unknown";
   return {
     approvalCount: record.approvals?.length ?? 0,
     artifactCount: record.artifacts?.length ?? 0,
@@ -142,14 +146,19 @@ function summarizeRun(
     createdAt: record.createdAt ?? "",
     nextRecommendedCommand:
       typeof evidence?.nextRecommendedCommand === "string"
-        ? evidence.nextRecommendedCommand
-        : (staticEvidenceNextCommand(record.state ?? "FAILED") ?? null),
+        ? materializeRunCommand(evidence.nextRecommendedCommand, runId)
+        : materializeStaticNextCommand(record.state ?? "FAILED", runId),
     readinessPassed: typeof readiness?.passed === "boolean" ? readiness.passed : null,
-    runId: record.runId ?? "unknown",
+    runId,
     state: record.state ?? "FAILED",
     updatedAt: record.updatedAt ?? record.createdAt ?? "",
     warningCount: record.warnings?.length ?? 0,
   };
+}
+
+function materializeStaticNextCommand(state: string, runId: string): string | null {
+  const command = staticEvidenceNextCommand(state);
+  return command ? materializeRunCommand(command, runId) : null;
 }
 
 async function readStudioRunDiagnostics(

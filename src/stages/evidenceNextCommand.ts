@@ -45,6 +45,10 @@ export function staticEvidenceNextCommand(state: string): string | undefined {
   return STATIC_NEXT_COMMANDS[state];
 }
 
+export function materializeRunCommand(command: string, runId: string): string {
+  return command.replaceAll("<run_id>", runId);
+}
+
 /** Returns the next safe operator action represented by an evidence snapshot. */
 export function evidenceNextCommand(input: EvidenceNextCommandInput): string {
   const {

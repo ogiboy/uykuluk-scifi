@@ -46,7 +46,7 @@ describe("Studio read-only run summaries", () => {
     expect(summaries[1]).toMatchObject({
       approvalCount: 1,
       artifactCount: 2,
-      nextRecommendedCommand: "pnpm producer approve render --run <run_id>",
+      nextRecommendedCommand: `pnpm producer approve render --run ${first.runId}`,
       readinessPassed: true,
       state: "READY_FOR_MANUAL_PRODUCTION",
       warningCount: 1,
@@ -241,7 +241,7 @@ describe("Studio read-only run summaries", () => {
           stage: "script",
         },
       ],
-      nextRecommendedCommand: "pnpm producer script --run <run_id>",
+      nextRecommendedCommand: `pnpm producer script --run ${run.runId}`,
       state: "IDEA_APPROVED",
     });
     expect(detail?.evidence).toBeNull();

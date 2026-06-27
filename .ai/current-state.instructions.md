@@ -223,9 +223,10 @@
   acknowledgement before script approval.
 - `producer status` now defaults to an operator-readable summary with state,
   approval/warning/artifact counts, evidence availability, production media evidence details, recent
-  artifacts, and next safe action; early workflow states still show the actionable stage command
-  before evidence exists, while invalid evidence keeps pointing operators back to evidence
-  regeneration. `--json` preserves raw persisted state output for automation.
+  artifacts, and a concrete next safe action with the current run id filled in; early workflow
+  states still show the actionable stage command before evidence exists, while invalid evidence
+  keeps pointing operators back to evidence regeneration. `--json` preserves raw persisted state
+  output for automation.
 - Readiness diagnostics that strictly parse and revalidate persisted cost quotes, live hard budgets,
   complete production-package integrity, and exact paid-generation cost approval when required.
 - Final readiness diagnostics agree with the post-transition run state.
@@ -267,12 +268,12 @@
   `next/font` wired for the initial shell.
 - Studio has a type-safe `next-intl` request/provider foundation with English and Turkish locale
   selection through a local cookie. Existing operator copy has not been migrated yet.
-- Studio can list local persisted runs and show a read-only run detail page with next safe action,
-  readiness status, readiness check messages, warning/approval counts, production media evidence
-  details, and review artifact availability. Readiness check next-action commands are shown when the
-  CLI/core diagnostics provide them. It does not mutate run state or call providers. Early states
-  without an evidence bundle reuse the CLI/core next-action contract instead of presenting evidence
-  generation as the only possible step.
+- Studio can list local persisted runs and show a read-only run detail page with a concrete next
+  safe action, readiness status, readiness check messages, warning/approval counts, production media
+  evidence details, and review artifact availability. Readiness check next-action commands are shown
+  when the CLI/core diagnostics provide them. It does not mutate run state or call providers. Early
+  states without an evidence bundle reuse the CLI/core next-action contract instead of presenting
+  evidence generation as the only possible step.
 - Studio run detail includes read-only artifact preview excerpts for scripts, reviews, production
   packages, render plans, contact sheets, asset provenance, evidence, readiness, voiceover metadata,
   and render manifests. Previews are grouped by operator review phase with per-artifact review
