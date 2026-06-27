@@ -11,6 +11,12 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.24.0 (2026-06-27)
+
+### Features
+
+- add evidence json output (10e160e)
+
 ## v0.23.0 (2026-06-27)
 
 ### Features
