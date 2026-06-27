@@ -30,6 +30,7 @@ export const readOnlyStudioRoutes = [
   route("runs.detail", "/runs/[runId]"),
   route("assets.index", "/assets"),
   route("analytics.index", "/analytics"),
+  route("prompts.index", "/prompts"),
 ] as const satisfies readonly StudioRouteSecurityContract[];
 
 export const disabledStudioActionRoutes = [

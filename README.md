@@ -349,8 +349,9 @@ Current Studio scope:
 - run/workflow command overview;
 - current asset inventory summary and read-only `/assets` detail page backed by configured asset
   guard checks;
-- read-only runtime prompt inventory for tracked defaults and configured ignored
-  `prompts/local/*.md` overrides, with source paths, hashes, and doctor remediation but no editing;
+- read-only runtime prompt inventory and `/prompts` detail page for tracked defaults and configured
+  ignored `prompts/local/*.md` overrides, with source paths, hashes, and doctor remediation but no
+  editing;
 - Radix module tabs for planned run, prompt, asset, and safety surfaces;
 - type-safe `next-intl` request/provider foundation for English and Turkish locales;
 - visible reminder that CLI/core remains the workflow source of truth.

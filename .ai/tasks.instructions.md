@@ -104,9 +104,9 @@
 - Keep Studio read-only artifact previews useful as new artifact types are added. Current previews
   include operator-phase grouping, media-specific metadata, and per-artifact review wording while
   keeping the surface non-mutating.
-- Keep Studio read-only prompt inventory aligned with prompt defaults and local override safety.
-  Prompt source/status visibility is allowed; editing, diff approval, rollback, provider calls, and
-  prompt revision history remain future work.
+- Keep Studio read-only prompt inventory and `/prompts` route aligned with prompt defaults and local
+  override safety. Prompt source/status visibility is allowed; editing, diff approval, rollback,
+  provider calls, and prompt revision history remain future work.
 - Keep Studio evidence panels conservative: missing, malformed, or stale evidence must point back to
   `producer evidence --run <run_id>` and must not imply blocked actions are absent or media is
   review-proof.
