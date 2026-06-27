@@ -143,11 +143,16 @@ program
 program
   .command("render")
   .requiredOption("--run <run_id>")
+  .option("--json", "Print the raw draft render manifest JSON for automation.")
   .description("Generate a local FFmpeg draft render after explicit render approval.")
   .action(
-    wrap(async (options: { run: string }) => {
+    wrap(async (options: { json?: boolean; run: string }) => {
       const manifest = await renderDraft(options.run);
-      console.log(`Draft render generated: ${manifest.output.path}`);
+      console.log(
+        options.json
+          ? JSON.stringify(manifest, null, 2)
+          : `Draft render generated: ${manifest.output.path}`,
+      );
     }),
   );
 

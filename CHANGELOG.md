@@ -9,7 +9,9 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Features
+
+- add `producer render --json` for automation-friendly draft render manifest inspection
 
 ## v0.29.0 (2026-06-27)
 

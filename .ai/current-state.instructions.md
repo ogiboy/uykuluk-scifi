@@ -383,7 +383,7 @@ pnpm producer status --latest
 pnpm producer list-runs
 pnpm producer list-runs --json
 pnpm producer voice --run <run_id> [--json]
-pnpm producer render --run <run_id>
+pnpm producer render --run <run_id> [--json]
 pnpm producer analytics import --file <path>
 pnpm producer analytics report
 pnpm producer upload private --run <run_id>

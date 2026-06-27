@@ -19,10 +19,14 @@ export async function enableDeterministicTts(root: string): Promise<void> {
  * Creates a fake FFmpeg executable in the temp project root.
  *
  * @param root - The temp project root where the script should be written.
+ * @param binaryName - The executable filename to create.
  * @returns The path to the generated script.
  */
-export async function createFakeFfmpeg(root: string): Promise<string> {
-  const target = path.join(root, "fake-ffmpeg.mjs");
+export async function createFakeFfmpeg(
+  root: string,
+  binaryName = "fake-ffmpeg.mjs",
+): Promise<string> {
+  const target = path.join(root, binaryName);
   await writeFile(
     target,
     [
@@ -41,10 +45,14 @@ export async function createFakeFfmpeg(root: string): Promise<string> {
  * Creates a fake FFprobe executable that prints fixed media metadata.
  *
  * @param root - The temp project root where the script should be written.
+ * @param binaryName - The executable filename to create.
  * @returns The path to the generated script.
  */
-export async function createFakeFfprobe(root: string): Promise<string> {
-  const target = path.join(root, "fake-ffprobe.mjs");
+export async function createFakeFfprobe(
+  root: string,
+  binaryName = "fake-ffprobe.mjs",
+): Promise<string> {
+  const target = path.join(root, binaryName);
   await writeFile(
     target,
     [
