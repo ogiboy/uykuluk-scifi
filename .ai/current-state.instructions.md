@@ -306,10 +306,10 @@
   directories and committed render-support asset categories. It surfaces invalid producer config and
   missing guarded assets as operator warnings without approving assets, rendering media, or mutating
   run state.
-- Studio home has read-only runtime prompt inventory visibility for tracked `prompts/defaults/`
-  sources and configured ignored `prompts/local/*.md` overrides, including source paths, hashes,
-  warnings, and doctor remediation. It does not edit prompts, call providers, approve prompt
-  changes, or read `.ai/` as runtime state.
+- Studio home and `/prompts` have read-only runtime prompt inventory visibility for tracked
+  `prompts/defaults/` sources and configured ignored `prompts/local/*.md` overrides, including
+  source paths, hashes, warnings, and doctor remediation. They do not edit prompts, call providers,
+  approve prompt changes, or read `.ai/` as runtime state.
 - Studio has a typed route-security contract for current read-only pages and disabled future action
   routes. Tests assert that all current App Router pages are covered as read-only, no Studio
   `route.ts` handlers exist, disabled actions require shared CLI/core service contracts, CSRF

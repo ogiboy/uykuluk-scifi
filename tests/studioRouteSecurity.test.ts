@@ -25,6 +25,7 @@ describe("Studio route security contract", () => {
         }),
         expect.objectContaining({ path: "/runs/[runId]" }),
         expect.objectContaining({ path: "/analytics" }),
+        expect.objectContaining({ path: "/prompts" }),
       ]),
     );
   });

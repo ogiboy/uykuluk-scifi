@@ -105,7 +105,7 @@ Priority order:
   render evidence, and readiness artifacts;
 - maintain the read-only visual asset inventory page backed by configured guard checks;
 - maintain read-only runtime prompt source/status visibility for tracked defaults and explicit local
-  overrides before any prompt editor work;
+  overrides before any prompt editor work, including the `/prompts` operator route;
 - maintain read-only mutation-service status so operators can see that future
   approval/upload/publish actions are contract-defined but not routable;
 - maintain the read-only manual analytics overview and import data-quality summary backed by ignored

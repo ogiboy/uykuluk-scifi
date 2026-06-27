@@ -4,9 +4,9 @@ export const studioSections = [
   { id: "actions", label: "Actions" },
   { id: "assets", label: "Assets", href: "/assets" },
   { id: "analytics", label: "Analytics", href: "/analytics" },
-  { id: "prompts", label: "Prompts" },
+  { id: "prompts", label: "Prompts", href: "/prompts" },
 ] as const satisfies ReadonlyArray<{
-  href?: "/analytics" | "/assets" | "/runs";
+  href?: "/analytics" | "/assets" | "/prompts" | "/runs";
   id: string;
   label: string;
 }>;
