@@ -106,11 +106,12 @@ program
 program
   .command("estimate")
   .requiredOption("--run <run_id>")
+  .option("--json", "Print the raw cost estimate JSON for automation.")
   .description("Estimate next-step costs.")
   .action(
-    wrap(async (options: { run: string }) => {
-      await estimateCost(options.run);
-      console.log("Cost estimate generated.");
+    wrap(async (options: { json?: boolean; run: string }) => {
+      const estimate = await estimateCost(options.run);
+      console.log(options.json ? JSON.stringify(estimate, null, 2) : "Cost estimate generated.");
     }),
   );
 

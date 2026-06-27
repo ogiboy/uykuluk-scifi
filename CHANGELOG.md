@@ -9,7 +9,9 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Features
+
+- add `producer estimate --json` for automation-friendly cost quote inspection
 
 ## v0.22.0 (2026-06-27)
 
