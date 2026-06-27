@@ -139,11 +139,16 @@ program
 program
   .command("readiness")
   .requiredOption("--run <run_id>")
+  .option("--json", "Print the raw readiness diagnostics JSON for automation.")
   .description("Run operator readiness diagnostics.")
   .action(
-    wrap(async (options: { run: string }) => {
+    wrap(async (options: { json?: boolean; run: string }) => {
       const result = await runReadiness(options.run);
-      console.log(formatReadinessConsole(options.run, result));
+      console.log(
+        options.json
+          ? JSON.stringify(result, null, 2)
+          : formatReadinessConsole(options.run, result),
+      );
       if (!result.passed) {
         throw new SafeExitError("Readiness blocked.", 1);
       }

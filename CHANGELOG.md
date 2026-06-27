@@ -15,6 +15,7 @@ _No unreleased changes yet._
 
 ### Features
 
+- add `producer readiness --json` for automation-friendly readiness diagnostics
 - add `producer doctor --json` for automation-friendly local diagnostics
 
 ## v0.20.0 (2026-06-27)

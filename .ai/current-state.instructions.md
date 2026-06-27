@@ -376,6 +376,7 @@ pnpm producer estimate --run <run_id>
 pnpm producer approve cost --run <run_id>
 pnpm producer evidence --run <run_id>
 pnpm producer readiness --run <run_id>
+pnpm producer readiness --run <run_id> --json
 pnpm producer status --run <run_id>
 pnpm producer status --run <run_id> --json
 pnpm producer status --latest
