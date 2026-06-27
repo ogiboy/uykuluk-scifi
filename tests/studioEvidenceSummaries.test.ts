@@ -47,7 +47,7 @@ describe("Studio evidence summary validity", () => {
     });
     expect(detail?.productionMedia[0]).toMatchObject({
       artifactPath: "production/render_plan.json",
-      detail: undefined,
+      detail: "artifact record only; regenerate evidence to verify current media",
       status: "recorded",
     });
   });

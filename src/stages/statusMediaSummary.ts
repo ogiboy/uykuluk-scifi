@@ -53,13 +53,16 @@ export function productionMediaStatus(
   run: { artifacts: readonly string[] },
   evidence: EvidenceStatus | null,
 ): ProductionMediaStatus[] {
-  return PRODUCTION_MEDIA_ARTIFACTS.map((item) => ({
-    artifactPath: item.path,
-    detail: mediaArtifactDetail(item.evidenceKey, evidence?.[item.evidenceKey]),
-    evidenceKey: item.evidenceKey,
-    label: item.label,
-    status: mediaArtifactStatus(run, evidence?.[item.evidenceKey]?.status, item.path),
-  }));
+  return PRODUCTION_MEDIA_ARTIFACTS.map((item) => {
+    const status = mediaArtifactStatus(run, evidence?.[item.evidenceKey]?.status, item.path);
+    return {
+      artifactPath: item.path,
+      detail: mediaArtifactDetail(item.evidenceKey, evidence?.[item.evidenceKey], status),
+      evidenceKey: item.evidenceKey,
+      label: item.label,
+      status,
+    };
+  });
 }
 
 export function formatProductionMediaStatus(artifact: ProductionMediaStatus): string {
@@ -81,7 +84,11 @@ function mediaArtifactStatus(
 function mediaArtifactDetail(
   evidenceKey: ProductionMediaStatus["evidenceKey"],
   evidence: EvidenceMediaStatus | undefined,
+  status: ProductionMediaStatus["status"],
 ): string | undefined {
+  if (status === "recorded") {
+    return "artifact record only; regenerate evidence to verify current media";
+  }
   if (!evidence) {
     return undefined;
   }

@@ -49,6 +49,7 @@ _No unreleased changes yet._
 ### Fixes
 
 - harden release workflow contract tests for main-only version, changelog, and tag automation
+- clarify recorded production media rows as artifact records, not current evidence proof
 - label CLI status production media rows as artifact-record fallback until evidence is current
 - keep Studio asset inventory directory definitions precise for static analysis
 - avoid treating unavailable Studio evidence as no blocked actions or media proof
