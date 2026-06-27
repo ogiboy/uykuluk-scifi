@@ -105,6 +105,16 @@ describe("run id validation", () => {
     expect(result.status).toBe(0);
     expect(JSON.parse(result.stdout) as unknown).toMatchObject({ runId: latest.runId });
   });
+
+  it("makes the CLI list-runs command print JSON for automation", async () => {
+    const run = await createRun();
+    const result = runCli(["list-runs", "--json"]);
+
+    expect(result.status).toBe(0);
+    expect(JSON.parse(result.stdout) as unknown).toEqual([
+      expect.objectContaining({ runId: run.runId, state: "NEW" }),
+    ]);
+  });
 });
 
 function runCli(args: string[]): { status: number | null; stderr: string; stdout: string } {

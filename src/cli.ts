@@ -168,10 +168,15 @@ program
 
 program
   .command("list-runs")
+  .option("--json", "Print the raw run list JSON for automation.")
   .description("List saved runs.")
   .action(
-    wrap(async () => {
+    wrap(async (options: { json?: boolean }) => {
       const runs = await listRuns();
+      if (options.json) {
+        console.log(JSON.stringify(runs, null, 2));
+        return;
+      }
       for (const run of runs) {
         console.log(`${run.runId}\t${run.state}\t${run.updatedAt}`);
       }

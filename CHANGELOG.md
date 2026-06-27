@@ -15,6 +15,7 @@ _No unreleased changes yet._
 
 ### Features
 
+- add `producer list-runs --json` for automation-friendly run inspection
 - add `producer status --latest` for quick inspection of the newest run
 
 ## v0.18.0 (2026-06-27)
