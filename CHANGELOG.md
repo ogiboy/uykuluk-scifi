@@ -9,6 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
+_No unreleased changes yet._
+
+## v0.17.0 (2026-06-27)
+
 ### Features
 
 - show latest-run readiness and next safe action on the Studio home page
