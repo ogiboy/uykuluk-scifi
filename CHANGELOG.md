@@ -9,6 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
+_No unreleased changes yet._
+
+## v0.9.0 (2026-06-27)
+
 ### Features
 
 - add bounded package artifact revision events for subtitles, scenes, popup-card package Markdown,
