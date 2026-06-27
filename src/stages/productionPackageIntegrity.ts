@@ -66,6 +66,19 @@ type ProductionPackageProviderEvidence = {
   prompt: PromptProvenance;
 };
 
+export function providerEvidenceFromManifest(
+  manifest: ProductionPackageManifest,
+): ProductionPackageProviderEvidence {
+  return {
+    provider: manifest.provider,
+    model: manifest.model,
+    inputTokensApprox: manifest.inputTokensApprox,
+    outputTokensApprox: manifest.outputTokensApprox,
+    durationMs: manifest.durationMs,
+    prompt: manifest.prompt,
+  };
+}
+
 export async function createProductionPackageManifest(
   run: RunRecord,
   approvedScriptDigest: string,

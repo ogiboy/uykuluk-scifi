@@ -9,7 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Features
+
+- add bounded package artifact revision events for subtitles, scenes, popup-card package Markdown,
+  and YouTube metadata before cost/render work starts
 
 ## v0.8.1 (2026-06-27)
 

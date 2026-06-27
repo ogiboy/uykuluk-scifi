@@ -122,8 +122,12 @@
 - Define local prompt override storage and revision events before adding a prompt editor; typed
   keys, tracked `prompts/defaults/` runtime defaults, source paths, and prompt hashes are
   implemented.
-- Define revision events for subtitles, scene prompts, popup cards, and YouTube metadata edits;
-  script revision evidence is implemented.
+- Keep package artifact revision events safe. `producer revise package-artifact` now supports
+  bounded edits to subtitles, scenes, popup-card package Markdown, and YouTube metadata only while
+  the run is still `PRODUCTION_PACKAGE_GENERATED`; it snapshots before/after content, refreshes the
+  production-package manifest, invalidates stale evidence/readiness/render-plan artifacts, and
+  records revision evidence. Future work can extend this to richer editor UX and per-field diffs
+  without weakening the cost/render approval boundary.
 - Maintain route security requirements before any web action routes exist; current tests cover
   read-only page routes, disabled future action routes, and absence of App Router `route.ts`
   handlers, and bind each disabled action route to a shared service contract.
