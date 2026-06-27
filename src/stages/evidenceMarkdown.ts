@@ -156,12 +156,21 @@ function draftRenderSummary(
   draftRender: Awaited<ReturnType<typeof readDraftRenderEvidence>>,
 ): string {
   if (draftRender.status === "pass") {
-    return `Draft render: pass (${Math.round(draftRender.durationSeconds)}s, ${draftRender.timelineSegments.join(" -> ")}${sourceFrameSummary(draftRender)}${mediaProbeSummary(draftRender.mediaProbe)}).`;
+    return `Draft render: pass (${Math.round(draftRender.durationSeconds)}s, ${draftRender.timelineSegments.join(" -> ")}${sourceFrameSummary(draftRender)}${draftRenderVoiceoverSummary(draftRender)}${mediaProbeSummary(draftRender.mediaProbe)}).`;
   }
   if (draftRender.status === "block") {
     return `Draft render: block (${draftRender.message}).`;
   }
   return `Draft render: missing (${draftRender.requiredArtifacts.join(", ")}).`;
+}
+
+function draftRenderVoiceoverSummary(
+  draftRender: Extract<Awaited<ReturnType<typeof readDraftRenderEvidence>>, { status: "pass" }>,
+): string {
+  if (draftRender.voiceoverProductionVoiceCandidate) {
+    return `, voiceover ${draftRender.voiceoverMode} production voice candidate`;
+  }
+  return `, voiceover ${draftRender.voiceoverMode} timing/reference only`;
 }
 
 function sourceFrameSummary(

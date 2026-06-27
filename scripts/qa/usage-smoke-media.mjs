@@ -116,9 +116,17 @@ async function assertRenderedEvidence({ workdir, runId, assert }) {
   assert(renderedEvidence.voiceoverAudio.status === "pass", "voiceover evidence passes");
   assert(renderedEvidence.draftRender.status === "pass", "draft render evidence passes");
   assert(
+    renderedEvidence.draftRender.voiceoverProductionVoiceCandidate === false,
+    "draft render evidence preserves reference audio classification",
+  );
+  assert(
     renderedEvidence.nextRecommendedCommand ===
-      "Manual final draft review. Upload remains approval-gated.",
-    "rendered evidence keeps upload gated behind manual review",
+      "Review local timing draft; regenerate voiceover with reviewed local Piper audio before final production review.",
+    "rendered evidence keeps deterministic draft audio out of final production review",
+  );
+  assert(
+    renderManifest.voiceoverAudio?.productionVoiceCandidate === false,
+    "render manifest records reference audio classification",
   );
   assert(
     renderManifest.mediaProbe?.video?.width === 1280 &&

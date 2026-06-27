@@ -50,10 +50,14 @@ export function renderDraftReviewMarkdown(manifest: DraftRenderManifest): string
     "## Inputs",
     "",
     table(
-      ["Input", "Digest"],
+      ["Input", "Digest", "Detail"],
       [
-        [manifest.renderPlan.path, manifest.renderPlan.digest],
-        [manifest.voiceoverAudio.path, manifest.voiceoverAudio.digest],
+        [manifest.renderPlan.path, manifest.renderPlan.digest, "current render plan"],
+        [
+          manifest.voiceoverAudio.path,
+          manifest.voiceoverAudio.digest,
+          voiceoverReviewDetail(manifest),
+        ],
       ],
     ),
     "",
@@ -89,20 +93,32 @@ export function renderDraftReviewMarkdown(manifest: DraftRenderManifest): string
     "",
     "Review the MP4 locally. If it is not acceptable, revise upstream artifacts and regenerate the render. Upload remains disabled until a separate future upload approval exists.",
     "",
-    ...renderDraftDecision(manifest.runId),
+    ...renderDraftDecision(manifest),
   );
   return sections.join("\n");
 }
 
-function renderDraftDecision(runId: string): string[] {
+function renderDraftDecision(manifest: DraftRenderManifest): string[] {
+  const timingDraftGate = manifest.voiceoverAudio.productionVoiceCandidate
+    ? []
+    : [
+        "Confirm this MP4 used deterministic reference audio; treat it as a local timing draft, not final production voice.",
+      ];
+  const timingDraftNextStep = manifest.voiceoverAudio.productionVoiceCandidate
+    ? []
+    : [
+        "Regenerate voiceover with reviewed local Piper audio before final production voice review.",
+      ];
   return renderOperatorDecisionSection({
     reviewGates: [
       "Watch the complete MP4 locally and verify audio, subtitles, popup cards, overlays, watermark, intro/outro, and timing.",
+      ...timingDraftGate,
       "Confirm media probe evidence matches the expected local review output before treating the draft as ready for manual channel review.",
       "Confirm render output is local review media only; it does not grant upload or publish authority.",
     ],
     acceptableNextSteps: [
-      `Keep the local draft with run ${runId} for manual review or external editing.`,
+      `Keep the local draft with run ${manifest.runId} for manual review or external editing.`,
+      ...timingDraftNextStep,
       "Wait for a future private-upload feature with separate config and approval before any YouTube upload.",
     ],
     revisionSteps: [
@@ -115,6 +131,13 @@ function renderDraftDecision(runId: string): string[] {
       "Paid/generative media providers remain outside the deterministic local render path.",
     ],
   });
+}
+
+function voiceoverReviewDetail(manifest: DraftRenderManifest): string {
+  const candidateLabel = manifest.voiceoverAudio.productionVoiceCandidate
+    ? "production voice candidate; operator listening still required"
+    : "timing/reference only; local timing draft";
+  return `${manifest.voiceoverAudio.mode}; ${manifest.voiceoverAudio.quality}; ${candidateLabel}`;
 }
 
 function audioProbeSummary(audio: NonNullable<DraftRenderManifest["mediaProbe"]>["audio"]): string {

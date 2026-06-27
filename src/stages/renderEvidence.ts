@@ -26,6 +26,8 @@ const renderCompositionOverlaySchema = z.strictObject({
   digest: digestSchema,
   placement: z.string().min(1),
 });
+const voiceoverModeSchema = z.enum(["deterministic-local", "local-piper"]);
+const voiceoverQualitySchema = z.enum(["deterministic-local-reference", "local-piper"]);
 const renderTimelineItemSchema = z
   .strictObject({
     segment: z.enum(["intro", "scene", "outro"]).optional(),
@@ -42,7 +44,7 @@ const renderTimelineItemSchema = z
   );
 
 export const draftRenderManifestSchema = z.strictObject({
-  schemaVersion: z.literal(2),
+  schemaVersion: z.literal(3),
   runId: z.string().min(1),
   createdAt: z.iso.datetime(),
   renderPlan: z.strictObject({
@@ -52,6 +54,9 @@ export const draftRenderManifestSchema = z.strictObject({
   voiceoverAudio: z.strictObject({
     path: z.literal("production/audio/voiceover.wav"),
     digest: digestSchema,
+    mode: voiceoverModeSchema,
+    productionVoiceCandidate: z.boolean(),
+    quality: voiceoverQualitySchema,
   }),
   timeline: z.array(renderTimelineItemSchema).min(1),
   composition: z.strictObject({
@@ -87,6 +92,9 @@ export type DraftRenderEvidence =
       sourceFrameSegments: string[];
       reviewPath: string;
       reviewChecklist: string[];
+      voiceoverMode: z.infer<typeof voiceoverModeSchema>;
+      voiceoverProductionVoiceCandidate: boolean;
+      voiceoverQuality: z.infer<typeof voiceoverQualitySchema>;
       mediaProbe?: RenderMediaProbe;
     }
   | { status: "block"; path: string; message: string };
@@ -124,7 +132,10 @@ export async function readDraftRenderEvidence(run: RunRecord): Promise<DraftRend
     }
     if (
       voiceoverAudio.status !== "pass" ||
-      voiceoverAudio.digest !== manifest.voiceoverAudio.digest
+      voiceoverAudio.digest !== manifest.voiceoverAudio.digest ||
+      voiceoverAudio.mode !== manifest.voiceoverAudio.mode ||
+      voiceoverAudio.quality !== manifest.voiceoverAudio.quality ||
+      voiceoverAudio.productionVoiceCandidate !== manifest.voiceoverAudio.productionVoiceCandidate
     ) {
       throw new SafeExitError("Draft render was generated from stale or missing voiceover audio.");
     }
@@ -140,6 +151,9 @@ export async function readDraftRenderEvidence(run: RunRecord): Promise<DraftRend
       sourceFrameSegments: sourceFrameSegments(manifest.timeline),
       reviewPath: draftRenderReviewPath,
       reviewChecklist: manifest.composition.reviewChecklist,
+      voiceoverMode: manifest.voiceoverAudio.mode,
+      voiceoverProductionVoiceCandidate: manifest.voiceoverAudio.productionVoiceCandidate,
+      voiceoverQuality: manifest.voiceoverAudio.quality,
       mediaProbe: manifest.mediaProbe,
     };
   } catch (error) {

@@ -49,9 +49,9 @@ function draftRenderReadyMessage(
 ): string {
   const duration = Math.round(evidence.durationSeconds);
   if (!evidence.mediaProbe) {
-    return `${evidence.path} exists with ${duration}s draft video${sourceFrameDetail(evidence)}.`;
+    return `${evidence.path} exists with ${duration}s draft video${sourceFrameDetail(evidence)}${voiceoverDetail(evidence)}.`;
   }
-  return `${evidence.path} exists with ${duration}s ffprobe-validated draft video (${evidence.mediaProbe.video.width}x${evidence.mediaProbe.video.height}, audio stream present${sourceFrameDetail(evidence)}).`;
+  return `${evidence.path} exists with ${duration}s ffprobe-validated draft video (${evidence.mediaProbe.video.width}x${evidence.mediaProbe.video.height}, audio stream present${sourceFrameDetail(evidence)}${voiceoverDetail(evidence)}).`;
 }
 
 function sourceFrameDetail(
@@ -61,4 +61,13 @@ function sourceFrameDetail(
     return "";
   }
   return `, source frames ${evidence.sourceFrameSegments.join("/")}`;
+}
+
+function voiceoverDetail(
+  evidence: Extract<Awaited<ReturnType<typeof readDraftRenderEvidence>>, { status: "pass" }>,
+): string {
+  if (evidence.voiceoverProductionVoiceCandidate) {
+    return `, voiceover ${evidence.voiceoverMode} production voice candidate`;
+  }
+  return `, voiceover ${evidence.voiceoverMode} timing/reference only`;
 }

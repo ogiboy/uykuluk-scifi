@@ -21,6 +21,8 @@ type EvidenceMediaStatus = {
   sourceWordCount?: unknown;
   status?: unknown;
   timelineSegments?: unknown;
+  voiceoverMode?: unknown;
+  voiceoverProductionVoiceCandidate?: unknown;
 };
 
 export type ProductionMediaStatus = {
@@ -134,6 +136,7 @@ function draftRenderDetail(evidence: EvidenceMediaStatus): string | undefined {
     durationDetail(evidence.durationSeconds),
     timelineDetail(evidence.timelineSegments),
     sourceFrameDetail(evidence),
+    draftVoiceoverDetail(evidence),
     mediaProbeDetail(evidence.mediaProbe),
   ].filter((part): part is string => Boolean(part));
   return parts.length > 0 ? parts.join(", ") : undefined;
@@ -183,4 +186,17 @@ function mediaProbeDetail(value: unknown): string | undefined {
   return audio && typeof audio === "object"
     ? `ffprobe ${width}x${height} audio`
     : `ffprobe ${width}x${height}`;
+}
+
+function draftVoiceoverDetail(evidence: EvidenceMediaStatus): string | undefined {
+  if (typeof evidence.voiceoverMode !== "string") {
+    return undefined;
+  }
+  if (evidence.voiceoverProductionVoiceCandidate === true) {
+    return `voiceover ${evidence.voiceoverMode} production candidate`;
+  }
+  if (evidence.voiceoverProductionVoiceCandidate === false) {
+    return `voiceover ${evidence.voiceoverMode} timing/reference only`;
+  }
+  return `voiceover ${evidence.voiceoverMode}`;
 }

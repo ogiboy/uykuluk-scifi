@@ -10,6 +10,7 @@ import { estimateCost } from "../src/stages/estimate";
 import { runIdeas } from "../src/stages/ideas";
 import { generateProductionPackage } from "../src/stages/productionPackage";
 import { renderDraft } from "../src/stages/render";
+import type { DraftRenderEvidence, DraftRenderManifest } from "../src/stages/renderEvidence";
 import { generateRenderPlan } from "../src/stages/renderPlan";
 import { runReadiness } from "../src/stages/readiness";
 import { reviewScript } from "../src/stages/reviewScript";
@@ -66,31 +67,10 @@ describe("draft render", () => {
         "production/render/draft_review.md",
       ]),
     );
-    const manifest = await readJsonFile<{
-      composition: {
-        overlays: Array<{ role: string; path: string; placement: string }>;
-        reviewChecklist: string[];
-      };
-      output: { path: string; sha256: string; bytes: number; durationSeconds: number };
-      ffmpeg: { args: string[]; binary: string };
-      mediaProbe?: {
-        audio: { channels?: number; codecName?: string; sampleRateHz?: number };
-        binary: string;
-        durationSeconds: number;
-        formatName?: string;
-        video: { codecName?: string; height: number; width: number };
-      };
-      renderPlan: { digest: string; path: string };
-      schemaVersion: number;
-      timeline: Array<{
-        backgroundAsset: { path: string };
-        durationSeconds: number;
-        segment: string;
-        sourceFrameAssets?: Array<{ path: string }>;
-      }>;
-      voiceoverAudio: { digest: string; path: string };
-    }>(artifactPath(runId, "production/render/render_manifest.json"));
-    expect(manifest.schemaVersion).toBe(2);
+    const manifest = await readJsonFile<DraftRenderManifest>(
+      artifactPath(runId, "production/render/render_manifest.json"),
+    );
+    expect(manifest.schemaVersion).toBe(3);
     expect(manifest.output).toMatchObject({
       path: "production/render/draft.mp4",
       sha256: expect.stringMatching(/^[a-f0-9]{64}$/),
@@ -98,7 +78,12 @@ describe("draft render", () => {
     });
     expect(manifest.output.bytes).toBeGreaterThan(0);
     expect(manifest.renderPlan.path).toBe("production/render_plan.json");
-    expect(manifest.voiceoverAudio.path).toBe("production/audio/voiceover.wav");
+    expect(manifest.voiceoverAudio).toMatchObject({
+      mode: "deterministic-local",
+      path: "production/audio/voiceover.wav",
+      productionVoiceCandidate: false,
+      quality: "deterministic-local-reference",
+    });
     expect(manifest.timeline.map((item) => item.segment)).toEqual(["intro", "scene", "outro"]);
     expect(manifest.timeline[0]).toMatchObject({
       backgroundAsset: { path: "assets/intro/episode_title_card_1920x1080.jpg" },
@@ -149,21 +134,7 @@ describe("draft render", () => {
     expect(manifest.composition.reviewChecklist.join(" ")).toContain("private upload");
 
     const evidence = (await generateEvidenceBundle(runId)) as {
-      draftRender: {
-        status: string;
-        path: string;
-        durationSeconds: number;
-        overlayRoles: string[];
-        timelineSegments: string[];
-        sourceFrameCount: number;
-        sourceFrameSegments: string[];
-        reviewPath: string;
-        reviewChecklist: string[];
-        mediaProbe?: {
-          audio: { codecName?: string };
-          video: { height: number; width: number };
-        };
-      };
+      draftRender: Extract<DraftRenderEvidence, { status: "pass" }>;
     };
     expect(evidence.draftRender).toMatchObject({
       status: "pass",
@@ -174,6 +145,9 @@ describe("draft render", () => {
       sourceFrameCount: 4,
       sourceFrameSegments: ["intro:2", "outro:2"],
       reviewPath: "production/render/draft_review.md",
+      voiceoverMode: "deterministic-local",
+      voiceoverProductionVoiceCandidate: false,
+      voiceoverQuality: "deterministic-local-reference",
       mediaProbe: {
         audio: { codecName: "aac" },
         video: { height: 720, width: 1280 },
@@ -184,13 +158,15 @@ describe("draft render", () => {
     expect(evidenceMarkdown).toContain("Render plan: pass");
     expect(evidenceMarkdown).toContain("Voiceover audio: pass");
     expect(evidenceMarkdown).toContain(
-      "Draft render: pass (8s, intro -> scene -> outro, source frames intro:2/outro:2, ffprobe 1280x720 audio)",
+      "Draft render: pass (8s, intro -> scene -> outro, source frames intro:2/outro:2, voiceover deterministic-local timing/reference only, ffprobe 1280x720 audio)",
     );
     const review = await readFile(artifactPath(runId, "production/render/draft_review.md"), "utf8");
     expect(review).toContain("# Draft Render Review");
     expect(review).toContain("## Media Probe");
     expect(review).toContain("1280x720 h264");
     expect(review).toContain("Local review artifact only");
+    expect(review).toContain("timing/reference only; local timing draft");
+    expect(review).toContain("not final production voice");
     expect(review).toContain("assets/intro/episode_title_card_1920x1080.jpg");
     expect(review).toContain("assets/outro/youtube_end_screen_1920x1080.jpg");
     expect(review).toContain("## Operator Decision");
@@ -202,7 +178,7 @@ describe("draft render", () => {
     expect(readiness.checks.find((check) => check.name === "draft render available")).toMatchObject(
       {
         message: expect.stringContaining(
-          "ffprobe-validated draft video (1280x720, audio stream present, source frames intro:2/outro:2)",
+          "ffprobe-validated draft video (1280x720, audio stream present, source frames intro:2/outro:2, voiceover deterministic-local timing/reference only)",
         ),
         status: "pass",
       },

@@ -70,4 +70,20 @@ describe("evidence next command", () => {
       "Review deterministic reference audio; approve render only for a local timing draft with pnpm producer approve render --run <run_id>",
     );
   });
+
+  it("keeps rendered timing drafts separate from final production review", () => {
+    expect(
+      evidenceNextCommand({
+        costQuote: null,
+        draftRender: {
+          status: "pass",
+          voiceoverProductionVoiceCandidate: false,
+        },
+        hasUnresolvedCostReservation: false,
+        state: "RENDERED",
+      }),
+    ).toBe(
+      "Review local timing draft; regenerate voiceover with reviewed local Piper audio before final production review.",
+    );
+  });
 });

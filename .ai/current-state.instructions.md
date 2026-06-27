@@ -68,16 +68,17 @@
 - `producer doctor` TTS diagnostics persist a next-action field in JSON and Markdown for disabled
   TTS, deterministic reference audio, valid local Piper config, and local Piper remediation.
 - Approval-gated local FFmpeg draft render. `producer approve render` records approval for the exact
-  current render-plan and voiceover digests, then `producer render` requires `RENDER_APPROVED`
-  before writing `production/render/draft.mp4`, `production/render/render_manifest.json`, and
-  `production/render/draft_review.md`. The draft render now builds an FFmpeg concat timeline from
-  render-plan intro/outro bookends and scenes, expands committed intro/outro source-frame sequences
-  into FFmpeg inputs when enough review time exists, composes lower-third, popup-card, waveform, and
-  watermark overlays when available, records the exact intro-to-outro timeline, source-frame counts,
-  and overlay roles/placements in the manifest, evidence, and readiness summaries, validates the
-  output with `ffprobe` media stream evidence, and writes an operator-readable final local review
-  checklist with a local-only decision boundary that keeps upload and public/scheduled publish
-  disabled.
+  current render-plan digest, voiceover digest, and voiceover mode/quality/candidate classification,
+  then `producer render` requires `RENDER_APPROVED` before writing `production/render/draft.mp4`,
+  `production/render/render_manifest.json`, and `production/render/draft_review.md`. The draft
+  render now builds an FFmpeg concat timeline from render-plan intro/outro bookends and scenes,
+  expands committed intro/outro source-frame sequences into FFmpeg inputs when enough review time
+  exists, composes lower-third, popup-card, waveform, and watermark overlays when available, records
+  the exact intro-to-outro timeline, source-frame counts, overlay roles/placements, and voiceover
+  classification in the manifest, evidence, and readiness summaries, validates the output with
+  `ffprobe` media stream evidence, and writes an operator-readable final local review checklist with
+  deterministic-reference audio labeled as a local timing draft and with upload/public-scheduled
+  publish still disabled.
 - Provider-backed idea and production-package stages schema-validate and normalize common Ollama
   JSON variants before artifact writes, while rejecting malformed or English operator-facing
   payloads fail-closed.

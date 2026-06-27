@@ -20,6 +20,7 @@ type VoiceoverNextStep = {
 
 type DraftRenderNextStep = {
   status?: string;
+  voiceoverProductionVoiceCandidate?: boolean;
 } | null;
 
 type EvidenceNextCommandInput = {
@@ -144,14 +145,21 @@ function manualProductionNextCommand(
 
 function renderApprovedNextCommand(draftRender: DraftRenderNextStep): string {
   if (draftRender?.status === "pass") {
-    return "Manual draft render review. Upload remains approval-gated.";
+    return renderedDraftReviewCommand(draftRender);
   }
   return "pnpm producer render --run <run_id>";
 }
 
 function renderedNextCommand(draftRender: DraftRenderNextStep): string {
   if (draftRender?.status === "pass") {
-    return "Manual final draft review. Upload remains approval-gated.";
+    return renderedDraftReviewCommand(draftRender);
   }
   return "Regenerate evidence; draft render artifacts are missing or blocked.";
+}
+
+function renderedDraftReviewCommand(draftRender: DraftRenderNextStep): string {
+  if (draftRender?.voiceoverProductionVoiceCandidate === false) {
+    return "Review local timing draft; regenerate voiceover with reviewed local Piper audio before final production review.";
+  }
+  return "Manual final draft review. Upload remains approval-gated.";
 }

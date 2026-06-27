@@ -67,6 +67,7 @@
 - Harden FFmpeg draft render visual polish; the current foundation is exact-approval-gated local MP4
   with intro/outro source-card bookends or source-frame sequences, scene-timed background plates,
   subtitle burn-in, lower-third, popup-card, waveform, watermark overlays, render manifest evidence,
+  voiceover mode/quality/candidate classification preserved from approval through evidence,
   fail-closed `ffprobe` media validation, and an operator-readable
   `production/render/draft_review.md` checklist with local-only decision guidance.
 - Harden the idea repair prompt and idea-quality constraints with live qwen3 feedback. The

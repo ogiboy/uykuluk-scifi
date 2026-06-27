@@ -31,6 +31,9 @@ export async function approveRender(runId: string): Promise<ApprovalRecord> {
       approvedRef: renderApprovalRef({
         renderPlanDigest: renderPlan.digest,
         voiceoverAudioDigest: voiceoverAudio.digest,
+        voiceoverMode: voiceoverAudio.mode,
+        voiceoverProductionVoiceCandidate: voiceoverAudio.productionVoiceCandidate,
+        voiceoverQuality: voiceoverAudio.quality,
       }),
       previousState: run.state,
       nextState: "RENDER_APPROVED",

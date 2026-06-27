@@ -56,10 +56,15 @@ describe("evidence Markdown media summary", () => {
         sourceFrameSegments: [],
         reviewPath: "production/render/draft_review.md",
         reviewChecklist: ["review locally"],
+        voiceoverMode: "deterministic-local",
+        voiceoverProductionVoiceCandidate: false,
+        voiceoverQuality: "deterministic-local-reference",
       },
     });
 
-    expect(markdown).toContain("Draft render: pass (3s, scene).");
+    expect(markdown).toContain(
+      "Draft render: pass (3s, scene, voiceover deterministic-local timing/reference only).",
+    );
     expect(markdown).toContain(
       "Voiceover audio: pass (2s, deterministic-local, timing/reference only, 12 source words).",
     );

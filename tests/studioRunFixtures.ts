@@ -67,6 +67,8 @@ export async function createRenderedStudioRunFixture(): Promise<string> {
       sourceFrameCount: 4,
       sourceFrameSegments: ["intro:2", "outro:2"],
       timelineSegments: ["intro", "scene", "outro"],
+      voiceoverMode: "local-piper",
+      voiceoverProductionVoiceCandidate: true,
     },
     nextRecommendedCommand: "Manual final draft review. Upload remains approval-gated.",
     renderPlan: { status: "pass", artifactCount: 3, assetCount: 11 },
@@ -74,6 +76,7 @@ export async function createRenderedStudioRunFixture(): Promise<string> {
       status: "pass",
       durationSeconds: 8.2,
       mode: "local-piper",
+      productionVoiceCandidate: true,
       sourceWordCount: 42,
     },
   });
@@ -82,7 +85,7 @@ export async function createRenderedStudioRunFixture(): Promise<string> {
       name: "draft render available",
       status: "pass",
       message:
-        "production/render/draft.mp4 exists with 8s ffprobe-validated draft video (1280x720, audio stream present).",
+        "production/render/draft.mp4 exists with 8s ffprobe-validated draft video (1280x720, audio stream present, voiceover local-piper production voice candidate).",
     },
     {
       name: "public upload disabled without explicit config",
