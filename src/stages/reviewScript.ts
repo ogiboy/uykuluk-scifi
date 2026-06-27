@@ -9,20 +9,27 @@ import { sha256 } from "../utils/hash.js";
 import { bulletList } from "../utils/markdown.js";
 
 type ScriptReviewWarnings = ReturnType<typeof reviewScriptContent>;
+export type ScriptReview = {
+  runId: string;
+  scriptHash: string;
+  warningCount: number;
+  blockerCount: number;
+  warnings: ScriptReviewWarnings;
+};
 
 /**
  * Reviews the generated script content for a run.
  *
- * @returns An object containing the warnings produced by the content review.
+ * @returns The persisted script review result.
  */
-export async function reviewScript(runId: string): Promise<{ warnings: ScriptReviewWarnings }> {
+export async function reviewScript(runId: string): Promise<ScriptReview> {
   let run = await loadRun(runId);
   await requireState(run, "SCRIPT_GENERATED", "review-script");
   assertTransition(run.state, "SCRIPT_REVIEWED");
   try {
     const script = await readFile(artifactPath(run.runId, "script.md"), "utf8");
     const warnings = reviewScriptContent(script);
-    const review = {
+    const review: ScriptReview = {
       runId: run.runId,
       scriptHash: sha256(script),
       warningCount: warnings.length,
@@ -55,7 +62,7 @@ export async function reviewScript(runId: string): Promise<{ warnings: ScriptRev
       ].join("\n"),
     );
     await setRunState(run, "SCRIPT_REVIEWED", "review-script");
-    return { warnings };
+    return review;
   } catch (error) {
     await appendLedgerEvent({
       runId: run.runId,

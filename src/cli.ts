@@ -56,11 +56,16 @@ const review = program.command("review").description("Run local reviews.");
 review
   .command("script")
   .requiredOption("--run <run_id>")
+  .option("--json", "Print the raw script review JSON for automation.")
   .description("Review generated script.")
   .action(
-    wrap(async (options: { run: string }) => {
+    wrap(async (options: { json?: boolean; run: string }) => {
       const result = await reviewScript(options.run);
-      console.log(`Script reviewed. Warnings: ${result.warnings.length}`);
+      console.log(
+        options.json
+          ? JSON.stringify(result, null, 2)
+          : `Script reviewed. Warnings: ${result.warnings.length}`,
+      );
     }),
   );
 
