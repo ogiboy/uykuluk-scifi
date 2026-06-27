@@ -205,7 +205,8 @@ agent-tracking state only; runtime code must not require it.
   `production/audio/voiceover_review.md` gives the operator the local audio review checklist,
   required decision boundary, and next safe commands; audio file existence never grants render
   approval. Evidence, readiness, and status label deterministic-local WAVs as timing/reference
-  artifacts until reviewed local Piper audio exists.
+  artifacts until reviewed local Piper audio exists, and next-action guidance calls out reference
+  audio before suggesting render approval for a local timing draft.
 - Draft render runs only after explicit render approval for the exact current render-plan and
   voiceover digests. The manifest records the intro-to-outro timeline, composed overlay roles,
   intro/outro source-frame counts when available, placements used by FFmpeg, and `ffprobe`-validated

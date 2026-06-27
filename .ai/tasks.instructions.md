@@ -62,7 +62,8 @@
   optional configured `local-piper` shell-out, pinned Turkish model setup into ignored `models/`,
   provider model/config digest provenance, local smoke evidence, and `producer doctor`
   setup/remediation next actions. Evidence/readiness/status now mark deterministic-local WAVs as
-  timing/reference only; keep the listen-before-render decision boundary explicit.
+  timing/reference only, and next-action guidance limits render approval with that audio to local
+  timing drafts. Keep the listen-before-render decision boundary explicit.
 - Harden FFmpeg draft render visual polish; the current foundation is exact-approval-gated local MP4
   with intro/outro source-card bookends or source-frame sequences, scene-timed background plates,
   subtitle burn-in, lower-third, popup-card, waveform, watermark overlays, render manifest evidence,

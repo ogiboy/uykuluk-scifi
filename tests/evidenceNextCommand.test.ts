@@ -53,4 +53,21 @@ describe("evidence next command", () => {
       }),
     ).not.toContain("approve script");
   });
+
+  it("keeps reference voiceover audio explicit before render approval", () => {
+    expect(
+      evidenceNextCommand({
+        costQuote: null,
+        hasUnresolvedCostReservation: false,
+        state: "READY_FOR_MANUAL_PRODUCTION",
+        ttsEnabled: true,
+        voiceoverAudio: {
+          productionVoiceCandidate: false,
+          status: "pass",
+        },
+      }),
+    ).toBe(
+      "Review deterministic reference audio; approve render only for a local timing draft with pnpm producer approve render --run <run_id>",
+    );
+  });
 });

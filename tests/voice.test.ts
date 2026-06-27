@@ -83,6 +83,7 @@ describe("voiceover audio", () => {
 
     const evidence = (await generateEvidenceBundle(runId)) as {
       blockedActions: string[];
+      nextRecommendedCommand: string;
       voiceoverAudio: {
         productionVoiceCandidate: boolean;
         quality: string;
@@ -102,6 +103,9 @@ describe("voiceover audio", () => {
     });
     expect(evidence.blockedActions).toContain(
       "Production voice candidate is not available; deterministic local audio is timing/reference only until reviewed local Piper audio exists.",
+    );
+    expect(evidence.nextRecommendedCommand).toBe(
+      "Review deterministic reference audio; approve render only for a local timing draft with pnpm producer approve render --run <run_id>",
     );
     const postVoiceReadiness = await runReadiness(runId);
     expect(postVoiceReadiness.passed).toBe(true);

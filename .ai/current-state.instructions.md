@@ -60,7 +60,8 @@
   record the model/config SHA-256 digests used for the generated WAV. The review Markdown includes
   an explicit listen-before-render decision boundary and exact next safe commands. Evidence,
   readiness, status, and blocked-action summaries mark deterministic-local WAVs as timing/reference
-  only until reviewed local Piper audio exists.
+  only until reviewed local Piper audio exists. Next-action guidance explicitly says render approval
+  with deterministic-local audio is only for a local timing draft.
 - `pnpm tts:piper:setup` downloads the pinned CPU-friendly Turkish
   `speaches-ai/piper-tr_TR-fahrettin-medium` model into ignored `models/` and prints the matching
   local config override for `local-piper`.

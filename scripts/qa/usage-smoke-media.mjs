@@ -46,8 +46,9 @@ export async function runLocalMediaSmoke({ run, pnpm, workdir, runId, assertFile
   await assertEvidenceNextCommand({
     workdir,
     runId,
-    expected: "pnpm producer approve render --run <run_id>",
-    message: "evidence recommends render approval after voiceover evidence exists",
+    expected:
+      "Review deterministic reference audio; approve render only for a local timing draft with pnpm producer approve render --run <run_id>",
+    message: "evidence keeps reference audio explicit before render approval",
     assert,
   });
   run([pnpm, "producer", "approve", "render", "--run", runId], {
