@@ -97,7 +97,12 @@ export async function writeEvidence(
   runId: string,
   evidence: Record<string, unknown>,
 ): Promise<void> {
-  await writeFile(artifactPath(runId, "evidence_bundle.json"), JSON.stringify(evidence), "utf8");
+  const run = await loadRun(runId);
+  await writeFile(
+    artifactPath(runId, "evidence_bundle.json"),
+    JSON.stringify({ runId, currentState: run.state, ...evidence }),
+    "utf8",
+  );
 }
 
 export type StudioReadinessFixtureCheck = {

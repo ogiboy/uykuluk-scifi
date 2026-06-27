@@ -1,21 +1,21 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import {
-  materializeRunCommand,
-  staticEvidenceNextCommand,
-} from "../../../../src/stages/evidenceNextCommand";
-import {
   diagnosticSummaryArtifactPaths,
   summarizeRunDiagnosticArtifact,
   type RunDiagnosticSummary,
 } from "../../../../src/stages/runDiagnosticSummaryContracts";
 import {
   productionMediaStatus,
-  type EvidenceStatus,
   type ProductionMediaStatus,
 } from "../../../../src/stages/statusMedia";
 import { evidenceBlockedActionMessages } from "../../../../src/stages/statusBlockedActions";
 import { readReviewArtifactPreviews, type StudioArtifactPreview } from "./artifactPreviews";
+import {
+  evidenceNextRecommendedCommand,
+  readStudioEvidenceSummary,
+  type StudioEvidenceSummary,
+} from "./evidenceSummaries";
 import { projectRoot } from "./projectRoot";
 import {
   readStudioReadinessSnapshot,
@@ -51,6 +51,9 @@ export type StudioRunSummary = {
   blockedActions: string[];
   blockedActionCount: number;
   createdAt: string;
+  evidenceMessage: string;
+  evidenceNextAction?: string;
+  evidenceStatus: StudioEvidenceSummary["status"];
   nextRecommendedCommand: string | null;
   readinessPassed: boolean | null;
   readinessMessage: string;
@@ -88,8 +91,6 @@ type ValidRunRecord = RunRecord & {
   state: StudioRunState;
 };
 
-type EvidenceSnapshot = EvidenceStatus;
-
 export async function listStudioRuns(): Promise<StudioRunSummary[]> {
   const root = projectRoot();
   const runsDir = path.join(root, "runs");
@@ -114,7 +115,7 @@ export async function getStudioRunDetail(runId: string): Promise<StudioRunDetail
     return null;
   }
   const [evidence, readiness] = await Promise.all([
-    readOptionalJson<EvidenceSnapshot>(root, runId, "evidence_bundle.json"),
+    readStudioEvidenceSummary(root, runId, record.state),
     readStudioReadinessSnapshot(root, runId),
   ]);
   const readinessSummary = summarizeReadinessSnapshot(
@@ -129,8 +130,11 @@ export async function getStudioRunDetail(runId: string): Promise<StudioRunDetail
     approvals: record.approvals ?? [],
     artifacts: await readReviewArtifactPreviews(root, runId),
     diagnostics: await readStudioRunDiagnostics(root, runId, record.artifacts ?? []),
-    evidence: evidence ?? null,
-    productionMedia: productionMediaStatus({ artifacts: record.artifacts ?? [] }, evidence),
+    evidence: evidence.snapshot,
+    productionMedia: productionMediaStatus(
+      { artifacts: record.artifacts ?? [] },
+      evidence.snapshot,
+    ),
     readiness: readiness.snapshot,
     readinessChecks: readinessSummary.checks,
     warnings: record.warnings ?? [],
@@ -143,7 +147,7 @@ async function readRunSummary(root: string, runId: string): Promise<StudioRunSum
     return null;
   }
   const [evidence, readiness] = await Promise.all([
-    readOptionalJson<EvidenceSnapshot>(root, runId, "evidence_bundle.json"),
+    readStudioEvidenceSummary(root, runId, record.state),
     readStudioReadinessSnapshot(root, runId),
   ]);
   return summarizeRun(
@@ -155,21 +159,25 @@ async function readRunSummary(root: string, runId: string): Promise<StudioRunSum
 
 function summarizeRun(
   record: RunRecord,
-  evidence: EvidenceSnapshot | null,
+  evidence: StudioEvidenceSummary,
   readiness: StudioReadinessSummary,
 ): StudioRunSummary {
   const runId = record.runId ?? "unknown";
-  const blockedActions = evidenceBlockedActionMessages(evidence, runId);
+  const blockedActions = evidenceBlockedActionMessages(evidence.snapshot, runId);
   return {
     approvalCount: record.approvals?.length ?? 0,
     artifactCount: record.artifacts?.length ?? 0,
     blockedActionCount: blockedActions.length,
     blockedActions,
     createdAt: record.createdAt ?? "",
-    nextRecommendedCommand:
-      typeof evidence?.nextRecommendedCommand === "string"
-        ? materializeRunCommand(evidence.nextRecommendedCommand, runId)
-        : materializeStaticNextCommand(record.state ?? "FAILED", runId),
+    evidenceMessage: evidence.message,
+    evidenceNextAction: evidence.nextAction,
+    evidenceStatus: evidence.status,
+    nextRecommendedCommand: evidenceNextRecommendedCommand(
+      evidence,
+      record.state ?? "FAILED",
+      runId,
+    ),
     readinessMessage: readiness.message,
     readinessNextAction: readiness.nextAction,
     readinessPassed: readiness.passed,
@@ -179,11 +187,6 @@ function summarizeRun(
     updatedAt: record.updatedAt ?? record.createdAt ?? "",
     warningCount: record.warnings?.length ?? 0,
   };
-}
-
-function materializeStaticNextCommand(state: string, runId: string): string | null {
-  const command = staticEvidenceNextCommand(state);
-  return command ? materializeRunCommand(command, runId) : null;
 }
 
 async function readStudioRunDiagnostics(

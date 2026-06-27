@@ -25,6 +25,10 @@ export function RunDetailView({ run }: Readonly<{ run: StudioRunDetail }>) {
             <dt>Readiness</dt>
             <dd>{run.readinessStatus}</dd>
           </div>
+          <div>
+            <dt>Evidence</dt>
+            <dd>{run.evidenceStatus}</dd>
+          </div>
         </dl>
       </section>
 
@@ -37,6 +41,10 @@ export function RunDetailView({ run }: Readonly<{ run: StudioRunDetail }>) {
           Read-only display. Use the CLI to mutate approvals, artifacts, render, upload, or publish
           state.
         </p>
+        <p>Evidence: {run.evidenceMessage}</p>
+        {run.evidenceNextAction ? (
+          <p className='artifact-action'>Evidence action: {run.evidenceNextAction}</p>
+        ) : null}
       </section>
 
       <section className='panel' aria-labelledby='blocked-actions-heading'>
