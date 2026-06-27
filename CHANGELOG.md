@@ -9,7 +9,9 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Features
+
+- add `producer doctor --json` for automation-friendly local diagnostics
 
 ## v0.20.0 (2026-06-27)
 
