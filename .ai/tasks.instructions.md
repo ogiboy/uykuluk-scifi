@@ -108,6 +108,9 @@
   models, or mutate workflow state.
 - Keep the read-only Studio home latest-run readiness summary aligned with `listStudioRuns()` and
   persisted readiness/evidence artifacts. It must not duplicate workflow state or trigger CLI work.
+- Keep the read-only Studio home manual analytics summary aligned with
+  `getStudioAnalyticsOverview()` and local analytics artifacts. It must not call YouTube APIs or
+  infer causality from incomplete imports.
 - Keep Studio read-only artifact previews useful as new artifact types are added. Current previews
   include operator-phase grouping, media-specific metadata, and per-artifact review wording while
   keeping the surface non-mutating.
