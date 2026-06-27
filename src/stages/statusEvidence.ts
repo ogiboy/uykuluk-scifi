@@ -43,7 +43,7 @@ export async function readEvidenceStatus(
 export function validateEvidenceStatus(
   evidence: EvidenceStatus,
   runId: string,
-  currentState: RunState | string,
+  currentState: string,
 ): EvidenceReadResult {
   if (!evidence || typeof evidence !== "object") {
     return { kind: "invalid", message: "evidence_bundle.json is not an object." };

@@ -114,7 +114,7 @@ function expandTimelineInputs(timeline: DraftRenderTimeline): FfmpegTimelineInpu
     const durations = distributeDuration(item.durationSeconds, assets.length);
     return assets.map((asset, index) => ({
       asset,
-      durationSeconds: durations[index]!,
+      durationSeconds: durations[index],
     }));
   });
 }

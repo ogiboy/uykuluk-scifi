@@ -1,14 +1,12 @@
 import {
   emptyAnalyticsDataQuality,
-  summarizeAnalyticsDataQuality,
   type AnalyticsDataQualitySummary,
 } from "../../../../src/analytics/dataQuality";
+export { summarizeAnalyticsDataQuality } from "../../../../src/analytics/dataQuality";
 
 export type StudioAnalyticsReportStatus = "current" | "missing" | "stale";
 
 export type StudioAnalyticsDataQuality = AnalyticsDataQualitySummary;
-
-export { summarizeAnalyticsDataQuality };
 
 /**
  * Returns an empty studio analytics data quality summary.

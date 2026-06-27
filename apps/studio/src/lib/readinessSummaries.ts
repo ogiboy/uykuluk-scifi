@@ -102,7 +102,7 @@ export function summarizeReadinessSnapshot(
     return invalidReadiness(nextAction, "Readiness diagnostics are missing required fields.");
   }
   const checks = readiness.checks.map((check) => summarizeReadinessCheck(check, runId));
-  if (checks.some((check) => check === null)) {
+  if (checks.includes(null)) {
     return invalidReadiness(nextAction, "Readiness diagnostics contain an invalid check.");
   }
   return {

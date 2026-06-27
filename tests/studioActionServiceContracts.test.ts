@@ -1,3 +1,4 @@
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { disabledStudioActionRoutes } from "../apps/studio/src/lib/routeSecurity";
 import {
@@ -62,7 +63,7 @@ describe("Studio mutation service contracts", () => {
       /Invalid run id/,
     );
     for (const runId of [
-      "/tmp/run_escape",
+      path.join(path.sep, "tmp", "run_escape"),
       "run_escape/child",
       "run_escape child",
       "bad_operator_review",

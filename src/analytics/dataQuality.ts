@@ -74,10 +74,10 @@ export function analyticsRecordConfidence(
 ): AnalyticsRecordConfidence {
   const missing = [
     record.runId ? null : "run link",
-    record.views !== undefined ? null : "views",
-    record.impressions !== undefined ? null : "impressions",
-    record.ctr !== undefined ? null : "CTR",
-    record.averagePercentageViewed !== undefined ? null : "retention",
+    record.views === undefined ? "views" : null,
+    record.impressions === undefined ? "impressions" : null,
+    record.ctr === undefined ? "CTR" : null,
+    record.averagePercentageViewed === undefined ? "retention" : null,
   ].filter(isString);
   const presentCount = 5 - missing.length;
   return {
