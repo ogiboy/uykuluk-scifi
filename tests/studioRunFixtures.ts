@@ -77,7 +77,19 @@ export async function createRenderedStudioRunFixture(): Promise<string> {
       sourceWordCount: 42,
     },
   });
-  await writeReadiness(run.runId, true);
+  await writeReadiness(run.runId, true, [
+    {
+      name: "draft render available",
+      status: "pass",
+      message:
+        "production/render/draft.mp4 exists with 8s ffprobe-validated draft video (1280x720, audio stream present).",
+    },
+    {
+      name: "public upload disabled without explicit config",
+      status: "pass",
+      message: "Public/scheduled publish remains disabled by default.",
+    },
+  ]);
   return run.runId;
 }
 
@@ -88,11 +100,21 @@ export async function writeEvidence(
   await writeFile(artifactPath(runId, "evidence_bundle.json"), JSON.stringify(evidence), "utf8");
 }
 
-export async function writeReadiness(runId: string, passed: boolean): Promise<void> {
+export type StudioReadinessFixtureCheck = {
+  message: string;
+  name: string;
+  status: "block" | "pass" | "warn";
+};
+
+export async function writeReadiness(
+  runId: string,
+  passed: boolean,
+  checks: readonly StudioReadinessFixtureCheck[] = [],
+): Promise<void> {
   await mkdir(`runs/${runId}/diagnostics`, { recursive: true });
   await writeFile(
     artifactPath(runId, "diagnostics/readiness.json"),
-    JSON.stringify({ runId, passed, checks: [] }),
+    JSON.stringify({ runId, passed, checks }),
     "utf8",
   );
 }

@@ -166,10 +166,7 @@ function warningsForCategory(
   return guardWarnings.filter((warning) => definition.guardedWarningPattern?.test(warning));
 }
 
-function resolveAssetDirectory(
-  assets: StudioAssetConfig,
-  directory: string | ConfiguredAssetDirectory,
-): string {
+function resolveAssetDirectory(assets: StudioAssetConfig, directory: string): string {
   if (isConfiguredAssetDirectory(directory)) {
     return assets[directory];
   }

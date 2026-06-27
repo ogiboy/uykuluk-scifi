@@ -12,7 +12,7 @@ export const DEFAULT_ASSET_CONFIG: StudioAssetConfig = {
 
 export type AssetCategoryDefinition = {
   description: string;
-  directory: string | ConfiguredAssetDirectory;
+  directory: string;
   guardedWarningPattern?: RegExp;
   id: string;
   label: string;

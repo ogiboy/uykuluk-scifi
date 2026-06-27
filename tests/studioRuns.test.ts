@@ -68,6 +68,19 @@ describe("Studio read-only run summaries", () => {
       },
       readiness: { passed: true },
     });
+    expect((detail as { readinessChecks?: unknown })?.readinessChecks).toEqual([
+      {
+        message:
+          "production/render/draft.mp4 exists with 8s ffprobe-validated draft video (1280x720, audio stream present).",
+        name: "draft render available",
+        status: "pass",
+      },
+      {
+        message: "Public/scheduled publish remains disabled by default.",
+        name: "public upload disabled without explicit config",
+        status: "pass",
+      },
+    ]);
     expect(detail?.productionMedia).toEqual([
       {
         artifactPath: "production/render_plan.json",

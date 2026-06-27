@@ -129,10 +129,22 @@ export function RunDetailView({ run }: Readonly<{ run: StudioRunDetail }>) {
           {run.readiness?.passed === true ? "Readiness passed." : "Readiness has not passed yet."}
         </p>
         <p>
-          {Array.isArray(run.readiness?.checks)
-            ? `${run.readiness.checks.length} check(s) recorded.`
+          {run.readinessChecks.length > 0
+            ? `${run.readinessChecks.length} check(s) recorded.`
             : "No readiness checks recorded."}
         </p>
+        {run.readinessChecks.length > 0 ? (
+          <ul>
+            {run.readinessChecks.map((check) => (
+              <li key={check.name}>
+                <strong>{check.name}</strong>:{" "}
+                <span className={readinessStatusClassName(check.status)}>{check.status}</span>
+                <br />
+                <span>{check.message}</span>
+              </li>
+            ))}
+          </ul>
+        ) : null}
       </section>
     </div>
   );
@@ -162,6 +174,10 @@ function formatReadiness(value: boolean | null): string {
 }
 
 function mediaStatusClassName(status: string): string {
+  return status === "pass" ? "status-pill small" : "status-pill small blocked";
+}
+
+function readinessStatusClassName(status: string): string {
   return status === "pass" ? "status-pill small" : "status-pill small blocked";
 }
 

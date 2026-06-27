@@ -54,7 +54,14 @@ export type StudioRunDetail = StudioRunSummary & {
   evidence: Record<string, unknown> | null;
   productionMedia: ProductionMediaStatus[];
   readiness: { checks?: unknown[]; passed?: boolean } | null;
+  readinessChecks: StudioReadinessCheck[];
   warnings: string[];
+};
+
+export type StudioReadinessCheck = {
+  message: string;
+  name: string;
+  status: "block" | "pass" | "warn";
 };
 
 type RunRecord = {
@@ -110,6 +117,7 @@ export async function getStudioRunDetail(runId: string): Promise<StudioRunDetail
     evidence: evidence ?? null,
     productionMedia: productionMediaStatus({ artifacts: record.artifacts ?? [] }, evidence),
     readiness: readiness ?? null,
+    readinessChecks: summarizeReadinessChecks(readiness),
     warnings: record.warnings ?? [],
   };
 }
@@ -148,6 +156,27 @@ function summarizeRun(
     updatedAt: record.updatedAt ?? record.createdAt ?? "",
     warningCount: record.warnings?.length ?? 0,
   };
+}
+
+function summarizeReadinessChecks(readiness: ReadinessSnapshot | null): StudioReadinessCheck[] {
+  if (!Array.isArray(readiness?.checks)) {
+    return [];
+  }
+  return readiness.checks.flatMap((check) => {
+    if (!check || typeof check !== "object") {
+      return [];
+    }
+    const name = "name" in check ? check.name : undefined;
+    const status = "status" in check ? check.status : undefined;
+    const message = "message" in check ? check.message : undefined;
+    return typeof name === "string" && isReadinessStatus(status) && typeof message === "string"
+      ? [{ name, status, message }]
+      : [];
+  });
+}
+
+function isReadinessStatus(value: unknown): value is StudioReadinessCheck["status"] {
+  return value === "block" || value === "pass" || value === "warn";
 }
 
 async function readStudioRunDiagnostics(
