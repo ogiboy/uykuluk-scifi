@@ -9,6 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
+_No unreleased changes yet._
+
+## v0.35.1 (2026-06-28)
+
 ### Fixes
 
 - bind render-plan evidence to the current run and production package manifest
