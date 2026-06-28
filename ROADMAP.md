@@ -33,6 +33,8 @@ The current CLI/core already covers the safe production foundation:
   budget accounting;
 - provider failure diagnostics, local-model receipts, prompt provenance, production-package
   integrity, and durable evidence;
+- lightweight local model evaluation reports for configured mock/Ollama/llama.cpp providers without
+  persisting raw provider output;
 - disabled-by-default local TTS, approval-gated local draft render, and disabled upload and
   public/scheduled publish scaffolds;
 - CI, CodeQL, Sonar, formatting, modularity, secret scan, usage smoke, and release hygiene gates.
@@ -167,8 +169,6 @@ Allowed only after the local production loop is useful:
 
 - private YouTube upload with explicit config, approval, and request/response evidence;
 - YouTube Analytics API;
-- local LLM evaluation for `llama.cpp` GGUF candidates before treating any model as production
-  default;
 - idea-only scheduler;
 - prompt override UI;
 - subtitle, scene, popup card, thumbnail, and metadata revision contracts;

@@ -77,6 +77,8 @@ agent-tracking state only; runtime code must not require it.
 - Mock-first provider layer with Ollama and local `llama.cpp` adapters.
 - Project-level `producer doctor` diagnostics for config, mock/Ollama/llama.cpp readiness, local
   TTS/Piper readiness, local FFmpeg/ffprobe toolchain availability, assets, and publish defaults.
+- Local model evaluation command that exercises small idea/script parser contracts, writes ignored
+  `diagnostics/local_model_eval.*` reports, and never persists raw provider output.
 - Runtime prompt defaults under `prompts/defaults/`; `.ai/` is development and agent-tracking
   guidance, not a runtime dependency.
 - Strict run state machine and explicit approval ledger.
@@ -298,6 +300,18 @@ pnpm producer status --latest
 pnpm producer list-runs
 pnpm producer list-runs --json
 ```
+
+Local model evaluation:
+
+```bash
+pnpm producer eval local-model
+pnpm producer eval local-model --json
+```
+
+This uses the configured local provider and model, so keep `mock` for cheap parser-contract checks
+or point `producer.config.json` at Ollama/`llama.cpp` for manual local bake-offs. The report writes
+ignored `diagnostics/local_model_eval.json` and `.md` with hashes, token/duration metadata, and
+parser results. Raw provider text is intentionally not persisted.
 
 Manual analytics feedback:
 
@@ -570,6 +584,14 @@ persisted under the run when safe to record. Repeated sentence or label blockers
 raw-output-free repair retries, and a later successful script run clears stale failure diagnostics
 before advancing. `producer status` and the read-only Studio run detail surface safe idea/script
 failure diagnostic summaries so the next blocker is visible without opening JSON artifacts by hand.
+
+`producer eval local-model` is a lightweight manual bake-off surface for local model candidates. It
+does not create a run or advance workflow state; it calls only the configured local LLM provider,
+validates small idea/script samples through the production parsers, and writes ignored diagnostic
+reports without raw model output. A 2026-06-28 local qwen3:8b run remained fail-closed at the
+idea-contract check because `fit` explanations were not slot-specific, while the script-section
+contract parsed; this keeps Qwen as regression evidence rather than the recommended production
+default.
 
 Run `pnpm producer doctor` before starting production work. Mock mode passes without network access.
 Ollama mode checks `/api/tags`; `llama.cpp` mode checks `/v1/models`. Both use bounded timeouts and
