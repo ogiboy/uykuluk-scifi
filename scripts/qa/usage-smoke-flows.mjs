@@ -41,7 +41,7 @@ export async function runScriptRevisionSmoke({ run, pnpm, workdir, runId, assert
     `${generatedScript.trim()}\n\nOperator revision smoke evidence.\n`,
     "utf8",
   );
-  run(
+  const revisionResult = run(
     [
       pnpm,
       "producer",
@@ -55,11 +55,18 @@ export async function runScriptRevisionSmoke({ run, pnpm, workdir, runId, assert
       "Clean-copy revision smoke",
       "--editor",
       "usage-smoke",
+      "--json",
     ],
-    { label: "revise script", expectOutput: "Script revision recorded" },
+    { label: "revise script JSON", expectOutput: '"artifact": "script.md"' },
   );
+  const revision = JSON.parse(revisionResult.stdout);
+  assert(revision.runId === runId, "script revision JSON includes run id");
+  assert(revision.artifact === "script.md", "script revision JSON includes artifact");
+  assert(revision.editor === "usage-smoke", "script revision JSON includes editor");
+  assert(revision.nextState === "SCRIPT_GENERATED", "script revision JSON resets script state");
   const revisionIds = await readdir(path.join(workdir, "runs", runId, "revisions", "script"));
   assert(revisionIds.length === 1, "one script revision directory exists");
+  assert(revisionIds[0] === revision.revisionId, "script revision directory matches JSON output");
   const revisionDir = path.join("runs", runId, "revisions", "script", revisionIds[0]);
   for (const artifact of ["before.md", "after.md", "revision.json"]) {
     await assertFile(path.join(revisionDir, artifact));
