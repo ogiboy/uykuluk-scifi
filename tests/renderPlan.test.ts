@@ -111,6 +111,10 @@ describe("render plan", () => {
       "utf8",
     );
     expect(contactSheet).toContain("## Intro And Outro Bookends");
+    expect(contactSheet).toContain("## Timing Summary");
+    expect(contactSheet).toContain("Scene count:");
+    expect(contactSheet).toContain("Intro/outro bookends: 5s");
+    expect(contactSheet).toContain("Estimated local draft duration:");
     expect(contactSheet).toContain("assets/intro/episode_title_card_1920x1080.jpg");
     expect(contactSheet).toContain("Intro source frames: 2 committed frames");
     expect(contactSheet).toContain("assets/outro/youtube_end_screen_1920x1080.jpg");

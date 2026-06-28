@@ -85,8 +85,9 @@ agent-tracking state only; runtime code must not require it.
   hard-budget revalidation, adapter-bound local at-most-once execution claims, fail-closed
   timeout/unknown outcomes, cost ledger, content/clickbait review, full asset readiness, and
   evidence bundles.
-- Render Plan + Contact Sheet MVP that maps generated scenes to tracked visual assets and records
-  per-run asset provenance, including committed intro/outro source-frame sequences when present.
+- Render Plan + Contact Sheet MVP that maps generated scenes to tracked visual assets, summarizes
+  scene/bookend timing, and records per-run asset provenance, including committed intro/outro
+  source-frame sequences when present.
 - Disabled-by-default local voiceover generation with deterministic reference WAV output,
   production-readiness warnings, operator review Markdown, and an optional Piper binary/model-path
   adapter.
