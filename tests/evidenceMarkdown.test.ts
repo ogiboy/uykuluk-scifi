@@ -63,6 +63,7 @@ describe("evidence Markdown media summary", () => {
         sourceFrameCadence: [],
         reviewPath: "production/render/draft_review.md",
         reviewChecklist: ["review locally"],
+        ffmpegReviewCommand: "ffmpeg -i production/render/draft.mp4 -f null -",
         voiceoverMode: "deterministic-local",
         voiceoverProductionVoiceCandidate: false,
         voiceoverQuality: "deterministic-local-reference",

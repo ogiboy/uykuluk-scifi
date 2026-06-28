@@ -177,6 +177,9 @@ describe("draft render", () => {
         "outro#2=1.5s assets/outro/frames/outro_frame_01.jpg",
       ],
       reviewPath: "production/render/draft_review.md",
+      ffmpegReviewCommand: expect.stringContaining(
+        artifactPath(runId, "production/render/draft.mp4"),
+      ),
       voiceoverMode: "deterministic-local",
       voiceoverProductionVoiceCandidate: false,
       voiceoverQuality: "deterministic-local-reference",

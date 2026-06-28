@@ -114,6 +114,7 @@ export type DraftRenderEvidence =
       sourceFrameCadence: string[];
       reviewPath: string;
       reviewChecklist: string[];
+      ffmpegReviewCommand: string;
       voiceoverMode: z.infer<typeof voiceoverModeSchema>;
       voiceoverProductionVoiceCandidate: boolean;
       voiceoverQuality: z.infer<typeof voiceoverQualitySchema>;
@@ -189,6 +190,7 @@ export async function readDraftRenderEvidence(run: RunRecord): Promise<DraftRend
       sourceFrameCadence: sourceFrameCadence(manifest.ffmpegTimelineInputs),
       reviewPath: draftRenderReviewPath,
       reviewChecklist: manifest.composition.reviewChecklist,
+      ffmpegReviewCommand: manifest.ffmpeg.reviewCommand,
       voiceoverMode: manifest.voiceoverAudio.mode,
       voiceoverProductionVoiceCandidate: manifest.voiceoverAudio.productionVoiceCandidate,
       voiceoverQuality: manifest.voiceoverAudio.quality,

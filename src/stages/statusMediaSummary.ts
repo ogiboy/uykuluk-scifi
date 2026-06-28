@@ -12,6 +12,7 @@ export type EvidenceMediaStatus = {
   artifactCount?: unknown;
   assetCount?: unknown;
   durationSeconds?: unknown;
+  ffmpegReviewCommand?: unknown;
   mediaProbe?: unknown;
   message?: unknown;
   mode?: unknown;

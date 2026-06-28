@@ -148,6 +148,11 @@ async function assertRenderedEvidence({ workdir, runId, assert }) {
     "draft render evidence preserves reference audio classification",
   );
   assert(
+    typeof renderedEvidence.draftRender.ffmpegReviewCommand === "string" &&
+      renderedEvidence.draftRender.ffmpegReviewCommand.includes("production/render/draft.mp4"),
+    "draft render evidence records final-output FFmpeg review command",
+  );
+  assert(
     renderedEvidence.nextRecommendedCommand ===
       "Review local timing draft; regenerate voiceover with reviewed local Piper audio before final production review.",
     "rendered evidence keeps deterministic draft audio out of final production review",

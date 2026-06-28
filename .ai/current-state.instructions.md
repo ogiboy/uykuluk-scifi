@@ -400,9 +400,9 @@ Corepack/PATH before treating failures as product failures.
 - FFmpeg draft render currently focuses on a local review MP4 using intro/outro source-card bookends
   or source-frame sequences, scene-timed background plates, subtitle burn-in, lower-third,
   popup-card, waveform, watermark overlays, voiceover audio, render manifest evidence, source-frame
-  evidence/readiness summaries, a stable final-output FFmpeg review command, and an operator review
-  checklist. Render-ready intro/outro MP4 clips for reuse outside the draft renderer and broader
-  visual polish remain follow-up work.
+  evidence/readiness summaries, a stable final-output FFmpeg review command in the manifest and
+  draft-render evidence JSON, and an operator review checklist. Render-ready intro/outro MP4 clips
+  for reuse outside the draft renderer and broader visual polish remain follow-up work.
 - Upload and publish are intentionally disabled scaffolds.
 - Manual analytics import/reporting and the basic read-only Studio analytics overview are local-only
   and operator-provided. Richer analytics comparisons, cohort-level confidence scoring, and YouTube

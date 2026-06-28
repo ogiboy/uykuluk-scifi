@@ -29,9 +29,12 @@ coherent, tested slices until the safe core and its evidence contracts are genui
   - `636f4ab feat(render): print draft review handoff`
   - `f828e2a feat(render): add read-only render review command`
   - `0546158 test(render): cover draft review handoff smoke`
+  - `f7ca5db feat(render): surface draft review commands`
 - `producer render` now prints a local-only review handoff, the render manifest records a stable
   final-output FFmpeg review command separately from temp-output execution args, and
   `producer review render --run <run_id>` replays the validated handoff without mutating run state.
+  CLI status, evidence Markdown, Studio production media summaries, and draft-render evidence JSON
+  now retain review handoff details without enabling upload or publish.
 - Active PR branch/worktree on 2026-06-25: `feat/local-production-workflow-hardening` at
   `/private/tmp/uykuluk-commit-work-20260624153047`.
 - Active product slice moved from safe-core-only work into local production-loop hardening: bounded
@@ -209,8 +212,14 @@ coherent, tested slices until the safe core and its evidence contracts are genui
     `feat(render): add read-only render review command`.
   - `pnpm lint && pnpm qa:modularity && pnpm format:check` passed after adding usage-smoke coverage
     for `producer review render`.
-  - Full `pnpm check` and `pnpm qa:usage` were intentionally deferred until PR-readiness because
-    this is still an accumulating feature branch.
+  - `pnpm test tests/render.test.ts tests/evidenceMarkdown.test.ts tests/statusOutput.test.ts tests/studioRuns.test.ts tests/renderCli.test.ts`
+    passed after persisting the final-output FFmpeg review command in draft-render evidence JSON.
+  - `pnpm qa:usage` passed; latest ignored report:
+    `.ai/qa/artifacts/usage-smoke-20260628-223132/qa-report.md`.
+  - `pnpm lint && pnpm typecheck && pnpm qa:modularity && pnpm changelog:check && pnpm release:check && pnpm format:check`
+    passed for the same slice.
+  - Full `pnpm check`, Studio build, browser smoke, dependency audit, and version plan were
+    intentionally deferred until PR-readiness because this is still an accumulating feature branch.
 - `pnpm check` passes with 44 test files and 261 tests.
 - `pnpm qa:usage`, `pnpm version:plan`, and `pnpm security:dependencies` pass; latest usage smoke
   report is `.ai/qa/artifacts/usage-smoke-20260624-120510/qa-report.md`.
