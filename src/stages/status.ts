@@ -5,6 +5,7 @@ import type { RunDiagnosticSummary } from "./runDiagnosticSummaryContracts.js";
 import { readRunDiagnosticSummaries } from "./runDiagnosticSummaries.js";
 import {
   formatProductionMediaStatus,
+  productionMediaReviewAction,
   productionMediaStatus,
   type ProductionMediaStatus,
 } from "./statusMedia.js";
@@ -90,13 +91,27 @@ export function formatRunStatus(status: RunStatusSummary): string {
     ...formatBlockedActions(status.blockedActions),
     ...formatDiagnostics(status.diagnostics),
     ...formatProductionMediaEvidenceForRun(status),
-    ...status.mediaArtifacts.map(formatProductionMediaStatus),
+    ...formatProductionMediaRows(status),
     "",
     "Recent artifacts:",
     ...(status.recentArtifacts.length > 0
       ? status.recentArtifacts.map((artifact) => `- ${artifact}`)
       : ["- none"]),
   ].join("\n");
+}
+
+/**
+ * Formats production media rows with conservative review guidance.
+ *
+ * @param status - The run status summary to render.
+ * @returns Lines for each production media row.
+ */
+function formatProductionMediaRows(status: RunStatusSummary): string[] {
+  const evidenceIsCurrent = status.evidenceStatus === "present";
+  return status.mediaArtifacts.flatMap((artifact) => [
+    formatProductionMediaStatus(artifact),
+    `  Review: ${productionMediaReviewAction(artifact, evidenceIsCurrent)}`,
+  ]);
 }
 
 /**

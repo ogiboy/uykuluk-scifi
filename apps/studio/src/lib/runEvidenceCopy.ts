@@ -1,5 +1,8 @@
 import type { StudioEvidenceSummary } from "./evidenceSummaries";
-import type { ProductionMediaStatus } from "../../../../src/stages/statusMediaSummary";
+import {
+  productionMediaReviewAction as coreProductionMediaReviewAction,
+  type ProductionMediaStatus,
+} from "../../../../src/stages/statusMediaReview";
 
 type EvidenceStatus = StudioEvidenceSummary["status"];
 
@@ -53,16 +56,7 @@ export function productionMediaReviewAction(
   evidenceStatus: EvidenceStatus,
   artifact: ProductionMediaStatus,
 ): string {
-  if (evidenceStatus !== "available" || artifact.status === "recorded") {
-    return "Regenerate evidence before using this media row as current review proof.";
-  }
-  if (artifact.status === "block") {
-    return "Resolve the blocker from the CLI before approving, rendering, uploading, or publishing.";
-  }
-  if (artifact.status === "missing") {
-    return missingProductionMediaAction(artifact.evidenceKey);
-  }
-  return passedProductionMediaAction(artifact);
+  return coreProductionMediaReviewAction(artifact, evidenceStatus === "available");
 }
 
 /**
@@ -86,61 +80,4 @@ export function artifactPreviewsIntro(evidenceStatus: EvidenceStatus): string {
  */
 export function shouldShowEvidenceRemediation(evidenceStatus: EvidenceStatus): boolean {
   return evidenceStatus !== "available";
-}
-
-/**
- * Chooses the review action for missing production media.
- *
- * @param evidenceKey - The evidence key for the missing artifact.
- * @returns The operator action to take from the CLI.
- */
-function missingProductionMediaAction(evidenceKey: ProductionMediaStatus["evidenceKey"]): string {
-  switch (evidenceKey) {
-    case "renderPlan":
-      return "Generate the render plan and contact sheet from the CLI before voiceover or render work.";
-    case "voiceoverAudio":
-      return "Generate and review local voiceover from the CLI before render approval.";
-    case "draftRender":
-      return "Approve and run the local draft render from the CLI only after current plan and voiceover evidence pass.";
-  }
-}
-
-/**
- * Chooses the review action for media that passes current evidence.
- *
- * @param artifact - The production media row being displayed.
- * @returns The next review action for the operator.
- */
-function passedProductionMediaAction(artifact: ProductionMediaStatus): string {
-  if (artifact.evidenceKey === "renderPlan") {
-    return "Review scene-to-asset mapping and the contact sheet before voiceover or render approval.";
-  }
-  if (artifact.evidenceKey === "voiceoverAudio") {
-    return voiceoverReviewAction(artifact.detail);
-  }
-  return draftRenderReviewAction(artifact.detail);
-}
-
-/**
- * Chooses voiceover review copy from the evidence detail.
- *
- * @param detail - Optional detail text produced from the current evidence bundle.
- * @returns The operator review action for voiceover audio.
- */
-function voiceoverReviewAction(detail: string | undefined): string {
-  return detail?.includes("timing/reference only")
-    ? "Use this audio only for local timing review; regenerate reviewed production voice before final render review."
-    : "Listen locally and verify pronunciation, pacing, and tone before render approval.";
-}
-
-/**
- * Chooses draft-render review copy from the evidence detail.
- *
- * @param detail - Optional detail text produced from the current evidence bundle.
- * @returns The operator review action for a local draft render.
- */
-function draftRenderReviewAction(detail: string | undefined): string {
-  return detail?.includes("timing/reference only")
-    ? "Review this MP4 as a timing draft only; production voice is still required before final review."
-    : "Review the MP4, manifest, and draft checklist locally; upload and publish remain disabled.";
 }
