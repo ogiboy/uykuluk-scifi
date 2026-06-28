@@ -105,6 +105,30 @@ export async function assertReviewEvidenceRecommendsWarningAcknowledgement({
 }
 
 /**
+ * Validates the operator summary JSON emitted by `producer status`.
+ * Confirms the summary stays automation-friendly while `status --json` remains raw state output.
+ */
+export function runStatusSummarySmoke({ run, pnpm, runId, assert }) {
+  const result = run([pnpm, "producer", "status", "--run", runId, "--summary-json"], {
+    label: "status summary JSON",
+    expectOutput: '"nextRecommendedCommand"',
+  });
+  const summary = JSON.parse(result.stdout);
+  assert(summary.run?.runId === runId, "status summary JSON includes run id");
+  assert(
+    summary.run?.state === "READY_FOR_MANUAL_PRODUCTION",
+    "status summary JSON includes current state",
+  );
+  assert(summary.evidenceStatus === "present", "status summary JSON has current evidence");
+  assert(summary.readiness?.status === "passed", "status summary JSON has readiness status");
+  assert(
+    typeof summary.nextRecommendedCommand === "string" &&
+      summary.nextRecommendedCommand.includes(runId),
+    "status summary JSON materializes next recommended command",
+  );
+}
+
+/**
  * Validates local manual analytics import/report commands from a clean copy.
  * Uses operator-provided CSV data only; no YouTube API or workflow mutation occurs.
  */

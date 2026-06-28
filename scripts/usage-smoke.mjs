@@ -10,6 +10,7 @@ import {
   runAnalyticsSmoke,
   runDoctorSmoke,
   runScriptRevisionSmoke,
+  runStatusSummarySmoke,
 } from "./qa/usage-smoke-flows.mjs";
 
 const repoRoot = process.cwd();
@@ -133,6 +134,7 @@ try {
     label: "status",
     expectOutput: "READY_FOR_MANUAL_PRODUCTION",
   });
+  runStatusSummarySmoke({ run, pnpm, runId, assert });
   run([pnpm, "producer", "status", "--latest"], {
     label: "status latest",
     expectOutput: runId,
