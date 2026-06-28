@@ -42,6 +42,10 @@ describe("local model candidate evaluation", () => {
       configSource: "cli-overrides",
       passed: false,
       providerMode: "mock",
+      operatorGuidance: {
+        decision: "candidate-ready",
+        nextCommand: "pnpm producer eval local-model --llm-mode mock --model mock-deterministic",
+      },
       recommendedCandidate: {
         blockedChecks: 0,
         configuredModel: "mock-deterministic",
@@ -60,9 +64,15 @@ describe("local model candidate evaluation", () => {
     expect(formatLocalModelCandidateEvalConsole(report)).toContain(
       "Recommended: mock-deterministic",
     );
+    expect(formatLocalModelCandidateEvalConsole(report)).toContain(
+      "Next command: pnpm producer eval local-model --llm-mode mock --model mock-deterministic",
+    );
     expect(renderLocalModelCandidateEvalMarkdown(report)).toContain("mock-invalid-script-json");
     expect(renderLocalModelCandidateEvalMarkdown(report)).toContain(
       "Recommended candidate: mock-deterministic",
+    );
+    expect(renderLocalModelCandidateEvalMarkdown(report)).toContain(
+      "Next command: `pnpm producer eval local-model --llm-mode mock --model mock-deterministic`",
     );
   });
 
@@ -80,6 +90,11 @@ describe("local model candidate evaluation", () => {
         }),
       ],
       passed: false,
+      operatorGuidance: {
+        decision: "try-more-candidates",
+        nextCommand:
+          "pnpm producer eval local-model-candidates --llm-mode mock --candidate <another-model>",
+      },
       recommendedCandidate: null,
     });
     expect(formatLocalModelCandidateEvalConsole(report)).toContain(
@@ -87,6 +102,20 @@ describe("local model candidate evaluation", () => {
     );
     expect(renderLocalModelCandidateEvalMarkdown(report)).toContain(
       "Recommended candidate: none; no candidate passed all checks",
+    );
+    expect(renderLocalModelCandidateEvalMarkdown(report)).toContain(
+      "No candidate passed all parser-contract checks.",
+    );
+  });
+
+  it("quotes unsafe model names in operator guidance commands", async () => {
+    const report = await runLocalModelCandidateEval({
+      candidates: ["mock candidate's model"],
+      llmOverrides: { mode: "mock" },
+    });
+
+    expect(report.operatorGuidance.nextCommand).toBe(
+      `pnpm producer eval local-model --llm-mode mock --model 'mock candidate'"'"'s model'`,
     );
   });
 

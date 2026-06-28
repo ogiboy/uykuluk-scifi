@@ -320,9 +320,10 @@ Ollama/`llama.cpp` candidates without mutating `producer.config.json`. The repor
 `diagnostics/local_model_eval.json` and `.md` with hashes, token/duration metadata, applied override
 names, and parser results. Use `local-model-candidates` with repeated `--candidate` values for a
 single comparison report at `diagnostics/local_model_candidates_eval.*`, including a deterministic
-recommended passing candidate when one exists. Raw provider text is intentionally not persisted. For
-automation that parses `--json` output through pnpm, prefer `pnpm --silent producer ... --json`;
-blocked evaluations still exit nonzero, but pnpm lifecycle text stays out of stdout.
+recommended passing candidate and next operator command when one exists. Raw provider text is
+intentionally not persisted. For automation that parses `--json` output through pnpm, prefer
+`pnpm --silent producer ... --json`; blocked evaluations still exit nonzero, but pnpm lifecycle text
+stays out of stdout.
 
 Manual analytics feedback:
 

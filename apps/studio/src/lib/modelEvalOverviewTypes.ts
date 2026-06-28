@@ -44,6 +44,7 @@ export type StudioCandidateEvalSummary = {
   passed: boolean;
   passingCandidateCount: number;
   providerMode: LocalModelCandidateEvalReportPersisted["providerMode"];
+  operatorGuidance: LocalModelCandidateEvalReportPersisted["operatorGuidance"] | null;
   recommendedCandidate: StudioCandidateModelSummary | null;
 };
 

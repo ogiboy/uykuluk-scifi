@@ -58,6 +58,11 @@ const blockedCandidateReport = {
   durationMs: 34,
   passed: false,
   providerMode: "mock",
+  operatorGuidance: {
+    decision: "candidate-ready",
+    message: "A candidate passed the parser-contract checks.",
+    nextCommand: "pnpm producer eval local-model --llm-mode mock --model mock-deterministic",
+  },
   recommendedCandidate: {
     blockedChecks: 0,
     configuredModel: "mock-deterministic",
@@ -108,7 +113,7 @@ describe("Studio local model evaluation overview", () => {
 
     expect(overview).toMatchObject({
       error: null,
-      nextCommand: "pnpm producer eval local-model-candidates --candidate <model>",
+      nextCommand: "pnpm producer eval local-model --llm-mode mock --model mock-deterministic",
       status: "blocked",
       singleReport: {
         blockCount: 0,
@@ -139,6 +144,9 @@ describe("Studio local model evaluation overview", () => {
         candidateCount: 2,
         passingCandidateCount: 1,
         passed: false,
+        operatorGuidance: expect.objectContaining({
+          nextCommand: "pnpm producer eval local-model --llm-mode mock --model mock-deterministic",
+        }),
         recommendedCandidate: expect.objectContaining({
           configuredModel: "mock-deterministic",
           durationMs: 12,
