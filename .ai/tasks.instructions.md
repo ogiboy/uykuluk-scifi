@@ -41,7 +41,9 @@
 - Keep `producer status` operator-readable while preserving `--json` for raw state automation and
   `--summary-json` for enriched operator-status automation; approval ledger and warning details
   should stay visible in the default operator output. Missing, malformed, or stale evidence must
-  label production media rows as artifact-record fallback rather than review proof.
+  label production media rows as artifact-record fallback rather than review proof, and the shared
+  production-media `Review:` guidance should stay consistent across CLI status, evidence Markdown,
+  and Studio.
 - Keep all run-root filesystem access behind canonical bounded run-ID validation.
 - Keep run artifact reads, writes, and persisted lists behind canonical relative-path validation.
 - Keep state, ledger, cost, reservation, lock, and artifact access behind canonical
@@ -122,7 +124,8 @@
   `producer evidence --run <run_id>` and must not imply blocked actions are absent or media is
   review-proof.
 - Keep CLI status evidence panels equally conservative: production media rows may fall back to
-  artifact records for visibility, but the text must say they are not current evidence proof.
+  artifact records for visibility, but the text must say they are not current evidence proof and
+  reuse the shared production-media review guidance.
 - Keep the read-only Studio mutation-service status panel aligned with route-security and service
   contract changes; it must not become an approval form or route handler.
 - Harden manual analytics feedback with import edge cases and richer comparisons while keeping data

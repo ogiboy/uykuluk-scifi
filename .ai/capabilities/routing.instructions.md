@@ -192,6 +192,8 @@ model. Offensive or exploit-oriented skills require explicit authorization and a
 - Review: independent reviewer or CodeRabbit after tests, not instead of tests.
 - Security-sensitive diff: Codex Security diff scan.
 - PR/CI: GitHub plugin route; use `gh` only where connector coverage is insufficient.
+- PR batching: group related slices into fewer coherent PRs; treat CodeRabbit review quota and CI
+  time as limited engineering budget, not free feedback on every tiny change.
 - Completion: Aegis verification-before-completion and project quality gates.
 - Release/changelog/version workflow drift: compare this repo's scripts with `agentic-trader` only
   as design reference; keep Producer's release policy conventional-commit based and deterministic.
