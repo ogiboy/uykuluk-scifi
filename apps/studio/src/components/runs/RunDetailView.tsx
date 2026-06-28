@@ -66,8 +66,8 @@ export function RunDetailView({ run }: Readonly<{ run: StudioRunDetail }>) {
         <h2 id='diagnostics-heading'>Diagnostics</h2>
         {run.diagnostics.length > 0 ? (
           <ul>
-            {run.diagnostics.map((diagnostic) => (
-              <li key={diagnostic.path}>
+            {run.diagnostics.map((diagnostic, index) => (
+              <li key={`diagnostic-${index}-${diagnostic.path}`}>
                 <strong>{diagnostic.stage}</strong>: {diagnostic.message}
                 <br />
                 <span>{diagnostic.path}</span>
@@ -149,8 +149,8 @@ export function RunDetailView({ run }: Readonly<{ run: StudioRunDetail }>) {
         </p>
         {run.readinessChecks.length > 0 ? (
           <ul>
-            {run.readinessChecks.map((check) => (
-              <li key={check.name}>
+            {run.readinessChecks.map((check, index) => (
+              <li key={`readiness-check-${index}-${check.name}`}>
                 <strong>{check.name}</strong>:{" "}
                 <span className={readinessStatusClassName(check.status)}>{check.status}</span>
                 <br />

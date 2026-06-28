@@ -32,8 +32,8 @@ export function RunBlockedActionsPanel({
       <p>{blockedActionsIntro(evidenceStatus)}</p>
       {evidenceStatus === "available" && blockedActions.length > 0 ? (
         <ul>
-          {blockedActions.map((action) => (
-            <li key={action}>{action}</li>
+          {blockedActions.map((action, index) => (
+            <li key={`blocked-action-${index}-${action}`}>{action}</li>
           ))}
         </ul>
       ) : (

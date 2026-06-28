@@ -9,7 +9,9 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Fixes
+
+- keep Studio read-only warning and blocker lists uniquely keyed when operator text repeats
 
 ## v0.35.4 (2026-06-28)
 
