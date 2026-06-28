@@ -135,6 +135,34 @@ describe("local model evaluation", () => {
     );
     expect(JSON.stringify(report)).not.toContain("local-secret-response");
   });
+
+  it("applies eval-only LLM overrides without mutating project config", async () => {
+    await useOllamaConfig();
+    const beforeConfig = await readFile("producer.config.json", "utf8");
+
+    const report = await runLocalModelEval({
+      llmOverrides: {
+        mode: "mock",
+        model: "mock-invalid-script-json",
+      },
+    });
+
+    expect(report).toMatchObject({
+      appliedOverrides: ["mode", "model"],
+      configSource: "cli-overrides",
+      configuredModel: "mock-invalid-script-json",
+      providerMode: "mock",
+      passed: false,
+      checks: expect.arrayContaining([
+        expect.objectContaining({
+          name: "script-section-json",
+          status: "block",
+        }),
+      ]),
+    });
+    await expect(readFile("producer.config.json", "utf8")).resolves.toBe(beforeConfig);
+    expect(renderLocalModelEvalMarkdown(report)).toContain("Overrides: mode, model");
+  });
 });
 
 async function useMockModel(model: string): Promise<void> {

@@ -75,8 +75,10 @@
   guidance.
 - Use `producer eval local-model` before more Qwen-specific tuning. Compare configured local
   candidates through the same idea/script gates, receipt evidence, JSON compliance, repetition
-  checks, Turkish label discipline, and operator quality review. `llama.cpp` support is the local
-  OpenAI-compatible runtime path for this work; live model runs remain manual/local and outside CI.
+  checks, Turkish label discipline, and operator quality review. Prefer eval-only CLI overrides for
+  candidate bake-offs so the project config does not churn between local model tests. `llama.cpp`
+  support is the local OpenAI-compatible runtime path for this work; live model runs remain
+  manual/local and outside CI.
 - Preserve Qwen/Ollama regressions as known-bad safety evidence. Current blockers reject repeated
   fit frames, generic boilerplate, repeated uncertainty openers, generic unknown-species phrasing,
   weak premise action frames, English scientific leftovers, malformed labels, repeated sentence

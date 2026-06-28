@@ -16,6 +16,10 @@ import { writeTextFile } from "../utils/fs.js";
 import { writeJsonFile } from "../utils/json.js";
 import { renderLocalModelEvalMarkdown } from "./localModelEvalFormatting.js";
 import {
+  applyLocalModelEvalOverrides,
+  LocalModelEvalLlmOverrides,
+} from "./localModelEvalConfig.js";
+import {
   ideaEvalResponseFormat,
   renderIdeaEvalPrompt,
   renderScriptEvalBasePrompt,
@@ -35,12 +39,18 @@ export type LocalModelEvalCheck = {
 };
 
 export type LocalModelEvalReport = {
+  appliedOverrides: string[];
+  configSource: "cli-overrides" | "project";
   createdAt: string;
   durationMs: number;
   providerMode: ProducerConfig["providers"]["llm"]["mode"];
   configuredModel: string;
   passed: boolean;
   checks: LocalModelEvalCheck[];
+};
+
+export type LocalModelEvalOptions = {
+  llmOverrides?: LocalModelEvalLlmOverrides;
 };
 
 /**
@@ -69,15 +79,22 @@ export function localModelEvalMarkdownPath(): string {
  *
  * @returns A persisted local model evaluation report.
  */
-export async function runLocalModelEval(): Promise<LocalModelEvalReport> {
+export async function runLocalModelEval(
+  options: LocalModelEvalOptions = {},
+): Promise<LocalModelEvalReport> {
   const startedAt = Date.now();
-  const config = await loadConfig();
+  const { appliedOverrides, config } = applyLocalModelEvalOverrides(
+    await loadConfig(),
+    options.llmOverrides,
+  );
   const provider = createLlmProvider(config);
   const checks = [
     await evaluateIdeas(provider, config),
     await evaluateScriptSection(provider, config),
   ];
   const report: LocalModelEvalReport = {
+    appliedOverrides,
+    configSource: appliedOverrides.length > 0 ? "cli-overrides" : "project",
     createdAt: nowIso(),
     durationMs: Date.now() - startedAt,
     providerMode: config.providers.llm.mode,

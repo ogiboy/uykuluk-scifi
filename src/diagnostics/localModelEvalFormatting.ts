@@ -12,6 +12,8 @@ export function formatLocalModelEvalConsole(report: LocalModelEvalReport): strin
     `Local model eval ${report.passed ? "passed" : "blocked"}.`,
     `Provider: ${report.providerMode}`,
     `Model: ${report.configuredModel}`,
+    `Config source: ${report.configSource}`,
+    `Overrides: ${report.appliedOverrides.join(", ") || "none"}`,
     ...report.checks.map((check) => `[${check.status}] ${check.name}: ${check.message}`),
     "Report: diagnostics/local_model_eval.md",
   ].join("\n");
@@ -25,6 +27,8 @@ export function renderLocalModelEvalMarkdown(report: LocalModelEvalReport): stri
     `Duration: ${report.durationMs} ms`,
     `Provider: ${report.providerMode}`,
     `Model: ${report.configuredModel}`,
+    `Config source: ${report.configSource}`,
+    `Overrides: ${report.appliedOverrides.join(", ") || "none"}`,
     `Passed: ${report.passed}`,
     "",
     table(

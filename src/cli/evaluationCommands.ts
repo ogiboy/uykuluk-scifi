@@ -1,9 +1,24 @@
 import { Command } from "commander";
+import { z } from "zod";
 import { SafeExitError } from "../core/errors.js";
 import { runLocalModelEval } from "../diagnostics/localModelEval.js";
+import { LocalModelEvalLlmOverrides } from "../diagnostics/localModelEvalConfig.js";
 import { formatLocalModelEvalConsole } from "../diagnostics/localModelEvalFormatting.js";
 
 type Wrap = <T extends unknown[]>(handler: (...args: T) => Promise<void>) => (...args: T) => void;
+
+type LocalModelEvalCliOptions = {
+  json?: boolean;
+  llamaCppBaseUrl?: string;
+  llmMode?: string;
+  model?: string;
+  ollamaBaseUrl?: string;
+  requestTimeoutMs?: string;
+  thinkingMode?: string;
+};
+
+const llmModeSchema = z.enum(["mock", "ollama", "llama.cpp"]);
+const thinkingModeSchema = z.enum(["default", "think", "no_think"]);
 
 /**
  * Registers local model evaluation commands.
@@ -16,10 +31,18 @@ export function registerEvaluationCommands(program: Command, wrap: Wrap): void {
   evalCommand
     .command("local-model")
     .option("--json", "Print the raw local model evaluation JSON for automation.")
+    .option("--llm-mode <mode>", "Override only this eval run's LLM mode.")
+    .option("--model <model>", "Override only this eval run's model name.")
+    .option("--ollama-base-url <url>", "Override only this eval run's Ollama base URL.")
+    .option("--llama-cpp-base-url <url>", "Override only this eval run's llama.cpp base URL.")
+    .option("--thinking-mode <mode>", "Override only this eval run's Ollama thinking mode.")
+    .option("--request-timeout-ms <ms>", "Override only this eval run's provider timeout.")
     .description("Evaluate the configured local LLM against small production parser contracts.")
     .action(
-      wrap(async (options: { json?: boolean }) => {
-        const report = await runLocalModelEval();
+      wrap(async (options: LocalModelEvalCliOptions) => {
+        const report = await runLocalModelEval({
+          llmOverrides: parseLocalModelEvalOverrides(options),
+        });
         console.log(
           options.json ? JSON.stringify(report, null, 2) : formatLocalModelEvalConsole(report),
         );
@@ -28,4 +51,24 @@ export function registerEvaluationCommands(program: Command, wrap: Wrap): void {
         }
       }),
     );
+}
+
+function parseLocalModelEvalOverrides(
+  options: LocalModelEvalCliOptions,
+): LocalModelEvalLlmOverrides {
+  const requestTimeoutMs =
+    options.requestTimeoutMs === undefined
+      ? undefined
+      : z.coerce.number().int().positive().parse(options.requestTimeoutMs);
+  return {
+    llamaCppBaseUrl: options.llamaCppBaseUrl,
+    mode: options.llmMode === undefined ? undefined : llmModeSchema.parse(options.llmMode),
+    model: options.model,
+    ollamaBaseUrl: options.ollamaBaseUrl,
+    requestTimeoutMs,
+    thinkingMode:
+      options.thinkingMode === undefined
+        ? undefined
+        : thinkingModeSchema.parse(options.thinkingMode),
+  };
 }
