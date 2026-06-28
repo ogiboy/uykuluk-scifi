@@ -17,6 +17,21 @@ coherent, tested slices until the safe core and its evidence contracts are genui
 
 ## Current State
 
+- 2026-06-29 continuation branch/worktree: `feat/render-review-command` at
+  `/Users/ogiboy/.codex/worktrees/894d/uykuluk-scifi`, pushed to
+  `origin/feat/render-review-command`.
+- Current branch scope is intentionally broader than a single micro-feature: group related
+  render/operator production-loop improvements before opening one PR, to conserve CodeRabbit/CI
+  review budget.
+- Completed render/operator branch slices:
+  - `2fb9cbf feat(render): add ffmpeg review command evidence`
+  - `14f4323 test(studio): cover render review command preview`
+  - `636f4ab feat(render): print draft review handoff`
+  - `f828e2a feat(render): add read-only render review command`
+  - `0546158 test(render): cover draft review handoff smoke`
+- `producer render` now prints a local-only review handoff, the render manifest records a stable
+  final-output FFmpeg review command separately from temp-output execution args, and
+  `producer review render --run <run_id>` replays the validated handoff without mutating run state.
 - Active PR branch/worktree on 2026-06-25: `feat/local-production-workflow-hardening` at
   `/private/tmp/uykuluk-commit-work-20260624153047`.
 - Active product slice moved from safe-core-only work into local production-loop hardening: bounded
@@ -170,6 +185,13 @@ coherent, tested slices until the safe core and its evidence contracts are genui
 
 ## Decisions
 
+- Fewer, broader PRs are preferred for related product slices. Continue slice-by-slice commits, but
+  delay PR creation until a coherent feature group is implemented and risk-based local validation is
+  complete.
+- Treat time as an engineering budget: run targeted checks after small slices, and reserve full
+  `pnpm check` / `pnpm qa:usage` / browser-heavy checks for PR-readiness or merge-adjacent points.
+- Current product focus is the real local production loop and operator handoff quality, not more
+  standalone security/code-quality cleanup unless it blocks active product work.
 - `src/costs/` owns cost quote shape and fingerprints; core state/ledger owns approval authority.
 - Cost approval covers future paid production stages after package generation only.
 - Cost approval does not authorize or execute a provider call.
@@ -179,6 +201,16 @@ coherent, tested slices until the safe core and its evidence contracts are genui
 
 ## Latest Verification
 
+- 2026-06-29 render/operator branch targeted verification:
+  - `pnpm test tests/renderCli.test.ts tests/render.test.ts tests/renderApprovalGate.test.ts` passed
+    after render handoff and read-only render review command changes.
+  - `pnpm lint && pnpm typecheck && pnpm qa:modularity && pnpm changelog:check && pnpm release:check && pnpm format:check`
+    passed before committing `feat(render): print draft review handoff` and
+    `feat(render): add read-only render review command`.
+  - `pnpm lint && pnpm qa:modularity && pnpm format:check` passed after adding usage-smoke coverage
+    for `producer review render`.
+  - Full `pnpm check` and `pnpm qa:usage` were intentionally deferred until PR-readiness because
+    this is still an accumulating feature branch.
 - `pnpm check` passes with 44 test files and 261 tests.
 - `pnpm qa:usage`, `pnpm version:plan`, and `pnpm security:dependencies` pass; latest usage smoke
   report is `.ai/qa/artifacts/usage-smoke-20260624-120510/qa-report.md`.
@@ -246,11 +278,16 @@ coherent, tested slices until the safe core and its evidence contracts are genui
 
 ## Remaining Work
 
-1. Commit the current green local-provider quality/continuation/Studio/Sonar/two-attempt
-   retry-repair slice once git index write permission is available.
-2. Continue qwen3 prompt/label/repetition hardening. Current live ideas can pass parser after repair
-   but remain weak for production approval, and real `no_think` script retries still fail closed on
-   malformed production labels or assembled repeated sentence loops.
+1. Continue the current `feat/render-review-command` branch with one or two more product-facing
+   render/operator production-loop slices if they materially improve reviewable draft production.
+2. Before opening the grouped PR, refresh from `origin/main`, run broader gates in proportion to
+   accumulated scope (`pnpm check`, `pnpm qa:usage`, `pnpm version:plan`), then open a single PR.
+3. After the PR opens, review CodeRabbit/GitHub comments and fix still-valid findings in the same PR
+   instead of opening follow-up micro PRs.
+4. Continue qwen3 prompt/label/repetition hardening only when model/runtime evaluation work is
+   explicitly resumed. Current live ideas can pass parser after repair but remain weak for
+   production approval, and real `no_think` script retries still fail closed on malformed production
+   labels or assembled repeated sentence loops.
 
 ## Blockers And Risks
 
