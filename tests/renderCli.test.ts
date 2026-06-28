@@ -42,7 +42,7 @@ describe("producer render CLI", () => {
 
     expect(result.status).toBe(0);
     expect(JSON.parse(result.stdout) as unknown).toMatchObject({
-      schemaVersion: 4,
+      schemaVersion: 5,
       runId,
       renderApproval: {
         approvalId: expect.stringMatching(/^approval_/),
@@ -58,6 +58,49 @@ describe("producer render CLI", () => {
         productionVoiceCandidate: false,
         quality: "deterministic-local-reference",
       },
+      ffmpegTimelineInputs: expect.arrayContaining([
+        expect.objectContaining({
+          asset: expect.objectContaining({
+            path: "assets/intro/frames/intro_frame_00.jpg",
+          }),
+          durationSeconds: 1,
+          frameIndex: 1,
+          segment: "intro",
+          source: "source-frame",
+        }),
+        expect.objectContaining({
+          asset: expect.objectContaining({
+            path: "assets/intro/frames/intro_frame_01.jpg",
+          }),
+          durationSeconds: 1,
+          frameIndex: 2,
+          segment: "intro",
+          source: "source-frame",
+        }),
+        expect.objectContaining({
+          asset: expect.objectContaining({
+            path: "assets/backgrounds/plate_test_1920x1080.jpg",
+          }),
+          segment: "scene",
+          source: "background",
+        }),
+        expect.objectContaining({
+          asset: expect.objectContaining({
+            path: "assets/outro/frames/outro_frame_00.jpg",
+          }),
+          frameIndex: 1,
+          segment: "outro",
+          source: "source-frame",
+        }),
+        expect.objectContaining({
+          asset: expect.objectContaining({
+            path: "assets/outro/frames/outro_frame_01.jpg",
+          }),
+          frameIndex: 2,
+          segment: "outro",
+          source: "source-frame",
+        }),
+      ]),
       output: {
         path: "production/render/draft.mp4",
         sha256: expect.stringMatching(/^[a-f0-9]{64}$/),

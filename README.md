@@ -94,8 +94,9 @@ agent-tracking state only; runtime code must not require it.
 - Approval-gated local FFmpeg draft render that writes a review MP4, manifest, operator review
   Markdown, and `ffprobe` media-validation evidence from the current render plan, intro/outro source
   cards or source-frame sequences, scene-timed background plates, voiceover audio, subtitles,
-  lower-third, popup, waveform, watermark overlays, source-frame counts, and voiceover
-  mode/quality/candidate classification surfaced in evidence/readiness summaries.
+  lower-third, popup, waveform, watermark overlays, source-frame counts/cadence, and voiceover
+  mode/quality/candidate classification surfaced in evidence/readiness summaries and review
+  Markdown.
 - Manual analytics import/report commands for operator-provided CSV/JSON performance exports, plus a
   read-only Studio view over the ignored local analytics artifacts and import data-quality summary.
 - Typed Studio route-security contract covering current read-only routes and disabled future action
@@ -213,11 +214,11 @@ agent-tracking state only; runtime code must not require it.
 - Draft render runs only after explicit render approval for the exact current render-plan digest,
   voiceover digest, and voiceover mode/quality/candidate classification. The manifest records those
   input classifications, the exact render approval ID/reference that authorized the draft, the
-  intro-to-outro timeline, composed overlay roles, intro/outro source-frame counts when available,
-  placements used by FFmpeg, and `ffprobe`-validated media duration, video resolution, and audio
-  stream evidence; `production/render/draft_review.md` labels deterministic audio renders as local
-  timing drafts and gives the operator the final local review checklist and blocked-action boundary.
-  Render output is local review media, not upload or publish authority.
+  intro-to-outro timeline, composed overlay roles, intro/outro source-frame counts/cadence when
+  available, placements used by FFmpeg, and `ffprobe`-validated media duration, video resolution,
+  and audio stream evidence; `production/render/draft_review.md` labels deterministic audio renders
+  as local timing drafts and gives the operator the final local review checklist and blocked-action
+  boundary. Render output is local review media, not upload or publish authority.
 - Upload and publish remain intentionally blocked scaffolds.
 - Upload and public/scheduled publish require future explicit config and separate approval gates.
 - Studio must call typed local service contracts; it must not duplicate workflow state.

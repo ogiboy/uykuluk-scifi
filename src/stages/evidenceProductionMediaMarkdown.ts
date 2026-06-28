@@ -83,7 +83,7 @@ function draftRenderSummary(
   draftRender: Awaited<ReturnType<typeof readDraftRenderEvidence>>,
 ): string {
   if (draftRender.status === "pass") {
-    return `Draft render: pass (${Math.round(draftRender.durationSeconds)}s, ${draftRender.timelineSegments.join(" -> ")}${sourceFrameSummary(draftRender)}${draftRenderVoiceoverSummary(draftRender)}${renderApprovalSummary(draftRender)}${mediaProbeSummary(draftRender.mediaProbe)}).`;
+    return `Draft render: pass (${Math.round(draftRender.durationSeconds)}s, ${draftRender.timelineSegments.join(" -> ")}${sourceFrameSummary(draftRender)}${sourceFrameCadenceSummary(draftRender)}${draftRenderVoiceoverSummary(draftRender)}${renderApprovalSummary(draftRender)}${mediaProbeSummary(draftRender.mediaProbe)}).`;
   }
   if (draftRender.status === "block") {
     return `Draft render: block (${draftRender.message}).`;
@@ -135,6 +135,20 @@ function sourceFrameSummary(
     return "";
   }
   return `, source frames ${draftRender.sourceFrameSegments.join("/")}`;
+}
+
+/**
+ * Summarizes exact source-frame cadence for a passed draft render.
+ *
+ * @param draftRender - Passed draft render evidence
+ * @returns A cadence summary when source frames are available, or an empty string otherwise
+ */
+function sourceFrameCadenceSummary(
+  draftRender: Extract<Awaited<ReturnType<typeof readDraftRenderEvidence>>, { status: "pass" }>,
+): string {
+  return draftRender.sourceFrameCadence.length > 0
+    ? `, frame cadence ${draftRender.sourceFrameCadence.join("; ")}`
+    : "";
 }
 
 /**

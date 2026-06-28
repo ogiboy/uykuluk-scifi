@@ -57,6 +57,7 @@ describe("evidence Markdown media summary", () => {
         timelineSegments: ["scene"],
         sourceFrameCount: 0,
         sourceFrameSegments: [],
+        sourceFrameCadence: [],
         reviewPath: "production/render/draft_review.md",
         reviewChecklist: ["review locally"],
         voiceoverMode: "deterministic-local",

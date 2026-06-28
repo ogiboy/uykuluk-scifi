@@ -63,7 +63,7 @@ describe("draft render", () => {
     const manifest = await readJsonFile<DraftRenderManifest>(
       artifactPath(runId, "production/render/render_manifest.json"),
     );
-    expect(manifest.schemaVersion).toBe(4);
+    expect(manifest.schemaVersion).toBe(5);
     expect(manifest.renderApproval).toEqual({
       approvalId: approval.approvalId,
       approvedRef,
@@ -102,6 +102,42 @@ describe("draft render", () => {
         { path: "assets/outro/frames/outro_frame_01.jpg" },
       ],
     });
+    expect(manifest.ffmpegTimelineInputs).toMatchObject([
+      {
+        asset: { path: "assets/intro/frames/intro_frame_00.jpg" },
+        durationSeconds: 1,
+        frameIndex: 1,
+        segment: "intro",
+        source: "source-frame",
+      },
+      {
+        asset: { path: "assets/intro/frames/intro_frame_01.jpg" },
+        durationSeconds: 1,
+        frameIndex: 2,
+        segment: "intro",
+        source: "source-frame",
+      },
+      {
+        asset: { path: "assets/backgrounds/plate_test_1920x1080.jpg" },
+        durationSeconds: 3,
+        segment: "scene",
+        source: "background",
+      },
+      {
+        asset: { path: "assets/outro/frames/outro_frame_00.jpg" },
+        durationSeconds: 1.5,
+        frameIndex: 1,
+        segment: "outro",
+        source: "source-frame",
+      },
+      {
+        asset: { path: "assets/outro/frames/outro_frame_01.jpg" },
+        durationSeconds: 1.5,
+        frameIndex: 2,
+        segment: "outro",
+        source: "source-frame",
+      },
+    ]);
     expect(manifest.ffmpeg.binary).toBe(ffmpeg);
     expect(manifest.mediaProbe).toEqual({
       audio: { channels: 2, codecName: "aac", sampleRateHz: 48000 },
@@ -141,6 +177,12 @@ describe("draft render", () => {
       timelineSegments: ["intro", "scene", "outro"],
       sourceFrameCount: 4,
       sourceFrameSegments: ["intro:2", "outro:2"],
+      sourceFrameCadence: [
+        "intro#1=1s assets/intro/frames/intro_frame_00.jpg",
+        "intro#2=1s assets/intro/frames/intro_frame_01.jpg",
+        "outro#1=1.5s assets/outro/frames/outro_frame_00.jpg",
+        "outro#2=1.5s assets/outro/frames/outro_frame_01.jpg",
+      ],
       reviewPath: "production/render/draft_review.md",
       voiceoverMode: "deterministic-local",
       voiceoverProductionVoiceCandidate: false,
@@ -159,12 +201,15 @@ describe("draft render", () => {
     expect(evidenceMarkdown).toContain("Render plan: pass");
     expect(evidenceMarkdown).toContain("Voiceover audio: pass");
     expect(evidenceMarkdown).toContain(
-      `Draft render: pass (8s, intro -> scene -> outro, source frames intro:2/outro:2, voiceover deterministic-local timing/reference only, approval ${approval.approvalId}, ffprobe 1280x720 audio)`,
+      `Draft render: pass (8s, intro -> scene -> outro, source frames intro:2/outro:2, frame cadence intro#1=1s assets/intro/frames/intro_frame_00.jpg; intro#2=1s assets/intro/frames/intro_frame_01.jpg; outro#1=1.5s assets/outro/frames/outro_frame_00.jpg; outro#2=1.5s assets/outro/frames/outro_frame_01.jpg, voiceover deterministic-local timing/reference only, approval ${approval.approvalId}, ffprobe 1280x720 audio)`,
     );
     const review = await readFile(artifactPath(runId, "production/render/draft_review.md"), "utf8");
     expect(review).toContain("# Draft Render Review");
     expect(review).toContain("## Media Probe");
     expect(review).toContain("## Render Approval");
+    expect(review).toContain("## Source Frame Cadence");
+    expect(review).toContain("| intro | - | 1 | 1s | assets/intro/frames/intro_frame_00.jpg |");
+    expect(review).toContain("| outro | - | 2 | 1.5s | assets/outro/frames/outro_frame_01.jpg |");
     expect(review).toContain(approval.approvalId);
     expect(review).toContain(approvedRef);
     expect(review).toContain("1280x720 h264");

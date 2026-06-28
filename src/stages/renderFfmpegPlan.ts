@@ -9,9 +9,10 @@ import {
   type DraftRenderOverlay,
 } from "./renderComposition.js";
 import { buildDraftRenderTimeline, type DraftRenderTimeline } from "./renderTimeline.js";
-import type { AssetRef } from "./renderPlanSchemas.js";
+import { buildFfmpegTimelineInputs } from "./renderFfmpegInputs.js";
 
 export { buildDraftRenderTimeline, clampRenderDuration } from "./renderTimeline.js";
+export { buildFfmpegTimelineInputs } from "./renderFfmpegInputs.js";
 export type { DraftRenderTimeline } from "./renderTimeline.js";
 
 /**
@@ -39,7 +40,7 @@ export function buildFfmpegArgs(input: {
     throw new SafeExitError("Draft render requires at least one render-plan scene.");
   }
   const composition = input.composition ?? buildDraftRenderComposition(input.renderPlan);
-  const ffmpegInputs = expandTimelineInputs(timeline);
+  const ffmpegInputs = buildFfmpegTimelineInputs(timeline);
   const audio = artifactPath(input.runId, voiceoverAudioPath);
   const subtitles = artifactPath(input.runId, "production/subtitles.srt");
   const audioInputIndex = ffmpegInputs.length;
@@ -95,73 +96,6 @@ export function buildFfmpegArgs(input: {
     input.ffmpegOutputPath,
   );
   return args;
-}
-
-type FfmpegTimelineInput = {
-  asset: AssetRef;
-  durationSeconds: number;
-};
-
-/**
- * Expands a draft render timeline into FFmpeg input segments.
- *
- * @param timeline - The timeline to convert.
- * @returns A flattened list of assets with per-segment durations.
- */
-function expandTimelineInputs(timeline: DraftRenderTimeline): FfmpegTimelineInput[] {
-  return timeline.flatMap((item) => {
-    const assets = timelineInputAssets(item);
-    const durations = distributeDuration(item.durationSeconds, assets.length);
-    return assets.map((asset, index) => ({
-      asset,
-      durationSeconds: durations[index],
-    }));
-  });
-}
-
-/**
- * Selects the assets used to represent a timeline item in FFmpeg input expansion.
- *
- * @param item - The timeline item to inspect.
- * @returns The source frame assets when there is more than one and each receives at least 0.1 seconds; otherwise the background asset.
- */
-function timelineInputAssets(item: DraftRenderTimeline[number]): AssetRef[] {
-  const frameAssets = item.sourceFrameAssets ?? [];
-  if (frameAssets.length === 0) {
-    return [item.backgroundAsset];
-  }
-  if (item.durationSeconds / frameAssets.length < 0.1) {
-    return [item.backgroundAsset];
-  }
-  return frameAssets;
-}
-
-/**
- * Splits a duration across a number of segments.
- *
- * @param durationSeconds - The total duration to distribute.
- * @param itemCount - The number of segments to produce.
- * @returns An array of durations whose sum matches `durationSeconds` after rounding.
- */
-function distributeDuration(durationSeconds: number, itemCount: number): number[] {
-  if (itemCount <= 1) {
-    return [roundSeconds(durationSeconds)];
-  }
-  const baseDuration = roundSeconds(durationSeconds / itemCount);
-  const durations = Array.from({ length: itemCount }, () => baseDuration);
-  const usedDuration = roundSeconds(baseDuration * (itemCount - 1));
-  durations[itemCount - 1] = roundSeconds(durationSeconds - usedDuration);
-  return durations;
-}
-
-/**
- * Rounds a duration to two decimal places.
- *
- * @param seconds - The duration in seconds.
- * @returns The duration rounded to the nearest hundredth.
- */
-function roundSeconds(seconds: number): number {
-  return Math.round(seconds * 100) / 100;
 }
 
 /**
