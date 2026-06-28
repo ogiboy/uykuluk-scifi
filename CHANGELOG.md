@@ -9,6 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
+_No unreleased changes yet._
+
+## v0.34.1 (2026-06-28)
+
 ### Tests
 
 - cover status summary JSON in usage smoke
