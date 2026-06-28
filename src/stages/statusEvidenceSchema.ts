@@ -12,6 +12,27 @@ export type EvidenceStatusValidationResult =
 
 const digestSchema = z.string().regex(/^[a-f0-9]{64}$/);
 
+const evidenceRunStateSchema = z.enum([
+  "NEW",
+  "IDEAS_GENERATED",
+  "IDEA_APPROVED",
+  "SCRIPT_GENERATED",
+  "SCRIPT_REVIEWED",
+  "SCRIPT_APPROVED",
+  "PRODUCTION_PACKAGE_GENERATED",
+  "COST_ESTIMATED",
+  "PAID_GENERATION_COST_APPROVED",
+  "READY_FOR_MANUAL_PRODUCTION",
+  "RENDER_APPROVED",
+  "RENDERED",
+  "UPLOAD_APPROVED",
+  "UPLOADED_PRIVATE",
+  "PUBLISH_APPROVED",
+  "SCHEDULED_OR_PUBLIC",
+  "ARCHIVED",
+  "FAILED",
+]);
+
 const mediaProbeSchema = z.strictObject({
   binary: z.string().min(1),
   durationSeconds: z.number().positive(),
@@ -79,8 +100,8 @@ const draftRenderPassSchema = z.looseObject({
 
 const persistedEvidenceStatusSchema = z.looseObject({
   runId: z.string().min(1),
-  generatedAt: z.string().min(1),
-  currentState: z.string().min(1),
+  generatedAt: z.iso.datetime(),
+  currentState: evidenceRunStateSchema,
   approvals: z.array(z.unknown()),
   costs: z.array(z.unknown()),
   costReservations: z.array(z.unknown()),
