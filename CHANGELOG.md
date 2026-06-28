@@ -9,6 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
+_No unreleased changes yet._
+
+## v0.34.3 (2026-06-28)
+
 ### Fixes
 
 - validate Studio readiness run IDs before reading diagnostics paths
