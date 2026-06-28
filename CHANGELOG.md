@@ -9,7 +9,9 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Features
+
+- add `producer status --summary-json` for automation-friendly operator status snapshots
 
 ## v0.33.1 (2026-06-28)
 

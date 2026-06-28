@@ -241,7 +241,7 @@
   Missing, malformed, or stale evidence now labels production media rows as artifact-record fallback
   until the evidence bundle is regenerated. Missing, malformed, or stale readiness diagnostics point
   operators back to `producer readiness --run <run_id>`. `--json` preserves raw persisted state
-  output for automation.
+  output for automation, while `--summary-json` prints the enriched operator status snapshot.
 - Readiness diagnostics that strictly parse and revalidate persisted cost quotes, live hard budgets,
   complete production-package integrity, and exact paid-generation cost approval when required.
 - Final readiness diagnostics agree with the post-transition run state.
