@@ -11,6 +11,12 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.35.9 (2026-06-28)
+
+### Fixes
+
+- prefer boolean existence checks (#78) (e4d6f86)
+
 ## v0.35.8 (2026-06-28)
 
 ### Fixes
