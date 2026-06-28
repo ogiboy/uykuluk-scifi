@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
+import { isValidRunId } from "../../../../src/core/runId";
 
 export type StudioReadinessCheck = {
   message: string;
@@ -34,6 +35,9 @@ export async function readStudioReadinessSnapshot(
   root: string,
   runId: string,
 ): Promise<{ malformed: boolean; snapshot: ReadinessSnapshot | null }> {
+  if (!isValidRunId(runId)) {
+    return { malformed: true, snapshot: null };
+  }
   try {
     const file = path.join(root, "runs", runId, "diagnostics", "readiness.json");
     return {

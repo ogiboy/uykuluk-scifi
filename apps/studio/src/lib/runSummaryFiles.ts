@@ -5,6 +5,7 @@ import {
   summarizeRunDiagnosticArtifact,
   type RunDiagnosticSummary,
 } from "../../../../src/stages/runDiagnosticSummaryContracts";
+import { isValidRunId } from "../../../../src/core/runId";
 import type { RunRecord, StudioRunState } from "./runSummaries";
 
 export type ValidRunRecord = RunRecord & {
@@ -53,7 +54,7 @@ export async function safeReaddir(
 }
 
 export function isRunId(value: string): boolean {
-  return /^run_[A-Za-z0-9][A-Za-z0-9_-]{0,123}$/.test(value);
+  return isValidRunId(value);
 }
 
 async function readOptionalJson<T>(
