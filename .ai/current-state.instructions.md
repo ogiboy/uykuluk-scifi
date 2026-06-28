@@ -335,14 +335,14 @@
   operator-provided CSV/JSON performance exports and writes ignored local
   `analytics/performance.json` plus `analytics/performance_report.md`. `producer analytics report`
   prints the current report. Reports now include overall metrics, top videos, run-linked summaries,
-  unmapped record counts, and non-causal repeat / avoid-without-revision / mixed-signal inspect /
-  test-next operator planning prompts with simple confidence/missingness framing. CLI reports and
-  Studio share the same import data-quality summary for confidence counts plus missing run links,
-  views, impressions, CTR, and retention fields. Studio has a read-only `/analytics` overview over
-  those ignored local artifacts. No YouTube API, workflow mutation, upload, publish, or causal claim
-  is introduced. `producer analytics report` refreshes the ignored Markdown report from the saved
-  dataset before printing it, and Studio marks report previews as missing, stale, or current by
-  checking the dataset timestamp and source digest.
+  an unmapped-record table for videos that need a future `run_id`, and non-causal repeat /
+  avoid-without-revision / mixed-signal inspect / test-next operator planning prompts with simple
+  confidence/missingness framing. CLI reports and Studio share the same import data-quality summary
+  for confidence counts plus missing run links, views, impressions, CTR, and retention fields.
+  Studio has a read-only `/analytics` overview over those ignored local artifacts. No YouTube API,
+  workflow mutation, upload, publish, or causal claim is introduced. `producer analytics report`
+  refreshes the ignored Markdown report from the saved dataset before printing it, and Studio marks
+  report previews as missing, stale, or current by checking the dataset timestamp and source digest.
 - Roadmap and `.ai` guidance now include future Next.js Producer Studio, prompt editing, revision
   tracking, design direction, development preferences, versioning expectations, and Computer Use QA
   boundaries.
