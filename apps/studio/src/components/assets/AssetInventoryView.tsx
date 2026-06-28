@@ -47,8 +47,8 @@ export function AssetInventoryView({ inventory }: AssetInventoryViewProps) {
         <h2 id='asset-warning-heading'>Guard Warnings</h2>
         {inventory.warnings.length > 0 ? (
           <ul className='plain-list'>
-            {inventory.warnings.map((warning) => (
-              <li key={warning}>{warning}</li>
+            {inventory.warnings.map((warning, index) => (
+              <li key={listKey("inventory-warning", warning, index)}>{warning}</li>
             ))}
           </ul>
         ) : (
@@ -88,14 +88,14 @@ function AssetCategoryCard({ category }: Readonly<{ category: StudioAssetCategor
       </p>
       {category.warnings.length > 0 ? (
         <ul className='plain-list'>
-          {category.warnings.map((warning) => (
-            <li key={warning}>{warning}</li>
+          {category.warnings.map((warning, index) => (
+            <li key={listKey(`${category.id}-warning`, warning, index)}>{warning}</li>
           ))}
         </ul>
       ) : null}
       <ul className='asset-file-list'>
-        {category.files.map((file) => (
-          <li key={file}>{file}</li>
+        {category.files.map((file, index) => (
+          <li key={listKey(`${category.id}-file`, file, index)}>{file}</li>
         ))}
       </ul>
     </article>
@@ -126,4 +126,16 @@ function statusLabel(status: StudioAssetCategoryStatus): string {
     return "needs action";
   }
   return status;
+}
+
+/**
+ * Builds a React list key from display text plus a stable local discriminator.
+ *
+ * @param scope - The list scope where the key is used.
+ * @param value - The displayed list value.
+ * @param index - The item index, used only to disambiguate repeated display values.
+ * @returns A key that remains unique even when operator-facing text repeats.
+ */
+function listKey(scope: string, value: string, index: number): string {
+  return `${scope}-${index}-${value}`;
 }
