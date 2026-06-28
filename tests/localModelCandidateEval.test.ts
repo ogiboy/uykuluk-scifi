@@ -1,0 +1,163 @@
+import { readFile, writeFile } from "node:fs/promises";
+import { describe, expect, it } from "vitest";
+import { defaultConfig } from "../src/config/config";
+import {
+  localModelCandidateEvalJsonPath,
+  localModelCandidateEvalMarkdownPath,
+  runLocalModelCandidateEval,
+  selectRecommendedLocalModelCandidate,
+} from "../src/diagnostics/localModelCandidateEval";
+import {
+  formatLocalModelCandidateEvalConsole,
+  renderLocalModelCandidateEvalMarkdown,
+} from "../src/diagnostics/localModelCandidateEvalFormatting";
+import { LocalModelEvalReport } from "../src/diagnostics/localModelEval";
+import { pathExists } from "../src/utils/fs";
+import { useTempProject } from "./helpers";
+
+describe("local model candidate evaluation", () => {
+  useTempProject();
+
+  it("compares candidate models without mutating project config or storing raw output", async () => {
+    await useOllamaConfig();
+    const beforeConfig = await readFile("producer.config.json", "utf8");
+
+    const report = await runLocalModelCandidateEval({
+      candidates: ["mock-deterministic", "mock-invalid-script-json", "mock-deterministic"],
+      llmOverrides: { mode: "mock" },
+    });
+
+    expect(report).toMatchObject({
+      baseOverrides: ["mode"],
+      candidates: [
+        expect.objectContaining({
+          configuredModel: "mock-deterministic",
+          passed: true,
+        }),
+        expect.objectContaining({
+          configuredModel: "mock-invalid-script-json",
+          passed: false,
+        }),
+      ],
+      configSource: "cli-overrides",
+      passed: false,
+      providerMode: "mock",
+      recommendedCandidate: {
+        blockedChecks: 0,
+        configuredModel: "mock-deterministic",
+        durationMs: expect.any(Number),
+        passedChecks: 2,
+      },
+    });
+    expect(report.candidates).toHaveLength(2);
+    expect(await pathExists(localModelCandidateEvalJsonPath())).toBe(true);
+    expect(await pathExists(localModelCandidateEvalMarkdownPath())).toBe(true);
+    expect(JSON.stringify(report)).not.toContain("Mock provider returned non-JSON");
+    await expect(readFile("producer.config.json", "utf8")).resolves.toBe(beforeConfig);
+    expect(formatLocalModelCandidateEvalConsole(report)).toContain(
+      "[block] mock-invalid-script-json",
+    );
+    expect(formatLocalModelCandidateEvalConsole(report)).toContain(
+      "Recommended: mock-deterministic",
+    );
+    expect(renderLocalModelCandidateEvalMarkdown(report)).toContain("mock-invalid-script-json");
+    expect(renderLocalModelCandidateEvalMarkdown(report)).toContain(
+      "Recommended candidate: mock-deterministic",
+    );
+  });
+
+  it("does not recommend a candidate when every local model candidate blocks", async () => {
+    const report = await runLocalModelCandidateEval({
+      candidates: ["mock-invalid-script-json"],
+      llmOverrides: { mode: "mock" },
+    });
+
+    expect(report).toMatchObject({
+      candidates: [
+        expect.objectContaining({
+          configuredModel: "mock-invalid-script-json",
+          passed: false,
+        }),
+      ],
+      passed: false,
+      recommendedCandidate: null,
+    });
+    expect(formatLocalModelCandidateEvalConsole(report)).toContain(
+      "Recommended: none; no candidate passed all checks",
+    );
+    expect(renderLocalModelCandidateEvalMarkdown(report)).toContain(
+      "Recommended candidate: none; no candidate passed all checks",
+    );
+  });
+
+  it("ranks passing candidate recommendations deterministically", () => {
+    const recommended = selectRecommendedLocalModelCandidate([
+      localModelCandidateReport("mock-slower", 20),
+      localModelCandidateReport("mock-faster-z", 10),
+      localModelCandidateReport("mock-faster-a", 10),
+      localModelCandidateReport("mock-blocked", 1, false),
+    ]);
+
+    expect(recommended).toEqual({
+      blockedChecks: 0,
+      configuredModel: "mock-faster-a",
+      durationMs: 10,
+      passedChecks: 2,
+    });
+  });
+});
+
+function localModelCandidateReport(
+  configuredModel: string,
+  durationMs: number,
+  passed = true,
+): LocalModelEvalReport {
+  return {
+    appliedOverrides: ["mode", "model"],
+    checks: [
+      {
+        message: passed ? "2 ideas parsed." : "Invalid JSON.",
+        name: "ideas-json",
+        status: passed ? "pass" : "block",
+      },
+      {
+        message: "42 words parsed.",
+        name: "script-section-json",
+        status: "pass",
+      },
+    ],
+    configSource: "cli-overrides",
+    configuredModel,
+    createdAt: "2026-06-28T18:00:00.000Z",
+    durationMs,
+    passed,
+    providerMode: "mock",
+  };
+}
+
+async function useOllamaConfig(): Promise<void> {
+  await writeLlmConfig({ mode: "ollama" });
+}
+
+async function writeLlmConfig(
+  llm: Partial<(typeof defaultConfig.providers)["llm"]>,
+): Promise<void> {
+  await writeFile(
+    "producer.config.json",
+    `${JSON.stringify(
+      {
+        ...defaultConfig,
+        providers: {
+          ...defaultConfig.providers,
+          llm: {
+            ...defaultConfig.providers.llm,
+            ...llm,
+          },
+        },
+      },
+      null,
+      2,
+    )}\n`,
+    "utf8",
+  );
+}

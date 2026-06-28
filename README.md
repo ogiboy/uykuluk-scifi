@@ -307,6 +307,7 @@ Local model evaluation:
 ```bash
 pnpm producer eval local-model
 pnpm producer eval local-model --json
+pnpm --silent producer eval local-model --json
 pnpm producer eval local-model --llm-mode llama.cpp --model <served-model.gguf>
 pnpm producer eval local-model-candidates --llm-mode llama.cpp \
   --candidate <served-model-a.gguf> --candidate <served-model-b.gguf>
@@ -318,8 +319,10 @@ parser-contract checks. One-run overrides such as `--llm-mode`, `--model`, `--ol
 Ollama/`llama.cpp` candidates without mutating `producer.config.json`. The report writes ignored
 `diagnostics/local_model_eval.json` and `.md` with hashes, token/duration metadata, applied override
 names, and parser results. Use `local-model-candidates` with repeated `--candidate` values for a
-single comparison report at `diagnostics/local_model_candidates_eval.*`. Raw provider text is
-intentionally not persisted.
+single comparison report at `diagnostics/local_model_candidates_eval.*`, including a deterministic
+recommended passing candidate when one exists. Raw provider text is intentionally not persisted. For
+automation that parses `--json` output through pnpm, prefer `pnpm --silent producer ... --json`;
+blocked evaluations still exit nonzero, but pnpm lifecycle text stays out of stdout.
 
 Manual analytics feedback:
 
@@ -601,7 +604,8 @@ run remained fail-closed at the idea-contract check because `fit` explanations w
 slot-specific, while the script-section contract parsed; this keeps Qwen as regression evidence
 rather than the recommended production default. `producer eval local-model-candidates` runs the same
 checks for repeated `--candidate` model names and produces a local comparison report so operators
-can compare served Ollama or `llama.cpp` candidates without editing config between attempts.
+can compare served Ollama or `llama.cpp` candidates without editing config between attempts. The
+comparison report recommends only candidates that pass all parser-contract checks.
 
 Run `pnpm producer doctor` before starting production work. Mock mode passes without network access.
 Ollama mode checks `/api/tags`; `llama.cpp` mode checks `/v1/models`. Both use bounded timeouts and

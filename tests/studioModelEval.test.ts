@@ -58,6 +58,12 @@ const blockedCandidateReport = {
   durationMs: 34,
   passed: false,
   providerMode: "mock",
+  recommendedCandidate: {
+    blockedChecks: 0,
+    configuredModel: "mock-deterministic",
+    durationMs: 12,
+    passedChecks: 2,
+  },
 } satisfies LocalModelCandidateEvalReportPersisted;
 
 describe("Studio local model evaluation overview", () => {
