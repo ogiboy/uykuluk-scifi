@@ -32,6 +32,9 @@ describe("status evidence validity", () => {
     expect(output).toContain(
       "- Render plan: recorded (artifact record only; regenerate evidence to verify current media)",
     );
+    expect(output).toContain(
+      "  Review: Regenerate evidence before using this media row as current review proof.",
+    );
   });
 
   it("labels production media as current evidence when evidence is valid", async () => {
@@ -64,6 +67,9 @@ describe("status evidence validity", () => {
     expect(output).toContain("Production media evidence: current evidence bundle.");
     expect(output).not.toContain("artifact-record fallback");
     expect(output).toContain("- Render plan: pass (11 assets, 3 artifacts)");
+    expect(output).toContain(
+      "  Review: Review scene-to-asset mapping and the contact sheet before voiceover or render approval.",
+    );
   });
 
   it("marks evidence generated for a previous run state as stale", async () => {

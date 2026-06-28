@@ -56,8 +56,17 @@ describe("operator status output", () => {
     expect(output).toContain(`Next safe action: pnpm producer approve render --run ${run.runId}`);
     expect(output).toContain("Production media:");
     expect(output).toContain("- Render plan: pass");
+    expect(output).toContain(
+      "  Review: Review scene-to-asset mapping and the contact sheet before voiceover or render approval.",
+    );
     expect(output).toContain("- Voiceover audio: missing");
+    expect(output).toContain(
+      "  Review: Generate and review local voiceover from the CLI before render approval.",
+    );
     expect(output).toContain("- Draft render: missing");
+    expect(output).toContain(
+      "  Review: Approve and run the local draft render from the CLI only after current plan and voiceover evidence pass.",
+    );
     expect(output).toContain("Recent artifacts:");
     expect(output).toContain("- evidence_bundle.json");
     expect((await loadRun(run.runId)).state).toBe("READY_FOR_MANUAL_PRODUCTION");
@@ -97,6 +106,9 @@ describe("operator status output", () => {
     expect(output).toContain("- Voiceover audio: pass");
     expect(output).toContain("- Draft render: block");
     expect(output).toContain(
+      "  Review: Resolve the blocker from the CLI before approving, rendering, uploading, or publishing.",
+    );
+    expect(output).toContain(
       `Next safe action: Regenerate evidence with pnpm producer evidence --run ${run.runId}; if draft artifacts remain blocked, revise upstream artifacts before a new render approval.`,
     );
   });
@@ -127,6 +139,9 @@ describe("operator status output", () => {
     );
     expect(output).toContain(
       "- Draft render: pass (8s, intro -> scene -> outro, source frames intro:2/outro:2, frame cadence intro#1=1s assets/intro/frames/intro_frame_00.jpg; intro#2=1s assets/intro/frames/intro_frame_01.jpg; outro#1=1.5s assets/outro/frames/outro_frame_00.jpg; outro#2=1.5s assets/outro/frames/outro_frame_01.jpg, voiceover local-piper production candidate, approval approval_render_status, ffprobe 1280x720 audio)",
+    );
+    expect(output).toContain(
+      "  Review: Review the MP4, manifest, and draft checklist locally; upload and publish remain disabled.",
     );
     expect(output).toContain(
       "Next safe action: Manual final draft review. Upload remains approval-gated.",
