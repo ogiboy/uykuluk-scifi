@@ -1,5 +1,7 @@
 import type { readDraftRenderEvidence } from "./renderEvidence.js";
 import type { readRenderPlanEvidence } from "./renderPlan.js";
+import { productionMediaReviewAction } from "./statusMediaReview.js";
+import { productionMediaStatus } from "./statusMediaSummary.js";
 import type { readVoiceoverAudioEvidence } from "./voiceoverEvidence.js";
 
 /**
@@ -15,11 +17,19 @@ export function productionMediaSummary(
   voiceoverAudio: Awaited<ReturnType<typeof readVoiceoverAudioEvidence>>,
   draftRender: Awaited<ReturnType<typeof readDraftRenderEvidence>>,
 ): string[] {
-  return [
+  const summaries = [
     renderPlanSummary(renderPlan),
     voiceoverAudioSummary(voiceoverAudio),
     draftRenderSummary(draftRender),
   ];
+  const reviewRows = productionMediaStatus(
+    { artifacts: [] },
+    { draftRender, renderPlan, voiceoverAudio },
+  );
+  return summaries.map(
+    (summary, index) =>
+      `${summary} Review: ${productionMediaReviewAction(reviewRows[index], true)}`,
+  );
 }
 
 /**
