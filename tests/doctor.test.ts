@@ -239,7 +239,7 @@ async function useOllamaConfig(): Promise<void> {
 }
 
 async function writeFakeRenderTools(): Promise<string> {
-  const binDir = path.join(process.cwd(), "fake-render-bin");
+  const binDir = path.join(process.cwd(), ".tmp", "render-tools", "doctor");
   await mkdir(binDir, { recursive: true });
   await writeFakeExecutable(path.join(binDir, "ffmpeg"));
   await writeFakeExecutable(path.join(binDir, "ffprobe"));

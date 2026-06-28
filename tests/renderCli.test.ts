@@ -23,6 +23,7 @@ import {
   createFakeFfprobe,
   createMinimalRenderAssets,
   enableDeterministicTts,
+  renderToolRoot,
 } from "./renderTestHelpers";
 
 const repoRoot = process.cwd();
@@ -33,7 +34,7 @@ describe("producer render CLI", () => {
   it("prints parseable JSON draft render manifests for automation", async () => {
     const runId = await prepareVoiceoverReadyRun();
     await approveRender(runId);
-    const fakeBinPath = await createFakeRenderPath(process.cwd());
+    const fakeBinPath = await createFakeRenderPath(renderToolRoot("cli-path"));
 
     const result = runCli(["render", "--run", runId, "--json"], {
       PATH: `${fakeBinPath}${path.delimiter}${process.env.PATH ?? ""}`,
