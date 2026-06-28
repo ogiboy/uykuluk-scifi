@@ -11,6 +11,12 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.33.1 (2026-06-28)
+
+### Tests
+
+- assert revision json in usage smoke (8fbcaf5)
+
 ## v0.33.0 (2026-06-28)
 
 ### Features
