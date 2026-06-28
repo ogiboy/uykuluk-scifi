@@ -211,6 +211,12 @@ describe("render plan", () => {
       status: "block",
       message: expect.stringMatching(/stale production package manifest/i),
     });
+    expect(
+      (await runReadiness(runId)).checks.find((check) => check.name === "render plan available"),
+    ).toMatchObject({
+      status: "block",
+      nextAction: `pnpm producer render-plan --run ${runId}`,
+    });
   });
 });
 
