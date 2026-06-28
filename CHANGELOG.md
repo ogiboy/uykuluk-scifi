@@ -9,6 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
+_No unreleased changes yet._
+
+## v0.35.2 (2026-06-28)
+
 ### Fixes
 
 - show render-plan regeneration guidance when readiness blocks on stale evidence
