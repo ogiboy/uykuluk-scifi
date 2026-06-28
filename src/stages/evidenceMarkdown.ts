@@ -240,7 +240,7 @@ function sourceFrameSummary(
  * Summarizes the media probe dimensions for a draft render.
  *
  * @param mediaProbe - The media probe data for a passed draft render.
- * @returns A summary string with the probed video dimensions, or an empty string when no probe is available.
+ * @returns A summary string with the probed video dimensions.
  */
 function mediaProbeSummary(
   mediaProbe: Extract<
@@ -248,8 +248,5 @@ function mediaProbeSummary(
     { status: "pass" }
   >["mediaProbe"],
 ): string {
-  if (!mediaProbe) {
-    return "";
-  }
   return `, ffprobe ${mediaProbe.video.width}x${mediaProbe.video.height} audio`;
 }

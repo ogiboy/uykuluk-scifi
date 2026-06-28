@@ -91,9 +91,6 @@ function draftRenderReadyMessage(
   evidence: Extract<Awaited<ReturnType<typeof readDraftRenderEvidence>>, { status: "pass" }>,
 ): string {
   const duration = Math.round(evidence.durationSeconds);
-  if (!evidence.mediaProbe) {
-    return `${evidence.path} exists with ${duration}s draft video${sourceFrameDetail(evidence)}${voiceoverDetail(evidence)}.`;
-  }
   return `${evidence.path} exists with ${duration}s ffprobe-validated draft video (${evidence.mediaProbe.video.width}x${evidence.mediaProbe.video.height}, audio stream present${sourceFrameDetail(evidence)}${voiceoverDetail(evidence)}).`;
 }
 
