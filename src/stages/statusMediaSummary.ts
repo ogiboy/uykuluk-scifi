@@ -17,6 +17,7 @@ export type EvidenceMediaStatus = {
   mode?: unknown;
   productionVoiceCandidate?: unknown;
   renderApproval?: unknown;
+  sourceFrameCadence?: unknown;
   sourceFrameCount?: unknown;
   sourceFrameSegments?: unknown;
   sourceWordCount?: unknown;
@@ -139,6 +140,7 @@ function draftRenderDetail(evidence: EvidenceMediaStatus): string | undefined {
     durationDetail(evidence.durationSeconds),
     timelineDetail(evidence.timelineSegments),
     sourceFrameDetail(evidence),
+    sourceFrameCadenceDetail(evidence.sourceFrameCadence),
     draftVoiceoverDetail(evidence),
     renderApprovalDetail(evidence.renderApproval),
     mediaProbeDetail(evidence.mediaProbe),
@@ -170,6 +172,12 @@ function sourceFrameDetail(evidence: EvidenceMediaStatus): string | undefined {
   }
   return typeof evidence.sourceFrameCount === "number" && evidence.sourceFrameCount > 0
     ? `${evidence.sourceFrameCount} source frames`
+    : undefined;
+}
+
+function sourceFrameCadenceDetail(value: unknown): string | undefined {
+  return Array.isArray(value) && value.every((item) => typeof item === "string") && value.length > 0
+    ? `frame cadence ${value.join("; ")}`
     : undefined;
 }
 

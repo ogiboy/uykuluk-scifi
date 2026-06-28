@@ -107,7 +107,7 @@ describe("Studio read-only run summaries", () => {
       {
         artifactPath: "production/render/draft.mp4",
         detail:
-          "8s, intro -> scene -> outro, source frames intro:2/outro:2, voiceover local-piper production candidate, approval approval_render_fixture, ffprobe 1280x720 audio",
+          "8s, intro -> scene -> outro, source frames intro:2/outro:2, frame cadence intro#1=1s assets/intro/frames/intro_frame_00.jpg; intro#2=1s assets/intro/frames/intro_frame_01.jpg; outro#1=1.5s assets/outro/frames/outro_frame_00.jpg; outro#2=1.5s assets/outro/frames/outro_frame_01.jpg, voiceover local-piper production candidate, approval approval_render_fixture, ffprobe 1280x720 audio",
         evidenceKey: "draftRender",
         label: "Draft render",
         status: "pass",
