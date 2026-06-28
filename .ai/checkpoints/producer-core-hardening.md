@@ -226,8 +226,12 @@ coherent, tested slices until the safe core and its evidence contracts are genui
   - `pnpm qa:modularity && pnpm format:check` and `pnpm changelog:check && pnpm release:check`
     passed for the same next-action slice; the broader lint/typecheck chain had already passed
     before the modularity-only line-count failure was corrected.
-  - Full `pnpm check`, Studio build, browser smoke, dependency audit, and version plan were
-    intentionally deferred until PR-readiness because this is still an accumulating feature branch.
+  - PR-ready verification for `feat/render-review-command` passed on 2026-06-29: `pnpm check` (102
+    test files, 474 tests, Studio build included), `pnpm qa:usage`
+    (`.ai/qa/artifacts/usage-smoke-20260628-224007/qa-report.md`), `pnpm version:plan`
+    (`nextVersion: 0.48.0`), and `pnpm security:dependencies`.
+  - Browser smoke and remote CI are intentionally left to PR/CI review; do not wait on them in this
+    thread unless a failure is reported.
 - `pnpm check` passes with 44 test files and 261 tests.
 - `pnpm qa:usage`, `pnpm version:plan`, and `pnpm security:dependencies` pass; latest usage smoke
   report is `.ai/qa/artifacts/usage-smoke-20260624-120510/qa-report.md`.
