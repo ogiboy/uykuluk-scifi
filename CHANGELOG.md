@@ -11,6 +11,12 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.37.0 (2026-06-28)
+
+### Features
+
+- list unmapped performance records (#80) (417c3ca)
+
 ## v0.36.0 (2026-06-28)
 
 ### Features
