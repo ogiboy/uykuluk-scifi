@@ -126,9 +126,9 @@
   contract changes; it must not become an approval form or route handler.
 - Harden manual analytics feedback with import edge cases and richer comparisons while keeping data
   operator-provided and local-only. Run-linked summaries, unmapped-record visibility, non-causal
-  repeat / avoid-without-revision / test-next prompts, simple confidence/missingness framing, and
-  the shared CLI/Studio import data-quality summary plus read-only Studio analytics overview with
-  report freshness summaries are implemented.
+  repeat / avoid-without-revision / mixed-signal inspect / test-next prompts, simple
+  confidence/missingness framing, and the shared CLI/Studio import data-quality summary plus
+  read-only Studio analytics overview with report freshness summaries are implemented.
 - Maintain typed Studio mutation service contracts that both CLI and web can use before adding
   Studio mutations. Current contracts cover future idea/script/cost/render approvals plus disabled
   upload/publish actions; concrete CSRF/session handling and route implementations remain deferred.

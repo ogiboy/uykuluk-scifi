@@ -20,6 +20,9 @@ export function renderAnalyticsRecommendations(records: AnalyticsRecord[]): stri
   const avoidCandidates = classified.flatMap((recommendation) =>
     recommendation.kind === "avoid" ? [recommendation.value] : [],
   );
+  const mixedCandidates = classified.flatMap((recommendation) =>
+    recommendation.kind === "mixed" ? [recommendation.value] : [],
+  );
   return [
     "### Repeat candidates",
     "",
@@ -28,6 +31,10 @@ export function renderAnalyticsRecommendations(records: AnalyticsRecord[]): stri
     "### Avoid without revision",
     "",
     ...recommendationLines(avoidCandidates, "No avoid candidate yet."),
+    "",
+    "### Mixed signals to inspect",
+    "",
+    ...recommendationLines(mixedCandidates, "No mixed-signal candidate yet."),
     "",
     "### Test next",
     "",
@@ -44,14 +51,24 @@ export function renderAnalyticsRecommendations(records: AnalyticsRecord[]): stri
 
 type ClassifiedRecommendation =
   | { kind: "avoid"; value: Recommendation }
-  | { kind: "mixed" | "none" }
+  | { kind: "mixed"; value: Recommendation }
+  | { kind: "none" }
   | { kind: "repeat"; value: Recommendation };
 
 function classifyRecommendation(record: AnalyticsRecord): ClassifiedRecommendation {
   const repeat = repeatRecommendation(record);
   const avoid = avoidRecommendation(record);
   if (repeat && avoid) {
-    return { kind: "mixed" };
+    return {
+      kind: "mixed",
+      value: {
+        reasons: [
+          `repeat signals: ${repeat.reasons.join(", ")}`,
+          `avoid signals: ${avoid.reasons.join(", ")}`,
+        ],
+        record,
+      },
+    };
   }
   if (repeat) {
     return { kind: "repeat", value: repeat };

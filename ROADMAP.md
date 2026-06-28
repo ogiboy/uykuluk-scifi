@@ -150,9 +150,9 @@ Minimum loop:
   comments where provided - implemented in `analytics/performance_report.md`;
 - review the imported local dataset and report preview in Studio without YouTube API calls, workflow
   mutation, upload, publish, or causal claims, including stale/missing report visibility;
-- produce “repeat / avoid / test next” recommendations for future ideas, titles, formats, and
-  thumbnail directions - implemented as non-causal operator planning prompts with
-  confidence/missingness framing in `analytics/performance_report.md`.
+- produce “repeat / avoid / mixed-signal inspect / test next” recommendations for future ideas,
+  titles, formats, and thumbnail directions - implemented as non-causal operator planning prompts
+  with confidence/missingness framing in `analytics/performance_report.md`.
 
 This phase must not invent metrics or claim causality from weak data. YouTube Analytics API work is
 optional later and requires its own credentials, privacy, cost, and approval design.
