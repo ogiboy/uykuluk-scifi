@@ -105,11 +105,13 @@ export function summarizeReadinessSnapshot(
   if (checks.includes(null)) {
     return invalidReadiness(nextAction, "Readiness diagnostics contain an invalid check.");
   }
+  const validChecks = checks.filter((check): check is StudioReadinessCheck => check !== null);
+  const passed = readiness.passed && !validChecks.some((check) => check.status === "block");
   return {
-    checks: checks.filter((check): check is StudioReadinessCheck => check !== null),
-    message: readiness.passed ? "Readiness passed." : "Readiness has not passed yet.",
-    passed: readiness.passed,
-    status: readiness.passed ? "passed" : "blocked",
+    checks: validChecks,
+    message: passed ? "Readiness passed." : "Readiness has not passed yet.",
+    passed,
+    status: passed ? "passed" : "blocked",
   };
 }
 
