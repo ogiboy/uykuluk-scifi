@@ -53,6 +53,12 @@ export function registerEvaluationCommands(program: Command, wrap: Wrap): void {
     );
 }
 
+/**
+ * Parses eval-only CLI provider overrides into the diagnostics config shape.
+ *
+ * @param options - Commander options from `producer eval local-model`.
+ * @returns Provider overrides that apply only to the current evaluation run.
+ */
 function parseLocalModelEvalOverrides(
   options: LocalModelEvalCliOptions,
 ): LocalModelEvalLlmOverrides {

@@ -19,6 +19,12 @@ export function formatLocalModelEvalConsole(report: LocalModelEvalReport): strin
   ].join("\n");
 }
 
+/**
+ * Renders the local model evaluation report as operator-facing Markdown.
+ *
+ * @param report - The completed model evaluation report.
+ * @returns Markdown that summarizes parser checks without raw provider output.
+ */
 export function renderLocalModelEvalMarkdown(report: LocalModelEvalReport): string {
   return [
     "# Local Model Evaluation",
