@@ -9,6 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
+_No unreleased changes yet._
+
+## v0.34.2 (2026-06-28)
+
 ### Fixes
 
 - keep Studio readiness blocked when persisted checks include blocking failures
