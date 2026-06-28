@@ -24,6 +24,9 @@ describe("evidence Markdown media summary", () => {
     expect(markdown).toContain("Render plan: block (bad plan).");
     expect(markdown).toContain("Voiceover audio: block (bad voiceover).");
     expect(markdown).toContain("Draft render: block (bad render).");
+    expect(markdown).toContain(
+      "Review: Resolve the blocker from the CLI before approving, rendering, uploading, or publishing.",
+    );
   });
 
   it("summarizes draft render evidence with required media probe data", () => {
@@ -81,6 +84,26 @@ describe("evidence Markdown media summary", () => {
     );
     expect(markdown).toContain(
       "Voiceover audio: pass (2s, deterministic-local, timing/reference only, 12 source words).",
+    );
+    expect(markdown).toContain(
+      "Review: Use this audio only for local timing review; regenerate reviewed production voice before final render review.",
+    );
+    expect(markdown).toContain(
+      "Review: Review this MP4 as a timing draft only; production voice is still required before final review.",
+    );
+  });
+
+  it("includes production media review actions for missing artifacts", () => {
+    const markdown = renderEvidenceMarkdown(baseBundle());
+
+    expect(markdown).toContain(
+      "Review: Generate the render plan and contact sheet from the CLI before voiceover or render work.",
+    );
+    expect(markdown).toContain(
+      "Review: Generate and review local voiceover from the CLI before render approval.",
+    );
+    expect(markdown).toContain(
+      "Review: Approve and run the local draft render from the CLI only after current plan and voiceover evidence pass.",
     );
   });
 
