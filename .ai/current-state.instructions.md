@@ -228,19 +228,18 @@
   second-retry evidence but remained below the long-form quality target.
 - Evidence bundle generation with production-package integrity status and manifest digest.
 - Evidence next-command guidance reflects script review blockers and required warning
-  acknowledgement before script approval. Evidence JSON keeps portable command templates while
-  evidence Markdown renders the current run id for direct operator use.
-- `producer status` now defaults to an operator-readable summary with state,
-  approval/warning/artifact counts, approval ledger entries, warning details, evidence availability,
-  readiness summary/attention checks, blocked-action details, production media evidence details,
-  recent artifacts, and a concrete next safe action with the current run id filled in; early
-  workflow states still show the actionable stage command before evidence exists, while invalid
-  evidence keeps pointing operators back to evidence regeneration. Stale evidence is not used for
-  media or next-action guidance; it points operators back to `producer evidence --run <run_id>`.
-  Missing, malformed, or stale evidence now labels production media rows as artifact-record fallback
-  until the evidence bundle is regenerated. Missing, malformed, or stale readiness diagnostics point
-  operators back to `producer readiness --run <run_id>`. `--json` preserves raw persisted state
-  output for automation, while `--summary-json` prints the enriched operator status snapshot.
+  acknowledgement before script approval. Evidence JSON keeps portable command templates; evidence
+  Markdown renders the current run id plus shared conservative production-media `Review:` guidance
+  without treating missing, stale, or malformed media evidence as current proof.
+- `producer status` now defaults to an operator summary with state, counts, approval ledger,
+  warnings, evidence/readiness availability, attention checks, blocked-action details, production
+  media evidence, recent artifacts, and current-run next action. Early states still show the
+  actionable stage command before evidence exists. Invalid or stale evidence points back to
+  `producer evidence --run <run_id>` and labels production media as artifact-record fallback.
+  Production media rows use the same shared review-action helper as evidence Markdown and Studio.
+  Missing, malformed, or stale readiness diagnostics point back to
+  `producer readiness --run <run_id>`. `--json` preserves raw persisted state output;
+  `--summary-json` prints the enriched operator status snapshot.
 - Readiness diagnostics that strictly parse and revalidate persisted cost quotes, live hard budgets,
   complete production-package integrity, and exact paid-generation cost approval when required.
 - Final readiness diagnostics agree with the post-transition run state.
@@ -285,18 +284,14 @@
   `next/font` wired for the initial shell.
 - Studio has a type-safe `next-intl` request/provider foundation with English and Turkish locale
   selection through a local cookie. Existing operator copy has not been migrated yet.
-- Studio can list local persisted runs with approval/warning/artifact counts, readiness/evidence
-  status, stale or invalid artifact remediation, and next-action visibility, then show a read-only
-  run detail page with a concrete next safe action, readiness status, readiness check messages,
-  warning/approval counts, approval ledger entries, warning lists, blocked-action details,
-  production media evidence details, and review artifact availability. Readiness check next-action
-  commands are shown when the CLI/core diagnostics provide them. Missing, malformed, or stale
-  readiness diagnostics point operators back to `producer readiness --run <run_id>`. Malformed or
-  stale evidence bundles point operators back to `producer evidence --run <run_id>` and are not used
-  as proof for blocked-action, production-media readiness, or next-action summaries; Studio labels
-  media rows as persisted artifact-record fallback until evidence is current. It does not mutate run
-  state or call providers. Early states without an evidence bundle reuse the CLI/core next-action
-  contract instead of presenting evidence generation as the only possible step.
+- Studio can list local persisted runs with counts, readiness/evidence status, remediation, and
+  next-action visibility, then show a read-only run detail page with next action, readiness checks,
+  warnings, approvals, ledger entries, blockers, production media evidence, shared review guidance,
+  and review artifacts. Missing/stale readiness points to `producer readiness --run <run_id>`;
+  malformed or stale evidence points to `producer evidence --run <run_id>` and is not proof for
+  blockers, production-media readiness, or next actions. Studio labels media rows as persisted
+  artifact-record fallback until evidence is current, does not mutate run state or call providers,
+  and reuses the CLI/core next-action contract in early states.
 - Studio run detail includes read-only artifact preview excerpts for scripts, reviews, production
   packages, render plans, contact sheets, asset provenance, evidence, readiness, voiceover metadata,
   and render manifests. Previews are grouped by operator review phase with per-artifact review

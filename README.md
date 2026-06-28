@@ -168,7 +168,9 @@ agent-tracking state only; runtime code must not require it.
 - `producer status` shows an operator-readable run summary with current state, counts, approval
   ledger entries, warning details, evidence availability, readiness summary/attention checks,
   blocked-action details, production media evidence details, recent artifacts, and a concrete next
-  safe action with the current run id filled in. Malformed or stale evidence points back to
+  safe action with the current run id filled in. Production media rows include the shared
+  conservative `Review:` action used by evidence Markdown and Studio so operators can distinguish
+  verified evidence from informational artifact records. Malformed or stale evidence points back to
   `producer evidence --run <run_id>`. Missing, malformed, or stale evidence labels production media
   rows as artifact-record fallback until evidence is regenerated, while missing, malformed, or stale
   readiness diagnostics point back to `producer readiness --run <run_id>`; use `--json` for the raw
@@ -209,8 +211,9 @@ agent-tracking state only; runtime code must not require it.
   `production/audio/voiceover_review.md` gives the operator the local audio review checklist,
   required decision boundary, and next safe commands; audio file existence never grants render
   approval. Evidence, readiness, and status label deterministic-local WAVs as timing/reference
-  artifacts until reviewed local Piper audio exists, and next-action guidance calls out reference
-  audio before suggesting render approval for a local timing draft.
+  artifacts until reviewed local Piper audio exists, and shared production-media review guidance in
+  status, evidence Markdown, and Studio calls out reference audio before suggesting render approval
+  for a local timing draft.
 - Draft render runs only after explicit render approval for the exact current render-plan digest,
   voiceover digest, and voiceover mode/quality/candidate classification. The manifest records those
   input classifications, the exact render approval ID/reference that authorized the draft, the
@@ -364,11 +367,12 @@ Current Studio scope:
   readiness/evidence status, stale or invalid artifact remediation, and next safe action visibility;
 - read-only `/runs/<run_id>` detail view with next action, readiness status, and review artifact
   availability plus approval ledger entries, warning lists, production media evidence details,
-  readiness check messages, and readiness next-action commands from CLI/core artifacts. Malformed or
-  stale evidence artifacts stay read-only, are not used as proof for blocked actions, media
-  readiness, or next-action guidance, and point back to the CLI evidence command; media rows fall
-  back to persisted artifact-record visibility until evidence is current. Missing, malformed, or
-  stale readiness artifacts stay read-only and point back to the CLI readiness command;
+  per-row review guidance, readiness check messages, and readiness next-action commands from
+  CLI/core artifacts. Malformed or stale evidence artifacts stay read-only, are not used as proof
+  for blocked actions, media readiness, or next-action guidance, and point back to the CLI evidence
+  command; media rows fall back to persisted artifact-record visibility until evidence is current.
+  Missing, malformed, or stale readiness artifacts stay read-only and point back to the CLI
+  readiness command;
 - read-only artifact preview excerpts for scripts, reviews, production packages, render plans,
   contact sheets, asset provenance, evidence, readiness, voiceover metadata, and render manifests,
   grouped by operator review phase, with binary media limited to metadata;
