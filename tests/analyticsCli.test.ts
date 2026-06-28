@@ -27,8 +27,12 @@ describe("producer analytics CLI", () => {
       outputPath: "analytics/performance.json",
       recordCount: 1,
       reportPath: "analytics/performance_report.md",
+      runLinkTemplatePath: "analytics/run_link_template.csv",
     });
     await expect(readFile("analytics/performance.json", "utf8")).resolves.toContain("yt_001");
+    await expect(readFile("analytics/run_link_template.csv", "utf8")).resolves.toBe(
+      "run_id,video_id,title,published_at,views,notes",
+    );
 
     const reportResult = runCli(["analytics", "report", "--json"]);
 
@@ -36,6 +40,7 @@ describe("producer analytics CLI", () => {
     expect(JSON.parse(reportResult.stdout) as unknown).toMatchObject({
       report: expect.stringContaining("Manual Analytics Report"),
       reportPath: "analytics/performance_report.md",
+      runLinkTemplatePath: "analytics/run_link_template.csv",
     });
   });
 });

@@ -26,12 +26,14 @@ describe("manual analytics import", () => {
     const result = await importAnalyticsFile("performance.csv");
     const dataset = await loadAnalyticsDataset();
     const report = await readFile("analytics/performance_report.md", "utf8");
+    const runLinkTemplate = await readFile("analytics/run_link_template.csv", "utf8");
 
     expect(result).toMatchObject({
       format: "csv",
       recordCount: 3,
       outputPath: "analytics/performance.json",
       reportPath: "analytics/performance_report.md",
+      runLinkTemplatePath: "analytics/run_link_template.csv",
     });
     expect(dataset.records).toEqual(
       expect.arrayContaining([
@@ -57,8 +59,13 @@ describe("manual analytics import", () => {
     expect(report).toContain("Unmapped records");
     expect(report).toContain("| run_20260624010101_abcd12 | 2 | 1,450 |");
     expect(report).toContain("Unmapped Records");
+    expect(report).toContain("Run link template: analytics/run_link_template.csv");
     expect(report).toContain(
       "| yt_003 | Haritasız Uydu | 100 | 2026-06-22T12:00:00.000Z | Add run_id in the next import. |",
+    );
+    expect(runLinkTemplate).toContain("run_id,video_id,title,published_at,views,notes");
+    expect(runLinkTemplate).toContain(
+      ',yt_003,Haritasız Uydu,2026-06-22T12:00:00.000Z,100,"Fill run_id, then include it in the next analytics import."',
     );
     expect(report).toContain("Import Data Quality");
     expect(report).toContain("| High confidence records | 2 |");
@@ -149,9 +156,11 @@ describe("manual analytics import", () => {
 
     const result = await refreshSavedAnalyticsReport();
     const report = await readFile("analytics/performance_report.md", "utf8");
+    const runLinkTemplate = await readFile("analytics/run_link_template.csv", "utf8");
     const dataset = await loadAnalyticsDataset();
 
     expect(result.reportPath).toBe("analytics/performance_report.md");
+    expect(result.runLinkTemplatePath).toBe("analytics/run_link_template.csv");
     expect(result.report).toBe(report);
     expect(report).toContain(dataset.generatedAt);
     expect(report).toContain(dataset.source.sha256);
@@ -160,6 +169,7 @@ describe("manual analytics import", () => {
       "| none | All imported records include run_id. | 0 | unknown | No action needed |",
     );
     expect(report).toContain("Non-Causal Recommendations");
+    expect(runLinkTemplate).toBe("run_id,video_id,title,published_at,views,notes");
   });
 
   it("classifies mixed-signal records separately from repeat and avoid", () => {

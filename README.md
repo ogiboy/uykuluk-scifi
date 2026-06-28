@@ -308,18 +308,19 @@ Analytics imports accept operator-provided CSV or JSON records with fields such 
 `video_id`, `title`, `published_at`, `impressions`, `views`, `ctr`, `avg_view_duration_seconds`,
 `avg_percentage_viewed`, `subscribers_gained`, `likes`, `comments`, and `notes`. The report includes
 overall metrics, top videos, run-linked summaries, an unmapped-record table for videos that need a
-future `run_id`, and operator review prompts, including non-causal repeat / avoid-without-revision /
-mixed-signal inspect / test-next recommendations. The recommendations include simple
-confidence/missingness framing based on the fields present in the import. The report also prints
-import data-quality counts for confidence levels and missing run links, views, impressions, CTR, or
-retention fields. The importer writes ignored local artifacts under `analytics/`; Studio can display
-the same read-only import data-quality summary at `/analytics`. Neither path calls YouTube APIs,
+future `run_id`, a fillable `analytics/run_link_template.csv`, and operator review prompts,
+including non-causal repeat / avoid-without-revision / mixed-signal inspect / test-next
+recommendations. The recommendations include simple confidence/missingness framing based on the
+fields present in the import. The report also prints import data-quality counts for confidence
+levels and missing run links, views, impressions, CTR, or retention fields. The importer writes
+ignored local artifacts under `analytics/`; Studio can display the same read-only import
+data-quality summary and run-link template path at `/analytics`. Neither path calls YouTube APIs,
 uploads media, publishes content, mutates workflow state, or claims causality from performance
 changes.
 
 `producer analytics report` refreshes `analytics/performance_report.md` from the saved local dataset
-before printing it. Studio marks the report preview as missing, stale, or current by checking it
-against the dataset timestamp and source digest.
+and rewrites `analytics/run_link_template.csv` before printing it. Studio marks the report preview
+as missing, stale, or current by checking it against the dataset timestamp and source digest.
 
 Do not edit `runs/<run_id>/script.md` directly. Use `producer revise script` before production
 packaging. Revisions are blocked after the production package exists. Each revision stores the old

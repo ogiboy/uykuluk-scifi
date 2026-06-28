@@ -145,7 +145,7 @@ Minimum loop:
 - import operator-provided CSV/JSON performance data - implemented locally through
   `producer analytics import`;
 - map performance records back to runs/videos with run-linked summaries and unmapped-record
-  visibility;
+  visibility plus a fillable run-link CSV template;
 - summarize CTR, views, average view duration, retention notes, subscriber deltas, and qualitative
   comments where provided - implemented in `analytics/performance_report.md`;
 - review the imported local dataset and report preview in Studio without YouTube API calls, workflow

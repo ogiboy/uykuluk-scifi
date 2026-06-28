@@ -106,6 +106,7 @@ export function AnalyticsOverviewView({ overview }: AnalyticsOverviewViewProps) 
           {overview.reportPath} · report status: {overview.reportStatus}
           {overview.reportPreviewTruncated ? " · preview truncated" : ""}
         </p>
+        <p className='artifact-meta'>Run link template: {overview.runLinkTemplatePath}</p>
         {overview.reportWarning ? <p className='blocked'>{overview.reportWarning}</p> : null}
         {overview.reportPreview ? (
           <pre className='artifact-preview'>{overview.reportPreview}</pre>
