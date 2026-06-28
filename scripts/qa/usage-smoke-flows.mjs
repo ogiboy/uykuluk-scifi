@@ -47,6 +47,39 @@ export async function runDoctorSmoke({ run, pnpm, workdir, assertFile, assert })
 }
 
 /**
+ * Validates the local model evaluation command in default mock mode.
+ * The report must stay local, parser-focused, and raw-output-free.
+ */
+export async function runLocalModelEvalSmoke({ run, pnpm, workdir, assertFile, assert }) {
+  const result = run([pnpm, "producer", "eval", "local-model", "--json"], {
+    label: "local model eval JSON",
+    expectOutput: '"passed": true',
+  });
+  const report = JSON.parse(result.stdout);
+  assert(report.providerMode === "mock", "local model eval uses default mock mode");
+  assert(report.passed === true, "local model eval JSON passed=true");
+  assert(
+    report.checks.some((check) => check.name === "ideas-json" && check.status === "pass"),
+    "local model eval passes idea parser contract",
+  );
+  assert(
+    report.checks.some((check) => check.name === "script-section-json" && check.status === "pass"),
+    "local model eval passes script-section parser contract",
+  );
+  assert(
+    JSON.stringify(report).includes("Bazı gezegenler vardır") === false,
+    "eval omits raw text",
+  );
+  await assertFile("diagnostics/local_model_eval.json");
+  await assertFile("diagnostics/local_model_eval.md");
+  const markdown = await readFile(path.join(workdir, "diagnostics", "local_model_eval.md"), "utf8");
+  assert(
+    markdown.includes("Raw provider output is intentionally not persisted."),
+    "local model eval Markdown documents raw-output boundary",
+  );
+}
+
+/**
  * Validates the script revision workflow by executing a revision command and confirming artifacts.
  * Reads a generated script, creates a revised version, runs the revision command, and asserts that exactly one revision directory exists with the required artifacts.
  */

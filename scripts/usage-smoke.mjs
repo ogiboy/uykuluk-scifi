@@ -9,6 +9,7 @@ import {
   assertReviewEvidenceRecommendsWarningAcknowledgement,
   runAnalyticsSmoke,
   runDoctorSmoke,
+  runLocalModelEvalSmoke,
   runScriptRevisionSmoke,
   runStatusSummarySmoke,
 } from "./qa/usage-smoke-flows.mjs";
@@ -69,6 +70,7 @@ try {
   run([pnpm, "producer", "init"], { label: "init creates config and dirs" });
   await assertFile("producer.config.json");
   await runDoctorSmoke({ run, pnpm, workdir, assertFile, assert });
+  await runLocalModelEvalSmoke({ run, pnpm, workdir, assertFile, assert });
   await assertDefaultConfigSafety({ workdir, assert });
 
   const blockedIdeas = run([pnpm, "producer", "ideas"], {
