@@ -5,7 +5,9 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { enableDeterministicTts, runLocalMediaSmoke } from "./qa/usage-smoke-media.mjs";
 import {
+  assertDefaultConfigSafety,
   assertReviewEvidenceRecommendsWarningAcknowledgement,
+  runAnalyticsSmoke,
   runDoctorSmoke,
   runScriptRevisionSmoke,
 } from "./qa/usage-smoke-flows.mjs";
@@ -66,18 +68,7 @@ try {
   run([pnpm, "producer", "init"], { label: "init creates config and dirs" });
   await assertFile("producer.config.json");
   await runDoctorSmoke({ run, pnpm, workdir, assertFile, assert });
-
-  const defaults = JSON.parse(await readFile(path.join(workdir, "producer.config.json"), "utf8"));
-  assert(defaults.providers.llm.mode === "mock", "default LLM mode is mock");
-  assert(defaults.providers.youtube.enabled === false, "YouTube disabled by default");
-  assert(
-    defaults.providers.youtube.allowPrivateUpload === false,
-    "private upload disabled by default",
-  );
-  assert(
-    defaults.providers.youtube.allowPublicPublish === false,
-    "public publish disabled by default",
-  );
+  await assertDefaultConfigSafety({ workdir, assert });
 
   const blockedIdeas = run([pnpm, "producer", "ideas"], {
     label: "negative setup: ideas for blocked run",
@@ -232,6 +223,7 @@ try {
   }
 
   await runLocalMediaSmoke({ run, pnpm, workdir, runId, assertFile, assert });
+  await runAnalyticsSmoke({ run, pnpm, workdir, runId, assertFile, assert });
 
   await writeReports({ runId, passed: true });
   console.log(
