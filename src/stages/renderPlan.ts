@@ -17,6 +17,7 @@ import { renderContactSheet } from "./renderPlanContactSheet.js";
 import { selectRenderAssets, uniqueAssets } from "./renderPlanAssets.js";
 import {
   assetProvenanceSchema,
+  AssetProvenance,
   AssetRef,
   productionSceneSchema,
   RenderPlan,
@@ -141,10 +142,11 @@ export async function readRenderPlanEvidence(run: RunRecord): Promise<RenderPlan
   try {
     await assertRenderPlanArtifacts(run);
     const planText = await readFile(artifactPath(run.runId, "production/render_plan.json"), "utf8");
-    renderPlanSchema.parse(JSON.parse(planText) as unknown);
+    const plan = renderPlanSchema.parse(JSON.parse(planText) as unknown);
     const provenance = assetProvenanceSchema.parse(
       await readJsonFile(artifactPath(run.runId, "production/asset_provenance.json")),
     );
+    await assertRenderPlanEvidenceMatchesRun(run, plan, provenance);
     return {
       status: "pass",
       path: "production/render_plan.json",
@@ -158,6 +160,22 @@ export async function readRenderPlanEvidence(run: RunRecord): Promise<RenderPlan
       path: "production/render_plan.json",
       message: error instanceof Error ? error.message : String(error),
     };
+  }
+}
+
+async function assertRenderPlanEvidenceMatchesRun(
+  run: RunRecord,
+  plan: RenderPlan,
+  provenance: AssetProvenance,
+): Promise<void> {
+  if (plan.runId !== run.runId || provenance.runId !== run.runId) {
+    throw new SafeExitError("Render plan evidence belongs to a different run.");
+  }
+  const { digest } = await verifyProductionPackage(run);
+  if (plan.productionPackageManifestDigest !== digest) {
+    throw new SafeExitError(
+      "Render plan evidence was generated from a stale production package manifest.",
+    );
   }
 }
 
