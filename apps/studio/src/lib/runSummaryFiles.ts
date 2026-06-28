@@ -1,12 +1,11 @@
 import { readdir, readFile } from "node:fs/promises";
-import path from "node:path";
 import {
   diagnosticSummaryArtifactPaths,
   summarizeRunDiagnosticArtifact,
   type RunDiagnosticSummary,
 } from "../../../../src/stages/runDiagnosticSummaryContracts";
-import { isValidArtifactRelativePath } from "../../../../src/core/artifactPathRules";
 import { isValidRunId } from "../../../../src/core/runId";
+import { studioRunFilePath } from "./runFilePaths";
 import type { RunRecord, StudioRunState } from "./runSummaries";
 
 export type ValidRunRecord = RunRecord & {
@@ -64,7 +63,7 @@ async function readOptionalJson<T>(
   relativePath: string,
 ): Promise<T | null> {
   try {
-    const file = safeRunFilePath(root, runId, relativePath);
+    const file = studioRunFilePath(root, runId, relativePath);
     if (!file) {
       return null;
     }
@@ -75,11 +74,4 @@ async function readOptionalJson<T>(
     }
     return null;
   }
-}
-
-function safeRunFilePath(root: string, runId: string, relativePath: string): string | null {
-  if (!isValidRunId(runId) || !isValidArtifactRelativePath(relativePath)) {
-    return null;
-  }
-  return path.join(root, "runs", runId, ...relativePath.split("/"));
 }

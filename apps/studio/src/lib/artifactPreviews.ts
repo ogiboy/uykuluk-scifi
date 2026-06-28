@@ -1,5 +1,5 @@
 import { open, stat } from "node:fs/promises";
-import path from "node:path";
+import { studioRunFilePath } from "./runFilePaths";
 
 const PREVIEW_BYTE_LIMIT = 2_400;
 
@@ -101,7 +101,10 @@ async function readArtifactPreview(
   runId: string,
   artifact: ReviewArtifactDefinition,
 ): Promise<StudioArtifactPreview> {
-  const file = path.join(root, "runs", runId, ...artifact.path.split("/"));
+  const file = studioRunFilePath(root, runId, artifact.path);
+  if (!file) {
+    return missingArtifact(artifact);
+  }
   try {
     const fileStat = await stat(file);
     if (!fileStat.isFile()) {

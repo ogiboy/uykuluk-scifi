@@ -1,5 +1,4 @@
 import { readFile } from "node:fs/promises";
-import path from "node:path";
 import {
   materializeRunCommand,
   staticEvidenceNextCommand,
@@ -7,6 +6,7 @@ import {
 import { isValidRunId } from "../../../../src/core/runId";
 import type { EvidenceStatus } from "../../../../src/stages/statusMediaSummary";
 import { validateEvidenceStatusSnapshot } from "../../../../src/stages/statusEvidenceSchema";
+import { studioRunFilePath } from "./runFilePaths";
 
 export type StudioEvidenceSummary = {
   message: string;
@@ -30,7 +30,10 @@ export async function readStudioEvidenceSummary(
 ): Promise<StudioEvidenceSummary> {
   try {
     const validatedRunId = validStudioRunId(runId);
-    const file = path.join(root, "runs", validatedRunId, "evidence_bundle.json");
+    const file = studioRunFilePath(root, validatedRunId, "evidence_bundle.json");
+    if (!file) {
+      return invalidEvidence(runId, "Evidence bundle path is invalid.");
+    }
     return summarizeEvidenceSnapshot(
       JSON.parse(await readFile(file, "utf8")),
       validatedRunId,
