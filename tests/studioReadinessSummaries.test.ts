@@ -99,4 +99,47 @@ describe("Studio readiness summary validity", () => {
       readinessStatus: "stale",
     });
   });
+
+  it("treats blocking checks as not passed even when readiness says passed", async () => {
+    const run = await createRun();
+    await mkdir(`runs/${run.runId}/diagnostics`, { recursive: true });
+    await writeFile(
+      artifactPath(run.runId, "diagnostics/readiness.json"),
+      JSON.stringify({
+        checks: [
+          {
+            message: "costs/estimate.json is missing.",
+            name: "budget not exceeded",
+            nextAction: "pnpm producer estimate --run <run_id>",
+            status: "block",
+          },
+        ],
+        currentState: "NEW",
+        passed: true,
+        runId: run.runId,
+      }),
+      "utf8",
+    );
+
+    const [detail, summary] = await Promise.all([getStudioRunDetail(run.runId), listStudioRuns()]);
+
+    expect(detail).toMatchObject({
+      readinessChecks: [
+        {
+          message: "costs/estimate.json is missing.",
+          name: "budget not exceeded",
+          nextAction: `pnpm producer estimate --run ${run.runId}`,
+          status: "block",
+        },
+      ],
+      readinessMessage: "Readiness has not passed yet.",
+      readinessPassed: false,
+      readinessStatus: "blocked",
+    });
+    expect(summary[0]).toMatchObject({
+      readinessMessage: "Readiness has not passed yet.",
+      readinessPassed: false,
+      readinessStatus: "blocked",
+    });
+  });
 });
