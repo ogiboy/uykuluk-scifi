@@ -11,6 +11,12 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.38.2 (2026-06-28)
+
+### Fixes
+
+- reject malformed status snapshots (#83) (cf740a0)
+
 ## v0.38.1 (2026-06-28)
 
 ### Fixes
