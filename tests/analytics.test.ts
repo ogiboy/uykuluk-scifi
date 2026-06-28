@@ -56,6 +56,10 @@ describe("manual analytics import", () => {
     expect(report).toContain("Mapped runs");
     expect(report).toContain("Unmapped records");
     expect(report).toContain("| run_20260624010101_abcd12 | 2 | 1,450 |");
+    expect(report).toContain("Unmapped Records");
+    expect(report).toContain(
+      "| yt_003 | Haritasız Uydu | 100 | 2026-06-22T12:00:00.000Z | Add run_id in the next import. |",
+    );
     expect(report).toContain("Import Data Quality");
     expect(report).toContain("| High confidence records | 2 |");
     expect(report).toContain("| Medium confidence records | 1 |");
@@ -151,6 +155,10 @@ describe("manual analytics import", () => {
     expect(result.report).toBe(report);
     expect(report).toContain(dataset.generatedAt);
     expect(report).toContain(dataset.source.sha256);
+    expect(report).toContain("Unmapped Records");
+    expect(report).toContain(
+      "| none | All imported records include run_id. | 0 | unknown | No action needed |",
+    );
     expect(report).toContain("Non-Causal Recommendations");
   });
 

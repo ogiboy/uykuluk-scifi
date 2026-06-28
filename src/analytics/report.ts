@@ -2,6 +2,7 @@ import { table } from "../utils/markdown.js";
 import { summarizeAnalyticsDataQuality } from "./dataQuality.js";
 import { renderAnalyticsRecommendations } from "./recommendations.js";
 import type { AnalyticsDataset, AnalyticsRecord } from "./schema.js";
+import { unmappedRecordRows } from "./unmappedRecords.js";
 
 /**
  * Builds a Markdown analytics report from an import dataset.
@@ -44,6 +45,13 @@ export function renderAnalyticsReport(dataset: AnalyticsDataset): string {
     table(
       ["Run", "Videos", "Views", "Weighted CTR", "Avg viewed", "Latest publish", "Top title"],
       runSummaryRows(runSummaries),
+    ),
+    "",
+    "## Unmapped Records",
+    "",
+    table(
+      ["Video", "Title", "Views", "Published", "Next action"],
+      unmappedRecordRows(dataset.records),
     ),
     "",
     "## Top Videos By Views",

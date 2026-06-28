@@ -307,14 +307,15 @@ pnpm producer analytics report --json
 Analytics imports accept operator-provided CSV or JSON records with fields such as `run_id`,
 `video_id`, `title`, `published_at`, `impressions`, `views`, `ctr`, `avg_view_duration_seconds`,
 `avg_percentage_viewed`, `subscribers_gained`, `likes`, `comments`, and `notes`. The report includes
-overall metrics, top videos, run-linked summaries, unmapped record counts, and operator review
-prompts, including non-causal repeat / avoid-without-revision / mixed-signal inspect / test-next
-recommendations. The recommendations include simple confidence/missingness framing based on the
-fields present in the import. The report also prints import data-quality counts for confidence
-levels and missing run links, views, impressions, CTR, or retention fields. The importer writes
-ignored local artifacts under `analytics/`; Studio can display the same read-only import
-data-quality summary at `/analytics`. Neither path calls YouTube APIs, uploads media, publishes
-content, mutates workflow state, or claims causality from performance changes.
+overall metrics, top videos, run-linked summaries, an unmapped-record table for videos that need a
+future `run_id`, and operator review prompts, including non-causal repeat / avoid-without-revision /
+mixed-signal inspect / test-next recommendations. The recommendations include simple
+confidence/missingness framing based on the fields present in the import. The report also prints
+import data-quality counts for confidence levels and missing run links, views, impressions, CTR, or
+retention fields. The importer writes ignored local artifacts under `analytics/`; Studio can display
+the same read-only import data-quality summary at `/analytics`. Neither path calls YouTube APIs,
+uploads media, publishes content, mutates workflow state, or claims causality from performance
+changes.
 
 `producer analytics report` refreshes `analytics/performance_report.md` from the saved local dataset
 before printing it. Studio marks the report preview as missing, stale, or current by checking it
