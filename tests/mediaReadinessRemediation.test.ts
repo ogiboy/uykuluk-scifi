@@ -22,6 +22,7 @@ import {
   createFakeFfprobe,
   createMinimalRenderAssets,
   enableDeterministicTts,
+  renderToolRoot,
 } from "./renderTestHelpers";
 
 describe("media readiness remediation", () => {
@@ -100,8 +101,8 @@ describe("media readiness remediation", () => {
     const runId = await prepareVoiceoverReadyRun();
     await approveRender(runId);
     await renderDraft(runId, {
-      ffmpegBinary: await createFakeFfmpeg(process.cwd()),
-      ffprobeBinary: await createFakeFfprobe(process.cwd()),
+      ffmpegBinary: await createFakeFfmpeg(renderToolRoot("persisted-draft-evidence")),
+      ffprobeBinary: await createFakeFfprobe(renderToolRoot("persisted-draft-evidence")),
       maxDurationSeconds: 2,
     });
     const manifestPath = artifactPath(runId, "production/render/render_manifest.json");

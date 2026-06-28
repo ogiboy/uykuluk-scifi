@@ -27,6 +27,7 @@ export async function createFakeFfmpeg(
   binaryName = "fake-ffmpeg.mjs",
 ): Promise<string> {
   const target = path.join(root, binaryName);
+  await mkdir(path.dirname(target), { recursive: true });
   await writeFile(
     target,
     [
@@ -53,6 +54,7 @@ export async function createFakeFfprobe(
   binaryName = "fake-ffprobe.mjs",
 ): Promise<string> {
   const target = path.join(root, binaryName);
+  await mkdir(path.dirname(target), { recursive: true });
   await writeFile(
     target,
     [
@@ -79,6 +81,7 @@ export async function createFakeFfprobe(
  */
 export async function createFailingFakeFfprobe(root: string): Promise<string> {
   const target = path.join(root, "fake-failing-ffprobe.mjs");
+  await mkdir(path.dirname(target), { recursive: true });
   await writeFile(
     target,
     ["#!/usr/bin/env node", 'console.error("invalid media");', "process.exit(1);"].join("\n"),
@@ -86,6 +89,16 @@ export async function createFailingFakeFfprobe(root: string): Promise<string> {
   );
   await chmod(target, 0o755);
   return target;
+}
+
+/**
+ * Builds an isolated temp-project path for fake render tools.
+ *
+ * @param scope - The caller-specific tool directory name.
+ * @returns A directory path beneath the current temp project.
+ */
+export function renderToolRoot(scope: string): string {
+  return path.join(process.cwd(), ".tmp", "render-tools", scope);
 }
 
 /**

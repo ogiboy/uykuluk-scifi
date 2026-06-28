@@ -25,6 +25,7 @@ import {
   createFakeFfprobe,
   createMinimalRenderAssets,
   enableDeterministicTts,
+  renderToolRoot,
 } from "./renderTestHelpers";
 
 describe("draft render", () => {
@@ -32,7 +33,7 @@ describe("draft render", () => {
 
   it("requires explicit render approval before generating a draft video", async () => {
     const runId = await prepareVoiceoverReadyRun();
-    const ffmpeg = await createFakeFfmpeg(process.cwd());
+    const ffmpeg = await createFakeFfmpeg(renderToolRoot("approval-required"));
     const evidence = (await generateEvidenceBundle(runId)) as { nextRecommendedCommand: string };
 
     expect(evidence.nextRecommendedCommand).toBe(
@@ -48,8 +49,8 @@ describe("draft render", () => {
   it("records render approval and writes a draft video manifest through FFmpeg", async () => {
     const runId = await prepareVoiceoverReadyRun();
     const approval = await approveRender(runId);
-    const ffmpeg = await createFakeFfmpeg(process.cwd());
-    const ffprobe = await createFakeFfprobe(process.cwd());
+    const ffmpeg = await createFakeFfmpeg(renderToolRoot("manifest"));
+    const ffprobe = await createFakeFfprobe(renderToolRoot("manifest"));
 
     await renderDraft(runId, {
       ffmpegBinary: ffmpeg,
@@ -188,8 +189,8 @@ describe("draft render", () => {
   it("blocks draft render completion when media probing cannot validate the output", async () => {
     const runId = await prepareVoiceoverReadyRun();
     await approveRender(runId);
-    const ffmpeg = await createFakeFfmpeg(process.cwd());
-    const ffprobe = await createFailingFakeFfprobe(process.cwd());
+    const ffmpeg = await createFakeFfmpeg(renderToolRoot("probe-failure"));
+    const ffprobe = await createFailingFakeFfprobe(renderToolRoot("probe-failure"));
 
     await expect(
       renderDraft(runId, { ffmpegBinary: ffmpeg, ffprobeBinary: ffprobe, maxDurationSeconds: 1 }),
