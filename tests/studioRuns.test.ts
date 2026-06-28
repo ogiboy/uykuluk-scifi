@@ -166,7 +166,7 @@ describe("Studio read-only run summaries", () => {
         }),
         expect.objectContaining({
           path: "production/render/render_manifest.json",
-          description: expect.stringContaining("ffprobe media evidence"),
+          description: expect.stringMatching(/ffprobe media evidence.*review command/),
           group: "Audio And Render",
           kind: "json",
         }),
