@@ -70,7 +70,7 @@ function renderVoiceoverDecision(meta: VoiceoverAudioMeta): string[] {
       "Confirm render approval has not been granted from audio file existence alone.",
     ],
     acceptableNextSteps: [
-      `Run \`pnpm producer approve render --run ${meta.runId}\` only after audio and render-plan review both pass.`,
+      renderApprovalNextStep(meta),
       `Run \`pnpm producer render --run ${meta.runId}\` only after exact render approval is recorded.`,
     ],
     revisionSteps: [
@@ -82,6 +82,19 @@ function renderVoiceoverDecision(meta: VoiceoverAudioMeta): string[] {
       "Private upload, scheduled publish, public publish, and paid provider execution remain unavailable from this review artifact.",
     ],
   });
+}
+
+/**
+ * Builds the render-approval guidance for the current voiceover mode.
+ *
+ * @param meta - Voiceover review metadata used to choose the safest approval wording.
+ * @returns The operator-facing render approval guidance.
+ */
+function renderApprovalNextStep(meta: VoiceoverAudioMeta): string {
+  if (meta.mode === "local-piper") {
+    return `Run \`pnpm producer approve render --run ${meta.runId}\` only after audio and render-plan review both pass.`;
+  }
+  return `Run \`pnpm producer approve render --run ${meta.runId}\` only for a local timing draft after deterministic reference audio and render-plan review both pass.`;
 }
 
 /**
