@@ -5,6 +5,7 @@ import {
   summarizeRunDiagnosticArtifact,
   type RunDiagnosticSummary,
 } from "../../../../src/stages/runDiagnosticSummaryContracts";
+import { isValidArtifactRelativePath } from "../../../../src/core/artifactPathRules";
 import { isValidRunId } from "../../../../src/core/runId";
 import type { RunRecord, StudioRunState } from "./runSummaries";
 
@@ -63,7 +64,10 @@ async function readOptionalJson<T>(
   relativePath: string,
 ): Promise<T | null> {
   try {
-    const file = path.join(root, "runs", runId, ...relativePath.split("/"));
+    const file = safeRunFilePath(root, runId, relativePath);
+    if (!file) {
+      return null;
+    }
     return JSON.parse(await readFile(file, "utf8")) as T;
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") {
@@ -71,4 +75,11 @@ async function readOptionalJson<T>(
     }
     return null;
   }
+}
+
+function safeRunFilePath(root: string, runId: string, relativePath: string): string | null {
+  if (!isValidRunId(runId) || !isValidArtifactRelativePath(relativePath)) {
+    return null;
+  }
+  return path.join(root, "runs", runId, ...relativePath.split("/"));
 }
