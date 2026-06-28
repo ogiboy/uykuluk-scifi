@@ -76,7 +76,9 @@ describe("voiceover audio", () => {
       "render approval has not been granted from audio file existence alone",
     );
     expect(review).toContain("## Operator Decision");
-    expect(review).toContain(`pnpm producer approve render --run ${runId}`);
+    expect(review).toContain(
+      `pnpm producer approve render --run ${runId}\` only for a local timing draft`,
+    );
     expect(review).toContain(`pnpm producer render --run ${runId}`);
     expect(review).toContain(
       "Private upload, scheduled publish, public publish, and paid provider execution remain unavailable",
