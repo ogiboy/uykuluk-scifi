@@ -75,6 +75,12 @@ export async function createRenderedStudioRunFixture(): Promise<string> {
       path: "production/render/draft.mp4",
       sourceFrameCount: 4,
       sourceFrameSegments: ["intro:2", "outro:2"],
+      sourceFrameCadence: [
+        "intro#1=1s assets/intro/frames/intro_frame_00.jpg",
+        "intro#2=1s assets/intro/frames/intro_frame_01.jpg",
+        "outro#1=1.5s assets/outro/frames/outro_frame_00.jpg",
+        "outro#2=1.5s assets/outro/frames/outro_frame_01.jpg",
+      ],
       timelineSegments: ["intro", "scene", "outro"],
       overlayRoles: ["watermark", "popup-card"],
       reviewPath: "production/render/draft_review.md",

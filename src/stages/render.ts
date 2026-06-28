@@ -23,6 +23,7 @@ import { readRenderPlanEvidence } from "./renderPlan.js";
 import { renderDraftReviewMarkdown } from "./renderReviewMarkdown.js";
 import {
   buildDraftRenderTimeline,
+  buildFfmpegTimelineInputs,
   buildFfmpegArgs,
   clampRenderDuration,
 } from "./renderFfmpegPlan.js";
@@ -81,6 +82,7 @@ export async function renderDraft(
       options.maxDurationSeconds,
     );
     const timeline = buildDraftRenderTimeline(renderPlan, durationSeconds);
+    const ffmpegTimelineInputs = buildFfmpegTimelineInputs(timeline);
     const composition = buildDraftRenderComposition(renderPlan);
     const output = artifactPath(run.runId, draftRenderPath);
     temporaryOutput = path.join(path.dirname(output), `.draft.${process.pid}.${randomUUID()}.mp4`);
@@ -110,7 +112,7 @@ export async function renderDraft(
     const outputBytes = await readFile(output);
     run = await recordRunArtifact(run, "render", draftRenderPath);
     const manifest = draftRenderManifestSchema.parse({
-      schemaVersion: 4,
+      schemaVersion: 5,
       runId: run.runId,
       createdAt: nowIso(),
       renderPlan: {
@@ -129,6 +131,7 @@ export async function renderDraft(
         approvedRef: currentApprovalRef,
       },
       timeline,
+      ffmpegTimelineInputs,
       composition: {
         overlays: composition.overlays.map((overlay) => ({
           role: overlay.asset.role,

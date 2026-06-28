@@ -9,6 +9,11 @@ import { readJsonFile } from "../utils/json.js";
 import { readRenderPlanEvidence } from "./renderPlan.js";
 import { renderMediaProbeSchema, type RenderMediaProbe } from "./renderProbe.js";
 import { assetRefSchema, digestSchema } from "./renderPlanSchemas.js";
+import {
+  sourceFrameCadence,
+  sourceFrameCount,
+  sourceFrameSegments,
+} from "./renderTimelineSummary.js";
 import { readVoiceoverAudioEvidence } from "./voiceoverEvidence.js";
 
 export const draftRenderPath = "production/render/draft.mp4";
@@ -46,9 +51,17 @@ const renderTimelineItemSchema = z
       message: "Scene timeline items must include a scene index.",
     },
   );
+const ffmpegTimelineInputSchema = z.strictObject({
+  segment: z.enum(["intro", "scene", "outro"]),
+  sceneIndex: z.int().positive().optional(),
+  durationSeconds: z.number().positive(),
+  asset: assetRefSchema,
+  source: z.enum(["background", "source-frame"]),
+  frameIndex: z.int().positive().optional(),
+});
 
 export const draftRenderManifestSchema = z.strictObject({
-  schemaVersion: z.literal(4),
+  schemaVersion: z.literal(5),
   runId: z.string().min(1),
   createdAt: z.iso.datetime(),
   renderPlan: z.strictObject({
@@ -64,6 +77,7 @@ export const draftRenderManifestSchema = z.strictObject({
   }),
   renderApproval: renderApprovalSchema,
   timeline: z.array(renderTimelineItemSchema).min(1),
+  ffmpegTimelineInputs: z.array(ffmpegTimelineInputSchema).min(1),
   composition: z.strictObject({
     overlays: z.array(renderCompositionOverlaySchema),
     reviewChecklist: z.array(z.string().min(1)),
@@ -95,6 +109,7 @@ export type DraftRenderEvidence =
       timelineSegments: string[];
       sourceFrameCount: number;
       sourceFrameSegments: string[];
+      sourceFrameCadence: string[];
       reviewPath: string;
       reviewChecklist: string[];
       voiceoverMode: z.infer<typeof voiceoverModeSchema>;
@@ -169,6 +184,7 @@ export async function readDraftRenderEvidence(run: RunRecord): Promise<DraftRend
       timelineSegments: manifest.timeline.map((item) => item.segment ?? "scene"),
       sourceFrameCount: sourceFrameCount(manifest.timeline),
       sourceFrameSegments: sourceFrameSegments(manifest.timeline),
+      sourceFrameCadence: sourceFrameCadence(manifest.ffmpegTimelineInputs),
       reviewPath: draftRenderReviewPath,
       reviewChecklist: manifest.composition.reviewChecklist,
       voiceoverMode: manifest.voiceoverAudio.mode,
@@ -184,42 +200,6 @@ export async function readDraftRenderEvidence(run: RunRecord): Promise<DraftRend
       message: error instanceof Error ? error.message : String(error),
     };
   }
-}
-
-/**
- * Counts the source frame assets used across a timeline.
- *
- * @param timeline - The draft render timeline to inspect
- * @returns The total number of source frame assets across all timeline items
- */
-function sourceFrameCount(timeline: DraftRenderManifest["timeline"]): number {
-  return timeline.reduce((total, item) => total + (item.sourceFrameAssets?.length ?? 0), 0);
-}
-
-/**
- * Builds source-frame segment labels for a timeline.
- *
- * @param timeline - The draft render timeline to inspect
- * @returns Labels in the form `segment:count` for timeline items that include source-frame assets
- */
-function sourceFrameSegments(timeline: DraftRenderManifest["timeline"]): string[] {
-  return timeline.flatMap((item) => {
-    const count = item.sourceFrameAssets?.length ?? 0;
-    return count > 0 ? [`${timelineSegmentLabel(item)}:${count}`] : [];
-  });
-}
-
-/**
- * Labels a timeline item by segment.
- *
- * @param item - The timeline item to label
- * @returns A segment label, using `scene-<index>` for scene items
- */
-function timelineSegmentLabel(item: DraftRenderManifest["timeline"][number]): string {
-  if (item.segment === "scene") {
-    return `scene-${item.sceneIndex ?? "unknown"}`;
-  }
-  return item.segment ?? "scene";
 }
 
 /**

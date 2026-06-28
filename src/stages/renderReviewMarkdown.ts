@@ -88,6 +88,7 @@ export function renderDraftReviewMarkdown(manifest: DraftRenderManifest): string
       ]),
     ),
     "",
+    ...frameCadenceSection(manifest),
     "## Overlays",
     "",
     table(
@@ -110,6 +111,33 @@ export function renderDraftReviewMarkdown(manifest: DraftRenderManifest): string
     ...renderDraftDecision(manifest),
   );
   return sections.join("\n");
+}
+
+/**
+ * Builds the source-frame cadence section for reviewable draft renders.
+ *
+ * @param manifest - The draft render manifest to inspect.
+ * @returns Markdown lines for source-frame cadence, or an empty array when no frame inputs exist.
+ */
+function frameCadenceSection(manifest: DraftRenderManifest): string[] {
+  const rows = manifest.ffmpegTimelineInputs
+    .filter((input) => input.source === "source-frame")
+    .map((input) => [
+      input.segment,
+      input.sceneIndex ? String(input.sceneIndex) : "-",
+      input.frameIndex ? String(input.frameIndex) : "-",
+      `${input.durationSeconds}s`,
+      input.asset.path,
+    ]);
+  if (rows.length === 0) {
+    return [];
+  }
+  return [
+    "## Source Frame Cadence",
+    "",
+    table(["Segment", "Scene", "Frame", "Duration", "Asset"], rows),
+    "",
+  ];
 }
 
 /**
