@@ -29,5 +29,6 @@ export async function renderPlanReadinessCheck(run: RunRecord): Promise<Readines
     name: "render plan available",
     status: "block",
     message: evidence.message,
+    nextAction: `pnpm producer render-plan --run ${run.runId}`,
   };
 }
