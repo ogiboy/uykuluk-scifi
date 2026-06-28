@@ -42,7 +42,9 @@ export async function runReadiness(
     {
       name: "provider configured",
       status:
-        config.providers.llm.mode === "mock" || config.providers.llm.mode === "ollama"
+        config.providers.llm.mode === "mock" ||
+        config.providers.llm.mode === "ollama" ||
+        config.providers.llm.mode === "llama.cpp"
           ? "pass"
           : "block",
       message: `LLM provider mode: ${config.providers.llm.mode}.`,

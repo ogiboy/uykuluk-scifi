@@ -49,6 +49,6 @@ function isIdeaProviderFailure(message: string): boolean {
   return (
     message.startsWith("Invalid ideas provider response") ||
     message.startsWith("Ideas provider did not return") ||
-    /Ollama/i.test(message)
+    /Ollama|llama\.cpp/i.test(message)
   );
 }

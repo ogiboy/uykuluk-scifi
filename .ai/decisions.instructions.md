@@ -80,6 +80,21 @@ Constraints:
 - Future paid providers must use the approved reservation/execution boundary.
 - Deterministic local render should be useful before paid/generative video providers are considered.
 
+### Local model runtime is separate from model quality
+
+Reason: Ollama/Qwen testing proved the safety guards work, but also showed inconsistent Turkish
+draft quality, repeated ideas, malformed labels, and weak long-form scripts. More Qwen prompt tuning
+should not be the only path forward.
+
+Constraints:
+
+- Keep mock mode as the default test path.
+- Keep Ollama available for regression coverage and local experiments.
+- Support local OpenAI-compatible `llama.cpp` servers so GGUF candidates can be evaluated without
+  hosted credentials.
+- Do not treat any local model as production-ready until it passes a controlled UykulukSciFi idea
+  and script evaluation against the existing blockers and operator quality expectations.
+
 ### CLI/core remains the workflow source of truth
 
 Reason: The first reliable surface is the strict state machine, ledger, artifact, and approval

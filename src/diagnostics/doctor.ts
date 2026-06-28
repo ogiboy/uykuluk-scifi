@@ -1,6 +1,7 @@
 import path from "node:path";
 import { defaultConfig, loadConfig, projectConfigExists } from "../config/config.js";
 import { ProducerConfig } from "../config/schema.js";
+import { LlamaCppProvider } from "../providers/llamaCppProvider.js";
 import { OllamaProvider } from "../providers/ollamaProvider.js";
 import { checkAssets } from "../safeguards/assetGuard.js";
 import { writeTextFile } from "../utils/fs.js";
@@ -125,6 +126,21 @@ async function providerCheck(config: ProducerConfig | undefined): Promise<Doctor
       name: "LLM provider",
       status: "pass",
       message: `Deterministic mock provider is ready (${config.providers.llm.model}).`,
+    };
+  }
+  if (config.providers.llm.mode === "llama.cpp") {
+    const diagnostic = await new LlamaCppProvider(
+      config.providers.llm.llamaCppBaseUrl,
+      config.providers.llm.model,
+      config.providers.llm.requestTimeoutMs,
+    ).diagnose();
+    return {
+      name: "LLM provider",
+      status: diagnostic.available ? "pass" : "block",
+      message: diagnostic.message,
+      nextAction: diagnostic.available
+        ? undefined
+        : "Start llama-server with the configured local GGUF model, or switch providers.llm.mode to mock before rerunning pnpm producer doctor.",
     };
   }
   const diagnostic = await new OllamaProvider(

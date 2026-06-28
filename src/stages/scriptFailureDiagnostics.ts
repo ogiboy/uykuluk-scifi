@@ -43,5 +43,5 @@ export async function persistScriptGenerationFailure(
 }
 
 function isScriptProviderFailure(message: string): boolean {
-  return /provider response|Ollama/i.test(message);
+  return /provider response|Ollama|llama\.cpp/i.test(message);
 }

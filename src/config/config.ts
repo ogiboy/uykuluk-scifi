@@ -19,6 +19,7 @@ export const defaultConfig: ProducerConfig = {
     llm: {
       mode: "mock",
       ollamaBaseUrl: "http://localhost:11434",
+      llamaCppBaseUrl: "http://localhost:8080",
       model: "qwen3:8b",
       thinkingMode: "default",
       requestTimeoutMs: 120_000,

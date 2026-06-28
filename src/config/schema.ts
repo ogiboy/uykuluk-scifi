@@ -19,8 +19,9 @@ export const producerConfigSchema = z.object({
     .default({ overrides: {} }),
   providers: z.object({
     llm: z.object({
-      mode: z.enum(["mock", "ollama"]).default("mock"),
+      mode: z.enum(["mock", "ollama", "llama.cpp"]).default("mock"),
       ollamaBaseUrl: z.url(),
+      llamaCppBaseUrl: z.url().default("http://localhost:8080"),
       model: z.string(),
       thinkingMode: z.enum(["default", "think", "no_think"]).default("default"),
       requestTimeoutMs: z.int().positive().default(120_000),

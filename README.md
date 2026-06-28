@@ -74,9 +74,11 @@ agent-tracking state only; runtime code must not require it.
   mutation-service status, and manual analytics feedback routes.
 - Studio foundation with Tailwind CSS v4, shadcn-style primitives, Radix UI, lucide icons, GSAP, and
   `next/font`.
-- Mock-first provider layer with Ollama adapter scaffold.
-- Project-level `producer doctor` diagnostics for config, mock/Ollama readiness, local TTS/Piper
-  readiness, local FFmpeg/ffprobe toolchain availability, assets, and publish defaults.
+- Mock-first provider layer with Ollama and local `llama.cpp` adapters.
+- Project-level `producer doctor` diagnostics for config, mock/Ollama/llama.cpp readiness, local
+  TTS/Piper readiness, local FFmpeg/ffprobe toolchain availability, assets, and publish defaults.
+- Local model evaluation command that exercises small idea/script parser contracts, writes ignored
+  `diagnostics/local_model_eval.*` reports, and never persists raw provider output.
 - Runtime prompt defaults under `prompts/defaults/`; `.ai/` is development and agent-tracking
   guidance, not a runtime dependency.
 - Strict run state machine and explicit approval ledger.
@@ -299,6 +301,25 @@ pnpm producer list-runs
 pnpm producer list-runs --json
 ```
 
+Local model evaluation:
+
+```bash
+pnpm producer eval local-model
+pnpm producer eval local-model --json
+pnpm producer eval local-model --llm-mode llama.cpp --model <served-model.gguf>
+pnpm producer eval local-model-candidates --llm-mode llama.cpp \
+  --candidate <served-model-a.gguf> --candidate <served-model-b.gguf>
+```
+
+By default this uses the configured local provider and model, so keep `mock` for cheap
+parser-contract checks. One-run overrides such as `--llm-mode`, `--model`, `--ollama-base-url`,
+`--llama-cpp-base-url`, `--thinking-mode`, and `--request-timeout-ms` let operators compare local
+Ollama/`llama.cpp` candidates without mutating `producer.config.json`. The report writes ignored
+`diagnostics/local_model_eval.json` and `.md` with hashes, token/duration metadata, applied override
+names, and parser results. Use `local-model-candidates` with repeated `--candidate` values for a
+single comparison report at `diagnostics/local_model_candidates_eval.*`. Raw provider text is
+intentionally not persisted.
+
 Manual analytics feedback:
 
 ```bash
@@ -469,7 +490,8 @@ pnpm producer init
 ```
 
 Keep `producer.config.json` ignored. Keep `providers.llm.mode` as `mock` for normal local testing.
-Use `ollama` only when a local Ollama server and model are available.
+Use local provider modes only when the matching server and model are available. Qwen/Ollama remains
+useful for regression coverage, but it is not the production-quality default for channel drafts.
 
 Useful Ollama settings:
 
@@ -490,6 +512,36 @@ Useful Ollama settings:
   }
 }
 ```
+
+Useful local `llama.cpp` settings for an OpenAI-compatible `llama-server`:
+
+```json
+{
+  "providers": {
+    "llm": {
+      "mode": "llama.cpp",
+      "llamaCppBaseUrl": "http://localhost:8080",
+      "model": "Mistral-7B-Instruct-v0.3.Q4_K_M.gguf",
+      "requestTimeoutMs": 120000,
+      "maxOutputTokens": {
+        "ideas": 3000,
+        "script": 3200,
+        "productionPackage": 2000
+      }
+    }
+  }
+}
+```
+
+Example local server command:
+
+```bash
+llama-server --model models/llm/Mistral-7B-Instruct-v0.3.Q4_K_M.gguf --ctx-size 8192 --port 8080
+```
+
+The adapter is local-only, uses `/v1/models` for doctor diagnostics and `/v1/chat/completions` for
+generation, and does not require hosted API credentials. Model quality is still an evaluation
+decision: prefer controlled local comparisons before spending more time on Qwen prompt tuning.
 
 Useful local TTS settings:
 
@@ -540,14 +592,25 @@ raw-output-free repair retries, and a later successful script run clears stale f
 before advancing. `producer status` and the read-only Studio run detail surface safe idea/script
 failure diagnostic summaries so the next blocker is visible without opening JSON artifacts by hand.
 
+`producer eval local-model` is a lightweight manual bake-off surface for local model candidates. It
+does not create a run, advance workflow state, or edit config; it calls only the configured local
+LLM provider or the one-run CLI override, validates small idea/script samples through the production
+parsers, and writes ignored diagnostic reports without raw model output. A 2026-06-28 local qwen3:8b
+run remained fail-closed at the idea-contract check because `fit` explanations were not
+slot-specific, while the script-section contract parsed; this keeps Qwen as regression evidence
+rather than the recommended production default. `producer eval local-model-candidates` runs the same
+checks for repeated `--candidate` model names and produces a local comparison report so operators
+can compare served Ollama or `llama.cpp` candidates without editing config between attempts.
+
 Run `pnpm producer doctor` before starting production work. Mock mode passes without network access.
-Ollama mode checks `/api/tags` with a bounded timeout and blocks when the server is unavailable or
-the configured model is not installed. Provider, local render toolchain, TTS, and publish-default
-blockers print next-action guidance and persist the same guidance so the operator can repair local
-config without treating unsafe defaults as approval. Configured local prompt overrides are also
-checked for safe `prompts/local/*.md` paths, file presence, and non-empty content before generation
-starts. The command writes ignored local evidence to `diagnostics/doctor.json` and
-`diagnostics/doctor.md`; it does not create a run or grant approval.
+Ollama mode checks `/api/tags`; `llama.cpp` mode checks `/v1/models`. Both use bounded timeouts and
+block when the local server is unavailable or the configured model is not served. Provider, local
+render toolchain, TTS, and publish-default blockers print next-action guidance and persist the same
+guidance so the operator can repair local config without treating unsafe defaults as approval.
+Configured local prompt overrides are also checked for safe `prompts/local/*.md` paths, file
+presence, and non-empty content before generation starts. The command writes ignored local evidence
+to `diagnostics/doctor.json` and `diagnostics/doctor.md`; it does not create a run or grant
+approval.
 
 Tracked runtime prompt defaults:
 
