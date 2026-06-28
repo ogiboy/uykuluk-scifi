@@ -583,9 +583,10 @@ binary. The draft render is a local review artifact and may be regenerated after
 manifest records intro/outro source-card segments, scene timing, overlay roles, and the voiceover
 mode/quality/candidate classification bound to the approval. It also stores the actual execution
 arguments that used an atomic temporary output and a separate final-output FFmpeg review command for
-operator inspection. `production/render/draft_review.md` summarizes the final operator checklist,
-shows that review command, and labels deterministic-reference audio renders as local timing drafts.
-It does not upload, schedule, or publish anything.
+operator inspection. The non-JSON CLI output points directly to the MP4, manifest, review document,
+and local-only next action. `production/render/draft_review.md` summarizes the final operator
+checklist, shows that review command, and labels deterministic-reference audio renders as local
+timing drafts. It does not upload, schedule, or publish anything.
 
 `thinkingMode` can be `default`, `think`, or `no_think`. Token caps are sent to Ollama as
 `num_predict` so local generation cannot run unbounded. Script generation splits the approved idea

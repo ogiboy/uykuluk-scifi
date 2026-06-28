@@ -79,8 +79,9 @@
   approval ID/reference, voiceover classification, actual temporary-output FFmpeg execution args,
   and final-output FFmpeg review command in the manifest, evidence, and readiness summaries,
   validates the output with `ffprobe` media stream evidence, and writes an operator-readable final
-  local review checklist with deterministic-reference audio labeled as a local timing draft and with
-  upload/public-scheduled publish still disabled.
+  local review checklist. The non-JSON CLI handoff points to the MP4, manifest, review document, and
+  local-only next action, with deterministic-reference audio labeled as a local timing draft and
+  with upload/public-scheduled publish still disabled.
 - Provider-backed idea and production-package stages schema-validate and normalize common local
   model JSON variants before artifact writes, while rejecting malformed or English operator-facing
   payloads fail-closed.

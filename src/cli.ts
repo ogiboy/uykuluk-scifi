@@ -14,6 +14,7 @@ import { publishSchedulePlaceholder, uploadPrivatePlaceholder } from "./stages/d
 import { runReadiness } from "./stages/readiness.js";
 import { formatReadinessConsole } from "./stages/readinessConsole.js";
 import { renderDraft } from "./stages/render.js";
+import { formatRenderDraftConsole } from "./stages/renderConsole.js";
 import { reviewScript } from "./stages/reviewScript.js";
 import { formatRunStatus, readRunStatus } from "./stages/status.js";
 import { generateVoiceoverAudio } from "./stages/voice.js";
@@ -166,9 +167,7 @@ program
     wrap(async (options: { json?: boolean; run: string }) => {
       const manifest = await renderDraft(options.run);
       console.log(
-        options.json
-          ? JSON.stringify(manifest, null, 2)
-          : `Draft render generated: ${manifest.output.path}`,
+        options.json ? JSON.stringify(manifest, null, 2) : formatRenderDraftConsole(manifest),
       );
     }),
   );

@@ -124,6 +124,24 @@ describe("producer render CLI", () => {
       true,
     );
   });
+
+  it("prints a local-only review handoff after draft rendering", async () => {
+    const runId = await prepareVoiceoverReadyRun();
+    await approveRender(runId);
+    const fakeBinPath = await createFakeRenderPath(renderToolRoot("cli-handoff"));
+
+    const result = runCli(["render", "--run", runId], {
+      PATH: `${fakeBinPath}${path.delimiter}${process.env.PATH ?? ""}`,
+    });
+
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain("Draft render generated: production/render/draft.mp4");
+    expect(result.stdout).toContain("Review document: production/render/draft_review.md");
+    expect(result.stdout).toContain("Manifest: production/render/render_manifest.json");
+    expect(result.stdout).toContain("FFmpeg review command:");
+    expect(result.stdout).toContain(artifactPath(runId, "production/render/draft.mp4"));
+    expect(result.stdout).toContain("upload and publish remain disabled");
+  });
 });
 
 function runCli(

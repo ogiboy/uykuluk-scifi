@@ -12,6 +12,7 @@ future generated release notes can be inserted predictably.
 ### Features
 
 - add reviewable FFmpeg command evidence for local draft renders
+- print local-only draft render review handoff after `producer render`
 
 ## v0.47.0 (2026-06-28)
 
