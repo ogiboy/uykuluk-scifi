@@ -31,7 +31,7 @@ export async function draftRenderReadinessCheck(run: RunRecord): Promise<Readine
         voiceover.status === "pass"
           ? "Draft render is not generated yet; render remains behind explicit approval."
           : "Draft render is not generated yet; generate voiceover audio before render approval.",
-      nextAction: draftRenderNextAction(run, voiceover.status),
+      nextAction: draftRenderNextAction(run, voiceover),
     };
   }
   return {
@@ -50,13 +50,16 @@ export async function draftRenderReadinessCheck(run: RunRecord): Promise<Readine
  */
 function draftRenderNextAction(
   run: RunRecord,
-  voiceoverStatus: Awaited<ReturnType<typeof readVoiceoverAudioEvidence>>["status"],
+  voiceover: Awaited<ReturnType<typeof readVoiceoverAudioEvidence>>,
 ): string | undefined {
-  if (voiceoverStatus !== "pass") {
+  if (voiceover.status !== "pass") {
     return undefined;
   }
   if (run.state === "RENDER_APPROVED") {
     return `pnpm producer render --run ${run.runId}`;
+  }
+  if (!voiceover.productionVoiceCandidate) {
+    return `Review deterministic reference audio; approve render only for a local timing draft with pnpm producer approve render --run ${run.runId}`;
   }
   return `pnpm producer approve render --run ${run.runId}`;
 }
