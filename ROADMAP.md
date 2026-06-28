@@ -26,13 +26,13 @@ Status: mostly implemented; maintain and simplify.
 
 The current CLI/core already covers the safe production foundation:
 
-- mock/Ollama idea, script, review, package, estimate, evidence, and readiness stages;
+- mock/Ollama/llama.cpp idea, script, review, package, estimate, evidence, and readiness stages;
 - explicit idea, script, and cost approvals;
 - content-addressed script review/approval and attributable script revisions;
 - provider budget preflight, cost quote approval, reservation/settlement foundations, and hard
   budget accounting;
-- provider failure diagnostics, Ollama receipts, prompt provenance, production-package integrity,
-  and durable evidence;
+- provider failure diagnostics, local-model receipts, prompt provenance, production-package
+  integrity, and durable evidence;
 - disabled-by-default local TTS, approval-gated local draft render, and disabled upload and
   public/scheduled publish scaffolds;
 - CI, CodeQL, Sonar, formatting, modularity, secret scan, usage smoke, and release hygiene gates.
@@ -43,6 +43,8 @@ infrastructure:
 - make `status`, evidence, readiness, and docs answer the next safe action clearly;
 - keep `.ai/` aligned with the source tree without becoming runtime state;
 - keep provider failures, approval blockers, and cost blockers visible in durable artifacts;
+- evaluate local LLM runtime/model quality through controlled comparisons before more Qwen-specific
+  tuning;
 - keep bounded long-form continuation evidence aligned with script receipts and prompt provenance;
 - keep paid-provider internals isolated as future scaffolding until a real adapter is approved.
 
@@ -165,6 +167,8 @@ Allowed only after the local production loop is useful:
 
 - private YouTube upload with explicit config, approval, and request/response evidence;
 - YouTube Analytics API;
+- local LLM evaluation for `llama.cpp` GGUF candidates before treating any model as production
+  default;
 - idea-only scheduler;
 - prompt override UI;
 - subtitle, scene, popup card, thumbnail, and metadata revision contracts;

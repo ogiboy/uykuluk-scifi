@@ -10,7 +10,7 @@ Primary contracts:
 - `src/stages/` owns workflow stages: ideas, approvals, script generation, review, production
   package, estimate, evidence, readiness, and disabled placeholders.
 - `src/safeguards/` owns approval, budget, content, asset, and publish guards.
-- `src/providers/` owns LLM adapters for mock and Ollama.
+- `src/providers/` owns LLM adapters for mock, Ollama, and local OpenAI-compatible `llama.cpp`.
 - `src/diagnostics/` owns project-level, read-only operator diagnostics; it must not mutate run
   state or imply workflow approval.
 - `src/prompts/` owns runtime prompt provenance metadata shared by stages and evidence.
@@ -51,6 +51,9 @@ The next product phase should extend the existing CLI/core flow toward a local v
   checklist;
 - analytics import/reporting consumes operator-provided CSV/JSON files, writes ignored local
   analytics artifacts, and links records back to runs when `runId` is present.
+- local LLM runtime selection belongs in `src/providers/` and diagnostics. Model quality remains an
+  evaluation concern; render/TTS/publish stages must not depend on `.ai/` notes or a frontend-only
+  model decision.
 
 Render planning must not create a second workflow engine. It should reuse run state, artifact,
 ledger, approval, evidence, readiness, asset, and cost patterns already owned by the CLI/core.

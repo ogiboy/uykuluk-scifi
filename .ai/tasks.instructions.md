@@ -30,10 +30,10 @@
   recoverable settlement, and explicit reconciliation passing.
 - Keep future nonzero provider callbacks behind adapter identity matching, durable execution claim,
   local at-most-once dispatch, bounded timeout, and fail-closed outcome classification.
-- Keep live Ollama generation fail-closed when local models return malformed JSON, English
-  operator-facing text, or incomplete scripts.
+- Keep local LLM generation fail-closed when models return malformed JSON, English operator-facing
+  text, repeated/weak ideas, malformed labels, or incomplete scripts.
 - Keep idea and script provider failure diagnostics safe, raw-output-free, and state-preserving.
-- Keep chunked Ollama script diagnostics and receipts complete enough to diagnose which draft or
+- Keep local-model script diagnostics and receipts complete enough to diagnose which draft or
   expansion chunk failed.
 - Keep readiness diagnostics, production-loop next actions, and evidence synchronized with persisted
   run state.
@@ -73,32 +73,14 @@
   classification preserved from approval through evidence, fail-closed `ffprobe` media validation,
   and an operator-readable `production/render/draft_review.md` checklist with local-only decision
   guidance.
-- Harden the idea repair prompt and idea-quality constraints with live qwen3 feedback. The
-  implemented two-attempt retry loop either recovers to `IDEAS_GENERATED` or fails closed without
-  idea artifacts while persisting a safe diagnostic summary. Live qwen3 QA now rejects repeated fit
-  frames, generic fit boilerplate, repeated uncertainty openers, generic unknown-species phrases,
-  weak premise action frames, English scientific leftovers, and repeated weak inspection/clue verbs.
-  Continue tightening prompt and quality checks before treating qwen3 ideas as production-ready.
-- Tune idea and script prompts so qwen3 avoids near-duplicate ideas, English style text, unsupported
-  science framing, malformed labels, and repeated sentence loops. The parser now rejects exact
-  duplicate idea titles/premises, duplicate `fit` explanations, repeated generic title motifs,
-  repeated premise frames, repeated fit frames, repeated idea sentence loops, malformed brand
-  fragments, copied English lane terms, repeated local-model boilerplate, English scientific
-  leftovers such as `anomaly’sı`, and weak verbs such as `inceleyerek`/`yansıtmakta`; script
-  expansion prompts now show previous chunks from the same section to reduce repeated sentence
-  loops; prompt quality still needs to produce a consistently reviewable idea list.
-- Harden script continuation and expansion quality for live qwen3. Malformed local-model `"text"`
-  wrappers now have regression coverage for raw text, fences, trailing commas, missing closing
-  quotes, and short external notes. Section and continuation blockers now get up to two bounded
-  retries with raw-output-free receipt evidence. Live qwen3 `no_think` QA recovered from repeated
-  section loops to `SCRIPT_GENERATED`, but the resulting 1015-word draft exposed a missing final
-  word-floor check. Underfilled drafts now fail closed after bounded continuation passes; the next
-  work is repeat live qwen QA and prompt/content-quality tuning rather than weakening blockers.
-- Repeat live qwen3 script QA after prompt/label tuning. Known production-label variants now repair
-  with section-receipt evidence; unrelated malformed labels must still fail closed without raw
-  output persistence. Malformed-label and repeated-loop diagnostics now report safe category
-  details, not raw labels or repeated sentences. Do not broaden label repair by guessing at raw
-  output; add a variant only when it is safe, bounded, and regression-tested.
+- Add a lightweight local LLM evaluation path before more Qwen-specific tuning. Compare configured
+  local candidates through the same idea/script gates, receipt evidence, JSON compliance, repetition
+  checks, Turkish label discipline, and operator quality review. `llama.cpp` support is the local
+  OpenAI-compatible runtime path for this work; live model runs remain manual/local and outside CI.
+- Preserve Qwen/Ollama regressions as known-bad safety evidence. Current blockers reject repeated
+  fit frames, generic boilerplate, repeated uncertainty openers, generic unknown-species phrasing,
+  weak premise action frames, English scientific leftovers, malformed labels, repeated sentence
+  loops, and underfilled long-form drafts. Do not weaken these blockers just to make one model pass.
 - Preserve the continuation design over simply raising local section chunk caps; live local QA
   showed larger chunks can destabilize JSON parse reliability.
 - Keep continuation request schemas compatible with Ollama grammar limits; large accepted-text
@@ -155,7 +137,8 @@
 
 ## Later
 
-- Repeat live Ollama generation QA after provider, prompt, or model-setting changes.
+- Repeat live local-model QA only after provider, prompt, model-setting, or evaluation-harness
+  changes justify the time cost.
 - YouTube Analytics API only after manual analytics import/reporting proves useful.
 - Private YouTube upload behind upload approval and explicit config.
 - Public/scheduled publish only after separate risk review.
