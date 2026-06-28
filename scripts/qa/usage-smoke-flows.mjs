@@ -2,6 +2,23 @@ import { readFile, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 /**
+ * Validates fail-safe default project configuration after `producer init`.
+ */
+export async function assertDefaultConfigSafety({ workdir, assert }) {
+  const defaults = JSON.parse(await readFile(path.join(workdir, "producer.config.json"), "utf8"));
+  assert(defaults.providers.llm.mode === "mock", "default LLM mode is mock");
+  assert(defaults.providers.youtube.enabled === false, "YouTube disabled by default");
+  assert(
+    defaults.providers.youtube.allowPrivateUpload === false,
+    "private upload disabled by default",
+  );
+  assert(
+    defaults.providers.youtube.allowPublicPublish === false,
+    "public publish disabled by default",
+  );
+}
+
+/**
  * Validates the local development environment passes all required diagnostic checks.
  * Confirms that the doctor command executes successfully and all critical checks (project config, LLM provider, production assets, publish defaults) have passed.
  */
@@ -85,4 +102,37 @@ export async function assertReviewEvidenceRecommendsWarningAcknowledgement({
     reviewedEvidence.nextRecommendedCommand.includes("--acknowledge-warnings"),
     "review evidence recommends explicit warning acknowledgement",
   );
+}
+
+/**
+ * Validates local manual analytics import/report commands from a clean copy.
+ * Uses operator-provided CSV data only; no YouTube API or workflow mutation occurs.
+ */
+export async function runAnalyticsSmoke({ run, pnpm, workdir, runId, assertFile, assert }) {
+  const csvPath = path.join(workdir, "performance.csv");
+  await writeFile(
+    csvPath,
+    [
+      "run_id,video_id,title,published_at,impressions,views,ctr,avg_view_duration_seconds,avg_percentage_viewed,subscribers_gained,likes,comments,notes",
+      `${runId},yt_usage_001,"Usage Smoke",2026-06-28T00:00:00.000Z,1000,120,6%,90,40%,2,9,1,"Local import smoke"`,
+    ].join("\n"),
+    "utf8",
+  );
+  const importResult = run([pnpm, "producer", "analytics", "import", "--file", csvPath, "--json"], {
+    label: "analytics import JSON",
+    expectOutput: '"recordCount": 1',
+  });
+  const imported = JSON.parse(importResult.stdout);
+  assert(imported.outputPath === "analytics/performance.json", "analytics import JSON path");
+  assert(imported.reportPath === "analytics/performance_report.md", "analytics report JSON path");
+  await assertFile("analytics/performance.json");
+  await assertFile("analytics/performance_report.md");
+
+  const reportResult = run([pnpm, "producer", "analytics", "report", "--json"], {
+    label: "analytics report JSON",
+    expectOutput: '"reportPath": "analytics/performance_report.md"',
+  });
+  const refreshed = JSON.parse(reportResult.stdout);
+  assert(refreshed.report.includes("Manual Analytics Report"), "analytics report JSON has report");
+  assert(refreshed.report.includes(runId), "analytics report links imported run id");
 }
