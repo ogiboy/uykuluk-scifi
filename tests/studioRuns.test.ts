@@ -79,7 +79,7 @@ describe("Studio read-only run summaries", () => {
     expect((detail as { readinessChecks?: unknown })?.readinessChecks).toEqual([
       {
         message:
-          "production/render/draft.mp4 exists with 8s ffprobe-validated draft video (1280x720, audio stream present, voiceover local-piper production voice candidate).",
+          "production/render/draft.mp4 exists with 8s ffprobe-validated draft video (1280x720, audio stream present, voiceover local-piper production voice candidate, approval approval_render_fixture).",
         name: "draft render available",
         status: "pass",
       },
@@ -107,7 +107,7 @@ describe("Studio read-only run summaries", () => {
       {
         artifactPath: "production/render/draft.mp4",
         detail:
-          "8s, intro -> scene -> outro, source frames intro:2/outro:2, voiceover local-piper production candidate, ffprobe 1280x720 audio",
+          "8s, intro -> scene -> outro, source frames intro:2/outro:2, voiceover local-piper production candidate, approval approval_render_fixture, ffprobe 1280x720 audio",
         evidenceKey: "draftRender",
         label: "Draft render",
         status: "pass",

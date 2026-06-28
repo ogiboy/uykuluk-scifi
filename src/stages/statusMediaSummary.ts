@@ -16,6 +16,7 @@ export type EvidenceMediaStatus = {
   message?: unknown;
   mode?: unknown;
   productionVoiceCandidate?: unknown;
+  renderApproval?: unknown;
   sourceFrameCount?: unknown;
   sourceFrameSegments?: unknown;
   sourceWordCount?: unknown;
@@ -139,6 +140,7 @@ function draftRenderDetail(evidence: EvidenceMediaStatus): string | undefined {
     timelineDetail(evidence.timelineSegments),
     sourceFrameDetail(evidence),
     draftVoiceoverDetail(evidence),
+    renderApprovalDetail(evidence.renderApproval),
     mediaProbeDetail(evidence.mediaProbe),
   ].filter((part): part is string => Boolean(part));
   return parts.length > 0 ? parts.join(", ") : undefined;
@@ -188,6 +190,16 @@ function mediaProbeDetail(value: unknown): string | undefined {
   return audio && typeof audio === "object"
     ? `ffprobe ${width}x${height} audio`
     : `ffprobe ${width}x${height}`;
+}
+
+function renderApprovalDetail(value: unknown): string | undefined {
+  if (!value || typeof value !== "object") {
+    return undefined;
+  }
+  const approvalId = "approvalId" in value ? value.approvalId : undefined;
+  return typeof approvalId === "string" && approvalId.length > 0
+    ? `approval ${approvalId}`
+    : undefined;
 }
 
 function draftVoiceoverDetail(evidence: EvidenceMediaStatus): string | undefined {

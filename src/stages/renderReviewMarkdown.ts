@@ -51,6 +51,16 @@ export function renderDraftReviewMarkdown(manifest: DraftRenderManifest): string
     "",
   );
   sections.push(
+    "## Render Approval",
+    "",
+    table(
+      ["Approval", "Value"],
+      [
+        ["Approval ID", manifest.renderApproval.approvalId],
+        ["Approved ref", manifest.renderApproval.approvedRef],
+      ],
+    ),
+    "",
     "## Inputs",
     "",
     table(

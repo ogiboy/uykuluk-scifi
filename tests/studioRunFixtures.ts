@@ -79,6 +79,10 @@ export async function createRenderedStudioRunFixture(): Promise<string> {
       overlayRoles: ["watermark", "popup-card"],
       reviewPath: "production/render/draft_review.md",
       reviewChecklist: ["Review local draft only."],
+      renderApproval: {
+        approvalId: "approval_render_fixture",
+        approvedRef: "d".repeat(64),
+      },
       voiceoverMode: "local-piper",
       voiceoverProductionVoiceCandidate: true,
       voiceoverQuality: "local-piper",
@@ -108,7 +112,7 @@ export async function createRenderedStudioRunFixture(): Promise<string> {
       name: "draft render available",
       status: "pass",
       message:
-        "production/render/draft.mp4 exists with 8s ffprobe-validated draft video (1280x720, audio stream present, voiceover local-piper production voice candidate).",
+        "production/render/draft.mp4 exists with 8s ffprobe-validated draft video (1280x720, audio stream present, voiceover local-piper production voice candidate, approval approval_render_fixture).",
     },
     {
       name: "public upload disabled without explicit config",

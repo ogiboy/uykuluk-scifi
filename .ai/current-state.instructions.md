@@ -75,11 +75,11 @@
   render now builds an FFmpeg concat timeline from render-plan intro/outro bookends and scenes,
   expands committed intro/outro source-frame sequences into FFmpeg inputs when enough review time
   exists, composes lower-third, popup-card, waveform, and watermark overlays when available, records
-  the exact intro-to-outro timeline, source-frame counts, overlay roles/placements, and voiceover
-  classification in the manifest, evidence, and readiness summaries, validates the output with
-  `ffprobe` media stream evidence, and writes an operator-readable final local review checklist with
-  deterministic-reference audio labeled as a local timing draft and with upload/public-scheduled
-  publish still disabled.
+  the exact intro-to-outro timeline, source-frame counts, overlay roles/placements, render approval
+  ID/reference, and voiceover classification in the manifest, evidence, and readiness summaries,
+  validates the output with `ffprobe` media stream evidence, and writes an operator-readable final
+  local review checklist with deterministic-reference audio labeled as a local timing draft and with
+  upload/public-scheduled publish still disabled.
 - Provider-backed idea and production-package stages schema-validate and normalize common Ollama
   JSON variants before artifact writes, while rejecting malformed or English operator-facing
   payloads fail-closed.

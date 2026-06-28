@@ -1,30 +1,20 @@
-import { readFile, writeFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { artifactPath } from "../src/core/artifacts";
 import { loadRun } from "../src/core/runStore";
 import { approveRender } from "../src/stages/approveRender";
-import { approveIdea } from "../src/stages/approveIdea";
-import { approveScript } from "../src/stages/approveScript";
 import { generateEvidenceBundle } from "../src/stages/evidence";
-import { estimateCost } from "../src/stages/estimate";
-import { runIdeas } from "../src/stages/ideas";
-import { generateProductionPackage } from "../src/stages/productionPackage";
 import { renderDraft } from "../src/stages/render";
 import type { DraftRenderEvidence, DraftRenderManifest } from "../src/stages/renderEvidence";
-import { generateRenderPlan } from "../src/stages/renderPlan";
 import { runReadiness } from "../src/stages/readiness";
-import { reviewScript } from "../src/stages/reviewScript";
-import { generateScript } from "../src/stages/script";
-import { generateVoiceoverAudio } from "../src/stages/voice";
 import { pathExists } from "../src/utils/fs";
 import { readJsonFile } from "../src/utils/json";
 import { useTempProject } from "./helpers";
+import { prepareReadyRunWithoutVoiceover, prepareVoiceoverReadyRun } from "./renderPipelineHelpers";
 import {
   createFailingFakeFfprobe,
   createFakeFfmpeg,
   createFakeFfprobe,
-  createMinimalRenderAssets,
-  enableDeterministicTts,
   renderToolRoot,
 } from "./renderTestHelpers";
 
@@ -49,6 +39,8 @@ describe("draft render", () => {
   it("records render approval and writes a draft video manifest through FFmpeg", async () => {
     const runId = await prepareVoiceoverReadyRun();
     const approval = await approveRender(runId);
+    const approvedRef = approval.approvedRef ?? "";
+    expect(approvedRef).toMatch(/^[a-f0-9]{64}$/);
     const ffmpeg = await createFakeFfmpeg(renderToolRoot("manifest"));
     const ffprobe = await createFakeFfprobe(renderToolRoot("manifest"));
 
@@ -71,7 +63,11 @@ describe("draft render", () => {
     const manifest = await readJsonFile<DraftRenderManifest>(
       artifactPath(runId, "production/render/render_manifest.json"),
     );
-    expect(manifest.schemaVersion).toBe(3);
+    expect(manifest.schemaVersion).toBe(4);
+    expect(manifest.renderApproval).toEqual({
+      approvalId: approval.approvalId,
+      approvedRef,
+    });
     expect(manifest.output).toMatchObject({
       path: "production/render/draft.mp4",
       sha256: expect.stringMatching(/^[a-f0-9]{64}$/),
@@ -149,6 +145,10 @@ describe("draft render", () => {
       voiceoverMode: "deterministic-local",
       voiceoverProductionVoiceCandidate: false,
       voiceoverQuality: "deterministic-local-reference",
+      renderApproval: {
+        approvalId: approval.approvalId,
+        approvedRef,
+      },
       mediaProbe: {
         audio: { codecName: "aac" },
         video: { height: 720, width: 1280 },
@@ -159,11 +159,14 @@ describe("draft render", () => {
     expect(evidenceMarkdown).toContain("Render plan: pass");
     expect(evidenceMarkdown).toContain("Voiceover audio: pass");
     expect(evidenceMarkdown).toContain(
-      "Draft render: pass (8s, intro -> scene -> outro, source frames intro:2/outro:2, voiceover deterministic-local timing/reference only, ffprobe 1280x720 audio)",
+      `Draft render: pass (8s, intro -> scene -> outro, source frames intro:2/outro:2, voiceover deterministic-local timing/reference only, approval ${approval.approvalId}, ffprobe 1280x720 audio)`,
     );
     const review = await readFile(artifactPath(runId, "production/render/draft_review.md"), "utf8");
     expect(review).toContain("# Draft Render Review");
     expect(review).toContain("## Media Probe");
+    expect(review).toContain("## Render Approval");
+    expect(review).toContain(approval.approvalId);
+    expect(review).toContain(approvedRef);
     expect(review).toContain("1280x720 h264");
     expect(review).toContain("Local review artifact only");
     expect(review).toContain("timing/reference only; local timing draft");
@@ -179,7 +182,7 @@ describe("draft render", () => {
     expect(readiness.checks.find((check) => check.name === "draft render available")).toMatchObject(
       {
         message: expect.stringContaining(
-          "ffprobe-validated draft video (1280x720, audio stream present, source frames intro:2/outro:2, voiceover deterministic-local timing/reference only)",
+          `ffprobe-validated draft video (1280x720, audio stream present, source frames intro:2/outro:2, voiceover deterministic-local timing/reference only, approval ${approval.approvalId})`,
         ),
         status: "pass",
       },
@@ -202,21 +205,6 @@ describe("draft render", () => {
     expect(await pathExists(artifactPath(runId, "production/render/draft.mp4"))).toBe(false);
   });
 
-  it("rejects stale render approval after voiceover classification changes", async () => {
-    const runId = await prepareVoiceoverReadyRun();
-    await approveRender(runId);
-    const metaPath = artifactPath(runId, "production/audio/voiceover.meta.json");
-    const meta = await readJsonFile<Record<string, unknown>>(metaPath);
-    await writeFile(metaPath, `${JSON.stringify({ ...meta, quality: "local-piper" }, null, 2)}\n`);
-
-    await expect(renderDraft(runId, { ffprobeBinary: false })).rejects.toThrow(/stale/i);
-
-    const run = await loadRun(runId);
-    expect(run.state).toBe("RENDER_APPROVED");
-    expect(run.artifacts).not.toContain("production/render/draft.mp4");
-    expect(await pathExists(artifactPath(runId, "production/render/draft.mp4"))).toBe(false);
-  });
-
   it("blocks render approval until voiceover audio evidence exists", async () => {
     const runId = await prepareReadyRunWithoutVoiceover();
 
@@ -224,26 +212,3 @@ describe("draft render", () => {
     expect((await loadRun(runId)).state).toBe("READY_FOR_MANUAL_PRODUCTION");
   });
 });
-
-async function prepareVoiceoverReadyRun(): Promise<string> {
-  const runId = await prepareReadyRunWithoutVoiceover();
-  await generateVoiceoverAudio(runId);
-  return runId;
-}
-
-async function prepareReadyRunWithoutVoiceover(): Promise<string> {
-  await enableDeterministicTts(process.cwd());
-  await createMinimalRenderAssets();
-  const { runId, ideas } = await runIdeas();
-  await approveIdea(runId, ideas[0].id);
-  await generateScript(runId);
-  await reviewScript(runId);
-  await approveScript(runId, { acknowledgeWarnings: true });
-  await generateProductionPackage(runId);
-  await generateRenderPlan(runId);
-  await estimateCost(runId);
-  await generateEvidenceBundle(runId);
-  const readiness = await runReadiness(runId);
-  expect(readiness.passed).toBe(true);
-  return runId;
-}

@@ -95,6 +95,10 @@ const draftRenderPassSchema = z.looseObject({
   voiceoverMode: z.enum(["deterministic-local", "local-piper"]),
   voiceoverProductionVoiceCandidate: z.boolean(),
   voiceoverQuality: z.enum(["deterministic-local-reference", "local-piper"]),
+  renderApproval: z.strictObject({
+    approvalId: z.string().min(1),
+    approvedRef: digestSchema,
+  }),
   mediaProbe: mediaProbeSchema,
 });
 

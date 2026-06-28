@@ -126,7 +126,7 @@ describe("operator status output", () => {
       "- Voiceover audio: pass (8s, local-piper, production voice candidate, 42 source words)",
     );
     expect(output).toContain(
-      "- Draft render: pass (8s, intro -> scene -> outro, source frames intro:2/outro:2, voiceover local-piper production candidate, ffprobe 1280x720 audio)",
+      "- Draft render: pass (8s, intro -> scene -> outro, source frames intro:2/outro:2, voiceover local-piper production candidate, approval approval_render_status, ffprobe 1280x720 audio)",
     );
     expect(output).toContain(
       "Next safe action: Manual final draft review. Upload remains approval-gated.",
