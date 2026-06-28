@@ -8,75 +8,30 @@ import {
   type LocalModelEvalReportPersisted,
 } from "../../../../src/diagnostics/localModelEvalSchema";
 import { ArtifactJsonParseError, parseArtifactJson, readOptionalText } from "./localArtifactReads";
+import type {
+  StudioCandidateEvalSummary,
+  StudioCandidateModelSummary,
+  StudioModelEvalCheckSummary,
+  StudioModelEvalOverview,
+  StudioModelEvalStatus,
+  StudioSingleModelEvalSummary,
+} from "./modelEvalOverviewTypes";
 import { projectRoot } from "./projectRoot";
+
+export type {
+  StudioCandidateEvalSummary,
+  StudioCandidateModelSummary,
+  StudioModelEvalCheckSummary,
+  StudioModelEvalOverview,
+  StudioModelEvalStatus,
+  StudioSingleModelEvalSummary,
+} from "./modelEvalOverviewTypes";
 
 const SINGLE_JSON_PATH = "diagnostics/local_model_eval.json";
 const SINGLE_MARKDOWN_PATH = "diagnostics/local_model_eval.md";
 const CANDIDATE_JSON_PATH = "diagnostics/local_model_candidates_eval.json";
 const CANDIDATE_MARKDOWN_PATH = "diagnostics/local_model_candidates_eval.md";
 const REPORT_PREVIEW_LIMIT = 3_000;
-
-export type StudioModelEvalStatus = "blocked" | "invalid" | "missing" | "passing";
-
-export type StudioModelEvalOverview = {
-  candidateReport: StudioCandidateEvalSummary | null;
-  candidateMarkdownPath: string;
-  candidateReportPreview: string | null;
-  candidateReportPreviewTruncated: boolean;
-  error: string | null;
-  nextCommand: string;
-  singleReport: StudioSingleModelEvalSummary | null;
-  singleMarkdownPath: string;
-  singleReportPreview: string | null;
-  singleReportPreviewTruncated: boolean;
-  status: StudioModelEvalStatus;
-};
-
-export type StudioSingleModelEvalSummary = {
-  appliedOverrides: string[];
-  blockCount: number;
-  checkCount: number;
-  configuredModel: string;
-  configSource: LocalModelEvalReportPersisted["configSource"];
-  createdAt: string;
-  durationMs: number;
-  passCount: number;
-  passed: boolean;
-  providerMode: LocalModelEvalReportPersisted["providerMode"];
-  checks: StudioModelEvalCheckSummary[];
-};
-
-export type StudioCandidateEvalSummary = {
-  baseOverrides: string[];
-  blockedCandidateCount: number;
-  candidateCount: number;
-  candidates: StudioCandidateModelSummary[];
-  configSource: LocalModelCandidateEvalReportPersisted["configSource"];
-  createdAt: string;
-  durationMs: number;
-  passed: boolean;
-  passingCandidateCount: number;
-  providerMode: LocalModelCandidateEvalReportPersisted["providerMode"];
-};
-
-export type StudioCandidateModelSummary = {
-  blockCount: number;
-  checks: StudioModelEvalCheckSummary[];
-  configuredModel: string;
-  passCount: number;
-  passed: boolean;
-};
-
-export type StudioModelEvalCheckSummary = {
-  durationMs: number | null;
-  inputTokensApprox: number | null;
-  message: string;
-  name: LocalModelEvalReportPersisted["checks"][number]["name"];
-  outputHash: string | null;
-  outputTokensApprox: number | null;
-  promptHash: string | null;
-  status: LocalModelEvalReportPersisted["checks"][number]["status"];
-};
 
 /**
  * Loads local model evaluation artifacts for read-only Studio display.
@@ -177,6 +132,7 @@ function summarizeCandidateReport(
     blockCount: countChecks(candidate, "block"),
     checks: summarizeChecks(candidate),
     configuredModel: candidate.configuredModel,
+    durationMs: candidate.durationMs,
     passCount: countChecks(candidate, "pass"),
     passed: candidate.passed,
   }));
@@ -191,6 +147,7 @@ function summarizeCandidateReport(
     passed: report.passed,
     passingCandidateCount: candidates.filter((candidate) => candidate.passed).length,
     providerMode: report.providerMode,
+    recommendedCandidate: selectRecommendedCandidate(candidates),
   };
 }
 
@@ -209,6 +166,28 @@ function summarizeChecks(report: LocalModelEvalReportPersisted): StudioModelEval
     promptHash: check.promptHash ?? null,
     status: check.status,
   }));
+}
+
+function selectRecommendedCandidate(
+  candidates: StudioCandidateModelSummary[],
+): StudioCandidateModelSummary | null {
+  const passingCandidates = candidates.filter((candidate) => candidate.passed);
+  if (passingCandidates.length === 0) {
+    return null;
+  }
+  return [...passingCandidates].sort(candidateRankSort)[0] ?? null;
+}
+
+function candidateRankSort(
+  left: StudioCandidateModelSummary,
+  right: StudioCandidateModelSummary,
+): number {
+  return (
+    right.passCount - left.passCount ||
+    left.blockCount - right.blockCount ||
+    left.durationMs - right.durationMs ||
+    left.configuredModel.localeCompare(right.configuredModel)
+  );
 }
 
 function modelEvalStatus(

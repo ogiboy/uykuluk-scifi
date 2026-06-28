@@ -133,6 +133,11 @@ describe("Studio local model evaluation overview", () => {
         candidateCount: 2,
         passingCandidateCount: 1,
         passed: false,
+        recommendedCandidate: expect.objectContaining({
+          configuredModel: "mock-deterministic",
+          durationMs: 12,
+          passed: true,
+        }),
       },
       singleReportPreview: expect.stringContaining("Local Model Evaluation"),
       candidateReportPreview: expect.stringContaining("Local Model Candidate Evaluation"),
@@ -148,6 +153,7 @@ describe("Studio local model evaluation overview", () => {
           }),
         ]),
         configuredModel: "mock-invalid-script-json",
+        durationMs: 12,
         passed: false,
       }),
     );

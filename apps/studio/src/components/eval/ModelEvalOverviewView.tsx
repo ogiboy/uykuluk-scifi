@@ -45,6 +45,10 @@ export function ModelEvalOverviewView({ overview }: ModelEvalOverviewViewProps) 
               label: "Blocked candidates",
               value: formatStudioInteger(overview.candidateReport?.blockedCandidateCount ?? 0),
             },
+            {
+              label: "Recommended candidate",
+              value: overview.candidateReport?.recommendedCandidate?.configuredModel ?? "none",
+            },
           ]}
         />
       </section>
@@ -107,26 +111,33 @@ function CandidatePanel({
     <section className='panel' aria-labelledby='model-eval-candidates-heading'>
       <h2 id='model-eval-candidates-heading'>Candidate Results</h2>
       {candidateReport ? (
-        <ul className='artifact-preview-list'>
-          {candidateReport.candidates.map((candidate, index) => (
-            <li className='artifact-preview-card' key={`${candidate.configuredModel}-${index}`}>
-              <div className='artifact-preview-header'>
-                <div>
-                  <strong>{candidate.configuredModel}</strong>
-                  <span>
-                    {candidate.passCount} passed · {candidate.blockCount} blocked checks
+        <>
+          <p className='artifact-meta'>
+            Recommended passing candidate:{" "}
+            {candidateReport.recommendedCandidate?.configuredModel ?? "none yet"}
+          </p>
+          <ul className='artifact-preview-list'>
+            {candidateReport.candidates.map((candidate, index) => (
+              <li className='artifact-preview-card' key={`${candidate.configuredModel}-${index}`}>
+                <div className='artifact-preview-header'>
+                  <div>
+                    <strong>{candidate.configuredModel}</strong>
+                    <span>
+                      {candidate.passCount} passed · {candidate.blockCount} blocked checks ·{" "}
+                      {candidate.durationMs}ms
+                    </span>
+                  </div>
+                  <span
+                    className={candidate.passed ? "status-pill small" : "status-pill small blocked"}
+                  >
+                    {candidate.passed ? "pass" : "block"}
                   </span>
                 </div>
-                <span
-                  className={candidate.passed ? "status-pill small" : "status-pill small blocked"}
-                >
-                  {candidate.passed ? "pass" : "block"}
-                </span>
-              </div>
-              <CheckList checks={candidate.checks} ownerId={`candidate-${index}`} />
-            </li>
-          ))}
-        </ul>
+                <CheckList checks={candidate.checks} ownerId={`candidate-${index}`} />
+              </li>
+            ))}
+          </ul>
+        </>
       ) : (
         <p>No candidate comparison report has been generated.</p>
       )}
