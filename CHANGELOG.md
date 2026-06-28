@@ -11,6 +11,12 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.35.8 (2026-06-28)
+
+### Fixes
+
+- clarify timing draft approval copy (#77) (85f1523)
+
 ## v0.35.7 (2026-06-28)
 
 ### Fixes
