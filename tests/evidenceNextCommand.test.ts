@@ -99,6 +99,22 @@ describe("evidence next command", () => {
     ).toBe("pnpm producer voice --run <run_id>");
   });
 
+  it("blocks render approval when passing voiceover evidence lacks production candidate proof", () => {
+    expect(
+      evidenceNextCommand({
+        costQuote: null,
+        hasUnresolvedCostReservation: false,
+        state: "READY_FOR_MANUAL_PRODUCTION",
+        ttsEnabled: true,
+        voiceoverAudio: {
+          status: "pass",
+        },
+      }),
+    ).toBe(
+      "Regenerate voiceover evidence or review deterministic reference audio before render approval.",
+    );
+  });
+
   it("keeps blocked rendered evidence tied to the evidence refresh command", () => {
     expect(
       evidenceNextCommand({
@@ -140,9 +156,7 @@ describe("evidence next command", () => {
         hasUnresolvedCostReservation: false,
         state: "RENDERED",
       }),
-    ).toBe(
-      "pnpm producer review render --run <run_id>; timing draft only; regenerate voiceover with reviewed local Piper audio before final production review.",
-    );
+    ).toBe("pnpm producer review render --run <run_id>");
   });
 
   it("recommends the read-only draft render review command for production voice drafts", () => {

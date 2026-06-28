@@ -12,7 +12,7 @@ import {
  */
 export function formatRenderDraftConsole(manifest: DraftRenderManifest): string {
   return [
-    `Draft render generated: ${manifest.output.path}`,
+    `Draft render available: ${manifest.output.path}`,
     `Review document: ${draftRenderReviewPath}`,
     `Manifest: ${draftRenderManifestPath}`,
     `FFmpeg review command: ${manifest.ffmpeg.reviewCommand}`,

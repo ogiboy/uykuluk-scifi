@@ -85,6 +85,7 @@ export async function createRenderedStudioRunFixture(): Promise<string> {
       overlayRoles: ["watermark", "popup-card"],
       reviewPath: "production/render/draft_review.md",
       reviewChecklist: ["Review local draft only."],
+      ffmpegReviewCommand: "ffmpeg -v error -i production/render/draft.mp4 -f null -",
       renderApproval: {
         approvalId: "approval_render_fixture",
         approvedRef: "d".repeat(64),

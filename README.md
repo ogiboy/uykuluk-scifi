@@ -99,7 +99,8 @@ agent-tracking state only; runtime code must not require it.
   cards or source-frame sequences, scene-timed background plates, voiceover audio, subtitles,
   lower-third, popup, waveform, watermark overlays, source-frame counts/cadence, and voiceover
   mode/quality/candidate classification surfaced in evidence/readiness summaries, plus a stable
-  final-output FFmpeg review command in the manifest, evidence JSON, and review Markdown.
+  read-only FFmpeg review command for the final draft artifact in the manifest, evidence JSON, and
+  review Markdown.
 - Manual analytics import/report commands for operator-provided CSV/JSON performance exports, plus a
   read-only Studio view over the ignored local analytics artifacts and import data-quality summary.
 - Typed Studio route-security contract covering current read-only routes and disabled future action
@@ -582,12 +583,13 @@ timing, pacing, pronunciation, source binding, and provider provenance before re
 binary. The draft render is a local review artifact and may be regenerated after approval; its
 manifest records intro/outro source-card segments, scene timing, overlay roles, and the voiceover
 mode/quality/candidate classification bound to the approval. It also stores the actual execution
-arguments that used an atomic temporary output and a separate final-output FFmpeg review command for
-operator inspection; the same final-output command is copied into draft-render evidence JSON. The
-non-JSON CLI output and read-only `producer review render --run <run_id>` command point directly to
-the MP4, manifest, review document, and local-only next action. Status, evidence Markdown, and the
-read-only Studio production-media panel surface that same safe review command when draft-render
-evidence is current, and rendered runs use the read-only review command as their next safe action.
+arguments that used an atomic temporary output and a separate read-only FFmpeg review command that
+decodes the final draft artifact to `null` for operator inspection; the same trusted command is
+copied into draft-render evidence JSON. The non-JSON CLI output and read-only
+`producer review render --run <run_id>` command point directly to the MP4, manifest, review
+document, and local-only next action. Status, evidence Markdown, and the read-only Studio
+production-media panel surface that same safe review command when draft-render evidence is current,
+and rendered runs use the read-only review command as their next safe action.
 `production/render/draft_review.md` summarizes the final operator checklist, shows that review
 command, and labels deterministic-reference audio renders as local timing drafts. It does not
 upload, schedule, or publish anything.

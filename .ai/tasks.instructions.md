@@ -71,7 +71,7 @@
   subtitle burn-in, lower-third, popup-card, waveform, watermark overlays, render manifest evidence,
   source-frame cadence, render approval ID/reference plus voiceover mode/quality/candidate
   classification preserved from approval through evidence, fail-closed `ffprobe` media validation,
-  stable final-output FFmpeg review command evidence, and an operator-readable
+  stable read-only FFmpeg review command evidence, and an operator-readable
   `production/render/draft_review.md` checklist plus render/review CLI handoffs with local-only
   decision guidance surfaced through CLI status, evidence Markdown, and read-only Studio panels.
 - Use `producer eval local-model` before more Qwen-specific tuning. Compare configured local

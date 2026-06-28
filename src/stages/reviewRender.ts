@@ -1,13 +1,6 @@
-import { artifactPath } from "../core/artifacts.js";
 import { SafeExitError } from "../core/errors.js";
 import { loadRun } from "../core/runStore.js";
-import { readJsonFile } from "../utils/json.js";
-import {
-  draftRenderManifestPath,
-  draftRenderManifestSchema,
-  type DraftRenderManifest,
-  readDraftRenderEvidence,
-} from "./renderEvidence.js";
+import { type DraftRenderManifest, readDraftRenderValidation } from "./renderEvidence.js";
 
 /**
  * Reads the validated draft render manifest for operator review.
@@ -17,20 +10,14 @@ import {
  */
 export async function reviewDraftRender(runId: string): Promise<DraftRenderManifest> {
   const run = await loadRun(runId);
-  const evidence = await readDraftRenderEvidence(run);
-  if (evidence.status === "missing") {
+  const result = await readDraftRenderValidation(run);
+  if (result.status === "missing") {
     throw new SafeExitError(
       `Draft render review is not available yet; run pnpm producer render --run ${run.runId} after explicit render approval.`,
     );
   }
-  if (evidence.status === "block") {
-    throw new SafeExitError(`Draft render review is blocked: ${evidence.message}`);
+  if (result.status === "block") {
+    throw new SafeExitError(`Draft render review is blocked: ${result.message}`);
   }
-  const manifest = draftRenderManifestSchema.parse(
-    await readJsonFile(artifactPath(run.runId, draftRenderManifestPath)),
-  );
-  if (manifest.runId !== run.runId) {
-    throw new SafeExitError("Draft render manifest run id does not match this run.");
-  }
-  return manifest;
+  return result.manifest;
 }

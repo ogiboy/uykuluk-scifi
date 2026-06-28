@@ -5,6 +5,7 @@ import { createRun, saveRun } from "../src/core/runStore";
 import { formatRunStatus, readRunStatus } from "../src/stages/status";
 import { useTempProject } from "./helpers";
 import { studioEvidenceFixture } from "./studioRunFixtures";
+import { passingRenderedEvidence } from "./statusOutputEvidenceFixtures";
 
 describe("status evidence validity", () => {
   useTempProject();
@@ -142,5 +143,28 @@ describe("status evidence validity", () => {
     expect(output).toContain(
       "Production media evidence: artifact-record fallback because evidence is invalid.",
     );
+  });
+
+  it("rejects legacy passing draft-render evidence without review command provenance", async () => {
+    const run = await createRun();
+    await saveRun({
+      ...run,
+      artifacts: ["production/render/draft.mp4", "evidence_bundle.json"],
+      state: "RENDERED",
+    });
+    const evidence = passingRenderedEvidence(run.runId);
+    delete (evidence.draftRender as Record<string, unknown>).ffmpegReviewCommand;
+    await writeFile(
+      artifactPath(run.runId, "evidence_bundle.json"),
+      JSON.stringify(evidence),
+      "utf8",
+    );
+
+    const output = formatRunStatus(await readRunStatus(run.runId));
+
+    expect(output).toContain(
+      "Evidence: invalid (evidence_bundle.json is missing required fields.)",
+    );
+    expect(output).toContain(`Evidence next action: pnpm producer evidence --run ${run.runId}`);
   });
 });

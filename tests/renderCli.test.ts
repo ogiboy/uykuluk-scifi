@@ -135,7 +135,7 @@ describe("producer render CLI", () => {
     });
 
     expect(result.status).toBe(0);
-    expect(result.stdout).toContain("Draft render generated: production/render/draft.mp4");
+    expect(result.stdout).toContain("Draft render available: production/render/draft.mp4");
     expect(result.stdout).toContain("Review document: production/render/draft_review.md");
     expect(result.stdout).toContain("Manifest: production/render/render_manifest.json");
     expect(result.stdout).toContain("FFmpeg review command:");
@@ -145,7 +145,7 @@ describe("producer render CLI", () => {
     const review = runCli(["review", "render", "--run", runId]);
 
     expect(review.status).toBe(0);
-    expect(review.stdout).toContain("Draft render generated: production/render/draft.mp4");
+    expect(review.stdout).toContain("Draft render available: production/render/draft.mp4");
     expect(review.stdout).toContain("Review document: production/render/draft_review.md");
     expect(review.stdout).toContain("upload and publish remain disabled");
   });

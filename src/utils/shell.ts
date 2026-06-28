@@ -4,11 +4,13 @@
  * @param value - The raw argument value.
  * @returns A shell-safe argument string.
  */
+const POSIX_SINGLE_QUOTE_ESCAPE = "'\"'\"'";
+
 export function shellQuote(value: string): string {
   if (/^[A-Za-z0-9_./:@%+=,-]+$/.test(value)) {
     return value;
   }
-  return `'${value.replaceAll("'", String.raw`'"'"'`)}'`;
+  return `'${value.replaceAll("'", POSIX_SINGLE_QUOTE_ESCAPE)}'`;
 }
 
 /**

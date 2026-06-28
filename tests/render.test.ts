@@ -26,8 +26,11 @@ describe("draft render", () => {
     const approval = await approveRender(runId);
     const approvedRef = approval.approvedRef ?? "";
     expect(approvedRef).toMatch(/^[a-f0-9]{64}$/);
-    const ffmpeg = await createFakeFfmpeg(renderToolRoot("manifest"));
-    const ffprobe = await createFakeFfprobe(renderToolRoot("manifest"));
+    const ffmpeg = await createFakeFfmpeg(
+      renderToolRoot("manifest with spaces"),
+      "fake ffmpeg.mjs",
+    );
+    const ffprobe = await createFakeFfprobe(renderToolRoot("manifest with spaces"));
 
     await renderDraft(runId, {
       ffmpegBinary: ffmpeg,
@@ -48,6 +51,7 @@ describe("draft render", () => {
     const manifest = await readJsonFile<DraftRenderManifest>(
       artifactPath(runId, "production/render/render_manifest.json"),
     );
+    const draftRenderArtifactPath = artifactPath(runId, "production/render/draft.mp4");
     expect(manifest.schemaVersion).toBe(6);
     expect(manifest.renderApproval).toEqual({
       approvalId: approval.approvalId,
@@ -147,12 +151,17 @@ describe("draft render", () => {
       "assets/waveforms/waveform_overlay_thin_panel_transparent_1920x240.png",
     );
     expect(manifest.ffmpeg.args.at(-1)).toContain(".draft.");
-    expect(manifest.ffmpeg.reviewArgs.at(-1)).toBe(
-      artifactPath(runId, "production/render/draft.mp4"),
-    );
-    expect(manifest.ffmpeg.reviewCommand).toContain(
-      artifactPath(runId, "production/render/draft.mp4"),
-    );
+    expect(manifest.ffmpeg.reviewArgs).toEqual([
+      "-v",
+      "error",
+      "-i",
+      draftRenderArtifactPath,
+      "-f",
+      "null",
+      "-",
+    ]);
+    expect(manifest.ffmpeg.reviewCommand).toContain(draftRenderArtifactPath);
+    expect(manifest.ffmpeg.reviewCommand).toContain(`'${ffmpeg}'`);
     expect(manifest.ffmpeg.reviewCommand).not.toContain(".draft.");
     expect(manifest.composition.overlays.map((overlay) => overlay.role)).toEqual(
       expect.arrayContaining(["watermark", "popup-card", "waveform-overlay"]),
@@ -177,9 +186,7 @@ describe("draft render", () => {
         "outro#2=1.5s assets/outro/frames/outro_frame_01.jpg",
       ],
       reviewPath: "production/render/draft_review.md",
-      ffmpegReviewCommand: expect.stringContaining(
-        artifactPath(runId, "production/render/draft.mp4"),
-      ),
+      ffmpegReviewCommand: expect.stringContaining(draftRenderArtifactPath),
       voiceoverMode: "deterministic-local",
       voiceoverProductionVoiceCandidate: false,
       voiceoverQuality: "deterministic-local-reference",
@@ -202,7 +209,7 @@ describe("draft render", () => {
     const review = await readFile(artifactPath(runId, "production/render/draft_review.md"), "utf8");
     expect(review).toContain("# Draft Render Review");
     expect(review).toContain("## FFmpeg Review Command");
-    expect(review).toContain(artifactPath(runId, "production/render/draft.mp4"));
+    expect(review).toContain(draftRenderArtifactPath);
     expect(review).toContain("atomic temporary output");
     expect(review).toContain("## Media Probe");
     expect(review).toContain("## Render Approval");

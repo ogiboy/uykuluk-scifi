@@ -70,15 +70,27 @@ export async function runLocalMediaSmoke({ run, pnpm, workdir, runId, assertFile
   const fakeMediaTools = await createFakeMediaTools(workdir);
   run([pnpm, "producer", "render", "--run", runId], {
     label: "fake ffmpeg draft render",
-    expectOutput: "Draft render generated",
+    expectOutput: "Draft render available",
     env: {
       PATH: `${fakeMediaTools.binDir}${path.delimiter}${process.env.PATH ?? ""}`,
     },
   });
-  run([pnpm, "producer", "review", "render", "--run", runId], {
+  const review = run([pnpm, "producer", "review", "render", "--run", runId], {
     label: "render review handoff",
-    expectOutput: "upload and publish remain disabled",
+    expectOutput: "FFmpeg review command:",
   });
+  assert(
+    review.stdout.includes("production/render/draft.mp4"),
+    "render review handoff points at the final draft artifact",
+  );
+  assert(
+    !review.stdout.includes(".draft."),
+    "render review handoff does not point at the temporary render output",
+  );
+  assert(
+    review.stdout.includes("upload and publish remain disabled"),
+    "render review handoff keeps upload and publish disabled",
+  );
   run([pnpm, "producer", "evidence", "--run", runId], { label: "rendered evidence" });
   run([pnpm, "producer", "readiness", "--run", runId], {
     label: "rendered readiness",
@@ -150,11 +162,10 @@ async function assertRenderedEvidence({ workdir, runId, assert }) {
   assert(
     typeof renderedEvidence.draftRender.ffmpegReviewCommand === "string" &&
       renderedEvidence.draftRender.ffmpegReviewCommand.includes("production/render/draft.mp4"),
-    "draft render evidence records final-output FFmpeg review command",
+    "draft render evidence records final-artifact FFmpeg review command",
   );
   assert(
-    renderedEvidence.nextRecommendedCommand ===
-      `pnpm producer review render --run ${runId}; timing draft only; regenerate voiceover with reviewed local Piper audio before final production review.`,
+    renderedEvidence.nextRecommendedCommand === `pnpm producer review render --run ${runId}`,
     "rendered evidence keeps deterministic draft audio out of final production review",
   );
   assert(
@@ -165,7 +176,12 @@ async function assertRenderedEvidence({ workdir, runId, assert }) {
     renderManifest.schemaVersion === 6 &&
       typeof renderManifest.ffmpeg?.reviewCommand === "string" &&
       renderManifest.ffmpeg.reviewCommand.includes("production/render/draft.mp4"),
-    "render manifest records final-output FFmpeg review command",
+    "render manifest records final-artifact FFmpeg review command",
+  );
+  assert(
+    renderManifest.ffmpeg.reviewCommand.includes(" -f null -") &&
+      !renderManifest.ffmpeg.reviewCommand.includes(".draft."),
+    "render manifest review command validates the final draft without rewriting temp output",
   );
   assert(
     renderManifest.mediaProbe?.video?.width === 1280 &&

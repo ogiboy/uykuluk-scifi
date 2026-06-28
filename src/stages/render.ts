@@ -26,6 +26,7 @@ import {
   buildDraftRenderTimeline,
   buildFfmpegTimelineInputs,
   buildFfmpegArgs,
+  buildFfmpegReviewArgs,
   clampRenderDuration,
 } from "./renderFfmpegPlan.js";
 import { probeDraftRender } from "./renderProbe.js";
@@ -99,14 +100,7 @@ export async function renderDraft(
       composition,
       durationSeconds,
     });
-    const reviewArgs = buildFfmpegArgs({
-      ffmpegOutputPath: output,
-      renderPlan,
-      runId: run.runId,
-      timeline,
-      composition,
-      durationSeconds,
-    });
+    const reviewArgs = buildFfmpegReviewArgs(output);
     await runFfmpeg(ffmpegBinary, args);
     const outputInfo = await stat(temporaryOutput);
     if (outputInfo.size <= 0) {
