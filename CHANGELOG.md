@@ -11,6 +11,12 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.38.1 (2026-06-28)
+
+### Fixes
+
+- require media probe evidence (#82) (587740d)
+
 ## v0.38.0 (2026-06-28)
 
 ### Features
