@@ -30,28 +30,26 @@ export function renderDraftReviewMarkdown(manifest: DraftRenderManifest): string
     ),
     "",
   ];
-  if (manifest.mediaProbe) {
-    sections.push(
-      "## Media Probe",
-      "",
-      table(
-        ["Probe", "Value"],
+  sections.push(
+    "## Media Probe",
+    "",
+    table(
+      ["Probe", "Value"],
+      [
+        ["Binary", manifest.mediaProbe.binary],
+        ["Container", manifest.mediaProbe.formatName ?? "unknown"],
+        ["Duration", `${manifest.mediaProbe.durationSeconds}s`],
         [
-          ["Binary", manifest.mediaProbe.binary],
-          ["Container", manifest.mediaProbe.formatName ?? "unknown"],
-          ["Duration", `${manifest.mediaProbe.durationSeconds}s`],
-          [
-            "Video",
-            `${manifest.mediaProbe.video.width}x${manifest.mediaProbe.video.height}${
-              manifest.mediaProbe.video.codecName ? ` ${manifest.mediaProbe.video.codecName}` : ""
-            }`,
-          ],
-          ["Audio", audioProbeSummary(manifest.mediaProbe.audio)],
+          "Video",
+          `${manifest.mediaProbe.video.width}x${manifest.mediaProbe.video.height}${
+            manifest.mediaProbe.video.codecName ? ` ${manifest.mediaProbe.video.codecName}` : ""
+          }`,
         ],
-      ),
-      "",
-    );
-  }
+        ["Audio", audioProbeSummary(manifest.mediaProbe.audio)],
+      ],
+    ),
+    "",
+  );
   sections.push(
     "## Inputs",
     "",
