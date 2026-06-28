@@ -69,7 +69,9 @@ export function renderEvidenceMarkdown(data: EvidenceMarkdownBundle): string {
     "",
     "## Production Media Summary",
     "",
-    bulletList(productionMediaSummary(data.renderPlan, data.voiceoverAudio, data.draftRender)),
+    bulletList(
+      productionMediaSummary(data.runId, data.renderPlan, data.voiceoverAudio, data.draftRender),
+    ),
     "",
     "## Render Plan",
     "",

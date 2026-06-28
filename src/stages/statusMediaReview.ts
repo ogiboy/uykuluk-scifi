@@ -43,7 +43,7 @@ function passedProductionMediaAction(artifact: ProductionMediaStatus): string {
   if (artifact.evidenceKey === "voiceoverAudio") {
     return voiceoverReviewAction(artifact.detail);
   }
-  return draftRenderReviewAction(artifact.detail);
+  return draftRenderReviewAction(artifact);
 }
 
 function voiceoverReviewAction(detail: string | undefined): string {
@@ -52,8 +52,12 @@ function voiceoverReviewAction(detail: string | undefined): string {
     : "Listen locally and verify pronunciation, pacing, and tone before render approval.";
 }
 
-function draftRenderReviewAction(detail: string | undefined): string {
-  return detail?.includes("timing/reference only")
-    ? "Review this MP4 as a timing draft only; production voice is still required before final review."
-    : "Review the MP4, manifest, and draft checklist locally; upload and publish remain disabled.";
+function draftRenderReviewAction(artifact: ProductionMediaStatus): string {
+  const reviewPrefix = artifact.reviewCommand
+    ? `Review with ${artifact.reviewCommand}; `
+    : "Review the MP4, manifest, and draft checklist locally; ";
+  if (artifact.detail?.includes("timing/reference only")) {
+    return `${reviewPrefix}treat this MP4 as a timing draft only; production voice is still required before final review.`;
+  }
+  return `${reviewPrefix}upload and publish remain disabled.`;
 }

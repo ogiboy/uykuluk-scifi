@@ -55,9 +55,12 @@ describe("Studio run evidence copy", () => {
         detail: "8s, voiceover local-piper production candidate",
         evidenceKey: "draftRender",
         label: "Draft render",
+        reviewCommand: "pnpm producer review render --run run_studio_copy",
         status: "pass",
       }),
-    ).toContain("upload and publish remain disabled");
+    ).toBe(
+      "Review with pnpm producer review render --run run_studio_copy; upload and publish remain disabled.",
+    );
     expect(
       productionMediaReviewAction("stale", {
         artifactPath: "production/render/draft.mp4",

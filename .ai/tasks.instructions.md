@@ -73,7 +73,7 @@
   classification preserved from approval through evidence, fail-closed `ffprobe` media validation,
   stable final-output FFmpeg review command evidence, and an operator-readable
   `production/render/draft_review.md` checklist plus render/review CLI handoffs with local-only
-  decision guidance.
+  decision guidance surfaced through CLI status, evidence Markdown, and read-only Studio panels.
 - Use `producer eval local-model` before more Qwen-specific tuning. Compare configured local
   candidates through the same idea/script gates, receipt evidence, JSON compliance, repetition
   checks, Turkish label discipline, and operator quality review. Prefer eval-only CLI overrides for
