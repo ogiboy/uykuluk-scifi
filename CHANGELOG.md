@@ -11,6 +11,12 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.38.0 (2026-06-28)
+
+### Features
+
+- write run link template (#81) (1e7872f)
+
 ## v0.37.0 (2026-06-28)
 
 ### Features
