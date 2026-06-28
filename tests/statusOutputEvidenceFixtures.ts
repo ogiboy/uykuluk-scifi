@@ -18,7 +18,8 @@ export function blockedRenderedEvidence(runId: string): Record<string, unknown> 
       path: "production/render/draft.mp4",
       message: "Draft render output does not match manifest.",
     },
-    nextRecommendedCommand: "Regenerate evidence; draft render artifacts are missing or blocked.",
+    nextRecommendedCommand:
+      "Regenerate evidence with pnpm producer evidence --run <run_id>; if draft artifacts remain blocked, revise upstream artifacts before a new render approval.",
     renderPlan: passRenderPlanEvidence(),
     voiceoverAudio: passVoiceoverEvidence(),
   });

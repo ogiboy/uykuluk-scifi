@@ -165,6 +165,11 @@ function manualProductionNextCommand(
     }
     return "Regenerate voiceover evidence or review deterministic reference audio before render approval.";
   }
+  if (voiceoverAudio?.status === "block") {
+    return ttsEnabled
+      ? "pnpm producer voice --run <run_id>"
+      : "Enable local TTS in producer.config.json, then pnpm producer voice --run <run_id>";
+  }
   if (ttsEnabled) {
     return "pnpm producer voice --run <run_id>";
   }
@@ -194,7 +199,10 @@ function renderedNextCommand(draftRender: DraftRenderNextStep): string {
   if (draftRender?.status === "pass") {
     return renderedDraftReviewCommand(draftRender);
   }
-  return "Regenerate evidence; draft render artifacts are missing or blocked.";
+  if (draftRender?.status === "block") {
+    return "Regenerate evidence with pnpm producer evidence --run <run_id>; if draft artifacts remain blocked, revise upstream artifacts before a new render approval.";
+  }
+  return "pnpm producer evidence --run <run_id> (draft render artifacts are missing or evidence is stale)";
 }
 
 /**
