@@ -9,6 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
+_No unreleased changes yet._
+
+## v0.35.4 (2026-06-28)
+
 ### Fixes
 
 - align evidence next-action guidance with blocked voiceover and draft-render remediation
