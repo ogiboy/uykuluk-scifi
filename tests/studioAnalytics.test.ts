@@ -108,6 +108,7 @@ describe("Studio analytics overview", () => {
       reportPreviewTruncated: false,
       reportStatus: "current",
       reportWarning: null,
+      runLinkTemplatePath: "analytics/run_link_template.csv",
       sourceFileName: "performance.csv",
       sourceFormat: "csv",
       status: "ready",
@@ -172,6 +173,7 @@ describe("Studio analytics overview", () => {
       nextCommand: "pnpm producer analytics import --file performance.csv",
       recordCount: 0,
       reportStatus: "missing",
+      runLinkTemplatePath: "analytics/run_link_template.csv",
       status: "invalid",
     });
   });

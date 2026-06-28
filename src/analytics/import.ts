@@ -6,18 +6,22 @@ import { readJsonFile, writeJsonFile } from "../utils/json.js";
 import { nowIso } from "../utils/time.js";
 import { parseCsvRows } from "./csv.js";
 import { normalizeAnalyticsRecord } from "./normalization.js";
+import {
+  ANALYTICS_DIR,
+  analyticsDatasetPath,
+  analyticsReportPath,
+  analyticsRunLinkTemplatePath,
+} from "./paths.js";
 import { renderAnalyticsReport } from "./report.js";
+import { renderRunLinkTemplate } from "./runLinkTemplate.js";
 import { analyticsDatasetSchema, type AnalyticsDataset } from "./schema.js";
-
-const ANALYTICS_DIR = "analytics";
-export const analyticsDatasetPath = `${ANALYTICS_DIR}/performance.json`;
-export const analyticsReportPath = `${ANALYTICS_DIR}/performance_report.md`;
 
 export type AnalyticsImportResult = {
   format: "csv" | "json";
   outputPath: string;
   recordCount: number;
   reportPath: string;
+  runLinkTemplatePath: string;
 };
 
 export async function importAnalyticsFile(inputPath: string): Promise<AnalyticsImportResult> {
@@ -38,14 +42,13 @@ export async function importAnalyticsFile(inputPath: string): Promise<AnalyticsI
       sha256: createHash("sha256").update(source).digest("hex"),
     },
   });
-  await ensureDir(ANALYTICS_DIR);
-  await writeJsonFile(analyticsDatasetPath, dataset);
-  await writeTextFile(analyticsReportPath, renderAnalyticsReport(dataset));
+  await writeAnalyticsArtifacts(dataset);
   return {
     format,
     outputPath: analyticsDatasetPath,
     recordCount: dataset.records.length,
     reportPath: analyticsReportPath,
+    runLinkTemplatePath: analyticsRunLinkTemplatePath,
   };
 }
 
@@ -70,11 +73,16 @@ export async function renderSavedAnalyticsReport(): Promise<string> {
 export async function refreshSavedAnalyticsReport(): Promise<{
   report: string;
   reportPath: string;
+  runLinkTemplatePath: string;
 }> {
-  const report = await renderSavedAnalyticsReport();
-  await ensureDir(ANALYTICS_DIR);
-  await writeTextFile(analyticsReportPath, report);
-  return { report, reportPath: analyticsReportPath };
+  const dataset = await loadAnalyticsDataset();
+  const report = renderAnalyticsReport(dataset);
+  await writeAnalyticsArtifacts(dataset);
+  return {
+    report,
+    reportPath: analyticsReportPath,
+    runLinkTemplatePath: analyticsRunLinkTemplatePath,
+  };
 }
 
 /**
@@ -85,6 +93,13 @@ export async function refreshSavedAnalyticsReport(): Promise<{
  */
 function inferFormat(inputPath: string): "csv" | "json" {
   return path.extname(inputPath).toLowerCase() === ".json" ? "json" : "csv";
+}
+
+async function writeAnalyticsArtifacts(dataset: AnalyticsDataset): Promise<void> {
+  await ensureDir(ANALYTICS_DIR);
+  await writeJsonFile(analyticsDatasetPath, dataset);
+  await writeTextFile(analyticsReportPath, renderAnalyticsReport(dataset));
+  await writeTextFile(analyticsRunLinkTemplatePath, renderRunLinkTemplate(dataset.records));
 }
 
 function parseJsonRecords(input: string): ReturnType<typeof normalizeAnalyticsRecord>[] {

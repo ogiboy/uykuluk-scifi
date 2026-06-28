@@ -28,6 +28,7 @@ export function registerAnalyticsCommands(program: Command, wrap: AsyncActionWra
         console.log(`Analytics imported. Records: ${result.recordCount}`);
         console.log(`Dataset: ${result.outputPath}`);
         console.log(`Report: ${result.reportPath}`);
+        console.log(`Run link template: ${result.runLinkTemplatePath}`);
       }),
     );
 
@@ -44,6 +45,7 @@ export function registerAnalyticsCommands(program: Command, wrap: AsyncActionWra
         }
         console.log(result.report);
         console.log(`\nReport refreshed: ${result.reportPath}`);
+        console.log(`Run link template refreshed: ${result.runLinkTemplatePath}`);
       }),
     );
 }

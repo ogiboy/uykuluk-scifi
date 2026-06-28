@@ -1,6 +1,11 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { ZodError } from "zod";
+import {
+  analyticsDatasetPath,
+  analyticsReportPath,
+  analyticsRunLinkTemplatePath,
+} from "../../../../src/analytics/paths";
 import { analyticsDatasetSchema, type AnalyticsRecord } from "../../../../src/analytics/schema";
 import {
   currentReportStatus,
@@ -13,8 +18,6 @@ import {
 import { ArtifactJsonParseError, parseArtifactJson, readOptionalText } from "./localArtifactReads";
 import { projectRoot } from "./projectRoot";
 
-const ANALYTICS_DATASET_PATH = "analytics/performance.json";
-const ANALYTICS_REPORT_PATH = "analytics/performance_report.md";
 const REPORT_PREVIEW_LIMIT = 3_000;
 
 export type StudioAnalyticsStatus = "invalid" | "missing" | "ready";
@@ -39,6 +42,7 @@ export type StudioAnalyticsOverview = {
   reportStatus: StudioAnalyticsReportStatus;
   reportPreviewTruncated: boolean;
   reportWarning: string | null;
+  runLinkTemplatePath: string;
   sourceFileName: string | null;
   sourceFormat: string | null;
   status: StudioAnalyticsStatus;
@@ -55,14 +59,14 @@ export type StudioAnalyticsOverview = {
  */
 export async function getStudioAnalyticsOverview(): Promise<StudioAnalyticsOverview> {
   const root = projectRoot();
-  const datasetPath = path.join(root, ...ANALYTICS_DATASET_PATH.split("/"));
-  const reportPath = path.join(root, ...ANALYTICS_REPORT_PATH.split("/"));
+  const datasetPath = path.join(root, ...analyticsDatasetPath.split("/"));
+  const reportPath = path.join(root, ...analyticsReportPath.split("/"));
   const report = await readOptionalText(reportPath, REPORT_PREVIEW_LIMIT);
 
   try {
     const rawDataset = await readFile(datasetPath, "utf8");
     const dataset = analyticsDatasetSchema.parse(
-      parseArtifactJson(rawDataset, ANALYTICS_DATASET_PATH),
+      parseArtifactJson(rawDataset, analyticsDatasetPath),
     );
     const reportStatus = currentReportStatus(dataset, report.text);
     const mappedRunIds = new Set(
@@ -72,17 +76,18 @@ export async function getStudioAnalyticsOverview(): Promise<StudioAnalyticsOverv
     );
 
     return {
-      datasetPath: ANALYTICS_DATASET_PATH,
+      datasetPath: analyticsDatasetPath,
       error: null,
       generatedAt: dataset.generatedAt,
       mappedRunCount: mappedRunIds.size,
       nextCommand: "pnpm producer analytics report",
       recordCount: dataset.records.length,
-      reportPath: ANALYTICS_REPORT_PATH,
+      reportPath: analyticsReportPath,
       reportPreview: report.text,
       reportPreviewTruncated: report.truncated,
       reportStatus,
       reportWarning: reportWarning(reportStatus),
+      runLinkTemplatePath: analyticsRunLinkTemplatePath,
       sourceFileName: dataset.source.fileName,
       sourceFormat: dataset.source.format,
       status: "ready",
@@ -110,19 +115,20 @@ function missingOrInvalidOverview(
 ): StudioAnalyticsOverview {
   const missingDataset = (error as NodeJS.ErrnoException).code === "ENOENT";
   return {
-    datasetPath: ANALYTICS_DATASET_PATH,
+    datasetPath: analyticsDatasetPath,
     error: missingDataset ? null : invalidDatasetMessage(error),
     generatedAt: null,
     mappedRunCount: 0,
     nextCommand: "pnpm producer analytics import --file performance.csv",
     recordCount: 0,
-    reportPath: ANALYTICS_REPORT_PATH,
+    reportPath: analyticsReportPath,
     reportPreview: report.text,
     reportPreviewTruncated: report.truncated,
     reportStatus: report.text ? "stale" : "missing",
     reportWarning: report.text
       ? "Report artifact exists, but the analytics dataset is missing or invalid."
       : null,
+    runLinkTemplatePath: analyticsRunLinkTemplatePath,
     sourceFileName: null,
     sourceFormat: null,
     status: missingDataset ? "missing" : "invalid",

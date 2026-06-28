@@ -1,5 +1,6 @@
 import { table } from "../utils/markdown.js";
 import { summarizeAnalyticsDataQuality } from "./dataQuality.js";
+import { analyticsRunLinkTemplatePath } from "./paths.js";
 import { renderAnalyticsRecommendations } from "./recommendations.js";
 import type { AnalyticsDataset, AnalyticsRecord } from "./schema.js";
 import { unmappedRecordRows } from "./unmappedRecords.js";
@@ -48,6 +49,8 @@ export function renderAnalyticsReport(dataset: AnalyticsDataset): string {
     ),
     "",
     "## Unmapped Records",
+    "",
+    `Run link template: ${analyticsRunLinkTemplatePath} (fill run_id values, then include them in the next import).`,
     "",
     table(
       ["Video", "Title", "Views", "Published", "Next action"],
