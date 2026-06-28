@@ -1,5 +1,6 @@
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import type { StudioArtifactPreview } from "@/lib/artifactPreviews";
+import { artifactPreviewsIntro } from "@/lib/runEvidenceCopy";
 import { RunBlockedActionsPanel } from "./RunBlockedActionsPanel";
 import { RunLedgerPanel } from "./RunLedgerPanel";
 import { RunProductionMediaPanel } from "./RunProductionMediaPanel";
@@ -94,6 +95,7 @@ export function RunDetailView({ run }: Readonly<{ run: StudioRunDetail }>) {
           Read-only excerpts grouped by operator review phase. Use CLI commands to change workflow
           state.
         </p>
+        <p>{artifactPreviewsIntro(run.evidenceStatus)}</p>
         <div className='artifact-preview-groups'>
           {artifactGroups.map((group) => (
             <section className='artifact-preview-group' key={group.label}>

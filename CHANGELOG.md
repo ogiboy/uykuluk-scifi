@@ -9,7 +9,9 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Fixes
+
+- clarify Studio artifact previews when evidence is missing, stale, or invalid
 
 ## v0.35.6 (2026-06-28)
 

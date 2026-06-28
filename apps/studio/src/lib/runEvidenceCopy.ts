@@ -42,6 +42,19 @@ export function productionMediaIntro(evidenceStatus: EvidenceStatus): string {
 }
 
 /**
+ * Describes how artifact previews should be interpreted for the current evidence state.
+ *
+ * @param evidenceStatus - The current evidence bundle status.
+ * @returns Copy that distinguishes file availability from current workflow evidence.
+ */
+export function artifactPreviewsIntro(evidenceStatus: EvidenceStatus): string {
+  if (evidenceStatus === "available") {
+    return "File availability is shown alongside the current evidence bundle. Artifact previews are read-only and do not grant approvals.";
+  }
+  return "File availability is shown from local artifact records only. Regenerate evidence before treating any previewed artifact as current review proof.";
+}
+
+/**
  * Determines whether evidence remediation messaging should be shown.
  *
  * @param evidenceStatus - The current evidence bundle status.
