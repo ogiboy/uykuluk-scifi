@@ -4,11 +4,13 @@ import { ServiceContractPanel } from "@/components/ServiceContractPanel";
 import { StatusGrid } from "@/components/StatusGrid";
 import { AnalyticsStatusPanel } from "@/components/analytics/AnalyticsStatusPanel";
 import { DoctorStatusPanel } from "@/components/doctor/DoctorStatusPanel";
+import { ModelEvalStatusPanel } from "@/components/eval/ModelEvalStatusPanel";
 import { LatestRunReadinessPanel } from "@/components/runs/LatestRunReadinessPanel";
 import { StudioTabs } from "@/components/studio/StudioTabs";
 import { getStudioAnalyticsOverview } from "@/lib/analyticsOverview";
 import { getStudioAssetInventory } from "@/lib/assetInventory";
 import { getStudioDoctorOverview } from "@/lib/doctorOverview";
+import { getStudioModelEvalOverview } from "@/lib/modelEvalOverview";
 import { getStudioPromptInventory } from "@/lib/promptInventory";
 import { listStudioRuns } from "@/lib/runSummaries";
 import { studioSections } from "@/lib/studioData";
@@ -21,14 +23,21 @@ export const dynamic = "force-dynamic";
  * @returns The Studio page layout with navigation, status panels, and the current asset inventory.
  */
 export default async function StudioHomePage() {
-  const [analyticsOverview, assetInventory, doctorOverview, promptInventory, runs] =
-    await Promise.all([
-      getStudioAnalyticsOverview(),
-      getStudioAssetInventory(),
-      getStudioDoctorOverview(),
-      getStudioPromptInventory(),
-      listStudioRuns(),
-    ]);
+  const [
+    analyticsOverview,
+    assetInventory,
+    doctorOverview,
+    modelEvalOverview,
+    promptInventory,
+    runs,
+  ] = await Promise.all([
+    getStudioAnalyticsOverview(),
+    getStudioAssetInventory(),
+    getStudioDoctorOverview(),
+    getStudioModelEvalOverview(),
+    getStudioPromptInventory(),
+    listStudioRuns(),
+  ]);
 
   return (
     <main className='studio-shell'>
@@ -66,6 +75,7 @@ export default async function StudioHomePage() {
 
         <StatusGrid />
         <DoctorStatusPanel overview={doctorOverview} />
+        <ModelEvalStatusPanel overview={modelEvalOverview} />
         <LatestRunReadinessPanel latestRun={runs[0] ?? null} />
         <AnalyticsStatusPanel overview={analyticsOverview} />
         <CommandPanel />
