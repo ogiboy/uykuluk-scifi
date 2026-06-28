@@ -71,6 +71,64 @@ describe("evidence next command", () => {
     );
   });
 
+  it("recommends TTS configuration when voiceover evidence is blocked and TTS is disabled", () => {
+    expect(
+      evidenceNextCommand({
+        costQuote: null,
+        hasUnresolvedCostReservation: false,
+        state: "READY_FOR_MANUAL_PRODUCTION",
+        ttsEnabled: false,
+        voiceoverAudio: {
+          status: "block",
+        },
+      }),
+    ).toBe("Enable local TTS in producer.config.json, then pnpm producer voice --run <run_id>");
+  });
+
+  it("recommends voiceover regeneration when voiceover evidence is blocked and TTS is enabled", () => {
+    expect(
+      evidenceNextCommand({
+        costQuote: null,
+        hasUnresolvedCostReservation: false,
+        state: "READY_FOR_MANUAL_PRODUCTION",
+        ttsEnabled: true,
+        voiceoverAudio: {
+          status: "block",
+        },
+      }),
+    ).toBe("pnpm producer voice --run <run_id>");
+  });
+
+  it("keeps blocked rendered evidence tied to the evidence refresh command", () => {
+    expect(
+      evidenceNextCommand({
+        costQuote: null,
+        draftRender: {
+          status: "block",
+        },
+        hasUnresolvedCostReservation: false,
+        state: "RENDERED",
+      }),
+    ).toBe(
+      "Regenerate evidence with pnpm producer evidence --run <run_id>; if draft artifacts remain blocked, revise upstream artifacts before a new render approval.",
+    );
+  });
+
+  it("keeps missing rendered evidence tied to the evidence refresh command", () => {
+    expect(
+      evidenceNextCommand({
+        costQuote: null,
+        draftRender: {
+          status: "missing",
+        },
+        hasUnresolvedCostReservation: false,
+        state: "RENDERED",
+      }),
+    ).toBe(
+      "pnpm producer evidence --run <run_id> (draft render artifacts are missing or evidence is stale)",
+    );
+  });
+
   it("keeps rendered timing drafts separate from final production review", () => {
     expect(
       evidenceNextCommand({

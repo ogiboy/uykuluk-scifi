@@ -97,7 +97,7 @@ describe("operator status output", () => {
     expect(output).toContain("- Voiceover audio: pass");
     expect(output).toContain("- Draft render: block");
     expect(output).toContain(
-      "Next safe action: Regenerate evidence; draft render artifacts are missing or blocked.",
+      `Next safe action: Regenerate evidence with pnpm producer evidence --run ${run.runId}; if draft artifacts remain blocked, revise upstream artifacts before a new render approval.`,
     );
   });
 
