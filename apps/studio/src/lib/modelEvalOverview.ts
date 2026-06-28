@@ -43,6 +43,7 @@ export type StudioSingleModelEvalSummary = {
   passCount: number;
   passed: boolean;
   providerMode: LocalModelEvalReportPersisted["providerMode"];
+  checks: StudioModelEvalCheckSummary[];
 };
 
 export type StudioCandidateEvalSummary = {
@@ -60,9 +61,21 @@ export type StudioCandidateEvalSummary = {
 
 export type StudioCandidateModelSummary = {
   blockCount: number;
+  checks: StudioModelEvalCheckSummary[];
   configuredModel: string;
   passCount: number;
   passed: boolean;
+};
+
+export type StudioModelEvalCheckSummary = {
+  durationMs: number | null;
+  inputTokensApprox: number | null;
+  message: string;
+  name: LocalModelEvalReportPersisted["checks"][number]["name"];
+  outputHash: string | null;
+  outputTokensApprox: number | null;
+  promptHash: string | null;
+  status: LocalModelEvalReportPersisted["checks"][number]["status"];
 };
 
 /**
@@ -153,6 +166,7 @@ function summarizeSingleReport(
     passCount: countChecks(report, "pass"),
     passed: report.passed,
     providerMode: report.providerMode,
+    checks: summarizeChecks(report),
   };
 }
 
@@ -161,6 +175,7 @@ function summarizeCandidateReport(
 ): StudioCandidateEvalSummary {
   const candidates = report.candidates.map((candidate) => ({
     blockCount: countChecks(candidate, "block"),
+    checks: summarizeChecks(candidate),
     configuredModel: candidate.configuredModel,
     passCount: countChecks(candidate, "pass"),
     passed: candidate.passed,
@@ -181,6 +196,19 @@ function summarizeCandidateReport(
 
 function countChecks(report: LocalModelEvalReportPersisted, status: "block" | "pass"): number {
   return report.checks.filter((check) => check.status === status).length;
+}
+
+function summarizeChecks(report: LocalModelEvalReportPersisted): StudioModelEvalCheckSummary[] {
+  return report.checks.map((check) => ({
+    durationMs: check.durationMs ?? null,
+    inputTokensApprox: check.inputTokensApprox ?? null,
+    message: check.message,
+    name: check.name,
+    outputHash: check.outputHash ?? null,
+    outputTokensApprox: check.outputTokensApprox ?? null,
+    promptHash: check.promptHash ?? null,
+    status: check.status,
+  }));
 }
 
 function modelEvalStatus(

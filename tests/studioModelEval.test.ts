@@ -11,8 +11,13 @@ const passingSingleReport = {
   appliedOverrides: [],
   checks: [
     {
+      durationMs: 7,
+      inputTokensApprox: 42,
       message: "3 ideas parsed.",
       name: "ideas-json",
+      outputHash: "idea-output-hash",
+      outputTokensApprox: 84,
+      promptHash: "idea-prompt-hash",
       status: "pass",
     },
     {
@@ -105,6 +110,23 @@ describe("Studio local model evaluation overview", () => {
         configuredModel: "mock-deterministic",
         passCount: 2,
         passed: true,
+        checks: [
+          expect.objectContaining({
+            durationMs: 7,
+            inputTokensApprox: 42,
+            message: "3 ideas parsed.",
+            name: "ideas-json",
+            outputHash: "idea-output-hash",
+            outputTokensApprox: 84,
+            promptHash: "idea-prompt-hash",
+            status: "pass",
+          }),
+          expect.objectContaining({
+            message: "180 words parsed.",
+            name: "script-section-json",
+            status: "pass",
+          }),
+        ],
       },
       candidateReport: {
         blockedCandidateCount: 1,
@@ -118,6 +140,13 @@ describe("Studio local model evaluation overview", () => {
     expect(overview.candidateReport?.candidates).toContainEqual(
       expect.objectContaining({
         blockCount: 1,
+        checks: expect.arrayContaining([
+          expect.objectContaining({
+            message: "Invalid script section.",
+            name: "script-section-json",
+            status: "block",
+          }),
+        ]),
         configuredModel: "mock-invalid-script-json",
         passed: false,
       }),

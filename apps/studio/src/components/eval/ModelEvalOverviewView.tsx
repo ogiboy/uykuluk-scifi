@@ -1,5 +1,9 @@
 import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
-import type { StudioCandidateEvalSummary, StudioModelEvalOverview } from "@/lib/modelEvalOverview";
+import type {
+  StudioCandidateEvalSummary,
+  StudioModelEvalCheckSummary,
+  StudioModelEvalOverview,
+} from "@/lib/modelEvalOverview";
 
 type ModelEvalOverviewViewProps = Readonly<{
   overview: StudioModelEvalOverview;
@@ -56,6 +60,15 @@ export function ModelEvalOverviewView({ overview }: ModelEvalOverviewViewProps) 
         {overview.error ? <p className='blocked'>{overview.error}</p> : null}
       </section>
 
+      <section className='panel' aria-labelledby='model-eval-single-checks-heading'>
+        <h2 id='model-eval-single-checks-heading'>Single Model Check Results</h2>
+        {overview.singleReport ? (
+          <CheckList checks={overview.singleReport.checks} ownerId='single-model' />
+        ) : (
+          <p>No single-model check results are available.</p>
+        )}
+      </section>
+
       <CandidatePanel candidateReport={overview.candidateReport} />
 
       <section className='panel' aria-labelledby='model-eval-single-report-heading'>
@@ -110,6 +123,7 @@ function CandidatePanel({
                   {candidate.passed ? "pass" : "block"}
                 </span>
               </div>
+              <CheckList checks={candidate.checks} ownerId={`candidate-${index}`} />
             </li>
           ))}
         </ul>
@@ -117,5 +131,39 @@ function CandidatePanel({
         <p>No candidate comparison report has been generated.</p>
       )}
     </section>
+  );
+}
+
+function CheckList({
+  checks,
+  ownerId,
+}: Readonly<{ checks: StudioModelEvalCheckSummary[]; ownerId: string }>) {
+  return (
+    <ul className='artifact-preview-list'>
+      {checks.map((check) => (
+        <li className='artifact-preview-card' key={`${ownerId}-${check.name}`}>
+          <div className='artifact-preview-header'>
+            <div>
+              <strong>{check.name}</strong>
+              <span>{check.message}</span>
+            </div>
+            <span
+              className={
+                check.status === "pass" ? "status-pill small" : "status-pill small blocked"
+              }
+            >
+              {check.status}
+            </span>
+          </div>
+          <p className='artifact-meta'>
+            {check.durationMs === null ? "duration n/a" : `${check.durationMs}ms`}
+            {" · "}
+            input {check.inputTokensApprox ?? "n/a"} / output {check.outputTokensApprox ?? "n/a"}
+            {check.promptHash ? ` · prompt ${check.promptHash}` : ""}
+            {check.outputHash ? ` · output ${check.outputHash}` : ""}
+          </p>
+        </li>
+      ))}
+    </ul>
   );
 }
