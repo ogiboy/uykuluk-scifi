@@ -59,7 +59,7 @@ export async function reserveApprovedCost(input: {
       }
       throw new SafeExitError(`Operation id is already bound: ${input.operationId}.`);
     }
-    const consumed = all.find(
+    const consumed = all.some(
       (item) =>
         item.runId === input.runId &&
         item.approvalId === context.approvalId &&
