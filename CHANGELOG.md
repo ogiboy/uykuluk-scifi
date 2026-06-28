@@ -9,7 +9,9 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Fixes
+
+- validate Studio run file reads before resolving local run artifacts
 
 ## v0.34.3 (2026-06-28)
 
