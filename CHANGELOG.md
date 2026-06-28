@@ -11,6 +11,12 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.43.1 (2026-06-28)
+
+### Documentation
+
+- align operator guidance and PR batching (8b83338)
+
 ## v0.43.0 (2026-06-28)
 
 ### Features
