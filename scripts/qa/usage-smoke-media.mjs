@@ -75,6 +75,10 @@ export async function runLocalMediaSmoke({ run, pnpm, workdir, runId, assertFile
       PATH: `${fakeMediaTools.binDir}${path.delimiter}${process.env.PATH ?? ""}`,
     },
   });
+  run([pnpm, "producer", "review", "render", "--run", runId], {
+    label: "render review handoff",
+    expectOutput: "upload and publish remain disabled",
+  });
   run([pnpm, "producer", "evidence", "--run", runId], { label: "rendered evidence" });
   run([pnpm, "producer", "readiness", "--run", runId], {
     label: "rendered readiness",
@@ -151,6 +155,12 @@ async function assertRenderedEvidence({ workdir, runId, assert }) {
   assert(
     renderManifest.voiceoverAudio?.productionVoiceCandidate === false,
     "render manifest records reference audio classification",
+  );
+  assert(
+    renderManifest.schemaVersion === 6 &&
+      typeof renderManifest.ffmpeg?.reviewCommand === "string" &&
+      renderManifest.ffmpeg.reviewCommand.includes("production/render/draft.mp4"),
+    "render manifest records final-output FFmpeg review command",
   );
   assert(
     renderManifest.mediaProbe?.video?.width === 1280 &&
