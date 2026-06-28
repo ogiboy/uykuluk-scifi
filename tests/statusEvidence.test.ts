@@ -108,4 +108,33 @@ describe("status evidence validity", () => {
       "Production media evidence: artifact-record fallback because evidence is invalid.",
     );
   });
+
+  it("marks evidence with malformed schema fields as invalid", async () => {
+    const run = await createRun();
+    await saveRun({
+      ...run,
+      artifacts: ["evidence_bundle.json"],
+      state: "SCRIPT_APPROVED",
+    });
+    await writeFile(
+      artifactPath(run.runId, "evidence_bundle.json"),
+      JSON.stringify(
+        studioEvidenceFixture(run.runId, "SCRIPT_APPROVED", {
+          currentState: "NOT_A_RUN_STATE",
+          generatedAt: "not-a-date",
+        }),
+      ),
+      "utf8",
+    );
+
+    const output = formatRunStatus(await readRunStatus(run.runId));
+
+    expect(output).toContain(
+      "Evidence: invalid (evidence_bundle.json is missing required fields.)",
+    );
+    expect(output).toContain(`Evidence next action: pnpm producer evidence --run ${run.runId}`);
+    expect(output).toContain(
+      "Production media evidence: artifact-record fallback because evidence is invalid.",
+    );
+  });
 });
