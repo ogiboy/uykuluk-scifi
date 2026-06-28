@@ -37,5 +37,20 @@ export async function voiceoverReadinessCheck(run: RunRecord): Promise<Readiness
     name: "voiceover audio available",
     status: "block",
     message: evidence.message,
+    nextAction: await voiceoverNextAction(run),
   };
+}
+
+/**
+ * Builds the next safe operator action for blocked voiceover evidence.
+ *
+ * @param run - The run record used to populate the command.
+ * @returns The local TTS remediation command or configuration instruction.
+ */
+async function voiceoverNextAction(run: RunRecord): Promise<string> {
+  const config = await loadConfig();
+  if (config.providers.tts.enabled) {
+    return `pnpm producer voice --run ${run.runId}`;
+  }
+  return `Enable local TTS in producer.config.json, then pnpm producer voice --run ${run.runId}`;
 }

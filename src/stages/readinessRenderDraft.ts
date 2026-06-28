@@ -38,6 +38,7 @@ export async function draftRenderReadinessCheck(run: RunRecord): Promise<Readine
     name: "draft render available",
     status: "block",
     message: evidence.message,
+    nextAction: draftRenderBlockedNextAction(run),
   };
 }
 
@@ -62,6 +63,22 @@ function draftRenderNextAction(
     return `Review deterministic reference audio; approve render only for a local timing draft with pnpm producer approve render --run ${run.runId}`;
   }
   return `pnpm producer approve render --run ${run.runId}`;
+}
+
+/**
+ * Builds a conservative next action for blocked draft render evidence.
+ *
+ * @param run - The run record used to choose the safe remediation boundary.
+ * @returns A command when rerendering is currently allowed, otherwise an operator instruction.
+ */
+function draftRenderBlockedNextAction(run: RunRecord): string {
+  if (run.state === "RENDER_APPROVED") {
+    return `pnpm producer render --run ${run.runId}`;
+  }
+  if (run.state === "READY_FOR_MANUAL_PRODUCTION") {
+    return `Repair voiceover/render evidence, then pnpm producer approve render --run ${run.runId}`;
+  }
+  return `Regenerate evidence with pnpm producer evidence --run ${run.runId}; if draft artifacts remain blocked, revise upstream artifacts before a new render approval.`;
 }
 
 /**

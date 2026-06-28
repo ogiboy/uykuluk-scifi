@@ -9,7 +9,9 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Fixes
+
+- show remediation guidance when voiceover or draft-render readiness evidence is blocked
 
 ## v0.35.2 (2026-06-28)
 
