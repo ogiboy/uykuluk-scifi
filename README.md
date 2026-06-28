@@ -253,7 +253,7 @@ pnpm producer approve idea --run <run_id> --idea <idea_id>
 pnpm producer approve idea --run <run_id> --idea <idea_id> --json
 pnpm producer script --run <run_id>
 pnpm producer script --run <run_id> --json
-pnpm producer revise script --run <run_id> --file <path> --reason "<reason>" --editor <name>
+pnpm producer revise script --run <run_id> --file <path> --reason "<reason>" --editor <name> [--json]
 pnpm producer review script --run <run_id>
 pnpm producer review script --run <run_id> --json
 pnpm producer approve script --run <run_id>
@@ -328,7 +328,7 @@ subtitles, scene prompts, popup-card package Markdown, or YouTube metadata befor
 render work starts:
 
 ```bash
-pnpm producer revise package-artifact --run <run_id> --artifact subtitles --file subtitles.srt --reason "<reason>" --editor <name>
+pnpm producer revise package-artifact --run <run_id> --artifact subtitles --file subtitles.srt --reason "<reason>" --editor <name> [--json]
 ```
 
 Package artifact revisions are blocked once the run leaves `PRODUCTION_PACKAGE_GENERATED`. Each

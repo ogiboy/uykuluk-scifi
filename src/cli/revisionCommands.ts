@@ -4,11 +4,12 @@ import { revisePackageArtifact } from "../revisions/packageArtifactRevision.js";
 import { reviseScript } from "../revisions/scriptRevision.js";
 
 type RevisionOptions = {
-  run: string;
-  file: string;
-  reason: string;
-  editor: string;
   artifact?: string;
+  editor: string;
+  file: string;
+  json?: boolean;
+  reason: string;
+  run: string;
 };
 
 type WrapRevisionAction = (
@@ -30,6 +31,7 @@ export function registerRevisionCommands(program: Command, wrap: WrapRevisionAct
     .requiredOption("--file <path>")
     .requiredOption("--reason <reason>")
     .option("--editor <editor>", "Revision author.", "operator")
+    .option("--json", "Print the raw script revision JSON for automation.")
     .description("Replace script.md with durable before/after revision evidence.")
     .action(
       wrap(async (options) => {
@@ -39,6 +41,10 @@ export function registerRevisionCommands(program: Command, wrap: WrapRevisionAct
           reason: options.reason,
           editor: options.editor,
         });
+        if (options.json) {
+          console.log(JSON.stringify(revision, null, 2));
+          return;
+        }
         console.log(`Script revision recorded: ${revision.revisionId}`);
         console.log("Script review and approval are required again.");
       }),
@@ -50,6 +56,7 @@ export function registerRevisionCommands(program: Command, wrap: WrapRevisionAct
     .requiredOption("--file <path>")
     .requiredOption("--reason <reason>")
     .option("--editor <editor>", "Revision author.", "operator")
+    .option("--json", "Print the raw package artifact revision JSON for automation.")
     .description(
       "Replace a generated production-package artifact with durable before/after revision evidence.",
     )
@@ -62,6 +69,10 @@ export function registerRevisionCommands(program: Command, wrap: WrapRevisionAct
           reason: options.reason,
           editor: options.editor,
         });
+        if (options.json) {
+          console.log(JSON.stringify(revision, null, 2));
+          return;
+        }
         console.log(`Package artifact revision recorded: ${revision.revisionId}`);
         console.log("Regenerate evidence/readiness before using downstream artifacts.");
       }),

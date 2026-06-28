@@ -365,12 +365,12 @@ pnpm producer doctor --json
 pnpm producer ideas [--json]
 pnpm producer approve idea --run <run_id> --idea <idea_id> [--json]
 pnpm producer script --run <run_id> [--json]
-pnpm producer revise script --run <run_id> --file <path> --reason "<reason>" --editor <name>
+pnpm producer revise script --run <run_id> --file <path> --reason "<reason>" --editor <name> [--json]
 pnpm producer review script --run <run_id> [--json]
 pnpm producer approve script --run <run_id> [--json]
 pnpm producer approve script --run <run_id> --acknowledge-warnings [--json] # when review warnings remain
 pnpm producer package --run <run_id> [--json]
-pnpm producer revise package-artifact --run <run_id> --artifact subtitles --file <path> --reason "<reason>" --editor <name>
+pnpm producer revise package-artifact --run <run_id> --artifact subtitles --file <path> --reason "<reason>" --editor <name> [--json]
 pnpm producer render-plan --run <run_id> [--json]
 pnpm producer estimate --run <run_id> [--json]
 pnpm producer approve cost --run <run_id> [--json]
