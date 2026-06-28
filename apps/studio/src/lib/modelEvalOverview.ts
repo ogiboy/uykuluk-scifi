@@ -147,7 +147,7 @@ function summarizeCandidateReport(
     passed: report.passed,
     passingCandidateCount: candidates.filter((candidate) => candidate.passed).length,
     providerMode: report.providerMode,
-    recommendedCandidate: selectRecommendedCandidate(candidates),
+    recommendedCandidate: selectRecommendedCandidate(candidates, report.recommendedCandidate),
   };
 }
 
@@ -170,7 +170,16 @@ function summarizeChecks(report: LocalModelEvalReportPersisted): StudioModelEval
 
 function selectRecommendedCandidate(
   candidates: StudioCandidateModelSummary[],
+  persistedRecommendation: LocalModelCandidateEvalReportPersisted["recommendedCandidate"],
 ): StudioCandidateModelSummary | null {
+  if (persistedRecommendation) {
+    const persistedCandidate = candidates.find(
+      (candidate) => candidate.configuredModel === persistedRecommendation.configuredModel,
+    );
+    if (persistedCandidate?.passed) {
+      return persistedCandidate;
+    }
+  }
   const passingCandidates = candidates.filter((candidate) => candidate.passed);
   if (passingCandidates.length === 0) {
     return null;

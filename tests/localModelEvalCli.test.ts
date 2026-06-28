@@ -59,6 +59,10 @@ describe("producer local-model eval CLI", () => {
       ],
       passed: false,
       providerMode: "mock",
+      recommendedCandidate: expect.objectContaining({
+        configuredModel: "mock-deterministic",
+        passedChecks: 2,
+      }),
     });
     await expect(readFile("producer.config.json", "utf8")).resolves.toBe(beforeConfig);
   });
