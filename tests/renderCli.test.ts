@@ -141,6 +141,22 @@ describe("producer render CLI", () => {
     expect(result.stdout).toContain("FFmpeg review command:");
     expect(result.stdout).toContain(artifactPath(runId, "production/render/draft.mp4"));
     expect(result.stdout).toContain("upload and publish remain disabled");
+
+    const review = runCli(["review", "render", "--run", runId]);
+
+    expect(review.status).toBe(0);
+    expect(review.stdout).toContain("Draft render generated: production/render/draft.mp4");
+    expect(review.stdout).toContain("Review document: production/render/draft_review.md");
+    expect(review.stdout).toContain("upload and publish remain disabled");
+  });
+
+  it("blocks render review before a draft render exists", async () => {
+    const runId = await prepareVoiceoverReadyRun();
+
+    const result = runCli(["review", "render", "--run", runId]);
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain("Draft render review is not available yet");
   });
 });
 
