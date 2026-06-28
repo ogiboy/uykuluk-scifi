@@ -11,6 +11,12 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.40.0 (2026-06-28)
+
+### Features
+
+- show render frame cadence (#86) (d866041)
+
 ## v0.39.0 (2026-06-28)
 
 ### Features
