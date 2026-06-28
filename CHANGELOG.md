@@ -11,6 +11,12 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.33.2 (2026-06-28)
+
+### Tests
+
+- cover analytics json in usage smoke (b465e34)
+
 ## v0.33.1 (2026-06-28)
 
 ### Tests
