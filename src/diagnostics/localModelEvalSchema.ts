@@ -31,6 +31,12 @@ export const localModelCandidateRecommendationSchema = z.object({
   passedChecks: z.int().nonnegative(),
 });
 
+export const localModelCandidateOperatorGuidanceSchema = z.object({
+  decision: z.enum(["candidate-ready", "try-more-candidates"]),
+  message: z.string(),
+  nextCommand: z.string(),
+});
+
 export const localModelCandidateEvalReportSchema = z.object({
   baseOverrides: z.array(z.string()),
   candidates: z.array(localModelEvalReportSchema),
@@ -39,6 +45,7 @@ export const localModelCandidateEvalReportSchema = z.object({
   durationMs: z.number().nonnegative(),
   passed: z.boolean(),
   providerMode: z.enum(["mock", "ollama", "llama.cpp"]),
+  operatorGuidance: localModelCandidateOperatorGuidanceSchema.optional(),
   recommendedCandidate: localModelCandidateRecommendationSchema.nullable().optional(),
 });
 
@@ -46,6 +53,9 @@ export type LocalModelEvalCheckPersisted = z.infer<typeof localModelEvalCheckSch
 export type LocalModelEvalReportPersisted = z.infer<typeof localModelEvalReportSchema>;
 export type LocalModelCandidateRecommendationPersisted = z.infer<
   typeof localModelCandidateRecommendationSchema
+>;
+export type LocalModelCandidateOperatorGuidancePersisted = z.infer<
+  typeof localModelCandidateOperatorGuidanceSchema
 >;
 export type LocalModelCandidateEvalReportPersisted = z.infer<
   typeof localModelCandidateEvalReportSchema

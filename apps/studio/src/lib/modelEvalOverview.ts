@@ -147,6 +147,7 @@ function summarizeCandidateReport(
     passed: report.passed,
     passingCandidateCount: candidates.filter((candidate) => candidate.passed).length,
     providerMode: report.providerMode,
+    operatorGuidance: report.operatorGuidance ?? null,
     recommendedCandidate: selectRecommendedCandidate(candidates, report.recommendedCandidate),
   };
 }
@@ -229,5 +230,8 @@ function modelEvalNextCommand(
   if (!candidateReport) {
     return "pnpm producer eval local-model-candidates --candidate <model-a> --candidate <model-b>";
   }
-  return "pnpm producer eval local-model-candidates --candidate <model>";
+  return (
+    candidateReport.operatorGuidance?.nextCommand ??
+    "pnpm producer eval local-model-candidates --candidate <model>"
+  );
 }

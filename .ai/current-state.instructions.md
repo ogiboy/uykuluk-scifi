@@ -94,9 +94,9 @@
   overrides can compare local Ollama/`llama.cpp` candidates without mutating `producer.config.json`.
   `producer eval local-model-candidates` runs the same checks for repeated `--candidate` model names
   and writes ignored `diagnostics/local_model_candidates_eval.json` and Markdown reports with a
-  deterministic recommendation only when a candidate passes all parser-contract checks. A 2026-06-28
-  qwen3:8b run stayed fail-closed on non-slot-specific idea `fit` explanations while its
-  script-section sample parsed.
+  deterministic recommendation and next operator command only when a candidate passes all
+  parser-contract checks. A 2026-06-28 qwen3:8b run stayed fail-closed on non-slot-specific idea
+  `fit` explanations while its script-section sample parsed.
 - Studio reads the ignored local model evaluation JSON/Markdown artifacts on the home page and
   `/eval`, distinguishing missing, malformed, schema-invalid, passing, and blocked reports without
   calling Ollama, `llama.cpp`, hosted APIs, or mutating configuration.

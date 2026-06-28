@@ -24,7 +24,14 @@ export type LocalModelCandidateEvalReport = {
   durationMs: number;
   passed: boolean;
   providerMode: ProducerConfig["providers"]["llm"]["mode"];
+  operatorGuidance: LocalModelCandidateOperatorGuidance;
   recommendedCandidate: LocalModelCandidateRecommendation | null;
+};
+
+export type LocalModelCandidateOperatorGuidance = {
+  decision: "candidate-ready" | "try-more-candidates";
+  message: string;
+  nextCommand: string;
 };
 
 export type LocalModelCandidateRecommendation = {
@@ -67,6 +74,7 @@ export async function runLocalModelCandidateEval(
     options.llmOverrides,
   );
   const candidates = await evaluateCandidates(config, baseOverrides, options.candidates);
+  const recommendedCandidate = selectRecommendedLocalModelCandidate(candidates);
   const report: LocalModelCandidateEvalReport = {
     baseOverrides,
     candidates,
@@ -75,7 +83,11 @@ export async function runLocalModelCandidateEval(
     durationMs: Date.now() - startedAt,
     passed: candidates.every((candidate) => candidate.passed),
     providerMode: config.providers.llm.mode,
-    recommendedCandidate: selectRecommendedLocalModelCandidate(candidates),
+    operatorGuidance: localModelCandidateOperatorGuidance(
+      config.providers.llm.mode,
+      recommendedCandidate,
+    ),
+    recommendedCandidate,
   };
   await writeJsonFile(localModelCandidateEvalJsonPath(), report);
   await writeTextFile(
@@ -151,4 +163,35 @@ function candidateRecommendationSort(
     left.durationMs - right.durationMs ||
     left.configuredModel.localeCompare(right.configuredModel)
   );
+}
+
+function localModelCandidateOperatorGuidance(
+  providerMode: ProducerConfig["providers"]["llm"]["mode"],
+  recommendation: LocalModelCandidateRecommendation | null,
+): LocalModelCandidateOperatorGuidance {
+  if (recommendation) {
+    return {
+      decision: "candidate-ready",
+      message:
+        "A candidate passed the parser-contract checks. Review the report, then run a single-model eval before changing producer.config.json.",
+      nextCommand: `pnpm producer eval local-model --llm-mode ${shellArg(
+        providerMode,
+      )} --model ${shellArg(recommendation.configuredModel)}`,
+    };
+  }
+  return {
+    decision: "try-more-candidates",
+    message:
+      "No candidate passed all parser-contract checks. Keep the current project config unchanged and compare different local models or runtimes.",
+    nextCommand: `pnpm producer eval local-model-candidates --llm-mode ${shellArg(
+      providerMode,
+    )} --candidate <another-model>`,
+  };
+}
+
+function shellArg(value: string): string {
+  if (/^[A-Za-z0-9._:/@+-]+$/.test(value)) {
+    return value;
+  }
+  return `'${value.replaceAll("'", String.raw`'"'"'`)}'`;
 }

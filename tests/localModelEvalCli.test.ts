@@ -59,6 +59,9 @@ describe("producer local-model eval CLI", () => {
       ],
       passed: false,
       providerMode: "mock",
+      operatorGuidance: expect.objectContaining({
+        nextCommand: "pnpm producer eval local-model --llm-mode mock --model mock-deterministic",
+      }),
       recommendedCandidate: expect.objectContaining({
         configuredModel: "mock-deterministic",
         passedChecks: 2,

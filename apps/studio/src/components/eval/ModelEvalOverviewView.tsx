@@ -116,6 +116,12 @@ function CandidatePanel({
             Recommended passing candidate:{" "}
             {candidateReport.recommendedCandidate?.configuredModel ?? "none yet"}
           </p>
+          {candidateReport.operatorGuidance ? (
+            <p className='artifact-meta'>
+              {candidateReport.operatorGuidance.message} Next:{" "}
+              <code className='command'>{candidateReport.operatorGuidance.nextCommand}</code>
+            </p>
+          ) : null}
           <ul className='artifact-preview-list'>
             {candidateReport.candidates.map((candidate, index) => (
               <li className='artifact-preview-card' key={`${candidate.configuredModel}-${index}`}>

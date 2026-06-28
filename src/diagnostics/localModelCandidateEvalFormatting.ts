@@ -16,6 +16,8 @@ export function formatLocalModelCandidateEvalConsole(
     `Config source: ${report.configSource}`,
     `Base overrides: ${report.baseOverrides.join(", ") || "none"}`,
     `Recommended: ${formatRecommendedCandidate(report)}`,
+    `Decision: ${report.operatorGuidance.message}`,
+    `Next command: ${report.operatorGuidance.nextCommand}`,
     ...report.candidates.map(
       (candidate) =>
         `[${candidate.passed ? "pass" : "block"}] ${candidate.configuredModel}: ${
@@ -45,6 +47,8 @@ export function renderLocalModelCandidateEvalMarkdown(
     `Base overrides: ${report.baseOverrides.join(", ") || "none"}`,
     `Passed: ${report.passed}`,
     `Recommended candidate: ${formatRecommendedCandidate(report)}`,
+    `Decision: ${report.operatorGuidance.message}`,
+    `Next command: \`${report.operatorGuidance.nextCommand}\``,
     "",
     table(
       ["Model", "Passed", "Passed checks", "Blocked checks", "Duration"],
