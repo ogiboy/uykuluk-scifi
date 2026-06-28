@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  artifactPreviewsIntro,
   blockedActionsEmptyMessage,
   blockedActionsIntro,
   productionMediaIntro,
@@ -27,5 +28,11 @@ describe("Studio run evidence copy", () => {
   it("labels production-media fallback as artifact-record evidence until evidence is current", () => {
     expect(productionMediaIntro("available")).toContain("current CLI evidence bundle");
     expect(productionMediaIntro("stale")).toContain("fallback from persisted artifact records");
+  });
+
+  it("keeps artifact previews separate from current review proof", () => {
+    expect(artifactPreviewsIntro("available")).toContain("current evidence bundle");
+    expect(artifactPreviewsIntro("invalid")).toContain("local artifact records only");
+    expect(artifactPreviewsIntro("invalid")).toContain("Regenerate evidence");
   });
 });
