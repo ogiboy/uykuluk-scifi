@@ -94,17 +94,32 @@ program
   .command("status")
   .option("--run <run_id>")
   .option("--latest", "Show the most recently created run.")
-  .option("--json", "Print the raw run state JSON for automation.")
+  .option("--json", "Print the raw persisted run state JSON for automation.")
+  .option("--summary-json", "Print the operator status summary JSON for automation.")
   .description("Show run state and artifacts.")
   .action(
-    wrap(async (options: { json?: boolean; latest?: boolean; run?: string }) => {
-      const runId = await resolveStatusRunId(options);
-      console.log(
-        options.json
-          ? JSON.stringify(await loadRun(runId), null, 2)
-          : formatRunStatus(await readRunStatus(runId)),
-      );
-    }),
+    wrap(
+      async (options: {
+        json?: boolean;
+        latest?: boolean;
+        run?: string;
+        summaryJson?: boolean;
+      }) => {
+        if (options.json && options.summaryJson) {
+          throw new SafeExitError("Use either --json or --summary-json, not both.");
+        }
+        const runId = await resolveStatusRunId(options);
+        if (options.summaryJson) {
+          console.log(JSON.stringify(await readRunStatus(runId), null, 2));
+          return;
+        }
+        console.log(
+          options.json
+            ? JSON.stringify(await loadRun(runId), null, 2)
+            : formatRunStatus(await readRunStatus(runId)),
+        );
+      },
+    ),
   );
 
 program
