@@ -4,6 +4,7 @@ import {
   blockedActionsEmptyMessage,
   blockedActionsIntro,
   productionMediaIntro,
+  productionMediaReviewAction,
   shouldShowEvidenceRemediation,
 } from "../apps/studio/src/lib/runEvidenceCopy";
 
@@ -28,6 +29,43 @@ describe("Studio run evidence copy", () => {
   it("labels production-media fallback as artifact-record evidence until evidence is current", () => {
     expect(productionMediaIntro("available")).toContain("current CLI evidence bundle");
     expect(productionMediaIntro("stale")).toContain("fallback from persisted artifact records");
+  });
+
+  it("gives conservative production-media review actions", () => {
+    expect(
+      productionMediaReviewAction("available", {
+        artifactPath: "production/render_plan.json",
+        evidenceKey: "renderPlan",
+        label: "Render plan",
+        status: "pass",
+      }),
+    ).toContain("contact sheet");
+    expect(
+      productionMediaReviewAction("available", {
+        artifactPath: "production/audio/voiceover.wav",
+        detail: "8s, deterministic-local, timing/reference only",
+        evidenceKey: "voiceoverAudio",
+        label: "Voiceover audio",
+        status: "pass",
+      }),
+    ).toContain("only for local timing review");
+    expect(
+      productionMediaReviewAction("available", {
+        artifactPath: "production/render/draft.mp4",
+        detail: "8s, voiceover local-piper production candidate",
+        evidenceKey: "draftRender",
+        label: "Draft render",
+        status: "pass",
+      }),
+    ).toContain("upload and publish remain disabled");
+    expect(
+      productionMediaReviewAction("stale", {
+        artifactPath: "production/render/draft.mp4",
+        evidenceKey: "draftRender",
+        label: "Draft render",
+        status: "recorded",
+      }),
+    ).toBe("Regenerate evidence before using this media row as current review proof.");
   });
 
   it("keeps artifact previews separate from current review proof", () => {

@@ -1,4 +1,8 @@
-import { productionMediaIntro, shouldShowEvidenceRemediation } from "@/lib/runEvidenceCopy";
+import {
+  productionMediaIntro,
+  productionMediaReviewAction,
+  shouldShowEvidenceRemediation,
+} from "@/lib/runEvidenceCopy";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import type { ProductionMediaStatus } from "../../../../../src/stages/statusMediaSummary";
 
@@ -38,6 +42,9 @@ export function RunProductionMediaPanel({
             {artifact.detail ? ` — ${artifact.detail}` : ""}
             <br />
             <span>{artifact.artifactPath}</span>
+            <p className='artifact-action'>
+              Review: {productionMediaReviewAction(evidenceStatus, artifact)}
+            </p>
           </li>
         ))}
       </ul>
