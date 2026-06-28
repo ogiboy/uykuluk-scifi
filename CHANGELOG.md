@@ -11,6 +11,12 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.36.0 (2026-06-28)
+
+### Features
+
+- surface mixed-signal recommendations (#79) (41a8c71)
+
 ## v0.35.9 (2026-06-28)
 
 ### Fixes
