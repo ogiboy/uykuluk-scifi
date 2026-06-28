@@ -72,9 +72,82 @@ describe("local model evaluation", () => {
       "local-secret-response",
     );
   });
+
+  it("blocks invalid mock parser outputs without raw provider text", async () => {
+    await useMockModel("mock-invalid-ideas-always");
+
+    const invalidIdeasReport = await runLocalModelEval();
+
+    expect(invalidIdeasReport.passed).toBe(false);
+    expect(invalidIdeasReport.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: "ideas-json",
+          status: "block",
+          provider: "mock",
+          model: "mock-invalid-ideas-always",
+        }),
+      ]),
+    );
+
+    await useMockModel("mock-invalid-script-json");
+
+    const invalidScriptReport = await runLocalModelEval();
+
+    expect(invalidScriptReport.passed).toBe(false);
+    expect(invalidScriptReport.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: "script-section-json",
+          status: "block",
+          provider: "mock",
+          model: "mock-invalid-script-json",
+        }),
+      ]),
+    );
+    expect(JSON.stringify(invalidScriptReport)).not.toContain(
+      "Mock provider returned non-JSON script section text.",
+    );
+  });
+
+  it("sanitizes Ollama provider error payloads in blocked eval reports", async () => {
+    await useOllamaConfig();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ error: "local-secret-response" }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        }),
+      ),
+    );
+
+    const report = await runLocalModelEval();
+
+    expect(report.passed).toBe(false);
+    expect(report.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          message: "Ollama provider reported an error.",
+          status: "block",
+        }),
+      ]),
+    );
+    expect(JSON.stringify(report)).not.toContain("local-secret-response");
+  });
 });
 
+async function useMockModel(model: string): Promise<void> {
+  await writeLlmConfig({ mode: "mock", model });
+}
+
 async function useOllamaConfig(): Promise<void> {
+  await writeLlmConfig({ mode: "ollama" });
+}
+
+async function writeLlmConfig(
+  llm: Partial<(typeof defaultConfig.providers)["llm"]>,
+): Promise<void> {
   await writeFile(
     "producer.config.json",
     `${JSON.stringify(
@@ -84,7 +157,7 @@ async function useOllamaConfig(): Promise<void> {
           ...defaultConfig.providers,
           llm: {
             ...defaultConfig.providers.llm,
-            mode: "ollama",
+            ...llm,
           },
         },
       },
