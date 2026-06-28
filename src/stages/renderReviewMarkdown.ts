@@ -31,6 +31,14 @@ export function renderDraftReviewMarkdown(manifest: DraftRenderManifest): string
     "",
   ];
   sections.push(
+    "## FFmpeg Review Command",
+    "",
+    "> Operator review command only. The actual render used an atomic temporary output before moving the validated MP4 into place.",
+    "",
+    "```bash",
+    manifest.ffmpeg.reviewCommand,
+    "```",
+    "",
     "## Media Probe",
     "",
     table(

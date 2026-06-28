@@ -42,7 +42,7 @@ describe("producer render CLI", () => {
 
     expect(result.status).toBe(0);
     expect(JSON.parse(result.stdout) as unknown).toMatchObject({
-      schemaVersion: 5,
+      schemaVersion: 6,
       runId,
       renderApproval: {
         approvalId: expect.stringMatching(/^approval_/),
@@ -108,6 +108,9 @@ describe("producer render CLI", () => {
       mediaProbe: {
         audio: { codecName: "aac" },
         video: { height: 720, width: 1280 },
+      },
+      ffmpeg: {
+        reviewCommand: expect.stringContaining("production/render/draft.mp4"),
       },
     });
     await expect(loadRun(runId)).resolves.toMatchObject({

@@ -9,7 +9,9 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Features
+
+- add reviewable FFmpeg command evidence for local draft renders
 
 ## v0.47.0 (2026-06-28)
 

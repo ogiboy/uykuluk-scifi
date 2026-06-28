@@ -8,6 +8,7 @@ import { appendLedgerEvent } from "../core/ledger.js";
 import { loadRun, saveRun, setRunState } from "../core/runStore.js";
 import { requireApproval, requireState } from "../safeguards/approvalGuard.js";
 import { ensureDir } from "../utils/fs.js";
+import { shellCommand } from "../utils/shell.js";
 import { nowIso } from "../utils/time.js";
 import { verifyProductionPackage } from "./productionPackageIntegrity.js";
 import { renderApprovalRef } from "./renderApproval.js";
@@ -98,6 +99,14 @@ export async function renderDraft(
       composition,
       durationSeconds,
     });
+    const reviewArgs = buildFfmpegArgs({
+      ffmpegOutputPath: output,
+      renderPlan,
+      runId: run.runId,
+      timeline,
+      composition,
+      durationSeconds,
+    });
     await runFfmpeg(ffmpegBinary, args);
     const outputInfo = await stat(temporaryOutput);
     if (outputInfo.size <= 0) {
@@ -112,7 +121,7 @@ export async function renderDraft(
     const outputBytes = await readFile(output);
     run = await recordRunArtifact(run, "render", draftRenderPath);
     const manifest = draftRenderManifestSchema.parse({
-      schemaVersion: 5,
+      schemaVersion: 6,
       runId: run.runId,
       createdAt: nowIso(),
       renderPlan: {
@@ -150,6 +159,8 @@ export async function renderDraft(
       ffmpeg: {
         binary: ffmpegBinary,
         args,
+        reviewArgs,
+        reviewCommand: shellCommand(ffmpegBinary, reviewArgs),
       },
       mediaProbe,
     });

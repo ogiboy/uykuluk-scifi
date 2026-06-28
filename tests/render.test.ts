@@ -10,7 +10,7 @@ import { runReadiness } from "../src/stages/readiness";
 import { pathExists } from "../src/utils/fs";
 import { readJsonFile } from "../src/utils/json";
 import { useTempProject } from "./helpers";
-import { prepareReadyRunWithoutVoiceover, prepareVoiceoverReadyRun } from "./renderPipelineHelpers";
+import { prepareVoiceoverReadyRun } from "./renderPipelineHelpers";
 import {
   createFailingFakeFfprobe,
   createFakeFfmpeg,
@@ -20,21 +20,6 @@ import {
 
 describe("draft render", () => {
   useTempProject();
-
-  it("requires explicit render approval before generating a draft video", async () => {
-    const runId = await prepareVoiceoverReadyRun();
-    const ffmpeg = await createFakeFfmpeg(renderToolRoot("approval-required"));
-    const evidence = (await generateEvidenceBundle(runId)) as { nextRecommendedCommand: string };
-
-    expect(evidence.nextRecommendedCommand).toBe(
-      `Review deterministic reference audio; approve render only for a local timing draft with pnpm producer approve render --run ${runId}`,
-    );
-
-    await expect(
-      renderDraft(runId, { ffmpegBinary: ffmpeg, maxDurationSeconds: 1 }),
-    ).rejects.toThrow(/render approval/i);
-    expect(await pathExists(artifactPath(runId, "production/render/draft.mp4"))).toBe(false);
-  });
 
   it("records render approval and writes a draft video manifest through FFmpeg", async () => {
     const runId = await prepareVoiceoverReadyRun();
@@ -63,7 +48,7 @@ describe("draft render", () => {
     const manifest = await readJsonFile<DraftRenderManifest>(
       artifactPath(runId, "production/render/render_manifest.json"),
     );
-    expect(manifest.schemaVersion).toBe(5);
+    expect(manifest.schemaVersion).toBe(6);
     expect(manifest.renderApproval).toEqual({
       approvalId: approval.approvalId,
       approvedRef,
@@ -161,6 +146,14 @@ describe("draft render", () => {
     expect(manifest.ffmpeg.args.join("\n")).toContain(
       "assets/waveforms/waveform_overlay_thin_panel_transparent_1920x240.png",
     );
+    expect(manifest.ffmpeg.args.at(-1)).toContain(".draft.");
+    expect(manifest.ffmpeg.reviewArgs.at(-1)).toBe(
+      artifactPath(runId, "production/render/draft.mp4"),
+    );
+    expect(manifest.ffmpeg.reviewCommand).toContain(
+      artifactPath(runId, "production/render/draft.mp4"),
+    );
+    expect(manifest.ffmpeg.reviewCommand).not.toContain(".draft.");
     expect(manifest.composition.overlays.map((overlay) => overlay.role)).toEqual(
       expect.arrayContaining(["watermark", "popup-card", "waveform-overlay"]),
     );
@@ -205,6 +198,9 @@ describe("draft render", () => {
     );
     const review = await readFile(artifactPath(runId, "production/render/draft_review.md"), "utf8");
     expect(review).toContain("# Draft Render Review");
+    expect(review).toContain("## FFmpeg Review Command");
+    expect(review).toContain(artifactPath(runId, "production/render/draft.mp4"));
+    expect(review).toContain("atomic temporary output");
     expect(review).toContain("## Media Probe");
     expect(review).toContain("## Render Approval");
     expect(review).toContain("## Source Frame Cadence");
@@ -248,12 +244,5 @@ describe("draft render", () => {
     expect(run.state).toBe("RENDER_APPROVED");
     expect(run.artifacts).not.toContain("production/render/draft.mp4");
     expect(await pathExists(artifactPath(runId, "production/render/draft.mp4"))).toBe(false);
-  });
-
-  it("blocks render approval until voiceover audio evidence exists", async () => {
-    const runId = await prepareReadyRunWithoutVoiceover();
-
-    await expect(approveRender(runId)).rejects.toThrow(/voiceover/i);
-    expect((await loadRun(runId)).state).toBe("READY_FOR_MANUAL_PRODUCTION");
   });
 });

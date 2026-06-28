@@ -61,7 +61,7 @@ const ffmpegTimelineInputSchema = z.strictObject({
 });
 
 export const draftRenderManifestSchema = z.strictObject({
-  schemaVersion: z.literal(5),
+  schemaVersion: z.literal(6),
   runId: z.string().min(1),
   createdAt: z.iso.datetime(),
   renderPlan: z.strictObject({
@@ -91,6 +91,8 @@ export const draftRenderManifestSchema = z.strictObject({
   ffmpeg: z.strictObject({
     binary: z.string().min(1),
     args: z.array(z.string()),
+    reviewArgs: z.array(z.string()),
+    reviewCommand: z.string().min(1),
   }),
   mediaProbe: renderMediaProbeSchema,
 });
