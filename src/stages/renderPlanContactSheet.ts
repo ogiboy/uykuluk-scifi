@@ -24,6 +24,7 @@ export function renderContactSheet(plan: RenderPlan, provenance: AssetProvenance
     `- Manifest digest: ${plan.productionPackageManifestDigest}`,
     `- Asset count: ${provenance.assets.length}`,
     "",
+    ...renderTimingSummary(plan),
     ...renderBookends(plan),
     "## Asset Provenance",
     "",
@@ -52,6 +53,33 @@ export function renderContactSheet(plan: RenderPlan, provenance: AssetProvenance
       ].join("\n"),
     ),
   ].join("\n");
+}
+
+/**
+ * Renders the timing summary operators use before voiceover and draft render work.
+ *
+ * @param plan - The render plan to summarize.
+ * @returns Markdown lines describing scene, bookend, and estimated local draft duration.
+ */
+function renderTimingSummary(plan: RenderPlan): string[] {
+  const sceneDurationSeconds = plan.scenes.reduce(
+    (total, scene) => total + scene.durationSeconds,
+    0,
+  );
+  const bookendDurationSeconds = plan.bookends
+    ? plan.bookends.intro.durationSeconds + plan.bookends.outro.durationSeconds
+    : 0;
+  return [
+    "## Timing Summary",
+    "",
+    `- Scene count: ${plan.scenes.length}`,
+    `- Scene narration duration: ${formatSeconds(sceneDurationSeconds)}`,
+    `- Intro/outro bookends: ${formatSeconds(bookendDurationSeconds)}`,
+    `- Estimated local draft duration: ${formatSeconds(sceneDurationSeconds + bookendDurationSeconds)}`,
+    "",
+    "> Timing is planning evidence only. Voiceover generation and render approval remain separate gates.",
+    "",
+  ];
 }
 
 /**
@@ -118,4 +146,8 @@ function frameBullets(label: string, frames: AssetRef[] | undefined): string[] {
     return [];
   }
   return [`- ${label}: ${frames.length} committed frames`];
+}
+
+function formatSeconds(value: number): string {
+  return `${Math.round(value)}s`;
 }

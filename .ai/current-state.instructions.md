@@ -44,12 +44,11 @@
 - Brand, overlay, intro, and outro asset inventory checks.
 - Production package generation with complete manifest creation after all derived artifacts are
   persisted.
-- Render Plan + Contact Sheet MVP that consumes the verified production-package manifest and tracked
+- Render Plan + Contact Sheet MVP consumes the verified production-package manifest and tracked
   assets, then writes `production/render_plan.json`, `production/storyboard_contact_sheet.md`, and
   `production/asset_provenance.json` without FFmpeg render, upload, paid provider, or public publish
-  execution. Intro/outro source-frame sequences under tracked asset directories are recorded in
-  render-plan bookend provenance when present. The contact sheet includes an operator decision
-  section with review gates, safe next commands, revision path, and blocked upload/publish actions.
+  execution. Intro/outro source frames are recorded when present. The contact sheet includes timing,
+  review gates, safe commands, revision path, and upload/publish blockers.
 - Evidence and readiness now surface render-plan presence; missing render plans warn, while partial
   or malformed render-plan artifacts block readiness.
 - Disabled-by-default local voiceover generation. `producer voice` requires local TTS config,

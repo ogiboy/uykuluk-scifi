@@ -9,7 +9,9 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Features
+
+- add timing summaries to render-plan contact sheets
 
 ## v0.34.6 (2026-06-28)
 
