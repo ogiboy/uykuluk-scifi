@@ -8,7 +8,7 @@ import { generateEvidenceBundle } from "../src/stages/evidence";
 import { estimateCost } from "../src/stages/estimate";
 import { runIdeas } from "../src/stages/ideas";
 import { generateProductionPackage } from "../src/stages/productionPackage";
-import { generateRenderPlan } from "../src/stages/renderPlan";
+import { generateRenderPlan, readRenderPlanEvidence } from "../src/stages/renderPlan";
 import { runReadiness } from "../src/stages/readiness";
 import { reviewScript } from "../src/stages/reviewScript";
 import { generateScript } from "../src/stages/script";
@@ -163,7 +163,60 @@ describe("render plan", () => {
       expect(await pathExists(artifactPath(runId, artifact))).toBe(false);
     }
   });
+
+  it("blocks evidence when the render plan belongs to another run", async () => {
+    await createMinimalRenderAssets();
+    const runId = await preparePackagedRun();
+
+    await generateRenderPlan(runId);
+    const planPath = artifactPath(runId, "production/render_plan.json");
+    const plan = await readJsonFile<Record<string, unknown>>(planPath);
+    await writeFile(planPath, JSON.stringify({ ...plan, runId: "other-run" }), "utf8");
+
+    await expect(readRenderEvidence(runId)).resolves.toMatchObject({
+      status: "block",
+      message: expect.stringMatching(/different run/i),
+    });
+  });
+
+  it("blocks evidence when asset provenance belongs to another run", async () => {
+    await createMinimalRenderAssets();
+    const runId = await preparePackagedRun();
+
+    await generateRenderPlan(runId);
+    const provenancePath = artifactPath(runId, "production/asset_provenance.json");
+    const provenance = await readJsonFile<Record<string, unknown>>(provenancePath);
+    await writeFile(provenancePath, JSON.stringify({ ...provenance, runId: "other-run" }), "utf8");
+
+    await expect(readRenderEvidence(runId)).resolves.toMatchObject({
+      status: "block",
+      message: expect.stringMatching(/different run/i),
+    });
+  });
+
+  it("blocks evidence when the render plan references a stale package manifest", async () => {
+    await createMinimalRenderAssets();
+    const runId = await preparePackagedRun();
+
+    await generateRenderPlan(runId);
+    const planPath = artifactPath(runId, "production/render_plan.json");
+    const plan = await readJsonFile<Record<string, unknown>>(planPath);
+    await writeFile(
+      planPath,
+      JSON.stringify({ ...plan, productionPackageManifestDigest: "0".repeat(64) }),
+      "utf8",
+    );
+
+    await expect(readRenderEvidence(runId)).resolves.toMatchObject({
+      status: "block",
+      message: expect.stringMatching(/stale production package manifest/i),
+    });
+  });
 });
+
+async function readRenderEvidence(runId: string) {
+  return readRenderPlanEvidence(await loadRun(runId));
+}
 
 async function preparePackagedRun(): Promise<string> {
   const { runId, ideas } = await runIdeas();
