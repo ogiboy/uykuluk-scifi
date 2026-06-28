@@ -9,7 +9,9 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Features
+
+- show local model evaluation reports in Studio
 
 ## v0.43.1 (2026-06-28)
 

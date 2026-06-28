@@ -105,6 +105,10 @@
 - Keep Studio read-only prompt inventory and `/prompts` route aligned with prompt defaults and local
   override safety. Prompt source/status visibility is allowed; editing, diff approval, rollback,
   provider calls, and prompt revision history remain future work.
+- Keep Studio read-only local model evaluation summaries aligned with ignored
+  `diagnostics/local_model_eval.*` and `diagnostics/local_model_candidates_eval.*` artifacts. Studio
+  may show parser-contract evidence and next safe CLI commands, but must not call local models, edit
+  provider config, generate runs, or weaken fail-closed provider checks.
 - Keep Studio evidence panels conservative: missing, malformed, or stale evidence must point back to
   `producer evidence --run <run_id>` and must not imply blocked actions are absent or media is
   review-proof.

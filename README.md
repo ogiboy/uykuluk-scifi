@@ -70,15 +70,16 @@ agent-tracking state only; runtime code must not require it.
 - TypeScript CLI workflow under `src/`.
 - Basic Next.js App Router Studio under `apps/studio/` with read-only run index/detail, visual asset
   inventory, producer doctor diagnostics on the home page and `/doctor`, latest-run readiness
-  visibility and manual analytics feedback summary on the home page, runtime prompt inventory,
-  mutation-service status, and manual analytics feedback routes.
+  visibility, local model evaluation summaries, manual analytics feedback summary on the home page,
+  runtime prompt inventory, mutation-service status, and manual analytics feedback routes.
 - Studio foundation with Tailwind CSS v4, shadcn-style primitives, Radix UI, lucide icons, GSAP, and
   `next/font`.
 - Mock-first provider layer with Ollama and local `llama.cpp` adapters.
 - Project-level `producer doctor` diagnostics for config, mock/Ollama/llama.cpp readiness, local
   TTS/Piper readiness, local FFmpeg/ffprobe toolchain availability, assets, and publish defaults.
 - Local model evaluation command that exercises small idea/script parser contracts, writes ignored
-  `diagnostics/local_model_eval.*` reports, and never persists raw provider output.
+  `diagnostics/local_model_eval.*` reports, and never persists raw provider output; Studio exposes
+  these reports as read-only operator evidence without calling local models or changing config.
 - Runtime prompt defaults under `prompts/defaults/`; `.ai/` is development and agent-tracking
   guidance, not a runtime dependency.
 - Strict run state machine and explicit approval ledger.

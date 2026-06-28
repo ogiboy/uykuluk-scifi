@@ -31,6 +31,7 @@ export const readOnlyStudioRoutes = [
   route("assets.index", "/assets"),
   route("analytics.index", "/analytics"),
   route("doctor.index", "/doctor"),
+  route("eval.index", "/eval"),
   route("prompts.index", "/prompts"),
 ] as const satisfies readonly StudioRouteSecurityContract[];
 
