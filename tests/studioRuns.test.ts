@@ -64,16 +64,15 @@ describe("Studio read-only run summaries", () => {
 
   it("reads run detail with reviewable evidence and artifact flags", async () => {
     const runId = await createRenderedStudioRunFixture();
-
     const detail = await getStudioRunDetail(runId);
-
     expect(detail).toMatchObject({
       runId,
       state: "RENDERED",
       evidence: {
         currentState: "RENDERED",
-        nextRecommendedCommand: "Manual final draft review. Upload remains approval-gated.",
+        nextRecommendedCommand: "pnpm producer review render --run <run_id>",
       },
+      nextRecommendedCommand: `pnpm producer review render --run ${runId}`,
       readiness: { passed: true },
     });
     expect((detail as { readinessChecks?: unknown })?.readinessChecks).toEqual([

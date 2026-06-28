@@ -143,9 +143,7 @@ describe("operator status output", () => {
     expect(output).toContain(
       `  Review: Review with pnpm producer review render --run ${run.runId}; upload and publish remain disabled.`,
     );
-    expect(output).toContain(
-      "Next safe action: Manual final draft review. Upload remains approval-gated.",
-    );
+    expect(output).toContain(`Next safe action: pnpm producer review render --run ${run.runId}`);
   });
 
   it("recommends idea approval before evidence exists", async () => {

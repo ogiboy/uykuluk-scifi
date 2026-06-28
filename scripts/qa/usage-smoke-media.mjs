@@ -154,7 +154,7 @@ async function assertRenderedEvidence({ workdir, runId, assert }) {
   );
   assert(
     renderedEvidence.nextRecommendedCommand ===
-      "Review local timing draft; regenerate voiceover with reviewed local Piper audio before final production review.",
+      `pnpm producer review render --run ${runId}; timing draft only; regenerate voiceover with reviewed local Piper audio before final production review.`,
     "rendered evidence keeps deterministic draft audio out of final production review",
   );
   assert(

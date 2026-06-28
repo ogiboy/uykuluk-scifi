@@ -60,7 +60,7 @@ export function passingRenderedEvidence(runId: string): Record<string, unknown> 
       voiceoverProductionVoiceCandidate: true,
       voiceoverQuality: "local-piper",
     },
-    nextRecommendedCommand: "Manual final draft review. Upload remains approval-gated.",
+    nextRecommendedCommand: "pnpm producer review render --run <run_id>",
     renderPlan: passRenderPlanEvidence(),
     voiceoverAudio: passVoiceoverEvidence(),
   });

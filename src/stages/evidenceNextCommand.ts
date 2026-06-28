@@ -213,7 +213,7 @@ function renderedNextCommand(draftRender: DraftRenderNextStep): string {
  */
 function renderedDraftReviewCommand(draftRender: DraftRenderNextStep): string {
   if (draftRender?.voiceoverProductionVoiceCandidate === false) {
-    return "Review local timing draft; regenerate voiceover with reviewed local Piper audio before final production review.";
+    return "pnpm producer review render --run <run_id>; timing draft only; regenerate voiceover with reviewed local Piper audio before final production review.";
   }
-  return "Manual final draft review. Upload remains approval-gated.";
+  return "pnpm producer review render --run <run_id>";
 }

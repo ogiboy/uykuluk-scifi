@@ -93,7 +93,7 @@ export async function createRenderedStudioRunFixture(): Promise<string> {
       voiceoverProductionVoiceCandidate: true,
       voiceoverQuality: "local-piper",
     },
-    nextRecommendedCommand: "Manual final draft review. Upload remains approval-gated.",
+    nextRecommendedCommand: "pnpm producer review render --run <run_id>",
     renderPlan: {
       status: "pass",
       path: "production/render_plan.json",

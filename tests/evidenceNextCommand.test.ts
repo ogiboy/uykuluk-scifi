@@ -141,7 +141,21 @@ describe("evidence next command", () => {
         state: "RENDERED",
       }),
     ).toBe(
-      "Review local timing draft; regenerate voiceover with reviewed local Piper audio before final production review.",
+      "pnpm producer review render --run <run_id>; timing draft only; regenerate voiceover with reviewed local Piper audio before final production review.",
     );
+  });
+
+  it("recommends the read-only draft render review command for production voice drafts", () => {
+    expect(
+      evidenceNextCommand({
+        costQuote: null,
+        draftRender: {
+          status: "pass",
+          voiceoverProductionVoiceCandidate: true,
+        },
+        hasUnresolvedCostReservation: false,
+        state: "RENDERED",
+      }),
+    ).toBe("pnpm producer review render --run <run_id>");
   });
 });

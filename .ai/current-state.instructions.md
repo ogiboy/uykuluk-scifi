@@ -83,7 +83,8 @@
   point to the MP4, manifest, review document, and local-only next action, with
   deterministic-reference audio labeled as a local timing draft. CLI status, evidence Markdown, and
   the read-only Studio production-media panel surface the same review command only when current
-  draft-render evidence passes, with upload/public-scheduled publish still disabled.
+  draft-render evidence passes, and rendered runs use the read-only review command as their next
+  safe action with upload/public-scheduled publish still disabled.
 - Provider-backed idea and production-package stages schema-validate and normalize common local
   model JSON variants before artifact writes, while rejecting malformed or English operator-facing
   payloads fail-closed.

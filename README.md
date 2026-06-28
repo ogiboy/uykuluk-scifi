@@ -587,9 +587,10 @@ operator inspection; the same final-output command is copied into draft-render e
 non-JSON CLI output and read-only `producer review render --run <run_id>` command point directly to
 the MP4, manifest, review document, and local-only next action. Status, evidence Markdown, and the
 read-only Studio production-media panel surface that same safe review command when draft-render
-evidence is current. `production/render/draft_review.md` summarizes the final operator checklist,
-shows that review command, and labels deterministic-reference audio renders as local timing drafts.
-It does not upload, schedule, or publish anything.
+evidence is current, and rendered runs use the read-only review command as their next safe action.
+`production/render/draft_review.md` summarizes the final operator checklist, shows that review
+command, and labels deterministic-reference audio renders as local timing drafts. It does not
+upload, schedule, or publish anything.
 
 `thinkingMode` can be `default`, `think`, or `no_think`. Token caps are sent to Ollama as
 `num_predict` so local generation cannot run unbounded. Script generation splits the approved idea

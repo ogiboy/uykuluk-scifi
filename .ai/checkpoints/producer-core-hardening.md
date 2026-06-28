@@ -30,6 +30,7 @@ coherent, tested slices until the safe core and its evidence contracts are genui
   - `f828e2a feat(render): add read-only render review command`
   - `0546158 test(render): cover draft review handoff smoke`
   - `f7ca5db feat(render): surface draft review commands`
+  - `cabdb55 feat(render): persist draft review command evidence`
 - `producer render` now prints a local-only review handoff, the render manifest records a stable
   final-output FFmpeg review command separately from temp-output execution args, and
   `producer review render --run <run_id>` replays the validated handoff without mutating run state.
@@ -218,6 +219,13 @@ coherent, tested slices until the safe core and its evidence contracts are genui
     `.ai/qa/artifacts/usage-smoke-20260628-223132/qa-report.md`.
   - `pnpm lint && pnpm typecheck && pnpm qa:modularity && pnpm changelog:check && pnpm release:check && pnpm format:check`
     passed for the same slice.
+  - `pnpm test tests/evidenceNextCommand.test.ts tests/statusOutput.test.ts tests/studioRuns.test.ts tests/renderCli.test.ts tests/evidenceMarkdown.test.ts`
+    passed after making rendered-run next actions use `pnpm producer review render --run <run_id>`.
+  - `pnpm qa:usage` passed again; latest ignored report:
+    `.ai/qa/artifacts/usage-smoke-20260628-223649/qa-report.md`.
+  - `pnpm qa:modularity && pnpm format:check` and `pnpm changelog:check && pnpm release:check`
+    passed for the same next-action slice; the broader lint/typecheck chain had already passed
+    before the modularity-only line-count failure was corrected.
   - Full `pnpm check`, Studio build, browser smoke, dependency audit, and version plan were
     intentionally deferred until PR-readiness because this is still an accumulating feature branch.
 - `pnpm check` passes with 44 test files and 261 tests.
