@@ -124,13 +124,13 @@ export async function verifyProductionPackage(run: RunRecord): Promise<{
     }
     const script = await readPackageArtifact(run.runId, "script.md");
     const scriptDigest = sha256(script);
-    const scriptApproval = run.approvals.find(
+    const scriptApprovalExists = run.approvals.some(
       (approval) =>
         approval.runId === run.runId &&
         approval.target === "script" &&
         approval.approvedRef === manifest.approvedScriptDigest,
     );
-    if (!scriptApproval || manifest.approvedScriptDigest !== scriptDigest) {
+    if (!scriptApprovalExists || manifest.approvedScriptDigest !== scriptDigest) {
       throw new SafeExitError(
         "Production package does not match the currently approved script digest.",
       );
