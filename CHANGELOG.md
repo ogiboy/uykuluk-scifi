@@ -11,6 +11,12 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.42.0 (2026-06-28)
+
+### Features
+
+- show production media review actions (#88) (5cfe67e)
+
 ## v0.41.0 (2026-06-28)
 
 ### Features
