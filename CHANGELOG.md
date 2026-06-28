@@ -9,6 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
+_No unreleased changes yet._
+
+## v0.35.6 (2026-06-28)
+
 ### Tests
 
 - isolate fake render tool binaries under temp test directories
