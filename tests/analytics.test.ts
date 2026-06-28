@@ -77,6 +77,10 @@ describe("manual analytics import", () => {
     expect(report).toContain(
       "- Haritasız Uydu (unmapped): weak CTR, weak retention (confidence: medium; missing run link).",
     );
+    expect(report).toContain("Mixed signals to inspect");
+    expect(report).toContain(
+      "- Kayıp Sonda (run_20260624010101_abcd12): repeat signals: subscriber gain, avoid signals: weak CTR, weak retention (confidence: high; run-linked with views, impressions, CTR, and retention).",
+    );
     expect(report).toContain("Test next");
     expect(report).toContain("one topic/title/thumbnail hypothesis");
     expect(report).toContain("Missing impressions, retention, or run links reduce confidence");
@@ -150,7 +154,7 @@ describe("manual analytics import", () => {
     expect(report).toContain("Non-Causal Recommendations");
   });
 
-  it("does not classify mixed-signal records as both repeat and avoid", () => {
+  it("classifies mixed-signal records separately from repeat and avoid", () => {
     const recommendations = renderAnalyticsRecommendations([
       {
         averagePercentageViewed: 0.18,
@@ -161,7 +165,10 @@ describe("manual analytics import", () => {
       },
     ]).join("\n");
 
-    expect(recommendations).not.toContain("Kararsız Sinyal");
+    expect(recommendations).toContain("Mixed signals to inspect");
+    expect(recommendations).toContain(
+      "- Kararsız Sinyal (run_20260624010303_abcd14): repeat signals: strong CTR, avoid signals: weak retention (confidence: medium; missing views, impressions).",
+    );
     expect(recommendations).toContain("No repeat candidate yet.");
     expect(recommendations).toContain("No avoid candidate yet.");
   });
