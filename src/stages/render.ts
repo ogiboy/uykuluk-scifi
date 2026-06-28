@@ -71,7 +71,7 @@ export async function renderDraft(
       voiceoverProductionVoiceCandidate: voiceoverAudio.productionVoiceCandidate,
       voiceoverQuality: voiceoverAudio.quality,
     });
-    if (approval?.approvedRef !== currentApprovalRef) {
+    if (!approval || approval.approvedRef !== currentApprovalRef) {
       throw new SafeExitError("Draft render approval is stale for current render inputs.");
     }
 
@@ -110,7 +110,7 @@ export async function renderDraft(
     const outputBytes = await readFile(output);
     run = await recordRunArtifact(run, "render", draftRenderPath);
     const manifest = draftRenderManifestSchema.parse({
-      schemaVersion: 3,
+      schemaVersion: 4,
       runId: run.runId,
       createdAt: nowIso(),
       renderPlan: {
@@ -123,6 +123,10 @@ export async function renderDraft(
         mode: voiceoverAudio.mode,
         productionVoiceCandidate: voiceoverAudio.productionVoiceCandidate,
         quality: voiceoverAudio.quality,
+      },
+      renderApproval: {
+        approvalId: approval.approvalId,
+        approvedRef: currentApprovalRef,
       },
       timeline,
       composition: {

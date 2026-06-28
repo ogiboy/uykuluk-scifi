@@ -42,8 +42,12 @@ describe("producer render CLI", () => {
 
     expect(result.status).toBe(0);
     expect(JSON.parse(result.stdout) as unknown).toMatchObject({
-      schemaVersion: 3,
+      schemaVersion: 4,
       runId,
+      renderApproval: {
+        approvalId: expect.stringMatching(/^approval_/),
+        approvedRef: expect.stringMatching(/^[a-f0-9]{64}$/),
+      },
       renderPlan: {
         path: "production/render_plan.json",
         digest: expect.stringMatching(/^[a-f0-9]{64}$/),

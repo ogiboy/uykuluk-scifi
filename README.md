@@ -212,12 +212,12 @@ agent-tracking state only; runtime code must not require it.
   audio before suggesting render approval for a local timing draft.
 - Draft render runs only after explicit render approval for the exact current render-plan digest,
   voiceover digest, and voiceover mode/quality/candidate classification. The manifest records those
-  input classifications, the intro-to-outro timeline, composed overlay roles, intro/outro
-  source-frame counts when available, placements used by FFmpeg, and `ffprobe`-validated media
-  duration, video resolution, and audio stream evidence; `production/render/draft_review.md` labels
-  deterministic audio renders as local timing drafts and gives the operator the final local review
-  checklist and blocked-action boundary. Render output is local review media, not upload or publish
-  authority.
+  input classifications, the exact render approval ID/reference that authorized the draft, the
+  intro-to-outro timeline, composed overlay roles, intro/outro source-frame counts when available,
+  placements used by FFmpeg, and `ffprobe`-validated media duration, video resolution, and audio
+  stream evidence; `production/render/draft_review.md` labels deterministic audio renders as local
+  timing drafts and gives the operator the final local review checklist and blocked-action boundary.
+  Render output is local review media, not upload or publish authority.
 - Upload and publish remain intentionally blocked scaffolds.
 - Upload and public/scheduled publish require future explicit config and separate approval gates.
 - Studio must call typed local service contracts; it must not duplicate workflow state.

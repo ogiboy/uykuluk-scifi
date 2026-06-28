@@ -62,6 +62,10 @@ describe("evidence Markdown media summary", () => {
         voiceoverMode: "deterministic-local",
         voiceoverProductionVoiceCandidate: false,
         voiceoverQuality: "deterministic-local-reference",
+        renderApproval: {
+          approvalId: "approval_render_trace",
+          approvedRef: digest(),
+        },
         mediaProbe: {
           binary: "ffprobe",
           durationSeconds: 3.1,
@@ -72,7 +76,7 @@ describe("evidence Markdown media summary", () => {
     });
 
     expect(markdown).toContain(
-      "Draft render: pass (3s, scene, voiceover deterministic-local timing/reference only, ffprobe 1280x720 audio).",
+      "Draft render: pass (3s, scene, voiceover deterministic-local timing/reference only, approval approval_render_trace, ffprobe 1280x720 audio).",
     );
     expect(markdown).toContain(
       "Voiceover audio: pass (2s, deterministic-local, timing/reference only, 12 source words).",

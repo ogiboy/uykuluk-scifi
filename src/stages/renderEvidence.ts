@@ -28,6 +28,10 @@ const renderCompositionOverlaySchema = z.strictObject({
 });
 const voiceoverModeSchema = z.enum(["deterministic-local", "local-piper"]);
 const voiceoverQualitySchema = z.enum(["deterministic-local-reference", "local-piper"]);
+const renderApprovalSchema = z.strictObject({
+  approvalId: z.string().min(1),
+  approvedRef: digestSchema,
+});
 const renderTimelineItemSchema = z
   .strictObject({
     segment: z.enum(["intro", "scene", "outro"]).optional(),
@@ -44,7 +48,7 @@ const renderTimelineItemSchema = z
   );
 
 export const draftRenderManifestSchema = z.strictObject({
-  schemaVersion: z.literal(3),
+  schemaVersion: z.literal(4),
   runId: z.string().min(1),
   createdAt: z.iso.datetime(),
   renderPlan: z.strictObject({
@@ -58,6 +62,7 @@ export const draftRenderManifestSchema = z.strictObject({
     productionVoiceCandidate: z.boolean(),
     quality: voiceoverQualitySchema,
   }),
+  renderApproval: renderApprovalSchema,
   timeline: z.array(renderTimelineItemSchema).min(1),
   composition: z.strictObject({
     overlays: z.array(renderCompositionOverlaySchema),
@@ -95,6 +100,7 @@ export type DraftRenderEvidence =
       voiceoverMode: z.infer<typeof voiceoverModeSchema>;
       voiceoverProductionVoiceCandidate: boolean;
       voiceoverQuality: z.infer<typeof voiceoverQualitySchema>;
+      renderApproval: z.infer<typeof renderApprovalSchema>;
       mediaProbe: RenderMediaProbe;
     }
   | { status: "block"; path: string; message: string };
@@ -145,6 +151,14 @@ export async function readDraftRenderEvidence(run: RunRecord): Promise<DraftRend
     ) {
       throw new SafeExitError("Draft render was generated from stale or missing voiceover audio.");
     }
+    const approval = run.approvals.find((item) => item.target === "render");
+    if (
+      !approval ||
+      approval.approvalId !== manifest.renderApproval.approvalId ||
+      approval.approvedRef !== manifest.renderApproval.approvedRef
+    ) {
+      throw new SafeExitError("Draft render approval record changed after render.");
+    }
     return {
       status: "pass",
       path: draftRenderPath,
@@ -160,6 +174,7 @@ export async function readDraftRenderEvidence(run: RunRecord): Promise<DraftRend
       voiceoverMode: manifest.voiceoverAudio.mode,
       voiceoverProductionVoiceCandidate: manifest.voiceoverAudio.productionVoiceCandidate,
       voiceoverQuality: manifest.voiceoverAudio.quality,
+      renderApproval: manifest.renderApproval,
       mediaProbe: manifest.mediaProbe,
     };
   } catch (error) {
