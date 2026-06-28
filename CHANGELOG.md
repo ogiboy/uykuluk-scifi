@@ -9,6 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
+_No unreleased changes yet._
+
+## v0.47.0 (2026-06-28)
+
 ### Features
 
 - add local model candidate operator guidance and next commands
