@@ -82,11 +82,28 @@ export function localModelEvalMarkdownPath(): string {
 export async function runLocalModelEval(
   options: LocalModelEvalOptions = {},
 ): Promise<LocalModelEvalReport> {
-  const startedAt = Date.now();
   const { appliedOverrides, config } = applyLocalModelEvalOverrides(
     await loadConfig(),
     options.llmOverrides,
   );
+  const report = await runLocalModelEvalWithConfig(config, appliedOverrides);
+  await writeJsonFile(localModelEvalJsonPath(), report);
+  await writeTextFile(localModelEvalMarkdownPath(), renderLocalModelEvalMarkdown(report));
+  return report;
+}
+
+/**
+ * Evaluates a concrete local model configuration without writing report artifacts.
+ *
+ * @param config - The exact provider configuration to evaluate.
+ * @param appliedOverrides - Stable override keys that explain how this config was derived.
+ * @returns The local model evaluation report.
+ */
+export async function runLocalModelEvalWithConfig(
+  config: ProducerConfig,
+  appliedOverrides: string[],
+): Promise<LocalModelEvalReport> {
+  const startedAt = Date.now();
   const provider = createLlmProvider(config);
   const checks = [
     await evaluateIdeas(provider, config),
@@ -102,8 +119,6 @@ export async function runLocalModelEval(
     passed: checks.every((check) => check.status === "pass"),
     checks,
   };
-  await writeJsonFile(localModelEvalJsonPath(), report);
-  await writeTextFile(localModelEvalMarkdownPath(), renderLocalModelEvalMarkdown(report));
   return report;
 }
 

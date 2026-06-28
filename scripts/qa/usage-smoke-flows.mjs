@@ -77,6 +77,24 @@ export async function runLocalModelEvalSmoke({ run, pnpm, workdir, assertFile, a
     markdown.includes("Raw provider output is intentionally not persisted."),
     "local model eval Markdown documents raw-output boundary",
   );
+
+  const candidateEvalResult = await run([
+    pnpm,
+    "producer",
+    "eval",
+    "local-model-candidates",
+    "--json",
+    "--candidate",
+    "mock-deterministic",
+  ]);
+  const candidateReport = JSON.parse(candidateEvalResult.stdout);
+  assert(candidateReport.passed === true, "local model candidate eval JSON passed=true");
+  assert(
+    candidateReport.candidates.length === 1,
+    "local model candidate eval records one candidate",
+  );
+  await assertFile("diagnostics/local_model_candidates_eval.json");
+  await assertFile("diagnostics/local_model_candidates_eval.md");
 }
 
 /**

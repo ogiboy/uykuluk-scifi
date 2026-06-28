@@ -92,8 +92,10 @@
   writes ignored `diagnostics/local_model_eval.json` and Markdown reports with hashes,
   token/duration metadata, applied one-run CLI override names, and no raw provider output. Eval-only
   overrides can compare local Ollama/`llama.cpp` candidates without mutating `producer.config.json`.
-  A 2026-06-28 qwen3:8b run stayed fail-closed on non-slot-specific idea `fit` explanations while
-  its script-section sample parsed.
+  `producer eval local-model-candidates` runs the same checks for repeated `--candidate` model names
+  and writes ignored `diagnostics/local_model_candidates_eval.json` and Markdown reports. A
+  2026-06-28 qwen3:8b run stayed fail-closed on non-slot-specific idea `fit` explanations while its
+  script-section sample parsed.
 - Script generation uses bounded hook/context/development/outro provider calls, writes
   `script.sections.json` draft and expansion-chunk receipts, and assembles `script.md` only after
   all sections pass blocking quality checks.

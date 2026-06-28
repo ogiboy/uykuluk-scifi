@@ -307,6 +307,8 @@ Local model evaluation:
 pnpm producer eval local-model
 pnpm producer eval local-model --json
 pnpm producer eval local-model --llm-mode llama.cpp --model <served-model.gguf>
+pnpm producer eval local-model-candidates --llm-mode llama.cpp \
+  --candidate <served-model-a.gguf> --candidate <served-model-b.gguf>
 ```
 
 By default this uses the configured local provider and model, so keep `mock` for cheap
@@ -314,7 +316,9 @@ parser-contract checks. One-run overrides such as `--llm-mode`, `--model`, `--ol
 `--llama-cpp-base-url`, `--thinking-mode`, and `--request-timeout-ms` let operators compare local
 Ollama/`llama.cpp` candidates without mutating `producer.config.json`. The report writes ignored
 `diagnostics/local_model_eval.json` and `.md` with hashes, token/duration metadata, applied override
-names, and parser results. Raw provider text is intentionally not persisted.
+names, and parser results. Use `local-model-candidates` with repeated `--candidate` values for a
+single comparison report at `diagnostics/local_model_candidates_eval.*`. Raw provider text is
+intentionally not persisted.
 
 Manual analytics feedback:
 
@@ -594,7 +598,9 @@ LLM provider or the one-run CLI override, validates small idea/script samples th
 parsers, and writes ignored diagnostic reports without raw model output. A 2026-06-28 local qwen3:8b
 run remained fail-closed at the idea-contract check because `fit` explanations were not
 slot-specific, while the script-section contract parsed; this keeps Qwen as regression evidence
-rather than the recommended production default.
+rather than the recommended production default. `producer eval local-model-candidates` runs the same
+checks for repeated `--candidate` model names and produces a local comparison report so operators
+can compare served Ollama or `llama.cpp` candidates without editing config between attempts.
 
 Run `pnpm producer doctor` before starting production work. Mock mode passes without network access.
 Ollama mode checks `/api/tags`; `llama.cpp` mode checks `/v1/models`. Both use bounded timeouts and

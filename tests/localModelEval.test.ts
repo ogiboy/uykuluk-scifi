@@ -2,6 +2,15 @@ import { readFile, writeFile } from "node:fs/promises";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { defaultConfig } from "../src/config/config";
 import {
+  localModelCandidateEvalJsonPath,
+  localModelCandidateEvalMarkdownPath,
+  runLocalModelCandidateEval,
+} from "../src/diagnostics/localModelCandidateEval";
+import {
+  formatLocalModelCandidateEvalConsole,
+  renderLocalModelCandidateEvalMarkdown,
+} from "../src/diagnostics/localModelCandidateEvalFormatting";
+import {
   formatLocalModelEvalConsole,
   renderLocalModelEvalMarkdown,
 } from "../src/diagnostics/localModelEvalFormatting";
@@ -162,6 +171,42 @@ describe("local model evaluation", () => {
     });
     await expect(readFile("producer.config.json", "utf8")).resolves.toBe(beforeConfig);
     expect(renderLocalModelEvalMarkdown(report)).toContain("Overrides: mode, model");
+  });
+
+  it("compares candidate models without mutating project config or storing raw output", async () => {
+    await useOllamaConfig();
+    const beforeConfig = await readFile("producer.config.json", "utf8");
+
+    const report = await runLocalModelCandidateEval({
+      candidates: ["mock-deterministic", "mock-invalid-script-json", "mock-deterministic"],
+      llmOverrides: { mode: "mock" },
+    });
+
+    expect(report).toMatchObject({
+      baseOverrides: ["mode"],
+      configSource: "cli-overrides",
+      passed: false,
+      providerMode: "mock",
+      candidates: [
+        expect.objectContaining({
+          configuredModel: "mock-deterministic",
+          passed: true,
+        }),
+        expect.objectContaining({
+          configuredModel: "mock-invalid-script-json",
+          passed: false,
+        }),
+      ],
+    });
+    expect(report.candidates).toHaveLength(2);
+    expect(await pathExists(localModelCandidateEvalJsonPath())).toBe(true);
+    expect(await pathExists(localModelCandidateEvalMarkdownPath())).toBe(true);
+    expect(JSON.stringify(report)).not.toContain("Mock provider returned non-JSON");
+    await expect(readFile("producer.config.json", "utf8")).resolves.toBe(beforeConfig);
+    expect(formatLocalModelCandidateEvalConsole(report)).toContain(
+      "[block] mock-invalid-script-json",
+    );
+    expect(renderLocalModelCandidateEvalMarkdown(report)).toContain("mock-invalid-script-json");
   });
 });
 

@@ -33,6 +33,35 @@ describe("producer local-model eval CLI", () => {
     });
     await expect(readFile("producer.config.json", "utf8")).resolves.toBe(beforeConfig);
   });
+
+  it("prints candidate comparison JSON without mutating project config", async () => {
+    const beforeConfig = await readFile("producer.config.json", "utf8");
+
+    const result = runCli([
+      "eval",
+      "local-model-candidates",
+      "--llm-mode",
+      "mock",
+      "--candidate",
+      "mock-deterministic",
+      "--candidate",
+      "mock-invalid-script-json",
+      "--json",
+    ]);
+
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain("Local model candidate eval blocked.");
+    expect(JSON.parse(result.stdout) as unknown).toMatchObject({
+      baseOverrides: ["mode"],
+      candidates: [
+        expect.objectContaining({ configuredModel: "mock-deterministic", passed: true }),
+        expect.objectContaining({ configuredModel: "mock-invalid-script-json", passed: false }),
+      ],
+      passed: false,
+      providerMode: "mock",
+    });
+    await expect(readFile("producer.config.json", "utf8")).resolves.toBe(beforeConfig);
+  });
 });
 
 function runCli(args: string[]): { status: number | null; stderr: string; stdout: string } {
