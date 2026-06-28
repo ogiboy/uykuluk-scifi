@@ -9,6 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
+_No unreleased changes yet._
+
+## v0.33.0 (2026-06-28)
+
 ### Features
 
 - add revision command JSON output for automation-friendly operator edit evidence
