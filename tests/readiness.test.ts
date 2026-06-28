@@ -136,7 +136,8 @@ describe("readiness and disabled public actions", () => {
     await generateVoiceoverAudio(runId);
     const approvalOutput = formatReadinessConsole(runId, await runReadiness(runId));
 
-    expect(approvalOutput).toContain(`Next action: pnpm producer approve render --run ${runId}`);
+    expect(approvalOutput).toContain("approve render only for a local timing draft");
+    expect(approvalOutput).toContain(`pnpm producer approve render --run ${runId}`);
 
     await approveRender(runId);
     const renderOutput = formatReadinessConsole(runId, await runReadiness(runId));

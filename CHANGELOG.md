@@ -9,7 +9,9 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Fixes
+
+- keep readiness render-approval guidance explicit for timing/reference voiceover audio
 
 ## v0.34.5 (2026-06-28)
 
