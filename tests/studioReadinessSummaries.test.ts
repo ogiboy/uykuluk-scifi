@@ -1,5 +1,6 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
+import { readStudioReadinessSnapshot } from "../apps/studio/src/lib/readinessSummaries";
 import { getStudioRunDetail, listStudioRuns } from "../apps/studio/src/lib/runSummaries";
 import { artifactPath } from "../src/core/artifacts";
 import { createRun } from "../src/core/runStore";
@@ -72,6 +73,25 @@ describe("Studio readiness summary validity", () => {
       readinessNextAction: `pnpm producer readiness --run ${run.runId}`,
       readinessPassed: null,
       readinessStatus: "invalid",
+    });
+  });
+
+  it("does not read readiness files through an invalid run id path", async () => {
+    await mkdir("outside/diagnostics", { recursive: true });
+    await writeFile(
+      "outside/diagnostics/readiness.json",
+      JSON.stringify({
+        checks: [],
+        currentState: "NEW",
+        passed: true,
+        runId: "../outside",
+      }),
+      "utf8",
+    );
+
+    await expect(readStudioReadinessSnapshot(process.cwd(), "../outside")).resolves.toEqual({
+      malformed: true,
+      snapshot: null,
     });
   });
 
