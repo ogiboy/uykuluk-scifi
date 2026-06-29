@@ -17,6 +17,7 @@ future generated release notes can be inserted predictably.
   rejection
 - extend product UAT smoke coverage to Studio read-only run, media, analytics, and disabled
   mutation-service visibility
+- add `producer desk`, an Ink-based local operator workbench with scriptable plain output
 
 ## v0.48.0 (2026-06-29)
 

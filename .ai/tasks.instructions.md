@@ -48,6 +48,9 @@
   label production media rows as artifact-record fallback rather than review proof, and the shared
   production-media `Review:` guidance should stay consistent across CLI status, evidence Markdown,
   and Studio.
+- Keep `producer desk` as an Ink-based operator surface over CLI/core status contracts. It may make
+  review and next-action navigation easier, but it must not become a second workflow engine or
+  bypass approval/cost/evidence gates.
 - Keep all run-root filesystem access behind canonical bounded run-ID validation.
 - Keep run artifact reads, writes, and persisted lists behind canonical relative-path validation.
 - Keep state, ledger, cost, reservation, lock, and artifact access behind canonical

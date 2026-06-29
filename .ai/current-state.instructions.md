@@ -199,6 +199,9 @@
   Missing, malformed, or stale readiness diagnostics point back to
   `producer readiness --run <run_id>`. `--json` preserves raw persisted state output;
   `--summary-json` prints the enriched operator status snapshot.
+- `producer desk` provides an Ink-based local terminal workbench over the same
+  status/readiness/media contracts, with `--plain` for scriptable or non-TTY output. It is an
+  operator surface only and does not own workflow transitions or mutate run state.
 - Readiness diagnostics that strictly parse and revalidate persisted cost quotes, live hard budgets,
   complete production-package integrity, and exact paid-generation cost approval when required.
 - Final readiness diagnostics agree with the post-transition run state.
@@ -338,6 +341,9 @@ pnpm producer readiness --run <run_id> [--json]
 pnpm producer status --run <run_id>
 pnpm producer status --run <run_id> --json
 pnpm producer status --latest
+pnpm producer desk
+pnpm producer desk --run <run_id>
+pnpm producer desk --plain
 pnpm producer list-runs
 pnpm producer list-runs --json
 pnpm producer voice --run <run_id> [--json]

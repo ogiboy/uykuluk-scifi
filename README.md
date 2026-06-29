@@ -179,6 +179,9 @@ agent-tracking state only; runtime code must not require it.
   rows as artifact-record fallback until evidence is regenerated, while missing, malformed, or stale
   readiness diagnostics point back to `producer readiness --run <run_id>`; use `--json` for the raw
   persisted state.
+- `producer desk` opens a local Ink terminal workbench over the same run/status contracts. It is an
+  operator review surface, not a second workflow engine; use `--plain` for scriptable output or
+  non-TTY shells.
 - Script edits use an attributable revision command with before/after snapshots; reviewed or
   approved scripts return to `SCRIPT_GENERATED` and require review/approval again.
 - Production packaging requires explicit script approval for the unchanged reviewed content.
@@ -299,6 +302,9 @@ pnpm producer status --run <run_id>
 pnpm producer status --run <run_id> --json
 pnpm producer status --run <run_id> --summary-json
 pnpm producer status --latest
+pnpm producer desk
+pnpm producer desk --run <run_id>
+pnpm producer desk --plain
 pnpm producer list-runs
 pnpm producer list-runs --json
 ```
