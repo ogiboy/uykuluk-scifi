@@ -13,6 +13,10 @@ future generated release notes can be inserted predictably.
 
 - add `producer review voice` to show the local voiceover review handoff before render approval
 
+### Fixes
+
+- route post-voiceover next actions through `producer review voice` before render approval
+
 ### Tests
 
 - cover the voiceover review handoff in targeted tests and product UAT

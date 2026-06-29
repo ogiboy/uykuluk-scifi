@@ -54,7 +54,7 @@ describe("evidence next command", () => {
     ).not.toContain("approve script");
   });
 
-  it("keeps reference voiceover audio explicit before render approval", () => {
+  it("routes reference voiceover audio through read-only review before render approval", () => {
     expect(
       evidenceNextCommand({
         costQuote: null,
@@ -66,9 +66,22 @@ describe("evidence next command", () => {
           status: "pass",
         },
       }),
-    ).toBe(
-      "Review deterministic reference audio; approve render only for a local timing draft with pnpm producer approve render --run <run_id>",
-    );
+    ).toBe("pnpm producer review voice --run <run_id>");
+  });
+
+  it("routes production voice candidates through read-only review before render approval", () => {
+    expect(
+      evidenceNextCommand({
+        costQuote: null,
+        hasUnresolvedCostReservation: false,
+        state: "READY_FOR_MANUAL_PRODUCTION",
+        ttsEnabled: true,
+        voiceoverAudio: {
+          productionVoiceCandidate: true,
+          status: "pass",
+        },
+      }),
+    ).toBe("pnpm producer review voice --run <run_id>");
   });
 
   it("recommends TTS configuration when voiceover evidence is blocked and TTS is disabled", () => {
@@ -110,9 +123,7 @@ describe("evidence next command", () => {
           status: "pass",
         },
       }),
-    ).toBe(
-      "Regenerate voiceover evidence or review deterministic reference audio before render approval.",
-    );
+    ).toBe("Regenerate voiceover evidence before render approval.");
   });
 
   it("keeps blocked rendered evidence tied to the evidence refresh command", () => {

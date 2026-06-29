@@ -20,6 +20,7 @@ export async function voiceoverReadinessCheck(run: RunRecord): Promise<Readiness
       name: "voiceover audio available",
       status: evidence.productionVoiceCandidate ? "pass" : "warn",
       message: `${evidence.path} exists with ${Math.round(evidence.durationSeconds)}s ${evidence.mode} audio.${referenceOnly}`,
+      nextAction: `pnpm producer review voice --run ${run.runId}`,
     };
   }
   if (evidence.status === "missing") {

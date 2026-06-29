@@ -111,11 +111,11 @@ describe("evidence Markdown media summary", () => {
   it("materializes the run id in the operator-facing next command", () => {
     const markdown = renderEvidenceMarkdown({
       ...baseBundle(),
-      nextRecommendedCommand: "pnpm producer approve render --run <run_id>",
+      nextRecommendedCommand: "pnpm producer review voice --run <run_id>",
     });
 
-    expect(markdown).toContain("pnpm producer approve render --run run_media_summary");
-    expect(markdown).not.toContain("approve render --run <run_id>");
+    expect(markdown).toContain("pnpm producer review voice --run run_media_summary");
+    expect(markdown).not.toContain("review voice --run <run_id>");
   });
 });
 

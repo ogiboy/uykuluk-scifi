@@ -56,6 +56,7 @@ doctor
   -> render-plan
   -> estimate / evidence / readiness
   -> optional local voiceover
+  -> review voice
   -> approve render
   -> local FFmpeg draft render
   -> future private upload review
