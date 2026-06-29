@@ -9,7 +9,14 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Features
+
+- add product UAT smoke coverage for happy-path, malicious, stale, tampered, and publish-blocked
+  local workflows
+- extend product UAT smoke coverage to manual analytics import, report refresh, and malformed import
+  rejection
+- extend product UAT smoke coverage to Studio read-only run, media, analytics, and disabled
+  mutation-service visibility
 
 ## v0.48.0 (2026-06-29)
 
@@ -21,10 +28,6 @@ _No unreleased changes yet._
 - surface draft render review commands in status, evidence, and Studio media summaries
 - record final-artifact FFmpeg review commands in draft render evidence
 - use the read-only draft render review command as the rendered-run next action
-- add product UAT smoke coverage for happy-path, malicious, stale, tampered, and publish-blocked
-  local workflows
-- extend product UAT smoke coverage to manual analytics import, report refresh, and malformed import
-  rejection
 
 ### Fixes
 

@@ -1,16 +1,22 @@
-import { appendFile, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rm } from "node:fs/promises";
 import path from "node:path";
 import {
   assertProductCondition,
   assertProductFile,
   createFakeMediaTools,
   enableDeterministicTts,
-  extractRunId,
   prepareWorkspace,
-  productFileExists,
   runProductCommand,
   writeProductUatReports,
 } from "./product-uat-helpers.mjs";
+import {
+  assertRenderedArtifacts,
+  assertStaleEvidenceRecovery,
+  assertTamperedRenderReviewCommandBlocks,
+  createIdeaOnlyRun,
+  createVoiceReadyRun,
+  runManualAnalyticsSmoke,
+} from "./product-uat-scenarios.mjs";
 
 const repoRoot = process.cwd();
 const pnpm = process.env.PNPM_EXECUTABLE ?? "pnpm";
@@ -37,7 +43,7 @@ try {
     scenario: "malicious input",
   });
 
-  const blockedRunId = await createIdeaOnlyRun("blocked-order");
+  const blockedRunId = await createIdeaOnlyRun({ pnpm, run, scenario: "blocked-order" });
   run([pnpm, "producer", "script", "--run", blockedRunId], {
     expectFailure: true,
     expectOutput: "requires state IDEA_APPROVED",
@@ -51,7 +57,12 @@ try {
     scenario: "incorrect order",
   });
 
-  const renderedRunId = await createVoiceReadyRun("happy-path");
+  const renderedRunId = await createVoiceReadyRun({
+    pnpm,
+    run,
+    scenario: "happy-path",
+    workdir,
+  });
   run([pnpm, "producer", "approve", "render", "--run", renderedRunId], {
     expectOutput: "Render approval recorded",
     label: "render approval binds current media inputs",
@@ -74,6 +85,15 @@ try {
     label: "status reaches rendered state",
     scenario: "happy path",
   });
+  run([pnpm, "producer", "evidence", "--run", renderedRunId], {
+    label: "rendered evidence is current",
+    scenario: "happy path",
+  });
+  run([pnpm, "producer", "readiness", "--run", renderedRunId], {
+    expectOutput: "Readiness passed",
+    label: "rendered readiness is current",
+    scenario: "happy path",
+  });
   run([pnpm, "producer", "upload", "private", "--run", renderedRunId], {
     expectFailure: true,
     expectOutput: "requires explicit upload approval",
@@ -86,22 +106,39 @@ try {
     label: "scheduled publish stays blocked",
     scenario: "publish safety",
   });
-  await assertRenderedArtifacts(renderedRunId);
-  await runManualAnalyticsSmoke(renderedRunId);
-  await assertStaleEvidenceRecovery(renderedRunId);
-  await assertTamperedRenderReviewCommandBlocks(renderedRunId);
+  await assertRenderedArtifacts({ assertFile, runId: renderedRunId });
+  await runManualAnalyticsSmoke({
+    assertCondition,
+    assertFile,
+    pnpm,
+    run,
+    runId: renderedRunId,
+    workdir,
+  });
+  run([pnpm, "exec", "tsx", "scripts/qa/product-uat-studio-readonly.ts", renderedRunId], {
+    env: { UYKULUK_SCIFI_ROOT: workdir },
+    expectOutput: "Studio read-only UAT passed.",
+    label: "studio read-only services expose reviewable run",
+    scenario: "studio read-only",
+  });
+  await assertStaleEvidenceRecovery({ pnpm, run, runId: renderedRunId, workdir });
+  await assertTamperedRenderReviewCommandBlocks({ pnpm, run, runId: renderedRunId, workdir });
 
-  const tamperedRunId = await createVoiceReadyRun("tampered-render-input");
+  const tamperedRunId = await createVoiceReadyRun({
+    pnpm,
+    run,
+    scenario: "tampered-render-input",
+    workdir,
+  });
   run([pnpm, "producer", "approve", "render", "--run", tamperedRunId], {
     expectOutput: "Render approval recorded",
     label: "render approval recorded before input tamper",
     scenario: "tamper",
   });
-  await appendFile(
-    path.join(workdir, "runs", tamperedRunId, "production", "audio", "voiceover.wav"),
-    "tampered",
-    "utf8",
-  );
+  await appendToProductFile({
+    content: "tampered",
+    relativePath: path.join("runs", tamperedRunId, "production", "audio", "voiceover.wav"),
+  });
   run([pnpm, "producer", "render", "--run", tamperedRunId], {
     env: { PATH: `${mediaTools.binDir}${path.delimiter}${process.env.PATH ?? ""}` },
     expectFailure: true,
@@ -123,189 +160,6 @@ try {
   process.exitCode = 1;
 } finally {
   await rm(scratchRoot, { force: true, recursive: true });
-}
-
-/**
- * Creates a run with generated ideas but no approval.
- *
- * @param {string} scenario - Scenario label for the report.
- * @returns {Promise<string>} The created run id.
- */
-async function createIdeaOnlyRun(scenario) {
-  const ideas = run([pnpm, "producer", "ideas"], {
-    label: "generate ideas",
-    scenario,
-  });
-  return extractRunId(ideas.stdout);
-}
-
-/**
- * Drives the CLI to a local voiceover-ready run.
- *
- * @param {string} scenario - Scenario label for the report.
- * @returns {Promise<string>} The created run id.
- */
-async function createVoiceReadyRun(scenario) {
-  const runId = await createIdeaOnlyRun(scenario);
-  const ideas = JSON.parse(await readFile(path.join(workdir, "runs", runId, "ideas.json"), "utf8"));
-  const ideaId = ideas.ideas[0].id;
-  run([pnpm, "producer", "approve", "idea", "--run", runId, "--idea", ideaId], {
-    label: "approve idea",
-    scenario,
-  });
-  run([pnpm, "producer", "script", "--run", runId], { label: "generate script", scenario });
-  run([pnpm, "producer", "review", "script", "--run", runId], {
-    label: "review script",
-    scenario,
-  });
-  run([pnpm, "producer", "approve", "script", "--run", runId, "--acknowledge-warnings"], {
-    label: "approve script with warning acknowledgement",
-    scenario,
-  });
-  run([pnpm, "producer", "package", "--run", runId], { label: "generate package", scenario });
-  run([pnpm, "producer", "render-plan", "--run", runId], {
-    label: "generate render plan",
-    scenario,
-  });
-  run([pnpm, "producer", "estimate", "--run", runId], { label: "estimate cost", scenario });
-  run([pnpm, "producer", "evidence", "--run", runId], { label: "generate evidence", scenario });
-  run([pnpm, "producer", "readiness", "--run", runId], {
-    expectOutput: "Readiness passed",
-    label: "readiness passes",
-    scenario,
-  });
-  run([pnpm, "producer", "voice", "--run", runId], {
-    expectOutput: "Voiceover generated",
-    label: "generate deterministic voiceover",
-    scenario,
-  });
-  return runId;
-}
-
-/**
- * Verifies manual analytics import, report refresh, and malformed-input safety.
- *
- * @param {string} runId - Run id to link one imported performance row.
- */
-async function runManualAnalyticsSmoke(runId) {
-  await writeFile(
-    path.join(workdir, "bad-performance.json"),
-    JSON.stringify([{ title: "missing video id" }]),
-    "utf8",
-  );
-  run([pnpm, "producer", "analytics", "import", "--file", "bad-performance.json"], {
-    expectFailure: true,
-    label: "malformed analytics import is rejected",
-    scenario: "analytics feedback",
-  });
-  assertCondition(
-    !productFileExists({ relativePath: "analytics/performance.json", workdir }),
-    "malformed analytics import writes no dataset",
-    "analytics feedback",
-  );
-
-  await writeFile(
-    path.join(workdir, "performance.csv"),
-    [
-      "run_id,video_id,title,published_at,impressions,views,ctr,avg_view_duration_seconds,avg_percentage_viewed,subscribers_gained,likes,comments,notes",
-      `${runId},yt_rendered,"Rendered Draft Review",2026-06-29T12:00:00.000Z,10000,1250,7.4%,181,42%,12,90,8,"Strong retention candidate"`,
-      ',yt_unmapped,"Unmapped Topic",2026-06-29T13:00:00.000Z,3000,90,1.8%,35,12%,0,4,1,"Needs run link"',
-    ].join("\n"),
-    "utf8",
-  );
-  run([pnpm, "producer", "analytics", "import", "--file", "performance.csv"], {
-    expectOutput: "Analytics imported. Records: 2",
-    label: "analytics CSV import writes local artifacts",
-    scenario: "analytics feedback",
-  });
-  await assertFile("analytics/performance.json", "analytics dataset exists");
-  await assertFile("analytics/performance_report.md", "analytics report exists");
-  await assertFile("analytics/run_link_template.csv", "analytics run-link template exists");
-  run([pnpm, "producer", "analytics", "report"], {
-    expectOutput: "No causal claims are made from this import.",
-    label: "analytics report prints non-causal guidance",
-    scenario: "analytics feedback",
-  });
-
-  const reportPath = path.join(workdir, "analytics", "performance_report.md");
-  await writeFile(reportPath, "# stale report\n", "utf8");
-  run([pnpm, "producer", "analytics", "report"], {
-    expectOutput: "Manual Analytics Report",
-    label: "analytics report refreshes stale markdown",
-    scenario: "analytics feedback",
-  });
-  const refreshedReport = await readFile(reportPath, "utf8");
-  assertCondition(
-    refreshedReport.includes("Manual Analytics Report") &&
-      !refreshedReport.includes("# stale report"),
-    "analytics report artifact is regenerated",
-    "analytics feedback",
-  );
-}
-
-/**
- * Verifies that stale evidence is visible and recoverable by regeneration.
- *
- * @param {string} runId - Rendered run id.
- */
-async function assertStaleEvidenceRecovery(runId) {
-  const target = path.join(workdir, "runs", runId, "evidence_bundle.json");
-  const evidence = JSON.parse(await readFile(target, "utf8"));
-  evidence.currentState = "NEW";
-  await writeFile(target, `${JSON.stringify(evidence, null, 2)}\n`, "utf8");
-  run([pnpm, "producer", "status", "--run", runId], {
-    expectOutput: "Evidence: stale",
-    label: "status marks stale evidence",
-    scenario: "stale evidence",
-  });
-  run([pnpm, "producer", "evidence", "--run", runId], {
-    label: "regenerate evidence",
-    scenario: "stale evidence",
-  });
-  run([pnpm, "producer", "status", "--run", runId], {
-    expectOutput: "Evidence: available",
-    label: "status accepts regenerated evidence",
-    scenario: "stale evidence",
-  });
-}
-
-/**
- * Verifies that tampered render review commands are not trusted.
- *
- * @param {string} runId - Rendered run id.
- */
-async function assertTamperedRenderReviewCommandBlocks(runId) {
-  const target = path.join(workdir, "runs", runId, "production", "render", "render_manifest.json");
-  const manifest = JSON.parse(await readFile(target, "utf8"));
-  manifest.ffmpeg.reviewCommand = "echo tampered";
-  await writeFile(target, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
-  run([pnpm, "producer", "review", "render", "--run", runId], {
-    expectFailure: true,
-    expectOutput: "Draft render review is blocked",
-    label: "tampered render review command is rejected",
-    scenario: "tamper",
-  });
-}
-
-/**
- * Verifies the expected rendered artifacts exist.
- *
- * @param {string} runId - Rendered run id.
- */
-async function assertRenderedArtifacts(runId) {
-  for (const artifact of [
-    "production/render_plan.json",
-    "production/storyboard_contact_sheet.md",
-    "production/asset_provenance.json",
-    "production/audio/voiceover.wav",
-    "production/audio/voiceover.meta.json",
-    "production/audio/voiceover_review.md",
-    "production/render/draft.mp4",
-    "production/render/render_manifest.json",
-    "production/render/draft_review.md",
-  ]) {
-    await assertFile(path.join("runs", runId, artifact), `rendered artifact exists: ${artifact}`);
-  }
 }
 
 /**
@@ -343,6 +197,18 @@ async function assertFile(relativePath, label) {
  */
 function assertCondition(condition, label, scenario) {
   assertProductCondition({ condition, label, scenario, steps });
+}
+
+/**
+ * Appends text to a file under the isolated workdir.
+ *
+ * @param {Object} input - Append input.
+ * @param {string} input.content - Text to append.
+ * @param {string} input.relativePath - File path relative to the isolated workdir.
+ */
+async function appendToProductFile({ content, relativePath }) {
+  const { appendFile } = await import("node:fs/promises");
+  await appendFile(path.join(workdir, relativePath), content, "utf8");
 }
 
 /**
