@@ -9,6 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
+_No unreleased changes yet._
+
+## v0.50.0 (2026-06-29)
+
 ### Features
 
 - add `producer review render-plan` for validated contact-sheet and asset-provenance handoff
