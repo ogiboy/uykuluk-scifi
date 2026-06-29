@@ -309,6 +309,7 @@ exact quote approval, or refreshed evidence bundle.
 Inspection:
 
 ```bash
+pnpm producer                 # open the local operator desk
 pnpm producer status --run <run_id>
 pnpm producer status --run <run_id> --json
 pnpm producer status --run <run_id> --summary-json

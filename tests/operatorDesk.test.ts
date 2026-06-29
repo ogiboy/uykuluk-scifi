@@ -62,6 +62,18 @@ describe("operator desk", () => {
     expect(result.stdout).toContain("Next safe action:");
   });
 
+  it("opens the operator desk when the root producer command has no subcommand", () => {
+    const result = spawnSync(
+      path.join(repoRoot, "node_modules", ".bin", "tsx"),
+      [path.join(repoRoot, "src", "cli.ts")],
+      { cwd: process.cwd(), encoding: "utf8" },
+    );
+
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain("UykulukSciFi Operator Desk");
+    expect(result.stdout).toContain("Next safe action:");
+  });
+
   it("falls back to plain output when either terminal stream is non-interactive", () => {
     expect(shouldUsePlainOperatorDeskOutput({}, { stdinIsTTY: false, stdoutIsTTY: true })).toBe(
       true,
