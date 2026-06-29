@@ -33,10 +33,11 @@ export async function runOperatorDesk(options: RunOperatorDeskOptions): Promise<
  */
 export function shouldUsePlainOperatorDeskOutput(
   options: Pick<RunOperatorDeskOptions, "plain">,
-  streams: { stdinIsTTY?: boolean; stdoutIsTTY?: boolean } = {
+  streams?: { stdinIsTTY?: boolean; stdoutIsTTY?: boolean },
+): boolean {
+  const ttyState = streams ?? {
     stdinIsTTY: process.stdin.isTTY,
     stdoutIsTTY: process.stdout.isTTY,
-  },
-): boolean {
-  return options.plain === true || streams.stdoutIsTTY !== true || streams.stdinIsTTY !== true;
+  };
+  return options.plain === true || ttyState.stdoutIsTTY !== true || ttyState.stdinIsTTY !== true;
 }
