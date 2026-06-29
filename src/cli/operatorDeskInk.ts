@@ -100,16 +100,17 @@ function RunList({
     Box,
     { borderStyle: "round", flexDirection: "column", paddingX: 1 },
     React.createElement(Text, { bold: true }, "Recent runs"),
-    ...runs.map((run, index) =>
-      React.createElement(
+    ...runs.map((run, index) => {
+      const selectionMarker = index === selectedIndex ? ">" : " ";
+      return React.createElement(
         Text,
         {
           color: index === selectedIndex ? "green" : undefined,
           key: run.runId,
         },
-        `${index === selectedIndex ? ">" : " "} ${run.runId}  ${run.state}  ${run.readinessStatus}  decision:${run.renderDecisionStatus}`,
-      ),
-    ),
+        `${selectionMarker} ${run.runId}  ${run.state}  ${run.readinessStatus}  decision:${run.renderDecisionStatus}`,
+      );
+    }),
   );
 }
 

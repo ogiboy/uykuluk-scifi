@@ -91,7 +91,13 @@ function mediaReviewCommand(
   evidenceKey: ProductionMediaStatus["evidenceKey"],
   status: ProductionMediaStatus["status"],
 ): string | undefined {
-  if (runId && evidenceKey === "draftRender" && status === "pass") {
+  if (!runId || status !== "pass") {
+    return undefined;
+  }
+  if (evidenceKey === "voiceoverAudio") {
+    return `pnpm producer review voice --run ${runId}`;
+  }
+  if (evidenceKey === "draftRender") {
     return `pnpm producer review render --run ${runId}`;
   }
   return undefined;

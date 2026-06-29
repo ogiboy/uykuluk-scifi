@@ -16,6 +16,7 @@ future generated release notes can be inserted predictably.
 ### Fixes
 
 - route post-voiceover next actions through `producer review voice` before render approval
+- surface the same voiceover review command in Studio production-media rows
 
 ### Tests
 

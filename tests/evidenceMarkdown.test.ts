@@ -87,7 +87,7 @@ describe("evidence Markdown media summary", () => {
       "Voiceover audio: pass (2s, deterministic-local, timing/reference only, 12 source words).",
     );
     expect(markdown).toContain(
-      "Review: Use this audio only for local timing review; regenerate reviewed production voice before final render review.",
+      "Review: Review with pnpm producer review voice --run run_media_summary; use this audio only for local timing review; regenerate reviewed production voice before final render review.",
     );
     expect(markdown).toContain(
       "Review: Review with pnpm producer review render --run run_media_summary; treat this MP4 as a timing draft only; production voice is still required before final review.",
