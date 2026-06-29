@@ -5,6 +5,7 @@ import { appendLedgerEvent } from "../core/ledger.js";
 import { loadRun, saveRun } from "../core/runStore.js";
 import { nowIso } from "../utils/time.js";
 import { bulletList, table } from "../utils/markdown.js";
+import { pathExists } from "../utils/fs.js";
 import { reviewDraftRender } from "./reviewRender.js";
 
 export const renderDecisionValues = [
@@ -67,6 +68,12 @@ export async function recordRenderDecision(
   let run = await loadRun(parsed.runId);
   if (run.state !== "RENDERED") {
     throw new SafeExitError("Render decision requires state RENDERED.");
+  }
+  const decisionPath = artifactPath(run.runId, renderDecisionJsonPath);
+  if (await pathExists(decisionPath)) {
+    throw new SafeExitError(
+      "Render decision already exists for this run. Cannot overwrite existing decision.",
+    );
   }
   const manifest = await reviewDraftRender(run.runId);
   const record: RenderDecisionRecord = {

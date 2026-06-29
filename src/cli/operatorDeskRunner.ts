@@ -17,7 +17,7 @@ export async function runOperatorDesk(options: RunOperatorDeskOptions): Promise<
     latest: options.latest,
     runId: options.run,
   });
-  if (options.plain || process.stdout.isTTY !== true) {
+  if (options.plain || process.stdout.isTTY !== true || process.stdin.isTTY !== true) {
     console.log(formatOperatorDeskPlain(model));
     return;
   }
