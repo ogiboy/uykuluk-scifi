@@ -59,7 +59,7 @@ describe("operator status output", () => {
     expect(output).toContain("Production media:");
     expect(output).toContain("- Render plan: pass");
     expect(output).toContain(
-      "  Review: Review scene-to-asset mapping and the contact sheet before voiceover or render approval.",
+      `  Review: Review with pnpm producer review render-plan --run ${run.runId}; confirm scene-to-asset mapping and the contact sheet before voiceover or render approval.`,
     );
     expect(output).toContain("- Voiceover audio: missing");
     expect(output).toContain(
