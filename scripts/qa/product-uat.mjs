@@ -1,11 +1,13 @@
 import { appendFile, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import {
+  assertProductCondition,
   assertProductFile,
   createFakeMediaTools,
   enableDeterministicTts,
   extractRunId,
   prepareWorkspace,
+  productFileExists,
   runProductCommand,
   writeProductUatReports,
 } from "./product-uat-helpers.mjs";
@@ -85,6 +87,7 @@ try {
     scenario: "publish safety",
   });
   await assertRenderedArtifacts(renderedRunId);
+  await runManualAnalyticsSmoke(renderedRunId);
   await assertStaleEvidenceRecovery(renderedRunId);
   await assertTamperedRenderReviewCommandBlocks(renderedRunId);
 
@@ -180,6 +183,67 @@ async function createVoiceReadyRun(scenario) {
 }
 
 /**
+ * Verifies manual analytics import, report refresh, and malformed-input safety.
+ *
+ * @param {string} runId - Run id to link one imported performance row.
+ */
+async function runManualAnalyticsSmoke(runId) {
+  await writeFile(
+    path.join(workdir, "bad-performance.json"),
+    JSON.stringify([{ title: "missing video id" }]),
+    "utf8",
+  );
+  run([pnpm, "producer", "analytics", "import", "--file", "bad-performance.json"], {
+    expectFailure: true,
+    label: "malformed analytics import is rejected",
+    scenario: "analytics feedback",
+  });
+  assertCondition(
+    !productFileExists({ relativePath: "analytics/performance.json", workdir }),
+    "malformed analytics import writes no dataset",
+    "analytics feedback",
+  );
+
+  await writeFile(
+    path.join(workdir, "performance.csv"),
+    [
+      "run_id,video_id,title,published_at,impressions,views,ctr,avg_view_duration_seconds,avg_percentage_viewed,subscribers_gained,likes,comments,notes",
+      `${runId},yt_rendered,"Rendered Draft Review",2026-06-29T12:00:00.000Z,10000,1250,7.4%,181,42%,12,90,8,"Strong retention candidate"`,
+      ',yt_unmapped,"Unmapped Topic",2026-06-29T13:00:00.000Z,3000,90,1.8%,35,12%,0,4,1,"Needs run link"',
+    ].join("\n"),
+    "utf8",
+  );
+  run([pnpm, "producer", "analytics", "import", "--file", "performance.csv"], {
+    expectOutput: "Analytics imported. Records: 2",
+    label: "analytics CSV import writes local artifacts",
+    scenario: "analytics feedback",
+  });
+  await assertFile("analytics/performance.json", "analytics dataset exists");
+  await assertFile("analytics/performance_report.md", "analytics report exists");
+  await assertFile("analytics/run_link_template.csv", "analytics run-link template exists");
+  run([pnpm, "producer", "analytics", "report"], {
+    expectOutput: "No causal claims are made from this import.",
+    label: "analytics report prints non-causal guidance",
+    scenario: "analytics feedback",
+  });
+
+  const reportPath = path.join(workdir, "analytics", "performance_report.md");
+  await writeFile(reportPath, "# stale report\n", "utf8");
+  run([pnpm, "producer", "analytics", "report"], {
+    expectOutput: "Manual Analytics Report",
+    label: "analytics report refreshes stale markdown",
+    scenario: "analytics feedback",
+  });
+  const refreshedReport = await readFile(reportPath, "utf8");
+  assertCondition(
+    refreshedReport.includes("Manual Analytics Report") &&
+      !refreshedReport.includes("# stale report"),
+    "analytics report artifact is regenerated",
+    "analytics feedback",
+  );
+}
+
+/**
  * Verifies that stale evidence is visible and recoverable by regeneration.
  *
  * @param {string} runId - Rendered run id.
@@ -268,6 +332,17 @@ function run(args, options) {
  */
 async function assertFile(relativePath, label) {
   await assertProductFile({ label, relativePath, steps, workdir });
+}
+
+/**
+ * Records a product UAT assertion.
+ *
+ * @param {boolean} condition - Assertion condition.
+ * @param {string} label - Report label.
+ * @param {string} scenario - Scenario label.
+ */
+function assertCondition(condition, label, scenario) {
+  assertProductCondition({ condition, label, scenario, steps });
 }
 
 /**

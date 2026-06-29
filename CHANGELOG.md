@@ -23,6 +23,8 @@ _No unreleased changes yet._
 - use the read-only draft render review command as the rendered-run next action
 - add product UAT smoke coverage for happy-path, malicious, stale, tampered, and publish-blocked
   local workflows
+- extend product UAT smoke coverage to manual analytics import, report refresh, and malformed import
+  rejection
 
 ### Fixes
 

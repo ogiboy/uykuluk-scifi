@@ -15,6 +15,9 @@ export async function prepareWorkspace({ repoRoot, workdir }) {
     filter: (source) => {
       const relative = path.relative(repoRoot, source);
       if (!relative) return true;
+      if (shouldSkipProductUatCopy(relative)) {
+        return false;
+      }
       return !(
         relative === ".git" ||
         relative.startsWith(`.git${path.sep}`) ||
@@ -28,6 +31,30 @@ export async function prepareWorkspace({ repoRoot, workdir }) {
     },
     recursive: true,
   });
+}
+
+/**
+ * Checks whether a source path is local-only state that must not enter UAT clean copies.
+ *
+ * @param {string} relative - Path relative to the source repository root.
+ * @returns {boolean} Whether the path should be skipped.
+ */
+function shouldSkipProductUatCopy(relative) {
+  if (relative === ".env" || relative.startsWith(".env.")) {
+    return true;
+  }
+  const localOnly = [
+    ".next",
+    "analytics",
+    "build",
+    "diagnostics",
+    "dist",
+    "models",
+    "prompts/local",
+  ];
+  return localOnly.some(
+    (entry) => relative === entry || relative.startsWith(`${entry}${path.sep}`),
+  );
 }
 
 /**
@@ -164,6 +191,41 @@ export async function assertProductFile({ label, relativePath, steps, workdir })
   if (!isFile) {
     throw new Error(`Missing expected file: ${relativePath}`);
   }
+}
+
+/**
+ * Records a product UAT assertion with a pass/fail result.
+ *
+ * @param {Object} input - Assertion input.
+ * @param {boolean} input.condition - Assertion condition.
+ * @param {string} input.label - Report label.
+ * @param {string} input.scenario - Scenario label.
+ * @param {Array<Object>} input.steps - Mutable report step list.
+ */
+export function assertProductCondition({ condition, label, scenario, steps }) {
+  steps.push({
+    command: "assert",
+    label,
+    output: "",
+    passed: Boolean(condition),
+    scenario,
+    status: condition ? 0 : 1,
+  });
+  if (!condition) {
+    throw new Error(`Product UAT assertion failed: ${scenario} / ${label}`);
+  }
+}
+
+/**
+ * Checks whether a product UAT file exists in the isolated workdir.
+ *
+ * @param {Object} input - File lookup input.
+ * @param {string} input.relativePath - File path relative to the workdir.
+ * @param {string} input.workdir - Isolated workdir.
+ * @returns {boolean} Whether the path exists.
+ */
+export function productFileExists({ relativePath, workdir }) {
+  return existsSync(path.join(workdir, relativePath));
 }
 
 /**
