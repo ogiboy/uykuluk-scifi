@@ -8,7 +8,12 @@ import {
   formatOperatorDeskBlockedActionLines,
   formatOperatorDeskReadinessLines,
   formatOperatorDeskRecentArtifactLines,
+  formatOperatorDeskWorkflowLines,
 } from "./operatorDeskFormatting.js";
+import {
+  buildOperatorDeskWorkflowProgress,
+  type OperatorDeskWorkflowStep,
+} from "./operatorDeskWorkflow.js";
 
 const RECENT_RUN_LIMIT = 8;
 
@@ -37,6 +42,7 @@ export type OperatorDeskSelectedRun = OperatorDeskRun & {
   readiness: RunStatusSummary["readiness"];
   recentArtifacts: string[];
   renderDecision: RenderDecisionStatus;
+  workflowProgress: OperatorDeskWorkflowStep[];
 };
 
 export type OperatorDeskViewModel = {
@@ -127,6 +133,8 @@ export function formatOperatorDeskPlain(model: OperatorDeskViewModel): string {
     `Blocked actions: ${run.blockedActionCount ?? "unknown"}`,
     ...formatOperatorDeskBlockedActionLines(run.blockedActions),
     "",
+    ...formatOperatorDeskWorkflowLines(run.workflowProgress),
+    "",
     "Next safe action:",
     `  ${run.nextRecommendedCommand}`,
     "",
@@ -190,6 +198,7 @@ function selectedRun(status: RunStatusSummary): OperatorDeskSelectedRun {
     readiness: status.readiness,
     recentArtifacts: status.recentArtifacts,
     renderDecision: status.renderDecision,
+    workflowProgress: buildOperatorDeskWorkflowProgress(status),
   };
 }
 

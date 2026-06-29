@@ -46,6 +46,8 @@ describe("operator desk", () => {
     expect(model.runDetails.map((run) => run.runId)).toContain(first.runId);
     expect(formatOperatorDeskPlain(model)).toContain(`Selected run: ${first.runId}`);
     expect(formatOperatorDeskPlain(model)).toContain("Render decision: missing");
+    expect(formatOperatorDeskPlain(model)).toContain("Workflow progress:");
+    expect(formatOperatorDeskPlain(model)).toContain("- [current] Ideas: Generate ideas.");
   });
 
   it("prints a scriptable plain CLI summary", async () => {
@@ -162,6 +164,13 @@ describe("operator desk", () => {
     expect(output).toContain(`Next action: pnpm producer voice --run ${run.runId}`);
     expect(output).toContain("Blocked action details:");
     expect(output).toContain("TTS disabled until configured and approved.");
+    expect(output).toContain(
+      "- [blocked] Estimate/evidence/readiness: Resolve readiness attention before local voice/render work.",
+    );
+    expect(output).toContain("- [pending] Voiceover: Generate and review local audio.");
+    expect(output).toContain(
+      "- [pending] Render approval: Wait for voiceover review and readiness.",
+    );
   });
 
   it("surfaces the concrete render decision in recent run summaries", async () => {
@@ -182,6 +191,7 @@ describe("operator desk", () => {
     });
     expect(output).toContain(`> ${runId}  RENDERED`);
     expect(output).toContain("decision:needs-revision by operator");
+    expect(output).toContain("- [done] Operator decision: Local draft decision is recorded.");
     expect(output).not.toContain("decision:present");
   });
 

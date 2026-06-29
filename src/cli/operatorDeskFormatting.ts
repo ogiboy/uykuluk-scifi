@@ -1,4 +1,5 @@
 import { formatStatusReadiness, type StatusReadinessSummary } from "../stages/statusReadiness.js";
+import type { OperatorDeskWorkflowStep } from "./operatorDeskWorkflow.js";
 
 /**
  * Formats readiness diagnostics for the operator desk.
@@ -36,4 +37,19 @@ export function formatOperatorDeskRecentArtifactLines(
     return ["Recent artifacts:", "- none"];
   }
   return ["Recent artifacts:", ...recentArtifacts.map((artifact) => `- ${artifact}`)];
+}
+
+/**
+ * Formats v1 workflow progress rows for the operator desk.
+ *
+ * @param workflow - Ordered workflow progress rows.
+ * @returns Operator-facing workflow progress lines.
+ */
+export function formatOperatorDeskWorkflowLines(
+  workflow: readonly OperatorDeskWorkflowStep[],
+): string[] {
+  return [
+    "Workflow progress:",
+    ...workflow.map((step) => `- [${step.status}] ${step.label}: ${step.detail}`),
+  ];
 }

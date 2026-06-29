@@ -4,6 +4,7 @@ import {
   formatOperatorDeskBlockedActionLines,
   formatOperatorDeskReadinessLines,
   formatOperatorDeskRecentArtifactLines,
+  formatOperatorDeskWorkflowLines,
 } from "./operatorDeskFormatting.js";
 import { formatOperatorDeskMediaArtifactLine } from "./operatorDeskModel.js";
 import type {
@@ -144,6 +145,9 @@ function SelectedRun({ run }: { run: OperatorDeskSelectedRun }): React.ReactElem
     React.createElement(Text, null, `Blocked actions: ${run.blockedActionCount ?? "unknown"}`),
     ...formatOperatorDeskBlockedActionLines(run.blockedActions).map((line, index) =>
       React.createElement(Text, { key: `blocked:${index}:${line}` }, line),
+    ),
+    ...formatOperatorDeskWorkflowLines(run.workflowProgress).map((line, index) =>
+      React.createElement(Text, { key: `workflow:${index}:${line}` }, line),
     ),
     React.createElement(
       Text,
