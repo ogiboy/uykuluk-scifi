@@ -5,8 +5,6 @@ import { describe, expect, it } from "vitest";
 import { artifactPath } from "../src/core/artifacts";
 import { readLedger } from "../src/core/ledger";
 import { createRun, loadRun } from "../src/core/runStore";
-import { approveRender } from "../src/stages/approveRender";
-import { renderDraft } from "../src/stages/render";
 import {
   recordRenderDecision,
   renderDecisionArtifactPaths,
@@ -15,8 +13,7 @@ import {
 import { readRenderDecisionStatus } from "../src/stages/renderDecisionStatus";
 import { formatRunStatus, readRunStatus } from "../src/stages/status";
 import { useTempProject } from "./helpers";
-import { prepareVoiceoverReadyRun } from "./renderPipelineHelpers";
-import { createFakeFfmpeg, createFakeFfprobe, renderToolRoot } from "./renderTestHelpers";
+import { renderLocalDraft } from "./renderPipelineHelpers";
 
 const repoRoot = process.cwd();
 
@@ -24,13 +21,7 @@ describe("render operator decision", () => {
   useTempProject();
 
   it("records a durable decision after local draft-render review without upload approval", async () => {
-    const runId = await prepareVoiceoverReadyRun();
-    await approveRender(runId);
-    await renderDraft(runId, {
-      ffmpegBinary: await createFakeFfmpeg(renderToolRoot("decision")),
-      ffprobeBinary: await createFakeFfprobe(renderToolRoot("decision")),
-      maxDurationSeconds: 8,
-    });
+    const runId = await renderLocalDraft("decision");
 
     const result = runCli([
       "decide",
@@ -242,17 +233,6 @@ describe("render operator decision", () => {
     expect(formatRunStatus(await readRunStatus(runId))).toContain("Render decision: invalid");
   });
 });
-
-async function renderLocalDraft(scope: string): Promise<string> {
-  const runId = await prepareVoiceoverReadyRun();
-  await approveRender(runId);
-  await renderDraft(runId, {
-    ffmpegBinary: await createFakeFfmpeg(renderToolRoot(scope)),
-    ffprobeBinary: await createFakeFfprobe(renderToolRoot(scope)),
-    maxDurationSeconds: 8,
-  });
-  return runId;
-}
 
 function runCli(args: string[]): { status: number | null; stderr: string; stdout: string } {
   const result = spawnSync(

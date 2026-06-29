@@ -6,12 +6,9 @@ import { buildOperatorDeskViewModel, formatOperatorDeskPlain } from "../src/cli/
 import { shouldUsePlainOperatorDeskOutput } from "../src/cli/operatorDeskRunner";
 import { artifactPath } from "../src/core/artifacts";
 import { createRun, saveRun } from "../src/core/runStore";
-import { approveRender } from "../src/stages/approveRender";
-import { renderDraft } from "../src/stages/render";
 import { recordRenderDecision } from "../src/stages/renderDecision";
 import { useTempProject } from "./helpers";
-import { prepareVoiceoverReadyRun } from "./renderPipelineHelpers";
-import { createFakeFfmpeg, createFakeFfprobe, renderToolRoot } from "./renderTestHelpers";
+import { renderLocalDraft } from "./renderPipelineHelpers";
 import { passingRenderedEvidence } from "./statusOutputEvidenceFixtures";
 
 const repoRoot = process.cwd();
@@ -137,14 +134,3 @@ describe("operator desk", () => {
     );
   });
 });
-
-async function renderLocalDraft(scope: string): Promise<string> {
-  const runId = await prepareVoiceoverReadyRun();
-  await approveRender(runId);
-  await renderDraft(runId, {
-    ffmpegBinary: await createFakeFfmpeg(renderToolRoot(scope)),
-    ffprobeBinary: await createFakeFfprobe(renderToolRoot(scope)),
-    maxDurationSeconds: 8,
-  });
-  return runId;
-}

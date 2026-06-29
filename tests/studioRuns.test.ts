@@ -202,9 +202,7 @@ describe("Studio read-only run summaries", () => {
         status: "block",
       },
     ]);
-
     const detail = await getStudioRunDetail(run.runId);
-
     expect(detail?.readinessChecks).toEqual([
       {
         message: "costs/estimate.json is missing.",
