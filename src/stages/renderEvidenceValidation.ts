@@ -6,8 +6,6 @@ import { RunRecord } from "../core/state.js";
 import { pathExists } from "../utils/fs.js";
 import { readJsonFile } from "../utils/json.js";
 import { shellCommand } from "../utils/shell.js";
-import { buildFfmpegReviewArgs } from "./renderFfmpegPlan.js";
-import { readRenderPlanEvidence } from "./renderPlan.js";
 import {
   draftRenderArtifactPaths,
   draftRenderManifestPath,
@@ -15,6 +13,8 @@ import {
   draftRenderPath,
   type DraftRenderManifest,
 } from "./renderEvidenceContracts.js";
+import { buildFfmpegReviewArgs } from "./renderFfmpegPlan.js";
+import { readRenderPlanEvidence } from "./renderPlan.js";
 import { readVoiceoverAudioEvidence } from "./voiceoverEvidence.js";
 
 export type ValidatedDraftRenderManifest = {
@@ -107,8 +107,7 @@ async function assertDraftRenderInputs(
   }
   const approval = run.approvals.find((item) => item.target === "render");
   if (
-    !approval ||
-    approval.approvalId !== manifest.renderApproval.approvalId ||
+    approval?.approvalId !== manifest.renderApproval.approvalId ||
     approval.approvedRef !== manifest.renderApproval.approvedRef
   ) {
     throw new SafeExitError("Draft render approval record changed after render.");

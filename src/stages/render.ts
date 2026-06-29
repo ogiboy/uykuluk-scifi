@@ -1,7 +1,7 @@
+import { spawn } from "node:child_process";
 import { createHash, randomUUID } from "node:crypto";
 import { readFile, rename, rm, stat } from "node:fs/promises";
 import path from "node:path";
-import { spawn } from "node:child_process";
 import { artifactPath, recordRunArtifact, writeRunJson, writeRunText } from "../core/artifacts.js";
 import { SafeExitError } from "../core/errors.js";
 import { appendLedgerEvent } from "../core/ledger.js";
@@ -12,6 +12,7 @@ import { shellCommand } from "../utils/shell.js";
 import { nowIso } from "../utils/time.js";
 import { verifyProductionPackage } from "./productionPackageIntegrity.js";
 import { renderApprovalRef } from "./renderApproval.js";
+import { buildDraftRenderComposition } from "./renderComposition.js";
 import {
   DraftRenderManifest,
   draftRenderManifestPath,
@@ -19,18 +20,17 @@ import {
   draftRenderPath,
   draftRenderReviewPath,
 } from "./renderEvidence.js";
-import { buildDraftRenderComposition } from "./renderComposition.js";
-import { readRenderPlanEvidence } from "./renderPlan.js";
-import { renderDraftReviewMarkdown } from "./renderReviewMarkdown.js";
 import {
   buildDraftRenderTimeline,
-  buildFfmpegTimelineInputs,
   buildFfmpegArgs,
   buildFfmpegReviewArgs,
+  buildFfmpegTimelineInputs,
   clampRenderDuration,
 } from "./renderFfmpegPlan.js";
-import { probeDraftRender } from "./renderProbe.js";
+import { readRenderPlanEvidence } from "./renderPlan.js";
 import { RenderPlan, renderPlanSchema } from "./renderPlanSchemas.js";
+import { probeDraftRender } from "./renderProbe.js";
+import { renderDraftReviewMarkdown } from "./renderReviewMarkdown.js";
 import { readVoiceoverAudioEvidence, voiceoverAudioPath } from "./voiceoverEvidence.js";
 
 export { buildDraftRenderTimeline, buildFfmpegArgs } from "./renderFfmpegPlan.js";
@@ -74,7 +74,7 @@ export async function renderDraft(
       voiceoverProductionVoiceCandidate: voiceoverAudio.productionVoiceCandidate,
       voiceoverQuality: voiceoverAudio.quality,
     });
-    if (!approval || approval.approvedRef !== currentApprovalRef) {
+    if (approval?.approvedRef !== currentApprovalRef) {
       throw new SafeExitError("Draft render approval is stale for current render inputs.");
     }
 

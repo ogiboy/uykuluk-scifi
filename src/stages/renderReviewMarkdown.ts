@@ -57,8 +57,6 @@ export function renderDraftReviewMarkdown(manifest: DraftRenderManifest): string
       ],
     ),
     "",
-  );
-  sections.push(
     "## Render Approval",
     "",
     table(
