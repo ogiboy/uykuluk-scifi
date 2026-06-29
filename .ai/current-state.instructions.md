@@ -199,6 +199,13 @@
   Missing, malformed, or stale readiness diagnostics point back to
   `producer readiness --run <run_id>`. `--json` preserves raw persisted state output;
   `--summary-json` prints the enriched operator status snapshot.
+- `producer desk` provides an Ink-based local terminal workbench over the same
+  status/readiness/media contracts, with `--plain` for scriptable or non-TTY output. It is an
+  operator surface only and does not own workflow transitions or mutate run state.
+- `producer decide render` records the human decision after local draft-render review as durable
+  JSON/Markdown evidence under `production/render/`. It does not approve upload or publish and keeps
+  the run in `RENDERED`. `producer status`, `producer desk`, and product UAT surface the recorded
+  decision so operators do not loop back to render review after a decision is recorded.
 - Readiness diagnostics that strictly parse and revalidate persisted cost quotes, live hard budgets,
   complete production-package integrity, and exact paid-generation cost approval when required.
 - Final readiness diagnostics agree with the post-transition run state.
@@ -213,8 +220,9 @@
 - Optional clean-copy product UAT smoke script via `pnpm qa:product`, covering rendered happy path,
   traversal rejection, incorrect ordering, stale evidence recovery, tampered render review command
   rejection, post-approval voiceover tamper blocking, disabled upload/publish safeguards, manual
-  analytics import/report malformed-input recovery, and Studio read-only service visibility for
-  runs, production media, analytics, and disabled mutation contracts.
+  analytics import/report malformed-input recovery, durable local render decisions, and Studio
+  read-only service visibility for runs, production media, analytics, and disabled mutation
+  contracts.
 - Production build emits a Node-runnable `dist/cli.js` and `pnpm build:smoke` verifies the built CLI
   starts and can initialize a fresh project from an arbitrary working directory.
 - Direct mock/Ollama/llama.cpp provider diagnostics and upload/publish safeguard tests.
@@ -338,11 +346,17 @@ pnpm producer readiness --run <run_id> [--json]
 pnpm producer status --run <run_id>
 pnpm producer status --run <run_id> --json
 pnpm producer status --latest
+pnpm producer desk
+pnpm producer desk --run <run_id>
+pnpm producer desk --plain
 pnpm producer list-runs
 pnpm producer list-runs --json
 pnpm producer voice --run <run_id> [--json]
 pnpm producer approve render --run <run_id> [--json]
 pnpm producer render --run <run_id> [--json]
+pnpm producer decide render --run <run_id> --decision accepted-for-local-review --notes "<notes>" [--json]
+pnpm producer decide render --run <run_id> --decision needs-revision --notes "<notes>" [--json]
+pnpm producer decide render --run <run_id> --decision rejected --notes "<notes>" [--json]
 pnpm producer analytics import --file <path> [--json]
 pnpm producer analytics report [--json]
 pnpm producer upload private --run <run_id>

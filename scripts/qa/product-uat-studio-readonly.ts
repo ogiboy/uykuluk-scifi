@@ -50,6 +50,12 @@ assert(
   ),
   "Studio artifact previews include render manifest.",
 );
+assert(
+  detail.artifacts.some(
+    (item) => item.path === "production/render/render_decision.md" && item.exists,
+  ),
+  "Studio artifact previews include render decision markdown.",
+);
 
 const analytics = await getStudioAnalyticsOverview();
 assert(analytics.status === "ready", "Studio analytics overview is ready.");

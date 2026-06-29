@@ -179,6 +179,12 @@ agent-tracking state only; runtime code must not require it.
   rows as artifact-record fallback until evidence is regenerated, while missing, malformed, or stale
   readiness diagnostics point back to `producer readiness --run <run_id>`; use `--json` for the raw
   persisted state.
+- `producer desk` opens a local Ink terminal workbench over the same run/status contracts. It is an
+  operator review surface, not a second workflow engine; use `--plain` for scriptable output or
+  non-TTY shells.
+- `producer decide render` records the human decision after local draft-render review as durable
+  JSON/Markdown evidence. `producer status` and `producer desk` surface the recorded decision and
+  next safe action. It does not approve upload or publish.
 - Script edits use an attributable revision command with before/after snapshots; reviewed or
   approved scripts return to `SCRIPT_GENERATED` and require review/approval again.
 - Production packaging requires explicit script approval for the unchanged reviewed content.
@@ -286,6 +292,9 @@ pnpm producer approve render --run <run_id>
 pnpm producer approve render --run <run_id> --json
 pnpm producer render --run <run_id>
 pnpm producer render --run <run_id> --json
+pnpm producer decide render --run <run_id> --decision accepted-for-local-review --notes "<notes>"
+pnpm producer decide render --run <run_id> --decision needs-revision --notes "<notes>"
+pnpm producer decide render --run <run_id> --decision rejected --notes "<notes>"
 ```
 
 Blocked readiness checks print and persist next-action guidance for common operator steps such as
@@ -299,6 +308,9 @@ pnpm producer status --run <run_id>
 pnpm producer status --run <run_id> --json
 pnpm producer status --run <run_id> --summary-json
 pnpm producer status --latest
+pnpm producer desk
+pnpm producer desk --run <run_id>
+pnpm producer desk --plain
 pnpm producer list-runs
 pnpm producer list-runs --json
 ```
@@ -451,7 +463,7 @@ pnpm version:plan
 `pnpm qa:product` is the broader optional product UAT gate for PR-ready production-loop work. It
 exercises local draft-render review, malicious/incorrect order attempts, stale/tampered evidence,
 disabled upload/publish, manual analytics import/report feedback, and Studio read-only service
-visibility in an isolated clean copy.
+visibility, including durable local render decisions, in an isolated clean copy.
 
 Focused gates:
 

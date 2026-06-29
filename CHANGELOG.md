@@ -9,7 +9,16 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Features
+
+- add `producer desk`, an Ink-based local operator workbench with scriptable plain output
+- add `producer decide render` to persist local draft-render operator decisions without approving
+  upload or publish
+- surface recorded render decisions in CLI status and the operator desk
+
+### Tests
+
+- cover durable local render decisions in the clean-copy product UAT gate
 
 ## v0.48.1 (2026-06-29)
 

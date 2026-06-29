@@ -2,8 +2,10 @@
 import { Command } from "commander";
 import { registerAnalyticsCommands } from "./cli/analyticsCommands.js";
 import { registerApprovalCommands } from "./cli/approvalCommands.js";
+import { registerDecisionCommands } from "./cli/decisionCommands.js";
 import { registerEvaluationCommands } from "./cli/evaluationCommands.js";
 import { registerGenerationCommands } from "./cli/generationCommands.js";
+import { registerOperatorDeskCommand } from "./cli/operatorDeskCommand.js";
 import { registerRevisionCommands } from "./cli/revisionCommands.js";
 import { resolveStatusRunId } from "./cli/statusRunSelector.js";
 import { initProject } from "./config/config.js";
@@ -53,8 +55,10 @@ program
 
 registerApprovalCommands(program, wrap);
 registerAnalyticsCommands(program, wrap);
+registerDecisionCommands(program, wrap);
 registerEvaluationCommands(program, wrap);
 registerGenerationCommands(program, wrap);
+registerOperatorDeskCommand(program, wrap);
 
 const review = program.command("review").description("Run local reviews.");
 review

@@ -11,6 +11,7 @@ import {
 } from "./statusMedia.js";
 import { evidenceBlockedActionMessages } from "./statusBlockedActions.js";
 import { readEvidenceStatus, type EvidenceReadResult } from "./statusEvidence.js";
+import { readRenderDecisionStatus, type RenderDecisionStatus } from "./renderDecisionStatus.js";
 import {
   formatStatusReadiness,
   readStatusReadiness,
@@ -31,22 +32,26 @@ export type RunStatusSummary = {
   nextRecommendedCommand: string;
   readiness: StatusReadinessSummary;
   recentArtifacts: string[];
+  renderDecision: RenderDecisionStatus;
   run: RunRecord;
   warningCount: number;
 };
 
 /**
- * Loads a run and compiles its status summary.
+ * Loads a run and compiles a combined status summary.
+ *
+ * The summary includes evidence, diagnostics, readiness, render decision state, media status, and the next recommended command.
  *
  * @param runId - The run identifier
  * @returns The combined status summary for the run
  */
 export async function readRunStatus(runId: string): Promise<RunStatusSummary> {
   const run = await loadRun(runId);
-  const [evidenceResult, diagnostics, readiness] = await Promise.all([
+  const [evidenceResult, diagnostics, readiness, renderDecision] = await Promise.all([
     readEvidenceStatus(run.runId, run.state),
     readRunDiagnosticSummaries(run.runId, run.artifacts),
     readStatusReadiness(run.runId, run.state),
+    readRenderDecisionStatus(run),
   ]);
   const evidence = evidenceResult.kind === "present" ? evidenceResult.evidence : null;
   const blockedActions = evidenceBlockedActionMessages(evidence, run.runId);
@@ -60,16 +65,25 @@ export async function readRunStatus(runId: string): Promise<RunStatusSummary> {
     evidencePresent: Boolean(evidence),
     evidenceStatus: evidenceResult.kind,
     mediaArtifacts: productionMediaStatus(run, evidence),
-    nextRecommendedCommand: statusNextRecommendedCommand(run.runId, run.state, evidenceResult),
+    nextRecommendedCommand: statusNextRecommendedCommand(
+      run.runId,
+      run.state,
+      evidenceResult,
+      renderDecision,
+    ),
     readiness,
     recentArtifacts: run.artifacts.slice(-5).reverse(),
+    renderDecision,
     run,
     warningCount: run.warnings.length,
   };
 }
 
 /**
- * Renders a run status summary as a human-readable report.
+ * Renders a run status summary as a multiline operator report.
+ *
+ * The report includes run metadata, evidence status, readiness, render decision details,
+ * blocked actions, diagnostics, production media, and recent artifacts.
  *
  * @param status - The run status summary to format
  * @returns A newline-delimited report
@@ -88,6 +102,7 @@ export function formatRunStatus(status: RunStatusSummary): string {
     `Blocked actions: ${status.blockedActionCount ?? "unknown"}`,
     `Next safe action: ${status.nextRecommendedCommand}`,
     ...formatStatusReadiness(status.readiness),
+    ...formatRenderDecisionStatus(status.renderDecision),
     ...formatBlockedActions(status.blockedActions),
     ...formatDiagnostics(status.diagnostics),
     ...formatProductionMediaEvidenceForRun(status),
@@ -185,18 +200,47 @@ function formatDiagnostics(diagnostics: readonly RunDiagnosticSummary[]): string
 }
 
 /**
+ * Formats the durable render decision status for operator output.
+ *
+ * @param decision - The render decision status.
+ * @returns Lines describing the render decision and any next action.
+ */
+function formatRenderDecisionStatus(decision: RenderDecisionStatus): string[] {
+  if (decision.kind === "missing") {
+    return decision.nextAction
+      ? ["Render decision: missing", `Render decision next action: ${decision.nextAction}`]
+      : ["Render decision: not applicable"];
+  }
+  if (decision.kind === "present") {
+    return [
+      `Render decision: ${decision.decision.decision} by ${decision.decision.reviewedBy}`,
+      `Render decision next action: ${decision.nextAction}`,
+    ];
+  }
+  return [
+    `Render decision: ${decision.kind} (${decision.message})`,
+    `Render decision next action: ${decision.nextAction}`,
+  ];
+}
+
+/**
  * Chooses the next recommended command for a run.
  *
- * @param runId - The run identifier used to fill the command template
+ * @param runId - The run identifier used to fill command templates
  * @param state - The current run state used when evidence is missing
  * @param evidenceResult - The resolved evidence status for the run
- * @returns A command string for the next recommended action
+ * @param renderDecision - The resolved durable render decision for the run
+ * @returns The command string for the next recommended action
  */
 function statusNextRecommendedCommand(
   runId: string,
   state: RunState,
   evidenceResult: EvidenceReadResult,
+  renderDecision: RenderDecisionStatus,
 ): string {
+  if (renderDecision.kind === "present") {
+    return renderDecision.nextAction;
+  }
   if (
     evidenceResult.kind === "present" &&
     typeof evidenceResult.evidence.nextRecommendedCommand === "string"
