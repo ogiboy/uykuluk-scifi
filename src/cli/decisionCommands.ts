@@ -18,10 +18,10 @@ type WrapDecisionAction = (
 ) => (options: DecisionOptions) => void;
 
 /**
- * Registers CLI commands for durable operator decisions.
+ * Registers the `decide render` CLI command.
  *
  * @param program - The Commander program to extend.
- * @param wrap - Async error wrapper.
+ * @param wrap - Wraps the command handler for async error handling.
  */
 export function registerDecisionCommands(program: Command, wrap: WrapDecisionAction): void {
   const decide = program.command("decide").description("Record durable operator decisions.");

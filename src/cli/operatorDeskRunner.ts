@@ -8,9 +8,9 @@ export type RunOperatorDeskOptions = {
 };
 
 /**
- * Runs the operator desk in interactive Ink mode or plain mode.
+ * Runs the operator desk in interactive Ink mode or plain text mode.
  *
- * @param options - CLI options.
+ * @param options - CLI options that control the output mode and selected run.
  */
 export async function runOperatorDesk(options: RunOperatorDeskOptions): Promise<void> {
   const model = await buildOperatorDeskViewModel({

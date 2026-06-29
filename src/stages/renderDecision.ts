@@ -54,10 +54,11 @@ export const renderDecisionRecordSchema = z.strictObject({
 export type RenderDecisionRecord = z.infer<typeof renderDecisionRecordSchema>;
 
 /**
- * Records the operator decision after local draft-render review.
+ * Records an operator render decision after reviewing the local draft render.
  *
  * @param input - The render decision request.
  * @returns The persisted render decision record.
+ * @throws SafeExitError If the run is not in the `RENDERED` state.
  */
 export async function recordRenderDecision(
   input: RenderDecisionInput,
@@ -116,10 +117,10 @@ export async function recordRenderDecision(
 }
 
 /**
- * Renders the operator render decision as Markdown.
+ * Renders a persisted render decision record as Markdown.
  *
- * @param record - The render decision record.
- * @returns Operator-readable Markdown.
+ * @param record - The render decision record to render.
+ * @returns A Markdown document for operators.
  */
 export function renderDecisionMarkdown(record: RenderDecisionRecord): string {
   return [
@@ -167,6 +168,12 @@ export function renderDecisionMarkdown(record: RenderDecisionRecord): string {
   ].join("\n");
 }
 
+/**
+ * Computes the next safe action for a render decision.
+ *
+ * @param decision - The recorded render decision
+ * @returns Guidance for the next allowed step based on `decision`
+ */
 function nextSafeAction(decision: RenderDecision): string {
   if (decision === "accepted-for-local-review") {
     return "Keep the local draft for manual channel review. Upload remains disabled until a future private-upload approval/config path exists.";

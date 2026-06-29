@@ -38,7 +38,9 @@ export type RunStatusSummary = {
 };
 
 /**
- * Loads a run and compiles its status summary.
+ * Loads a run and compiles a combined status summary.
+ *
+ * The summary includes evidence, diagnostics, readiness, render decision state, media status, and the next recommended command.
  *
  * @param runId - The run identifier
  * @returns The combined status summary for the run
@@ -78,7 +80,10 @@ export async function readRunStatus(runId: string): Promise<RunStatusSummary> {
 }
 
 /**
- * Renders a run status summary as a human-readable report.
+ * Renders a run status summary as a multiline operator report.
+ *
+ * The report includes run metadata, evidence status, readiness, render decision details,
+ * blocked actions, diagnostics, production media, and recent artifacts.
  *
  * @param status - The run status summary to format
  * @returns A newline-delimited report
@@ -198,7 +203,7 @@ function formatDiagnostics(diagnostics: readonly RunDiagnosticSummary[]): string
  * Formats the durable render decision status for operator output.
  *
  * @param decision - The render decision status.
- * @returns Lines describing the render decision state.
+ * @returns Lines describing the render decision and any next action.
  */
 function formatRenderDecisionStatus(decision: RenderDecisionStatus): string[] {
   if (decision.kind === "missing") {
@@ -221,10 +226,11 @@ function formatRenderDecisionStatus(decision: RenderDecisionStatus): string[] {
 /**
  * Chooses the next recommended command for a run.
  *
- * @param runId - The run identifier used to fill the command template
+ * @param runId - The run identifier used to fill command templates
  * @param state - The current run state used when evidence is missing
  * @param evidenceResult - The resolved evidence status for the run
- * @returns A command string for the next recommended action
+ * @param renderDecision - The resolved durable render decision for the run
+ * @returns The command string for the next recommended action
  */
 function statusNextRecommendedCommand(
   runId: string,

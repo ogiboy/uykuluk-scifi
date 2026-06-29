@@ -11,10 +11,10 @@ type DeskCommandOptions = {
 };
 
 /**
- * Registers the local operator desk command.
+ * Registers the `desk` subcommand for the local operator desk.
  *
  * @param program - The Commander program to extend.
- * @param wrap - Async error wrapper.
+ * @param wrap - Wraps the command action for async error handling.
  */
 export function registerOperatorDeskCommand(program: Command, wrap: AsyncActionWrapper): void {
   program

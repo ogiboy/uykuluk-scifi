@@ -41,10 +41,10 @@ export type OperatorDeskViewModel = {
 };
 
 /**
- * Builds the operator desk model from persisted run state and status summaries.
+ * Builds the operator desk view model from persisted run state and status summaries.
  *
  * @param options - Selection options for the desk.
- * @returns A read-only operator desk view model.
+ * @returns A view model containing the latest run, recent runs, and the selected run details.
  */
 export async function buildOperatorDeskViewModel(
   options: OperatorDeskOptions = {},
@@ -89,10 +89,10 @@ export async function buildOperatorDeskViewModel(
 }
 
 /**
- * Formats the operator desk model for non-interactive shells and tests.
+ * Formats an operator desk view model as plain text.
  *
- * @param model - The operator desk model.
- * @returns Human-readable plain text.
+ * @param model - The operator desk view model to format.
+ * @returns The formatted plain-text output.
  */
 export function formatOperatorDeskPlain(model: OperatorDeskViewModel): string {
   if (!model.selectedRun) {
@@ -141,6 +141,12 @@ export function formatOperatorDeskPlain(model: OperatorDeskViewModel): string {
   ].join("\n");
 }
 
+/**
+ * Creates a compact run summary for the operator desk view.
+ *
+ * @param status - The run status summary to convert
+ * @returns A compact run record with counts, statuses, command, and run identity fields
+ */
 function compactRun(status: RunStatusSummary): OperatorDeskRun {
   return {
     approvalCount: status.approvalCount,
@@ -157,6 +163,12 @@ function compactRun(status: RunStatusSummary): OperatorDeskRun {
   };
 }
 
+/**
+ * Builds the selected-run view model from a run status summary.
+ *
+ * @param status - The run status summary to convert.
+ * @returns The selected-run view model with full blocked actions, media artifacts, recent artifacts, and render decision details.
+ */
 function selectedRun(status: RunStatusSummary): OperatorDeskSelectedRun {
   return {
     ...compactRun(status),
@@ -167,6 +179,12 @@ function selectedRun(status: RunStatusSummary): OperatorDeskSelectedRun {
   };
 }
 
+/**
+ * Summarizes a render decision for display.
+ *
+ * @param decision - The render decision status to summarize
+ * @returns A display string for the render decision
+ */
 function renderDecisionSummary(decision: RenderDecisionStatus): string {
   if (decision.kind === "present") {
     return `${decision.decision.decision} by ${decision.decision.reviewedBy}`;

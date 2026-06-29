@@ -11,15 +11,22 @@ type OperatorDeskAppProps = {
 };
 
 /**
- * Renders the operator desk as an interactive Ink terminal UI.
+ * Mounts the operator desk as an interactive Ink terminal UI.
  *
- * @param model - The model to render.
+ * @param model - The view model used to render the interface.
  */
 export async function renderOperatorDesk(model: OperatorDeskViewModel): Promise<void> {
   const { waitUntilExit } = render(React.createElement(OperatorDeskApp, { model }));
   await waitUntilExit();
 }
 
+/**
+ * Renders the Operator Desk terminal interface.
+ *
+ * Shows the recent runs list, the selected run details, and keyboard hints, or an empty state when no runs are available.
+ *
+ * @returns The rendered Operator Desk UI.
+ */
 function OperatorDeskApp({ model }: OperatorDeskAppProps): React.ReactElement {
   const initialIndex = selectedIndex(model);
   const [selected, setSelected] = useState(initialIndex);
@@ -62,6 +69,11 @@ function OperatorDeskApp({ model }: OperatorDeskAppProps): React.ReactElement {
   );
 }
 
+/**
+ * Renders the Operator Desk title and generation timestamp.
+ *
+ * @param generatedAt - The model generation timestamp to display.
+ */
 function Header({ generatedAt }: { generatedAt: string }): React.ReactElement {
   return React.createElement(
     Box,
@@ -71,6 +83,12 @@ function Header({ generatedAt }: { generatedAt: string }): React.ReactElement {
   );
 }
 
+/**
+ * Renders the recent runs list with the selected run highlighted.
+ *
+ * @param runs - Runs to display
+ * @param selectedIndex - Index of the currently selected run
+ */
 function RunList({
   runs,
   selectedIndex,
@@ -95,6 +113,11 @@ function RunList({
   );
 }
 
+/**
+ * Renders the selected run details panel.
+ *
+ * @param run - The run to display.
+ */
 function SelectedRun({ run }: { run: OperatorDeskSelectedRun }): React.ReactElement {
   return React.createElement(
     Box,
@@ -126,6 +149,12 @@ function SelectedRun({ run }: { run: OperatorDeskSelectedRun }): React.ReactElem
   );
 }
 
+/**
+ * Formats the render decision for display.
+ *
+ * @param run - The selected run to summarize.
+ * @returns The decision text with reviewer information when present, or the decision kind otherwise.
+ */
 function renderDecisionSummary(run: OperatorDeskSelectedRun): string {
   if (run.renderDecision.kind === "present") {
     return `${run.renderDecision.decision.decision} by ${run.renderDecision.decision.reviewedBy}`;
@@ -133,6 +162,12 @@ function renderDecisionSummary(run: OperatorDeskSelectedRun): string {
   return run.renderDecision.kind;
 }
 
+/**
+ * Determines the initial selected run index for the operator desk.
+ *
+ * @param model - The operator desk view model.
+ * @returns The matching run index, or `0` when no selected run is set or the run cannot be found.
+ */
 function selectedIndex(model: OperatorDeskViewModel): number {
   if (!model.selectedRun) {
     return 0;
@@ -141,6 +176,13 @@ function selectedIndex(model: OperatorDeskViewModel): number {
   return index >= 0 ? index : 0;
 }
 
+/**
+ * Resolves the selected-run details for a run ID.
+ *
+ * @param model - The operator desk view model
+ * @param runId - The run ID to look up
+ * @returns The matching selected-run details, or `null` if no matching run is found
+ */
 function selectedDetails(
   model: OperatorDeskViewModel,
   runId: string,
