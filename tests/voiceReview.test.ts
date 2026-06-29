@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { createRun } from "../src/core/runStore";
 import { formatVoiceoverReviewConsole, reviewVoiceover } from "../src/stages/reviewVoiceover";
 import { useTempProject } from "./helpers";
-import { prepareVoiceoverReadyRun } from "./renderPipelineHelpers";
+import { prepareReadyRunWithoutVoiceover, prepareVoiceoverReadyRun } from "./renderPipelineHelpers";
 
 const repoRoot = process.cwd();
 
@@ -49,6 +49,18 @@ describe("voiceover review handoff", () => {
       nextSafeAction: expect.stringContaining(`--run ${runId}`),
       runId,
     });
+  });
+
+  it("points generated voiceover output at the read-only voice review command", async () => {
+    const runId = await prepareReadyRunWithoutVoiceover();
+
+    const result = runCli(["voice", "--run", runId]);
+
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain("Voiceover generated: production/audio/voiceover.wav");
+    expect(result.stdout).toContain("Review artifact: production/audio/voiceover_review.md");
+    expect(result.stdout).toContain(`Next safe action: pnpm producer review voice --run ${runId}`);
+    expect(result.stdout).toContain("Production voice candidate: false");
   });
 
   it("blocks review when voiceover evidence is missing", async () => {

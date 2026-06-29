@@ -23,6 +23,7 @@ import { reviewScript } from "./stages/reviewScript.js";
 import { formatVoiceoverReviewConsole, reviewVoiceover } from "./stages/reviewVoiceover.js";
 import { formatRunStatus, readRunStatus } from "./stages/status.js";
 import { generateVoiceoverAudio } from "./stages/voice.js";
+import { formatVoiceoverGeneratedConsole } from "./stages/voiceConsole.js";
 
 const program = new Command();
 
@@ -197,9 +198,7 @@ program
     wrap(async (options: { json?: boolean; run: string }) => {
       const meta = await generateVoiceoverAudio(options.run);
       console.log(
-        options.json
-          ? JSON.stringify(meta, null, 2)
-          : `Voiceover generated. Duration: ${Math.round(meta.output.durationSeconds)}s`,
+        options.json ? JSON.stringify(meta, null, 2) : formatVoiceoverGeneratedConsole(meta),
       );
     }),
   );

@@ -16,6 +16,7 @@ future generated release notes can be inserted predictably.
 
 ### Fixes
 
+- point voiceover generation output at the read-only voice review command
 - route post-voiceover next actions through `producer review voice` before render approval
 - point render-plan generation output at the read-only render-plan review command
 - surface the same voiceover review command in Studio production-media rows
