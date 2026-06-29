@@ -49,8 +49,9 @@
   production-media `Review:` guidance should stay consistent across CLI status, evidence Markdown,
   and Studio.
 - Keep `producer desk` as an Ink-based operator surface over CLI/core status contracts. It may make
-  review and next-action navigation easier, but it must not become a second workflow engine or
-  bypass approval/cost/evidence gates.
+  review and next-action navigation easier with readiness attention, blocked actions, production
+  media review commands, render decisions, and read-only workflow progress, but it must not become a
+  second workflow engine or bypass approval/cost/evidence gates.
 - Keep `producer decide render` as local review evidence only. Render decisions must require a valid
   rendered draft, persist reviewer/notes/decision evidence, and never imply upload or publish
   approval. Status, the operator desk, and product UAT should surface the recorded decision and next

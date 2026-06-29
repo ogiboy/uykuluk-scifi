@@ -181,8 +181,9 @@ agent-tracking state only; runtime code must not require it.
   readiness diagnostics point back to `producer readiness --run <run_id>`; use `--json` for the raw
   persisted state.
 - `producer desk` opens a local Ink terminal workbench over the same run/status contracts. It is an
-  operator review surface, not a second workflow engine; use `--plain` for scriptable output or
-  non-TTY shells.
+  operator review surface, not a second workflow engine. It shows next safe action, readiness
+  attention, blocked actions, production media, recent artifacts, render decision, and v1 workflow
+  progress; use `--plain` for scriptable output or non-TTY shells.
 - `producer decide render` records the human decision after local draft-render review as durable
   JSON/Markdown evidence. `producer status` and `producer desk` surface the recorded decision and
   next safe action. It does not approve upload or publish.
