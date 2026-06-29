@@ -18,6 +18,8 @@ future generated release notes can be inserted predictably.
 - extend product UAT smoke coverage to Studio read-only run, media, analytics, and disabled
   mutation-service visibility
 - add `producer desk`, an Ink-based local operator workbench with scriptable plain output
+- add `producer decide render` to persist local draft-render operator decisions without approving
+  upload or publish
 
 ## v0.48.0 (2026-06-29)
 

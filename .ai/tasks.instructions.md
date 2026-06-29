@@ -51,6 +51,9 @@
 - Keep `producer desk` as an Ink-based operator surface over CLI/core status contracts. It may make
   review and next-action navigation easier, but it must not become a second workflow engine or
   bypass approval/cost/evidence gates.
+- Keep `producer decide render` as local review evidence only. Render decisions must require a valid
+  rendered draft, persist reviewer/notes/decision evidence, and never imply upload or publish
+  approval.
 - Keep all run-root filesystem access behind canonical bounded run-ID validation.
 - Keep run artifact reads, writes, and persisted lists behind canonical relative-path validation.
 - Keep state, ledger, cost, reservation, lock, and artifact access behind canonical

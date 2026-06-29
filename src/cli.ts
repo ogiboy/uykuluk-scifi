@@ -2,6 +2,7 @@
 import { Command } from "commander";
 import { registerAnalyticsCommands } from "./cli/analyticsCommands.js";
 import { registerApprovalCommands } from "./cli/approvalCommands.js";
+import { registerDecisionCommands } from "./cli/decisionCommands.js";
 import { registerEvaluationCommands } from "./cli/evaluationCommands.js";
 import { registerGenerationCommands } from "./cli/generationCommands.js";
 import { registerOperatorDeskCommand } from "./cli/operatorDeskCommand.js";
@@ -54,6 +55,7 @@ program
 
 registerApprovalCommands(program, wrap);
 registerAnalyticsCommands(program, wrap);
+registerDecisionCommands(program, wrap);
 registerEvaluationCommands(program, wrap);
 registerGenerationCommands(program, wrap);
 registerOperatorDeskCommand(program, wrap);

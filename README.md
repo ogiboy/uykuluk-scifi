@@ -182,6 +182,8 @@ agent-tracking state only; runtime code must not require it.
 - `producer desk` opens a local Ink terminal workbench over the same run/status contracts. It is an
   operator review surface, not a second workflow engine; use `--plain` for scriptable output or
   non-TTY shells.
+- `producer decide render` records the human decision after local draft-render review as durable
+  JSON/Markdown evidence. It does not approve upload or publish.
 - Script edits use an attributable revision command with before/after snapshots; reviewed or
   approved scripts return to `SCRIPT_GENERATED` and require review/approval again.
 - Production packaging requires explicit script approval for the unchanged reviewed content.
@@ -289,6 +291,9 @@ pnpm producer approve render --run <run_id>
 pnpm producer approve render --run <run_id> --json
 pnpm producer render --run <run_id>
 pnpm producer render --run <run_id> --json
+pnpm producer decide render --run <run_id> --decision accepted-for-local-review --notes "<notes>"
+pnpm producer decide render --run <run_id> --decision needs-revision --notes "<notes>"
+pnpm producer decide render --run <run_id> --decision rejected --notes "<notes>"
 ```
 
 Blocked readiness checks print and persist next-action guidance for common operator steps such as

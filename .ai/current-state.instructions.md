@@ -202,6 +202,9 @@
 - `producer desk` provides an Ink-based local terminal workbench over the same
   status/readiness/media contracts, with `--plain` for scriptable or non-TTY output. It is an
   operator surface only and does not own workflow transitions or mutate run state.
+- `producer decide render` records the human decision after local draft-render review as durable
+  JSON/Markdown evidence under `production/render/`. It does not approve upload or publish and keeps
+  the run in `RENDERED`.
 - Readiness diagnostics that strictly parse and revalidate persisted cost quotes, live hard budgets,
   complete production-package integrity, and exact paid-generation cost approval when required.
 - Final readiness diagnostics agree with the post-transition run state.
@@ -349,6 +352,9 @@ pnpm producer list-runs --json
 pnpm producer voice --run <run_id> [--json]
 pnpm producer approve render --run <run_id> [--json]
 pnpm producer render --run <run_id> [--json]
+pnpm producer decide render --run <run_id> --decision accepted-for-local-review --notes "<notes>" [--json]
+pnpm producer decide render --run <run_id> --decision needs-revision --notes "<notes>" [--json]
+pnpm producer decide render --run <run_id> --decision rejected --notes "<notes>" [--json]
 pnpm producer analytics import --file <path> [--json]
 pnpm producer analytics report [--json]
 pnpm producer upload private --run <run_id>
