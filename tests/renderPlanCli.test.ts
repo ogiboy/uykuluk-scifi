@@ -42,6 +42,21 @@ describe("producer render-plan CLI", () => {
       true,
     );
   });
+
+  it("prints the read-only review command after generating a render plan", async () => {
+    await createMinimalRenderAssets();
+    const runId = await preparePackagedRun();
+
+    const result = runCli(["render-plan", "--run", runId]);
+
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain("Render plan generated.");
+    expect(result.stdout).toContain("Contact sheet: production/storyboard_contact_sheet.md");
+    expect(result.stdout).toContain("Asset provenance: production/asset_provenance.json");
+    expect(result.stdout).toContain(
+      `Next safe action: pnpm producer review render-plan --run ${runId}`,
+    );
+  });
 });
 
 function runCli(args: string[]): { status: number | null; stderr: string; stdout: string } {
