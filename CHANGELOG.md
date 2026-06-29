@@ -9,6 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
+_No unreleased changes yet._
+
+## v0.48.1 (2026-06-29)
+
 ### Features
 
 - add product UAT smoke coverage for happy-path, malicious, stale, tampered, and publish-blocked
