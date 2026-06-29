@@ -94,6 +94,7 @@ describe("Studio read-only run summaries", () => {
         detail: "11 assets, 3 artifacts",
         evidenceKey: "renderPlan",
         label: "Render plan",
+        reviewCommand: `pnpm producer review render-plan --run ${runId}`,
         status: "pass",
       },
       {

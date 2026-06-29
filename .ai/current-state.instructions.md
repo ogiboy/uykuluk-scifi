@@ -49,6 +49,9 @@
   `production/asset_provenance.json` without FFmpeg render, upload, paid provider, or public publish
   execution. Intro/outro source frames are recorded when present. The contact sheet includes timing,
   review gates, safe commands, revision path, and upload/publish blockers.
+  `producer review render-plan` gives operators a read-only handoff from validated render-plan
+  evidence and surfaces the contact sheet, asset provenance, scene count, asset count, timing, and
+  still-blocked actions.
 - Evidence and readiness now surface render-plan presence; missing render plans warn, while partial
   or malformed render-plan artifacts block readiness.
 - Disabled-by-default local voiceover generation. `producer voice` requires local TTS config,
@@ -341,6 +344,7 @@ pnpm producer approve script --run <run_id> --acknowledge-warnings [--json] # wh
 pnpm producer package --run <run_id> [--json]
 pnpm producer revise package-artifact --run <run_id> --artifact subtitles --file <path> --reason "<reason>" --editor <name> [--json]
 pnpm producer render-plan --run <run_id> [--json]
+pnpm producer review render-plan --run <run_id> [--json]
 pnpm producer estimate --run <run_id> [--json]
 pnpm producer approve cost --run <run_id> [--json]
 pnpm producer evidence --run <run_id> [--json]

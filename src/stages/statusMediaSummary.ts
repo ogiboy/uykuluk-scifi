@@ -94,6 +94,9 @@ function mediaReviewCommand(
   if (!runId || status !== "pass") {
     return undefined;
   }
+  if (evidenceKey === "renderPlan") {
+    return `pnpm producer review render-plan --run ${runId}`;
+  }
   if (evidenceKey === "voiceoverAudio") {
     return `pnpm producer review voice --run ${runId}`;
   }

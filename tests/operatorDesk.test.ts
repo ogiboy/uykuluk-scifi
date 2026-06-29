@@ -93,6 +93,9 @@ describe("operator desk", () => {
     const output = formatOperatorDeskPlain(await buildOperatorDeskViewModel({ runId: run.runId }));
 
     expect(output).toContain(
+      `- Render plan: pass (11 assets, 3 artifacts) | Review command: pnpm producer review render-plan --run ${run.runId}`,
+    );
+    expect(output).toContain(
       `- Voiceover audio: pass (8s, local-piper, production voice candidate, 42 source words) | Review command: pnpm producer review voice --run ${run.runId}`,
     );
     expect(output).toContain(

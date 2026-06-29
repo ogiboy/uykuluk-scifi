@@ -18,6 +18,7 @@ import { formatReadinessConsole } from "./stages/readinessConsole.js";
 import { renderDraft } from "./stages/render.js";
 import { formatRenderDraftConsole } from "./stages/renderConsole.js";
 import { reviewDraftRender } from "./stages/reviewRender.js";
+import { formatRenderPlanReviewConsole, reviewRenderPlan } from "./stages/reviewRenderPlan.js";
 import { reviewScript } from "./stages/reviewScript.js";
 import { formatVoiceoverReviewConsole, reviewVoiceover } from "./stages/reviewVoiceover.js";
 import { formatRunStatus, readRunStatus } from "./stages/status.js";
@@ -62,6 +63,19 @@ registerGenerationCommands(program, wrap);
 registerOperatorDeskCommand(program, wrap);
 
 const review = program.command("review").description("Run local reviews.");
+review
+  .command("render-plan")
+  .requiredOption("--run <run_id>")
+  .option("--json", "Print the raw render-plan review handoff JSON for automation.")
+  .description("Show the local render-plan and contact-sheet review handoff.")
+  .action(
+    wrap(async (options: { json?: boolean; run: string }) => {
+      const handoff = await reviewRenderPlan(options.run);
+      console.log(
+        options.json ? JSON.stringify(handoff, null, 2) : formatRenderPlanReviewConsole(handoff),
+      );
+    }),
+  );
 review
   .command("voice")
   .requiredOption("--run <run_id>")

@@ -38,12 +38,19 @@ function missingProductionMediaAction(evidenceKey: ProductionMediaStatus["eviden
 
 function passedProductionMediaAction(artifact: ProductionMediaStatus): string {
   if (artifact.evidenceKey === "renderPlan") {
-    return "Review scene-to-asset mapping and the contact sheet before voiceover or render approval.";
+    return renderPlanReviewAction(artifact);
   }
   if (artifact.evidenceKey === "voiceoverAudio") {
     return voiceoverReviewAction(artifact);
   }
   return draftRenderReviewAction(artifact);
+}
+
+function renderPlanReviewAction(artifact: ProductionMediaStatus): string {
+  const reviewPrefix = artifact.reviewCommand
+    ? `Review with ${artifact.reviewCommand}; `
+    : "Review the contact sheet locally; ";
+  return `${reviewPrefix}confirm scene-to-asset mapping and the contact sheet before voiceover or render approval.`;
 }
 
 function voiceoverReviewAction(artifact: ProductionMediaStatus): string {

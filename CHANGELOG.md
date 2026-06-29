@@ -11,6 +11,7 @@ future generated release notes can be inserted predictably.
 
 ### Features
 
+- add `producer review render-plan` for validated contact-sheet and asset-provenance handoff
 - add `producer review voice` to show the local voiceover review handoff before render approval
 
 ### Fixes
@@ -22,6 +23,7 @@ future generated release notes can be inserted predictably.
 
 ### Tests
 
+- cover render-plan review handoff in targeted CLI/stage tests and product UAT
 - cover the voiceover review handoff in targeted tests and product UAT
 
 ### Chores

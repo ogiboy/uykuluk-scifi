@@ -69,7 +69,9 @@
 
 - Harden the Render Plan + Contact Sheet MVP with operator review refinements only where real use
   exposes gaps; the current contact sheet already includes review gates, safe next commands,
-  revision guidance, and blocked upload/publish actions. Do not turn it into render execution.
+  revision guidance, and blocked upload/publish actions. `producer review render-plan` now prints a
+  read-only validated handoff for the contact sheet, asset provenance, timing, scene count, and
+  still-blocked actions. Do not turn it into render execution.
 - Harden local TTS with continued Piper voice-quality QA. Keep models and generated audio ignored;
   the current implemented foundation is deterministic reference WAV, operator audio review Markdown,
   optional configured `local-piper` shell-out, pinned Turkish model setup into ignored `models/`,

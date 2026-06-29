@@ -51,6 +51,11 @@ export async function createVoiceReadyRun({ pnpm, run, scenario, workdir }) {
     label: "generate render plan",
     scenario,
   });
+  run([pnpm, "producer", "review", "render-plan", "--run", runId], {
+    expectOutput: "Contact sheet:",
+    label: "render-plan review handoff is available",
+    scenario,
+  });
   run([pnpm, "producer", "estimate", "--run", runId], { label: "estimate cost", scenario });
   run([pnpm, "producer", "evidence", "--run", runId], { label: "generate evidence", scenario });
   run([pnpm, "producer", "readiness", "--run", runId], {

@@ -37,9 +37,12 @@ describe("Studio run evidence copy", () => {
         artifactPath: "production/render_plan.json",
         evidenceKey: "renderPlan",
         label: "Render plan",
+        reviewCommand: "pnpm producer review render-plan --run run_studio_copy",
         status: "pass",
       }),
-    ).toContain("contact sheet");
+    ).toBe(
+      "Review with pnpm producer review render-plan --run run_studio_copy; confirm scene-to-asset mapping and the contact sheet before voiceover or render approval.",
+    );
     expect(
       productionMediaReviewAction("available", {
         artifactPath: "production/audio/voiceover.wav",
