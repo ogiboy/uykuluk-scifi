@@ -116,6 +116,11 @@ try {
       scenario: "happy path",
     },
   );
+  run([pnpm, "producer", "status", "--run", renderedRunId], {
+    expectOutput: "Render decision: accepted-for-local-review by product-uat",
+    label: "status surfaces local render decision",
+    scenario: "happy path",
+  });
   run([pnpm, "producer", "upload", "private", "--run", renderedRunId], {
     expectFailure: true,
     expectOutput: "requires explicit upload approval",

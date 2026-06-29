@@ -89,7 +89,7 @@ function RunList({
           color: index === selectedIndex ? "green" : undefined,
           key: run.runId,
         },
-        `${index === selectedIndex ? ">" : " "} ${run.runId}  ${run.state}  ${run.readinessStatus}`,
+        `${index === selectedIndex ? ">" : " "} ${run.runId}  ${run.state}  ${run.readinessStatus}  decision:${run.renderDecisionStatus}`,
       ),
     ),
   );
@@ -103,6 +103,7 @@ function SelectedRun({ run }: { run: OperatorDeskSelectedRun }): React.ReactElem
     React.createElement(Text, null, `State: ${run.state}`),
     React.createElement(Text, null, `Evidence: ${run.evidenceStatus}`),
     React.createElement(Text, null, `Readiness: ${run.readinessStatus}`),
+    React.createElement(Text, null, `Render decision: ${renderDecisionSummary(run)}`),
     React.createElement(
       Text,
       null,
@@ -123,6 +124,13 @@ function SelectedRun({ run }: { run: OperatorDeskSelectedRun }): React.ReactElem
       ),
     ),
   );
+}
+
+function renderDecisionSummary(run: OperatorDeskSelectedRun): string {
+  if (run.renderDecision.kind === "present") {
+    return `${run.renderDecision.decision.decision} by ${run.renderDecision.decision.reviewedBy}`;
+  }
+  return run.renderDecision.kind;
 }
 
 function selectedIndex(model: OperatorDeskViewModel): number {

@@ -23,31 +23,35 @@ export const renderDecisionInputSchema = z.strictObject({
 export type RenderDecisionInput = z.input<typeof renderDecisionInputSchema>;
 export type RenderDecision = (typeof renderDecisionValues)[number];
 
-export type RenderDecisionRecord = {
-  blockedActions: string[];
-  createdAt: string;
-  decision: RenderDecision;
-  draftRender: {
-    durationSeconds: number;
-    path: string;
-    reviewCommand: string;
-    sha256: string;
-  };
-  nextSafeAction: string;
-  notes: string;
-  renderApproval: {
-    approvalId: string;
-    approvedRef: string;
-  };
-  reviewedBy: string;
-  runId: string;
-  schemaVersion: 1;
-  voiceover: {
-    mode: string;
-    productionVoiceCandidate: boolean;
-    quality: string;
-  };
-};
+const digestSchema = z.string().regex(/^[a-f0-9]{64}$/);
+
+export const renderDecisionRecordSchema = z.strictObject({
+  blockedActions: z.array(z.string().min(1)),
+  createdAt: z.iso.datetime(),
+  decision: z.enum(renderDecisionValues),
+  draftRender: z.strictObject({
+    durationSeconds: z.number().positive(),
+    path: z.string().min(1),
+    reviewCommand: z.string().min(1),
+    sha256: digestSchema,
+  }),
+  nextSafeAction: z.string().min(1),
+  notes: z.string().min(1),
+  renderApproval: z.strictObject({
+    approvalId: z.string().min(1),
+    approvedRef: digestSchema,
+  }),
+  reviewedBy: z.string().min(1),
+  runId: z.string().min(1),
+  schemaVersion: z.literal(1),
+  voiceover: z.strictObject({
+    mode: z.string().min(1),
+    productionVoiceCandidate: z.boolean(),
+    quality: z.string().min(1),
+  }),
+});
+
+export type RenderDecisionRecord = z.infer<typeof renderDecisionRecordSchema>;
 
 /**
  * Records the operator decision after local draft-render review.

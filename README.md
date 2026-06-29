@@ -183,7 +183,8 @@ agent-tracking state only; runtime code must not require it.
   operator review surface, not a second workflow engine; use `--plain` for scriptable output or
   non-TTY shells.
 - `producer decide render` records the human decision after local draft-render review as durable
-  JSON/Markdown evidence. It does not approve upload or publish.
+  JSON/Markdown evidence. `producer status` and `producer desk` surface the recorded decision and
+  next safe action. It does not approve upload or publish.
 - Script edits use an attributable revision command with before/after snapshots; reviewed or
   approved scripts return to `SCRIPT_GENERATED` and require review/approval again.
 - Production packaging requires explicit script approval for the unchanged reviewed content.

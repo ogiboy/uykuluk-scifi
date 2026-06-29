@@ -8,6 +8,7 @@ import { createRun, loadRun } from "../src/core/runStore";
 import { approveRender } from "../src/stages/approveRender";
 import { renderDraft } from "../src/stages/render";
 import type { RenderDecisionRecord } from "../src/stages/renderDecision";
+import { formatRunStatus, readRunStatus } from "../src/stages/status";
 import { useTempProject } from "./helpers";
 import { prepareVoiceoverReadyRun } from "./renderPipelineHelpers";
 import { createFakeFfmpeg, createFakeFfprobe, renderToolRoot } from "./renderTestHelpers";
@@ -73,6 +74,16 @@ describe("render operator decision", () => {
     );
     expect(run.approvals.map((approval) => approval.target)).not.toContain("upload");
     expect(run.approvals.map((approval) => approval.target)).not.toContain("publish");
+
+    const status = await readRunStatus(runId);
+    expect(status.renderDecision).toMatchObject({
+      kind: "present",
+      decision: { decision: "accepted-for-local-review", reviewedBy: "operator" },
+    });
+    expect(status.nextRecommendedCommand).toContain("Upload remains disabled");
+    expect(formatRunStatus(status)).toContain(
+      "Render decision: accepted-for-local-review by operator",
+    );
   });
 
   it("blocks render decisions before a draft render exists", async () => {

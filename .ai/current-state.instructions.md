@@ -204,7 +204,8 @@
   operator surface only and does not own workflow transitions or mutate run state.
 - `producer decide render` records the human decision after local draft-render review as durable
   JSON/Markdown evidence under `production/render/`. It does not approve upload or publish and keeps
-  the run in `RENDERED`.
+  the run in `RENDERED`. `producer status`, `producer desk`, and product UAT surface the recorded
+  decision so operators do not loop back to render review after a decision is recorded.
 - Readiness diagnostics that strictly parse and revalidate persisted cost quotes, live hard budgets,
   complete production-package integrity, and exact paid-generation cost approval when required.
 - Final readiness diagnostics agree with the post-transition run state.

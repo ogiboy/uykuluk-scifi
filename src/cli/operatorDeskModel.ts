@@ -1,6 +1,7 @@
 import { SafeExitError } from "../core/errors.js";
 import { listRuns } from "../core/runStore.js";
 import type { RunState } from "../core/state.js";
+import type { RenderDecisionStatus } from "../stages/renderDecisionStatus.js";
 import { readRunStatus, type RunStatusSummary } from "../stages/status.js";
 
 const RECENT_RUN_LIMIT = 8;
@@ -17,6 +18,7 @@ export type OperatorDeskRun = {
   evidenceStatus: string;
   nextRecommendedCommand: string;
   readinessStatus: string;
+  renderDecisionStatus: RenderDecisionStatus["kind"];
   runId: string;
   state: RunState;
   updatedAt: string;
@@ -27,6 +29,7 @@ export type OperatorDeskSelectedRun = OperatorDeskRun & {
   blockedActions: string[];
   mediaArtifacts: RunStatusSummary["mediaArtifacts"];
   recentArtifacts: string[];
+  renderDecision: RenderDecisionStatus;
 };
 
 export type OperatorDeskViewModel = {
@@ -112,6 +115,7 @@ export function formatOperatorDeskPlain(model: OperatorDeskViewModel): string {
     `Updated: ${run.updatedAt}`,
     `Evidence: ${run.evidenceStatus}`,
     `Readiness: ${run.readinessStatus}`,
+    `Render decision: ${renderDecisionSummary(run.renderDecision)}`,
     `Approvals/artifacts/warnings: ${run.approvalCount} approvals, ${run.artifactCount} artifacts, ${run.warningCount} warnings`,
     `Blocked actions: ${run.blockedActionCount ?? "unknown"}`,
     "",
@@ -145,6 +149,7 @@ function compactRun(status: RunStatusSummary): OperatorDeskRun {
     evidenceStatus: status.evidenceStatus,
     nextRecommendedCommand: status.nextRecommendedCommand,
     readinessStatus: status.readiness.status,
+    renderDecisionStatus: status.renderDecision.kind,
     runId: status.run.runId,
     state: status.run.state,
     updatedAt: status.run.updatedAt,
@@ -158,5 +163,13 @@ function selectedRun(status: RunStatusSummary): OperatorDeskSelectedRun {
     blockedActions: status.blockedActions,
     mediaArtifacts: status.mediaArtifacts,
     recentArtifacts: status.recentArtifacts,
+    renderDecision: status.renderDecision,
   };
+}
+
+function renderDecisionSummary(decision: RenderDecisionStatus): string {
+  if (decision.kind === "present") {
+    return `${decision.decision.decision} by ${decision.decision.reviewedBy}`;
+  }
+  return decision.kind;
 }

@@ -33,11 +33,13 @@ describe("operator desk", () => {
       evidenceStatus: "missing",
       nextRecommendedCommand: "pnpm producer ideas",
       readinessStatus: "missing",
+      renderDecisionStatus: "missing",
       runId: first.runId,
       state: "NEW",
     });
     expect(model.runDetails.map((run) => run.runId)).toContain(first.runId);
     expect(formatOperatorDeskPlain(model)).toContain(`Selected run: ${first.runId}`);
+    expect(formatOperatorDeskPlain(model)).toContain("Render decision: missing");
   });
 
   it("prints a scriptable plain CLI summary", async () => {
