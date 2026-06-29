@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { readFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { artifactPath } from "../src/core/artifacts";
@@ -7,7 +7,12 @@ import { readLedger } from "../src/core/ledger";
 import { createRun, loadRun } from "../src/core/runStore";
 import { approveRender } from "../src/stages/approveRender";
 import { renderDraft } from "../src/stages/render";
-import type { RenderDecisionRecord } from "../src/stages/renderDecision";
+import {
+  recordRenderDecision,
+  renderDecisionArtifactPaths,
+  type RenderDecisionRecord,
+} from "../src/stages/renderDecision";
+import { readRenderDecisionStatus } from "../src/stages/renderDecisionStatus";
 import { formatRunStatus, readRunStatus } from "../src/stages/status";
 import { useTempProject } from "./helpers";
 import { prepareVoiceoverReadyRun } from "./renderPipelineHelpers";
@@ -103,7 +108,118 @@ describe("render operator decision", () => {
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain("Render decision requires state RENDERED");
   });
+
+  it("records decision records directly for each safe local-review outcome", async () => {
+    const runId = await renderLocalDraft("direct-decisions");
+
+    const accepted = await recordRenderDecision({
+      decision: "accepted-for-local-review",
+      notes: "  Draft timing is acceptable.  ",
+      reviewedBy: "  operator  ",
+      runId,
+    });
+    expect(accepted).toMatchObject({
+      decision: "accepted-for-local-review",
+      nextSafeAction: expect.stringContaining("Upload remains disabled"),
+      notes: "Draft timing is acceptable.",
+      reviewedBy: "operator",
+      runId,
+    });
+
+    const needsRevision = await recordRenderDecision({
+      decision: "needs-revision",
+      notes: "Subtitle timing needs another pass.",
+      reviewedBy: "operator",
+      runId,
+    });
+    expect(needsRevision.nextSafeAction).toContain("regenerate evidence/readiness");
+
+    const rejected = await recordRenderDecision({
+      decision: "rejected",
+      notes: "Do not use this draft.",
+      reviewedBy: "operator",
+      runId,
+    });
+    expect(rejected.nextSafeAction).toContain("Do not use this draft");
+
+    await expect(readFile(renderDecisionArtifactPaths(runId).markdown, "utf8")).resolves.toContain(
+      "## Still Blocked",
+    );
+  });
+
+  it("reports missing, invalid, and stale render decisions fail-closed", async () => {
+    const runId = await renderLocalDraft("decision-status");
+    const run = await loadRun(runId);
+    expect(await readRenderDecisionStatus(run)).toMatchObject({
+      kind: "missing",
+      nextAction: expect.stringContaining(`--run ${runId}`),
+    });
+
+    const decision = await recordRenderDecision({
+      decision: "accepted-for-local-review",
+      notes: "Reviewed locally.",
+      reviewedBy: "operator",
+      runId,
+    });
+    const decisionPath = renderDecisionArtifactPaths(runId).json;
+
+    await writeFile(decisionPath, JSON.stringify({ ...decision, runId: "run_other" }), "utf8");
+    expect(await readRenderDecisionStatus(run)).toMatchObject({
+      kind: "stale",
+      message: "Render decision belongs to a different run.",
+    });
+
+    await writeFile(decisionPath, JSON.stringify(decision), "utf8");
+    expect(await readRenderDecisionStatus({ ...run, state: "ARCHIVED" })).toMatchObject({
+      kind: "stale",
+      message: `Render decision was recorded, but the run is ARCHIVED.`,
+    });
+
+    await writeFile(
+      decisionPath,
+      JSON.stringify({
+        ...decision,
+        draftRender: { ...decision.draftRender, sha256: "f".repeat(64) },
+      }),
+      "utf8",
+    );
+    expect(await readRenderDecisionStatus(run)).toMatchObject({
+      kind: "stale",
+      message: "Render decision was recorded for a different draft render digest.",
+    });
+
+    await writeFile(
+      decisionPath,
+      JSON.stringify({
+        ...decision,
+        renderApproval: { ...decision.renderApproval, approvalId: "approval_other" },
+      }),
+      "utf8",
+    );
+    expect(await readRenderDecisionStatus(run)).toMatchObject({
+      kind: "stale",
+      message: "Render decision was recorded for a different render approval.",
+    });
+
+    await writeFile(decisionPath, JSON.stringify({ schemaVersion: 1 }), "utf8");
+    expect(await readRenderDecisionStatus(run)).toMatchObject({
+      kind: "invalid",
+      nextAction: expect.stringContaining(`--run ${runId}`),
+    });
+    expect(formatRunStatus(await readRunStatus(runId))).toContain("Render decision: invalid");
+  });
 });
+
+async function renderLocalDraft(scope: string): Promise<string> {
+  const runId = await prepareVoiceoverReadyRun();
+  await approveRender(runId);
+  await renderDraft(runId, {
+    ffmpegBinary: await createFakeFfmpeg(renderToolRoot(scope)),
+    ffprobeBinary: await createFakeFfprobe(renderToolRoot(scope)),
+    maxDurationSeconds: 8,
+  });
+  return runId;
+}
 
 function runCli(args: string[]): { status: number | null; stderr: string; stdout: string } {
   const result = spawnSync(

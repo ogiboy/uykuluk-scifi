@@ -140,11 +140,7 @@ function SelectedRun({ run }: { run: OperatorDeskSelectedRun }): React.ReactElem
     ),
     React.createElement(Text, { bold: true }, "Production media"),
     ...run.mediaArtifacts.map((artifact) =>
-      React.createElement(
-        Text,
-        { key: artifact.evidenceKey },
-        `- ${artifact.label}: ${artifact.status}${artifact.detail ? ` (${artifact.detail})` : ""}`,
-      ),
+      React.createElement(Text, { key: artifact.evidenceKey }, formatMediaArtifactLine(artifact)),
     ),
   );
 }
@@ -163,6 +159,19 @@ function renderDecisionSummary(run: OperatorDeskSelectedRun): string {
 }
 
 /**
+ * Formats one production media row for the selected run details panel.
+ *
+ * @param artifact - The media artifact summary to format.
+ * @returns A single display line.
+ */
+function formatMediaArtifactLine(
+  artifact: OperatorDeskSelectedRun["mediaArtifacts"][number],
+): string {
+  const detail = artifact.detail ? ` (${artifact.detail})` : "";
+  return `- ${artifact.label}: ${artifact.status}${detail}`;
+}
+
+/**
  * Determines the initial selected run index for the operator desk.
  *
  * @param model - The operator desk view model.
@@ -173,7 +182,7 @@ function selectedIndex(model: OperatorDeskViewModel): number {
     return 0;
   }
   const index = model.runs.findIndex((run) => run.runId === model.selectedRun?.runId);
-  return index >= 0 ? index : 0;
+  return Math.max(0, index);
 }
 
 /**
