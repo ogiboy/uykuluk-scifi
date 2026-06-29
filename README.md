@@ -117,8 +117,8 @@ agent-tracking state only; runtime code must not require it.
   multi-agent work loads only the tools relevant to the current task.
 - CI, CodeQL, Dependabot, SonarQube, Prettier, ESLint, Vitest, Playwright, modularity, secret-scan,
   and changelog gates.
-- Future Ink dependency is present for a richer CLI/TUI surface after the current commander CLI
-  contracts stabilize.
+- `producer desk` uses Ink for the local terminal workbench when TTY streams are available, while
+  preserving `--plain` output for scripts and CI.
 
 ## Repository Layout
 

@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { buildOperatorDeskViewModel, formatOperatorDeskPlain } from "../src/cli/operatorDeskModel";
@@ -9,7 +9,7 @@ import { createRun, saveRun } from "../src/core/runStore";
 import { recordRenderDecision } from "../src/stages/renderDecision";
 import { useTempProject } from "./helpers";
 import { renderLocalDraft } from "./renderPipelineHelpers";
-import { passingRenderedEvidence } from "./statusOutputEvidenceFixtures";
+import { manualProductionEvidence, passingRenderedEvidence } from "./statusOutputEvidenceFixtures";
 
 const repoRoot = process.cwd();
 
@@ -103,6 +103,53 @@ describe("operator desk", () => {
     expect(output).toContain(
       `- Draft render: pass (8s, intro -> scene -> outro, source frames intro:2/outro:2, frame cadence intro#1=1s assets/intro/frames/intro_frame_00.jpg; intro#2=1s assets/intro/frames/intro_frame_01.jpg; outro#1=1.5s assets/outro/frames/outro_frame_00.jpg; outro#2=1.5s assets/outro/frames/outro_frame_01.jpg, voiceover local-piper production candidate, approval approval_render_status, ffprobe 1280x720 audio) | Review command: pnpm producer review render --run ${run.runId}`,
     );
+  });
+
+  it("surfaces readiness attention and blocked action details in operator desk output", async () => {
+    const run = await createRun();
+    await saveRun({
+      ...run,
+      artifacts: ["diagnostics/readiness.json", "evidence_bundle.json"],
+      state: "READY_FOR_MANUAL_PRODUCTION",
+    });
+    await mkdir(path.dirname(artifactPath(run.runId, "diagnostics/readiness.json")), {
+      recursive: true,
+    });
+    await writeFile(
+      artifactPath(run.runId, "diagnostics/readiness.json"),
+      JSON.stringify({
+        checks: [
+          {
+            message: "Local voiceover audio is missing.",
+            name: "voiceover",
+            nextAction: "pnpm producer voice --run <run_id>",
+            status: "block",
+          },
+          {
+            message: "Upload remains disabled.",
+            name: "publish-safety",
+            status: "warn",
+          },
+        ],
+        currentState: "READY_FOR_MANUAL_PRODUCTION",
+        passed: false,
+        runId: run.runId,
+      }),
+      "utf8",
+    );
+    await writeFile(
+      artifactPath(run.runId, "evidence_bundle.json"),
+      JSON.stringify(manualProductionEvidence(run.runId)),
+      "utf8",
+    );
+
+    const output = formatOperatorDeskPlain(await buildOperatorDeskViewModel({ runId: run.runId }));
+
+    expect(output).toContain("Readiness: blocked (2 checks, 1 block, 1 warn)");
+    expect(output).toContain("- voiceover [block]: Local voiceover audio is missing.");
+    expect(output).toContain(`Next action: pnpm producer voice --run ${run.runId}`);
+    expect(output).toContain("Blocked action details:");
+    expect(output).toContain("TTS disabled until configured and approved.");
   });
 
   it("surfaces the concrete render decision in recent run summaries", async () => {

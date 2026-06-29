@@ -13,6 +13,7 @@ future generated release notes can be inserted predictably.
 
 - add `producer review render-plan` for validated contact-sheet and asset-provenance handoff
 - add `producer review voice` to show the local voiceover review handoff before render approval
+- show readiness attention and blocked action details in `producer desk`
 
 ### Fixes
 
