@@ -6,7 +6,12 @@ import { buildOperatorDeskViewModel, formatOperatorDeskPlain } from "../src/cli/
 import { shouldUsePlainOperatorDeskOutput } from "../src/cli/operatorDeskRunner";
 import { artifactPath } from "../src/core/artifacts";
 import { createRun, saveRun } from "../src/core/runStore";
+import { approveRender } from "../src/stages/approveRender";
+import { renderDraft } from "../src/stages/render";
+import { recordRenderDecision } from "../src/stages/renderDecision";
 import { useTempProject } from "./helpers";
+import { prepareVoiceoverReadyRun } from "./renderPipelineHelpers";
+import { createFakeFfmpeg, createFakeFfprobe, renderToolRoot } from "./renderTestHelpers";
 import { passingRenderedEvidence } from "./statusOutputEvidenceFixtures";
 
 const repoRoot = process.cwd();
@@ -103,6 +108,27 @@ describe("operator desk", () => {
     );
   });
 
+  it("surfaces the concrete render decision in recent run summaries", async () => {
+    const runId = await renderLocalDraft("operator-desk-decision");
+    await recordRenderDecision({
+      decision: "needs-revision",
+      notes: "Subtitle timing needs one more local pass.",
+      reviewedBy: "operator",
+      runId,
+    });
+
+    const model = await buildOperatorDeskViewModel({ runId });
+    const output = formatOperatorDeskPlain(model);
+
+    expect(model.selectedRun).toMatchObject({
+      renderDecisionStatus: "needs-revision by operator",
+      runId,
+    });
+    expect(output).toContain(`> ${runId}  RENDERED`);
+    expect(output).toContain("decision:needs-revision by operator");
+    expect(output).not.toContain("decision:present");
+  });
+
   it("rejects ambiguous run selection", async () => {
     const run = await createRun();
 
@@ -111,3 +137,14 @@ describe("operator desk", () => {
     );
   });
 });
+
+async function renderLocalDraft(scope: string): Promise<string> {
+  const runId = await prepareVoiceoverReadyRun();
+  await approveRender(runId);
+  await renderDraft(runId, {
+    ffmpegBinary: await createFakeFfmpeg(renderToolRoot(scope)),
+    ffprobeBinary: await createFakeFfprobe(renderToolRoot(scope)),
+    maxDurationSeconds: 8,
+  });
+  return runId;
+}

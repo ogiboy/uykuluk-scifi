@@ -19,7 +19,7 @@ export type OperatorDeskRun = {
   evidenceStatus: string;
   nextRecommendedCommand: string;
   readinessStatus: string;
-  renderDecisionStatus: RenderDecisionStatus["kind"];
+  renderDecisionStatus: string;
   runId: string;
   state: RunState;
   updatedAt: string;
@@ -134,7 +134,7 @@ export function formatOperatorDeskPlain(model: OperatorDeskViewModel): string {
     "Recent runs:",
     ...model.runs.map((candidate) => {
       const marker = candidate.runId === run.runId ? ">" : " ";
-      return `${marker} ${candidate.runId}  ${candidate.state}  ${candidate.updatedAt}`;
+      return `${marker} ${candidate.runId}  ${candidate.state}  ${candidate.updatedAt}  decision:${candidate.renderDecisionStatus}`;
     }),
   ].join("\n");
 }
@@ -164,7 +164,7 @@ function compactRun(status: RunStatusSummary): OperatorDeskRun {
     evidenceStatus: status.evidenceStatus,
     nextRecommendedCommand: status.nextRecommendedCommand,
     readinessStatus: status.readiness.status,
-    renderDecisionStatus: status.renderDecision.kind,
+    renderDecisionStatus: renderDecisionSummary(status.renderDecision),
     runId: status.run.runId,
     state: status.run.state,
     updatedAt: status.run.updatedAt,
