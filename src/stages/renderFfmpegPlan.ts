@@ -99,6 +99,16 @@ export function buildFfmpegArgs(input: {
 }
 
 /**
+ * Builds read-only FFmpeg arguments for validating the final draft render output.
+ *
+ * @param outputPath - The validated draft render artifact path to inspect.
+ * @returns FFmpeg arguments that read the artifact and discard decoded output.
+ */
+export function buildFfmpegReviewArgs(outputPath: string): string[] {
+  return ["-v", "error", "-i", outputPath, "-f", "null", "-"];
+}
+
+/**
  * Creates a concat and subtitles filter chain for a single labeled output.
  *
  * @param input.concatInputs - The FFmpeg input label sequence for the concat filter.

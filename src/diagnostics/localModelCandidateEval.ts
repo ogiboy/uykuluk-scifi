@@ -4,6 +4,7 @@ import { ProducerConfig } from "../config/schema.js";
 import { writeTextFile } from "../utils/fs.js";
 import { nowIso } from "../utils/time.js";
 import { writeJsonFile } from "../utils/json.js";
+import { shellQuote } from "../utils/shell.js";
 import {
   applyLocalModelEvalOverrides,
   LocalModelEvalLlmOverrides,
@@ -174,24 +175,17 @@ function localModelCandidateOperatorGuidance(
       decision: "candidate-ready",
       message:
         "A candidate passed the parser-contract checks. Review the report, then run a single-model eval before changing producer.config.json.",
-      nextCommand: `pnpm producer eval local-model --llm-mode ${shellArg(
+      nextCommand: `pnpm producer eval local-model --llm-mode ${shellQuote(
         providerMode,
-      )} --model ${shellArg(recommendation.configuredModel)}`,
+      )} --model ${shellQuote(recommendation.configuredModel)}`,
     };
   }
   return {
     decision: "try-more-candidates",
     message:
       "No candidate passed all parser-contract checks. Keep the current project config unchanged and compare different local models or runtimes.",
-    nextCommand: `pnpm producer eval local-model-candidates --llm-mode ${shellArg(
+    nextCommand: `pnpm producer eval local-model-candidates --llm-mode ${shellQuote(
       providerMode,
     )} --candidate <another-model>`,
   };
-}
-
-function shellArg(value: string): string {
-  if (/^[A-Za-z0-9._:/@+-]+$/.test(value)) {
-    return value;
-  }
-  return `'${value.replaceAll("'", String.raw`'"'"'`)}'`;
 }

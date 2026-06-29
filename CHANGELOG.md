@@ -9,7 +9,18 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Features
+
+- add reviewable FFmpeg command evidence for local draft renders
+- print local-only draft render review handoff after `producer render`
+- add read-only `producer review render` handoff for rendered drafts
+- surface draft render review commands in status, evidence, and Studio media summaries
+- record final-artifact FFmpeg review commands in draft render evidence
+- use the read-only draft render review command as the rendered-run next action
+
+### Fixes
+
+- make draft-render review commands executable-only, read-only, and tamper-checked
 
 ## v0.47.0 (2026-06-28)
 

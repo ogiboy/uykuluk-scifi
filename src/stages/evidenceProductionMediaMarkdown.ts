@@ -13,6 +13,7 @@ import type { readVoiceoverAudioEvidence } from "./voiceoverEvidence.js";
  * @returns Three summary strings, one for each evidence object
  */
 export function productionMediaSummary(
+  runId: string,
   renderPlan: Awaited<ReturnType<typeof readRenderPlanEvidence>>,
   voiceoverAudio: Awaited<ReturnType<typeof readVoiceoverAudioEvidence>>,
   draftRender: Awaited<ReturnType<typeof readDraftRenderEvidence>>,
@@ -23,7 +24,7 @@ export function productionMediaSummary(
     draftRenderSummary(draftRender),
   ];
   const reviewRows = productionMediaStatus(
-    { artifacts: [] },
+    { artifacts: [], runId },
     { draftRender, renderPlan, voiceoverAudio },
   );
   return summaries.map(

@@ -42,7 +42,7 @@ describe("producer render CLI", () => {
 
     expect(result.status).toBe(0);
     expect(JSON.parse(result.stdout) as unknown).toMatchObject({
-      schemaVersion: 5,
+      schemaVersion: 6,
       runId,
       renderApproval: {
         approvalId: expect.stringMatching(/^approval_/),
@@ -109,6 +109,9 @@ describe("producer render CLI", () => {
         audio: { codecName: "aac" },
         video: { height: 720, width: 1280 },
       },
+      ffmpeg: {
+        reviewCommand: expect.stringContaining("production/render/draft.mp4"),
+      },
     });
     await expect(loadRun(runId)).resolves.toMatchObject({
       artifacts: expect.arrayContaining([
@@ -120,6 +123,40 @@ describe("producer render CLI", () => {
     await expect(pathExists(artifactPath(runId, "production/render/draft.mp4"))).resolves.toBe(
       true,
     );
+  });
+
+  it("prints a local-only review handoff after draft rendering", async () => {
+    const runId = await prepareVoiceoverReadyRun();
+    await approveRender(runId);
+    const fakeBinPath = await createFakeRenderPath(renderToolRoot("cli-handoff"));
+
+    const result = runCli(["render", "--run", runId], {
+      PATH: `${fakeBinPath}${path.delimiter}${process.env.PATH ?? ""}`,
+    });
+
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain("Draft render available: production/render/draft.mp4");
+    expect(result.stdout).toContain("Review document: production/render/draft_review.md");
+    expect(result.stdout).toContain("Manifest: production/render/render_manifest.json");
+    expect(result.stdout).toContain("FFmpeg review command:");
+    expect(result.stdout).toContain(artifactPath(runId, "production/render/draft.mp4"));
+    expect(result.stdout).toContain("upload and publish remain disabled");
+
+    const review = runCli(["review", "render", "--run", runId]);
+
+    expect(review.status).toBe(0);
+    expect(review.stdout).toContain("Draft render available: production/render/draft.mp4");
+    expect(review.stdout).toContain("Review document: production/render/draft_review.md");
+    expect(review.stdout).toContain("upload and publish remain disabled");
+  });
+
+  it("blocks render review before a draft render exists", async () => {
+    const runId = await prepareVoiceoverReadyRun();
+
+    const result = runCli(["review", "render", "--run", runId]);
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain("Draft render review is not available yet");
   });
 });
 

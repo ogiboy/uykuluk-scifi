@@ -64,16 +64,15 @@ describe("Studio read-only run summaries", () => {
 
   it("reads run detail with reviewable evidence and artifact flags", async () => {
     const runId = await createRenderedStudioRunFixture();
-
     const detail = await getStudioRunDetail(runId);
-
     expect(detail).toMatchObject({
       runId,
       state: "RENDERED",
       evidence: {
         currentState: "RENDERED",
-        nextRecommendedCommand: "Manual final draft review. Upload remains approval-gated.",
+        nextRecommendedCommand: "pnpm producer review render --run <run_id>",
       },
+      nextRecommendedCommand: `pnpm producer review render --run ${runId}`,
       readiness: { passed: true },
     });
     expect((detail as { readinessChecks?: unknown })?.readinessChecks).toEqual([
@@ -110,6 +109,7 @@ describe("Studio read-only run summaries", () => {
           "8s, intro -> scene -> outro, source frames intro:2/outro:2, frame cadence intro#1=1s assets/intro/frames/intro_frame_00.jpg; intro#2=1s assets/intro/frames/intro_frame_01.jpg; outro#1=1.5s assets/outro/frames/outro_frame_00.jpg; outro#2=1.5s assets/outro/frames/outro_frame_01.jpg, voiceover local-piper production candidate, approval approval_render_fixture, ffprobe 1280x720 audio",
         evidenceKey: "draftRender",
         label: "Draft render",
+        reviewCommand: `pnpm producer review render --run ${runId}`,
         status: "pass",
       },
     ]);
@@ -166,7 +166,7 @@ describe("Studio read-only run summaries", () => {
         }),
         expect.objectContaining({
           path: "production/render/render_manifest.json",
-          description: expect.stringContaining("ffprobe media evidence"),
+          description: expect.stringMatching(/ffprobe media evidence.*review command/),
           group: "Audio And Render",
           kind: "json",
         }),

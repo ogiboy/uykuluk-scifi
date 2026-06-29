@@ -14,6 +14,8 @@ import { publishSchedulePlaceholder, uploadPrivatePlaceholder } from "./stages/d
 import { runReadiness } from "./stages/readiness.js";
 import { formatReadinessConsole } from "./stages/readinessConsole.js";
 import { renderDraft } from "./stages/render.js";
+import { formatRenderDraftConsole } from "./stages/renderConsole.js";
+import { reviewDraftRender } from "./stages/reviewRender.js";
 import { reviewScript } from "./stages/reviewScript.js";
 import { formatRunStatus, readRunStatus } from "./stages/status.js";
 import { generateVoiceoverAudio } from "./stages/voice.js";
@@ -67,6 +69,19 @@ review
         options.json
           ? JSON.stringify(result, null, 2)
           : `Script reviewed. Warnings: ${result.warnings.length}`,
+      );
+    }),
+  );
+review
+  .command("render")
+  .requiredOption("--run <run_id>")
+  .option("--json", "Print the raw draft render manifest JSON for automation.")
+  .description("Show the local draft render review handoff.")
+  .action(
+    wrap(async (options: { json?: boolean; run: string }) => {
+      const manifest = await reviewDraftRender(options.run);
+      console.log(
+        options.json ? JSON.stringify(manifest, null, 2) : formatRenderDraftConsole(manifest),
       );
     }),
   );
@@ -166,9 +181,7 @@ program
     wrap(async (options: { json?: boolean; run: string }) => {
       const manifest = await renderDraft(options.run);
       console.log(
-        options.json
-          ? JSON.stringify(manifest, null, 2)
-          : `Draft render generated: ${manifest.output.path}`,
+        options.json ? JSON.stringify(manifest, null, 2) : formatRenderDraftConsole(manifest),
       );
     }),
   );

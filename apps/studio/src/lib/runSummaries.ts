@@ -134,7 +134,7 @@ export async function getStudioRunDetail(runId: string): Promise<StudioRunDetail
     diagnostics: await readStudioRunDiagnostics(root, runId, record.artifacts ?? []),
     evidence: evidence.snapshot,
     productionMedia: productionMediaStatus(
-      { artifacts: record.artifacts ?? [] },
+      { artifacts: record.artifacts ?? [], runId: record.runId },
       evidence.snapshot,
     ),
     readiness: readiness.snapshot,

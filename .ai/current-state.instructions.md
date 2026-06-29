@@ -76,10 +76,15 @@
   expands committed intro/outro source-frame sequences into FFmpeg inputs when enough review time
   exists, composes lower-third, popup-card, waveform, and watermark overlays when available, records
   the exact intro-to-outro timeline, source-frame counts/cadence, overlay roles/placements, render
-  approval ID/reference, and voiceover classification in the manifest, evidence, and readiness
-  summaries, validates the output with `ffprobe` media stream evidence, and writes an
-  operator-readable final local review checklist with deterministic-reference audio labeled as a
-  local timing draft and with upload/public-scheduled publish still disabled.
+  approval ID/reference, voiceover classification, actual temporary-output FFmpeg execution args,
+  and read-only FFmpeg review command for the final draft artifact in the manifest, evidence, and
+  readiness summaries, validates the output with `ffprobe` media stream evidence, and writes an
+  operator-readable final local review checklist. The non-JSON CLI handoff and read-only
+  `producer review render` command point to the MP4, manifest, review document, and local-only next
+  action, with deterministic-reference audio labeled as a local timing draft. CLI status, evidence
+  Markdown, and the read-only Studio production-media panel surface the same review command only
+  when current draft-render evidence passes, and rendered runs use the read-only review command as
+  their next safe action with upload/public-scheduled publish still disabled.
 - Provider-backed idea and production-package stages schema-validate and normalize common local
   model JSON variants before artifact writes, while rejecting malformed or English operator-facing
   payloads fail-closed.
@@ -396,7 +401,8 @@ Corepack/PATH before treating failures as product failures.
 - FFmpeg draft render currently focuses on a local review MP4 using intro/outro source-card bookends
   or source-frame sequences, scene-timed background plates, subtitle burn-in, lower-third,
   popup-card, waveform, watermark overlays, voiceover audio, render manifest evidence, source-frame
-  evidence/readiness summaries, and an operator review checklist. Render-ready intro/outro MP4 clips
+  evidence/readiness summaries, a stable read-only FFmpeg review command in the manifest and
+  draft-render evidence JSON, and an operator review checklist. Render-ready intro/outro MP4 clips
   for reuse outside the draft renderer and broader visual polish remain follow-up work.
 - Upload and publish are intentionally disabled scaffolds.
 - Manual analytics import/reporting and the basic read-only Studio analytics overview are local-only

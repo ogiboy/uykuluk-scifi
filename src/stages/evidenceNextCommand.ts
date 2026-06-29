@@ -184,7 +184,7 @@ function manualProductionNextCommand(
  */
 function renderApprovedNextCommand(draftRender: DraftRenderNextStep): string {
   if (draftRender?.status === "pass") {
-    return renderedDraftReviewCommand(draftRender);
+    return renderedDraftReviewCommand();
   }
   return "pnpm producer render --run <run_id>";
 }
@@ -197,7 +197,7 @@ function renderApprovedNextCommand(draftRender: DraftRenderNextStep): string {
  */
 function renderedNextCommand(draftRender: DraftRenderNextStep): string {
   if (draftRender?.status === "pass") {
-    return renderedDraftReviewCommand(draftRender);
+    return renderedDraftReviewCommand();
   }
   if (draftRender?.status === "block") {
     return "Regenerate evidence with pnpm producer evidence --run <run_id>; if draft artifacts remain blocked, revise upstream artifacts before a new render approval.";
@@ -208,12 +208,8 @@ function renderedNextCommand(draftRender: DraftRenderNextStep): string {
 /**
  * Chooses the final draft review instruction for a rendered draft.
  *
- * @param draftRender - The draft render state used to determine the review message.
  * @returns A command or instruction for the final draft review step.
  */
-function renderedDraftReviewCommand(draftRender: DraftRenderNextStep): string {
-  if (draftRender?.voiceoverProductionVoiceCandidate === false) {
-    return "Review local timing draft; regenerate voiceover with reviewed local Piper audio before final production review.";
-  }
-  return "Manual final draft review. Upload remains approval-gated.";
+function renderedDraftReviewCommand(): string {
+  return "pnpm producer review render --run <run_id>";
 }

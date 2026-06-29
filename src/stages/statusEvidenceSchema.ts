@@ -93,6 +93,7 @@ const draftRenderPassSchema = z.looseObject({
   sourceFrameCadence: z.array(z.string()),
   reviewPath: z.string().min(1),
   reviewChecklist: z.array(z.string()),
+  ffmpegReviewCommand: z.string().min(1),
   voiceoverMode: z.enum(["deterministic-local", "local-piper"]),
   voiceoverProductionVoiceCandidate: z.boolean(),
   voiceoverQuality: z.enum(["deterministic-local-reference", "local-piper"]),

@@ -12,6 +12,7 @@ export type EvidenceMediaStatus = {
   artifactCount?: unknown;
   assetCount?: unknown;
   durationSeconds?: unknown;
+  ffmpegReviewCommand?: unknown;
   mediaProbe?: unknown;
   message?: unknown;
   mode?: unknown;
@@ -38,6 +39,7 @@ export type ProductionMediaStatus = {
   detail?: string;
   evidenceKey: "draftRender" | "renderPlan" | "voiceoverAudio";
   label: string;
+  reviewCommand?: string;
   status: "block" | "missing" | "pass" | "recorded";
 };
 
@@ -52,7 +54,7 @@ const PRODUCTION_MEDIA_ARTIFACTS = [
 ] as const;
 
 export function productionMediaStatus(
-  run: { artifacts: readonly string[] },
+  run: { artifacts: readonly string[]; runId?: string },
   evidence: EvidenceStatus | null,
 ): ProductionMediaStatus[] {
   return PRODUCTION_MEDIA_ARTIFACTS.map((item) => {
@@ -62,6 +64,7 @@ export function productionMediaStatus(
       detail: mediaArtifactDetail(item.evidenceKey, evidence?.[item.evidenceKey], status),
       evidenceKey: item.evidenceKey,
       label: item.label,
+      reviewCommand: mediaReviewCommand(run.runId, item.evidenceKey, status),
       status,
     };
   });
@@ -81,6 +84,17 @@ function mediaArtifactStatus(
     return evidenceStatus;
   }
   return run.artifacts.includes(artifactPath) ? "recorded" : "missing";
+}
+
+function mediaReviewCommand(
+  runId: string | undefined,
+  evidenceKey: ProductionMediaStatus["evidenceKey"],
+  status: ProductionMediaStatus["status"],
+): string | undefined {
+  if (runId && evidenceKey === "draftRender" && status === "pass") {
+    return `pnpm producer review render --run ${runId}`;
+  }
+  return undefined;
 }
 
 function mediaArtifactDetail(

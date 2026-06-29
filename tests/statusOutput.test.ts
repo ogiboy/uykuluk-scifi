@@ -141,11 +141,9 @@ describe("operator status output", () => {
       "- Draft render: pass (8s, intro -> scene -> outro, source frames intro:2/outro:2, frame cadence intro#1=1s assets/intro/frames/intro_frame_00.jpg; intro#2=1s assets/intro/frames/intro_frame_01.jpg; outro#1=1.5s assets/outro/frames/outro_frame_00.jpg; outro#2=1.5s assets/outro/frames/outro_frame_01.jpg, voiceover local-piper production candidate, approval approval_render_status, ffprobe 1280x720 audio)",
     );
     expect(output).toContain(
-      "  Review: Review the MP4, manifest, and draft checklist locally; upload and publish remain disabled.",
+      `  Review: Review with pnpm producer review render --run ${run.runId}; upload and publish remain disabled.`,
     );
-    expect(output).toContain(
-      "Next safe action: Manual final draft review. Upload remains approval-gated.",
-    );
+    expect(output).toContain(`Next safe action: pnpm producer review render --run ${run.runId}`);
   });
 
   it("recommends idea approval before evidence exists", async () => {
