@@ -94,6 +94,28 @@ try {
     label: "rendered readiness is current",
     scenario: "happy path",
   });
+  run(
+    [
+      pnpm,
+      "producer",
+      "decide",
+      "render",
+      "--run",
+      renderedRunId,
+      "--decision",
+      "accepted-for-local-review",
+      "--notes",
+      "Product UAT accepted this local draft for manual channel review.",
+      "--reviewed-by",
+      "product-uat",
+      "--json",
+    ],
+    {
+      expectOutput: '"decision": "accepted-for-local-review"',
+      label: "record local render review decision",
+      scenario: "happy path",
+    },
+  );
   run([pnpm, "producer", "upload", "private", "--run", renderedRunId], {
     expectFailure: true,
     expectOutput: "requires explicit upload approval",

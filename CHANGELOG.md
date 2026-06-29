@@ -20,6 +20,7 @@ future generated release notes can be inserted predictably.
 - add `producer desk`, an Ink-based local operator workbench with scriptable plain output
 - add `producer decide render` to persist local draft-render operator decisions without approving
   upload or publish
+- cover durable local render decisions in the clean-copy product UAT gate
 
 ## v0.48.0 (2026-06-29)
 
