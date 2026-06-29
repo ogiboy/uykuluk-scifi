@@ -9,6 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
+_No unreleased changes yet._
+
+## v0.49.0 (2026-06-29)
+
 ### Features
 
 - add `producer desk`, an Ink-based local operator workbench with scriptable plain output
