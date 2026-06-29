@@ -17,6 +17,8 @@ future generated release notes can be inserted predictably.
 
 - route post-voiceover next actions through `producer review voice` before render approval
 - surface the same voiceover review command in Studio production-media rows
+- surface local media review commands in the operator desk production-media rows
+- keep render decisions single-record and stale when their approval reference changes
 
 ### Tests
 

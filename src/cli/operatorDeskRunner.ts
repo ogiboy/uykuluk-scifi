@@ -17,9 +17,26 @@ export async function runOperatorDesk(options: RunOperatorDeskOptions): Promise<
     latest: options.latest,
     runId: options.run,
   });
-  if (options.plain || process.stdout.isTTY !== true) {
+  if (shouldUsePlainOperatorDeskOutput(options)) {
     console.log(formatOperatorDeskPlain(model));
     return;
   }
   await renderOperatorDesk(model);
+}
+
+/**
+ * Decides whether the operator desk should use non-interactive plain output.
+ *
+ * @param options - CLI options that control output mode.
+ * @param streams - Optional stream TTY state for tests.
+ * @returns `true` when Ink should not be mounted.
+ */
+export function shouldUsePlainOperatorDeskOutput(
+  options: Pick<RunOperatorDeskOptions, "plain">,
+  streams: { stdinIsTTY?: boolean; stdoutIsTTY?: boolean } = {
+    stdinIsTTY: process.stdin.isTTY,
+    stdoutIsTTY: process.stdout.isTTY,
+  },
+): boolean {
+  return options.plain === true || streams.stdoutIsTTY !== true || streams.stdinIsTTY !== true;
 }

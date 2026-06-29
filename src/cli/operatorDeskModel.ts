@@ -3,6 +3,7 @@ import { listRuns } from "../core/runStore.js";
 import type { RunState } from "../core/state.js";
 import type { RenderDecisionStatus } from "../stages/renderDecisionStatus.js";
 import { readRunStatus, type RunStatusSummary } from "../stages/status.js";
+import { formatProductionMediaStatus, type ProductionMediaStatus } from "../stages/statusMedia.js";
 
 const RECENT_RUN_LIMIT = 8;
 
@@ -123,10 +124,7 @@ export function formatOperatorDeskPlain(model: OperatorDeskViewModel): string {
     `  ${run.nextRecommendedCommand}`,
     "",
     "Production media:",
-    ...run.mediaArtifacts.map((artifact) => {
-      const detail = artifact.detail ? ` (${artifact.detail})` : "";
-      return `- ${artifact.label}: ${artifact.status}${detail}`;
-    }),
+    ...run.mediaArtifacts.map(formatOperatorDeskMediaArtifactLine),
     "",
     "Recent artifacts:",
     ...(run.recentArtifacts.length > 0
@@ -139,6 +137,17 @@ export function formatOperatorDeskPlain(model: OperatorDeskViewModel): string {
       return `${marker} ${candidate.runId}  ${candidate.state}  ${candidate.updatedAt}`;
     }),
   ].join("\n");
+}
+
+/**
+ * Formats a production media row for the operator desk.
+ *
+ * @param artifact - The media artifact summary to format.
+ * @returns A single display line, including the local review command when one exists.
+ */
+export function formatOperatorDeskMediaArtifactLine(artifact: ProductionMediaStatus): string {
+  const review = artifact.reviewCommand ? ` | Review command: ${artifact.reviewCommand}` : "";
+  return `${formatProductionMediaStatus(artifact)}${review}`;
 }
 
 /**
