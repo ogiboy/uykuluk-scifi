@@ -5,6 +5,10 @@
 - Keep CLI/core contracts stable.
 - Keep `.ai/` guidance aligned with the source tree without making `.ai/` part of runtime execution.
 - Keep `pnpm qa:usage` passing after workflow changes.
+- Keep `pnpm qa:product` passing before broad production-loop PRs or merge-adjacent handoff; it is
+  the optional product UAT gate for happy-path, malicious, stale, tampered, and publish-blocked
+  local workflows plus manual analytics import/report feedback and Studio read-only service
+  visibility.
 - Keep visual asset inventory and the read-only Studio `/assets` page current.
 - Keep content and asset guard coverage aligned with the operator checklist.
 - Keep `apps/studio` thin until shared service contracts exist.

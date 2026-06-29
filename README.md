@@ -444,8 +444,14 @@ Run the full local gate before push-ready handoff:
 ```bash
 pnpm check
 pnpm qa:usage
+pnpm qa:product
 pnpm version:plan
 ```
+
+`pnpm qa:product` is the broader optional product UAT gate for PR-ready production-loop work. It
+exercises local draft-render review, malicious/incorrect order attempts, stale/tampered evidence,
+disabled upload/publish, manual analytics import/report feedback, and Studio read-only service
+visibility in an isolated clean copy.
 
 Focused gates:
 
@@ -457,6 +463,7 @@ pnpm build:smoke
 pnpm test
 pnpm studio:typecheck
 pnpm studio:build
+pnpm qa:product
 pnpm qa:browser
 pnpm qa:modularity
 pnpm security:check
