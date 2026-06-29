@@ -9,7 +9,17 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Features
+
+- add `producer review voice` to show the local voiceover review handoff before render approval
+
+### Tests
+
+- cover the voiceover review handoff in targeted tests and product UAT
+
+### Chores
+
+- keep local model download directories ignored while tracking the `models/` placeholder
 
 ## v0.49.0 (2026-06-29)
 

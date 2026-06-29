@@ -61,7 +61,8 @@
   an explicit listen-before-render decision boundary and exact next safe commands. Evidence,
   readiness, status, and blocked-action summaries mark deterministic-local WAVs as timing/reference
   only until reviewed local Piper audio exists. Next-action guidance explicitly says render approval
-  with deterministic-local audio is only for a local timing draft.
+  with deterministic-local audio is only for a local timing draft. `producer review voice` gives
+  operators a read-only handoff from validated voiceover evidence before render approval.
 - `pnpm tts:piper:setup` downloads the pinned CPU-friendly Turkish
   `speaches-ai/piper-tr_TR-fahrettin-medium` model into ignored `models/` and prints the matching
   local config override for `local-piper`.
@@ -352,6 +353,7 @@ pnpm producer desk --plain
 pnpm producer list-runs
 pnpm producer list-runs --json
 pnpm producer voice --run <run_id> [--json]
+pnpm producer review voice --run <run_id> [--json]
 pnpm producer approve render --run <run_id> [--json]
 pnpm producer render --run <run_id> [--json]
 pnpm producer decide render --run <run_id> --decision accepted-for-local-review --notes "<notes>" [--json]

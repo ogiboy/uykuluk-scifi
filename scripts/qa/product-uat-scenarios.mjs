@@ -63,6 +63,11 @@ export async function createVoiceReadyRun({ pnpm, run, scenario, workdir }) {
     label: "generate deterministic voiceover",
     scenario,
   });
+  run([pnpm, "producer", "review", "voice", "--run", runId], {
+    expectOutput: "Production voice candidate: false",
+    label: "voiceover review handoff is available",
+    scenario,
+  });
   return runId;
 }
 

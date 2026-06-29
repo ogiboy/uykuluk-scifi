@@ -288,6 +288,8 @@ pnpm producer readiness --run <run_id>
 pnpm producer readiness --run <run_id> --json
 pnpm producer voice --run <run_id> # optional, only after local TTS is explicitly enabled
 pnpm producer voice --run <run_id> --json
+pnpm producer review voice --run <run_id>
+pnpm producer review voice --run <run_id> --json
 pnpm producer approve render --run <run_id>
 pnpm producer approve render --run <run_id> --json
 pnpm producer render --run <run_id>
@@ -597,6 +599,9 @@ requires a local `piper` binary and ignored model files configured with `piperMo
 SHA-256 digests used for the WAV. Do not commit downloaded voice models or generated audio.
 `producer voice` also writes `production/audio/voiceover_review.md` so the operator can check
 timing, pacing, pronunciation, source binding, and provider provenance before render approval.
+`producer review voice --run <run_id>` prints the same local audio review handoff from validated
+voiceover evidence and keeps deterministic audio labeled as a timing draft input, not a production
+voice approval.
 
 `producer render` requires `ffmpeg` on `PATH` unless called through a test harness with an explicit
 binary. The draft render is a local review artifact and may be regenerated after approval; its

@@ -76,7 +76,8 @@
   provider model/config digest provenance, local smoke evidence, and `producer doctor`
   setup/remediation next actions. Evidence/readiness/status now mark deterministic-local WAVs as
   timing/reference only, and next-action guidance limits render approval with that audio to local
-  timing drafts. Keep the listen-before-render decision boundary explicit.
+  timing drafts. `producer review voice` now prints the validated local audio review handoff before
+  render approval. Keep the listen-before-render decision boundary explicit.
 - Harden FFmpeg draft render visual polish; the current foundation is exact-approval-gated local MP4
   with intro/outro source-card bookends or source-frame sequences, scene-timed background plates,
   subtitle burn-in, lower-third, popup-card, waveform, watermark overlays, render manifest evidence,
