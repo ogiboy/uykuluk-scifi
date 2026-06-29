@@ -30,7 +30,7 @@ describe("Studio read-only run summaries", () => {
       warnings: ["needs fact check"],
     });
     await writeEvidence(first.runId, {
-      nextRecommendedCommand: "pnpm producer approve render --run <run_id>",
+      nextRecommendedCommand: "pnpm producer review voice --run <run_id>",
       blockedActions: [
         "Render plan not generated; run pnpm producer render-plan --run <run_id> before TTS/render work.",
         "Public/scheduled publish disabled by default.",
@@ -54,7 +54,7 @@ describe("Studio read-only run summaries", () => {
         `Render plan not generated; run pnpm producer render-plan --run ${first.runId} before TTS/render work.`,
         "Public/scheduled publish disabled by default.",
       ],
-      nextRecommendedCommand: `pnpm producer approve render --run ${first.runId}`,
+      nextRecommendedCommand: `pnpm producer review voice --run ${first.runId}`,
       readinessPassed: true,
       state: "READY_FOR_MANUAL_PRODUCTION",
       warningCount: 1,
@@ -94,6 +94,7 @@ describe("Studio read-only run summaries", () => {
         detail: "11 assets, 3 artifacts",
         evidenceKey: "renderPlan",
         label: "Render plan",
+        reviewCommand: `pnpm producer review render-plan --run ${runId}`,
         status: "pass",
       },
       {
@@ -101,6 +102,7 @@ describe("Studio read-only run summaries", () => {
         detail: "8s, local-piper, production voice candidate, 42 source words",
         evidenceKey: "voiceoverAudio",
         label: "Voiceover audio",
+        reviewCommand: `pnpm producer review voice --run ${runId}`,
         status: "pass",
       },
       {
@@ -153,7 +155,7 @@ describe("Studio read-only run summaries", () => {
           exists: true,
           group: "Audio And Render",
           kind: "markdown",
-          operatorAction: expect.stringContaining("pacing"),
+          operatorAction: expect.stringContaining("producer review voice"),
           preview: expect.stringContaining("Voiceover Review"),
         }),
         expect.objectContaining({
@@ -200,9 +202,7 @@ describe("Studio read-only run summaries", () => {
         status: "block",
       },
     ]);
-
     const detail = await getStudioRunDetail(run.runId);
-
     expect(detail?.readinessChecks).toEqual([
       {
         message: "costs/estimate.json is missing.",

@@ -89,5 +89,8 @@ async function renderDecisionStaleReason(
   if (decision.renderApproval.approvalId !== manifest.renderApproval.approvalId) {
     return "Render decision was recorded for a different render approval.";
   }
+  if (decision.renderApproval.approvedRef !== manifest.renderApproval.approvedRef) {
+    return "Render decision was recorded for a different render approval ref.";
+  }
   return null;
 }

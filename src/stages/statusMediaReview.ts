@@ -38,18 +38,28 @@ function missingProductionMediaAction(evidenceKey: ProductionMediaStatus["eviden
 
 function passedProductionMediaAction(artifact: ProductionMediaStatus): string {
   if (artifact.evidenceKey === "renderPlan") {
-    return "Review scene-to-asset mapping and the contact sheet before voiceover or render approval.";
+    return renderPlanReviewAction(artifact);
   }
   if (artifact.evidenceKey === "voiceoverAudio") {
-    return voiceoverReviewAction(artifact.detail);
+    return voiceoverReviewAction(artifact);
   }
   return draftRenderReviewAction(artifact);
 }
 
-function voiceoverReviewAction(detail: string | undefined): string {
-  return detail?.includes("timing/reference only")
-    ? "Use this audio only for local timing review; regenerate reviewed production voice before final render review."
-    : "Listen locally and verify pronunciation, pacing, and tone before render approval.";
+function renderPlanReviewAction(artifact: ProductionMediaStatus): string {
+  const reviewPrefix = artifact.reviewCommand
+    ? `Review with ${artifact.reviewCommand}; `
+    : "Review the contact sheet locally; ";
+  return `${reviewPrefix}confirm scene-to-asset mapping and the contact sheet before voiceover or render approval.`;
+}
+
+function voiceoverReviewAction(artifact: ProductionMediaStatus): string {
+  const reviewPrefix = artifact.reviewCommand
+    ? `Review with ${artifact.reviewCommand}; `
+    : "Review the voiceover checklist and WAV locally; ";
+  return artifact.detail?.includes("timing/reference only")
+    ? `${reviewPrefix}use this audio only for local timing review; regenerate reviewed production voice before final render review.`
+    : `${reviewPrefix}listen locally and verify pronunciation, pacing, and tone before render approval.`;
 }
 
 function draftRenderReviewAction(artifact: ProductionMediaStatus): string {

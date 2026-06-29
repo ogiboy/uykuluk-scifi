@@ -27,7 +27,10 @@ runs/*
 
 /diagnostics/
 /analytics/
-/models/
+# Local model downloads and smoke configs are machine-specific.
+/models/llm/
+/models/piper/
+/models/piper-smoke.config.json
 /prompts/local/*
 !/prompts/local/.gitkeep
 

@@ -49,6 +49,9 @@
   `production/asset_provenance.json` without FFmpeg render, upload, paid provider, or public publish
   execution. Intro/outro source frames are recorded when present. The contact sheet includes timing,
   review gates, safe commands, revision path, and upload/publish blockers.
+  `producer review render-plan` gives operators a read-only handoff from validated render-plan
+  evidence and surfaces the contact sheet, asset provenance, scene count, asset count, timing, and
+  still-blocked actions.
 - Evidence and readiness now surface render-plan presence; missing render plans warn, while partial
   or malformed render-plan artifacts block readiness.
 - Disabled-by-default local voiceover generation. `producer voice` requires local TTS config,
@@ -61,7 +64,9 @@
   an explicit listen-before-render decision boundary and exact next safe commands. Evidence,
   readiness, status, and blocked-action summaries mark deterministic-local WAVs as timing/reference
   only until reviewed local Piper audio exists. Next-action guidance explicitly says render approval
-  with deterministic-local audio is only for a local timing draft.
+  with deterministic-local audio is only for a local timing draft. `producer review voice` gives
+  operators a read-only handoff from validated voiceover evidence before render approval, and Studio
+  production-media rows surface the same review command without adding a web mutation.
 - `pnpm tts:piper:setup` downloads the pinned CPU-friendly Turkish
   `speaches-ai/piper-tr_TR-fahrettin-medium` model into ignored `models/` and prints the matching
   local config override for `local-piper`.
@@ -339,6 +344,7 @@ pnpm producer approve script --run <run_id> --acknowledge-warnings [--json] # wh
 pnpm producer package --run <run_id> [--json]
 pnpm producer revise package-artifact --run <run_id> --artifact subtitles --file <path> --reason "<reason>" --editor <name> [--json]
 pnpm producer render-plan --run <run_id> [--json]
+pnpm producer review render-plan --run <run_id> [--json]
 pnpm producer estimate --run <run_id> [--json]
 pnpm producer approve cost --run <run_id> [--json]
 pnpm producer evidence --run <run_id> [--json]
@@ -352,6 +358,7 @@ pnpm producer desk --plain
 pnpm producer list-runs
 pnpm producer list-runs --json
 pnpm producer voice --run <run_id> [--json]
+pnpm producer review voice --run <run_id> [--json]
 pnpm producer approve render --run <run_id> [--json]
 pnpm producer render --run <run_id> [--json]
 pnpm producer decide render --run <run_id> --decision accepted-for-local-review --notes "<notes>" [--json]

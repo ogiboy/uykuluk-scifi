@@ -9,7 +9,29 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Features
+
+- add `producer review render-plan` for validated contact-sheet and asset-provenance handoff
+- add `producer review voice` to show the local voiceover review handoff before render approval
+
+### Fixes
+
+- point voiceover generation output at the read-only voice review command
+- show concrete render decisions in operator desk recent-run summaries instead of generic `present`
+- route post-voiceover next actions through `producer review voice` before render approval
+- point render-plan generation output at the read-only render-plan review command
+- surface the same voiceover review command in Studio production-media rows
+- surface local media review commands in the operator desk production-media rows
+- keep render decisions single-record and stale when their approval reference changes
+
+### Tests
+
+- cover render-plan review handoff in targeted CLI/stage tests and product UAT
+- cover the voiceover review handoff in targeted tests and product UAT
+
+### Chores
+
+- keep local model download directories ignored while tracking the `models/` placeholder
 
 ## v0.49.0 (2026-06-29)
 

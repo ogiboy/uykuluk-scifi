@@ -157,13 +157,13 @@ function manualProductionNextCommand(
   ttsEnabled: boolean,
 ): string {
   if (voiceoverAudio?.status === "pass") {
-    if (voiceoverAudio.productionVoiceCandidate === true) {
-      return "pnpm producer approve render --run <run_id>";
+    if (
+      voiceoverAudio.productionVoiceCandidate === true ||
+      voiceoverAudio.productionVoiceCandidate === false
+    ) {
+      return "pnpm producer review voice --run <run_id>";
     }
-    if (voiceoverAudio.productionVoiceCandidate === false) {
-      return "Review deterministic reference audio; approve render only for a local timing draft with pnpm producer approve render --run <run_id>";
-    }
-    return "Regenerate voiceover evidence or review deterministic reference audio before render approval.";
+    return "Regenerate voiceover evidence before render approval.";
   }
   if (voiceoverAudio?.status === "block") {
     return ttsEnabled

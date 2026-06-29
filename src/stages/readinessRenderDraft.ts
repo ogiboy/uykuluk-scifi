@@ -59,10 +59,7 @@ function draftRenderNextAction(
   if (run.state === "RENDER_APPROVED") {
     return `pnpm producer render --run ${run.runId}`;
   }
-  if (!voiceover.productionVoiceCandidate) {
-    return `Review deterministic reference audio; approve render only for a local timing draft with pnpm producer approve render --run ${run.runId}`;
-  }
-  return `pnpm producer approve render --run ${run.runId}`;
+  return `pnpm producer review voice --run ${run.runId}`;
 }
 
 /**

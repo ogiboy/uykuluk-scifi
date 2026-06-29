@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Box, render, Text, useApp, useInput } from "ink";
+import { formatOperatorDeskMediaArtifactLine } from "./operatorDeskModel.js";
 import type {
   OperatorDeskRun,
   OperatorDeskSelectedRun,
@@ -100,16 +101,17 @@ function RunList({
     Box,
     { borderStyle: "round", flexDirection: "column", paddingX: 1 },
     React.createElement(Text, { bold: true }, "Recent runs"),
-    ...runs.map((run, index) =>
-      React.createElement(
+    ...runs.map((run, index) => {
+      const selectionMarker = index === selectedIndex ? ">" : " ";
+      return React.createElement(
         Text,
         {
           color: index === selectedIndex ? "green" : undefined,
           key: run.runId,
         },
-        `${index === selectedIndex ? ">" : " "} ${run.runId}  ${run.state}  ${run.readinessStatus}  decision:${run.renderDecisionStatus}`,
-      ),
-    ),
+        `${selectionMarker} ${run.runId}  ${run.state}  ${run.readinessStatus}  decision:${run.renderDecisionStatus}`,
+      );
+    }),
   );
 }
 
@@ -140,7 +142,11 @@ function SelectedRun({ run }: { run: OperatorDeskSelectedRun }): React.ReactElem
     ),
     React.createElement(Text, { bold: true }, "Production media"),
     ...run.mediaArtifacts.map((artifact) =>
-      React.createElement(Text, { key: artifact.evidenceKey }, formatMediaArtifactLine(artifact)),
+      React.createElement(
+        Text,
+        { key: artifact.evidenceKey },
+        formatOperatorDeskMediaArtifactLine(artifact),
+      ),
     ),
   );
 }
@@ -156,19 +162,6 @@ function renderDecisionSummary(run: OperatorDeskSelectedRun): string {
     return `${run.renderDecision.decision.decision} by ${run.renderDecision.decision.reviewedBy}`;
   }
   return run.renderDecision.kind;
-}
-
-/**
- * Formats one production media row for the selected run details panel.
- *
- * @param artifact - The media artifact summary to format.
- * @returns A single display line.
- */
-function formatMediaArtifactLine(
-  artifact: OperatorDeskSelectedRun["mediaArtifacts"][number],
-): string {
-  const detail = artifact.detail ? ` (${artifact.detail})` : "";
-  return `- ${artifact.label}: ${artifact.status}${detail}`;
 }
 
 /**

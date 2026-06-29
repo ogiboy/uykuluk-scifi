@@ -107,9 +107,7 @@ describe("voiceover audio", () => {
     expect(evidence.blockedActions).not.toContain(
       "Production voice candidate is not available; deterministic local audio is timing/reference only until reviewed local Piper audio exists.",
     );
-    expect(evidence.nextRecommendedCommand).toBe(
-      `Review deterministic reference audio; approve render only for a local timing draft with pnpm producer approve render --run ${runId}`,
-    );
+    expect(evidence.nextRecommendedCommand).toBe(`pnpm producer review voice --run ${runId}`);
     const postVoiceReadiness = await runReadiness(runId);
     expect(postVoiceReadiness.passed).toBe(true);
     expect(
@@ -117,6 +115,7 @@ describe("voiceover audio", () => {
     ).toMatchObject({
       status: "warn",
       message: expect.stringContaining("timing/reference audio only"),
+      nextAction: `pnpm producer review voice --run ${runId}`,
     });
   });
 

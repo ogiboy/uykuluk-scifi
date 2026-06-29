@@ -4,6 +4,7 @@ import { generateEvidenceBundle } from "../stages/evidence.js";
 import { runIdeas } from "../stages/ideas.js";
 import { generateProductionPackage } from "../stages/productionPackage.js";
 import { generateRenderPlan } from "../stages/renderPlan.js";
+import { renderPlanArtifactPaths, type RenderPlan } from "../stages/renderPlanSchemas.js";
 import { generateScript } from "../stages/script.js";
 
 type Wrap = <T extends unknown[]>(handler: (...args: T) => Promise<void>) => (...args: T) => void;
@@ -75,7 +76,9 @@ export function registerGenerationCommands(program: Command, wrap: Wrap): void {
     .action(
       wrap(async (options: { json?: boolean; run: string }) => {
         const plan = await generateRenderPlan(options.run);
-        console.log(options.json ? JSON.stringify(plan, null, 2) : "Render plan generated.");
+        console.log(
+          options.json ? JSON.stringify(plan, null, 2) : formatRenderPlanGeneratedConsole(plan),
+        );
       }),
     );
 
@@ -90,4 +93,21 @@ export function registerGenerationCommands(program: Command, wrap: Wrap): void {
         console.log(options.json ? JSON.stringify(bundle, null, 2) : "Evidence bundle generated.");
       }),
     );
+}
+
+/**
+ * Formats the post-generation render-plan handoff for CLI operators.
+ *
+ * @param plan - The generated render plan.
+ * @returns Operator-readable output that points at the read-only review command.
+ */
+function formatRenderPlanGeneratedConsole(plan: RenderPlan): string {
+  const [, contactSheetPath, assetProvenancePath] = renderPlanArtifactPaths;
+  return [
+    "Render plan generated.",
+    `Scenes: ${plan.scenes.length}`,
+    `Contact sheet: ${contactSheetPath}`,
+    `Asset provenance: ${assetProvenancePath}`,
+    `Next safe action: pnpm producer review render-plan --run ${plan.runId}`,
+  ].join("\n");
 }

@@ -1,0 +1,114 @@
+import { readFile } from "node:fs/promises";
+import { artifactPath } from "../core/artifacts.js";
+import { SafeExitError } from "../core/errors.js";
+import { loadRun } from "../core/runStore.js";
+import { readJsonFile } from "../utils/json.js";
+import { readRenderPlanEvidence } from "./renderPlan.js";
+import {
+  assetProvenanceSchema,
+  renderPlanArtifactPaths,
+  renderPlanSchema,
+  type RenderPlan,
+} from "./renderPlanSchemas.js";
+
+const [renderPlanPath, contactSheetPath, assetProvenancePath] = renderPlanArtifactPaths;
+
+export type RenderPlanReviewHandoff = {
+  assetCount: number;
+  assetProvenancePath: string;
+  blockedActions: string[];
+  contactSheetPath: string;
+  estimatedDraftDurationSeconds: number;
+  format: RenderPlan["format"];
+  nextSafeAction: string;
+  productionPackageManifestDigest: string;
+  productionPackageManifestPath: string;
+  renderPlanPath: string;
+  runId: string;
+  sceneCount: number;
+};
+
+/**
+ * Reads the validated render-plan review handoff for a run.
+ *
+ * @param runId - The run whose render plan should be reviewed.
+ * @returns The operator-facing render-plan review handoff.
+ */
+export async function reviewRenderPlan(runId: string): Promise<RenderPlanReviewHandoff> {
+  const run = await loadRun(runId);
+  const evidence = await readRenderPlanEvidence(run);
+  if (evidence.status === "missing") {
+    throw new SafeExitError(
+      `Render-plan review requires generated artifacts. Run pnpm producer render-plan --run ${run.runId}`,
+    );
+  }
+  if (evidence.status === "block") {
+    throw new SafeExitError(`Render-plan review requires valid evidence: ${evidence.message}`);
+  }
+  const plan = renderPlanSchema.parse(await readJsonFile(artifactPath(run.runId, renderPlanPath)));
+  const provenance = assetProvenanceSchema.parse(
+    await readJsonFile(artifactPath(run.runId, assetProvenancePath)),
+  );
+  await readFile(artifactPath(run.runId, contactSheetPath), "utf8");
+  return {
+    assetCount: provenance.assets.length,
+    assetProvenancePath,
+    blockedActions: renderPlanReviewBlockedActions(),
+    contactSheetPath,
+    estimatedDraftDurationSeconds: estimatedDraftDurationSeconds(plan),
+    format: plan.format,
+    nextSafeAction: renderPlanReviewNextAction(run.runId),
+    productionPackageManifestDigest: plan.productionPackageManifestDigest,
+    productionPackageManifestPath: plan.productionPackageManifestPath,
+    renderPlanPath,
+    runId: run.runId,
+    sceneCount: plan.scenes.length,
+  };
+}
+
+/**
+ * Formats the render-plan review handoff for console output.
+ *
+ * @param handoff - The review handoff to format.
+ * @returns Operator-readable console text.
+ */
+export function formatRenderPlanReviewConsole(handoff: RenderPlanReviewHandoff): string {
+  return [
+    `Run: ${handoff.runId}`,
+    `Render plan: ${handoff.renderPlanPath}`,
+    `Contact sheet: ${handoff.contactSheetPath}`,
+    `Asset provenance: ${handoff.assetProvenancePath}`,
+    `Scenes: ${handoff.sceneCount}`,
+    `Assets: ${handoff.assetCount}`,
+    `Estimated local draft duration: ${Math.round(handoff.estimatedDraftDurationSeconds)}s`,
+    `Format: ${handoff.format.resolution}, ${handoff.format.fps}fps, ${handoff.format.aspectRatio}, ${handoff.format.draftRenderer}`,
+    `Package manifest: ${handoff.productionPackageManifestPath}`,
+    `Package manifest digest: ${handoff.productionPackageManifestDigest}`,
+    `Next safe action: ${handoff.nextSafeAction}`,
+    "Still blocked:",
+    ...handoff.blockedActions.map((action) => `- ${action}`),
+  ].join("\n");
+}
+
+function estimatedDraftDurationSeconds(plan: RenderPlan): number {
+  const sceneDurationSeconds = plan.scenes.reduce(
+    (total, scene) => total + scene.durationSeconds,
+    0,
+  );
+  const bookendDurationSeconds = plan.bookends
+    ? plan.bookends.intro.durationSeconds + plan.bookends.outro.durationSeconds
+    : 0;
+  return sceneDurationSeconds + bookendDurationSeconds;
+}
+
+function renderPlanReviewNextAction(runId: string): string {
+  return `Review ${contactSheetPath}; if acceptable, run pnpm producer estimate --run ${runId}, then pnpm producer evidence --run ${runId} and pnpm producer readiness --run ${runId} before local voiceover.`;
+}
+
+function renderPlanReviewBlockedActions(): string[] {
+  return [
+    "Voiceover generation still requires explicit local TTS configuration plus current evidence/readiness.",
+    "Local draft render still requires voiceover evidence and explicit render approval.",
+    "Private upload, scheduled publish, public publish, and paid/generative media providers remain disabled.",
+  ];
+}

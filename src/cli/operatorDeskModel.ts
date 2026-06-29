@@ -3,6 +3,7 @@ import { listRuns } from "../core/runStore.js";
 import type { RunState } from "../core/state.js";
 import type { RenderDecisionStatus } from "../stages/renderDecisionStatus.js";
 import { readRunStatus, type RunStatusSummary } from "../stages/status.js";
+import { formatProductionMediaStatus, type ProductionMediaStatus } from "../stages/statusMedia.js";
 
 const RECENT_RUN_LIMIT = 8;
 
@@ -18,7 +19,7 @@ export type OperatorDeskRun = {
   evidenceStatus: string;
   nextRecommendedCommand: string;
   readinessStatus: string;
-  renderDecisionStatus: RenderDecisionStatus["kind"];
+  renderDecisionStatus: string;
   runId: string;
   state: RunState;
   updatedAt: string;
@@ -123,10 +124,7 @@ export function formatOperatorDeskPlain(model: OperatorDeskViewModel): string {
     `  ${run.nextRecommendedCommand}`,
     "",
     "Production media:",
-    ...run.mediaArtifacts.map((artifact) => {
-      const detail = artifact.detail ? ` (${artifact.detail})` : "";
-      return `- ${artifact.label}: ${artifact.status}${detail}`;
-    }),
+    ...run.mediaArtifacts.map(formatOperatorDeskMediaArtifactLine),
     "",
     "Recent artifacts:",
     ...(run.recentArtifacts.length > 0
@@ -136,9 +134,20 @@ export function formatOperatorDeskPlain(model: OperatorDeskViewModel): string {
     "Recent runs:",
     ...model.runs.map((candidate) => {
       const marker = candidate.runId === run.runId ? ">" : " ";
-      return `${marker} ${candidate.runId}  ${candidate.state}  ${candidate.updatedAt}`;
+      return `${marker} ${candidate.runId}  ${candidate.state}  ${candidate.updatedAt}  decision:${candidate.renderDecisionStatus}`;
     }),
   ].join("\n");
+}
+
+/**
+ * Formats a production media row for the operator desk.
+ *
+ * @param artifact - The media artifact summary to format.
+ * @returns A single display line, including the local review command when one exists.
+ */
+export function formatOperatorDeskMediaArtifactLine(artifact: ProductionMediaStatus): string {
+  const review = artifact.reviewCommand ? ` | Review command: ${artifact.reviewCommand}` : "";
+  return `${formatProductionMediaStatus(artifact)}${review}`;
 }
 
 /**
@@ -155,7 +164,7 @@ function compactRun(status: RunStatusSummary): OperatorDeskRun {
     evidenceStatus: status.evidenceStatus,
     nextRecommendedCommand: status.nextRecommendedCommand,
     readinessStatus: status.readiness.status,
-    renderDecisionStatus: status.renderDecision.kind,
+    renderDecisionStatus: renderDecisionSummary(status.renderDecision),
     runId: status.run.runId,
     state: status.run.state,
     updatedAt: status.run.updatedAt,

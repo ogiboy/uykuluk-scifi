@@ -56,6 +56,7 @@ doctor
   -> render-plan
   -> estimate / evidence / readiness
   -> optional local voiceover
+  -> review voice
   -> approve render
   -> local FFmpeg draft render
   -> future private upload review
@@ -278,6 +279,8 @@ pnpm producer package --run <run_id>
 pnpm producer package --run <run_id> --json
 pnpm producer render-plan --run <run_id>
 pnpm producer render-plan --run <run_id> --json
+pnpm producer review render-plan --run <run_id>
+pnpm producer review render-plan --run <run_id> --json
 pnpm producer estimate --run <run_id>
 pnpm producer estimate --run <run_id> --json
 pnpm producer approve cost --run <run_id> # only when the quote requires it
@@ -288,6 +291,8 @@ pnpm producer readiness --run <run_id>
 pnpm producer readiness --run <run_id> --json
 pnpm producer voice --run <run_id> # optional, only after local TTS is explicitly enabled
 pnpm producer voice --run <run_id> --json
+pnpm producer review voice --run <run_id>
+pnpm producer review voice --run <run_id> --json
 pnpm producer approve render --run <run_id>
 pnpm producer approve render --run <run_id> --json
 pnpm producer render --run <run_id>
@@ -596,7 +601,16 @@ requires a local `piper` binary and ignored model files configured with `piperMo
 `piperConfigPath`. Local Piper voiceover metadata and review Markdown record the model/config
 SHA-256 digests used for the WAV. Do not commit downloaded voice models or generated audio.
 `producer voice` also writes `production/audio/voiceover_review.md` so the operator can check
-timing, pacing, pronunciation, source binding, and provider provenance before render approval.
+timing, pacing, pronunciation, source binding, and provider provenance before render approval. The
+non-JSON `producer voice` output points directly at that review artifact and the next safe
+`producer review voice --run <run_id>` command. `producer review voice --run <run_id>` prints the
+same local audio review handoff from validated voiceover evidence and keeps deterministic audio
+labeled as a timing draft input, not a production voice approval.
+
+`producer review render-plan --run <run_id>` prints a read-only render-plan/contact-sheet handoff
+from validated render-plan evidence. It points operators to `production/storyboard_contact_sheet.md`
+and `production/asset_provenance.json`, summarizes scenes, assets, and timing, and keeps TTS,
+render, upload, publish, and paid/generative media work behind their separate gates.
 
 `producer render` requires `ffmpeg` on `PATH` unless called through a test harness with an explicit
 binary. The draft render is a local review artifact and may be regenerated after approval; its
