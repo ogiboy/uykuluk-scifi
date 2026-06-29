@@ -21,6 +21,8 @@ _No unreleased changes yet._
 - surface draft render review commands in status, evidence, and Studio media summaries
 - record final-artifact FFmpeg review commands in draft render evidence
 - use the read-only draft render review command as the rendered-run next action
+- add product UAT smoke coverage for happy-path, malicious, stale, tampered, and publish-blocked
+  local workflows
 
 ### Fixes
 

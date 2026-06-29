@@ -24,6 +24,7 @@
     "test": "vitest run",
     "tts:piper:setup": "tsx scripts/tts/setup-piper-model.ts",
     "qa:usage": "node scripts/usage-smoke.mjs",
+    "qa:product": "node scripts/qa/product-uat.mjs",
     "qa:browser": "pnpm studio:test:e2e",
     "qa:modularity": "node scripts/qa/modularity-gate.mjs --fail-on-findings",
     "security:dependencies": "pnpm audit --audit-level=high",

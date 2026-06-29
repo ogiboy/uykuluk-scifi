@@ -444,6 +444,7 @@ Run the full local gate before push-ready handoff:
 ```bash
 pnpm check
 pnpm qa:usage
+pnpm qa:product
 pnpm version:plan
 ```
 
@@ -457,6 +458,7 @@ pnpm build:smoke
 pnpm test
 pnpm studio:typecheck
 pnpm studio:build
+pnpm qa:product
 pnpm qa:browser
 pnpm qa:modularity
 pnpm security:check
