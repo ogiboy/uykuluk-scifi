@@ -16,6 +16,7 @@ future generated release notes can be inserted predictably.
 ### Tests
 
 - cover deterministic timing-draft and local-Piper production-candidate voiceover review guidance
+- assert voiceover render-approval scope in usage smoke and product UAT
 
 ## v0.52.0 (2026-06-30)
 

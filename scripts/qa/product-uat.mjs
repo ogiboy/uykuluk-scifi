@@ -58,6 +58,7 @@ try {
   });
 
   const renderedRunId = await createVoiceReadyRun({
+    assertCondition,
     pnpm,
     run,
     scenario: "happy-path",
@@ -162,6 +163,7 @@ try {
   await assertTamperedRenderReviewCommandBlocks({ pnpm, run, runId: renderedRunId, workdir });
 
   const tamperedRunId = await createVoiceReadyRun({
+    assertCondition,
     pnpm,
     run,
     scenario: "tampered-render-input",

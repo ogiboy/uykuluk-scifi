@@ -23,13 +23,14 @@ export async function createIdeaOnlyRun({ pnpm, run, scenario }) {
  * Drives the CLI to a local voiceover-ready run.
  *
  * @param {Object} input - Scenario input.
+ * @param {(condition: boolean, label: string, scenario: string) => void} [input.assertCondition] - Optional assertion recorder.
  * @param {string} input.pnpm - The package runner executable.
  * @param {(args: string[], options: Object) => {stdout: string, stderr: string}} input.run - Command runner.
  * @param {string} input.scenario - Scenario label for the report.
  * @param {string} input.workdir - Isolated workdir containing the generated run.
  * @returns {Promise<string>} The created run id.
  */
-export async function createVoiceReadyRun({ pnpm, run, scenario, workdir }) {
+export async function createVoiceReadyRun({ assertCondition, pnpm, run, scenario, workdir }) {
   const runId = await createIdeaOnlyRun({ pnpm, run, scenario });
   const ideas = JSON.parse(await readFile(path.join(workdir, "runs", runId, "ideas.json"), "utf8"));
   const ideaId = ideas.ideas[0].id;
@@ -68,11 +69,23 @@ export async function createVoiceReadyRun({ pnpm, run, scenario, workdir }) {
     label: "generate deterministic voiceover",
     scenario,
   });
-  run([pnpm, "producer", "review", "voice", "--run", runId], {
+  const voiceReview = run([pnpm, "producer", "review", "voice", "--run", runId], {
     expectOutput: "Production voice candidate: false",
     label: "voiceover review handoff is available",
     scenario,
   });
+  assertCondition?.(
+    voiceReview.stdout.includes("Render approval scope: timing-draft-only"),
+    "voiceover review marks deterministic audio as timing draft only",
+    scenario,
+  );
+  assertCondition?.(
+    voiceReview.stdout.includes(
+      `Render approval command: pnpm producer approve render --run ${runId}`,
+    ),
+    "voiceover review prints exact render approval command",
+    scenario,
+  );
   return runId;
 }
 
