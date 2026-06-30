@@ -612,7 +612,8 @@ non-JSON `producer voice` output points directly at that review artifact and the
 `producer review voice --run <run_id>` command. `producer review voice --run <run_id>` prints the
 same local audio review handoff from validated voiceover evidence, including the explicit render
 approval command and whether that approval is only for a local timing draft or for a reviewed
-production voice candidate.
+production voice candidate. Studio production-media rows show the same read-only review command,
+approval command, and approval scope without adding a web mutation.
 
 `producer review render-plan --run <run_id>` prints a read-only render-plan/contact-sheet handoff
 from validated render-plan evidence. It points operators to `production/storyboard_contact_sheet.md`

@@ -45,6 +45,16 @@ export function RunProductionMediaPanel({
             <p className='artifact-action'>
               Review: {productionMediaReviewAction(evidenceStatus, artifact)}
             </p>
+            {artifact.renderApprovalScope ? (
+              <p className='artifact-action'>
+                Render approval scope: {artifact.renderApprovalScope}
+              </p>
+            ) : null}
+            {artifact.renderApprovalCommand ? (
+              <p className='artifact-action'>
+                Render approval command: {artifact.renderApprovalCommand}
+              </p>
+            ) : null}
           </li>
         ))}
       </ul>

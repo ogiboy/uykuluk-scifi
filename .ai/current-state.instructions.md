@@ -69,7 +69,8 @@
   `producer review voice` gives operators a read-only handoff from validated voiceover evidence
   before render approval, including the exact approval command and whether the scope is
   `timing-draft-only` or `production-voice-candidate`, while Studio production-media rows surface
-  the same review command without adding a web mutation.
+  the same review command, render approval command, and approval scope without adding a web
+  mutation.
 - `pnpm tts:piper:setup` downloads the pinned CPU-friendly Turkish
   `speaches-ai/piper-tr_TR-fahrettin-medium` model into ignored `models/` and prints the matching
   local config override for `local-piper`.

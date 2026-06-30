@@ -9,6 +9,8 @@ if (!runId) {
 }
 
 const reviewCommand = `pnpm producer review render --run ${runId}`;
+const voiceReviewCommand = `pnpm producer review voice --run ${runId}`;
+const renderApprovalCommand = `pnpm producer approve render --run ${runId}`;
 const decisionReviewCommand = `pnpm producer review render-decision --run ${runId}`;
 const summaries = await listStudioRuns();
 const summary = summaries.find((candidate) => candidate.runId === runId);
@@ -53,6 +55,17 @@ assert(
       item.reviewCommand === reviewCommand,
   ),
   "Studio production media exposes the draft render review command.",
+);
+assert(
+  detail.productionMedia.some(
+    (item) =>
+      item.label === "Voiceover audio" &&
+      item.status === "pass" &&
+      item.reviewCommand === voiceReviewCommand &&
+      item.renderApprovalCommand === renderApprovalCommand &&
+      item.renderApprovalScope === "timing-draft-only",
+  ),
+  "Studio production media exposes voiceover review scope and render approval command.",
 );
 assert(
   detail.artifacts.some((item) => item.path === "production/render/draft_review.md" && item.exists),

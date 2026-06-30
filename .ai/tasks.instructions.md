@@ -85,8 +85,9 @@
   timing/reference only, and next-action guidance limits render approval with that audio to local
   timing drafts. `producer review voice` now prints the validated local audio review handoff before
   render approval, including the exact approval command and explicit `timing-draft-only` versus
-  `production-voice-candidate` scope. Studio production-media rows surface the same command
-  read-only. Keep the listen-before-render decision boundary explicit.
+  `production-voice-candidate` scope. Studio production-media rows surface the same review command,
+  render approval command, and scope read-only. Keep the listen-before-render decision boundary
+  explicit.
 - Harden FFmpeg draft render visual polish; the current foundation is exact-approval-gated local MP4
   with intro/outro source-card bookends or source-frame sequences, scene-timed background plates,
   subtitle burn-in, lower-third, popup-card, waveform, watermark overlays, render manifest evidence,

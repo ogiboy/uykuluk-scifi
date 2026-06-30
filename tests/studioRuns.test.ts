@@ -102,6 +102,8 @@ describe("Studio read-only run summaries", () => {
         detail: "8s, local-piper, production voice candidate, 42 source words",
         evidenceKey: "voiceoverAudio",
         label: "Voiceover audio",
+        renderApprovalCommand: `pnpm producer approve render --run ${runId}`,
+        renderApprovalScope: "production-voice-candidate",
         reviewCommand: `pnpm producer review voice --run ${runId}`,
         status: "pass",
       },
@@ -237,7 +239,6 @@ describe("Studio read-only run summaries", () => {
       artifacts: ["ideas.json", "diagnostics/script_generation_failure.json"],
       state: "IDEA_APPROVED",
     });
-
     const detail = await getStudioRunDetail(run.runId);
 
     expect(detail).toMatchObject({

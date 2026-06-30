@@ -1,3 +1,6 @@
+import { mediaRenderApprovalGuidance } from "./statusMediaApprovalGuidance.js";
+import type { VoiceoverRenderApprovalScope } from "./voiceoverReviewCommands.js";
+
 export type EvidenceStatus = {
   blockedActions?: unknown[];
   currentState?: unknown;
@@ -40,6 +43,8 @@ export type ProductionMediaStatus = {
   evidenceKey: "draftRender" | "renderPlan" | "voiceoverAudio";
   label: string;
   reviewCommand?: string;
+  renderApprovalCommand?: string;
+  renderApprovalScope?: VoiceoverRenderApprovalScope;
   status: "block" | "missing" | "pass" | "recorded";
 };
 
@@ -64,6 +69,12 @@ export function productionMediaStatus(
       detail: mediaArtifactDetail(item.evidenceKey, evidence?.[item.evidenceKey], status),
       evidenceKey: item.evidenceKey,
       label: item.label,
+      ...mediaRenderApprovalGuidance(
+        run.runId,
+        item.evidenceKey,
+        evidence?.[item.evidenceKey],
+        status,
+      ),
       reviewCommand: mediaReviewCommand(run.runId, item.evidenceKey, status),
       status,
     };
