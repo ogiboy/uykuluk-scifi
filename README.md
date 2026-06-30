@@ -150,7 +150,7 @@ agent-tracking state only; runtime code must not require it.
 
 - Mock mode is the default.
 - Script generation requires explicit idea approval.
-- Script generation uses bounded section calls and can add up to two bounded continuation passes
+- Script generation uses bounded section calls and can add up to three bounded continuation passes
   when a local model draft remains below the long-form review floor; continuation receipts are
   persisted with prompt/content hashes.
 - If those bounded continuation passes still leave the assembled provider draft below the long-form
@@ -158,11 +158,12 @@ agent-tracking state only; runtime code must not require it.
   diagnostics.
 - Local model continuations are JSON-first, with a bounded raw Turkish fallback for models that
   ignore the JSON wrapper but still return complete, labeled continuation text.
-- Script generation/review blocks malformed production labels and repeated sentence loops instead of
-  allowing a long but low-quality local draft to advance.
-- Script section and continuation content blockers get one bounded retry using only safe blocker
-  summaries and already accepted context; rejected raw provider text is discarded, while hashes,
-  token estimates, duration, and retry evidence are recorded on the accepted receipt.
+- Script generation/review blocks malformed production labels, repeated sentence loops, model
+  self-evaluation commentary, and literal escaped control text instead of allowing a long but
+  low-quality local draft to advance.
+- Script section and continuation content blockers get up to two bounded retries using only safe
+  blocker summaries and already accepted context; rejected raw provider text is discarded, while
+  hashes, token estimates, duration, and retry evidence are recorded on the accepted receipt.
 - Known local-model production label variants such as `Anlatici:` and `Gorsel:` are repaired only at
   bounded label prefixes and recorded in section receipts; unrelated malformed labels still block.
 - Script review and approval are bound to the exact `script.md` SHA-256 digest.

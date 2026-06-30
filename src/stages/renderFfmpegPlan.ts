@@ -125,7 +125,7 @@ function buildSubtitleConcatFilter(input: {
 }): string {
   return `${input.concatInputs}concat=n=${input.sceneCount}:v=1:a=0,subtitles=${escapeFilterPath(
     input.subtitles,
-  )}[${input.outputLabel}]`;
+  )}:force_style='FontSize=22,Outline=1,Shadow=0,Alignment=2,MarginV=86'[${input.outputLabel}]`;
 }
 
 function buildVideoFilter(input: {

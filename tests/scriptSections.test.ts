@@ -135,7 +135,7 @@ describe("sectional script generation", () => {
     expect(meta.wordCount).toBeGreaterThanOrEqual(1200);
     expect(sections.providerCallCount).toBeGreaterThanOrEqual(17);
     expect(continuationReceipts.length).toBeGreaterThanOrEqual(1);
-    expect(continuationReceipts.length).toBeLessThanOrEqual(2);
+    expect(continuationReceipts.length).toBeLessThanOrEqual(3);
     expect(continuationReceipts.every((section) => section.wordCount > 0)).toBe(true);
     expect(
       continuationReceipts.every((section) => /^[a-f0-9]{64}$/.test(section.contentHash)),
@@ -189,8 +189,8 @@ describe("sectional script generation", () => {
   });
 
   it("keeps continuation token caps within the configured script cap", () => {
-    expect(scriptContinuationTokenCap(900)).toBe(900);
-    expect(scriptContinuationTokenCap(3_200)).toBe(1_100);
+    expect(scriptContinuationTokenCap(900)).toBe(700);
+    expect(scriptContinuationTokenCap(3_200)).toBe(700);
     expect(sectionExpansionTokenCap(3_200)).toBeLessThanOrEqual(3_200);
   });
 

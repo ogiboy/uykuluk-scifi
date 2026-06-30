@@ -121,18 +121,19 @@
   all sections pass blocking quality checks.
 - Script expansion prompts include the previous expansion chunks from the same section so local
   models have explicit context to continue from rather than repeating section-level sentence loops.
-- Script generation now runs up to two bounded long-form continuation passes when the assembled
+- Script generation now runs up to three bounded long-form continuation passes when the assembled
   script remains below the 1200-word review floor. Continuations extend the existing
   `Sinematik Gelişme` section, add `continuation` receipts to `script.sections.json`, and are
   included in prompt provenance, token totals, cost recording, and blocker checks.
-- If both bounded continuation passes still leave the assembled provider draft below the 1200-word
-  floor, script generation now fails closed before script artifacts are written and persists a safe
+- If bounded continuation passes still leave the assembled provider draft below the 1200-word floor,
+  script generation now fails closed before script artifacts are written and persists a safe
   diagnostic message without raw provider text.
 - Script continuation parsing remains JSON-first but accepts bounded raw Turkish continuation text
   from local models when the response has complete sentences and exact Turkish production labels.
 - Script review and generation now block malformed Turkish production labels, unaccented production
-  labels such as `Anlatici:`/`Gorsel:`, and repeated sentence loops so local model drafts cannot
-  pass solely because they reached the word-count floor.
+  labels such as `Anlatici:`/`Gorsel:`, repeated sentence loops, model self-evaluation commentary,
+  and literal escaped control text so local model drafts cannot pass solely because they reached the
+  word-count floor.
 - Script section parsing applies bounded production-label repair for known local-model variants such
   as `Anlatici:`, `Anlatyıcı:`, `Gorsel:`, and `Görsel -`; repaired text uses exact labels and
   `script.sections.json` receipts record count/variant evidence without storing raw provider output.

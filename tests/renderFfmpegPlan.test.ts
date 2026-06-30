@@ -41,6 +41,8 @@ describe("draft render FFmpeg planning", () => {
     expect(renderedArgs).toContain("assets/waveforms/waveform.png");
     expect(renderedArgs).toContain("assets/overlays/popup_card.png");
     expect(renderedArgs).toContain("concat=n=4:v=1:a=0");
+    expect(renderedArgs).toContain("force_style='FontSize=22");
+    expect(renderedArgs).toContain("MarginV=86");
     expect(args).toContain("4:a");
     expect(renderedArgs).toContain("[5:v]scale=1280:-1[ov0]");
     expect(renderedArgs).toContain("[8:v]scale=120:-1[ov3]");

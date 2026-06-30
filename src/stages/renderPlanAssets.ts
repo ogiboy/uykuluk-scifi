@@ -55,7 +55,11 @@ export async function selectRenderAssets(
     popupCard: findAsset(overlays, /popup|card/i, "popup-card"),
     subtitlePanel: requireOne(overlays, /subtitle|panel/i, "subtitle-panel"),
     watermark: requireOne(brand, /watermark/i, "watermark"),
-    waveform: await firstAsset("assets/waveforms", /waveform/i, "waveform-overlay"),
+    waveform: await firstAsset(
+      "assets/waveforms",
+      /thin.*waveform|waveform.*thin/i,
+      "waveform-overlay",
+    ),
   };
 }
 

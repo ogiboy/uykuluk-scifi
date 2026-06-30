@@ -17,6 +17,14 @@ future generated release notes can be inserted predictably.
   media review rows
 - harden local model eval diagnostics by redacting llama.cpp endpoint details, using stage-specific
   token caps, and keeping persisted eval artifacts raw-output-free
+- retry script provider contract-parse failures with safe remediation prompts instead of persisting
+  raw local-model output
+- keep long-form continuation chunks smaller and bounded across up to three repair passes for local
+  llama.cpp providers
+- block model self-evaluation commentary and literal escaped control text before script review
+  approval
+- make draft renders prefer the thin waveform overlay and use a smaller subtitle style for local
+  review readability
 
 ## v0.55.0 (2026-06-30)
 

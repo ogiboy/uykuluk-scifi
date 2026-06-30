@@ -64,7 +64,7 @@ describe("script blocker retry", () => {
     expect(sections.providerCallCount).toBe(18);
     expect(retriedReceipt?.blockerRetry).toMatchObject({
       attemptCount: 3,
-      blockers: expect.stringContaining("attempt 2: repeated_sentence_loop"),
+      blockers: expect.stringContaining("attempt 2: content_blockers: repeated_sentence_loop"),
       rejectedAttempts: [
         expect.objectContaining({ contentHash: expect.stringMatching(/^[a-f0-9]{64}$/) }),
         expect.objectContaining({ contentHash: expect.stringMatching(/^[a-f0-9]{64}$/) }),

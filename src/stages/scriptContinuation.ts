@@ -27,7 +27,7 @@ type ScriptContinuationInput = {
 
 type ScriptContinuationChunk = {
   focus: string;
-  index: 1 | 2;
+  index: 1 | 2 | 3;
 };
 
 export const longFormWordFloor = 1200;
@@ -49,6 +49,10 @@ export const scriptContinuationChunks: ScriptContinuationChunk[] = [
   {
     index: 2,
     focus: "add scientific caution, alternatives, and a smoother bridge into the outro",
+  },
+  {
+    index: 3,
+    focus: "add a short final connective beat only if the long-form floor is still missing",
   },
 ];
 
@@ -137,7 +141,9 @@ export function renderScriptContinuationPrompt(
     `Continuation chunk: ${options.chunk.index}/${scriptContinuationChunks.length}`,
     `Chunk focus: ${options.chunk.focus}.`,
     `Current missing long-form floor estimate: ${Math.max(0, options.missingWords)} words.`,
-    "Target length: 260-340 Turkish words.",
+    "Target length: 120-170 Turkish words.",
+    "Hard limit: 1800 characters. Stop early rather than exceeding this limit.",
+    "Write 4-6 complete Turkish sentences total.",
     "Keep complete sentences, calm cinematic pacing, scientific caution, and Turkish production labels only.",
     "Spell production labels exactly as `Anlatıcı:` and `Görsel:`.",
     "Do not repeat any sentence or visual direction already present in the current script.",
@@ -153,7 +159,7 @@ export function renderScriptContinuationPrompt(
 export { parseScriptContinuationProviderPayload } from "./scriptContinuationParsing.js";
 
 export function scriptContinuationTokenCap(totalScriptCap: number): number {
-  return Math.min(totalScriptCap, Math.max(1100, Math.ceil(totalScriptCap / 3)));
+  return Math.min(totalScriptCap, Math.max(700, Math.ceil(totalScriptCap / 5)));
 }
 
 function extractApprovedIdeaBlock(basePrompt: string): string {

@@ -49,6 +49,22 @@ function appendBlockingScriptWarnings(warnings: ScriptReviewWarning[], script: s
       message: "Script contains English production labels or directions; regenerate in Turkish.",
     });
   }
+  if (containsModelMetaCommentary(script)) {
+    warnings.push({
+      code: "model_meta_commentary",
+      severity: "blocker",
+      message:
+        "Script contains model self-evaluation or prompt-compliance commentary; regenerate before review.",
+    });
+  }
+  if (containsLiteralModelEscapes(script)) {
+    warnings.push({
+      code: "literal_model_escape_text",
+      severity: "blocker",
+      message:
+        "Script contains literal escaped control text from the model response; regenerate before review.",
+    });
+  }
   const malformedLabelDetails = malformedProductionLabelDetails(script);
   if (malformedLabelDetails) {
     warnings.push({
@@ -207,4 +223,14 @@ function containsEnglishProductionText(script: string): boolean {
   return /\b(?:Narration|Narrator|Cut to|screen fades|camera lingers|ambient soundscape|research laboratory|close-up)\b/i.test(
     script,
   );
+}
+
+function containsModelMetaCommentary(script: string): boolean {
+  return /\b(?:All constraints met|This is the final JSON object|There is no further output|10\/10|Perfect response|Excellent work|masterful response|flawless execution|I am (?:extremely pleased|incredibly impressed)|This is exactly what (?:I|was) (?:requested|looking for))\b/i.test(
+    script,
+  );
+}
+
+function containsLiteralModelEscapes(script: string): boolean {
+  return /(?:\\[nrt]|\\u[0-9a-f]{4})/iu.test(script);
 }
