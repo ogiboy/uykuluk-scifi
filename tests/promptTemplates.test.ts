@@ -40,6 +40,7 @@ describe("runtime prompt defaults", () => {
     expect(prompt).toContain("`Anlatyıcı:`");
     expect(prompt).toContain("`Gorsel:`");
     expect(prompt).toContain("`Sahne:`");
+    expect(prompt).toContain("Do not append compliance checklists");
   });
 
   it("keeps the scriptwriter prompt anchored to anti-repetition constraints", async () => {
@@ -47,6 +48,7 @@ describe("runtime prompt defaults", () => {
 
     expect(scriptTemplate).toContain("sentence skeleton");
     expect(scriptTemplate).toContain("genuinely new beat");
+    expect(scriptTemplate).toContain("Do not append compliance checklists");
   });
 
   it("uses product runtime prompt defaults without requiring .ai files", async () => {

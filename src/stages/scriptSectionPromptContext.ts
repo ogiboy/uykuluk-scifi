@@ -20,6 +20,7 @@ export function renderScopedScriptSectionContext(basePrompt: string): string {
     "Forbidden label variants: `Anlatı:`, `Anlatyıcı:`, `Anlatici:`, `Gorsel:`, `Görsel -`, `Sahne:`, `Kamera:`, `Kes:`.",
     "Do not repeat exact sentences, sentence skeletons, metaphors, or visual directions across the script.",
     "If a previous line used the same structure, replace it with a new beat instead of paraphrasing it.",
+    "Do not append compliance checklists, self-evaluations, word/character counts, JSON-completeness notes, or model-quality commentary.",
     "If the approved idea contains an impossible mechanism, frame it as speculative fiction or a question, not established science.",
     "Ignore full-script duration and 1600+ word requirements in the runtime prompt; this call writes only one bounded section.",
     renderExactLabelChecklist(),

@@ -167,6 +167,7 @@ describe("sectional script generation", () => {
     expect(prompt).toContain("50-90 kelime");
     expect(prompt).toContain("Tek paragraf");
     expect(prompt).toContain('"text"');
+    expect(prompt).toContain("Do not append compliance checklists");
     expect(expansionPrompt).toContain("Do not write the full script");
     expect(expansionPrompt).toContain("Expansion chunk: 1/3");
     expect(expansionPrompt).toContain("80-110 Turkish words");
@@ -179,6 +180,7 @@ describe("sectional script generation", () => {
     expect(expansionPrompt).toContain("replace repeated structures with new images or decisions");
     expect(expansionPrompt).toContain("Exact label checklist");
     expect(expansionPrompt).toContain("Only `Anlatıcı:` and `Görsel:` are valid labels");
+    expect(expansionPrompt).toContain("Do not append compliance checklists");
     expect(expansionPrompt).not.toContain("Target at least 20 minutes");
     expect(scriptSectionResponseFormat.properties.text).toMatchObject({ maxLength: 750 });
     expect(scriptSectionExpansionChunks).toHaveLength(3);

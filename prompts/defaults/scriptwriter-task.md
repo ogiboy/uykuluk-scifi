@@ -26,3 +26,5 @@ Requirements:
 - Do not repeat the same sentence, sentence skeleton, metaphor, or visual direction. If a point was
   already made, deepen it with a genuinely new beat or move to the next beat.
 - Return only the final narration markdown. Do not include thinking traces or analysis blocks.
+- Do not append compliance checklists, self-evaluations, word/character counts, "all requirements
+  met" notes, JSON-completeness notes, or model-quality commentary.

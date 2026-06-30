@@ -212,6 +212,7 @@ function renderScriptContentRetryPrompt(
     "Write exactly four fresh Turkish sentences with four distinct sentence openings.",
     "Use only exact Turkish production labels `Anlatıcı:` and `Görsel:`.",
     "Do not repeat sentence skeletons, metaphors, visual directions, or rejected structures.",
+    "Do not append compliance checklists, self-evaluations, word/character counts, JSON-completeness notes, or model-quality commentary.",
     "Return only the JSON shape requested above.",
   ];
 
