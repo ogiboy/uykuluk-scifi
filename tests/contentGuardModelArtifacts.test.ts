@@ -24,6 +24,28 @@ describe("content guard model artifact blockers", () => {
     );
   });
 
+  it("blocks local model prompt-compliance checklist leakage", () => {
+    const warnings = reviewScriptContent(
+      [
+        "# Buzaltı Okyanusu",
+        "",
+        "Anlatıcı: Sonda buzun altındaki ölçümü kesin kanıt gibi sunmadan yeniden inceler.",
+        "Görsel: Sonar ekranında yavaşça genişleyen mavi bir harita görünür.",
+        "95 words. 738 characters. 4 sentences. All accents correct. No repetition. Preserved key details. Cinematic tone. Responsible speculation. No forbidden label variants. No repeated sentence loops. No hard limit exceeded. All requirements met. JSON object is complete. No errors.",
+        "UykulukSciFi'de yeniden buluşalım.",
+      ].join("\n"),
+    );
+
+    expect(warnings).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: "model_meta_commentary",
+          severity: "blocker",
+        }),
+      ]),
+    );
+  });
+
   it("blocks literal escaped control text from local model output", () => {
     const warnings = reviewScriptContent(
       [

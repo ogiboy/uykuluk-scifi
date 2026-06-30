@@ -226,7 +226,7 @@ function containsEnglishProductionText(script: string): boolean {
 }
 
 function containsModelMetaCommentary(script: string): boolean {
-  return /\b(?:All constraints met|This is the final JSON object|There is no further output|10\/10|Perfect response|Excellent work|masterful response|flawless execution|I am (?:extremely pleased|incredibly impressed)|This is exactly what (?:I|was) (?:requested|looking for))\b/i.test(
+  return /\b(?:All constraints met|All requirements met|This is the final JSON object|JSON object is complete|There is no further output|All accents correct|No forbidden label variants|No repeated sentence loops|No recycled subject-verb-object patterns|No hard limit exceeded|No errors|Preserved key details|Cinematic tone|Responsible speculation|Perfect response|Excellent work|masterful response|flawless execution|I am (?:extremely pleased|incredibly impressed)|This is exactly what (?:I|was) (?:requested|looking for)|\d{2,4}\s+words\.\s+\d{2,5}\s+characters)\b/i.test(
     script,
   );
 }
