@@ -11,6 +11,13 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.56.1 (2026-06-30)
+
+### Fixes
+
+- forbid model compliance prose (24d9489)
+- block model checklist leakage (be9b5a3)
+
 ## v0.56.0 (2026-06-30)
 
 ### Fixes
