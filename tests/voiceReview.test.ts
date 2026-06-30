@@ -24,6 +24,7 @@ describe("voiceover review handoff", () => {
 
     expect(handoff).toMatchObject({
       audioPath: "production/audio/voiceover.wav",
+      localPlaybackPath: `runs/${runId}/production/audio/voiceover.wav`,
       mode: "deterministic-local",
       nextSafeAction: expect.stringContaining("local timing draft"),
       productionVoiceCandidate: false,
@@ -42,12 +43,17 @@ describe("voiceover review handoff", () => {
 
     const output = formatVoiceoverReviewConsole(handoff);
     expect(output).toContain(`Run: ${runId}`);
+    expect(output).toContain(`Local playback path: runs/${runId}/production/audio/voiceover.wav`);
     expect(output).toContain("Production voice candidate: false");
     expect(output).toContain("Render approval scope: timing-draft-only");
     expect(output).toContain(
       `Render approval command: pnpm producer approve render --run ${runId}`,
     );
+    expect(output).toContain(
+      `Read production/audio/voiceover_review.md and listen to runs/${runId}/production/audio/voiceover.wav`,
+    );
     expect(output).toContain(`pnpm producer approve render --run ${runId}`);
+    expect(output).not.toContain("Listen to production/audio/voiceover_review.md");
   });
 
   it("shows a production-candidate render approval scope for local Piper evidence", async () => {
@@ -78,6 +84,7 @@ describe("voiceover review handoff", () => {
     expect(result.status).toBe(0);
     expect(JSON.parse(result.stdout) as unknown).toMatchObject({
       audioPath: "production/audio/voiceover.wav",
+      localPlaybackPath: `runs/${runId}/production/audio/voiceover.wav`,
       nextSafeAction: expect.stringContaining(`--run ${runId}`),
       runId,
     });
@@ -90,6 +97,9 @@ describe("voiceover review handoff", () => {
 
     expect(result.status).toBe(0);
     expect(result.stdout).toContain("Voiceover generated: production/audio/voiceover.wav");
+    expect(result.stdout).toContain(
+      `Local playback path: runs/${runId}/production/audio/voiceover.wav`,
+    );
     expect(result.stdout).toContain("Review artifact: production/audio/voiceover_review.md");
     expect(result.stdout).toContain(`Next safe action: pnpm producer review voice --run ${runId}`);
     expect(result.stdout).toContain("Production voice candidate: false");

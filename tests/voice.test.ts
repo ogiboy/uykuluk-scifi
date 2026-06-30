@@ -72,6 +72,7 @@ describe("voiceover audio", () => {
     expect(review).toContain("# Voiceover Review");
     expect(review).toContain("Deterministic reference audio is for timing only");
     expect(review).toContain("production/audio/voiceover.wav");
+    expect(review).toContain(`runs/${runId}/production/audio/voiceover.wav`);
     expect(review).toContain("Render approval scope");
     expect(review).toContain("timing-draft-only");
     expect(review).toContain("Render approval command");

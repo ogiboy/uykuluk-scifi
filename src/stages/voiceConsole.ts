@@ -1,5 +1,6 @@
 import type { VoiceoverAudioMeta } from "./voiceoverEvidence.js";
 import { voiceoverAudioMetaPath, voiceoverAudioReviewPath } from "./voiceoverEvidence.js";
+import { voiceoverLocalPlaybackPath } from "./voiceoverReviewCommands.js";
 
 /**
  * Formats the operator-facing console handoff after local voiceover generation completes.
@@ -10,6 +11,7 @@ import { voiceoverAudioMetaPath, voiceoverAudioReviewPath } from "./voiceoverEvi
 export function formatVoiceoverGeneratedConsole(meta: VoiceoverAudioMeta): string {
   return [
     `Voiceover generated: ${meta.output.path}`,
+    `Local playback path: ${voiceoverLocalPlaybackPath(meta.runId)}`,
     `Review artifact: ${voiceoverAudioReviewPath}`,
     `Metadata: ${voiceoverAudioMetaPath}`,
     `Mode: ${meta.mode}`,

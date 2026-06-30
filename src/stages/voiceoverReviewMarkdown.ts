@@ -2,6 +2,7 @@ import { bulletList, table } from "../utils/markdown.js";
 import { renderOperatorDecisionSection } from "./operatorReviewMarkdown.js";
 import type { VoiceoverAudioMeta } from "./voiceoverEvidence.js";
 import {
+  voiceoverLocalPlaybackPath,
   voiceoverRenderApprovalCommand,
   voiceoverRenderApprovalScope,
 } from "./voiceoverReviewCommands.js";
@@ -26,6 +27,7 @@ export function renderVoiceoverReviewMarkdown(meta: VoiceoverAudioMeta): string 
       ["Artifact", "Value"],
       [
         ["WAV", meta.output.path],
+        ["Local playback path", voiceoverLocalPlaybackPath(meta.runId)],
         ["Mode", meta.mode],
         ["Quality", meta.quality],
         ["Duration", `${meta.output.durationSeconds}s`],
@@ -56,7 +58,7 @@ export function renderVoiceoverReviewMarkdown(meta: VoiceoverAudioMeta): string 
     "",
     "## Required Decision",
     "",
-    "Listen to the WAV locally. If pacing, pronunciation, clipping, or source binding is unacceptable, revise the upstream package or TTS configuration and regenerate voiceover audio before render approval.",
+    `Listen to the WAV locally at \`${voiceoverLocalPlaybackPath(meta.runId)}\`. If pacing, pronunciation, clipping, or source binding is unacceptable, revise the upstream package or TTS configuration and regenerate voiceover audio before render approval.`,
     "",
     ...renderVoiceoverDecision(meta),
   ].join("\n");
