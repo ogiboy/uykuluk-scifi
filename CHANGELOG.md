@@ -9,7 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Fixes
+
+- point voiceover review handoffs at the generated WAV playback path instead of the review Markdown
+  artifact
 
 ## v0.54.0 (2026-06-30)
 
