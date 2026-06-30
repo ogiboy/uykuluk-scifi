@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   scriptContinuationResponseFormat,
   parseScriptContinuationProviderPayload,
+  renderScriptContinuationPrompt,
+  scriptContinuationTokenCap,
 } from "../src/stages/scriptContinuation";
 import { scriptContinuationMaxLength } from "../src/stages/scriptContinuationParsing";
 
@@ -130,5 +132,20 @@ describe("script continuation parsing", () => {
       type: "string",
       minLength: 1,
     });
+  });
+
+  it("keeps continuation prompts below the parser-side character guard", () => {
+    const prompt = renderScriptContinuationPrompt(
+      "Anlatıcı: Mevcut sakin senaryo kısa kalır.",
+      "## Approved Idea\nKuşak gemisi arşivinde temkinli bir keşif.",
+      {
+        chunk: { index: 2, focus: "scientific caution" },
+        missingWords: 180,
+      },
+    );
+
+    expect(prompt).toContain("Target length: 120-170 Turkish words.");
+    expect(prompt).toContain("Hard limit: 1800 characters.");
+    expect(scriptContinuationTokenCap(3200)).toBe(700);
   });
 });

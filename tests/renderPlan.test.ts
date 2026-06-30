@@ -56,6 +56,7 @@ describe("render plan", () => {
       };
       scenes: Array<{
         sceneIndex: number;
+        popupCardText?: string;
         backgroundAsset: { path: string; digest: string };
         overlayAssets: Array<{ role: string; path: string; digest: string }>;
       }>;
@@ -88,6 +89,7 @@ describe("render plan", () => {
       path: "assets/backgrounds/plate_test_1920x1080.jpg",
       digest: expect.stringMatching(/^[a-f0-9]{64}$/),
     });
+    expect(plan.scenes[0].popupCardText).toMatch(/Buz alti okyanus|Bilimsel ihtiyat/i);
     expect(plan.scenes[0].overlayAssets.map((asset) => asset.role)).toEqual(
       expect.arrayContaining(["subtitle-panel", "watermark", "popup-card", "waveform-overlay"]),
     );

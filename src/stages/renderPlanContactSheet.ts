@@ -53,6 +53,7 @@ export function renderContactSheet(plan: RenderPlan, provenance: AssetProvenance
         `- Duration: ${scene.durationSeconds}s`,
         `- Background: ${scene.backgroundAsset.path}`,
         `- Overlays: ${scene.overlayAssets.map((asset) => asset.path).join(", ")}`,
+        `- Popup card: ${scene.popupCardText ?? "none"}`,
         `- Subtitle source: ${scene.subtitleSource}`,
         "",
         scene.visualPrompt,

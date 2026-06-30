@@ -91,17 +91,21 @@ agent-tracking state only; runtime code must not require it.
   evidence bundles.
 - Render Plan + Contact Sheet MVP that maps generated scenes to tracked visual assets, summarizes
   scene/bookend timing, and records per-run asset provenance, including committed intro/outro
-  source-frame sequences when present.
+  source-frame sequences when present. Popup-card copy from the production package is bound to
+  render-plan scenes for contact-sheet review and local draft-render burn-in.
+- Production package generation derives `production/voiceover.txt` and `production/subtitles.srt`
+  from `Anlatıcı:` lines only; `Görsel:` directions stay in scene visual prompts for render
+  planning. Subtitles are wrapped into timed cues for local draft-review readability.
 - Disabled-by-default local voiceover generation with deterministic reference WAV output,
   production-readiness warnings, operator review Markdown, and an optional Piper binary/model-path
   adapter.
 - Approval-gated local FFmpeg draft render that writes a review MP4, manifest, operator review
   Markdown, and `ffprobe` media-validation evidence from the current render plan, intro/outro source
   cards or source-frame sequences, scene-timed background plates, voiceover audio, subtitles,
-  lower-third, popup, waveform, watermark overlays, source-frame counts/cadence, and voiceover
-  mode/quality/candidate classification surfaced in evidence/readiness summaries, plus a stable
-  read-only FFmpeg review command for the final draft artifact in the manifest, evidence JSON, and
-  review Markdown.
+  lower-third, popup-card text, waveform, watermark overlays, source-frame counts/cadence, and
+  voiceover mode/quality/candidate classification surfaced in evidence/readiness summaries, plus a
+  stable read-only FFmpeg review command for the final draft artifact in the manifest, evidence
+  JSON, and review Markdown.
 - Manual analytics import/report commands for operator-provided CSV/JSON performance exports, plus a
   read-only Studio view over the ignored local analytics artifacts and import data-quality summary.
 - Typed Studio route-security contract covering current read-only routes and disabled future action
@@ -150,7 +154,7 @@ agent-tracking state only; runtime code must not require it.
 
 - Mock mode is the default.
 - Script generation requires explicit idea approval.
-- Script generation uses bounded section calls and can add up to two bounded continuation passes
+- Script generation uses bounded section calls and can add up to three bounded continuation passes
   when a local model draft remains below the long-form review floor; continuation receipts are
   persisted with prompt/content hashes.
 - If those bounded continuation passes still leave the assembled provider draft below the long-form
@@ -158,11 +162,12 @@ agent-tracking state only; runtime code must not require it.
   diagnostics.
 - Local model continuations are JSON-first, with a bounded raw Turkish fallback for models that
   ignore the JSON wrapper but still return complete, labeled continuation text.
-- Script generation/review blocks malformed production labels and repeated sentence loops instead of
-  allowing a long but low-quality local draft to advance.
-- Script section and continuation content blockers get one bounded retry using only safe blocker
-  summaries and already accepted context; rejected raw provider text is discarded, while hashes,
-  token estimates, duration, and retry evidence are recorded on the accepted receipt.
+- Script generation/review blocks malformed production labels, repeated sentence loops, model
+  self-evaluation commentary, and literal escaped control text instead of allowing a long but
+  low-quality local draft to advance.
+- Script section and continuation content blockers get up to two bounded retries using only safe
+  blocker summaries and already accepted context; rejected raw provider text is discarded, while
+  hashes, token estimates, duration, and retry evidence are recorded on the accepted receipt.
 - Known local-model production label variants such as `Anlatici:` and `Gorsel:` are repaired only at
   bounded label prefixes and recorded in section receipts; unrelated malformed labels still block.
 - Script review and approval are bound to the exact `script.md` SHA-256 digest.
@@ -610,12 +615,13 @@ requires a local `piper` binary and ignored model files configured with `piperMo
 SHA-256 digests used for the WAV. Do not commit downloaded voice models or generated audio.
 `producer voice` also writes `production/audio/voiceover_review.md` so the operator can check
 timing, pacing, pronunciation, source binding, and provider provenance before render approval. The
-non-JSON `producer voice` output points directly at that review artifact and the next safe
-`producer review voice --run <run_id>` command. `producer review voice --run <run_id>` prints the
-same local audio review handoff from validated voiceover evidence, including the explicit render
-approval command and whether that approval is only for a local timing draft or for a reviewed
-production voice candidate. Studio production-media rows show the same read-only review command,
-approval command, and approval scope without adding a web mutation.
+non-JSON `producer voice` output points directly at the run-scoped WAV playback path, that review
+artifact, and the next safe `producer review voice --run <run_id>` command.
+`producer review voice --run <run_id>` prints the same local audio review handoff from validated
+voiceover evidence, including the explicit render approval command and whether that approval is only
+for a local timing draft or for a reviewed production voice candidate. Studio production-media rows
+show the same read-only playback path, review command, approval command, and approval scope without
+adding a web mutation.
 
 `producer review render-plan --run <run_id>` prints a read-only render-plan/contact-sheet handoff
 from validated render-plan evidence. It points operators to `production/storyboard_contact_sheet.md`

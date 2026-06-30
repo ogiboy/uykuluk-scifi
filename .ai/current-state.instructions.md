@@ -44,15 +44,20 @@
 - Brand, overlay, intro, and outro asset inventory checks.
 - Production package generation with complete manifest creation after all derived artifacts are
   persisted.
+- Production package voiceover/subtitle artifacts are derived from exact `Anlatıcı:` lines only.
+  Exact `Görsel:` directions are preserved as scene visual prompts for render planning, not spoken
+  by TTS or burned into subtitles. Subtitle SRT output is split into wrapped timed cues for local
+  draft-review readability.
 - Render Plan + Contact Sheet MVP consumes the verified production-package manifest and tracked
   assets, then writes `production/render_plan.json`, `production/storyboard_contact_sheet.md`, and
   `production/asset_provenance.json` without FFmpeg render, upload, paid provider, or public publish
   execution. Intro/outro source frames are recorded when present. The contact sheet includes timing,
   visual rhythm review, scene-to-asset mapping, intro/outro source-frame paths, background reuse,
-  asset role counts, review gates, safe commands, revision path, and upload/publish blockers.
-  `producer review render-plan` gives operators a read-only handoff from validated render-plan
-  evidence and surfaces the contact sheet, asset provenance, scene count, asset count, timing range,
-  bookend/frame sources, visual rhythm checklist, revision guidance, and still-blocked actions.
+  popup-card copy, asset role counts, review gates, safe commands, revision path, and upload/publish
+  blockers. `producer review render-plan` gives operators a read-only handoff from validated
+  render-plan evidence and surfaces the contact sheet, asset provenance, scene count, asset count,
+  timing range, bookend/frame sources, visual rhythm checklist, revision guidance, and still-blocked
+  actions.
 - Evidence and readiness now surface render-plan presence; missing render plans warn, while partial
   or malformed render-plan artifacts block readiness.
 - Disabled-by-default local voiceover generation. `producer voice` requires local TTS config,
@@ -83,19 +88,19 @@
   `production/render/render_manifest.json`, and `production/render/draft_review.md`. The draft
   render now builds an FFmpeg concat timeline from render-plan intro/outro bookends and scenes,
   expands committed intro/outro source-frame sequences into FFmpeg inputs when enough review time
-  exists, composes lower-third, popup-card, waveform, and watermark overlays when available, records
-  the exact intro-to-outro timeline, source-frame counts/cadence, overlay roles/placements, render
-  approval ID/reference, voiceover classification, actual temporary-output FFmpeg execution args,
-  and read-only FFmpeg review command for the final draft artifact in the manifest, evidence, and
-  readiness summaries, validates the output with `ffprobe` media stream evidence, and writes an
-  operator-readable final local review checklist. The non-JSON CLI handoff and read-only
-  `producer review render` command point to the MP4, manifest, review document, and local-only next
-  action plus copy-pasteable `producer decide render` command templates for recording exactly one
-  durable local operator decision, with deterministic-reference audio labeled as a local timing
-  draft. CLI status, evidence Markdown, and the read-only Studio production-media panel surface the
-  same review command only when current draft-render evidence passes, and rendered runs use the
-  read-only review command as their next safe action with upload/public-scheduled publish still
-  disabled.
+  exists, composes lower-third, scene-timed popup-card text, waveform, and watermark overlays when
+  available, records the exact intro-to-outro timeline, source-frame counts/cadence, overlay
+  roles/placements, render approval ID/reference, voiceover classification, actual temporary-output
+  FFmpeg execution args, and read-only FFmpeg review command for the final draft artifact in the
+  manifest, evidence, and readiness summaries, validates the output with `ffprobe` media stream
+  evidence, and writes an operator-readable final local review checklist. The non-JSON CLI handoff
+  and read-only `producer review render` command point to the MP4, manifest, review document, and
+  local-only next action plus copy-pasteable `producer decide render` command templates for
+  recording exactly one durable local operator decision, with deterministic-reference audio labeled
+  as a local timing draft. CLI status, evidence Markdown, and the read-only Studio production-media
+  panel surface the same review command only when current draft-render evidence passes, and rendered
+  runs use the read-only review command as their next safe action with upload/public-scheduled
+  publish still disabled.
 - Provider-backed idea and production-package stages schema-validate and normalize common local
   model JSON variants before artifact writes, while rejecting malformed or English operator-facing
   payloads fail-closed.
@@ -121,18 +126,19 @@
   all sections pass blocking quality checks.
 - Script expansion prompts include the previous expansion chunks from the same section so local
   models have explicit context to continue from rather than repeating section-level sentence loops.
-- Script generation now runs up to two bounded long-form continuation passes when the assembled
+- Script generation now runs up to three bounded long-form continuation passes when the assembled
   script remains below the 1200-word review floor. Continuations extend the existing
   `Sinematik Gelişme` section, add `continuation` receipts to `script.sections.json`, and are
   included in prompt provenance, token totals, cost recording, and blocker checks.
-- If both bounded continuation passes still leave the assembled provider draft below the 1200-word
-  floor, script generation now fails closed before script artifacts are written and persists a safe
+- If bounded continuation passes still leave the assembled provider draft below the 1200-word floor,
+  script generation now fails closed before script artifacts are written and persists a safe
   diagnostic message without raw provider text.
 - Script continuation parsing remains JSON-first but accepts bounded raw Turkish continuation text
   from local models when the response has complete sentences and exact Turkish production labels.
 - Script review and generation now block malformed Turkish production labels, unaccented production
-  labels such as `Anlatici:`/`Gorsel:`, and repeated sentence loops so local model drafts cannot
-  pass solely because they reached the word-count floor.
+  labels such as `Anlatici:`/`Gorsel:`, repeated sentence loops, model self-evaluation commentary,
+  and literal escaped control text so local model drafts cannot pass solely because they reached the
+  word-count floor.
 - Script section parsing applies bounded production-label repair for known local-model variants such
   as `Anlatici:`, `Anlatyıcı:`, `Gorsel:`, and `Görsel -`; repaired text uses exact labels and
   `script.sections.json` receipts record count/variant evidence without storing raw provider output.

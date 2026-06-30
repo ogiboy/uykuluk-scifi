@@ -1,3 +1,5 @@
+import { voiceoverAudioPath } from "./voiceoverPaths.js";
+
 export type VoiceoverRenderApprovalScope = "production-voice-candidate" | "timing-draft-only";
 
 /**
@@ -8,6 +10,16 @@ export type VoiceoverRenderApprovalScope = "production-voice-candidate" | "timin
  */
 export function voiceoverRenderApprovalCommand(runId: string): string {
   return `pnpm producer approve render --run ${runId}`;
+}
+
+/**
+ * Builds the run-scoped local audio path operators should open before approving render.
+ *
+ * @param runId - The run identifier that owns the voiceover artifact.
+ * @returns A copy-pasteable path from the project root to the generated WAV.
+ */
+export function voiceoverLocalPlaybackPath(runId: string): string {
+  return `runs/${runId}/${voiceoverAudioPath}`;
 }
 
 /**

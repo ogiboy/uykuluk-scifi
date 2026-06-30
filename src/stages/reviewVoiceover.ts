@@ -2,6 +2,7 @@ import { SafeExitError } from "../core/errors.js";
 import { loadRun } from "../core/runStore.js";
 import { readVoiceoverAudioEvidence } from "./voiceoverEvidence.js";
 import {
+  voiceoverLocalPlaybackPath,
   voiceoverRenderApprovalCommand,
   voiceoverRenderApprovalScope,
   type VoiceoverRenderApprovalScope,
@@ -17,6 +18,7 @@ export type VoiceoverReviewHandoff = {
   blockedActions: string[];
   durationSeconds: number;
   mode: PassingVoiceoverEvidence["mode"];
+  localPlaybackPath: string;
   nextSafeAction: string;
   productionVoiceCandidate: boolean;
   quality: PassingVoiceoverEvidence["quality"];
@@ -48,12 +50,14 @@ export async function reviewVoiceover(runId: string): Promise<VoiceoverReviewHan
   }
   const renderApprovalCommand = voiceoverRenderApprovalCommand(run.runId);
   const renderApprovalScope = voiceoverRenderApprovalScope(evidence.productionVoiceCandidate);
+  const localPlaybackPath = voiceoverLocalPlaybackPath(run.runId);
   return {
     audioPath: evidence.path,
     blockedActions: voiceoverReviewBlockedActions(evidence),
     durationSeconds: evidence.durationSeconds,
+    localPlaybackPath,
     mode: evidence.mode,
-    nextSafeAction: voiceoverReviewNextAction(evidence, renderApprovalCommand),
+    nextSafeAction: voiceoverReviewNextAction(evidence, renderApprovalCommand, localPlaybackPath),
     productionVoiceCandidate: evidence.productionVoiceCandidate,
     quality: evidence.quality,
     renderApprovalCommand,
@@ -74,6 +78,7 @@ export function formatVoiceoverReviewConsole(handoff: VoiceoverReviewHandoff): s
   return [
     `Run: ${handoff.runId}`,
     `Voiceover: ${handoff.audioPath}`,
+    `Local playback path: ${handoff.localPlaybackPath}`,
     `Review artifact: ${handoff.reviewPath}`,
     `Mode: ${handoff.mode}`,
     `Quality: ${handoff.quality}`,
@@ -91,11 +96,13 @@ export function formatVoiceoverReviewConsole(handoff: VoiceoverReviewHandoff): s
 function voiceoverReviewNextAction(
   evidence: PassingVoiceoverEvidence,
   renderApprovalCommand: string,
+  localPlaybackPath: string,
 ): string {
+  const reviewPrefix = `Read ${evidence.reviewPath} and listen to ${localPlaybackPath}`;
   if (evidence.productionVoiceCandidate) {
-    return `Listen to ${evidence.reviewPath}; if voice quality passes, run ${renderApprovalCommand}`;
+    return `${reviewPrefix}; if voice quality passes, run ${renderApprovalCommand}`;
   }
-  return `Listen to ${evidence.reviewPath}; approve render only for a local timing draft with ${renderApprovalCommand}`;
+  return `${reviewPrefix}; approve render only for a local timing draft with ${renderApprovalCommand}`;
 }
 
 function voiceoverReviewBlockedActions(evidence: PassingVoiceoverEvidence): string[] {

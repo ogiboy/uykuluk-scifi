@@ -8,8 +8,10 @@ import { pathExists } from "../utils/fs.js";
 import { readJsonFile } from "../utils/json.js";
 import { readRenderPlanEvidence } from "./renderPlan.js";
 import { digestSchema } from "./renderPlanSchemas.js";
+import { voiceoverAudioPath } from "./voiceoverPaths.js";
+import { voiceoverLocalPlaybackPath } from "./voiceoverReviewCommands.js";
 
-export const voiceoverAudioPath = "production/audio/voiceover.wav";
+export { voiceoverAudioPath } from "./voiceoverPaths.js";
 export const voiceoverAudioMetaPath = "production/audio/voiceover.meta.json";
 export const voiceoverAudioReviewPath = "production/audio/voiceover_review.md";
 export const voiceoverAudioArtifactPaths = [
@@ -92,6 +94,7 @@ export type VoiceoverAudioEvidence =
       path: string;
       digest: string;
       durationSeconds: number;
+      localPlaybackPath: string;
       mode: VoiceoverAudioMeta["mode"];
       productionVoiceCandidate: boolean;
       provider?: NonNullable<VoiceoverAudioMeta["provider"]>;
@@ -142,6 +145,7 @@ export async function readVoiceoverAudioEvidence(run: RunRecord): Promise<Voiceo
       path: voiceoverAudioPath,
       digest,
       durationSeconds: meta.output.durationSeconds,
+      localPlaybackPath: voiceoverLocalPlaybackPath(run.runId),
       mode: meta.mode,
       productionVoiceCandidate: meta.quality === "local-piper",
       provider: meta.provider,

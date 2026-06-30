@@ -38,6 +38,7 @@ export function createTwoSceneRenderPlan(
         narrationPreview: "Birinci sahne",
         durationSeconds: 3,
         visualPrompt: "A",
+        popupCardText: "İlk popup kartı: ölçüm notu",
         backgroundAsset: {
           role: "background-plate",
           path: "assets/backgrounds/plate_a.jpg",
@@ -52,6 +53,7 @@ export function createTwoSceneRenderPlan(
         narrationPreview: "İkinci sahne",
         durationSeconds: 4,
         visualPrompt: "B",
+        popupCardText: "İkinci popup kartı",
         backgroundAsset: {
           role: "background-plate",
           path: "assets/backgrounds/plate_b.jpg",

@@ -1,6 +1,5 @@
-import { readFile, writeFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { defaultConfig } from "../src/config/config";
 import {
   formatLocalModelEvalConsole,
   renderLocalModelEvalMarkdown,
@@ -10,9 +9,11 @@ import {
   localModelEvalMarkdownPath,
   runLocalModelEval,
 } from "../src/diagnostics/localModelEval";
+import { safeLocalModelEvalErrorMessage } from "../src/diagnostics/localModelEvalSafety";
 import { pathExists } from "../src/utils/fs";
 import { readJsonFile } from "../src/utils/json";
 import { useTempProject } from "./helpers";
+import { writeLlmConfig } from "./localModelEvalTestHelpers";
 
 describe("local model evaluation", () => {
   useTempProject();
@@ -68,6 +69,7 @@ describe("local model evaluation", () => {
       ]),
     );
     expect(JSON.stringify(report)).not.toContain("local-secret-response");
+    expect(await readFile(localModelEvalJsonPath(), "utf8")).not.toContain("local-secret-response");
     expect(await readFile(localModelEvalMarkdownPath(), "utf8")).not.toContain(
       "local-secret-response",
     );
@@ -134,6 +136,19 @@ describe("local model evaluation", () => {
       ]),
     );
     expect(JSON.stringify(report)).not.toContain("local-secret-response");
+    expect(await readFile(localModelEvalJsonPath(), "utf8")).not.toContain("local-secret-response");
+    expect(await readFile(localModelEvalMarkdownPath(), "utf8")).not.toContain(
+      "local-secret-response",
+    );
+  });
+
+  it("does not echo unknown eval exception messages", () => {
+    expect(safeLocalModelEvalErrorMessage(new Error("raw model output: local-secret"))).toBe(
+      "Provider evaluation failed.",
+    );
+    expect(
+      safeLocalModelEvalErrorMessage(new Error("llama.cpp returned invalid JSON: local-secret")),
+    ).toBe("llama.cpp provider returned invalid JSON.");
   });
 
   it("applies eval-only LLM overrides without mutating project config", async () => {
@@ -171,27 +186,4 @@ async function useMockModel(model: string): Promise<void> {
 
 async function useOllamaConfig(): Promise<void> {
   await writeLlmConfig({ mode: "ollama" });
-}
-
-async function writeLlmConfig(
-  llm: Partial<(typeof defaultConfig.providers)["llm"]>,
-): Promise<void> {
-  await writeFile(
-    "producer.config.json",
-    `${JSON.stringify(
-      {
-        ...defaultConfig,
-        providers: {
-          ...defaultConfig.providers,
-          llm: {
-            ...defaultConfig.providers.llm,
-            ...llm,
-          },
-        },
-      },
-      null,
-      2,
-    )}\n`,
-    "utf8",
-  );
 }

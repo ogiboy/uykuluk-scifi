@@ -41,10 +41,15 @@ describe("draft render FFmpeg planning", () => {
     expect(renderedArgs).toContain("assets/waveforms/waveform.png");
     expect(renderedArgs).toContain("assets/overlays/popup_card.png");
     expect(renderedArgs).toContain("concat=n=4:v=1:a=0");
+    expect(renderedArgs).toContain("force_style='FontSize=22");
+    expect(renderedArgs).toContain("MarginV=86");
     expect(args).toContain("4:a");
     expect(renderedArgs).toContain("[5:v]scale=1280:-1[ov0]");
     expect(renderedArgs).toContain("[8:v]scale=120:-1[ov3]");
-    expect(renderedArgs).toContain("overlay=W-w-24:24[v]");
+    expect(renderedArgs).toContain("overlay=W-w-24:24[overlayOut]");
+    expect(renderedArgs).toContain("drawtext=text='İlk popup kartı\\: ölçüm");
+    expect(renderedArgs).toContain("enable='between(t\\,2\\,5)'");
+    expect(renderedArgs).toContain("enable='between(t\\,5\\,7)'");
     expect(args).toContain("30");
   });
 
@@ -63,6 +68,7 @@ describe("draft render FFmpeg planning", () => {
     expect(renderedArgs).not.toContain("assets/backgrounds/plate_b.jpg");
     expect(renderedArgs).toContain("concat=n=1:v=1:a=0");
     expect(renderedArgs).toContain("subtitles=");
+    expect(renderedArgs).toContain("drawtext=text='İlk popup kartı\\: ölçüm");
     expect(renderedArgs).not.toContain("[ov0]");
     expect(args).toContain("1:a");
   });

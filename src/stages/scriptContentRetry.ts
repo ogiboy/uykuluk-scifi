@@ -48,16 +48,18 @@ type ScriptContentGenerationInput<T> = {
   validationContext?: string;
 };
 
+type RejectedScriptAttempt = {
+  prompt: string;
+  reason: string;
+  result: GenerateTextResult;
+};
+
 const maxScriptContentBlockerRepairAttempts = 2;
 
 export async function generateScriptContentWithBlockerRetry<T>(
   input: ScriptContentGenerationInput<T>,
 ): Promise<ScriptContentGenerationResult<T>> {
-  const rejectedAttempts: Array<{
-    blockers: ScriptReviewWarning[];
-    prompt: string;
-    result: GenerateTextResult;
-  }> = [];
+  const rejectedAttempts: RejectedScriptAttempt[] = [];
   const prompts: string[] = [];
   let prompt = input.prompt;
 
@@ -68,6 +70,27 @@ export async function generateScriptContentWithBlockerRetry<T>(
   ) {
     prompts.push(prompt);
     const attempt = await generateAttempt(input, prompt);
+    if (attempt.parsed === undefined) {
+      rejectedAttempts.push({
+        prompt,
+        reason: `contract_parse_failure: ${safeContractFailure(attempt.parseError)}`,
+        result: attempt.result,
+      });
+      if (attemptIndex === maxScriptContentBlockerRepairAttempts) {
+        throw new SafeExitError(
+          `Invalid ${input.source}: ${formatRejectedReasons(
+            rejectedAttempts,
+          )} after ${maxScriptContentBlockerRepairAttempts} retries.`,
+        );
+      }
+      prompt = renderScriptContentRetryPrompt(
+        input.prompt,
+        input.source,
+        formatRejectedReasons(rejectedAttempts),
+        attemptIndex + 1,
+      );
+      continue;
+    }
     const blockers = blockingScriptWarnings(input.textOf(attempt.parsed), input.validationContext);
     if (blockers.length === 0) {
       if (rejectedAttempts.length === 0) {
@@ -89,7 +112,11 @@ export async function generateScriptContentWithBlockerRetry<T>(
       };
     }
 
-    rejectedAttempts.push({ blockers, prompt, result: attempt.result });
+    rejectedAttempts.push({
+      prompt,
+      reason: `content_blockers: ${formatScriptReviewBlockers(blockers)}`,
+      result: attempt.result,
+    });
     if (attemptIndex === maxScriptContentBlockerRepairAttempts) {
       throw scriptContentBlockerError(
         input.source,
@@ -101,7 +128,7 @@ export async function generateScriptContentWithBlockerRetry<T>(
     prompt = renderScriptContentRetryPrompt(
       input.prompt,
       input.source,
-      formatRejectedBlockers(rejectedAttempts),
+      formatRejectedReasons(rejectedAttempts),
       attemptIndex + 1,
     );
   }
@@ -131,19 +158,42 @@ function blockingScriptWarnings(
 async function generateAttempt<T>(
   input: ScriptContentGenerationInput<T>,
   prompt: string,
-): Promise<{ parsed: T; result: GenerateTextResult }> {
+): Promise<{ parseError?: string; parsed?: T; result: GenerateTextResult }> {
   const result = await input.provider.generateText({ ...input.request, prompt });
-  return { parsed: input.parse(result.text), result };
+  try {
+    return { parsed: input.parse(result.text), result };
+  } catch (error) {
+    return {
+      parseError: error instanceof Error ? error.message : String(error),
+      result,
+    };
+  }
 }
 
-function formatRejectedBlockers(
-  rejectedAttempts: Array<{ blockers: readonly ScriptReviewWarning[] }>,
-): string {
+function formatRejectedBlockers(rejectedAttempts: Array<{ reason: string }>): string {
+  return formatRejectedReasons(rejectedAttempts);
+}
+
+function formatRejectedReasons(rejectedAttempts: Array<{ reason: string }>): string {
   return rejectedAttempts
-    .map(
-      (attempt, index) => `attempt ${index + 1}: ${formatScriptReviewBlockers(attempt.blockers)}`,
-    )
+    .map((attempt, index) => `attempt ${index + 1}: ${attempt.reason}`)
     .join(" | ");
+}
+
+function safeContractFailure(message: string | undefined): string {
+  const fallback = "provider response did not match the requested JSON contract";
+  if (!message) return fallback;
+  const firstLine = message.split(/\r?\n/u)[0]?.trim() || fallback;
+  if (/Unexpected token|not valid JSON|JSON/u.test(firstLine)) {
+    return "expected valid JSON";
+  }
+  const normalized = firstLine
+    .replace(/^Invalid script section provider response:\s*/u, "")
+    .replace(/^Invalid script continuation provider response:\s*/u, "");
+  if (/missing|required|label|contract|schema|field|shape|format/iu.test(normalized)) {
+    return normalized.slice(0, 180);
+  }
+  return fallback;
 }
 
 function renderScriptContentRetryPrompt(

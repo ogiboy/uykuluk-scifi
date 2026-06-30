@@ -191,7 +191,9 @@ model. Offensive or exploit-oriented skills require explicit authorization and a
 - Visual/chart behavior: screenshot or image-diff evidence when stable.
 - Review: independent reviewer or CodeRabbit after tests, not instead of tests.
 - Security-sensitive diff: Codex Security diff scan.
-- PR/CI: GitHub plugin route; use `gh` only where connector coverage is insufficient.
+- PR/CI: GitHub plugin route; use `gh` only where connector coverage is insufficient. PR readiness
+  checks must inspect hosted check status plus PR conversation/review comments, including
+  non-blocking CodeRabbit fix suggestions that may appear even when the bot status is green.
 - PR batching: group related slices into fewer coherent PRs; treat CodeRabbit review quota and CI
   time as limited engineering budget, not free feedback on every tiny change.
 - Completion: Aegis verification-before-completion and project quality gates.

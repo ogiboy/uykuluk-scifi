@@ -50,6 +50,7 @@ export class LlamaCppProvider implements LlmProvider {
 
   async diagnose(timeoutMs = 3_000): Promise<LlamaCppDiagnostic> {
     const baseUrl = withoutTrailingSlash(this.baseUrl);
+    const displayBaseUrl = displaySafeBaseUrl(this.baseUrl);
     let response: Response;
     try {
       response = await fetch(`${baseUrl}/v1/models`, {
@@ -58,18 +59,18 @@ export class LlamaCppProvider implements LlmProvider {
     } catch (error) {
       return {
         available: false,
-        baseUrl,
+        baseUrl: displayBaseUrl,
         model: this.defaultModel,
         servedModels: [],
-        message: `llama.cpp server unavailable at ${baseUrl}: ${
-          error instanceof Error ? error.message : String(error)
-        }`,
+        message: `llama.cpp server unavailable at ${displayBaseUrl} (${transportFailureReason(
+          error,
+        )}).`,
       };
     }
     if (!response.ok) {
       return {
         available: false,
-        baseUrl,
+        baseUrl: displayBaseUrl,
         model: this.defaultModel,
         servedModels: [],
         message: `llama.cpp diagnostics failed (${response.status} ${response.statusText || "HTTP error"}).`,
@@ -83,17 +84,17 @@ export class LlamaCppProvider implements LlmProvider {
       const available = servedModels.includes(this.defaultModel);
       return {
         available,
-        baseUrl,
+        baseUrl: displayBaseUrl,
         model: this.defaultModel,
         servedModels,
         message: available
-          ? `llama.cpp model ${this.defaultModel} is available at ${baseUrl}.`
+          ? `llama.cpp model ${this.defaultModel} is available at ${displayBaseUrl}.`
           : servedModelsMessage(this.defaultModel, servedModels),
       };
     } catch (error) {
       return {
         available: false,
-        baseUrl,
+        baseUrl: displayBaseUrl,
         model: this.defaultModel,
         servedModels: [],
         message: `llama.cpp diagnostics returned invalid JSON: ${
@@ -107,6 +108,7 @@ export class LlamaCppProvider implements LlmProvider {
     const started = Date.now();
     const model = input.model ?? this.defaultModel;
     const baseUrl = withoutTrailingSlash(this.baseUrl);
+    const displayBaseUrl = displaySafeBaseUrl(this.baseUrl);
     let response: Response;
     try {
       response = await fetch(`${baseUrl}/v1/chat/completions`, {
@@ -124,9 +126,7 @@ export class LlamaCppProvider implements LlmProvider {
       });
     } catch (error) {
       throw new Error(
-        `llama.cpp server unavailable at ${baseUrl}: ${
-          error instanceof Error ? error.message : String(error)
-        }`,
+        `llama.cpp server unavailable at ${displayBaseUrl} (${transportFailureReason(error)}).`,
         { cause: error },
       );
     }
@@ -203,6 +203,32 @@ function servedModelsMessage(defaultModel: string, servedModels: string[]): stri
 
 function withoutTrailingSlash(value: string): string {
   return value.endsWith("/") ? value.slice(0, -1) : value;
+}
+
+function displaySafeBaseUrl(value: string): string {
+  try {
+    const url = new URL(value);
+    url.username = "";
+    url.password = "";
+    url.search = "";
+    url.hash = "";
+    if (url.pathname && url.pathname !== "/") {
+      url.pathname = "/redacted-path";
+    }
+    return withoutTrailingSlash(url.toString());
+  } catch {
+    return "<invalid llama.cpp base URL>";
+  }
+}
+
+function transportFailureReason(error: unknown): string {
+  if (error instanceof Error && error.name === "TimeoutError") {
+    return "timeout";
+  }
+  if (error instanceof Error && error.name === "AbortError") {
+    return "request aborted";
+  }
+  return "transport error";
 }
 
 function isString(value: unknown): value is string {

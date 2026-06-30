@@ -9,7 +9,26 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Fixes
+
+- point voiceover review handoffs at the generated WAV playback path instead of the review Markdown
+  artifact
+- surface the generated voiceover WAV playback path in evidence, status, Operator Desk, and Studio
+  media review rows
+- harden local model eval diagnostics by redacting llama.cpp endpoint details, using stage-specific
+  token caps, and keeping persisted eval artifacts raw-output-free
+- retry script provider contract-parse failures with safe remediation prompts instead of persisting
+  raw local-model output
+- keep long-form continuation chunks smaller and bounded across up to three repair passes for local
+  llama.cpp providers
+- block model self-evaluation commentary and literal escaped control text before script review
+  approval
+- make draft renders prefer the thin waveform overlay and use a smaller subtitle style for local
+  review readability
+- keep `Görsel:` directions out of generated voiceover/subtitle artifacts while preserving them as
+  scene visual prompts, and wrap long subtitle narration into readable timed cues
+- bind production-package popup-card copy to render-plan scenes and burn it into local FFmpeg draft
+  renders with scene-timed text overlays
 
 ## v0.55.0 (2026-06-30)
 

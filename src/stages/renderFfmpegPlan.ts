@@ -10,6 +10,7 @@ import {
 } from "./renderComposition.js";
 import { buildDraftRenderTimeline, type DraftRenderTimeline } from "./renderTimeline.js";
 import { buildFfmpegTimelineInputs } from "./renderFfmpegInputs.js";
+import { buildPopupTextFilters, hasPopupText } from "./renderFfmpegPopupText.js";
 
 export { buildDraftRenderTimeline, clampRenderDuration } from "./renderTimeline.js";
 export { buildFfmpegTimelineInputs } from "./renderFfmpegInputs.js";
@@ -53,9 +54,11 @@ export function buildFfmpegArgs(input: {
     concatInputs,
     firstOverlayInputIndex: audioInputIndex + 1,
     overlays: composition.overlays,
+    renderPlan: input.renderPlan,
     sceneCount: ffmpegInputs.length,
     sceneFilters,
     subtitles,
+    timeline,
   });
   const args = ["-y"];
   for (const item of ffmpegInputs) {
@@ -125,18 +128,21 @@ function buildSubtitleConcatFilter(input: {
 }): string {
   return `${input.concatInputs}concat=n=${input.sceneCount}:v=1:a=0,subtitles=${escapeFilterPath(
     input.subtitles,
-  )}[${input.outputLabel}]`;
+  )}:force_style='FontSize=22,Outline=1,Shadow=0,Alignment=2,MarginV=86'[${input.outputLabel}]`;
 }
 
 function buildVideoFilter(input: {
   concatInputs: string;
   firstOverlayInputIndex: number;
   overlays: DraftRenderOverlay[];
+  renderPlan: RenderPlan;
   sceneCount: number;
   sceneFilters: string[];
   subtitles: string;
+  timeline: DraftRenderTimeline;
 }): string {
-  const outputLabel = input.overlays.length > 0 ? "base0" : "v";
+  const includesPopupText = hasPopupText(input.renderPlan, input.timeline);
+  const outputLabel = input.overlays.length > 0 || includesPopupText ? "base0" : "v";
   const filters = [
     ...input.sceneFilters,
     buildSubtitleConcatFilter({
@@ -146,22 +152,36 @@ function buildVideoFilter(input: {
       subtitles: input.subtitles,
     }),
   ];
+  const overlayResult = overlayFilters({
+    finalOutputLabel: includesPopupText ? "overlayOut" : "v",
+    firstInputLabel: outputLabel,
+    firstOverlayInputIndex: input.firstOverlayInputIndex,
+    overlays: input.overlays,
+  });
   return [
     ...filters,
-    ...overlayFilters(input.overlays, input.firstOverlayInputIndex, outputLabel),
+    ...overlayResult.filters,
+    ...buildPopupTextFilters({
+      inputLabel: overlayResult.outputLabel,
+      outputLabel: "v",
+      renderPlan: input.renderPlan,
+      timeline: input.timeline,
+    }),
   ].join(";");
 }
 
-function overlayFilters(
-  overlays: DraftRenderOverlay[],
-  firstOverlayInputIndex: number,
-  firstInputLabel: string,
-): string[] {
-  let inputLabel = firstInputLabel;
-  return overlays.flatMap((overlay, index) => {
+function overlayFilters(input: {
+  finalOutputLabel: string;
+  firstInputLabel: string;
+  firstOverlayInputIndex: number;
+  overlays: DraftRenderOverlay[];
+}): { filters: string[]; outputLabel: string } {
+  let inputLabel = input.firstInputLabel;
+  const filters = input.overlays.flatMap((overlay, index) => {
     const scaledLabel = `ov${index}`;
-    const outputLabel = index === overlays.length - 1 ? "v" : `base${index + 1}`;
-    const inputIndex = firstOverlayInputIndex + index;
+    const outputLabel =
+      index === input.overlays.length - 1 ? input.finalOutputLabel : `base${index + 1}`;
+    const inputIndex = input.firstOverlayInputIndex + index;
     const filters = [
       `[${inputIndex}:v]scale=${overlay.width}:-1[${scaledLabel}]`,
       `[${inputLabel}][${scaledLabel}]overlay=${overlay.x}:${overlay.y}[${outputLabel}]`,
@@ -169,6 +189,10 @@ function overlayFilters(
     inputLabel = outputLabel;
     return filters;
   });
+  return {
+    filters,
+    outputLabel: filters.length > 0 ? inputLabel : input.firstInputLabel,
+  };
 }
 
 const ffmpegFilterEscape = String.fromCodePoint(92);

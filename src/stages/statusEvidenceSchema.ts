@@ -73,6 +73,7 @@ const voiceoverPassSchema = z.looseObject({
   path: z.string().min(1),
   digest: digestSchema,
   durationSeconds: z.number().positive(),
+  localPlaybackPath: z.string().min(1),
   mode: z.enum(["deterministic-local", "local-piper"]),
   productionVoiceCandidate: z.boolean(),
   quality: z.enum(["deterministic-local-reference", "local-piper"]),

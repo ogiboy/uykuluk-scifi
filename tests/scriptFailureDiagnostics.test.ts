@@ -162,7 +162,7 @@ describe("script generation failure diagnostics", () => {
     );
 
     await expect(generateScript(runId)).rejects.toThrow(
-      /Invalid script continuation chunk 1 provider response: continuation has no complete sentence/,
+      /Invalid script continuation chunk 1 provider response: attempt 1: contract_parse_failure: provider response did not match the requested JSON contract/,
     );
 
     expect((await loadRun(runId)).state).toBe("IDEA_APPROVED");
@@ -171,7 +171,10 @@ describe("script generation failure diagnostics", () => {
       artifactPath(runId, "diagnostics/script_generation_failure.json"),
     );
     expect(diagnostics.message).toContain("Invalid script continuation chunk 1 provider response");
-    expect(diagnostics.message).toContain("continuation has no complete sentence");
+    expect(diagnostics.message).toContain(
+      "provider response did not match the requested JSON contract",
+    );
+    expect(diagnostics.message).not.toContain("continuation has no complete sentence");
   });
 
   it("removes stale script failure diagnostics after a later successful script generation", async () => {

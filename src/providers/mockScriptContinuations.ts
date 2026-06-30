@@ -1,12 +1,14 @@
 export function standardContinuationChunk(chunkIndex: number): string[] {
-  return chunkIndex === 1 ? continuationChunkOne : continuationChunkTwo;
+  if (chunkIndex === 1) return continuationChunkOne;
+  if (chunkIndex === 2) return continuationChunkTwo;
+  return continuationChunkThree;
 }
 
 export function underfilledContinuationChunk(chunkIndex: number): string[] {
-  const chunkName = chunkIndex === 1 ? "ilk" : "ikinci";
+  const chunkName = ["ilk", "ikinci", "üçüncü"][chunkIndex - 1] ?? "ek";
   return [
     `Anlatıcı: Bu ${chunkName} ek parça sahneyi yalnızca kısa bir ölçüm notuyla genişletir.`,
-    "Görsel: Veri çizgisi yavaşça söner ve ekip sonucu aceleyle kesinleştirmez.",
+    `Görsel: ${chunkName} veri çizgisi yavaşça söner ve ekip sonucu aceleyle kesinleştirmez.`,
   ];
 }
 
@@ -22,4 +24,9 @@ const continuationChunkTwo = [
   "Anlatıcı: Kapanışa yaklaşmadan önce anlatı bir kez daha temkinli davranır. Eğer bu ritim jeolojikse, yine de gezegenin sanıldığından daha etkin olduğunu gösterir; eğer kimyasalsa, buz altı okyanusun beklenmedik döngüler taşıyabileceğini düşündürür; eğer cihaz kaynaklıysa, iyi bilimin neden tekrar ve kontrol istediğini hatırlatır. Görsel: Sonda ışığını kısar, veri çizgileri sadeleşir ve müzik neredeyse duyulmayacak kadar alçalır. Böylece final, abartılı bir keşif yerine, izleyicinin zihninde sakin ama güçlü bir olasılık bırakır.",
   "Anlatıcı: Bu olasılıkların her biri farklı bir görsel ritim doğurur. Jeolojik açıklamada buz kabuğu yavaşça esner; kimyasal açıklamada mineral bulutları suyun içinde puslu bir harita oluşturur; cihaz açıklamasında ise kontrol odası sessizleşir ve ekip tekrar ölçüm ister. Görsel: Üç kısa sahne arka arkaya gelir, fakat hiçbiri tek başına nihai cevap gibi sunulmaz. Böylece izleyici, bilimsel belirsizliğin hikâyeyi zayıflatmadığını, aksine daha dürüst ve daha merak uyandırıcı yaptığını hisseder.",
   "Anlatıcı: Final köprüsü bu nedenle yumuşak kalır. Sonda karanlıkta ilerlerken, anlatı bize yalnızca uzak bir okyanusu değil, bilinmeyene yaklaşma biçimimizi de düşündürür. Bazen en değerli keşif, bir şeyi bulduğumuzu ilan etmek değil, daha iyi bir soru sormayı öğrenmektir. Görsel: Veri akışı yavaşça kaybolur, buz yüzeyi uzaktan yeniden görünür ve gezegenin sessizliği artık boşluk değil, dikkatle dinlenmesi gereken bir davet gibi durur.",
+];
+
+const continuationChunkThree = [
+  "Anlatıcı: Son küçük köprüde ekip, verinin eksik kalan yanını tek bir kesin sonuca bağlamadan yeniden tartar. Görsel: Harita üzerinde olası doğal süreç, cihaz etkisi ve bilinmeyen değişken başlıkları sade biçimde yanar. Bu kısa ek, sahneyi büyütmek yerine ritmi tamamlar ve izleyiciyi kapanışa daha sakin taşır.",
+  "Anlatıcı: Böylece anlatı, büyük iddiayı değil araştırma disiplinini öne çıkarır; bir ölçümün değerini, hemen cevap vermesinde değil daha iyi gözlem gerektirmesinde arar. Görsel: Sondanın ışığı buz altı karanlıkta dar bir çizgi bırakır, sonra görüntü yavaşça kontrol odasındaki sessiz bekleyişe döner.",
 ];

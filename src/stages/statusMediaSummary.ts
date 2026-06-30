@@ -3,7 +3,7 @@ import type {
   EvidenceStatus,
   ProductionMediaStatus,
 } from "./statusMediaTypes.js";
-
+import { voiceoverLocalPlaybackPath } from "./voiceoverReviewCommands.js";
 export type {
   EvidenceMediaStatus,
   EvidenceStatus,
@@ -32,6 +32,7 @@ export function productionMediaStatus(
       detail: mediaArtifactDetail(item.evidenceKey, evidence?.[item.evidenceKey], status),
       evidenceKey: item.evidenceKey,
       label: item.label,
+      ...mediaPlaybackGuidance(run.runId, item.evidenceKey, evidence?.[item.evidenceKey], status),
       ...mediaRenderApprovalGuidance(
         run.runId,
         item.evidenceKey,
@@ -42,6 +43,21 @@ export function productionMediaStatus(
       status,
     };
   });
+}
+
+function mediaPlaybackGuidance(
+  runId: string | undefined,
+  evidenceKey: ProductionMediaStatus["evidenceKey"],
+  evidence: EvidenceMediaStatus | undefined,
+  status: ProductionMediaStatus["status"],
+): Pick<ProductionMediaStatus, "localPlaybackPath"> {
+  if (evidenceKey !== "voiceoverAudio" || status !== "pass") {
+    return {};
+  }
+  if (typeof evidence?.localPlaybackPath === "string") {
+    return { localPlaybackPath: evidence.localPlaybackPath };
+  }
+  return runId ? { localPlaybackPath: voiceoverLocalPlaybackPath(runId) } : {};
 }
 
 export function formatProductionMediaStatus(artifact: ProductionMediaStatus): string {

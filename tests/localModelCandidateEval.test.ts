@@ -13,6 +13,7 @@ import {
 } from "../src/diagnostics/localModelCandidateEvalFormatting";
 import { LocalModelEvalReport } from "../src/diagnostics/localModelEval";
 import { pathExists } from "../src/utils/fs";
+import { readJsonFile } from "../src/utils/json";
 import { useTempProject } from "./helpers";
 
 describe("local model candidate evaluation", () => {
@@ -56,7 +57,14 @@ describe("local model candidate evaluation", () => {
     expect(report.candidates).toHaveLength(2);
     expect(await pathExists(localModelCandidateEvalJsonPath())).toBe(true);
     expect(await pathExists(localModelCandidateEvalMarkdownPath())).toBe(true);
+    expect(await readJsonFile(localModelCandidateEvalJsonPath())).toEqual(report);
     expect(JSON.stringify(report)).not.toContain("Mock provider returned non-JSON");
+    expect(await readFile(localModelCandidateEvalJsonPath(), "utf8")).not.toContain(
+      "Mock provider returned non-JSON",
+    );
+    expect(await readFile(localModelCandidateEvalMarkdownPath(), "utf8")).not.toContain(
+      "Mock provider returned non-JSON",
+    );
     await expect(readFile("producer.config.json", "utf8")).resolves.toBe(beforeConfig);
     expect(formatLocalModelCandidateEvalConsole(report)).toContain(
       "[block] mock-invalid-script-json",

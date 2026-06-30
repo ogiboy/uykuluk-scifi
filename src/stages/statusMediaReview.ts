@@ -57,9 +57,12 @@ function voiceoverReviewAction(artifact: ProductionMediaStatus): string {
   const reviewPrefix = artifact.reviewCommand
     ? `Review with ${artifact.reviewCommand}; `
     : "Review the voiceover checklist and WAV locally; ";
+  const listeningAction = artifact.localPlaybackPath
+    ? `listen to ${artifact.localPlaybackPath}`
+    : "listen locally";
   return artifact.detail?.includes("timing/reference only")
-    ? `${reviewPrefix}use this audio only for local timing review; regenerate reviewed production voice before final render review.`
-    : `${reviewPrefix}listen locally and verify pronunciation, pacing, and tone before render approval.`;
+    ? `${reviewPrefix}${listeningAction}; use this audio only for local timing review; regenerate reviewed production voice before final render review.`
+    : `${reviewPrefix}${listeningAction} and verify pronunciation, pacing, and tone before render approval.`;
 }
 
 function draftRenderReviewAction(artifact: ProductionMediaStatus): string {

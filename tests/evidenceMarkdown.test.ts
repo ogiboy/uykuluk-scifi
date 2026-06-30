@@ -44,6 +44,7 @@ describe("evidence Markdown media summary", () => {
         path: "production/audio/voiceover.wav",
         digest: digest(),
         durationSeconds: 2.4,
+        localPlaybackPath: "runs/run_media_summary/production/audio/voiceover.wav",
         mode: "deterministic-local",
         productionVoiceCandidate: false,
         quality: "deterministic-local-reference",
@@ -90,7 +91,7 @@ describe("evidence Markdown media summary", () => {
       "Review: Review with pnpm producer review render-plan --run run_media_summary; confirm scene-to-asset mapping, bookend/source-frame paths, and the contact sheet before voiceover or render approval.",
     );
     expect(markdown).toContain(
-      "Review: Review with pnpm producer review voice --run run_media_summary; use this audio only for local timing review; regenerate reviewed production voice before final render review.",
+      "Review: Review with pnpm producer review voice --run run_media_summary; listen to runs/run_media_summary/production/audio/voiceover.wav; use this audio only for local timing review; regenerate reviewed production voice before final render review.",
     );
     expect(markdown).toContain(
       "Review: Review with pnpm producer review render --run run_media_summary; treat this MP4 as a timing draft only; production voice is still required before final review.",

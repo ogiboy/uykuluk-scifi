@@ -167,4 +167,38 @@ describe("status evidence validity", () => {
     );
     expect(output).toContain(`Evidence next action: pnpm producer evidence --run ${run.runId}`);
   });
+
+  it("rejects legacy passing voiceover evidence without a local playback path", async () => {
+    const run = await createRun();
+    await saveRun({
+      ...run,
+      artifacts: ["production/audio/voiceover.wav", "evidence_bundle.json"],
+      state: "READY_FOR_MANUAL_PRODUCTION",
+    });
+    const evidence = studioEvidenceFixture(run.runId, "READY_FOR_MANUAL_PRODUCTION", {
+      voiceoverAudio: {
+        digest: "b".repeat(64),
+        durationSeconds: 8.2,
+        mode: "local-piper",
+        path: "production/audio/voiceover.wav",
+        productionVoiceCandidate: true,
+        quality: "local-piper",
+        reviewPath: "production/audio/voiceover_review.md",
+        sourceWordCount: 42,
+        status: "pass",
+      },
+    });
+    await writeFile(
+      artifactPath(run.runId, "evidence_bundle.json"),
+      JSON.stringify(evidence),
+      "utf8",
+    );
+
+    const output = formatRunStatus(await readRunStatus(run.runId));
+
+    expect(output).toContain(
+      "Evidence: invalid (evidence_bundle.json is missing required fields.)",
+    );
+    expect(output).toContain(`Evidence next action: pnpm producer evidence --run ${run.runId}`);
+  });
 });
