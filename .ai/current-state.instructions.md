@@ -237,9 +237,9 @@
 - Optional clean-copy product UAT smoke script via `pnpm qa:product`, covering rendered happy path,
   traversal rejection, incorrect ordering, stale evidence recovery, tampered render review command
   rejection, post-approval voiceover tamper blocking, disabled upload/publish safeguards, manual
-  analytics import/report malformed-input recovery, durable local render decisions, and Studio
-  read-only service visibility for runs, production media, analytics, and disabled mutation
-  contracts.
+  analytics import/report malformed-input recovery, operator desk command/diagnostic visibility,
+  durable local render decisions, and Studio read-only service visibility for runs, production
+  media, analytics, and disabled mutation contracts.
 - Production build emits a Node-runnable `dist/cli.js` and `pnpm build:smoke` verifies the built CLI
   starts and can initialize a fresh project from an arbitrary working directory.
 - Direct mock/Ollama/llama.cpp provider diagnostics and upload/publish safeguard tests.
