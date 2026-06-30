@@ -9,6 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
+_No unreleased changes yet._
+
+## v0.53.0 (2026-06-30)
+
 ### Features
 
 - show explicit voiceover render-approval scope and command in review handoffs and review Markdown
