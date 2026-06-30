@@ -22,6 +22,21 @@ export async function createRenderedStudioRunFixture(): Promise<string> {
     "utf8",
   );
   await writeFile(
+    artifactPath(run.runId, "production/storyboard_contact_sheet.md"),
+    [
+      "# Storyboard Contact Sheet",
+      "",
+      "## Scene Asset Map",
+      "",
+      "Scene 1 uses assets/backgrounds/nebula.png.",
+      "",
+      "## Intro And Outro Bookends",
+      "",
+      "Review bookend/source-frame paths before voiceover or render approval.",
+    ].join("\n"),
+    "utf8",
+  );
+  await writeFile(
     artifactPath(run.runId, "production/asset_provenance.json"),
     JSON.stringify({
       assets: [{ path: "assets/backgrounds/nebula.png", role: "background" }],
@@ -49,6 +64,7 @@ export async function createRenderedStudioRunFixture(): Promise<string> {
     artifacts: [
       "script.md",
       "production/render_plan.json",
+      "production/storyboard_contact_sheet.md",
       "production/asset_provenance.json",
       "production/audio/voiceover.wav",
       "production/audio/voiceover_review.md",

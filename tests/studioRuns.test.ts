@@ -136,6 +136,14 @@ describe("Studio read-only run summaries", () => {
           preview: expect.stringContaining('"scenes"'),
         }),
         expect.objectContaining({
+          path: "production/storyboard_contact_sheet.md",
+          description: expect.stringContaining("bookend/source-frame"),
+          exists: true,
+          group: "Render Planning",
+          kind: "markdown",
+          operatorAction: expect.stringContaining("not render approval"),
+        }),
+        expect.objectContaining({
           path: "production/asset_provenance.json",
           exists: true,
           group: "Render Planning",
