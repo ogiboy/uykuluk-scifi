@@ -5,6 +5,11 @@ import {
   type ProductionMediaStatus,
 } from "../../../../src/stages/statusMediaSummary";
 import {
+  renderDecisionJsonPath,
+  renderDecisionCommandTemplates,
+  type RenderDecisionCommandTemplate,
+} from "../../../../src/stages/renderDecisionCommands";
+import {
   buildStatusWorkflowProgress,
   type StatusWorkflowStep,
 } from "../../../../src/stages/statusWorkflow";
@@ -74,6 +79,7 @@ export type StudioRunDetail = StudioRunSummary & {
   productionMedia: ProductionMediaStatus[];
   readiness: ReadinessSnapshot | null;
   readinessChecks: StudioReadinessCheck[];
+  renderDecisionCommands: RenderDecisionCommandTemplate[];
   warnings: string[];
 };
 
@@ -144,6 +150,7 @@ export async function getStudioRunDetail(runId: string): Promise<StudioRunDetail
     ),
     readiness: readiness.snapshot,
     readinessChecks: readinessSummary.checks,
+    renderDecisionCommands: studioRenderDecisionCommands(record, evidence),
     warnings: record.warnings ?? [],
   };
 }
@@ -219,4 +226,20 @@ function summarizeRun(
       state: record.state ?? "FAILED",
     }),
   };
+}
+
+function studioRenderDecisionCommands(
+  record: RunRecord,
+  evidence: StudioEvidenceSummary,
+): RenderDecisionCommandTemplate[] {
+  const runId = record.runId;
+  if (!runId || record.state !== "RENDERED" || evidence.status !== "available") {
+    return [];
+  }
+  if (record.artifacts?.includes(renderDecisionJsonPath)) {
+    return [];
+  }
+  return evidence.snapshot?.draftRender?.status === "pass"
+    ? renderDecisionCommandTemplates(runId)
+    : [];
 }

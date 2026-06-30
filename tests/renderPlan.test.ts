@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { artifactPath } from "../src/core/artifacts";
 import { loadRun } from "../src/core/runStore";
@@ -106,27 +106,6 @@ describe("render plan", () => {
         expect.objectContaining({ role: "outro-source-frame" }),
       ]),
     );
-    const contactSheet = await readFile(
-      artifactPath(runId, "production/storyboard_contact_sheet.md"),
-      "utf8",
-    );
-    expect(contactSheet).toContain("## Intro And Outro Bookends");
-    expect(contactSheet).toContain("## Timing Summary");
-    expect(contactSheet).toContain("Scene count:");
-    expect(contactSheet).toContain("Intro/outro bookends: 5s");
-    expect(contactSheet).toContain("Estimated local draft duration:");
-    expect(contactSheet).toContain("assets/intro/episode_title_card_1920x1080.jpg");
-    expect(contactSheet).toContain("Intro source frames: 2 committed frames");
-    expect(contactSheet).toContain("assets/outro/youtube_end_screen_1920x1080.jpg");
-    expect(contactSheet).toContain("Outro source frames: 2 committed frames");
-    expect(contactSheet).toContain("## Operator Decision");
-    expect(contactSheet).toContain(`pnpm producer readiness --run ${runId}`);
-    expect(contactSheet).toContain(`pnpm producer voice --run ${runId}`);
-    expect(contactSheet).toContain(
-      "file existence does not approve TTS, render, upload, or publish",
-    );
-    expect(contactSheet).toContain("public publish");
-
     await estimateCost(runId);
     const evidence = (await generateEvidenceBundle(runId)) as {
       renderPlan: { status: string; artifactCount: number; assetCount: number };

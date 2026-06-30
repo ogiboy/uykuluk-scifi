@@ -48,9 +48,10 @@
   assets, then writes `production/render_plan.json`, `production/storyboard_contact_sheet.md`, and
   `production/asset_provenance.json` without FFmpeg render, upload, paid provider, or public publish
   execution. Intro/outro source frames are recorded when present. The contact sheet includes timing,
-  review gates, safe commands, revision path, and upload/publish blockers.
-  `producer review render-plan` gives operators a read-only handoff from validated render-plan
-  evidence and surfaces the contact sheet, asset provenance, scene count, asset count, timing, and
+  visual rhythm review, background reuse, asset role counts, review gates, safe commands, revision
+  path, and upload/publish blockers. `producer review render-plan` gives operators a read-only
+  handoff from validated render-plan evidence and surfaces the contact sheet, asset provenance,
+  scene count, asset count, timing range, visual rhythm checklist, revision guidance, and
   still-blocked actions.
 - Evidence and readiness now surface render-plan presence; missing render plans warn, while partial
   or malformed render-plan artifacts block readiness.
@@ -86,10 +87,12 @@
   readiness summaries, validates the output with `ffprobe` media stream evidence, and writes an
   operator-readable final local review checklist. The non-JSON CLI handoff and read-only
   `producer review render` command point to the MP4, manifest, review document, and local-only next
-  action, with deterministic-reference audio labeled as a local timing draft. CLI status, evidence
-  Markdown, and the read-only Studio production-media panel surface the same review command only
-  when current draft-render evidence passes, and rendered runs use the read-only review command as
-  their next safe action with upload/public-scheduled publish still disabled.
+  action plus copy-pasteable `producer decide render` command templates for recording exactly one
+  durable local operator decision, with deterministic-reference audio labeled as a local timing
+  draft. CLI status, evidence Markdown, and the read-only Studio production-media panel surface the
+  same review command only when current draft-render evidence passes, and rendered runs use the
+  read-only review command as their next safe action with upload/public-scheduled publish still
+  disabled.
 - Provider-backed idea and production-package stages schema-validate and normalize common local
   model JSON variants before artifact writes, while rejecting malformed or English operator-facing
   payloads fail-closed.
@@ -214,6 +217,9 @@
   JSON/Markdown evidence under `production/render/`. It does not approve upload or publish and keeps
   the run in `RENDERED`. `producer status`, `producer desk`, and product UAT surface the recorded
   decision so operators do not loop back to render review after a decision is recorded.
+- Studio run detail remains read-only but now shows the same local render-decision command templates
+  for rendered runs with current draft-render evidence and no recorded decision, so the operator can
+  copy the CLI command without Studio becoming a mutation surface.
 - Readiness diagnostics that strictly parse and revalidate persisted cost quotes, live hard budgets,
   complete production-package integrity, and exact paid-generation cost approval when required.
 - Final readiness diagnostics agree with the post-transition run state.

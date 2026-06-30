@@ -56,6 +56,9 @@
   rendered draft, persist reviewer/notes/decision evidence, and never imply upload or publish
   approval. Status, the operator desk, and product UAT should surface the recorded decision and next
   safe action.
+- Keep Studio render-decision visibility read-only: it may show copy-pasteable local
+  `producer decide render` command templates for rendered runs with current draft-render evidence,
+  but must not write the decision or bypass the CLI/core approval and evidence contracts.
 - Keep all run-root filesystem access behind canonical bounded run-ID validation.
 - Keep run artifact reads, writes, and persisted lists behind canonical relative-path validation.
 - Keep state, ledger, cost, reservation, lock, and artifact access behind canonical
@@ -69,10 +72,11 @@
 ## Next
 
 - Harden the Render Plan + Contact Sheet MVP with operator review refinements only where real use
-  exposes gaps; the current contact sheet already includes review gates, safe next commands,
-  revision guidance, and blocked upload/publish actions. `producer review render-plan` now prints a
-  read-only validated handoff for the contact sheet, asset provenance, timing, scene count, and
-  still-blocked actions. Do not turn it into render execution.
+  exposes gaps; the current contact sheet already includes review gates, safe next commands, visual
+  rhythm checks, timing ranges, asset role counts, background reuse, revision guidance, and blocked
+  upload/publish actions. `producer review render-plan` now prints a read-only validated handoff for
+  the contact sheet, asset provenance, timing range, scene count, review checklist, revision
+  guidance, and still-blocked actions. Do not turn it into render execution.
 - Harden local TTS with continued Piper voice-quality QA. Keep models and generated audio ignored;
   the current implemented foundation is deterministic reference WAV, operator audio review Markdown,
   optional configured `local-piper` shell-out, pinned Turkish model setup into ignored `models/`,
@@ -88,8 +92,9 @@
   source-frame cadence, render approval ID/reference plus voiceover mode/quality/candidate
   classification preserved from approval through evidence, fail-closed `ffprobe` media validation,
   stable read-only FFmpeg review command evidence, and an operator-readable
-  `production/render/draft_review.md` checklist plus render/review CLI handoffs with local-only
-  decision guidance surfaced through CLI status, evidence Markdown, and read-only Studio panels.
+  `production/render/draft_review.md` checklist plus render/review CLI handoffs with exact local
+  `producer decide render` command templates, local-only decision guidance surfaced through CLI
+  status, evidence Markdown, and read-only Studio panels.
 - Use `producer eval local-model` before more Qwen-specific tuning. Compare configured local
   candidates through the same idea/script gates, receipt evidence, JSON compliance, repetition
   checks, Turkish label discipline, and operator quality review. Prefer eval-only CLI overrides for

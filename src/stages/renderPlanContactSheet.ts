@@ -1,6 +1,7 @@
 import { bulletList } from "../utils/markdown.js";
 import { renderOperatorDecisionSection } from "./operatorReviewMarkdown.js";
 import { AssetProvenance, AssetRef, RenderPlan } from "./renderPlanSchemas.js";
+import { renderVisualRhythmReview, summarizeRenderPlanReview } from "./renderPlanReviewSummary.js";
 
 /**
  * Builds a Markdown contact sheet for a storyboard render plan.
@@ -10,6 +11,7 @@ import { AssetProvenance, AssetRef, RenderPlan } from "./renderPlanSchemas.js";
  * @returns A Markdown string containing the contact sheet.
  */
 export function renderContactSheet(plan: RenderPlan, provenance: AssetProvenance): string {
+  const reviewSummary = summarizeRenderPlanReview(plan, provenance);
   return [
     "# Storyboard Contact Sheet",
     "",
@@ -25,6 +27,7 @@ export function renderContactSheet(plan: RenderPlan, provenance: AssetProvenance
     `- Asset count: ${provenance.assets.length}`,
     "",
     ...renderTimingSummary(plan),
+    ...renderVisualRhythmReview(reviewSummary),
     ...renderBookends(plan),
     "## Asset Provenance",
     "",

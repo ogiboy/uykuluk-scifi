@@ -4,7 +4,9 @@ import { artifactPreviewsIntro } from "@/lib/runEvidenceCopy";
 import { RunBlockedActionsPanel } from "./RunBlockedActionsPanel";
 import { RunLedgerPanel } from "./RunLedgerPanel";
 import { RunProductionMediaPanel } from "./RunProductionMediaPanel";
+import { RunRenderDecisionCommandsPanel } from "./RunRenderDecisionCommandsPanel";
 import { RunWorkflowProgressPanel } from "./RunWorkflowProgressPanel";
+import { readinessStatusClassName } from "./readinessStatusClassName";
 
 /**
  * Renders a read-only detail view for a run.
@@ -88,6 +90,8 @@ export function RunDetailView({ run }: Readonly<{ run: StudioRunDetail }>) {
       />
 
       <RunWorkflowProgressPanel workflowProgress={run.workflowProgress} />
+
+      <RunRenderDecisionCommandsPanel commands={run.renderDecisionCommands} />
 
       <section className='panel' aria-labelledby='artifact-heading'>
         <h2 id='artifact-heading'>Artifact Previews</h2>
@@ -186,19 +190,6 @@ function groupedArtifactPreviews(
     artifacts: groupedArtifacts,
     label,
   }));
-}
-
-/**
- * Maps a readiness status to its status pill class name.
- *
- * @param status - The readiness status value
- * @returns The CSS class name for the corresponding status pill
- */
-function readinessStatusClassName(status: string): string {
-  if (status === "block") {
-    return "status-pill small blocked";
-  }
-  return "status-pill small";
 }
 
 /**

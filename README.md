@@ -413,12 +413,13 @@ Current Studio scope:
   readiness/evidence status, stale or invalid artifact remediation, and next safe action visibility;
 - read-only `/runs/<run_id>` detail view with next action, readiness status, and review artifact
   availability plus approval ledger entries, warning lists, production media evidence details,
-  shared v1 workflow progress, per-row review guidance, readiness check messages, and readiness
-  next-action commands from CLI/core artifacts. Malformed or stale evidence artifacts stay
-  read-only, are not used as proof for blocked actions, media readiness, or next-action guidance,
-  and point back to the CLI evidence command; media rows fall back to persisted artifact-record
-  visibility until evidence is current. Missing, malformed, or stale readiness artifacts stay
-  read-only and point back to the CLI readiness command;
+  shared v1 workflow progress, per-row review guidance, local render-decision command templates for
+  rendered runs that have current draft-render evidence and no recorded decision, readiness check
+  messages, and readiness next-action commands from CLI/core artifacts. Malformed or stale evidence
+  artifacts stay read-only, are not used as proof for blocked actions, media readiness, or
+  next-action guidance, and point back to the CLI evidence command; media rows fall back to
+  persisted artifact-record visibility until evidence is current. Missing, malformed, or stale
+  readiness artifacts stay read-only and point back to the CLI readiness command;
 - read-only artifact preview excerpts for scripts, reviews, production packages, render plans,
   contact sheets, asset provenance, evidence, readiness, voiceover metadata, and render manifests,
   grouped by operator review phase, with binary media limited to metadata;
@@ -611,8 +612,9 @@ labeled as a timing draft input, not a production voice approval.
 
 `producer review render-plan --run <run_id>` prints a read-only render-plan/contact-sheet handoff
 from validated render-plan evidence. It points operators to `production/storyboard_contact_sheet.md`
-and `production/asset_provenance.json`, summarizes scenes, assets, and timing, and keeps TTS,
-render, upload, publish, and paid/generative media work behind their separate gates.
+and `production/asset_provenance.json`, summarizes scenes, assets, timing ranges, visual rhythm,
+background reuse, asset role counts, and revision guidance, and keeps TTS, render, upload, publish,
+and paid/generative media work behind their separate gates.
 
 `producer render` requires `ffmpeg` on `PATH` unless called through a test harness with an explicit
 binary. The draft render is a local review artifact and may be regenerated after approval; its
@@ -622,12 +624,13 @@ arguments that used an atomic temporary output and a separate read-only FFmpeg r
 decodes the final draft artifact to `null` for operator inspection; the same trusted command is
 copied into draft-render evidence JSON. The non-JSON CLI output and read-only
 `producer review render --run <run_id>` command point directly to the MP4, manifest, review
-document, and local-only next action. Status, evidence Markdown, and the read-only Studio
-production-media panel surface that same safe review command when draft-render evidence is current,
-and rendered runs use the read-only review command as their next safe action.
+document, local-only next action, and copy-pasteable `producer decide render` command templates for
+recording exactly one durable local operator decision. Status, evidence Markdown, and the read-only
+Studio production-media panel surface that same safe review command when draft-render evidence is
+current, and rendered runs use the read-only review command as their next safe action.
 `production/render/draft_review.md` summarizes the final operator checklist, shows that review
-command, and labels deterministic-reference audio renders as local timing drafts. It does not
-upload, schedule, or publish anything.
+command, includes the decision command templates, and labels deterministic-reference audio renders
+as local timing drafts. It does not upload, schedule, or publish anything.
 
 `thinkingMode` can be `default`, `think`, or `no_think`. Token caps are sent to Ollama as
 `num_predict` so local generation cannot run unbounded. Script generation splits the approved idea
