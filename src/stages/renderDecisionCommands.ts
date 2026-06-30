@@ -48,7 +48,7 @@ export function renderDecisionCommandTemplates(runId: string): RenderDecisionCom
  * @returns The render-decision command template for `runId`.
  */
 export function renderDecisionNextAction(runId: string): string {
-  return `pnpm producer decide render --run ${runId} --decision accepted-for-local-review --notes "<notes>"`;
+  return renderDecisionCommandTemplates(runId)[0].command;
 }
 
 const POSIX_SINGLE_QUOTE_ESCAPE = "'\"'\"'";

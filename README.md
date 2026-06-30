@@ -298,9 +298,9 @@ pnpm producer approve render --run <run_id>
 pnpm producer approve render --run <run_id> --json
 pnpm producer render --run <run_id>
 pnpm producer render --run <run_id> --json
-pnpm producer decide render --run <run_id> --decision accepted-for-local-review --notes "<notes>"
-pnpm producer decide render --run <run_id> --decision needs-revision --notes "<notes>"
-pnpm producer decide render --run <run_id> --decision rejected --notes "<notes>"
+pnpm producer decide render --run <run_id> --decision accepted-for-local-review --notes "<operator notes>" --reviewed-by operator
+pnpm producer decide render --run <run_id> --decision needs-revision --notes "<operator notes>" --reviewed-by operator
+pnpm producer decide render --run <run_id> --decision rejected --notes "<operator notes>" --reviewed-by operator
 ```
 
 Blocked readiness checks print and persist next-action guidance for common operator steps such as

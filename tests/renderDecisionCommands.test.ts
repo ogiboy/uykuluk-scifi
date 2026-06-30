@@ -3,6 +3,7 @@ import {
   renderDecisionCommandTemplates,
   renderDecisionJsonPath,
   renderDecisionMarkdownPath,
+  renderDecisionNextAction,
 } from "../src/stages/renderDecisionCommands";
 
 describe("render decision command templates", () => {
@@ -31,5 +32,11 @@ describe("render decision command templates", () => {
     ]);
     expect(renderDecisionJsonPath).toBe("production/render/render_decision.json");
     expect(renderDecisionMarkdownPath).toBe("production/render/render_decision.md");
+  });
+
+  it("reuses the accepted-decision command for default next-action guidance", () => {
+    expect(renderDecisionNextAction("run_template")).toBe(
+      "pnpm producer decide render --run run_template --decision accepted-for-local-review --notes '<operator notes>' --reviewed-by operator",
+    );
   });
 });
