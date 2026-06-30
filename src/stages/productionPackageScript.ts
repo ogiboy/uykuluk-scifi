@@ -1,0 +1,244 @@
+import type { ProductionScene } from "./types.js";
+
+type ProductionUnit = {
+  label: "narration" | "visual";
+  text: string;
+};
+
+type SceneDraft = {
+  narration: string;
+  visuals: string[];
+};
+
+type SubtitleBlock = {
+  lines: string[];
+  weight: number;
+};
+
+const maxSubtitleLineLength = 46;
+const maxSubtitleLinesPerCue = 2;
+
+/**
+ * Extracts spoken narration from a labeled script.
+ *
+ * Visual directions stay out of the TTS/subtitle source and are preserved as scene prompts.
+ *
+ * @param script - The approved script markdown.
+ * @returns Scene records with spoken narration and visual prompts.
+ */
+export function buildProductionScenesFromScript(script: string): ProductionScene[] {
+  const units = parseProductionUnits(script);
+  const drafts = buildSceneDrafts(units);
+  const fallbackText = cleanScriptText(script);
+  const sceneDrafts =
+    drafts.length > 0
+      ? drafts
+      : [{ narration: fallbackText, visuals: [`Cinematic UykulukSciFi scene: ${fallbackText}`] }];
+
+  return sceneDrafts.map((scene, index) => ({
+    index: index + 1,
+    narration: scene.narration,
+    visualPrompt: renderVisualPrompt(index + 1, scene),
+    durationSeconds: Math.max(8, Math.round(scene.narration.split(/\s+/u).length / 2.3)),
+  }));
+}
+
+/**
+ * Renders readable SRT cues from production scenes.
+ *
+ * Long narration is split into timed, wrapped cue blocks so FFmpeg subtitle burn-in does not create
+ * oversized single-cue overlays.
+ *
+ * @param scenes - Production scenes derived from the approved script.
+ * @returns SRT subtitle text.
+ */
+export function buildWrappedSrt(scenes: readonly ProductionScene[]): string {
+  let cursor = 0;
+  let cueIndex = 1;
+  const cues: string[] = [];
+
+  for (const scene of scenes) {
+    const blocks = subtitleBlocks(scene.narration);
+    const sceneStart = cursor;
+    const sceneEnd = cursor + scene.durationSeconds;
+    const totalWeight = blocks.reduce((sum, block) => sum + block.weight, 0) || 1;
+    let consumedWeight = 0;
+
+    for (const [blockIndex, block] of blocks.entries()) {
+      const start = sceneStart + (scene.durationSeconds * consumedWeight) / totalWeight;
+      consumedWeight += block.weight;
+      const end =
+        blockIndex === blocks.length - 1
+          ? sceneEnd
+          : sceneStart + (scene.durationSeconds * consumedWeight) / totalWeight;
+      cues.push(
+        [
+          String(cueIndex),
+          `${formatSrtTime(start)} --> ${formatSrtTime(end)}`,
+          block.lines.join("\n"),
+          "",
+        ].join("\n"),
+      );
+      cueIndex += 1;
+    }
+    cursor = sceneEnd;
+  }
+
+  return cues.join("\n");
+}
+
+export function renderVoiceoverText(scenes: readonly ProductionScene[]): string {
+  return scenes.map((scene) => scene.narration).join("\n\n");
+}
+
+function parseProductionUnits(script: string): ProductionUnit[] {
+  return cleanScriptText(script)
+    .split(/\n+/u)
+    .flatMap((line) => parseProductionLine(line.trim()))
+    .filter((unit) => unit.text.length > 0);
+}
+
+function parseProductionLine(line: string): ProductionUnit[] {
+  if (!line) {
+    return [];
+  }
+  const labelPattern = /\b(Anlatıcı|Görsel):\s*/gu;
+  const matches = [...line.matchAll(labelPattern)];
+  if (matches.length === 0) {
+    return [{ label: "narration", text: line }];
+  }
+
+  const units: ProductionUnit[] = [];
+  const prefix = line.slice(0, matches[0].index).trim();
+  if (prefix) {
+    units.push({ label: "narration", text: prefix });
+  }
+  for (const [index, match] of matches.entries()) {
+    const start = (match.index ?? 0) + match[0].length;
+    const end = matches[index + 1]?.index ?? line.length;
+    const text = line.slice(start, end).trim();
+    if (text) {
+      units.push({
+        label: match[1] === "Görsel" ? "visual" : "narration",
+        text,
+      });
+    }
+  }
+  return units;
+}
+
+function buildSceneDrafts(units: readonly ProductionUnit[]): SceneDraft[] {
+  const scenes: SceneDraft[] = [];
+  const pendingVisuals: string[] = [];
+  let current: SceneDraft | undefined;
+
+  for (const unit of units) {
+    if (unit.label === "visual") {
+      if (current) {
+        current.visuals.push(unit.text);
+      } else {
+        pendingVisuals.push(unit.text);
+      }
+      continue;
+    }
+    if (current) {
+      scenes.push(current);
+    }
+    current = { narration: unit.text, visuals: pendingVisuals.splice(0) };
+  }
+
+  if (current) {
+    scenes.push(current);
+  }
+  return scenes;
+}
+
+function subtitleBlocks(text: string): SubtitleBlock[] {
+  const sentences = splitSentences(text);
+  const blocks: SubtitleBlock[] = [];
+  let currentLines: string[] = [];
+
+  for (const sentence of sentences) {
+    const sentenceLines = wrapSubtitleLines(sentence);
+    if (sentenceLines.length > maxSubtitleLinesPerCue) {
+      flushLines(blocks, currentLines);
+      currentLines = [];
+      for (let index = 0; index < sentenceLines.length; index += maxSubtitleLinesPerCue) {
+        flushLines(blocks, sentenceLines.slice(index, index + maxSubtitleLinesPerCue));
+      }
+      continue;
+    }
+    if (currentLines.length + sentenceLines.length > maxSubtitleLinesPerCue) {
+      flushLines(blocks, currentLines);
+      currentLines = [];
+    }
+    currentLines.push(...sentenceLines);
+  }
+
+  flushLines(blocks, currentLines);
+  return blocks.length > 0 ? blocks : [{ lines: [text], weight: text.length || 1 }];
+}
+
+function splitSentences(text: string): string[] {
+  return text
+    .replaceAll(/\s+/gu, " ")
+    .trim()
+    .split(/(?<=[.!?…])\s+/u)
+    .map((sentence) => sentence.trim())
+    .filter(Boolean);
+}
+
+function wrapSubtitleLines(text: string): string[] {
+  const words = text.split(/\s+/u).filter(Boolean);
+  const lines: string[] = [];
+  let current = "";
+  for (const word of words) {
+    const candidate = current ? `${current} ${word}` : word;
+    if (candidate.length <= maxSubtitleLineLength || !current) {
+      current = candidate;
+      continue;
+    }
+    lines.push(current);
+    current = word;
+  }
+  if (current) {
+    lines.push(current);
+  }
+  return lines;
+}
+
+function flushLines(blocks: SubtitleBlock[], lines: readonly string[]): void {
+  if (lines.length === 0) {
+    return;
+  }
+  blocks.push({
+    lines: [...lines],
+    weight: lines.join(" ").length || 1,
+  });
+}
+
+function cleanScriptText(script: string): string {
+  return script
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line && !line.startsWith("#"))
+    .join("\n")
+    .replaceAll(/\n{3,}/gu, "\n\n")
+    .trim();
+}
+
+function renderVisualPrompt(sceneIndex: number, scene: SceneDraft): string {
+  const visualText = scene.visuals.join(" ");
+  const source = visualText || scene.narration.slice(0, 180);
+  return `Cinematic UykulukSciFi scene ${sceneIndex}: ${source}`;
+}
+
+function formatSrtTime(seconds: number): string {
+  const safeSeconds = Math.max(0, seconds);
+  const totalMillis = Math.round(safeSeconds * 1000);
+  const hrs = Math.floor(totalMillis / 3_600_000);
+  const mins = Math.floor((totalMillis % 3_600_000) / 60_000);
+  const secs = Math.floor((totalMillis % 60_000) / 1000);
+  const millis = totalMillis % 1000;
+  return `${String(hrs).padStart(2, "0")}:${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")},${String(millis).padStart(3, "0")}`;
+}

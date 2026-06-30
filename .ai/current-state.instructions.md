@@ -44,6 +44,10 @@
 - Brand, overlay, intro, and outro asset inventory checks.
 - Production package generation with complete manifest creation after all derived artifacts are
   persisted.
+- Production package voiceover/subtitle artifacts are derived from exact `Anlatıcı:` lines only.
+  Exact `Görsel:` directions are preserved as scene visual prompts for render planning, not spoken
+  by TTS or burned into subtitles. Subtitle SRT output is split into wrapped timed cues for local
+  draft-review readability.
 - Render Plan + Contact Sheet MVP consumes the verified production-package manifest and tracked
   assets, then writes `production/render_plan.json`, `production/storyboard_contact_sheet.md`, and
   `production/asset_provenance.json` without FFmpeg render, upload, paid provider, or public publish

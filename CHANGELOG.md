@@ -25,6 +25,8 @@ future generated release notes can be inserted predictably.
   approval
 - make draft renders prefer the thin waveform overlay and use a smaller subtitle style for local
   review readability
+- keep `Görsel:` directions out of generated voiceover/subtitle artifacts while preserving them as
+  scene visual prompts, and wrap long subtitle narration into readable timed cues
 
 ## v0.55.0 (2026-06-30)
 

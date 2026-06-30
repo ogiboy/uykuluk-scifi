@@ -92,6 +92,9 @@ agent-tracking state only; runtime code must not require it.
 - Render Plan + Contact Sheet MVP that maps generated scenes to tracked visual assets, summarizes
   scene/bookend timing, and records per-run asset provenance, including committed intro/outro
   source-frame sequences when present.
+- Production package generation derives `production/voiceover.txt` and `production/subtitles.srt`
+  from `Anlatıcı:` lines only; `Görsel:` directions stay in scene visual prompts for render
+  planning. Subtitles are wrapped into timed cues for local draft-review readability.
 - Disabled-by-default local voiceover generation with deterministic reference WAV output,
   production-readiness warnings, operator review Markdown, and an optional Piper binary/model-path
   adapter.

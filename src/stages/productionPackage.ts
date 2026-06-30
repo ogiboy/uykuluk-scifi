@@ -21,6 +21,11 @@ import {
   createProductionPackageManifest,
   type ProductionPackageManifest,
 } from "./productionPackageIntegrity.js";
+import {
+  buildProductionScenesFromScript,
+  buildWrappedSrt,
+  renderVoiceoverText,
+} from "./productionPackageScript.js";
 import { ProductionScene } from "./types.js";
 
 /**
@@ -72,9 +77,9 @@ export async function generateProductionPackage(runId: string): Promise<Producti
       prompt: prompt.text,
     });
     const providerPayload = parseProductionPackageProviderPayload(result.text);
-    const voiceover = cleanVoiceover(script);
-    const scenes = buildScenes(voiceover);
-    const subtitles = buildSrt(scenes);
+    const scenes = buildProductionScenesFromScript(script);
+    const voiceover = renderVoiceoverText(scenes);
+    const subtitles = buildWrappedSrt(scenes);
     const packageMarkdown = renderPackageMarkdown(providerPayload, scenes);
     const promptProvenance = createPromptProvenance(
       prompt.key,
@@ -123,52 +128,6 @@ export async function generateProductionPackage(runId: string): Promise<Producti
     });
     throw error;
   }
-}
-
-function cleanVoiceover(script: string): string {
-  return script
-    .split("\n")
-    .filter((line) => !line.startsWith("#"))
-    .join("\n")
-    .replaceAll(/\n{3,}/g, "\n\n")
-    .trim();
-}
-
-function buildScenes(voiceover: string): ProductionScene[] {
-  const chunks = voiceover
-    .split(/\n\n+/)
-    .map((chunk) => chunk.trim())
-    .filter(Boolean);
-  return chunks.map((chunk, index) => ({
-    index: index + 1,
-    narration: chunk,
-    visualPrompt: `Cinematic UykulukSciFi scene ${index + 1}: ${chunk.slice(0, 180)}`,
-    durationSeconds: Math.max(8, Math.round(chunk.split(/\s+/).length / 2.3)),
-  }));
-}
-
-function buildSrt(scenes: ProductionScene[]): string {
-  let cursor = 0;
-  return scenes
-    .map((scene) => {
-      const start = cursor;
-      const end = cursor + scene.durationSeconds;
-      cursor = end;
-      return [
-        String(scene.index),
-        `${formatSrtTime(start)} --> ${formatSrtTime(end)}`,
-        scene.narration,
-        "",
-      ].join("\n");
-    })
-    .join("\n");
-}
-
-function formatSrtTime(seconds: number): string {
-  const hrs = Math.floor(seconds / 3600);
-  const mins = Math.floor((seconds % 3600) / 60);
-  const secs = seconds % 60;
-  return `${String(hrs).padStart(2, "0")}:${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")},000`;
 }
 
 function renderPackageMarkdown(payload: PackageProviderPayload, scenes: ProductionScene[]): string {
