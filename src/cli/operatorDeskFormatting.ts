@@ -8,7 +8,7 @@ import type { StatusWorkflowStep } from "../stages/statusWorkflow.js";
  * @returns Operator-facing readiness lines.
  */
 export function formatOperatorDeskReadinessLines(readiness: StatusReadinessSummary): string[] {
-  return formatStatusReadiness(readiness);
+  return formatStatusReadiness(readiness).flatMap(splitNextActionLine);
 }
 
 /**
@@ -50,4 +50,24 @@ export function formatOperatorDeskWorkflowLines(workflow: readonly StatusWorkflo
     "Workflow progress:",
     ...workflow.map((step) => `- [${step.status}] ${step.label}: ${step.detail}`),
   ];
+}
+
+/**
+ * Splits operator remediation commands onto their own line so Ink panels keep copy-paste commands readable.
+ *
+ * @param line - A formatted status/readiness line.
+ * @returns The original line, or a label plus indented command line for next-action entries.
+ */
+function splitNextActionLine(line: string): string[] {
+  const readinessPrefix = "Readiness next action: ";
+  if (line.startsWith(readinessPrefix)) {
+    return ["Readiness next action:", `  ${line.slice(readinessPrefix.length)}`];
+  }
+
+  const attentionPrefix = "  Next action: ";
+  if (line.startsWith(attentionPrefix)) {
+    return ["  Next action:", `    ${line.slice(attentionPrefix.length)}`];
+  }
+
+  return [line];
 }

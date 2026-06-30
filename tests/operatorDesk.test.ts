@@ -46,6 +46,9 @@ describe("operator desk", () => {
     expect(model.runDetails.map((run) => run.runId)).toContain(first.runId);
     expect(formatOperatorDeskPlain(model)).toContain(`Selected run: ${first.runId}`);
     expect(formatOperatorDeskPlain(model)).toContain("Render decision: missing");
+    expect(formatOperatorDeskPlain(model)).toContain(
+      "Readiness next action:\n  pnpm producer readiness --run ",
+    );
     expect(formatOperatorDeskPlain(model)).toContain("Workflow progress:");
     expect(formatOperatorDeskPlain(model)).toContain("- [current] Ideas: Generate ideas.");
   });
@@ -161,7 +164,7 @@ describe("operator desk", () => {
 
     expect(output).toContain("Readiness: blocked (2 checks, 1 block, 1 warn)");
     expect(output).toContain("- voiceover [block]: Local voiceover audio is missing.");
-    expect(output).toContain(`Next action: pnpm producer voice --run ${run.runId}`);
+    expect(output).toContain(`Next action:\n    pnpm producer voice --run ${run.runId}`);
     expect(output).toContain("Blocked action details:");
     expect(output).toContain("TTS disabled until configured and approved.");
     expect(output).toContain(
