@@ -18,6 +18,7 @@ describe("render plan contact sheet", () => {
     expect(contactSheet).toContain("## Intro And Outro Bookends");
     expect(contactSheet).toContain("## Timing Summary");
     expect(contactSheet).toContain("## Visual Rhythm Review");
+    expect(contactSheet).toContain("## Scene Asset Map");
     expect(contactSheet).toContain("Scene count:");
     expect(contactSheet).toContain("Intro/outro bookends: 5s");
     expect(contactSheet).toContain("Estimated local draft duration:");
@@ -27,6 +28,9 @@ describe("render plan contact sheet", () => {
     expect(contactSheet).toContain("Asset role counts:");
     expect(contactSheet).toContain("Review checklist:");
     expect(contactSheet).toContain("Revision guidance:");
+    expect(contactSheet).toContain("| Scene | Duration | Background | Overlays |");
+    expect(contactSheet).toContain("assets/backgrounds/plate_test_1920x1080.jpg");
+    expect(contactSheet).toContain("assets/overlays/subtitle_panel_blank_1700x190.png");
     expect(contactSheet).toContain("Confirm subtitle panel, popup card, waveform, and watermark");
     expect(contactSheet).toContain("assets/intro/episode_title_card_1920x1080.jpg");
     expect(contactSheet).toContain("Intro source frames: 2 committed frames");

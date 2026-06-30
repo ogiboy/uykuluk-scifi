@@ -13,6 +13,7 @@ import {
 import {
   summarizeRenderPlanReview,
   type CountedValue,
+  type RenderPlanSceneAssetReview,
   type RenderPlanTimingReview,
 } from "./renderPlanReviewSummary.js";
 
@@ -34,6 +35,7 @@ export type RenderPlanReviewHandoff = {
   reviewChecklist: string[];
   runId: string;
   sceneCount: number;
+  sceneAssetMap: RenderPlanSceneAssetReview[];
   timing: RenderPlanTimingReview;
   revisionGuidance: string[];
 };
@@ -78,6 +80,7 @@ export async function reviewRenderPlan(runId: string): Promise<RenderPlanReviewH
     revisionGuidance: reviewSummary.revisionGuidance,
     runId: run.runId,
     sceneCount: plan.scenes.length,
+    sceneAssetMap: reviewSummary.sceneAssetMap,
     timing: reviewSummary.timing,
   };
 }
@@ -100,6 +103,8 @@ export function formatRenderPlanReviewConsole(handoff: RenderPlanReviewHandoff):
     `Scene duration range: ${Math.round(handoff.timing.shortestSceneDurationSeconds)}s-${Math.round(handoff.timing.longestSceneDurationSeconds)}s`,
     `Background reuse: ${formatCountedValues(handoff.backgroundReuse, "none")}`,
     `Asset role counts: ${formatCountedValues(handoff.assetRoleCounts, "none")}`,
+    "Scene asset map:",
+    ...handoff.sceneAssetMap.map(formatSceneAssetMapLine),
     `Format: ${handoff.format.resolution}, ${handoff.format.fps}fps, ${handoff.format.aspectRatio}, ${handoff.format.draftRenderer}`,
     `Package manifest: ${handoff.productionPackageManifestPath}`,
     `Package manifest digest: ${handoff.productionPackageManifestDigest}`,
@@ -130,4 +135,9 @@ function formatCountedValues(values: CountedValue[], empty: string): string {
     return empty;
   }
   return values.map((item) => `${item.value}=${item.count}`).join(", ");
+}
+
+function formatSceneAssetMapLine(scene: RenderPlanSceneAssetReview): string {
+  const overlays = scene.overlayAssetPaths.length > 0 ? scene.overlayAssetPaths.join(", ") : "none";
+  return `- Scene ${scene.sceneIndex}: ${Math.round(scene.durationSeconds)}s, background ${scene.backgroundAssetPath}, overlays ${overlays}`;
 }

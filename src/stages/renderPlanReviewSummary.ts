@@ -15,11 +15,19 @@ export type RenderPlanTimingReview = {
   shortestSceneDurationSeconds: number;
 };
 
+export type RenderPlanSceneAssetReview = {
+  backgroundAssetPath: string;
+  durationSeconds: number;
+  overlayAssetPaths: string[];
+  sceneIndex: number;
+};
+
 export type RenderPlanReviewSummary = {
   assetRoleCounts: CountedValue[];
   backgroundReuse: CountedValue[];
   reviewChecklist: string[];
   revisionGuidance: string[];
+  sceneAssetMap: RenderPlanSceneAssetReview[];
   timing: RenderPlanTimingReview;
 };
 
@@ -41,8 +49,24 @@ export function summarizeRenderPlanReview(
     backgroundReuse,
     reviewChecklist: renderPlanReviewChecklist(plan, timing, backgroundReuse),
     revisionGuidance: renderPlanRevisionGuidance(backgroundReuse),
+    sceneAssetMap: buildSceneAssetMap(plan),
     timing,
   };
+}
+
+/**
+ * Builds a compact scene-to-asset map for operator review handoffs.
+ *
+ * @param plan - The validated render plan.
+ * @returns One row per render-plan scene with the selected visual assets.
+ */
+function buildSceneAssetMap(plan: RenderPlan): RenderPlanSceneAssetReview[] {
+  return plan.scenes.map((scene) => ({
+    backgroundAssetPath: scene.backgroundAsset.path,
+    durationSeconds: scene.durationSeconds,
+    overlayAssetPaths: scene.overlayAssets.map((asset) => asset.path),
+    sceneIndex: scene.sceneIndex,
+  }));
 }
 
 /**

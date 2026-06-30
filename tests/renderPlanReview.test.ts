@@ -41,6 +41,16 @@ describe("render-plan operator review", () => {
       renderPlanPath: "production/render_plan.json",
       runId,
       sceneCount: expect.any(Number),
+      sceneAssetMap: expect.arrayContaining([
+        expect.objectContaining({
+          backgroundAssetPath: expect.stringContaining("assets/backgrounds/"),
+          durationSeconds: expect.any(Number),
+          overlayAssetPaths: expect.arrayContaining([
+            "assets/overlays/subtitle_panel_blank_1700x190.png",
+          ]),
+          sceneIndex: expect.any(Number),
+        }),
+      ]),
       timing: {
         averageSceneDurationSeconds: expect.any(Number),
         bookendDurationSeconds: expect.any(Number),
@@ -88,6 +98,8 @@ describe("render-plan operator review", () => {
     expect(consoleResult.stdout).toContain("Render plan: production/render_plan.json");
     expect(consoleResult.stdout).toContain("Scene duration range:");
     expect(consoleResult.stdout).toContain("Background reuse:");
+    expect(consoleResult.stdout).toContain("Scene asset map:");
+    expect(consoleResult.stdout).toContain("assets/overlays/subtitle_panel_blank_1700x190.png");
     expect(consoleResult.stdout).toContain("Review checklist:");
     expect(consoleResult.stdout).toContain("Revision guidance:");
     expect(consoleResult.stdout).toContain("Still blocked:");

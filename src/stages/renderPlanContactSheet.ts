@@ -1,7 +1,11 @@
-import { bulletList } from "../utils/markdown.js";
+import { bulletList, table } from "../utils/markdown.js";
 import { renderOperatorDecisionSection } from "./operatorReviewMarkdown.js";
 import { AssetProvenance, AssetRef, RenderPlan } from "./renderPlanSchemas.js";
-import { renderVisualRhythmReview, summarizeRenderPlanReview } from "./renderPlanReviewSummary.js";
+import {
+  renderVisualRhythmReview,
+  summarizeRenderPlanReview,
+  type RenderPlanSceneAssetReview,
+} from "./renderPlanReviewSummary.js";
 
 /**
  * Builds a Markdown contact sheet for a storyboard render plan.
@@ -28,6 +32,7 @@ export function renderContactSheet(plan: RenderPlan, provenance: AssetProvenance
     "",
     ...renderTimingSummary(plan),
     ...renderVisualRhythmReview(reviewSummary),
+    ...renderSceneAssetMap(reviewSummary.sceneAssetMap),
     ...renderBookends(plan),
     "## Asset Provenance",
     "",
@@ -56,6 +61,29 @@ export function renderContactSheet(plan: RenderPlan, provenance: AssetProvenance
       ].join("\n"),
     ),
   ].join("\n");
+}
+
+/**
+ * Renders a compact scene-to-asset map before the detailed scene cards.
+ *
+ * @param sceneAssetMap - The scene asset rows computed from the render plan.
+ * @returns Markdown lines for the compact map.
+ */
+function renderSceneAssetMap(sceneAssetMap: RenderPlanSceneAssetReview[]): string[] {
+  return [
+    "## Scene Asset Map",
+    "",
+    table(
+      ["Scene", "Duration", "Background", "Overlays"],
+      sceneAssetMap.map((scene) => [
+        String(scene.sceneIndex),
+        formatSeconds(scene.durationSeconds),
+        scene.backgroundAssetPath,
+        formatOverlayAssetPaths(scene.overlayAssetPaths),
+      ]),
+    ),
+    "",
+  ];
 }
 
 /**
@@ -153,4 +181,8 @@ function frameBullets(label: string, frames: AssetRef[] | undefined): string[] {
 
 function formatSeconds(value: number): string {
   return `${Math.round(value)}s`;
+}
+
+function formatOverlayAssetPaths(paths: string[]): string {
+  return paths.length > 0 ? paths.join(", ") : "none";
 }
