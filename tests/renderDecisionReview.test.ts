@@ -2,7 +2,11 @@ import { spawnSync } from "node:child_process";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { recordRenderDecision } from "../src/stages/renderDecision";
-import type { RenderDecisionReviewHandoff } from "../src/stages/reviewRenderDecision";
+import {
+  formatRenderDecisionReviewConsole,
+  reviewRenderDecision,
+  type RenderDecisionReviewHandoff,
+} from "../src/stages/reviewRenderDecision";
 import { useTempProject } from "./helpers";
 import { renderLocalDraft } from "./renderPipelineHelpers";
 
@@ -41,6 +45,32 @@ describe("render-decision review command", () => {
     });
   });
 
+  it("reads and formats the recorded render decision through the stage contract", async () => {
+    const runId = await renderLocalDraft("decision-review-stage");
+    await recordRenderDecision({
+      decision: "needs-revision",
+      notes: "Subtitle timing needs another pass.",
+      reviewedBy: "operator",
+      runId,
+    });
+
+    const handoff = await reviewRenderDecision(runId);
+    const output = formatRenderDecisionReviewConsole(handoff);
+
+    expect(handoff).toMatchObject({
+      decision: "needs-revision",
+      renderDecisionMarkdownPath: "production/render/render_decision.md",
+      renderDecisionPath: "production/render/render_decision.json",
+      reviewedBy: "operator",
+      runId,
+    });
+    expect(output).toContain(`Run: ${runId}`);
+    expect(output).toContain("Decision: needs-revision");
+    expect(output).toContain("Voiceover: deterministic-local");
+    expect(output).toContain("Next safe action:");
+    expect(output).toContain("Subtitle timing needs another pass.");
+  });
+
   it("blocks before a render decision exists", async () => {
     const runId = await renderLocalDraft("decision-review-missing");
 
@@ -49,6 +79,9 @@ describe("render-decision review command", () => {
     expect(result.status).toBe(1);
     expect(result.stderr).toContain("Render decision review requires a recorded operator decision");
     expect(result.stderr).toContain(`pnpm producer decide render --run ${runId}`);
+    await expect(reviewRenderDecision(runId)).rejects.toThrow(
+      "Render decision review requires a recorded operator decision",
+    );
   });
 });
 
