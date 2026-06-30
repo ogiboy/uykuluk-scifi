@@ -33,8 +33,14 @@ export type OperatorDeskRun = {
   warningCount: number;
 };
 
+export type OperatorDeskCommand = {
+  command: string;
+  label: string;
+};
+
 export type OperatorDeskSelectedRun = OperatorDeskRun & {
   blockedActions: string[];
+  commandQueue: OperatorDeskCommand[];
   mediaArtifacts: RunStatusSummary["mediaArtifacts"];
   readiness: RunStatusSummary["readiness"];
   recentArtifacts: string[];
@@ -136,6 +142,8 @@ export function formatOperatorDeskPlain(model: OperatorDeskViewModel): string {
     "Next safe action:",
     `  ${run.nextRecommendedCommand}`,
     "",
+    ...formatOperatorDeskCommandLines(run.commandQueue),
+    "",
     "Production media:",
     ...run.mediaArtifacts.map(formatOperatorDeskMediaArtifactLine),
     "",
@@ -158,6 +166,19 @@ export function formatOperatorDeskPlain(model: OperatorDeskViewModel): string {
 export function formatOperatorDeskMediaArtifactLine(artifact: ProductionMediaStatus): string {
   const review = artifact.reviewCommand ? ` | Review command: ${artifact.reviewCommand}` : "";
   return `${formatProductionMediaStatus(artifact)}${review}`;
+}
+
+/**
+ * Formats the copyable operator command queue for desk output.
+ *
+ * @param commands - Commands derived from the current status summary.
+ * @returns Lines for the operator command section.
+ */
+export function formatOperatorDeskCommandLines(commands: readonly OperatorDeskCommand[]): string[] {
+  if (commands.length === 0) {
+    return ["Operator commands:", "- none"];
+  }
+  return ["Operator commands:", ...commands.map((item) => `- ${item.label}: ${item.command}`)];
 }
 
 /**
@@ -192,6 +213,7 @@ function selectedRun(status: RunStatusSummary): OperatorDeskSelectedRun {
   return {
     ...compactRun(status),
     blockedActions: status.blockedActions,
+    commandQueue: operatorCommandQueue(status),
     mediaArtifacts: status.mediaArtifacts,
     readiness: status.readiness,
     recentArtifacts: status.recentArtifacts,
@@ -220,4 +242,77 @@ function renderDecisionSummary(decision: RenderDecisionStatus): string {
 
 function renderDecisionReviewLines(decision: RenderDecisionStatus): string[] {
   return decision.kind === "present" ? [`Render decision review: ${decision.reviewCommand}`] : [];
+}
+
+function operatorCommandQueue(status: RunStatusSummary): OperatorDeskCommand[] {
+  const commands: OperatorDeskCommand[] = [];
+  const seen = new Set<string>();
+
+  const addCommand = (label: string, command: string | null | undefined) => {
+    if (!isCopyableProducerCommand(command) || seen.has(command)) {
+      return;
+    }
+    seen.add(command);
+    commands.push({ command, label });
+  };
+
+  addCommand("Next safe action", status.nextRecommendedCommand);
+  addReadinessCommands(status.readiness, addCommand);
+  addMediaCommands(status, addCommand);
+  addRenderDecisionCommands(status.renderDecision, addCommand);
+
+  return commands;
+}
+
+function addReadinessCommands(
+  readiness: RunStatusSummary["readiness"],
+  addCommand: (label: string, command: string | null | undefined) => void,
+): void {
+  switch (readiness.status) {
+    case "missing":
+    case "invalid":
+    case "stale":
+      addCommand("Readiness", readiness.nextAction);
+      return;
+    case "blocked":
+    case "passed":
+      for (const check of readiness.attention) {
+        addCommand(`Readiness ${check.name}`, check.nextAction);
+      }
+  }
+}
+
+function addMediaCommands(
+  status: RunStatusSummary,
+  addCommand: (label: string, command: string | null | undefined) => void,
+): void {
+  for (const artifact of status.mediaArtifacts) {
+    addCommand(`Review ${lowercaseFirst(artifact.label)}`, artifact.reviewCommand);
+    if (status.run.state === "READY_FOR_MANUAL_PRODUCTION") {
+      addCommand(renderApprovalLabel(artifact.renderApprovalScope), artifact.renderApprovalCommand);
+    }
+  }
+}
+
+function addRenderDecisionCommands(
+  decision: RenderDecisionStatus,
+  addCommand: (label: string, command: string | null | undefined) => void,
+): void {
+  if (decision.kind === "present") {
+    addCommand("Review render decision", decision.reviewCommand);
+    return;
+  }
+  addCommand("Render decision", decision.nextAction);
+}
+
+function renderApprovalLabel(scope: ProductionMediaStatus["renderApprovalScope"]): string {
+  return scope === "timing-draft-only" ? "Approve timing-draft render" : "Approve render";
+}
+
+function isCopyableProducerCommand(command: string | null | undefined): command is string {
+  return typeof command === "string" && command.startsWith("pnpm producer ");
+}
+
+function lowercaseFirst(value: string): string {
+  return value.length > 0 ? `${value[0].toLowerCase()}${value.slice(1)}` : value;
 }

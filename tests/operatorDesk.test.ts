@@ -10,6 +10,7 @@ import { recordRenderDecision } from "../src/stages/renderDecision";
 import { useTempProject } from "./helpers";
 import { renderLocalDraft } from "./renderPipelineHelpers";
 import { manualProductionEvidence, passingRenderedEvidence } from "./statusOutputEvidenceFixtures";
+import { studioEvidenceFixture } from "./studioRunFixtures";
 
 const repoRoot = process.cwd();
 
@@ -48,6 +49,11 @@ describe("operator desk", () => {
     expect(formatOperatorDeskPlain(model)).toContain("Render decision: missing");
     expect(formatOperatorDeskPlain(model)).toContain(
       "Readiness next action:\n  pnpm producer readiness --run ",
+    );
+    expect(formatOperatorDeskPlain(model)).toContain("Operator commands:");
+    expect(formatOperatorDeskPlain(model)).toContain("- Next safe action: pnpm producer ideas");
+    expect(formatOperatorDeskPlain(model)).toContain(
+      `- Readiness: pnpm producer readiness --run ${first.runId}`,
     );
     expect(formatOperatorDeskPlain(model)).toContain("Workflow progress:");
     expect(formatOperatorDeskPlain(model)).toContain("- [current] Ideas: Generate ideas.");
@@ -120,6 +126,75 @@ describe("operator desk", () => {
     expect(output).toContain(
       `- Draft render: pass (8s, intro -> scene -> outro, source frames intro:2/outro:2, frame cadence intro#1=1s assets/intro/frames/intro_frame_00.jpg; intro#2=1s assets/intro/frames/intro_frame_01.jpg; outro#1=1.5s assets/outro/frames/outro_frame_00.jpg; outro#2=1.5s assets/outro/frames/outro_frame_01.jpg, voiceover local-piper production candidate, approval approval_render_status, ffprobe 1280x720 audio) | Review command: pnpm producer review render --run ${run.runId}`,
     );
+    expect(output).toContain(`- Next safe action: pnpm producer review render --run ${run.runId}`);
+    expect(output).toContain(
+      `- Review render plan: pnpm producer review render-plan --run ${run.runId}`,
+    );
+    expect(output).toContain(
+      `- Review voiceover audio: pnpm producer review voice --run ${run.runId}`,
+    );
+  });
+
+  it("surfaces copyable render approval commands when voiceover evidence is ready", async () => {
+    const run = await createRun();
+    await saveRun({
+      ...run,
+      artifacts: [
+        "production/render_plan.json",
+        "production/audio/voiceover.wav",
+        "evidence_bundle.json",
+        "diagnostics/readiness.json",
+      ],
+      state: "READY_FOR_MANUAL_PRODUCTION",
+    });
+    await mkdir(path.dirname(artifactPath(run.runId, "diagnostics/readiness.json")), {
+      recursive: true,
+    });
+    await writeFile(
+      artifactPath(run.runId, "diagnostics/readiness.json"),
+      JSON.stringify({
+        checks: [],
+        currentState: "READY_FOR_MANUAL_PRODUCTION",
+        passed: true,
+        runId: run.runId,
+      }),
+      "utf8",
+    );
+    await writeFile(
+      artifactPath(run.runId, "evidence_bundle.json"),
+      JSON.stringify(
+        studioEvidenceFixture(run.runId, "READY_FOR_MANUAL_PRODUCTION", {
+          nextRecommendedCommand: "pnpm producer approve render --run <run_id>",
+          renderPlan: {
+            artifactCount: 3,
+            assetCount: 11,
+            digest: "a".repeat(64),
+            path: "production/render_plan.json",
+            status: "pass",
+          },
+          voiceoverAudio: {
+            digest: "b".repeat(64),
+            durationSeconds: 8.2,
+            mode: "local-piper",
+            path: "production/audio/voiceover.wav",
+            productionVoiceCandidate: true,
+            quality: "local-piper",
+            reviewPath: "production/audio/voiceover_review.md",
+            sourceWordCount: 42,
+            status: "pass",
+          },
+        }),
+      ),
+      "utf8",
+    );
+
+    const output = formatOperatorDeskPlain(await buildOperatorDeskViewModel({ runId: run.runId }));
+
+    expect(output).toContain(`- Next safe action: pnpm producer approve render --run ${run.runId}`);
+    expect(output).toContain(
+      `- Review voiceover audio: pnpm producer review voice --run ${run.runId}`,
+    );
+    expect(output).toContain(`pnpm producer approve render --run ${run.runId}`);
   });
 
   it("surfaces readiness attention and blocked action details in operator desk output", async () => {

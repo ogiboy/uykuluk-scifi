@@ -6,7 +6,10 @@ import {
   formatOperatorDeskRecentArtifactLines,
   formatOperatorDeskWorkflowLines,
 } from "./operatorDeskFormatting.js";
-import { formatOperatorDeskMediaArtifactLine } from "./operatorDeskModel.js";
+import {
+  formatOperatorDeskCommandLines,
+  formatOperatorDeskMediaArtifactLine,
+} from "./operatorDeskModel.js";
 import type {
   OperatorDeskRun,
   OperatorDeskSelectedRun,
@@ -156,6 +159,9 @@ function SelectedRun({ run }: { run: OperatorDeskSelectedRun }): React.ReactElem
       Text,
       { color: "green" },
       `Next safe action: ${run.nextRecommendedCommand}`,
+    ),
+    ...formatOperatorDeskCommandLines(run.commandQueue).map((line, index) =>
+      React.createElement(Text, { key: `commands:${index}:${line}` }, line),
     ),
     React.createElement(Text, { bold: true }, "Production media"),
     ...run.mediaArtifacts.map((artifact) =>
