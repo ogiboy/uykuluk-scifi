@@ -41,6 +41,7 @@ export type OperatorDeskCommand = {
 export type OperatorDeskSelectedRun = OperatorDeskRun & {
   blockedActions: string[];
   commandQueue: OperatorDeskCommand[];
+  diagnostics: RunStatusSummary["diagnostics"];
   mediaArtifacts: RunStatusSummary["mediaArtifacts"];
   readiness: RunStatusSummary["readiness"];
   recentArtifacts: string[];
@@ -136,6 +137,7 @@ export function formatOperatorDeskPlain(model: OperatorDeskViewModel): string {
     `Approvals/artifacts/warnings: ${run.approvalCount} approvals, ${run.artifactCount} artifacts, ${run.warningCount} warnings`,
     `Blocked actions: ${run.blockedActionCount ?? "unknown"}`,
     ...formatOperatorDeskBlockedActionLines(run.blockedActions),
+    ...formatOperatorDeskDiagnosticLines(run.diagnostics),
     "",
     ...formatOperatorDeskWorkflowLines(run.workflowProgress),
     "",
@@ -182,6 +184,26 @@ export function formatOperatorDeskCommandLines(commands: readonly OperatorDeskCo
 }
 
 /**
+ * Formats safe provider/stage diagnostics for the operator desk.
+ *
+ * @param diagnostics - Current run diagnostic summaries.
+ * @returns Lines for the diagnostics section.
+ */
+export function formatOperatorDeskDiagnosticLines(
+  diagnostics: readonly RunStatusSummary["diagnostics"][number][],
+): string[] {
+  if (diagnostics.length === 0) {
+    return ["Diagnostics: none"];
+  }
+  return [
+    "Diagnostics:",
+    ...diagnostics.map(
+      (diagnostic) => `- ${diagnostic.path} [${diagnostic.stage}]: ${diagnostic.message}`,
+    ),
+  ];
+}
+
+/**
  * Creates a compact run summary for the operator desk view.
  *
  * @param status - The run status summary to convert
@@ -214,6 +236,7 @@ function selectedRun(status: RunStatusSummary): OperatorDeskSelectedRun {
     ...compactRun(status),
     blockedActions: status.blockedActions,
     commandQueue: operatorCommandQueue(status),
+    diagnostics: status.diagnostics,
     mediaArtifacts: status.mediaArtifacts,
     readiness: status.readiness,
     recentArtifacts: status.recentArtifacts,

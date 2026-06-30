@@ -251,6 +251,39 @@ describe("operator desk", () => {
     );
   });
 
+  it("surfaces safe generation diagnostics in operator desk output", async () => {
+    const run = await createRun();
+    await mkdir(`runs/${run.runId}/diagnostics`, { recursive: true });
+    await writeFile(
+      artifactPath(run.runId, "diagnostics/ideas_generation_failure.json"),
+      JSON.stringify({
+        createdAt: "2026-06-25T00:00:00.000Z",
+        message:
+          "Invalid ideas provider response after repair attempt: ideas.3.fit: repeated framing.",
+        model: "qwen3:8b",
+        providerMode: "ollama",
+        runId: run.runId,
+        stage: "ideas",
+        state: "NEW",
+        thinkingMode: "no_think",
+      }),
+      "utf8",
+    );
+    await saveRun({
+      ...run,
+      artifacts: ["diagnostics/ideas_generation_failure.json"],
+      state: "NEW",
+    });
+
+    const output = formatOperatorDeskPlain(await buildOperatorDeskViewModel({ runId: run.runId }));
+
+    expect(output).toContain("Diagnostics:");
+    expect(output).toContain(
+      "- diagnostics/ideas_generation_failure.json [ideas]: Invalid ideas provider response after repair attempt: ideas.3.fit: repeated framing.",
+    );
+    expect(output).toContain(`- Readiness: pnpm producer readiness --run ${run.runId}`);
+  });
+
   it("surfaces the concrete render decision in recent run summaries", async () => {
     const runId = await renderLocalDraft("operator-desk-decision");
     await recordRenderDecision({
