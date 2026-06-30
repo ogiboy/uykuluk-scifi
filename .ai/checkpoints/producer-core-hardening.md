@@ -21,16 +21,15 @@ coherent, tested slices until the safe core and its evidence contracts are genui
   `/Users/ogiboy/.codex/worktrees/894d/uykuluk-scifi`, pushed to `origin/feat/render-review-polish`.
 - PR #100 (`feat: improve operator delivery surfaces`) was merged into `main` with merge commit
   `b2b4c7c80202cd2de7e9e13fd0eaf47c2d874c56`.
-- Current branch is intentionally grouping related render-review/product polish before opening the
-  next PR.
+- PR #101 (`feat: polish render review handoffs`) is open from `feat/render-review-polish` into
+  `main`.
 - Completed current-branch slices:
   - `e216a7f fix(operator): use desk render status in ink`
   - `9e0e2d9 feat(render): expand plan review guidance`
   - `6e59ef1 feat(render): guide draft decisions`
-- Current in-progress slice: Studio read-only run detail now exposes local render-decision command
-  templates for rendered runs that have current draft-render evidence and no recorded decision.
-  Finish validation, commit the Studio slice, then push `origin/feat/render-review-polish` before
-  opening the grouped render-review/product-polish PR.
+- Current branch slice is pushed and represented by PR #101. Studio read-only run detail now exposes
+  local render-decision command templates for rendered runs that have current draft-render evidence
+  and no recorded decision.
 - 2026-06-29 continuation branch/worktree: `feat/render-review-command` at
   `/Users/ogiboy/.codex/worktrees/894d/uykuluk-scifi`, pushed to
   `origin/feat/render-review-command`.
