@@ -51,7 +51,7 @@ describe("local model candidate evaluation", () => {
         blockedChecks: 0,
         configuredModel: "mock-deterministic",
         durationMs: expect.any(Number),
-        passedChecks: 2,
+        passedChecks: 3,
       },
     });
     expect(report.candidates).toHaveLength(2);
@@ -139,7 +139,7 @@ describe("local model candidate evaluation", () => {
       blockedChecks: 0,
       configuredModel: "mock-faster-a",
       durationMs: 10,
-      passedChecks: 2,
+      passedChecks: 3,
     });
   });
 });
@@ -160,6 +160,11 @@ function localModelCandidateReport(
       {
         message: "42 words parsed.",
         name: "script-section-json",
+        status: "pass",
+      },
+      {
+        message: "Script section passed production content blockers.",
+        name: "script-quality-guard",
         status: "pass",
       },
     ],

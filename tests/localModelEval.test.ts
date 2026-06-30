@@ -31,6 +31,7 @@ describe("local model evaluation", () => {
       checks: [
         expect.objectContaining({ name: "ideas-json", status: "pass" }),
         expect.objectContaining({ name: "script-section-json", status: "pass" }),
+        expect.objectContaining({ name: "script-quality-guard", status: "pass" }),
       ],
     });
     expect(await pathExists(localModelEvalJsonPath())).toBe(true);
@@ -43,6 +44,7 @@ describe("local model evaluation", () => {
     expect(markdown).toContain("Raw provider output is intentionally not persisted.");
     expect(formatLocalModelEvalConsole(report)).toContain("Local model eval passed.");
     expect(renderLocalModelEvalMarkdown(report)).toContain("| ideas-json | pass |");
+    expect(renderLocalModelEvalMarkdown(report)).toContain("| script-quality-guard | pass |");
   });
 
   it("sanitizes Ollama HTTP response bodies in blocked eval reports", async () => {
@@ -105,11 +107,44 @@ describe("local model evaluation", () => {
           provider: "mock",
           model: "mock-invalid-script-json",
         }),
+        expect.objectContaining({
+          name: "script-quality-guard",
+          status: "block",
+          message: "Skipped because script-section-json could not be parsed.",
+        }),
       ]),
     );
     expect(JSON.stringify(invalidScriptReport)).not.toContain(
       "Mock provider returned non-JSON script section text.",
     );
+  });
+
+  it("blocks parsed script text that fails production content guards", async () => {
+    await useMockModel("mock-script-quality-artifacts");
+
+    const report = await runLocalModelEval();
+
+    expect(report.passed).toBe(false);
+    expect(report.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: "script-section-json",
+          status: "pass",
+        }),
+        expect.objectContaining({
+          name: "script-quality-guard",
+          status: "block",
+          message: expect.stringContaining("provider_artifact_metadata"),
+        }),
+        expect.objectContaining({
+          name: "script-quality-guard",
+          message: expect.stringContaining("repeated_word_stutter"),
+        }),
+      ]),
+    );
+    expect(JSON.stringify(report)).not.toContain("kor kor");
+    expect(await readFile(localModelEvalJsonPath(), "utf8")).not.toContain("section_id");
+    expect(await readFile(localModelEvalMarkdownPath(), "utf8")).not.toContain("section_id");
   });
 
   it("sanitizes Ollama provider error payloads in blocked eval reports", async () => {
@@ -149,6 +184,11 @@ describe("local model evaluation", () => {
     expect(
       safeLocalModelEvalErrorMessage(new Error("llama.cpp returned invalid JSON: local-secret")),
     ).toBe("llama.cpp provider returned invalid JSON.");
+    expect(
+      safeLocalModelEvalErrorMessage(
+        new Error("Invalid ideas provider response: targetDuration: Required"),
+      ),
+    ).toBe("Invalid ideas provider response: targetDuration: Required");
   });
 
   it("applies eval-only LLM overrides without mutating project config", async () => {

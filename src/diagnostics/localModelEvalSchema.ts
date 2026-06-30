@@ -5,7 +5,7 @@ export const localModelEvalCheckSchema = z.object({
   inputTokensApprox: z.number().nonnegative().optional(),
   message: z.string(),
   model: z.string().optional(),
-  name: z.enum(["ideas-json", "script-section-json"]),
+  name: z.enum(["ideas-json", "script-section-json", "script-quality-guard"]),
   outputHash: z.string().optional(),
   outputTokensApprox: z.number().nonnegative().optional(),
   promptHash: z.string().optional(),

@@ -25,6 +25,11 @@ const passingSingleReport = {
       name: "script-section-json",
       status: "pass",
     },
+    {
+      message: "Script section passed production content blockers.",
+      name: "script-quality-guard",
+      status: "pass",
+    },
   ],
   configSource: "project",
   configuredModel: "mock-deterministic",
@@ -67,7 +72,7 @@ const blockedCandidateReport = {
     blockedChecks: 0,
     configuredModel: "mock-deterministic",
     durationMs: 12,
-    passedChecks: 2,
+    passedChecks: 3,
   },
 } satisfies LocalModelCandidateEvalReportPersisted;
 
@@ -117,9 +122,9 @@ describe("Studio local model evaluation overview", () => {
       status: "blocked",
       singleReport: {
         blockCount: 0,
-        checkCount: 2,
+        checkCount: 3,
         configuredModel: "mock-deterministic",
-        passCount: 2,
+        passCount: 3,
         passed: true,
         checks: [
           expect.objectContaining({
@@ -135,6 +140,11 @@ describe("Studio local model evaluation overview", () => {
           expect.objectContaining({
             message: "180 words parsed.",
             name: "script-section-json",
+            status: "pass",
+          }),
+          expect.objectContaining({
+            message: "Script section passed production content blockers.",
+            name: "script-quality-guard",
             status: "pass",
           }),
         ],

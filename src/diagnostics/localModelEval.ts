@@ -5,12 +5,6 @@ import { createLlmProvider } from "../providers/index.js";
 import { GenerateTextResult, LlmProvider } from "../providers/llmProvider.js";
 import { parseIdeasProviderPayload } from "../stages/providerPayloads.js";
 import { ideasResponseFormat } from "../stages/providerResponseFormats.js";
-import {
-  parseScriptSectionProviderPayload,
-  renderScriptSectionPrompt,
-  scriptSectionPlans,
-  scriptSectionResponseFormat,
-} from "../stages/scriptSections.js";
 import { writeTextFile } from "../utils/fs.js";
 import { sha256 } from "../utils/hash.js";
 import { writeJsonFile } from "../utils/json.js";
@@ -20,14 +14,15 @@ import {
   LocalModelEvalLlmOverrides,
 } from "./localModelEvalConfig.js";
 import { renderLocalModelEvalMarkdown } from "./localModelEvalFormatting.js";
-import { renderIdeaEvalPrompt, renderScriptEvalBasePrompt } from "./localModelEvalPrompts.js";
+import { renderIdeaEvalPrompt } from "./localModelEvalPrompts.js";
 import {
   maxOutputTokensForEvalCheck,
   safeLocalModelEvalErrorMessage,
 } from "./localModelEvalSafety.js";
+import { evaluateScriptSectionChecks } from "./localModelEvalScriptSection.js";
 
 export type LocalModelEvalCheck = {
-  name: "ideas-json" | "script-section-json";
+  name: "ideas-json" | "script-quality-guard" | "script-section-json";
   status: "pass" | "block";
   message: string;
   provider?: string;
@@ -106,10 +101,9 @@ export async function runLocalModelEvalWithConfig(
 ): Promise<LocalModelEvalReport> {
   const startedAt = Date.now();
   const provider = createLlmProvider(config);
-  const checks = [
-    await evaluateIdeas(provider, config),
-    await evaluateScriptSection(provider, config),
-  ];
+  const ideasCheck = await evaluateIdeas(provider, config);
+  const scriptChecks = await evaluateScriptSectionChecks(provider, config);
+  const checks = [ideasCheck, ...scriptChecks];
   const report: LocalModelEvalReport = {
     appliedOverrides,
     configSource: appliedOverrides.length > 0 ? "cli-overrides" : "project",
@@ -140,35 +134,6 @@ async function evaluateIdeas(
   } catch (error) {
     return blockingCheck(
       "ideas-json",
-      prompt,
-      result.result,
-      safeLocalModelEvalErrorMessage(error),
-    );
-  }
-}
-
-async function evaluateScriptSection(
-  provider: LlmProvider,
-  config: ProducerConfig,
-): Promise<LocalModelEvalCheck> {
-  const prompt = renderScriptSectionPrompt(renderScriptEvalBasePrompt(), scriptSectionPlans[0]);
-  const result = await requestProvider(provider, config, prompt, "script-section-json", {
-    responseFormat: scriptSectionResponseFormat,
-  });
-  if (!result.ok) {
-    return result.check;
-  }
-  try {
-    const text = parseScriptSectionProviderPayload(result.result.text);
-    return passingCheck(
-      "script-section-json",
-      prompt,
-      result.result,
-      `${countWords(text)} words parsed.`,
-    );
-  } catch (error) {
-    return blockingCheck(
-      "script-section-json",
       prompt,
       result.result,
       safeLocalModelEvalErrorMessage(error),
@@ -239,8 +204,4 @@ function blockingCheck(
     ...passingCheck(name, prompt, result, message),
     status: "block",
   };
-}
-
-function countWords(text: string): number {
-  return text.trim().split(/\s+/u).filter(Boolean).length;
 }

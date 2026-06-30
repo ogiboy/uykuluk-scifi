@@ -49,6 +49,11 @@ function generateMockText(prompt: string, model = ""): string {
     if (model === "mock-invalid-script-json") {
       return "Mock provider returned non-JSON script section text.";
     }
+    if (model === "mock-script-quality-artifacts") {
+      return JSON.stringify({
+        text: "Anlatıcı: Bu durum, Kuşak Gemisi’nin kor kor kor kor kor kor kor kor kor kor yapısını bozuyor. Görsel: Bahçe ekranında renk geçişi görünür.”} id=hook, section_id=idea_003.",
+      });
+    }
     return generateMockScriptSection(prompt, model);
   }
   if (prompt.includes("SCRIPT_MARKDOWN")) {

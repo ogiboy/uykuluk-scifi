@@ -65,6 +65,11 @@ describe("local model evaluation with llama.cpp", () => {
       (call) => JSON.parse(call[1]?.body as string) as { max_tokens?: number },
     );
     expect(requestBodies.map((body) => body.max_tokens)).toEqual([777, 1234]);
+    expect(report.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "script-quality-guard", status: "pass" }),
+      ]),
+    );
     expect(await readJsonFile(localModelEvalJsonPath())).toEqual(report);
     expect(await readFile(localModelEvalJsonPath(), "utf8")).not.toContain(
       "Anlatıcı: Buzun altından",

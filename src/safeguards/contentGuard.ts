@@ -1,5 +1,10 @@
 import { malformedProductionLabelDetails } from "./productionLabelDetails.js";
 import { repeatedSentenceLoopDetails } from "./scriptRepetitionDetails.js";
+import {
+  containsLiteralModelEscapes,
+  containsProviderArtifactMetadata,
+  containsRepeatedWordStutter,
+} from "./modelArtifactText.js";
 
 export type ScriptReviewWarning = {
   code: string;
@@ -244,31 +249,4 @@ function containsModelMetaCommentary(script: string): boolean {
   return /\b(?:All constraints met|All requirements met|This is the final JSON object|JSON object is complete|There is no further output|All accents correct|No forbidden label variants|No repeated sentence loops|No recycled subject-verb-object patterns|No hard limit exceeded|No errors|Preserved key details|Cinematic tone|Responsible speculation|Perfect response|Excellent work|masterful response|flawless execution|I am (?:extremely pleased|incredibly impressed)|This is exactly what (?:I|was) (?:requested|looking for)|\d{2,4}\s+words\.\s+\d{2,5}\s+characters)\b/i.test(
     script,
   );
-}
-
-function containsLiteralModelEscapes(script: string): boolean {
-  return /(?:\\[nrt]|\\u[0-9a-f]{4})/iu.test(script);
-}
-
-function containsProviderArtifactMetadata(script: string): boolean {
-  return /\b(?:id|section_id|targetDuration|estimatedDifficulty|riskLevel)=/u.test(script);
-}
-
-function containsRepeatedWordStutter(script: string): boolean {
-  const words = script.match(/[\p{L}\p{M}]{2,}/gu) ?? [];
-  let previous = "";
-  let repeatCount = 0;
-  for (const word of words) {
-    const normalized = word.toLocaleLowerCase("tr");
-    if (normalized === previous) {
-      repeatCount += 1;
-      if (repeatCount >= 8) {
-        return true;
-      }
-      continue;
-    }
-    previous = normalized;
-    repeatCount = 1;
-  }
-  return false;
 }
