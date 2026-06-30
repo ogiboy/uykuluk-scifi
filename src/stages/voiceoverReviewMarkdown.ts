@@ -1,6 +1,10 @@
 import { bulletList, table } from "../utils/markdown.js";
 import { renderOperatorDecisionSection } from "./operatorReviewMarkdown.js";
 import type { VoiceoverAudioMeta } from "./voiceoverEvidence.js";
+import {
+  voiceoverRenderApprovalCommand,
+  voiceoverRenderApprovalScope,
+} from "./voiceoverReviewCommands.js";
 
 /**
  * Builds the local voiceover review markdown artifact.
@@ -29,6 +33,8 @@ export function renderVoiceoverReviewMarkdown(meta: VoiceoverAudioMeta): string 
         ["Channels", String(meta.output.channels)],
         ["Bytes", String(meta.output.bytes)],
         ["SHA-256", meta.output.sha256],
+        ["Render approval scope", renderApprovalScope(meta)],
+        ["Render approval command", voiceoverRenderApprovalCommand(meta.runId)],
       ],
     ),
     "",
@@ -91,10 +97,11 @@ function renderVoiceoverDecision(meta: VoiceoverAudioMeta): string[] {
  * @returns The operator-facing render approval guidance.
  */
 function renderApprovalNextStep(meta: VoiceoverAudioMeta): string {
+  const command = voiceoverRenderApprovalCommand(meta.runId);
   if (meta.mode === "local-piper") {
-    return `Run \`pnpm producer approve render --run ${meta.runId}\` only after audio and render-plan review both pass.`;
+    return `Run \`${command}\` only after audio and render-plan review both pass.`;
   }
-  return `Run \`pnpm producer approve render --run ${meta.runId}\` only for a local timing draft after deterministic reference audio and render-plan review both pass.`;
+  return `Run \`${command}\` only for a local timing draft after deterministic reference audio and render-plan review both pass.`;
 }
 
 /**
@@ -146,4 +153,8 @@ function modeSpecificChecklistItem(meta: VoiceoverAudioMeta): string {
     return "Deterministic reference audio is for timing only; do not treat it as production voice quality.";
   }
   return "Local Piper audio must be manually reviewed for voice quality before render approval.";
+}
+
+function renderApprovalScope(meta: VoiceoverAudioMeta): string {
+  return voiceoverRenderApprovalScope(meta.quality === "local-piper");
 }

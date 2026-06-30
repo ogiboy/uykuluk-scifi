@@ -1,8 +1,14 @@
+import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
+import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { createRun } from "../src/core/runStore";
+import { artifactPath } from "../src/core/artifacts";
+import { createRun, loadRun, saveRun } from "../src/core/runStore";
 import { formatVoiceoverReviewConsole, reviewVoiceover } from "../src/stages/reviewVoiceover";
+import { readRenderPlanEvidence } from "../src/stages/renderPlan";
+import { renderVoiceoverReviewMarkdown } from "../src/stages/voiceoverReviewMarkdown";
+import type { VoiceoverAudioMeta } from "../src/stages/voiceoverEvidence";
 import { useTempProject } from "./helpers";
 import { prepareReadyRunWithoutVoiceover, prepareVoiceoverReadyRun } from "./renderPipelineHelpers";
 
@@ -22,6 +28,8 @@ describe("voiceover review handoff", () => {
       nextSafeAction: expect.stringContaining("local timing draft"),
       productionVoiceCandidate: false,
       quality: "deterministic-local-reference",
+      renderApprovalCommand: `pnpm producer approve render --run ${runId}`,
+      renderApprovalScope: "timing-draft-only",
       reviewPath: "production/audio/voiceover_review.md",
       runId,
     });
@@ -35,7 +43,31 @@ describe("voiceover review handoff", () => {
     const output = formatVoiceoverReviewConsole(handoff);
     expect(output).toContain(`Run: ${runId}`);
     expect(output).toContain("Production voice candidate: false");
+    expect(output).toContain("Render approval scope: timing-draft-only");
+    expect(output).toContain(
+      `Render approval command: pnpm producer approve render --run ${runId}`,
+    );
     expect(output).toContain(`pnpm producer approve render --run ${runId}`);
+  });
+
+  it("shows a production-candidate render approval scope for local Piper evidence", async () => {
+    const runId = await prepareReadyRunWithoutVoiceover();
+    await writeLocalPiperVoiceover(runId);
+
+    const handoff = await reviewVoiceover(runId);
+
+    expect(handoff).toMatchObject({
+      mode: "local-piper",
+      nextSafeAction: expect.stringContaining("if voice quality passes"),
+      productionVoiceCandidate: true,
+      quality: "local-piper",
+      renderApprovalCommand: `pnpm producer approve render --run ${runId}`,
+      renderApprovalScope: "production-voice-candidate",
+      runId,
+    });
+    expect(formatVoiceoverReviewConsole(handoff)).toContain(
+      "Render approval scope: production-voice-candidate",
+    );
   });
 
   it("prints parseable JSON from the CLI", async () => {
@@ -85,4 +117,73 @@ function runCli(args: string[]): { status: number | null; stderr: string; stdout
     stderr: result.stderr.toString(),
     stdout: result.stdout.toString(),
   };
+}
+
+async function writeLocalPiperVoiceover(runId: string): Promise<void> {
+  const run = await loadRun(runId);
+  const renderPlan = await readRenderPlanEvidence(run);
+  expect(renderPlan.status).toBe("pass");
+  if (renderPlan.status !== "pass") {
+    throw new Error("Test fixture requires passing render plan evidence.");
+  }
+
+  const audio = Buffer.from("RIFF local piper fixture WAVE");
+  const sha256 = createHash("sha256").update(audio).digest("hex");
+  const meta: VoiceoverAudioMeta = {
+    createdAt: "2026-06-30T12:00:00.000Z",
+    mode: "local-piper",
+    output: {
+      bytes: audio.byteLength,
+      channels: 1,
+      durationSeconds: 7,
+      path: "production/audio/voiceover.wav",
+      sampleRateHz: 22_050,
+      sha256,
+    },
+    provider: {
+      binary: "piper",
+      configPath: "models/piper/tr_TR-test.onnx.json",
+      configSha256: "e".repeat(64),
+      modelPath: "models/piper/tr_TR-test.onnx",
+      modelSha256: "d".repeat(64),
+    },
+    quality: "local-piper",
+    renderPlan: {
+      digest: renderPlan.digest,
+      path: "production/render_plan.json",
+    },
+    runId,
+    schemaVersion: 1,
+    source: {
+      path: "production/voiceover.txt",
+      sha256: "b".repeat(64),
+      wordCount: 42,
+    },
+  };
+
+  await mkdir(path.dirname(artifactPath(runId, "production/audio/voiceover.wav")), {
+    recursive: true,
+  });
+  await writeFile(artifactPath(runId, "production/audio/voiceover.wav"), audio);
+  await writeFile(
+    artifactPath(runId, "production/audio/voiceover.meta.json"),
+    `${JSON.stringify(meta, null, 2)}\n`,
+    "utf8",
+  );
+  await writeFile(
+    artifactPath(runId, "production/audio/voiceover_review.md"),
+    renderVoiceoverReviewMarkdown(meta),
+    "utf8",
+  );
+  await saveRun({
+    ...run,
+    artifacts: Array.from(
+      new Set([
+        ...run.artifacts,
+        "production/audio/voiceover.wav",
+        "production/audio/voiceover.meta.json",
+        "production/audio/voiceover_review.md",
+      ]),
+    ),
+  });
 }

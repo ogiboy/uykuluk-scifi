@@ -9,7 +9,13 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Features
+
+- show explicit voiceover render-approval scope and command in review handoffs and review Markdown
+
+### Tests
+
+- cover deterministic timing-draft and local-Piper production-candidate voiceover review guidance
 
 ## v0.52.0 (2026-06-30)
 
