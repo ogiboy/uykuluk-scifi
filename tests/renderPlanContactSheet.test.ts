@@ -32,6 +32,7 @@ describe("render plan contact sheet", () => {
     expect(contactSheet).toContain("assets/backgrounds/plate_test_1920x1080.jpg");
     expect(contactSheet).toContain("assets/overlays/subtitle_panel_blank_1700x190.png");
     expect(contactSheet).toContain("Confirm subtitle panel, popup card, waveform, and watermark");
+    expect(contactSheet).toContain("Popup card:");
     expect(contactSheet).toContain("assets/intro/episode_title_card_1920x1080.jpg");
     expect(contactSheet).toContain("Intro source frames: 2 committed frames");
     expect(contactSheet).toContain("assets/intro/frames/intro_frame_00.jpg");

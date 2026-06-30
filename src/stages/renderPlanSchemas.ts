@@ -48,6 +48,7 @@ export const renderPlanSchema = z.strictObject({
       narrationPreview: z.string().min(1),
       durationSeconds: z.number().positive(),
       visualPrompt: z.string().min(1),
+      popupCardText: z.string().min(1).optional(),
       backgroundAsset: assetRefSchema,
       overlayAssets: z.array(assetRefSchema),
       subtitleSource: z.literal("production/subtitles.srt"),

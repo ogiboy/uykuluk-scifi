@@ -13,6 +13,7 @@ import {
   productionPackageManifestPath,
   verifyProductionPackage,
 } from "./productionPackageIntegrity.js";
+import { readProductionPackagePopupCards } from "./productionPackageMarkdown.js";
 import { renderContactSheet } from "./renderPlanContactSheet.js";
 import { selectRenderAssets, uniqueAssets } from "./renderPlanAssets.js";
 import {
@@ -52,6 +53,7 @@ export async function generateRenderPlan(runId: string): Promise<RenderPlan> {
   }
   const { digest } = await verifyProductionPackage(run);
   const scenes = await readProductionScenes(run.runId);
+  const popupCards = await readProductionPackagePopupCards(run.runId);
   const assets = await selectRenderAssets(config.assets);
   const now = nowIso();
   const plan = renderPlanSchema.parse({
@@ -83,6 +85,7 @@ export async function generateRenderPlan(runId: string): Promise<RenderPlan> {
       narrationPreview: scene.narration.slice(0, 180),
       durationSeconds: scene.durationSeconds,
       visualPrompt: scene.visualPrompt,
+      ...popupCardText(popupCards, index),
       backgroundAsset: assets.backgrounds[index % assets.backgrounds.length],
       overlayAssets: [
         assets.subtitlePanel,
@@ -125,6 +128,13 @@ export async function generateRenderPlan(runId: string): Promise<RenderPlan> {
   run = await writeRunJson(run, "render-plan", "production/asset_provenance.json", provenance);
   await saveRun(run);
   return plan;
+}
+
+function popupCardText(cards: readonly string[], sceneIndex: number): { popupCardText?: string } {
+  if (cards.length === 0) {
+    return {};
+  }
+  return { popupCardText: cards[sceneIndex % cards.length] };
 }
 
 export async function readRenderPlanEvidence(run: RunRecord): Promise<RenderPlanEvidence> {

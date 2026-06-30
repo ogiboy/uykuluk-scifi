@@ -91,7 +91,8 @@ agent-tracking state only; runtime code must not require it.
   evidence bundles.
 - Render Plan + Contact Sheet MVP that maps generated scenes to tracked visual assets, summarizes
   scene/bookend timing, and records per-run asset provenance, including committed intro/outro
-  source-frame sequences when present.
+  source-frame sequences when present. Popup-card copy from the production package is bound to
+  render-plan scenes for contact-sheet review and local draft-render burn-in.
 - Production package generation derives `production/voiceover.txt` and `production/subtitles.srt`
   from `Anlatıcı:` lines only; `Görsel:` directions stay in scene visual prompts for render
   planning. Subtitles are wrapped into timed cues for local draft-review readability.
@@ -101,10 +102,10 @@ agent-tracking state only; runtime code must not require it.
 - Approval-gated local FFmpeg draft render that writes a review MP4, manifest, operator review
   Markdown, and `ffprobe` media-validation evidence from the current render plan, intro/outro source
   cards or source-frame sequences, scene-timed background plates, voiceover audio, subtitles,
-  lower-third, popup, waveform, watermark overlays, source-frame counts/cadence, and voiceover
-  mode/quality/candidate classification surfaced in evidence/readiness summaries, plus a stable
-  read-only FFmpeg review command for the final draft artifact in the manifest, evidence JSON, and
-  review Markdown.
+  lower-third, popup-card text, waveform, watermark overlays, source-frame counts/cadence, and
+  voiceover mode/quality/candidate classification surfaced in evidence/readiness summaries, plus a
+  stable read-only FFmpeg review command for the final draft artifact in the manifest, evidence
+  JSON, and review Markdown.
 - Manual analytics import/report commands for operator-provided CSV/JSON performance exports, plus a
   read-only Studio view over the ignored local analytics artifacts and import data-quality summary.
 - Typed Studio route-security contract covering current read-only routes and disabled future action

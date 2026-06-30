@@ -27,6 +27,8 @@ future generated release notes can be inserted predictably.
   review readability
 - keep `Görsel:` directions out of generated voiceover/subtitle artifacts while preserving them as
   scene visual prompts, and wrap long subtitle narration into readable timed cues
+- bind production-package popup-card copy to render-plan scenes and burn it into local FFmpeg draft
+  renders with scene-timed text overlays
 
 ## v0.55.0 (2026-06-30)
 
