@@ -213,9 +213,9 @@
 - `producer desk` provides an Ink-based local terminal workbench over the same
   status/readiness/media contracts, with `--plain` for scriptable or non-TTY output. It opens by
   default when `producer` is run without a subcommand, shows readiness attention, blocked actions,
-  production media review commands, recent artifacts, render decisions, and a read-only v1 workflow
-  progress projection. It is an operator surface only and does not own workflow transitions or
-  mutate run state.
+  safe run diagnostics, copyable operator commands, production media review commands, recent
+  artifacts, render decisions, and a read-only v1 workflow progress projection. It is an operator
+  surface only and does not own workflow transitions or mutate run state.
 - `producer decide render` records the human decision after local draft-render review as durable
   JSON/Markdown evidence under `production/render/`. It does not approve upload or publish and keeps
   the run in `RENDERED`. `producer status`, `producer desk`, and product UAT surface the recorded
