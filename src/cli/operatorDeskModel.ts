@@ -4,6 +4,13 @@ import type { RunState } from "../core/state.js";
 import type { RenderDecisionStatus } from "../stages/renderDecisionStatus.js";
 import { readRunStatus, type RunStatusSummary } from "../stages/status.js";
 import { formatProductionMediaStatus, type ProductionMediaStatus } from "../stages/statusMedia.js";
+import {
+  formatOperatorDeskBlockedActionLines,
+  formatOperatorDeskReadinessLines,
+  formatOperatorDeskRecentArtifactLines,
+  formatOperatorDeskWorkflowLines,
+} from "./operatorDeskFormatting.js";
+import { buildStatusWorkflowProgress, type StatusWorkflowStep } from "../stages/statusWorkflow.js";
 
 const RECENT_RUN_LIMIT = 8;
 
@@ -29,8 +36,10 @@ export type OperatorDeskRun = {
 export type OperatorDeskSelectedRun = OperatorDeskRun & {
   blockedActions: string[];
   mediaArtifacts: RunStatusSummary["mediaArtifacts"];
+  readiness: RunStatusSummary["readiness"];
   recentArtifacts: string[];
   renderDecision: RenderDecisionStatus;
+  workflowProgress: StatusWorkflowStep[];
 };
 
 export type OperatorDeskViewModel = {
@@ -115,10 +124,13 @@ export function formatOperatorDeskPlain(model: OperatorDeskViewModel): string {
     `State: ${run.state}`,
     `Updated: ${run.updatedAt}`,
     `Evidence: ${run.evidenceStatus}`,
-    `Readiness: ${run.readinessStatus}`,
+    ...formatOperatorDeskReadinessLines(run.readiness),
     `Render decision: ${renderDecisionSummary(run.renderDecision)}`,
     `Approvals/artifacts/warnings: ${run.approvalCount} approvals, ${run.artifactCount} artifacts, ${run.warningCount} warnings`,
     `Blocked actions: ${run.blockedActionCount ?? "unknown"}`,
+    ...formatOperatorDeskBlockedActionLines(run.blockedActions),
+    "",
+    ...formatOperatorDeskWorkflowLines(run.workflowProgress),
     "",
     "Next safe action:",
     `  ${run.nextRecommendedCommand}`,
@@ -126,10 +138,7 @@ export function formatOperatorDeskPlain(model: OperatorDeskViewModel): string {
     "Production media:",
     ...run.mediaArtifacts.map(formatOperatorDeskMediaArtifactLine),
     "",
-    "Recent artifacts:",
-    ...(run.recentArtifacts.length > 0
-      ? run.recentArtifacts.map((artifact) => `- ${artifact}`)
-      : ["- none"]),
+    ...formatOperatorDeskRecentArtifactLines(run.recentArtifacts),
     "",
     "Recent runs:",
     ...model.runs.map((candidate) => {
@@ -183,8 +192,15 @@ function selectedRun(status: RunStatusSummary): OperatorDeskSelectedRun {
     ...compactRun(status),
     blockedActions: status.blockedActions,
     mediaArtifacts: status.mediaArtifacts,
+    readiness: status.readiness,
     recentArtifacts: status.recentArtifacts,
     renderDecision: status.renderDecision,
+    workflowProgress: buildStatusWorkflowProgress({
+      mediaArtifacts: status.mediaArtifacts,
+      readinessStatus: status.readiness.status,
+      renderDecision: status.renderDecision,
+      state: status.run.state,
+    }),
   };
 }
 

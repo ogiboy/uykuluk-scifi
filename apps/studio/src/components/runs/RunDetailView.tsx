@@ -4,6 +4,7 @@ import { artifactPreviewsIntro } from "@/lib/runEvidenceCopy";
 import { RunBlockedActionsPanel } from "./RunBlockedActionsPanel";
 import { RunLedgerPanel } from "./RunLedgerPanel";
 import { RunProductionMediaPanel } from "./RunProductionMediaPanel";
+import { RunWorkflowProgressPanel } from "./RunWorkflowProgressPanel";
 
 /**
  * Renders a read-only detail view for a run.
@@ -46,10 +47,7 @@ export function RunDetailView({ run }: Readonly<{ run: StudioRunDetail }>) {
         <code className='command'>
           {run.nextRecommendedCommand ?? `Run pnpm producer evidence --run ${run.runId}`}
         </code>
-        <p>
-          Read-only display. Use the CLI to mutate approvals, artifacts, render, upload, or publish
-          state.
-        </p>
+        <p>Read-only display. Use the CLI for approvals, artifacts, render, upload, or publish.</p>
         <p>Evidence: {run.evidenceMessage}</p>
         {run.evidenceNextAction ? (
           <p className='artifact-action'>Evidence action: {run.evidenceNextAction}</p>
@@ -88,6 +86,8 @@ export function RunDetailView({ run }: Readonly<{ run: StudioRunDetail }>) {
         evidenceStatus={run.evidenceStatus}
         productionMedia={run.productionMedia}
       />
+
+      <RunWorkflowProgressPanel workflowProgress={run.workflowProgress} />
 
       <section className='panel' aria-labelledby='artifact-heading'>
         <h2 id='artifact-heading'>Artifact Previews</h2>

@@ -4,6 +4,10 @@ import {
   productionMediaStatus,
   type ProductionMediaStatus,
 } from "../../../../src/stages/statusMediaSummary";
+import {
+  buildStatusWorkflowProgress,
+  type StatusWorkflowStep,
+} from "../../../../src/stages/statusWorkflow";
 import { evidenceBlockedActionMessages } from "../../../../src/stages/statusBlockedActions";
 import { readReviewArtifactPreviews, type StudioArtifactPreview } from "./artifactPreviews";
 import {
@@ -59,6 +63,7 @@ export type StudioRunSummary = {
   state: StudioRunState;
   updatedAt: string;
   warningCount: number;
+  workflowProgress: StatusWorkflowStep[];
 };
 
 export type StudioRunDetail = StudioRunSummary & {
@@ -181,6 +186,10 @@ function summarizeRun(
 ): StudioRunSummary {
   const runId = record.runId ?? "unknown";
   const blockedActions = evidenceBlockedActionMessages(evidence.snapshot, runId);
+  const productionMedia = productionMediaStatus(
+    { artifacts: record.artifacts ?? [], runId },
+    evidence.snapshot,
+  );
   return {
     approvalCount: record.approvals?.length ?? 0,
     artifactCount: record.artifacts?.length ?? 0,
@@ -203,5 +212,11 @@ function summarizeRun(
     state: record.state ?? "FAILED",
     updatedAt: record.updatedAt ?? record.createdAt ?? "",
     warningCount: record.warnings?.length ?? 0,
+    workflowProgress: buildStatusWorkflowProgress({
+      mediaArtifacts: productionMedia,
+      readinessStatus: readiness.status,
+      renderDecision: { kind: "missing" },
+      state: record.state ?? "FAILED",
+    }),
   };
 }

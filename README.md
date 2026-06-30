@@ -117,8 +117,8 @@ agent-tracking state only; runtime code must not require it.
   multi-agent work loads only the tools relevant to the current task.
 - CI, CodeQL, Dependabot, SonarQube, Prettier, ESLint, Vitest, Playwright, modularity, secret-scan,
   and changelog gates.
-- Future Ink dependency is present for a richer CLI/TUI surface after the current commander CLI
-  contracts stabilize.
+- `producer desk` uses Ink for the local terminal workbench when TTY streams are available, while
+  preserving `--plain` output for scripts and CI.
 
 ## Repository Layout
 
@@ -181,8 +181,9 @@ agent-tracking state only; runtime code must not require it.
   readiness diagnostics point back to `producer readiness --run <run_id>`; use `--json` for the raw
   persisted state.
 - `producer desk` opens a local Ink terminal workbench over the same run/status contracts. It is an
-  operator review surface, not a second workflow engine; use `--plain` for scriptable output or
-  non-TTY shells.
+  operator review surface, not a second workflow engine. It shows next safe action, readiness
+  attention, blocked actions, production media, recent artifacts, render decision, and v1 workflow
+  progress; use `--plain` for scriptable output or non-TTY shells.
 - `producer decide render` records the human decision after local draft-render review as durable
   JSON/Markdown evidence. `producer status` and `producer desk` surface the recorded decision and
   next safe action. It does not approve upload or publish.
@@ -309,6 +310,7 @@ exact quote approval, or refreshed evidence bundle.
 Inspection:
 
 ```bash
+pnpm producer                 # open the local operator desk
 pnpm producer status --run <run_id>
 pnpm producer status --run <run_id> --json
 pnpm producer status --run <run_id> --summary-json
@@ -411,12 +413,12 @@ Current Studio scope:
   readiness/evidence status, stale or invalid artifact remediation, and next safe action visibility;
 - read-only `/runs/<run_id>` detail view with next action, readiness status, and review artifact
   availability plus approval ledger entries, warning lists, production media evidence details,
-  per-row review guidance, readiness check messages, and readiness next-action commands from
-  CLI/core artifacts. Malformed or stale evidence artifacts stay read-only, are not used as proof
-  for blocked actions, media readiness, or next-action guidance, and point back to the CLI evidence
-  command; media rows fall back to persisted artifact-record visibility until evidence is current.
-  Missing, malformed, or stale readiness artifacts stay read-only and point back to the CLI
-  readiness command;
+  shared v1 workflow progress, per-row review guidance, readiness check messages, and readiness
+  next-action commands from CLI/core artifacts. Malformed or stale evidence artifacts stay
+  read-only, are not used as proof for blocked actions, media readiness, or next-action guidance,
+  and point back to the CLI evidence command; media rows fall back to persisted artifact-record
+  visibility until evidence is current. Missing, malformed, or stale readiness artifacts stay
+  read-only and point back to the CLI readiness command;
 - read-only artifact preview excerpts for scripts, reviews, production packages, render plans,
   contact sheets, asset provenance, evidence, readiness, voiceover metadata, and render manifests,
   grouped by operator review phase, with binary media limited to metadata;

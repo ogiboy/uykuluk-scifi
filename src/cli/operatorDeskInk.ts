@@ -1,5 +1,11 @@
 import React, { useState } from "react";
 import { Box, render, Text, useApp, useInput } from "ink";
+import {
+  formatOperatorDeskBlockedActionLines,
+  formatOperatorDeskReadinessLines,
+  formatOperatorDeskRecentArtifactLines,
+  formatOperatorDeskWorkflowLines,
+} from "./operatorDeskFormatting.js";
 import { formatOperatorDeskMediaArtifactLine } from "./operatorDeskModel.js";
 import type {
   OperatorDeskRun,
@@ -127,7 +133,9 @@ function SelectedRun({ run }: { run: OperatorDeskSelectedRun }): React.ReactElem
     React.createElement(Text, { bold: true }, `Selected: ${run.runId}`),
     React.createElement(Text, null, `State: ${run.state}`),
     React.createElement(Text, null, `Evidence: ${run.evidenceStatus}`),
-    React.createElement(Text, null, `Readiness: ${run.readinessStatus}`),
+    ...formatOperatorDeskReadinessLines(run.readiness).map((line, index) =>
+      React.createElement(Text, { key: `readiness:${index}:${line}` }, line),
+    ),
     React.createElement(Text, null, `Render decision: ${renderDecisionSummary(run)}`),
     React.createElement(
       Text,
@@ -135,6 +143,12 @@ function SelectedRun({ run }: { run: OperatorDeskSelectedRun }): React.ReactElem
       `Approvals/artifacts/warnings: ${run.approvalCount}/${run.artifactCount}/${run.warningCount}`,
     ),
     React.createElement(Text, null, `Blocked actions: ${run.blockedActionCount ?? "unknown"}`),
+    ...formatOperatorDeskBlockedActionLines(run.blockedActions).map((line, index) =>
+      React.createElement(Text, { key: `blocked:${index}:${line}` }, line),
+    ),
+    ...formatOperatorDeskWorkflowLines(run.workflowProgress).map((line, index) =>
+      React.createElement(Text, { key: `workflow:${index}:${line}` }, line),
+    ),
     React.createElement(
       Text,
       { color: "green" },
@@ -147,6 +161,9 @@ function SelectedRun({ run }: { run: OperatorDeskSelectedRun }): React.ReactElem
         { key: artifact.evidenceKey },
         formatOperatorDeskMediaArtifactLine(artifact),
       ),
+    ),
+    ...formatOperatorDeskRecentArtifactLines(run.recentArtifacts).map((line, index) =>
+      React.createElement(Text, { key: `artifacts:${index}:${line}` }, line),
     ),
   );
 }
