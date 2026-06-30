@@ -115,7 +115,7 @@ function RunList({
           color: index === selectedIndex ? "green" : undefined,
           key: run.runId,
         },
-        `${selectionMarker} ${run.runId}  ${run.state}  ${run.readinessStatus}  decision:${run.renderDecisionStatus}`,
+        formatRecentRunLine(run, selectionMarker),
       );
     }),
   );
@@ -136,7 +136,7 @@ function SelectedRun({ run }: { run: OperatorDeskSelectedRun }): React.ReactElem
     ...formatOperatorDeskReadinessLines(run.readiness).map((line, index) =>
       React.createElement(Text, { key: `readiness:${index}:${line}` }, line),
     ),
-    React.createElement(Text, null, `Render decision: ${renderDecisionSummary(run)}`),
+    React.createElement(Text, null, `Render decision: ${run.renderDecisionStatus}`),
     React.createElement(
       Text,
       null,
@@ -169,16 +169,20 @@ function SelectedRun({ run }: { run: OperatorDeskSelectedRun }): React.ReactElem
 }
 
 /**
- * Formats the render decision for display.
+ * Formats a recent-run row for display.
  *
- * @param run - The selected run to summarize.
- * @returns The decision text with reviewer information when present, or the decision kind otherwise.
+ * @param run - The compact run to summarize.
+ * @param selectionMarker - The current selection marker.
+ * @returns The operator-facing compact run row.
  */
-function renderDecisionSummary(run: OperatorDeskSelectedRun): string {
-  if (run.renderDecision.kind === "present") {
-    return `${run.renderDecision.decision.decision} by ${run.renderDecision.decision.reviewedBy}`;
-  }
-  return run.renderDecision.kind;
+function formatRecentRunLine(run: OperatorDeskRun, selectionMarker: string): string {
+  return [
+    selectionMarker,
+    run.runId,
+    run.state,
+    run.readinessStatus,
+    `decision:${run.renderDecisionStatus}`,
+  ].join("  ");
 }
 
 /**
