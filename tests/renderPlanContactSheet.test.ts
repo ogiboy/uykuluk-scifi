@@ -34,8 +34,12 @@ describe("render plan contact sheet", () => {
     expect(contactSheet).toContain("Confirm subtitle panel, popup card, waveform, and watermark");
     expect(contactSheet).toContain("assets/intro/episode_title_card_1920x1080.jpg");
     expect(contactSheet).toContain("Intro source frames: 2 committed frames");
+    expect(contactSheet).toContain("assets/intro/frames/intro_frame_00.jpg");
+    expect(contactSheet).toContain("assets/intro/frames/intro_frame_01.jpg");
     expect(contactSheet).toContain("assets/outro/youtube_end_screen_1920x1080.jpg");
     expect(contactSheet).toContain("Outro source frames: 2 committed frames");
+    expect(contactSheet).toContain("assets/outro/frames/outro_frame_00.jpg");
+    expect(contactSheet).toContain("assets/outro/frames/outro_frame_01.jpg");
     expect(contactSheet).toContain("## Operator Decision");
     expect(contactSheet).toContain(`pnpm producer readiness --run ${runId}`);
     expect(contactSheet).toContain(`pnpm producer voice --run ${runId}`);

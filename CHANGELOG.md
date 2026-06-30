@@ -11,6 +11,7 @@ future generated release notes can be inserted predictably.
 
 ### Features
 
+- show intro/outro source-frame paths in render-plan review handoffs and storyboard contact sheets
 - show a scene-to-asset map in render-plan review handoffs and storyboard contact sheets
 - show explicit voiceover render-approval scope and command in review handoffs and review Markdown
 - surface voiceover render-approval scope and command in Studio read-only media rows

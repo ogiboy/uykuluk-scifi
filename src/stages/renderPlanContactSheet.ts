@@ -1,9 +1,10 @@
 import { bulletList, table } from "../utils/markdown.js";
 import { renderOperatorDecisionSection } from "./operatorReviewMarkdown.js";
-import { AssetProvenance, AssetRef, RenderPlan } from "./renderPlanSchemas.js";
+import { AssetProvenance, RenderPlan } from "./renderPlanSchemas.js";
 import {
   renderVisualRhythmReview,
   summarizeRenderPlanReview,
+  type RenderPlanBookendReview,
   type RenderPlanSceneAssetReview,
 } from "./renderPlanReviewSummary.js";
 
@@ -33,7 +34,7 @@ export function renderContactSheet(plan: RenderPlan, provenance: AssetProvenance
     ...renderTimingSummary(plan),
     ...renderVisualRhythmReview(reviewSummary),
     ...renderSceneAssetMap(reviewSummary.sceneAssetMap),
-    ...renderBookends(plan),
+    ...renderBookends(reviewSummary.bookends),
     "## Asset Provenance",
     "",
     bulletList(
@@ -145,20 +146,17 @@ function renderContactSheetDecision(runId: string): string[] {
 /**
  * Renders the intro and outro bookend section for a contact sheet.
  *
- * @param plan - The render plan that may include bookend assets.
+ * @param bookends - The computed bookend source summaries.
  * @returns An array of Markdown lines for the bookend section, or an empty array when no bookends are present.
  */
-function renderBookends(plan: RenderPlan): string[] {
-  if (!plan.bookends) {
+function renderBookends(bookends: RenderPlanBookendReview[]): string[] {
+  if (bookends.length === 0) {
     return [];
   }
   return [
     "## Intro And Outro Bookends",
     "",
-    `- Intro: ${plan.bookends.intro.asset.path} for ${plan.bookends.intro.durationSeconds}s`,
-    ...frameBullets("Intro source frames", plan.bookends.intro.frameAssets),
-    `- Outro: ${plan.bookends.outro.asset.path} for ${plan.bookends.outro.durationSeconds}s`,
-    ...frameBullets("Outro source frames", plan.bookends.outro.frameAssets),
+    ...bookends.flatMap(renderBookendLines),
     "",
     "> These committed source assets are included in the local draft render timeline for review; they do not imply upload or publish approval.",
     "",
@@ -166,17 +164,18 @@ function renderBookends(plan: RenderPlan): string[] {
 }
 
 /**
- * Builds a bullet for the number of committed frames in a bookend asset set.
+ * Builds operator-readable bookend source and frame bullets.
  *
- * @param label - The frame set label to include in the bullet text
- * @param frames - The frames to count
- * @returns A single bullet describing the frame count, or an empty array when no frames are provided
+ * @param bookend - The bookend source summary to render.
+ * @returns Markdown lines for the bookend source and any committed frames.
  */
-function frameBullets(label: string, frames: AssetRef[] | undefined): string[] {
-  if (!frames || frames.length === 0) {
-    return [];
-  }
-  return [`- ${label}: ${frames.length} committed frames`];
+function renderBookendLines(bookend: RenderPlanBookendReview): string[] {
+  const label = formatBookendSegment(bookend.segment);
+  return [
+    `- ${label}: ${bookend.sourceAssetPath} for ${formatSeconds(bookend.durationSeconds)}`,
+    `- ${label} source frames: ${bookend.frameAssetPaths.length} committed frames`,
+    ...bookend.frameAssetPaths.map((framePath) => `  - ${framePath}`),
+  ];
 }
 
 function formatSeconds(value: number): string {
@@ -185,4 +184,8 @@ function formatSeconds(value: number): string {
 
 function formatOverlayAssetPaths(paths: string[]): string {
   return paths.length > 0 ? paths.join(", ") : "none";
+}
+
+function formatBookendSegment(segment: RenderPlanBookendReview["segment"]): string {
+  return segment === "intro" ? "Intro" : "Outro";
 }

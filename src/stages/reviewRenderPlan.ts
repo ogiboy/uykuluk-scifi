@@ -12,6 +12,7 @@ import {
 } from "./renderPlanSchemas.js";
 import {
   summarizeRenderPlanReview,
+  type RenderPlanBookendReview,
   type CountedValue,
   type RenderPlanSceneAssetReview,
   type RenderPlanTimingReview,
@@ -25,6 +26,7 @@ export type RenderPlanReviewHandoff = {
   assetProvenancePath: string;
   backgroundReuse: CountedValue[];
   blockedActions: string[];
+  bookends: RenderPlanBookendReview[];
   contactSheetPath: string;
   estimatedDraftDurationSeconds: number;
   format: RenderPlan["format"];
@@ -69,6 +71,7 @@ export async function reviewRenderPlan(runId: string): Promise<RenderPlanReviewH
     assetProvenancePath,
     backgroundReuse: reviewSummary.backgroundReuse,
     blockedActions: renderPlanReviewBlockedActions(),
+    bookends: reviewSummary.bookends,
     contactSheetPath,
     estimatedDraftDurationSeconds: reviewSummary.timing.estimatedDraftDurationSeconds,
     format: plan.format,
@@ -103,6 +106,8 @@ export function formatRenderPlanReviewConsole(handoff: RenderPlanReviewHandoff):
     `Scene duration range: ${Math.round(handoff.timing.shortestSceneDurationSeconds)}s-${Math.round(handoff.timing.longestSceneDurationSeconds)}s`,
     `Background reuse: ${formatCountedValues(handoff.backgroundReuse, "none")}`,
     `Asset role counts: ${formatCountedValues(handoff.assetRoleCounts, "none")}`,
+    "Bookends:",
+    ...formatBookendReviewLines(handoff.bookends),
     "Scene asset map:",
     ...handoff.sceneAssetMap.map(formatSceneAssetMapLine),
     `Format: ${handoff.format.resolution}, ${handoff.format.fps}fps, ${handoff.format.aspectRatio}, ${handoff.format.draftRenderer}`,
@@ -140,4 +145,17 @@ function formatCountedValues(values: CountedValue[], empty: string): string {
 function formatSceneAssetMapLine(scene: RenderPlanSceneAssetReview): string {
   const overlays = scene.overlayAssetPaths.length > 0 ? scene.overlayAssetPaths.join(", ") : "none";
   return `- Scene ${scene.sceneIndex}: ${Math.round(scene.durationSeconds)}s, background ${scene.backgroundAssetPath}, overlays ${overlays}`;
+}
+
+function formatBookendReviewLines(bookends: RenderPlanBookendReview[]): string[] {
+  if (bookends.length === 0) {
+    return ["- none"];
+  }
+  return bookends.map((bookend) => {
+    const frames =
+      bookend.frameAssetPaths.length > 0
+        ? `${bookend.frameAssetPaths.length} committed frames: ${bookend.frameAssetPaths.join(", ")}`
+        : "no committed frame sequence";
+    return `- ${bookend.segment}: ${Math.round(bookend.durationSeconds)}s, source ${bookend.sourceAssetPath}, ${frames}`;
+  });
 }
