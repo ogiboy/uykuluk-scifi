@@ -4,22 +4,11 @@ import {
   productionMediaStatus,
   type ProductionMediaStatus,
 } from "../../../../src/stages/statusMediaSummary";
-import {
-  renderDecisionJsonPath,
-  renderDecisionCommandTemplates,
-  type RenderDecisionCommandTemplate,
-} from "../../../../src/stages/renderDecisionCommands";
-import {
-  buildStatusWorkflowProgress,
-  type StatusWorkflowStep,
-} from "../../../../src/stages/statusWorkflow";
+import type { RenderDecisionCommandTemplate } from "../../../../src/stages/renderDecisionCommands";
+import type { StatusWorkflowStep } from "../../../../src/stages/statusWorkflow";
 import { evidenceBlockedActionMessages } from "../../../../src/stages/statusBlockedActions";
 import { readReviewArtifactPreviews, type StudioArtifactPreview } from "./artifactPreviews";
-import {
-  evidenceNextRecommendedCommand,
-  readStudioEvidenceSummary,
-  type StudioEvidenceSummary,
-} from "./evidenceSummaries";
+import { readStudioEvidenceSummary, type StudioEvidenceSummary } from "./evidenceSummaries";
 import { projectRoot } from "./projectRoot";
 import {
   readStudioReadinessSnapshot,
@@ -28,6 +17,15 @@ import {
   type StudioReadinessSummary,
   summarizeReadinessSnapshot,
 } from "./readinessSummaries";
+import {
+  readStudioRenderDecisionSummary,
+  type StudioRenderDecisionSummary,
+} from "./renderDecisionSummaries";
+import {
+  studioNextRecommendedCommand,
+  studioRenderDecisionCommands,
+  studioWorkflowProgress,
+} from "./runDecisionProjection";
 import { isRunId, readRunRecord, readStudioRunDiagnostics, safeReaddir } from "./runSummaryFiles";
 
 export type StudioRunState =
@@ -64,6 +62,7 @@ export type StudioRunSummary = {
   readinessMessage: string;
   readinessNextAction?: string;
   readinessStatus: StudioReadinessSummary["status"];
+  renderDecision: StudioRenderDecisionSummary;
   runId: string;
   state: StudioRunState;
   updatedAt: string;
@@ -131,13 +130,14 @@ export async function getStudioRunDetail(runId: string): Promise<StudioRunDetail
     readStudioEvidenceSummary(root, runId, record.state),
     readStudioReadinessSnapshot(root, runId),
   ]);
+  const renderDecision = await readStudioRenderDecisionSummary(root, record, evidence.snapshot);
   const readinessSummary = summarizeReadinessSnapshot(
     readiness.snapshot,
     record.runId,
     record.state,
     readiness.malformed,
   );
-  const summary = summarizeRun(record, evidence, readinessSummary);
+  const summary = summarizeRun(record, evidence, readinessSummary, renderDecision);
   return {
     ...summary,
     approvals: record.approvals ?? [],
@@ -150,7 +150,7 @@ export async function getStudioRunDetail(runId: string): Promise<StudioRunDetail
     ),
     readiness: readiness.snapshot,
     readinessChecks: readinessSummary.checks,
-    renderDecisionCommands: studioRenderDecisionCommands(record, evidence),
+    renderDecisionCommands: studioRenderDecisionCommands(record, evidence, renderDecision),
     warnings: record.warnings ?? [],
   };
 }
@@ -171,10 +171,12 @@ async function readRunSummary(root: string, runId: string): Promise<StudioRunSum
     readStudioEvidenceSummary(root, runId, record.state),
     readStudioReadinessSnapshot(root, runId),
   ]);
+  const renderDecision = await readStudioRenderDecisionSummary(root, record, evidence.snapshot);
   return summarizeRun(
     record,
     evidence,
     summarizeReadinessSnapshot(readiness.snapshot, record.runId, record.state, readiness.malformed),
+    renderDecision,
   );
 }
 
@@ -184,12 +186,14 @@ async function readRunSummary(root: string, runId: string): Promise<StudioRunSum
  * @param record - The stored run record.
  * @param evidence - The evidence summary for the run.
  * @param readiness - The readiness summary for the run.
+ * @param renderDecision - The local render decision summary for the run.
  * @returns The combined run summary.
  */
 function summarizeRun(
   record: RunRecord,
   evidence: StudioEvidenceSummary,
   readiness: StudioReadinessSummary,
+  renderDecision: StudioRenderDecisionSummary,
 ): StudioRunSummary {
   const runId = record.runId ?? "unknown";
   const blockedActions = evidenceBlockedActionMessages(evidence.snapshot, runId);
@@ -206,40 +210,26 @@ function summarizeRun(
     evidenceMessage: evidence.message,
     evidenceNextAction: evidence.nextAction,
     evidenceStatus: evidence.status,
-    nextRecommendedCommand: evidenceNextRecommendedCommand(
+    nextRecommendedCommand: studioNextRecommendedCommand(
       evidence,
       record.state ?? "FAILED",
       runId,
+      renderDecision,
     ),
     readinessMessage: readiness.message,
     readinessNextAction: readiness.nextAction,
     readinessPassed: readiness.passed,
     readinessStatus: readiness.status,
+    renderDecision,
     runId,
     state: record.state ?? "FAILED",
     updatedAt: record.updatedAt ?? record.createdAt ?? "",
     warningCount: record.warnings?.length ?? 0,
-    workflowProgress: buildStatusWorkflowProgress({
+    workflowProgress: studioWorkflowProgress({
       mediaArtifacts: productionMedia,
       readinessStatus: readiness.status,
-      renderDecision: { kind: "missing" },
+      renderDecision,
       state: record.state ?? "FAILED",
     }),
   };
-}
-
-function studioRenderDecisionCommands(
-  record: RunRecord,
-  evidence: StudioEvidenceSummary,
-): RenderDecisionCommandTemplate[] {
-  const runId = record.runId;
-  if (!runId || record.state !== "RENDERED" || evidence.status !== "available") {
-    return [];
-  }
-  if (record.artifacts?.includes(renderDecisionJsonPath)) {
-    return [];
-  }
-  return evidence.snapshot?.draftRender?.status === "pass"
-    ? renderDecisionCommandTemplates(runId)
-    : [];
 }

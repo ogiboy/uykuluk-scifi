@@ -75,10 +75,14 @@ describe("render operator decision", () => {
     expect(status.renderDecision).toMatchObject({
       kind: "present",
       decision: { decision: "accepted-for-local-review", reviewedBy: "operator" },
+      reviewCommand: `pnpm producer review render-decision --run ${runId}`,
     });
     expect(status.nextRecommendedCommand).toContain("Upload remains disabled");
     expect(formatRunStatus(status)).toContain(
       "Render decision: accepted-for-local-review by operator",
+    );
+    expect(formatRunStatus(status)).toContain(
+      `Render decision review: pnpm producer review render-decision --run ${runId}`,
     );
   });
 

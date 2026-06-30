@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { StudioRunSummary } from "@/lib/runSummaries";
-import { formatRunReviewCounts } from "@/lib/runSummaryCopy";
+import { formatRunRenderDecision, formatRunReviewCounts } from "@/lib/runSummaryCopy";
 
 type RunSummaryTableProps = Readonly<{ runs: readonly StudioRunSummary[] }>;
 
@@ -28,6 +28,7 @@ export function RunSummaryTable({ runs }: RunSummaryTableProps) {
           <span role='columnheader'>State</span>
           <span role='columnheader'>Readiness</span>
           <span role='columnheader'>Evidence</span>
+          <span role='columnheader'>Render decision</span>
           <span role='columnheader'>Next action</span>
         </div>
         {runs.map((run) => (
@@ -45,6 +46,12 @@ export function RunSummaryTable({ runs }: RunSummaryTableProps) {
             <span className='run-cell-stack' role='cell'>
               <strong>{run.evidenceStatus}</strong>
               {run.evidenceStatus === "available" ? null : <small>{run.evidenceMessage}</small>}
+            </span>
+            <span className='run-cell-stack' role='cell'>
+              <strong>{formatRunRenderDecision(run)}</strong>
+              {run.renderDecision.kind === "present" ? (
+                <small>{run.renderDecision.message}</small>
+              ) : null}
             </span>
             <span role='cell'>{run.nextRecommendedCommand ?? "Generate evidence from CLI"}</span>
           </Link>

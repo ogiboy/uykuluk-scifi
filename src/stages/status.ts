@@ -214,6 +214,7 @@ function formatRenderDecisionStatus(decision: RenderDecisionStatus): string[] {
   if (decision.kind === "present") {
     return [
       `Render decision: ${decision.decision.decision} by ${decision.decision.reviewedBy}`,
+      `Render decision review: ${decision.reviewCommand}`,
       `Render decision next action: ${decision.nextAction}`,
     ];
   }

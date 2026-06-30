@@ -62,12 +62,15 @@
   `deterministic-local` is a timing/reference adapter; `local-piper` shells out to a configured
   local Piper binary and ignored model path. Local Piper metadata, evidence, and review Markdown now
   record the model/config SHA-256 digests used for the generated WAV. The review Markdown includes
-  an explicit listen-before-render decision boundary and exact next safe commands. Evidence,
-  readiness, status, and blocked-action summaries mark deterministic-local WAVs as timing/reference
-  only until reviewed local Piper audio exists. Next-action guidance explicitly says render approval
-  with deterministic-local audio is only for a local timing draft. `producer review voice` gives
-  operators a read-only handoff from validated voiceover evidence before render approval, and Studio
-  production-media rows surface the same review command without adding a web mutation.
+  an explicit listen-before-render decision boundary, render-approval scope, and exact next safe
+  commands. Evidence, readiness, status, and blocked-action summaries mark deterministic-local WAVs
+  as timing/reference only until reviewed local Piper audio exists. Next-action guidance explicitly
+  says render approval with deterministic-local audio is only for a local timing draft.
+  `producer review voice` gives operators a read-only handoff from validated voiceover evidence
+  before render approval, including the exact approval command and whether the scope is
+  `timing-draft-only` or `production-voice-candidate`, while Studio production-media rows surface
+  the same review command, render approval command, and approval scope without adding a web
+  mutation.
 - `pnpm tts:piper:setup` downloads the pinned CPU-friendly Turkish
   `speaches-ai/piper-tr_TR-fahrettin-medium` model into ignored `models/` and prints the matching
   local config override for `local-piper`.
@@ -371,9 +374,10 @@ pnpm producer voice --run <run_id> [--json]
 pnpm producer review voice --run <run_id> [--json]
 pnpm producer approve render --run <run_id> [--json]
 pnpm producer render --run <run_id> [--json]
-pnpm producer decide render --run <run_id> --decision accepted-for-local-review --notes "<notes>" [--json]
-pnpm producer decide render --run <run_id> --decision needs-revision --notes "<notes>" [--json]
-pnpm producer decide render --run <run_id> --decision rejected --notes "<notes>" [--json]
+pnpm producer decide render --run <run_id> --decision accepted-for-local-review --notes "<operator notes>" --reviewed-by operator [--json]
+pnpm producer decide render --run <run_id> --decision needs-revision --notes "<operator notes>" --reviewed-by operator [--json]
+pnpm producer decide render --run <run_id> --decision rejected --notes "<operator notes>" --reviewed-by operator [--json]
+pnpm producer review render-decision --run <run_id> [--json]
 pnpm producer analytics import --file <path> [--json]
 pnpm producer analytics report [--json]
 pnpm producer upload private --run <run_id>

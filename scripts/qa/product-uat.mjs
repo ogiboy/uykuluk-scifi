@@ -58,6 +58,7 @@ try {
   });
 
   const renderedRunId = await createVoiceReadyRun({
+    assertCondition,
     pnpm,
     run,
     scenario: "happy-path",
@@ -121,6 +122,16 @@ try {
     label: "status surfaces local render decision",
     scenario: "happy path",
   });
+  run([pnpm, "producer", "review", "render-decision", "--run", renderedRunId], {
+    expectOutput: "Decision artifact: production/render/render_decision.json",
+    label: "render-decision review handoff is available",
+    scenario: "happy path",
+  });
+  run([pnpm, "producer", "status", "--run", renderedRunId], {
+    expectOutput: `Render decision review: pnpm producer review render-decision --run ${renderedRunId}`,
+    label: "status surfaces render-decision review command",
+    scenario: "happy path",
+  });
   run([pnpm, "producer", "upload", "private", "--run", renderedRunId], {
     expectFailure: true,
     expectOutput: "requires explicit upload approval",
@@ -152,6 +163,7 @@ try {
   await assertTamperedRenderReviewCommandBlocks({ pnpm, run, runId: renderedRunId, workdir });
 
   const tamperedRunId = await createVoiceReadyRun({
+    assertCondition,
     pnpm,
     run,
     scenario: "tampered-render-input",

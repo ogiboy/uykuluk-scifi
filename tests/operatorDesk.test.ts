@@ -192,6 +192,9 @@ describe("operator desk", () => {
     expect(output).toContain(`> ${runId}  RENDERED`);
     expect(output).toContain("decision:needs-revision by operator");
     expect(output).toContain(
+      `Render decision review: pnpm producer review render-decision --run ${runId}`,
+    );
+    expect(output).toContain(
       "- [done] Operator decision: Render decision recorded: needs-revision.",
     );
     expect(output).not.toContain("decision:present");

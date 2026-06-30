@@ -41,6 +41,26 @@ export function renderDecisionCommandTemplates(runId: string): RenderDecisionCom
   }));
 }
 
+/**
+ * Builds the default command template for recording an accepted local render decision.
+ *
+ * @param runId - The run identifier to include in the command.
+ * @returns The render-decision command template for `runId`.
+ */
+export function renderDecisionNextAction(runId: string): string {
+  return renderDecisionCommandTemplates(runId)[0].command;
+}
+
+/**
+ * Builds the read-only command for reopening a recorded local render decision.
+ *
+ * @param runId - The run identifier to include in the command.
+ * @returns The render-decision review command for `runId`.
+ */
+export function renderDecisionReviewCommand(runId: string): string {
+  return renderShellCommand("pnpm", ["producer", "review", "render-decision", "--run", runId]);
+}
+
 const POSIX_SINGLE_QUOTE_ESCAPE = "'\"'\"'";
 
 function renderShellCommand(binary: string, args: string[]): string {

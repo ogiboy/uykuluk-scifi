@@ -84,8 +84,10 @@
   setup/remediation next actions. Evidence/readiness/status now mark deterministic-local WAVs as
   timing/reference only, and next-action guidance limits render approval with that audio to local
   timing drafts. `producer review voice` now prints the validated local audio review handoff before
-  render approval, and Studio production-media rows surface the same command read-only. Keep the
-  listen-before-render decision boundary explicit.
+  render approval, including the exact approval command and explicit `timing-draft-only` versus
+  `production-voice-candidate` scope. Studio production-media rows surface the same review command,
+  render approval command, and scope read-only. Keep the listen-before-render decision boundary
+  explicit.
 - Harden FFmpeg draft render visual polish; the current foundation is exact-approval-gated local MP4
   with intro/outro source-card bookends or source-frame sequences, scene-timed background plates,
   subtitle burn-in, lower-third, popup-card, waveform, watermark overlays, render manifest evidence,
@@ -93,8 +95,9 @@
   classification preserved from approval through evidence, fail-closed `ffprobe` media validation,
   stable read-only FFmpeg review command evidence, and an operator-readable
   `production/render/draft_review.md` checklist plus render/review CLI handoffs with exact local
-  `producer decide render` command templates, local-only decision guidance surfaced through CLI
-  status, evidence Markdown, and read-only Studio panels.
+  `producer decide render` command templates, read-only `producer review render-decision` evidence
+  readback, and local-only decision guidance surfaced through CLI status, evidence Markdown, and
+  read-only Studio panels.
 - Use `producer eval local-model` before more Qwen-specific tuning. Compare configured local
   candidates through the same idea/script gates, receipt evidence, JSON compliance, repetition
   checks, Turkish label discipline, and operator quality review. Prefer eval-only CLI overrides for

@@ -9,7 +9,15 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Features
+
+- show explicit voiceover render-approval scope and command in review handoffs and review Markdown
+- surface voiceover render-approval scope and command in Studio read-only media rows
+
+### Tests
+
+- cover deterministic timing-draft and local-Piper production-candidate voiceover review guidance
+- assert voiceover render-approval scope in usage smoke and product UAT
 
 ## v0.52.0 (2026-06-30)
 
@@ -18,7 +26,18 @@ _No unreleased changes yet._
 - expand render-plan review handoffs with visual rhythm checks, timing ranges, asset role counts,
   background reuse, and revision guidance
 - print copy-pasteable local render-decision commands in draft-render review handoffs
+- add `producer review render-decision` to reopen validated local decision evidence
 - show local render-decision command templates in Studio rendered-run details
+- show local render-decision status in Studio run index and latest-run summaries
+
+### Fixes
+
+- keep Studio workflow progress and next action aligned with recorded local render decisions
+- surface the recorded render-decision review command in status, desk, and Studio views
+
+### Tests
+
+- cover render-decision readback in product UAT and Studio read-only UAT
 
 ## v0.51.0 (2026-06-30)
 

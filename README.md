@@ -298,9 +298,11 @@ pnpm producer approve render --run <run_id>
 pnpm producer approve render --run <run_id> --json
 pnpm producer render --run <run_id>
 pnpm producer render --run <run_id> --json
-pnpm producer decide render --run <run_id> --decision accepted-for-local-review --notes "<notes>"
-pnpm producer decide render --run <run_id> --decision needs-revision --notes "<notes>"
-pnpm producer decide render --run <run_id> --decision rejected --notes "<notes>"
+pnpm producer decide render --run <run_id> --decision accepted-for-local-review --notes "<operator notes>" --reviewed-by operator
+pnpm producer decide render --run <run_id> --decision needs-revision --notes "<operator notes>" --reviewed-by operator
+pnpm producer decide render --run <run_id> --decision rejected --notes "<operator notes>" --reviewed-by operator
+pnpm producer review render-decision --run <run_id>
+pnpm producer review render-decision --run <run_id> --json
 ```
 
 Blocked readiness checks print and persist next-action guidance for common operator steps such as
@@ -320,6 +322,7 @@ pnpm producer desk --run <run_id>
 pnpm producer desk --plain
 pnpm producer list-runs
 pnpm producer list-runs --json
+pnpm producer review render-decision --run <run_id> [--json]
 ```
 
 Local model evaluation:
@@ -607,8 +610,10 @@ SHA-256 digests used for the WAV. Do not commit downloaded voice models or gener
 timing, pacing, pronunciation, source binding, and provider provenance before render approval. The
 non-JSON `producer voice` output points directly at that review artifact and the next safe
 `producer review voice --run <run_id>` command. `producer review voice --run <run_id>` prints the
-same local audio review handoff from validated voiceover evidence and keeps deterministic audio
-labeled as a timing draft input, not a production voice approval.
+same local audio review handoff from validated voiceover evidence, including the explicit render
+approval command and whether that approval is only for a local timing draft or for a reviewed
+production voice candidate. Studio production-media rows show the same read-only review command,
+approval command, and approval scope without adding a web mutation.
 
 `producer review render-plan --run <run_id>` prints a read-only render-plan/contact-sheet handoff
 from validated render-plan evidence. It points operators to `production/storyboard_contact_sheet.md`
@@ -625,12 +630,14 @@ decodes the final draft artifact to `null` for operator inspection; the same tru
 copied into draft-render evidence JSON. The non-JSON CLI output and read-only
 `producer review render --run <run_id>` command point directly to the MP4, manifest, review
 document, local-only next action, and copy-pasteable `producer decide render` command templates for
-recording exactly one durable local operator decision. Status, evidence Markdown, and the read-only
-Studio production-media panel surface that same safe review command when draft-render evidence is
-current, and rendered runs use the read-only review command as their next safe action.
-`production/render/draft_review.md` summarizes the final operator checklist, shows that review
-command, includes the decision command templates, and labels deterministic-reference audio renders
-as local timing drafts. It does not upload, schedule, or publish anything.
+recording exactly one durable local operator decision. After that decision exists,
+`producer review render-decision --run <run_id>` reopens the validated decision evidence without
+mutating state. Status, evidence Markdown, and the read-only Studio production-media panel surface
+that same safe review command when draft-render evidence is current, and rendered runs use the
+read-only review command as their next safe action. `production/render/draft_review.md` summarizes
+the final operator checklist, shows that review command, includes the decision command templates,
+and labels deterministic-reference audio renders as local timing drafts. It does not upload,
+schedule, or publish anything.
 
 `thinkingMode` can be `default`, `think`, or `no_think`. Token caps are sent to Ollama as
 `num_predict` so local generation cannot run unbounded. Script generation splits the approved idea

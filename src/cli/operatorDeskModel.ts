@@ -126,6 +126,7 @@ export function formatOperatorDeskPlain(model: OperatorDeskViewModel): string {
     `Evidence: ${run.evidenceStatus}`,
     ...formatOperatorDeskReadinessLines(run.readiness),
     `Render decision: ${renderDecisionSummary(run.renderDecision)}`,
+    ...renderDecisionReviewLines(run.renderDecision),
     `Approvals/artifacts/warnings: ${run.approvalCount} approvals, ${run.artifactCount} artifacts, ${run.warningCount} warnings`,
     `Blocked actions: ${run.blockedActionCount ?? "unknown"}`,
     ...formatOperatorDeskBlockedActionLines(run.blockedActions),
@@ -215,4 +216,8 @@ function renderDecisionSummary(decision: RenderDecisionStatus): string {
     return `${decision.decision.decision} by ${decision.decision.reviewedBy}`;
   }
   return decision.kind;
+}
+
+function renderDecisionReviewLines(decision: RenderDecisionStatus): string[] {
+  return decision.kind === "present" ? [`Render decision review: ${decision.reviewCommand}`] : [];
 }

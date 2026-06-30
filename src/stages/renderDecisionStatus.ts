@@ -1,14 +1,24 @@
 import type { RunRecord } from "../core/state.js";
 import { readJsonFile } from "../utils/json.js";
+import { renderDecisionNextAction, renderDecisionReviewCommand } from "./renderDecisionCommands.js";
+import {
+  renderDecisionRecordSchema,
+  type RenderDecisionRecord,
+} from "./renderDecisionContracts.js";
 import { renderDecisionArtifactPaths } from "./renderDecision.js";
-import { renderDecisionRecordSchema, type RenderDecisionRecord } from "./renderDecision.js";
 import { reviewDraftRender } from "./reviewRender.js";
 
 export type RenderDecisionStatus =
   | { kind: "missing"; nextAction: string | null }
   | { kind: "invalid"; message: string; nextAction: string }
   | { kind: "stale"; message: string; nextAction: string }
-  | { decision: RenderDecisionRecord; kind: "present"; message: string; nextAction: string };
+  | {
+      decision: RenderDecisionRecord;
+      kind: "present";
+      message: string;
+      nextAction: string;
+      reviewCommand: string;
+    };
 
 /**
  * Reads the local render decision status for a run.
@@ -40,6 +50,7 @@ export async function readRenderDecisionStatus(run: RunRecord): Promise<RenderDe
       kind: "present",
       message: `Render decision recorded: ${decision.decision}.`,
       nextAction: decision.nextSafeAction,
+      reviewCommand: renderDecisionReviewCommand(run.runId),
     };
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") {
@@ -56,16 +67,6 @@ export async function readRenderDecisionStatus(run: RunRecord): Promise<RenderDe
       nextAction,
     };
   }
-}
-
-/**
- * Builds the command template for recording a render decision.
- *
- * @param runId - The run identifier to include in the command.
- * @returns The render-decision command template for `runId`.
- */
-export function renderDecisionNextAction(runId: string): string {
-  return `pnpm producer decide render --run ${runId} --decision accepted-for-local-review --notes "<notes>"`;
 }
 
 /**

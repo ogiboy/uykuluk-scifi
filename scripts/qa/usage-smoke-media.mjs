@@ -63,10 +63,20 @@ export async function runLocalMediaSmoke({ run, pnpm, workdir, runId, assertFile
     message: "evidence routes reference audio through voice review before render approval",
     assert,
   });
-  run([pnpm, "producer", "review", "voice", "--run", runId], {
+  const voiceReview = run([pnpm, "producer", "review", "voice", "--run", runId], {
     label: "reference voice review handoff",
     expectOutput: "Production voice candidate: false",
   });
+  assert(
+    voiceReview.stdout.includes("Render approval scope: timing-draft-only"),
+    "reference voice review marks render approval as timing draft only",
+  );
+  assert(
+    voiceReview.stdout.includes(
+      `Render approval command: pnpm producer approve render --run ${runId}`,
+    ),
+    "reference voice review prints exact render approval command",
+  );
   run([pnpm, "producer", "approve", "render", "--run", runId], {
     label: "approve render",
     expectOutput: "Render approval recorded",

@@ -1,6 +1,11 @@
 import { SafeExitError } from "../core/errors.js";
 import { loadRun } from "../core/runStore.js";
 import { readVoiceoverAudioEvidence } from "./voiceoverEvidence.js";
+import {
+  voiceoverRenderApprovalCommand,
+  voiceoverRenderApprovalScope,
+  type VoiceoverRenderApprovalScope,
+} from "./voiceoverReviewCommands.js";
 
 type PassingVoiceoverEvidence = Extract<
   Awaited<ReturnType<typeof readVoiceoverAudioEvidence>>,
@@ -15,6 +20,8 @@ export type VoiceoverReviewHandoff = {
   nextSafeAction: string;
   productionVoiceCandidate: boolean;
   quality: PassingVoiceoverEvidence["quality"];
+  renderApprovalCommand: string;
+  renderApprovalScope: VoiceoverRenderApprovalScope;
   reviewPath: string;
   runId: string;
   sourceWordCount: number;
@@ -39,14 +46,18 @@ export async function reviewVoiceover(runId: string): Promise<VoiceoverReviewHan
       `Voiceover review requires valid voiceover evidence: ${evidence.message}`,
     );
   }
+  const renderApprovalCommand = voiceoverRenderApprovalCommand(run.runId);
+  const renderApprovalScope = voiceoverRenderApprovalScope(evidence.productionVoiceCandidate);
   return {
     audioPath: evidence.path,
     blockedActions: voiceoverReviewBlockedActions(evidence),
     durationSeconds: evidence.durationSeconds,
     mode: evidence.mode,
-    nextSafeAction: voiceoverReviewNextAction(run.runId, evidence),
+    nextSafeAction: voiceoverReviewNextAction(evidence, renderApprovalCommand),
     productionVoiceCandidate: evidence.productionVoiceCandidate,
     quality: evidence.quality,
+    renderApprovalCommand,
+    renderApprovalScope,
     reviewPath: evidence.reviewPath,
     runId: run.runId,
     sourceWordCount: evidence.sourceWordCount,
@@ -69,17 +80,22 @@ export function formatVoiceoverReviewConsole(handoff: VoiceoverReviewHandoff): s
     `Duration: ${Math.round(handoff.durationSeconds)}s`,
     `Source words: ${handoff.sourceWordCount}`,
     `Production voice candidate: ${String(handoff.productionVoiceCandidate)}`,
+    `Render approval scope: ${handoff.renderApprovalScope}`,
+    `Render approval command: ${handoff.renderApprovalCommand}`,
     `Next safe action: ${handoff.nextSafeAction}`,
     "Still blocked:",
     ...handoff.blockedActions.map((action) => `- ${action}`),
   ].join("\n");
 }
 
-function voiceoverReviewNextAction(runId: string, evidence: PassingVoiceoverEvidence): string {
+function voiceoverReviewNextAction(
+  evidence: PassingVoiceoverEvidence,
+  renderApprovalCommand: string,
+): string {
   if (evidence.productionVoiceCandidate) {
-    return `Listen to ${evidence.reviewPath}; if voice quality passes, run pnpm producer approve render --run ${runId}`;
+    return `Listen to ${evidence.reviewPath}; if voice quality passes, run ${renderApprovalCommand}`;
   }
-  return `Listen to ${evidence.reviewPath}; approve render only for a local timing draft with pnpm producer approve render --run ${runId}`;
+  return `Listen to ${evidence.reviewPath}; approve render only for a local timing draft with ${renderApprovalCommand}`;
 }
 
 function voiceoverReviewBlockedActions(evidence: PassingVoiceoverEvidence): string[] {

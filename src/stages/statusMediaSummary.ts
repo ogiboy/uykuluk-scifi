@@ -1,47 +1,15 @@
-export type EvidenceStatus = {
-  blockedActions?: unknown[];
-  currentState?: unknown;
-  draftRender?: EvidenceMediaStatus;
-  nextRecommendedCommand?: unknown;
-  renderPlan?: EvidenceMediaStatus;
-  runId?: unknown;
-  voiceoverAudio?: EvidenceMediaStatus;
-};
+import type {
+  EvidenceMediaStatus,
+  EvidenceStatus,
+  ProductionMediaStatus,
+} from "./statusMediaTypes.js";
 
-export type EvidenceMediaStatus = {
-  artifactCount?: unknown;
-  assetCount?: unknown;
-  durationSeconds?: unknown;
-  ffmpegReviewCommand?: unknown;
-  mediaProbe?: unknown;
-  message?: unknown;
-  mode?: unknown;
-  productionVoiceCandidate?: unknown;
-  renderApproval?: unknown;
-  sourceFrameCadence?: unknown;
-  sourceFrameCount?: unknown;
-  sourceFrameSegments?: unknown;
-  sourceWordCount?: unknown;
-  status?: unknown;
-  timelineSegments?: unknown;
-  voiceoverMode?: unknown;
-  voiceoverProductionVoiceCandidate?: unknown;
-};
-
-export type EvidenceStatusValidationResult =
-  | { evidence: EvidenceStatus; kind: "present" }
-  | { kind: "missing" }
-  | { kind: "invalid"; message: string }
-  | { kind: "stale"; message: string };
-
-export type ProductionMediaStatus = {
-  artifactPath: string;
-  detail?: string;
-  evidenceKey: "draftRender" | "renderPlan" | "voiceoverAudio";
-  label: string;
-  reviewCommand?: string;
-  status: "block" | "missing" | "pass" | "recorded";
-};
+export type {
+  EvidenceMediaStatus,
+  EvidenceStatus,
+  EvidenceStatusValidationResult,
+  ProductionMediaStatus,
+} from "./statusMediaTypes.js";
 
 const PRODUCTION_MEDIA_ARTIFACTS = [
   { evidenceKey: "renderPlan", label: "Render plan", path: "production/render_plan.json" },
@@ -64,6 +32,12 @@ export function productionMediaStatus(
       detail: mediaArtifactDetail(item.evidenceKey, evidence?.[item.evidenceKey], status),
       evidenceKey: item.evidenceKey,
       label: item.label,
+      ...mediaRenderApprovalGuidance(
+        run.runId,
+        item.evidenceKey,
+        evidence?.[item.evidenceKey],
+        status,
+      ),
       reviewCommand: mediaReviewCommand(run.runId, item.evidenceKey, status),
       status,
     };
@@ -73,6 +47,28 @@ export function productionMediaStatus(
 export function formatProductionMediaStatus(artifact: ProductionMediaStatus): string {
   const detail = artifact.detail ? ` (${artifact.detail})` : "";
   return `- ${artifact.label}: ${artifact.status}${detail}`;
+}
+
+function mediaRenderApprovalGuidance(
+  runId: string | undefined,
+  evidenceKey: ProductionMediaStatus["evidenceKey"],
+  evidence: EvidenceMediaStatus | undefined,
+  status: ProductionMediaStatus["status"],
+): Pick<ProductionMediaStatus, "renderApprovalCommand" | "renderApprovalScope"> {
+  if (
+    !runId ||
+    evidenceKey !== "voiceoverAudio" ||
+    status !== "pass" ||
+    typeof evidence?.productionVoiceCandidate !== "boolean"
+  ) {
+    return {};
+  }
+  return {
+    renderApprovalCommand: `pnpm producer approve render --run ${runId}`,
+    renderApprovalScope: evidence.productionVoiceCandidate
+      ? "production-voice-candidate"
+      : "timing-draft-only",
+  };
 }
 
 function mediaArtifactStatus(

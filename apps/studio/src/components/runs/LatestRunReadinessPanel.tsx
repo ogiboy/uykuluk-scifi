@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
 import type { StudioRunSummary } from "@/lib/runSummaries";
-import { formatRunReviewCounts } from "@/lib/runSummaryCopy";
+import { formatRunRenderDecision, formatRunReviewCounts } from "@/lib/runSummaryCopy";
 
 type LatestRunReadinessPanelProps = Readonly<{
   latestRun: StudioRunSummary | null;
@@ -42,6 +42,7 @@ function LatestRunSummary({ latestRun }: Readonly<{ latestRun: StudioRunSummary 
           { label: "State", value: latestRun.state },
           { label: "Readiness", value: latestRun.readinessStatus },
           { label: "Evidence", value: latestRun.evidenceStatus },
+          { label: "Decision", value: formatRunRenderDecision(latestRun) },
           { label: "Blocks", value: formatStudioInteger(latestRun.blockedActionCount) },
           { label: "Updated", value: latestRun.updatedAt || "unknown" },
         ]}
