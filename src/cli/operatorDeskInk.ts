@@ -2,10 +2,12 @@ import React, { useState } from "react";
 import { Box, render, Text, useApp, useInput } from "ink";
 import {
   formatOperatorDeskBlockedActionLines,
+  formatOperatorDeskDiagnosticLines,
   formatOperatorDeskReadinessLines,
   formatOperatorDeskRecentArtifactLines,
   formatOperatorDeskWorkflowLines,
 } from "./operatorDeskFormatting.js";
+import { formatOperatorDeskCommandLines } from "./operatorDeskCommands.js";
 import { formatOperatorDeskMediaArtifactLine } from "./operatorDeskModel.js";
 import type {
   OperatorDeskRun,
@@ -149,6 +151,9 @@ function SelectedRun({ run }: { run: OperatorDeskSelectedRun }): React.ReactElem
     ...formatOperatorDeskBlockedActionLines(run.blockedActions).map((line, index) =>
       React.createElement(Text, { key: `blocked:${index}:${line}` }, line),
     ),
+    ...formatOperatorDeskDiagnosticLines(run.diagnostics).map((line, index) =>
+      React.createElement(Text, { key: `diagnostics:${index}:${line}` }, line),
+    ),
     ...formatOperatorDeskWorkflowLines(run.workflowProgress).map((line, index) =>
       React.createElement(Text, { key: `workflow:${index}:${line}` }, line),
     ),
@@ -156,6 +161,9 @@ function SelectedRun({ run }: { run: OperatorDeskSelectedRun }): React.ReactElem
       Text,
       { color: "green" },
       `Next safe action: ${run.nextRecommendedCommand}`,
+    ),
+    ...formatOperatorDeskCommandLines(run.commandQueue).map((line, index) =>
+      React.createElement(Text, { key: `commands:${index}:${line}` }, line),
     ),
     React.createElement(Text, { bold: true }, "Production media"),
     ...run.mediaArtifacts.map((artifact) =>

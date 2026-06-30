@@ -4,13 +4,19 @@ import type { RunState } from "../core/state.js";
 import type { RenderDecisionStatus } from "../stages/renderDecisionStatus.js";
 import { readRunStatus, type RunStatusSummary } from "../stages/status.js";
 import { formatProductionMediaStatus, type ProductionMediaStatus } from "../stages/statusMedia.js";
+import { buildStatusWorkflowProgress, type StatusWorkflowStep } from "../stages/statusWorkflow.js";
+import {
+  buildOperatorDeskCommandQueue,
+  formatOperatorDeskCommandLines,
+  type OperatorDeskCommand,
+} from "./operatorDeskCommands.js";
 import {
   formatOperatorDeskBlockedActionLines,
+  formatOperatorDeskDiagnosticLines,
   formatOperatorDeskReadinessLines,
   formatOperatorDeskRecentArtifactLines,
   formatOperatorDeskWorkflowLines,
 } from "./operatorDeskFormatting.js";
-import { buildStatusWorkflowProgress, type StatusWorkflowStep } from "../stages/statusWorkflow.js";
 
 const RECENT_RUN_LIMIT = 8;
 
@@ -35,6 +41,8 @@ export type OperatorDeskRun = {
 
 export type OperatorDeskSelectedRun = OperatorDeskRun & {
   blockedActions: string[];
+  commandQueue: OperatorDeskCommand[];
+  diagnostics: RunStatusSummary["diagnostics"];
   mediaArtifacts: RunStatusSummary["mediaArtifacts"];
   readiness: RunStatusSummary["readiness"];
   recentArtifacts: string[];
@@ -130,11 +138,14 @@ export function formatOperatorDeskPlain(model: OperatorDeskViewModel): string {
     `Approvals/artifacts/warnings: ${run.approvalCount} approvals, ${run.artifactCount} artifacts, ${run.warningCount} warnings`,
     `Blocked actions: ${run.blockedActionCount ?? "unknown"}`,
     ...formatOperatorDeskBlockedActionLines(run.blockedActions),
+    ...formatOperatorDeskDiagnosticLines(run.diagnostics),
     "",
     ...formatOperatorDeskWorkflowLines(run.workflowProgress),
     "",
     "Next safe action:",
     `  ${run.nextRecommendedCommand}`,
+    "",
+    ...formatOperatorDeskCommandLines(run.commandQueue),
     "",
     "Production media:",
     ...run.mediaArtifacts.map(formatOperatorDeskMediaArtifactLine),
@@ -192,6 +203,8 @@ function selectedRun(status: RunStatusSummary): OperatorDeskSelectedRun {
   return {
     ...compactRun(status),
     blockedActions: status.blockedActions,
+    commandQueue: buildOperatorDeskCommandQueue(status),
+    diagnostics: status.diagnostics,
     mediaArtifacts: status.mediaArtifacts,
     readiness: status.readiness,
     recentArtifacts: status.recentArtifacts,

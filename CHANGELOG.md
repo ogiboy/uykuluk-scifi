@@ -9,6 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
+_No unreleased changes yet._
+
+## v0.53.0 (2026-06-30)
+
 ### Features
 
 - show intro/outro source-frame paths in render-plan review handoffs and storyboard contact sheets

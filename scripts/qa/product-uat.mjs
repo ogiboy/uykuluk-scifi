@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import {
   assertProductCondition,
@@ -56,6 +56,30 @@ try {
     label: "package is blocked before script approval",
     scenario: "incorrect order",
   });
+  await writeRunDiagnostic({
+    message: "Invalid ideas provider response after repair attempt: ideas.3.fit: repeated framing.",
+    relativePath: "diagnostics/ideas_generation_failure.json",
+    runId: blockedRunId,
+    stage: "ideas",
+  });
+  const diagnosticDesk = run([pnpm, "producer", "desk", "--run", blockedRunId, "--plain"], {
+    expectOutput: "Diagnostics:",
+    label: "operator desk surfaces safe run diagnostics",
+    scenario: "operator desk",
+  });
+  assertCondition(
+    diagnosticDesk.stdout.includes(
+      "diagnostics/ideas_generation_failure.json [ideas]: Invalid ideas provider response",
+    ),
+    "operator desk shows diagnostic summary text",
+    "operator desk",
+  );
+  assertCondition(
+    diagnosticDesk.stdout.includes("Operator commands:") &&
+      diagnosticDesk.stdout.includes(`pnpm producer readiness --run ${blockedRunId}`),
+    "operator desk shows copyable commands with diagnostics",
+    "operator desk",
+  );
 
   const renderedRunId = await createVoiceReadyRun({
     assertCondition,
@@ -132,6 +156,23 @@ try {
     label: "status surfaces render-decision review command",
     scenario: "happy path",
   });
+  const renderedDesk = run([pnpm, "producer", "desk", "--run", renderedRunId, "--plain"], {
+    expectOutput: "Operator commands:",
+    label: "operator desk surfaces review command queue",
+    scenario: "operator desk",
+  });
+  assertCondition(
+    renderedDesk.stdout.includes(
+      `- Review render decision: pnpm producer review render-decision --run ${renderedRunId}`,
+    ),
+    "operator desk shows render-decision review command",
+    "operator desk",
+  );
+  assertCondition(
+    renderedDesk.stdout.includes("Render decision: accepted-for-local-review by product-uat"),
+    "operator desk shows recorded render decision",
+    "operator desk",
+  );
   run([pnpm, "producer", "upload", "private", "--run", renderedRunId], {
     expectFailure: true,
     expectOutput: "requires explicit upload approval",
@@ -248,6 +289,43 @@ function assertCondition(condition, label, scenario) {
 async function appendToProductFile({ content, relativePath }) {
   const { appendFile } = await import("node:fs/promises");
   await appendFile(path.join(workdir, relativePath), content, "utf8");
+}
+
+/**
+ * Writes a safe run diagnostic fixture and records it in the persisted run artifacts list.
+ *
+ * @param {Object} input - Diagnostic fixture input.
+ * @param {string} input.message - Safe diagnostic message.
+ * @param {string} input.relativePath - Diagnostic artifact path relative to the run directory.
+ * @param {string} input.runId - Run id that owns the diagnostic.
+ * @param {string} input.stage - Diagnostic stage label.
+ */
+async function writeRunDiagnostic({ message, relativePath, runId, stage }) {
+  const target = path.join(workdir, "runs", runId, relativePath);
+  await mkdir(path.dirname(target), { recursive: true });
+  await writeFile(
+    target,
+    `${JSON.stringify(
+      {
+        createdAt: new Date().toISOString(),
+        message,
+        model: "mock",
+        providerMode: "mock",
+        runId,
+        stage,
+        state: "NEW",
+        thinkingMode: "default",
+      },
+      null,
+      2,
+    )}\n`,
+    "utf8",
+  );
+
+  const statePath = path.join(workdir, "runs", runId, "state.json");
+  const state = JSON.parse(await readFile(statePath, "utf8"));
+  state.artifacts = Array.from(new Set([...(state.artifacts ?? []), relativePath]));
+  await writeFile(statePath, `${JSON.stringify(state, null, 2)}\n`, "utf8");
 }
 
 /**
