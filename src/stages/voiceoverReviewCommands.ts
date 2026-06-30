@@ -1,6 +1,6 @@
-export type VoiceoverRenderApprovalScope = "production-voice-candidate" | "timing-draft-only";
+import { voiceoverAudioPath } from "./voiceoverPaths.js";
 
-const voiceoverAudioPath = "production/audio/voiceover.wav";
+export type VoiceoverRenderApprovalScope = "production-voice-candidate" | "timing-draft-only";
 
 /**
  * Builds the render approval command for a voiceover review.

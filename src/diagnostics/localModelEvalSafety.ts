@@ -24,7 +24,7 @@ export function safeLocalModelEvalErrorMessage(error: unknown): string {
   if (error.message.startsWith("llama.cpp provider error")) {
     return "llama.cpp provider reported an error.";
   }
-  return error.message;
+  return "Provider evaluation failed.";
 }
 
 export function maxOutputTokensForEvalCheck(

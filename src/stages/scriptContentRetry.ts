@@ -187,10 +187,13 @@ function safeContractFailure(message: string | undefined): string {
   if (/Unexpected token|not valid JSON|JSON/u.test(firstLine)) {
     return "expected valid JSON";
   }
-  return firstLine
+  const normalized = firstLine
     .replace(/^Invalid script section provider response:\s*/u, "")
-    .replace(/^Invalid script continuation provider response:\s*/u, "")
-    .slice(0, 180);
+    .replace(/^Invalid script continuation provider response:\s*/u, "");
+  if (/missing|required|label|contract|schema|field|shape|format/iu.test(normalized)) {
+    return normalized.slice(0, 180);
+  }
+  return fallback;
 }
 
 function renderScriptContentRetryPrompt(

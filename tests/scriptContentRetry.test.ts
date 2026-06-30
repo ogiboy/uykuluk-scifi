@@ -8,7 +8,7 @@ import type {
 
 describe("script content retry", () => {
   it("retries safe contract parse failures without persisting raw provider text", async () => {
-    const provider = new FlakyJsonProvider();
+    const provider = new FlakyJsonProvider("not json");
 
     const result = await generateScriptContentWithBlockerRetry({
       parse: (text) => {
@@ -40,16 +40,49 @@ describe("script content retry", () => {
     expect(result.blockerRetry?.blockers).not.toContain("not json");
     expect(provider.prompts[1]).toContain("SCRIPT_CONTENT_RETRY");
   });
+
+  it("does not echo unknown parser exception text into retries", async () => {
+    const provider = new FlakyJsonProvider(JSON.stringify({ text: "throw-secret" }));
+
+    const result = await generateScriptContentWithBlockerRetry({
+      parse: (text) => {
+        const payload = JSON.parse(text) as { text: string };
+        if (payload.text === "throw-secret") {
+          throw new Error("raw model output: local-secret");
+        }
+        return payload.text;
+      },
+      prompt: "Return JSON.",
+      provider,
+      request: {
+        model: "mock-flaky-json",
+        temperature: 0.1,
+        maxTokens: 200,
+        responseFormat: { type: "object" },
+      },
+      source: "script section draft provider response for hook",
+      textOf: (text) => text,
+    });
+
+    expect(result.parsed).toBe("Anlatıcı: Geçerli ve sakin bir Türkçe cümle kurulur.");
+    expect(result.blockerRetry?.blockers).toContain(
+      "provider response did not match the requested JSON contract",
+    );
+    expect(result.blockerRetry?.blockers).not.toContain("local-secret");
+    expect(provider.prompts[1]).not.toContain("local-secret");
+  });
 });
 
 class FlakyJsonProvider implements LlmProvider {
   readonly prompts: string[] = [];
 
+  constructor(private readonly firstText: string) {}
+
   async generateText(input: GenerateTextInput): Promise<GenerateTextResult> {
     this.prompts.push(input.prompt);
     const text =
       this.prompts.length === 1
-        ? "not json"
+        ? this.firstText
         : JSON.stringify({
             text: "Anlatıcı: Geçerli ve sakin bir Türkçe cümle kurulur.",
           });

@@ -9,6 +9,7 @@ import {
   localModelEvalMarkdownPath,
   runLocalModelEval,
 } from "../src/diagnostics/localModelEval";
+import { safeLocalModelEvalErrorMessage } from "../src/diagnostics/localModelEvalSafety";
 import { pathExists } from "../src/utils/fs";
 import { readJsonFile } from "../src/utils/json";
 import { useTempProject } from "./helpers";
@@ -139,6 +140,15 @@ describe("local model evaluation", () => {
     expect(await readFile(localModelEvalMarkdownPath(), "utf8")).not.toContain(
       "local-secret-response",
     );
+  });
+
+  it("does not echo unknown eval exception messages", () => {
+    expect(safeLocalModelEvalErrorMessage(new Error("raw model output: local-secret"))).toBe(
+      "Provider evaluation failed.",
+    );
+    expect(
+      safeLocalModelEvalErrorMessage(new Error("llama.cpp returned invalid JSON: local-secret")),
+    ).toBe("llama.cpp provider returned invalid JSON.");
   });
 
   it("applies eval-only LLM overrides without mutating project config", async () => {
