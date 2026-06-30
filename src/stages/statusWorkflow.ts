@@ -1,60 +1,68 @@
 import { orderedStates, type RunState } from "../core/state.js";
-import type { RenderDecisionStatus } from "../stages/renderDecisionStatus.js";
-import type { RunStatusSummary } from "../stages/status.js";
-import type { ProductionMediaStatus } from "../stages/statusMedia.js";
+import type { ProductionMediaStatus } from "./statusMediaSummary.js";
 
-export type OperatorDeskWorkflowStepStatus = "blocked" | "current" | "done" | "pending";
+export type StatusWorkflowStepStatus = "blocked" | "current" | "done" | "pending";
 
-export type OperatorDeskWorkflowStep = {
+export type StatusWorkflowRenderDecision =
+  | { kind: "invalid" | "stale"; message: string }
+  | { kind: "missing" | "present"; message?: string };
+
+export type StatusWorkflowInput = {
+  mediaArtifacts: readonly ProductionMediaStatus[];
+  readinessStatus: "blocked" | "invalid" | "missing" | "passed" | "stale";
+  renderDecision: StatusWorkflowRenderDecision;
+  state: RunState;
+};
+
+export type StatusWorkflowStep = {
   detail: string;
   label: string;
-  status: OperatorDeskWorkflowStepStatus;
+  status: StatusWorkflowStepStatus;
 };
 
 /**
- * Builds the operator workflow progress shown in the local desk.
+ * Builds read-only progress rows for the v1 local production workflow.
  *
- * This is a read-only projection of the CLI/core state, readiness, media evidence, approvals, and render-decision status.
+ * This projection consumes the canonical run state plus current readiness/media/decision summaries;
+ * it does not own transitions or infer approvals from files.
  *
- * @param summary - The shared run status summary used by status and Studio services.
- * @returns Ordered workflow progress rows for the v1 local production loop.
+ * @param input - Current run state and status summaries.
+ * @returns Ordered workflow progress rows for operator surfaces.
  */
-export function buildOperatorDeskWorkflowProgress(
-  summary: RunStatusSummary,
-): OperatorDeskWorkflowStep[] {
-  const media = mediaByKey(summary.mediaArtifacts);
+export function buildStatusWorkflowProgress(input: StatusWorkflowInput): StatusWorkflowStep[] {
+  const media = mediaByKey(input.mediaArtifacts);
   return [
-    stateStep(summary.run.state, "Ideas", "IDEAS_GENERATED", "NEW", "Generate ideas."),
+    stateStep(input.state, "Ideas", "IDEAS_GENERATED", "NEW", "Generate ideas."),
     stateStep(
-      summary.run.state,
+      input.state,
       "Idea approval",
       "IDEA_APPROVED",
       "IDEAS_GENERATED",
       "Approve one idea.",
     ),
     stateStep(
-      summary.run.state,
+      input.state,
       "Script draft",
       "SCRIPT_GENERATED",
       "IDEA_APPROVED",
       "Generate the script.",
     ),
     stateStep(
-      summary.run.state,
+      input.state,
       "Script review",
       "SCRIPT_REVIEWED",
       "SCRIPT_GENERATED",
       "Review script blockers and warnings.",
     ),
     stateStep(
-      summary.run.state,
+      input.state,
       "Script approval",
       "SCRIPT_APPROVED",
       "SCRIPT_REVIEWED",
       "Approve the reviewed script digest.",
     ),
     stateStep(
-      summary.run.state,
+      input.state,
       "Production package",
       "PRODUCTION_PACKAGE_GENERATED",
       "SCRIPT_APPROVED",
@@ -63,24 +71,24 @@ export function buildOperatorDeskWorkflowProgress(
     mediaStep(
       "Render plan",
       media.renderPlan,
-      stateAtLeast(summary.run.state, "PRODUCTION_PACKAGE_GENERATED"),
+      stateAtLeast(input.state, "PRODUCTION_PACKAGE_GENERATED"),
       "Generate and review the contact sheet.",
     ),
-    readinessStep(summary),
+    readinessStep(input),
     mediaStep(
       "Voiceover",
       media.voiceoverAudio,
-      summary.readiness.status === "passed",
+      input.readinessStatus === "passed",
       "Generate and review local audio.",
     ),
-    renderApprovalStep(summary, media.voiceoverAudio),
+    renderApprovalStep(input.state, media.voiceoverAudio),
     mediaStep(
       "Draft render",
       media.draftRender,
-      stateAtLeast(summary.run.state, "RENDER_APPROVED"),
+      stateAtLeast(input.state, "RENDER_APPROVED"),
       "Render the local MP4 draft.",
     ),
-    renderDecisionStep(summary.renderDecision, summary.run.state),
+    renderDecisionStep(input.renderDecision, input.state),
   ];
 }
 
@@ -90,18 +98,14 @@ function stateStep(
   doneState: RunState,
   activeState: RunState,
   detail: string,
-): OperatorDeskWorkflowStep {
+): StatusWorkflowStep {
   if (currentState === "FAILED") {
     return { detail: "Run failed before this gate completed.", label, status: "blocked" };
   }
   if (stateAtLeast(currentState, doneState)) {
     return { detail: "Completed.", label, status: "done" };
   }
-  return {
-    detail,
-    label,
-    status: currentState === activeState ? "current" : "pending",
-  };
+  return { detail, label, status: currentState === activeState ? "current" : "pending" };
 }
 
 function mediaStep(
@@ -109,7 +113,7 @@ function mediaStep(
   media: ProductionMediaStatus | undefined,
   canStart: boolean,
   detail: string,
-): OperatorDeskWorkflowStep {
+): StatusWorkflowStep {
   if (media?.status === "pass") {
     return { detail: "Verified by current evidence.", label, status: "done" };
   }
@@ -123,19 +127,15 @@ function mediaStep(
   return { detail, label, status: canStart ? "current" : "pending" };
 }
 
-function readinessStep(summary: RunStatusSummary): OperatorDeskWorkflowStep {
-  if (summary.readiness.status === "passed") {
+function readinessStep(input: StatusWorkflowInput): StatusWorkflowStep {
+  if (input.readinessStatus === "passed") {
     return {
       detail: "Evidence and readiness are current.",
       label: "Estimate/evidence/readiness",
       status: "done",
     };
   }
-  if (
-    summary.readiness.status === "blocked" ||
-    summary.readiness.status === "invalid" ||
-    summary.readiness.status === "stale"
-  ) {
+  if (["blocked", "invalid", "stale"].includes(input.readinessStatus)) {
     return {
       detail: "Resolve readiness attention before local voice/render work.",
       label: "Estimate/evidence/readiness",
@@ -145,18 +145,18 @@ function readinessStep(summary: RunStatusSummary): OperatorDeskWorkflowStep {
   return {
     detail: "Generate the cost estimate, evidence bundle, and readiness report.",
     label: "Estimate/evidence/readiness",
-    status: stateAtLeast(summary.run.state, "PRODUCTION_PACKAGE_GENERATED") ? "current" : "pending",
+    status: stateAtLeast(input.state, "PRODUCTION_PACKAGE_GENERATED") ? "current" : "pending",
   };
 }
 
 function renderApprovalStep(
-  summary: RunStatusSummary,
+  state: RunState,
   voiceover: ProductionMediaStatus | undefined,
-): OperatorDeskWorkflowStep {
-  if (stateAtLeast(summary.run.state, "RENDER_APPROVED")) {
+): StatusWorkflowStep {
+  if (stateAtLeast(state, "RENDER_APPROVED")) {
     return { detail: "Render approval is recorded.", label: "Render approval", status: "done" };
   }
-  if (summary.run.state === "READY_FOR_MANUAL_PRODUCTION" && voiceover?.status === "pass") {
+  if (state === "READY_FOR_MANUAL_PRODUCTION" && voiceover?.status === "pass") {
     return {
       detail: "Approve the exact current render inputs before rendering.",
       label: "Render approval",
@@ -171,12 +171,12 @@ function renderApprovalStep(
 }
 
 function renderDecisionStep(
-  decision: RenderDecisionStatus,
+  decision: StatusWorkflowRenderDecision,
   state: RunState,
-): OperatorDeskWorkflowStep {
+): StatusWorkflowStep {
   if (decision.kind === "present") {
     return {
-      detail: "Local draft decision is recorded.",
+      detail: decision.message ?? "Local draft decision is recorded.",
       label: "Operator decision",
       status: "done",
     };

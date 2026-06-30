@@ -10,10 +10,7 @@ import {
   formatOperatorDeskRecentArtifactLines,
   formatOperatorDeskWorkflowLines,
 } from "./operatorDeskFormatting.js";
-import {
-  buildOperatorDeskWorkflowProgress,
-  type OperatorDeskWorkflowStep,
-} from "./operatorDeskWorkflow.js";
+import { buildStatusWorkflowProgress, type StatusWorkflowStep } from "../stages/statusWorkflow.js";
 
 const RECENT_RUN_LIMIT = 8;
 
@@ -42,7 +39,7 @@ export type OperatorDeskSelectedRun = OperatorDeskRun & {
   readiness: RunStatusSummary["readiness"];
   recentArtifacts: string[];
   renderDecision: RenderDecisionStatus;
-  workflowProgress: OperatorDeskWorkflowStep[];
+  workflowProgress: StatusWorkflowStep[];
 };
 
 export type OperatorDeskViewModel = {
@@ -198,7 +195,12 @@ function selectedRun(status: RunStatusSummary): OperatorDeskSelectedRun {
     readiness: status.readiness,
     recentArtifacts: status.recentArtifacts,
     renderDecision: status.renderDecision,
-    workflowProgress: buildOperatorDeskWorkflowProgress(status),
+    workflowProgress: buildStatusWorkflowProgress({
+      mediaArtifacts: status.mediaArtifacts,
+      readinessStatus: status.readiness.status,
+      renderDecision: status.renderDecision,
+      state: status.run.state,
+    }),
   };
 }
 

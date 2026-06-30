@@ -1,5 +1,5 @@
 import { formatStatusReadiness, type StatusReadinessSummary } from "../stages/statusReadiness.js";
-import type { OperatorDeskWorkflowStep } from "./operatorDeskWorkflow.js";
+import type { StatusWorkflowStep } from "../stages/statusWorkflow.js";
 
 /**
  * Formats readiness diagnostics for the operator desk.
@@ -45,9 +45,7 @@ export function formatOperatorDeskRecentArtifactLines(
  * @param workflow - Ordered workflow progress rows.
  * @returns Operator-facing workflow progress lines.
  */
-export function formatOperatorDeskWorkflowLines(
-  workflow: readonly OperatorDeskWorkflowStep[],
-): string[] {
+export function formatOperatorDeskWorkflowLines(workflow: readonly StatusWorkflowStep[]): string[] {
   return [
     "Workflow progress:",
     ...workflow.map((step) => `- [${step.status}] ${step.label}: ${step.detail}`),

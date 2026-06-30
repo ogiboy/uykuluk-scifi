@@ -15,7 +15,7 @@ future generated release notes can be inserted predictably.
 - add `producer review voice` to show the local voiceover review handoff before render approval
 - open the local operator desk when `producer` runs without a subcommand
 - show readiness attention and blocked action details in `producer desk`
-- show v1 workflow progress in `producer desk`
+- show shared v1 workflow progress in `producer desk` and Studio run detail
 
 ### Fixes
 
