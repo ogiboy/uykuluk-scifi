@@ -4,13 +4,19 @@ import type { RunState } from "../core/state.js";
 import type { RenderDecisionStatus } from "../stages/renderDecisionStatus.js";
 import { readRunStatus, type RunStatusSummary } from "../stages/status.js";
 import { formatProductionMediaStatus, type ProductionMediaStatus } from "../stages/statusMedia.js";
+import { buildStatusWorkflowProgress, type StatusWorkflowStep } from "../stages/statusWorkflow.js";
+import {
+  buildOperatorDeskCommandQueue,
+  formatOperatorDeskCommandLines,
+  type OperatorDeskCommand,
+} from "./operatorDeskCommands.js";
 import {
   formatOperatorDeskBlockedActionLines,
+  formatOperatorDeskDiagnosticLines,
   formatOperatorDeskReadinessLines,
   formatOperatorDeskRecentArtifactLines,
   formatOperatorDeskWorkflowLines,
 } from "./operatorDeskFormatting.js";
-import { buildStatusWorkflowProgress, type StatusWorkflowStep } from "../stages/statusWorkflow.js";
 
 const RECENT_RUN_LIMIT = 8;
 
@@ -31,11 +37,6 @@ export type OperatorDeskRun = {
   state: RunState;
   updatedAt: string;
   warningCount: number;
-};
-
-export type OperatorDeskCommand = {
-  command: string;
-  label: string;
 };
 
 export type OperatorDeskSelectedRun = OperatorDeskRun & {
@@ -171,39 +172,6 @@ export function formatOperatorDeskMediaArtifactLine(artifact: ProductionMediaSta
 }
 
 /**
- * Formats the copyable operator command queue for desk output.
- *
- * @param commands - Commands derived from the current status summary.
- * @returns Lines for the operator command section.
- */
-export function formatOperatorDeskCommandLines(commands: readonly OperatorDeskCommand[]): string[] {
-  if (commands.length === 0) {
-    return ["Operator commands:", "- none"];
-  }
-  return ["Operator commands:", ...commands.map((item) => `- ${item.label}: ${item.command}`)];
-}
-
-/**
- * Formats safe provider/stage diagnostics for the operator desk.
- *
- * @param diagnostics - Current run diagnostic summaries.
- * @returns Lines for the diagnostics section.
- */
-export function formatOperatorDeskDiagnosticLines(
-  diagnostics: readonly RunStatusSummary["diagnostics"][number][],
-): string[] {
-  if (diagnostics.length === 0) {
-    return ["Diagnostics: none"];
-  }
-  return [
-    "Diagnostics:",
-    ...diagnostics.map(
-      (diagnostic) => `- ${diagnostic.path} [${diagnostic.stage}]: ${diagnostic.message}`,
-    ),
-  ];
-}
-
-/**
  * Creates a compact run summary for the operator desk view.
  *
  * @param status - The run status summary to convert
@@ -235,7 +203,7 @@ function selectedRun(status: RunStatusSummary): OperatorDeskSelectedRun {
   return {
     ...compactRun(status),
     blockedActions: status.blockedActions,
-    commandQueue: operatorCommandQueue(status),
+    commandQueue: buildOperatorDeskCommandQueue(status),
     diagnostics: status.diagnostics,
     mediaArtifacts: status.mediaArtifacts,
     readiness: status.readiness,
@@ -265,77 +233,4 @@ function renderDecisionSummary(decision: RenderDecisionStatus): string {
 
 function renderDecisionReviewLines(decision: RenderDecisionStatus): string[] {
   return decision.kind === "present" ? [`Render decision review: ${decision.reviewCommand}`] : [];
-}
-
-function operatorCommandQueue(status: RunStatusSummary): OperatorDeskCommand[] {
-  const commands: OperatorDeskCommand[] = [];
-  const seen = new Set<string>();
-
-  const addCommand = (label: string, command: string | null | undefined) => {
-    if (!isCopyableProducerCommand(command) || seen.has(command)) {
-      return;
-    }
-    seen.add(command);
-    commands.push({ command, label });
-  };
-
-  addCommand("Next safe action", status.nextRecommendedCommand);
-  addReadinessCommands(status.readiness, addCommand);
-  addMediaCommands(status, addCommand);
-  addRenderDecisionCommands(status.renderDecision, addCommand);
-
-  return commands;
-}
-
-function addReadinessCommands(
-  readiness: RunStatusSummary["readiness"],
-  addCommand: (label: string, command: string | null | undefined) => void,
-): void {
-  switch (readiness.status) {
-    case "missing":
-    case "invalid":
-    case "stale":
-      addCommand("Readiness", readiness.nextAction);
-      return;
-    case "blocked":
-    case "passed":
-      for (const check of readiness.attention) {
-        addCommand(`Readiness ${check.name}`, check.nextAction);
-      }
-  }
-}
-
-function addMediaCommands(
-  status: RunStatusSummary,
-  addCommand: (label: string, command: string | null | undefined) => void,
-): void {
-  for (const artifact of status.mediaArtifacts) {
-    addCommand(`Review ${lowercaseFirst(artifact.label)}`, artifact.reviewCommand);
-    if (status.run.state === "READY_FOR_MANUAL_PRODUCTION") {
-      addCommand(renderApprovalLabel(artifact.renderApprovalScope), artifact.renderApprovalCommand);
-    }
-  }
-}
-
-function addRenderDecisionCommands(
-  decision: RenderDecisionStatus,
-  addCommand: (label: string, command: string | null | undefined) => void,
-): void {
-  if (decision.kind === "present") {
-    addCommand("Review render decision", decision.reviewCommand);
-    return;
-  }
-  addCommand("Render decision", decision.nextAction);
-}
-
-function renderApprovalLabel(scope: ProductionMediaStatus["renderApprovalScope"]): string {
-  return scope === "timing-draft-only" ? "Approve timing-draft render" : "Approve render";
-}
-
-function isCopyableProducerCommand(command: string | null | undefined): command is string {
-  return typeof command === "string" && command.startsWith("pnpm producer ");
-}
-
-function lowercaseFirst(value: string): string {
-  return value.length > 0 ? `${value[0].toLowerCase()}${value.slice(1)}` : value;
 }

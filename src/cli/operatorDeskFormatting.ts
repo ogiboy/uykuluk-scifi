@@ -1,4 +1,5 @@
 import { formatStatusReadiness, type StatusReadinessSummary } from "../stages/statusReadiness.js";
+import type { RunDiagnosticSummary } from "../stages/runDiagnosticSummaryContracts.js";
 import type { StatusWorkflowStep } from "../stages/statusWorkflow.js";
 
 /**
@@ -22,6 +23,26 @@ export function formatOperatorDeskBlockedActionLines(blockedActions: readonly st
     return ["Blocked action details: none"];
   }
   return ["Blocked action details:", ...blockedActions.map((action) => `- ${action}`)];
+}
+
+/**
+ * Formats safe provider/stage diagnostics for the operator desk.
+ *
+ * @param diagnostics - Current run diagnostic summaries.
+ * @returns Lines for the diagnostics section.
+ */
+export function formatOperatorDeskDiagnosticLines(
+  diagnostics: readonly RunDiagnosticSummary[],
+): string[] {
+  if (diagnostics.length === 0) {
+    return ["Diagnostics: none"];
+  }
+  return [
+    "Diagnostics:",
+    ...diagnostics.map(
+      (diagnostic) => `- ${diagnostic.path} [${diagnostic.stage}]: ${diagnostic.message}`,
+    ),
+  ];
 }
 
 /**

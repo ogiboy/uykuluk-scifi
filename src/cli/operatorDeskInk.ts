@@ -2,15 +2,13 @@ import React, { useState } from "react";
 import { Box, render, Text, useApp, useInput } from "ink";
 import {
   formatOperatorDeskBlockedActionLines,
+  formatOperatorDeskDiagnosticLines,
   formatOperatorDeskReadinessLines,
   formatOperatorDeskRecentArtifactLines,
   formatOperatorDeskWorkflowLines,
 } from "./operatorDeskFormatting.js";
-import {
-  formatOperatorDeskCommandLines,
-  formatOperatorDeskDiagnosticLines,
-  formatOperatorDeskMediaArtifactLine,
-} from "./operatorDeskModel.js";
+import { formatOperatorDeskCommandLines } from "./operatorDeskCommands.js";
+import { formatOperatorDeskMediaArtifactLine } from "./operatorDeskModel.js";
 import type {
   OperatorDeskRun,
   OperatorDeskSelectedRun,
