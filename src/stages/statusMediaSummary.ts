@@ -3,7 +3,6 @@ import type {
   EvidenceStatus,
   ProductionMediaStatus,
 } from "./statusMediaTypes.js";
-import { voiceoverLocalPlaybackPath } from "./voiceoverReviewCommands.js";
 export type {
   EvidenceMediaStatus,
   EvidenceStatus,
@@ -20,6 +19,7 @@ const PRODUCTION_MEDIA_ARTIFACTS = [
   },
   { evidenceKey: "draftRender", label: "Draft render", path: "production/render/draft.mp4" },
 ] as const;
+const voiceoverAudioArtifactPath = PRODUCTION_MEDIA_ARTIFACTS[1].path;
 
 export function productionMediaStatus(
   run: { artifacts: readonly string[]; runId?: string },
@@ -57,7 +57,7 @@ function mediaPlaybackGuidance(
   if (typeof evidence?.localPlaybackPath === "string") {
     return { localPlaybackPath: evidence.localPlaybackPath };
   }
-  return runId ? { localPlaybackPath: voiceoverLocalPlaybackPath(runId) } : {};
+  return runId ? { localPlaybackPath: `runs/${runId}/${voiceoverAudioArtifactPath}` } : {};
 }
 
 export function formatProductionMediaStatus(artifact: ProductionMediaStatus): string {
