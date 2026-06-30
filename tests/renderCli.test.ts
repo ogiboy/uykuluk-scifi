@@ -1,6 +1,6 @@
 import path from "node:path";
 import { spawnSync } from "node:child_process";
-import { mkdir } from "node:fs/promises";
+import { mkdir, readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { artifactPath } from "../src/core/artifacts";
 import { loadRun } from "../src/core/runStore";
@@ -141,6 +141,9 @@ describe("producer render CLI", () => {
     expect(result.stdout).toContain("FFmpeg review command:");
     expect(result.stdout).toContain(artifactPath(runId, "production/render/draft.mp4"));
     expect(result.stdout).toContain("upload and publish remain disabled");
+    expect(result.stdout).toContain("After review, record exactly one local decision:");
+    expect(result.stdout).toContain(`pnpm producer decide render --run ${runId}`);
+    expect(result.stdout).toContain("--decision accepted-for-local-review");
 
     const review = runCli(["review", "render", "--run", runId]);
 
@@ -148,6 +151,14 @@ describe("producer render CLI", () => {
     expect(review.stdout).toContain("Draft render available: production/render/draft.mp4");
     expect(review.stdout).toContain("Review document: production/render/draft_review.md");
     expect(review.stdout).toContain("upload and publish remain disabled");
+    expect(review.stdout).toContain(`pnpm producer decide render --run ${runId}`);
+
+    await expect(
+      readFile(artifactPath(runId, "production/render/draft_review.md"), "utf8"),
+    ).resolves.toContain("## Decision Commands");
+    await expect(
+      readFile(artifactPath(runId, "production/render/draft_review.md"), "utf8"),
+    ).resolves.toContain(`pnpm producer decide render --run ${runId}`);
   });
 
   it("blocks render review before a draft render exists", async () => {

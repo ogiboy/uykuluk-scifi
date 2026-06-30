@@ -1,5 +1,6 @@
 import { bulletList, table } from "../utils/markdown.js";
 import { renderOperatorDecisionSection } from "./operatorReviewMarkdown.js";
+import { renderDecisionCommandTemplates } from "./renderDecisionCommands.js";
 import type { DraftRenderManifest } from "./renderEvidence.js";
 
 /**
@@ -114,9 +115,34 @@ export function renderDraftReviewMarkdown(manifest: DraftRenderManifest): string
     "",
     "Review the MP4 locally. If it is not acceptable, revise upstream artifacts and regenerate the render. Upload remains disabled until a separate future upload approval exists.",
     "",
+    ...decisionCommandSection(manifest),
     ...renderDraftDecision(manifest),
   );
   return sections.join("\n");
+}
+
+/**
+ * Builds the copy-pasteable local decision command section.
+ *
+ * @param manifest - The draft render manifest under review.
+ * @returns Markdown lines for all allowed local render-review decisions.
+ */
+function decisionCommandSection(manifest: DraftRenderManifest): string[] {
+  return [
+    "## Decision Commands",
+    "",
+    "After reviewing the local MP4, record exactly one durable local decision. These commands do not approve upload or publish.",
+    "",
+    table(
+      ["Decision", "When to use", "Command"],
+      renderDecisionCommandTemplates(manifest.runId).map((item) => [
+        item.decision,
+        item.guidance,
+        `\`${item.command}\``,
+      ]),
+    ),
+    "",
+  ];
 }
 
 /**

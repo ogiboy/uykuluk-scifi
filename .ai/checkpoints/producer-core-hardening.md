@@ -17,6 +17,18 @@ coherent, tested slices until the safe core and its evidence contracts are genui
 
 ## Current State
 
+- 2026-06-30 continuation branch/worktree: `feat/render-review-polish` at
+  `/Users/ogiboy/.codex/worktrees/894d/uykuluk-scifi`, pushed to `origin/feat/render-review-polish`.
+- PR #100 (`feat: improve operator delivery surfaces`) was merged into `main` with merge commit
+  `b2b4c7c80202cd2de7e9e13fd0eaf47c2d874c56`.
+- Current branch is intentionally grouping related render-review/product polish before opening the
+  next PR.
+- Completed current-branch slices:
+  - `0c5e1f9 fix(operator): use desk render status in ink`
+  - `09acc80 feat(render): expand plan review guidance`
+  - `d0943ce feat(render): guide draft decisions`
+- Current branch state: no active implementation slice after the draft-render decision-command
+  handoff; continue only with related render-review/product polish before opening the grouped PR.
 - 2026-06-29 continuation branch/worktree: `feat/render-review-command` at
   `/Users/ogiboy/.codex/worktrees/894d/uykuluk-scifi`, pushed to
   `origin/feat/render-review-command`.
@@ -205,6 +217,16 @@ coherent, tested slices until the safe core and its evidence contracts are genui
 
 ## Latest Verification
 
+- 2026-06-30 render-review-polish targeted verification:
+  - `pnpm exec vitest run tests/renderPlan.test.ts tests/renderPlanReview.test.ts tests/renderPlanCli.test.ts tests/operatorDesk.test.ts`
+    passed for render-plan review and operator desk polish.
+  - `pnpm typecheck`, `pnpm lint`, `pnpm format:check`, `pnpm changelog:check`, and
+    `pnpm release:check` passed after `feat(render): expand plan review guidance`.
+  - `pnpm exec vitest run tests/renderCli.test.ts tests/renderDecision.test.ts tests/renderReviewValidation.test.ts tests/render.test.ts`
+    passed for the draft-render decision-command handoff.
+  - `pnpm typecheck`, `pnpm lint`, `pnpm changelog:check`, and `pnpm release:check` passed for the
+    same decision-command slice; `.ai/checkpoints/producer-core-hardening.md` then required Prettier
+    formatting.
 - 2026-06-29 render-operator branch targeted verification:
   - Verified render handoff and read-only render review command changes with
     `pnpm test tests/renderCli.test.ts tests/render.test.ts tests/renderApprovalGate.test.ts`.
@@ -310,13 +332,14 @@ coherent, tested slices until the safe core and its evidence contracts are genui
 
 ## Remaining Work
 
-1. Continue the current `feat/render-review-command` branch with one or two more product-facing
-   render-operator production-loop slices if they materially improve reviewable draft production.
-2. Before opening the grouped PR, refresh from `origin/main`, run broader gates in proportion to
+1. Push `d0943ce feat(render): guide draft decisions` to `origin/feat/render-review-polish`.
+2. Continue one or two more product-facing local production-loop slices only if they materially
+   improve reviewable draft production or operator decision clarity.
+3. Before opening the grouped PR, refresh from `origin/main`, run broader gates in proportion to
    accumulated scope (`pnpm check`, `pnpm qa:usage`, `pnpm version:plan`), then open a single PR.
-3. After the PR opens, review CodeRabbit/GitHub comments and fix still-valid findings in the same PR
+4. After the PR opens, review CodeRabbit/GitHub comments and fix still-valid findings in the same PR
    instead of opening follow-up micro PRs.
-4. Continue qwen3 prompt/label/repetition hardening only when model/runtime evaluation work is
+5. Continue qwen3 prompt/label/repetition hardening only when model/runtime evaluation work is
    explicitly resumed. Current live ideas can pass parser after repair but remain weak for
    production approval, and real `no_think` script retries still fail closed on malformed production
    labels or assembled repeated sentence loops.
@@ -333,8 +356,7 @@ coherent, tested slices until the safe core and its evidence contracts are genui
   `openat` semantics.
 - Production-package manifests provide consistency, not authenticity; cryptographic tamper evidence
   remains separate roadmap work.
-- Current sandbox cannot stage or commit because the common worktree git index is outside the
-  writable root. Safe fallback is to preserve the dirty worktree and avoid claiming a committed
-  slice until the user or host grants git write access.
+- The previous git-index write blocker is resolved in the current Codex desktop context; commits and
+  pushes have succeeded from `/Users/ogiboy/.codex/worktrees/894d/uykuluk-scifi`.
 - qwen3:8b remains useful for fail-closed local QA but is not yet producing production-ready ideas
   reliably; prompt tuning is still required before approving another live idea.

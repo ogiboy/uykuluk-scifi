@@ -13,6 +13,7 @@ future generated release notes can be inserted predictably.
 
 - expand render-plan review handoffs with visual rhythm checks, timing ranges, asset role counts,
   background reuse, and revision guidance
+- print copy-pasteable local render-decision commands in draft-render review handoffs
 
 ## v0.51.0 (2026-06-30)
 

@@ -87,10 +87,12 @@
   readiness summaries, validates the output with `ffprobe` media stream evidence, and writes an
   operator-readable final local review checklist. The non-JSON CLI handoff and read-only
   `producer review render` command point to the MP4, manifest, review document, and local-only next
-  action, with deterministic-reference audio labeled as a local timing draft. CLI status, evidence
-  Markdown, and the read-only Studio production-media panel surface the same review command only
-  when current draft-render evidence passes, and rendered runs use the read-only review command as
-  their next safe action with upload/public-scheduled publish still disabled.
+  action plus copy-pasteable `producer decide render` command templates for recording exactly one
+  durable local operator decision, with deterministic-reference audio labeled as a local timing
+  draft. CLI status, evidence Markdown, and the read-only Studio production-media panel surface the
+  same review command only when current draft-render evidence passes, and rendered runs use the
+  read-only review command as their next safe action with upload/public-scheduled publish still
+  disabled.
 - Provider-backed idea and production-package stages schema-validate and normalize common local
   model JSON variants before artifact writes, while rejecting malformed or English operator-facing
   payloads fail-closed.
