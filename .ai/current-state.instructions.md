@@ -48,9 +48,10 @@
   assets, then writes `production/render_plan.json`, `production/storyboard_contact_sheet.md`, and
   `production/asset_provenance.json` without FFmpeg render, upload, paid provider, or public publish
   execution. Intro/outro source frames are recorded when present. The contact sheet includes timing,
-  review gates, safe commands, revision path, and upload/publish blockers.
-  `producer review render-plan` gives operators a read-only handoff from validated render-plan
-  evidence and surfaces the contact sheet, asset provenance, scene count, asset count, timing, and
+  visual rhythm review, background reuse, asset role counts, review gates, safe commands, revision
+  path, and upload/publish blockers. `producer review render-plan` gives operators a read-only
+  handoff from validated render-plan evidence and surfaces the contact sheet, asset provenance,
+  scene count, asset count, timing range, visual rhythm checklist, revision guidance, and
   still-blocked actions.
 - Evidence and readiness now surface render-plan presence; missing render plans warn, while partial
   or malformed render-plan artifacts block readiness.

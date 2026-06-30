@@ -10,12 +10,19 @@ import {
   renderPlanSchema,
   type RenderPlan,
 } from "./renderPlanSchemas.js";
+import {
+  summarizeRenderPlanReview,
+  type CountedValue,
+  type RenderPlanTimingReview,
+} from "./renderPlanReviewSummary.js";
 
 const [renderPlanPath, contactSheetPath, assetProvenancePath] = renderPlanArtifactPaths;
 
 export type RenderPlanReviewHandoff = {
   assetCount: number;
+  assetRoleCounts: CountedValue[];
   assetProvenancePath: string;
+  backgroundReuse: CountedValue[];
   blockedActions: string[];
   contactSheetPath: string;
   estimatedDraftDurationSeconds: number;
@@ -24,8 +31,11 @@ export type RenderPlanReviewHandoff = {
   productionPackageManifestDigest: string;
   productionPackageManifestPath: string;
   renderPlanPath: string;
+  reviewChecklist: string[];
   runId: string;
   sceneCount: number;
+  timing: RenderPlanTimingReview;
+  revisionGuidance: string[];
 };
 
 /**
@@ -50,19 +60,25 @@ export async function reviewRenderPlan(runId: string): Promise<RenderPlanReviewH
     await readJsonFile(artifactPath(run.runId, assetProvenancePath)),
   );
   await readFile(artifactPath(run.runId, contactSheetPath), "utf8");
+  const reviewSummary = summarizeRenderPlanReview(plan, provenance);
   return {
     assetCount: provenance.assets.length,
+    assetRoleCounts: reviewSummary.assetRoleCounts,
     assetProvenancePath,
+    backgroundReuse: reviewSummary.backgroundReuse,
     blockedActions: renderPlanReviewBlockedActions(),
     contactSheetPath,
-    estimatedDraftDurationSeconds: estimatedDraftDurationSeconds(plan),
+    estimatedDraftDurationSeconds: reviewSummary.timing.estimatedDraftDurationSeconds,
     format: plan.format,
     nextSafeAction: renderPlanReviewNextAction(run.runId),
     productionPackageManifestDigest: plan.productionPackageManifestDigest,
     productionPackageManifestPath: plan.productionPackageManifestPath,
     renderPlanPath,
+    reviewChecklist: reviewSummary.reviewChecklist,
+    revisionGuidance: reviewSummary.revisionGuidance,
     runId: run.runId,
     sceneCount: plan.scenes.length,
+    timing: reviewSummary.timing,
   };
 }
 
@@ -81,24 +97,20 @@ export function formatRenderPlanReviewConsole(handoff: RenderPlanReviewHandoff):
     `Scenes: ${handoff.sceneCount}`,
     `Assets: ${handoff.assetCount}`,
     `Estimated local draft duration: ${Math.round(handoff.estimatedDraftDurationSeconds)}s`,
+    `Scene duration range: ${Math.round(handoff.timing.shortestSceneDurationSeconds)}s-${Math.round(handoff.timing.longestSceneDurationSeconds)}s`,
+    `Background reuse: ${formatCountedValues(handoff.backgroundReuse, "none")}`,
+    `Asset role counts: ${formatCountedValues(handoff.assetRoleCounts, "none")}`,
     `Format: ${handoff.format.resolution}, ${handoff.format.fps}fps, ${handoff.format.aspectRatio}, ${handoff.format.draftRenderer}`,
     `Package manifest: ${handoff.productionPackageManifestPath}`,
     `Package manifest digest: ${handoff.productionPackageManifestDigest}`,
     `Next safe action: ${handoff.nextSafeAction}`,
+    "Review checklist:",
+    ...handoff.reviewChecklist.map((item) => `- ${item}`),
+    "Revision guidance:",
+    ...handoff.revisionGuidance.map((item) => `- ${item}`),
     "Still blocked:",
     ...handoff.blockedActions.map((action) => `- ${action}`),
   ].join("\n");
-}
-
-function estimatedDraftDurationSeconds(plan: RenderPlan): number {
-  const sceneDurationSeconds = plan.scenes.reduce(
-    (total, scene) => total + scene.durationSeconds,
-    0,
-  );
-  const bookendDurationSeconds = plan.bookends
-    ? plan.bookends.intro.durationSeconds + plan.bookends.outro.durationSeconds
-    : 0;
-  return sceneDurationSeconds + bookendDurationSeconds;
 }
 
 function renderPlanReviewNextAction(runId: string): string {
@@ -111,4 +123,11 @@ function renderPlanReviewBlockedActions(): string[] {
     "Local draft render still requires voiceover evidence and explicit render approval.",
     "Private upload, scheduled publish, public publish, and paid/generative media providers remain disabled.",
   ];
+}
+
+function formatCountedValues(values: CountedValue[], empty: string): string {
+  if (values.length === 0) {
+    return empty;
+  }
+  return values.map((item) => `${item.value}=${item.count}`).join(", ");
 }

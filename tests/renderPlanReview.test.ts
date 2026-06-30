@@ -21,7 +21,16 @@ describe("render-plan operator review", () => {
 
     expect(handoff).toMatchObject({
       assetCount: expect.any(Number),
+      assetRoleCounts: expect.arrayContaining([
+        expect.objectContaining({ count: expect.any(Number), value: "watermark" }),
+      ]),
       assetProvenancePath: "production/asset_provenance.json",
+      backgroundReuse: expect.arrayContaining([
+        expect.objectContaining({
+          count: expect.any(Number),
+          value: expect.stringContaining("assets/backgrounds/"),
+        }),
+      ]),
       contactSheetPath: "production/storyboard_contact_sheet.md",
       format: {
         aspectRatio: "16:9",
@@ -32,9 +41,25 @@ describe("render-plan operator review", () => {
       renderPlanPath: "production/render_plan.json",
       runId,
       sceneCount: expect.any(Number),
+      timing: {
+        averageSceneDurationSeconds: expect.any(Number),
+        bookendDurationSeconds: expect.any(Number),
+        estimatedDraftDurationSeconds: expect.any(Number),
+        longestSceneDurationSeconds: expect.any(Number),
+        sceneDurationSeconds: expect.any(Number),
+        shortestSceneDurationSeconds: expect.any(Number),
+      },
     });
     expect(handoff.estimatedDraftDurationSeconds).toBeGreaterThan(0);
     expect(handoff.nextSafeAction).toContain(`pnpm producer estimate --run ${runId}`);
+    expect(handoff.reviewChecklist).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining("Confirm subtitle panel, popup card, waveform, and watermark"),
+      ]),
+    );
+    expect(handoff.revisionGuidance).toEqual(
+      expect.arrayContaining([expect.stringContaining("regenerate the render plan")]),
+    );
     expect(handoff.blockedActions).toEqual(
       expect.arrayContaining([
         expect.stringContaining("paid/generative media providers remain disabled"),
@@ -53,10 +78,18 @@ describe("render-plan operator review", () => {
     expect(JSON.parse(jsonResult.stdout) as unknown).toMatchObject({
       contactSheetPath: "production/storyboard_contact_sheet.md",
       nextSafeAction: expect.stringContaining(`pnpm producer estimate --run ${runId}`),
+      reviewChecklist: expect.arrayContaining([
+        expect.stringContaining("Review"),
+        expect.stringContaining("does not approve voiceover"),
+      ]),
       runId,
     });
     expect(consoleResult.status).toBe(0);
     expect(consoleResult.stdout).toContain("Render plan: production/render_plan.json");
+    expect(consoleResult.stdout).toContain("Scene duration range:");
+    expect(consoleResult.stdout).toContain("Background reuse:");
+    expect(consoleResult.stdout).toContain("Review checklist:");
+    expect(consoleResult.stdout).toContain("Revision guidance:");
     expect(consoleResult.stdout).toContain("Still blocked:");
   });
 
