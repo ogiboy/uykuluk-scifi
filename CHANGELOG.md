@@ -27,6 +27,10 @@ _No unreleased changes yet._
 - keep Studio workflow progress and next action aligned with recorded local render decisions
 - surface the recorded render-decision review command in status, desk, and Studio views
 
+### Tests
+
+- cover render-decision readback in product UAT and Studio read-only UAT
+
 ## v0.51.0 (2026-06-30)
 
 ### Fixes

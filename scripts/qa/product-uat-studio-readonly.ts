@@ -9,14 +9,19 @@ if (!runId) {
 }
 
 const reviewCommand = `pnpm producer review render --run ${runId}`;
+const decisionReviewCommand = `pnpm producer review render-decision --run ${runId}`;
 const summaries = await listStudioRuns();
 const summary = summaries.find((candidate) => candidate.runId === runId);
 
 assert(summary !== undefined, "Studio run index includes rendered run.");
 assert(summary.state === "RENDERED", "Studio run index shows rendered state.");
 assert(
-  summary.nextRecommendedCommand === reviewCommand,
-  "Studio run index exposes render review as the next safe action.",
+  summary.nextRecommendedCommand?.includes("Upload remains disabled") === true,
+  "Studio run index exposes the recorded render decision next safe action.",
+);
+assert(
+  summary.renderDecision.kind === "present",
+  "Studio run index exposes render decision status.",
 );
 assert(summary.evidenceStatus === "available", "Studio run index trusts only current evidence.");
 assert(summary.readinessPassed === true, "Studio run index shows passing readiness.");
@@ -26,8 +31,17 @@ const detail = await getStudioRunDetail(runId);
 assert(detail !== null, "Studio run detail loads rendered run.");
 assert(detail.state === "RENDERED", "Studio run detail shows rendered state.");
 assert(
-  detail.nextRecommendedCommand === reviewCommand,
-  "Studio run detail exposes the render review command.",
+  detail.nextRecommendedCommand?.includes("Upload remains disabled") === true,
+  "Studio run detail exposes the recorded render decision next safe action.",
+);
+assert(
+  detail.renderDecision.kind === "present",
+  "Studio run detail exposes render decision status.",
+);
+assert(
+  detail.renderDecision.kind === "present" &&
+    detail.renderDecision.reviewCommand === decisionReviewCommand,
+  "Studio run detail exposes the render-decision review command.",
 );
 assert(detail.evidence?.currentState === "RENDERED", "Studio run detail loads current evidence.");
 assert(detail.readiness?.passed === true, "Studio run detail loads passing readiness.");
