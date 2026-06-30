@@ -18,6 +18,7 @@ _No unreleased changes yet._
 - expand render-plan review handoffs with visual rhythm checks, timing ranges, asset role counts,
   background reuse, and revision guidance
 - print copy-pasteable local render-decision commands in draft-render review handoffs
+- add `producer review render-decision` to reopen validated local decision evidence
 - show local render-decision command templates in Studio rendered-run details
 - show local render-decision status in Studio run index and latest-run summaries
 

@@ -301,6 +301,8 @@ pnpm producer render --run <run_id> --json
 pnpm producer decide render --run <run_id> --decision accepted-for-local-review --notes "<operator notes>" --reviewed-by operator
 pnpm producer decide render --run <run_id> --decision needs-revision --notes "<operator notes>" --reviewed-by operator
 pnpm producer decide render --run <run_id> --decision rejected --notes "<operator notes>" --reviewed-by operator
+pnpm producer review render-decision --run <run_id>
+pnpm producer review render-decision --run <run_id> --json
 ```
 
 Blocked readiness checks print and persist next-action guidance for common operator steps such as
@@ -320,6 +322,7 @@ pnpm producer desk --run <run_id>
 pnpm producer desk --plain
 pnpm producer list-runs
 pnpm producer list-runs --json
+pnpm producer review render-decision --run <run_id> [--json]
 ```
 
 Local model evaluation:
@@ -625,12 +628,14 @@ decodes the final draft artifact to `null` for operator inspection; the same tru
 copied into draft-render evidence JSON. The non-JSON CLI output and read-only
 `producer review render --run <run_id>` command point directly to the MP4, manifest, review
 document, local-only next action, and copy-pasteable `producer decide render` command templates for
-recording exactly one durable local operator decision. Status, evidence Markdown, and the read-only
-Studio production-media panel surface that same safe review command when draft-render evidence is
-current, and rendered runs use the read-only review command as their next safe action.
-`production/render/draft_review.md` summarizes the final operator checklist, shows that review
-command, includes the decision command templates, and labels deterministic-reference audio renders
-as local timing drafts. It does not upload, schedule, or publish anything.
+recording exactly one durable local operator decision. After that decision exists,
+`producer review render-decision --run <run_id>` reopens the validated decision evidence without
+mutating state. Status, evidence Markdown, and the read-only Studio production-media panel surface
+that same safe review command when draft-render evidence is current, and rendered runs use the
+read-only review command as their next safe action. `production/render/draft_review.md` summarizes
+the final operator checklist, shows that review command, includes the decision command templates,
+and labels deterministic-reference audio renders as local timing drafts. It does not upload,
+schedule, or publish anything.
 
 `thinkingMode` can be `default`, `think`, or `no_think`. Token caps are sent to Ollama as
 `num_predict` so local generation cannot run unbounded. Script generation splits the approved idea

@@ -374,6 +374,7 @@ pnpm producer render --run <run_id> [--json]
 pnpm producer decide render --run <run_id> --decision accepted-for-local-review --notes "<operator notes>" --reviewed-by operator [--json]
 pnpm producer decide render --run <run_id> --decision needs-revision --notes "<operator notes>" --reviewed-by operator [--json]
 pnpm producer decide render --run <run_id> --decision rejected --notes "<operator notes>" --reviewed-by operator [--json]
+pnpm producer review render-decision --run <run_id> [--json]
 pnpm producer analytics import --file <path> [--json]
 pnpm producer analytics report [--json]
 pnpm producer upload private --run <run_id>
