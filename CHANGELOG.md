@@ -22,6 +22,7 @@ _No unreleased changes yet._
 
 ### Tests
 
+- assert render-plan review source maps in product UAT
 - cover deterministic timing-draft and local-Piper production-candidate voiceover review guidance
 - assert voiceover render-approval scope in usage smoke and product UAT
 
