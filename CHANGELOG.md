@@ -39,11 +39,16 @@ _No unreleased changes yet._
 
 ### Features
 
+- show intro/outro source-frame paths in render-plan review handoffs and storyboard contact sheets
+- show a scene-to-asset map in render-plan review handoffs and storyboard contact sheets
+- mention bookend/source-frame checks in shared render-plan media review guidance
+- clarify storyboard contact sheet review scope in Studio artifact previews
 - show explicit voiceover render-approval scope and command in review handoffs and review Markdown
 - surface voiceover render-approval scope and command in Studio read-only media rows
 
 ### Tests
 
+- assert render-plan review source maps in product UAT
 - cover deterministic timing-draft and local-Piper production-candidate voiceover review guidance
 - assert voiceover render-approval scope in usage smoke and product UAT
 

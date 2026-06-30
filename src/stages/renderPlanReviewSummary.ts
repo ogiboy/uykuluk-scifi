@@ -15,11 +15,27 @@ export type RenderPlanTimingReview = {
   shortestSceneDurationSeconds: number;
 };
 
+export type RenderPlanSceneAssetReview = {
+  backgroundAssetPath: string;
+  durationSeconds: number;
+  overlayAssetPaths: string[];
+  sceneIndex: number;
+};
+
+export type RenderPlanBookendReview = {
+  durationSeconds: number;
+  frameAssetPaths: string[];
+  segment: "intro" | "outro";
+  sourceAssetPath: string;
+};
+
 export type RenderPlanReviewSummary = {
   assetRoleCounts: CountedValue[];
   backgroundReuse: CountedValue[];
+  bookends: RenderPlanBookendReview[];
   reviewChecklist: string[];
   revisionGuidance: string[];
+  sceneAssetMap: RenderPlanSceneAssetReview[];
   timing: RenderPlanTimingReview;
 };
 
@@ -39,10 +55,53 @@ export function summarizeRenderPlanReview(
   return {
     assetRoleCounts: countValues(provenance.assets.map((asset) => asset.role)),
     backgroundReuse,
+    bookends: buildBookendReview(plan),
     reviewChecklist: renderPlanReviewChecklist(plan, timing, backgroundReuse),
     revisionGuidance: renderPlanRevisionGuidance(backgroundReuse),
+    sceneAssetMap: buildSceneAssetMap(plan),
     timing,
   };
+}
+
+/**
+ * Builds a compact scene-to-asset map for operator review handoffs.
+ *
+ * @param plan - The validated render plan.
+ * @returns One row per render-plan scene with the selected visual assets.
+ */
+function buildSceneAssetMap(plan: RenderPlan): RenderPlanSceneAssetReview[] {
+  return plan.scenes.map((scene) => ({
+    backgroundAssetPath: scene.backgroundAsset.path,
+    durationSeconds: scene.durationSeconds,
+    overlayAssetPaths: scene.overlayAssets.map((asset) => asset.path),
+    sceneIndex: scene.sceneIndex,
+  }));
+}
+
+/**
+ * Builds a compact bookend source summary for operator review handoffs.
+ *
+ * @param plan - The validated render plan.
+ * @returns Intro/outro source assets and committed frame sequences, when present.
+ */
+function buildBookendReview(plan: RenderPlan): RenderPlanBookendReview[] {
+  if (!plan.bookends) {
+    return [];
+  }
+  return [
+    {
+      durationSeconds: plan.bookends.intro.durationSeconds,
+      frameAssetPaths: (plan.bookends.intro.frameAssets ?? []).map((asset) => asset.path),
+      segment: "intro",
+      sourceAssetPath: plan.bookends.intro.asset.path,
+    },
+    {
+      durationSeconds: plan.bookends.outro.durationSeconds,
+      frameAssetPaths: (plan.bookends.outro.frameAssets ?? []).map((asset) => asset.path),
+      segment: "outro",
+      sourceAssetPath: plan.bookends.outro.asset.path,
+    },
+  ];
 }
 
 /**
