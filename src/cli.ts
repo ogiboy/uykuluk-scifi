@@ -9,6 +9,7 @@ import { registerOperatorDeskCommand } from "./cli/operatorDeskCommand.js";
 import { registerRevisionCommands } from "./cli/revisionCommands.js";
 import { registerReviewCommands } from "./cli/reviewCommands.js";
 import { resolveStatusRunId } from "./cli/statusRunSelector.js";
+import { readCliVersion } from "./cli/version.js";
 import { initProject } from "./config/config.js";
 import { SafeExitError } from "./core/errors.js";
 import { listRuns, loadRun } from "./core/runStore.js";
@@ -27,7 +28,7 @@ const program = new Command();
 program
   .name("producer")
   .description("Approval-gated UykulukSciFi producer workflow.")
-  .version("0.1.0");
+  .version(readCliVersion());
 
 program
   .command("init")
