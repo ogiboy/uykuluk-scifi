@@ -11,6 +11,23 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.51.0 (2026-06-30)
+
+### Fixes
+
+- keep workflow projection bundle-safe (bc83c21)
+
+### Features
+
+- show workflow progress (6051e38)
+- show workflow progress (ff3e561)
+- open desk by default (d64723d)
+- surface desk blockers (5ed9fc3)
+
+### Documentation
+
+- document desk progress (15a1de1)
+
 ## v0.50.0 (2026-06-29)
 
 ### Features
