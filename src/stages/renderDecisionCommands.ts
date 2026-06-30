@@ -41,6 +41,16 @@ export function renderDecisionCommandTemplates(runId: string): RenderDecisionCom
   }));
 }
 
+/**
+ * Builds the default command template for recording an accepted local render decision.
+ *
+ * @param runId - The run identifier to include in the command.
+ * @returns The render-decision command template for `runId`.
+ */
+export function renderDecisionNextAction(runId: string): string {
+  return `pnpm producer decide render --run ${runId} --decision accepted-for-local-review --notes "<notes>"`;
+}
+
 const POSIX_SINGLE_QUOTE_ESCAPE = "'\"'\"'";
 
 function renderShellCommand(binary: string, args: string[]): string {

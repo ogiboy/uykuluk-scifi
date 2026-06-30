@@ -19,6 +19,11 @@ _No unreleased changes yet._
   background reuse, and revision guidance
 - print copy-pasteable local render-decision commands in draft-render review handoffs
 - show local render-decision command templates in Studio rendered-run details
+- show local render-decision status in Studio run index and latest-run summaries
+
+### Fixes
+
+- keep Studio workflow progress and next action aligned with recorded local render decisions
 
 ## v0.51.0 (2026-06-30)
 

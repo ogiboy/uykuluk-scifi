@@ -1,7 +1,11 @@
 import type { RunRecord } from "../core/state.js";
 import { readJsonFile } from "../utils/json.js";
+import { renderDecisionNextAction } from "./renderDecisionCommands.js";
+import {
+  renderDecisionRecordSchema,
+  type RenderDecisionRecord,
+} from "./renderDecisionContracts.js";
 import { renderDecisionArtifactPaths } from "./renderDecision.js";
-import { renderDecisionRecordSchema, type RenderDecisionRecord } from "./renderDecision.js";
 import { reviewDraftRender } from "./reviewRender.js";
 
 export type RenderDecisionStatus =
@@ -56,16 +60,6 @@ export async function readRenderDecisionStatus(run: RunRecord): Promise<RenderDe
       nextAction,
     };
   }
-}
-
-/**
- * Builds the command template for recording a render decision.
- *
- * @param runId - The run identifier to include in the command.
- * @returns The render-decision command template for `runId`.
- */
-export function renderDecisionNextAction(runId: string): string {
-  return `pnpm producer decide render --run ${runId} --decision accepted-for-local-review --notes "<notes>"`;
 }
 
 /**

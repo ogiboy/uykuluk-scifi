@@ -1,4 +1,3 @@
-import { z } from "zod";
 import { artifactPath, writeRunJson, writeRunText } from "../core/artifacts.js";
 import { SafeExitError } from "../core/errors.js";
 import { appendLedgerEvent } from "../core/ledger.js";
@@ -9,9 +8,13 @@ import { bulletList, table } from "../utils/markdown.js";
 import {
   renderDecisionJsonPath,
   renderDecisionMarkdownPath,
-  renderDecisionValues,
   type RenderDecision,
 } from "./renderDecisionCommands.js";
+import {
+  renderDecisionInputSchema,
+  type RenderDecisionInput,
+  type RenderDecisionRecord,
+} from "./renderDecisionContracts.js";
 import { reviewDraftRender } from "./reviewRender.js";
 
 export {
@@ -20,45 +23,11 @@ export {
   renderDecisionValues,
   type RenderDecision,
 } from "./renderDecisionCommands.js";
-
-export const renderDecisionInputSchema = z.strictObject({
-  decision: z.enum(renderDecisionValues),
-  notes: z.string().trim().min(1).max(4_000),
-  reviewedBy: z.string().trim().min(1).max(200),
-  runId: z.string().min(1),
-});
-
-export type RenderDecisionInput = z.input<typeof renderDecisionInputSchema>;
-
-const digestSchema = z.string().regex(/^[a-f0-9]{64}$/);
-
-export const renderDecisionRecordSchema = z.strictObject({
-  blockedActions: z.array(z.string().min(1)),
-  createdAt: z.iso.datetime(),
-  decision: z.enum(renderDecisionValues),
-  draftRender: z.strictObject({
-    durationSeconds: z.number().positive(),
-    path: z.string().min(1),
-    reviewCommand: z.string().min(1),
-    sha256: digestSchema,
-  }),
-  nextSafeAction: z.string().min(1),
-  notes: z.string().min(1),
-  renderApproval: z.strictObject({
-    approvalId: z.string().min(1),
-    approvedRef: digestSchema,
-  }),
-  reviewedBy: z.string().min(1),
-  runId: z.string().min(1),
-  schemaVersion: z.literal(1),
-  voiceover: z.strictObject({
-    mode: z.string().min(1),
-    productionVoiceCandidate: z.boolean(),
-    quality: z.string().min(1),
-  }),
-});
-
-export type RenderDecisionRecord = z.infer<typeof renderDecisionRecordSchema>;
+export {
+  renderDecisionInputSchema,
+  renderDecisionRecordSchema,
+} from "./renderDecisionContracts.js";
+export type { RenderDecisionInput, RenderDecisionRecord } from "./renderDecisionContracts.js";
 
 /**
  * Records an operator render decision after reviewing the local draft render.

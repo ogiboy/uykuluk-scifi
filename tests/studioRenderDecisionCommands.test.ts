@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { getStudioRunDetail } from "../apps/studio/src/lib/runSummaries";
 import { loadRun, saveRun } from "../src/core/runStore";
 import { useTempProject } from "./helpers";
+import { writeStudioRenderDecision } from "./studioRenderDecisionFixtures";
 import { createRenderedStudioRunFixture } from "./studioRunFixtures";
 
 describe("Studio render decision commands", () => {
@@ -34,6 +35,22 @@ describe("Studio render decision commands", () => {
 
   it("hides local render decision commands after a decision artifact is recorded", async () => {
     const runId = await createRenderedStudioRunFixture();
+    await writeStudioRenderDecision(runId);
+
+    const detail = await getStudioRunDetail(runId);
+
+    expect(detail?.renderDecisionCommands).toEqual([]);
+    expect(detail?.renderDecision).toMatchObject({
+      kind: "present",
+      decision: {
+        decision: "accepted-for-local-review",
+        reviewedBy: "operator",
+      },
+    });
+  });
+
+  it("keeps local render decision commands hidden when a recorded decision artifact is missing", async () => {
+    const runId = await createRenderedStudioRunFixture();
     const run = await loadRun(runId);
     await saveRun({
       ...run,
@@ -43,5 +60,9 @@ describe("Studio render decision commands", () => {
     const detail = await getStudioRunDetail(runId);
 
     expect(detail?.renderDecisionCommands).toEqual([]);
+    expect(detail?.renderDecision).toMatchObject({
+      kind: "missing",
+      message: "Render decision is listed in run artifacts but the JSON file is missing.",
+    });
   });
 });

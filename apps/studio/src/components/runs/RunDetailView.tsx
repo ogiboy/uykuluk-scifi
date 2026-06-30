@@ -5,6 +5,7 @@ import { RunBlockedActionsPanel } from "./RunBlockedActionsPanel";
 import { RunLedgerPanel } from "./RunLedgerPanel";
 import { RunProductionMediaPanel } from "./RunProductionMediaPanel";
 import { RunRenderDecisionCommandsPanel } from "./RunRenderDecisionCommandsPanel";
+import { RunRenderDecisionStatusPanel } from "./RunRenderDecisionStatusPanel";
 import { RunWorkflowProgressPanel } from "./RunWorkflowProgressPanel";
 import { readinessStatusClassName } from "./readinessStatusClassName";
 
@@ -90,6 +91,8 @@ export function RunDetailView({ run }: Readonly<{ run: StudioRunDetail }>) {
       />
 
       <RunWorkflowProgressPanel workflowProgress={run.workflowProgress} />
+
+      <RunRenderDecisionStatusPanel renderDecision={run.renderDecision} />
 
       <RunRenderDecisionCommandsPanel commands={run.renderDecisionCommands} />
 
