@@ -31,6 +31,26 @@ describe("render-plan operator review", () => {
           value: expect.stringContaining("assets/backgrounds/"),
         }),
       ]),
+      bookends: [
+        {
+          durationSeconds: 2,
+          frameAssetPaths: [
+            "assets/intro/frames/intro_frame_00.jpg",
+            "assets/intro/frames/intro_frame_01.jpg",
+          ],
+          segment: "intro",
+          sourceAssetPath: "assets/intro/episode_title_card_1920x1080.jpg",
+        },
+        {
+          durationSeconds: 3,
+          frameAssetPaths: [
+            "assets/outro/frames/outro_frame_00.jpg",
+            "assets/outro/frames/outro_frame_01.jpg",
+          ],
+          segment: "outro",
+          sourceAssetPath: "assets/outro/youtube_end_screen_1920x1080.jpg",
+        },
+      ],
       contactSheetPath: "production/storyboard_contact_sheet.md",
       format: {
         aspectRatio: "16:9",
@@ -41,6 +61,16 @@ describe("render-plan operator review", () => {
       renderPlanPath: "production/render_plan.json",
       runId,
       sceneCount: expect.any(Number),
+      sceneAssetMap: expect.arrayContaining([
+        expect.objectContaining({
+          backgroundAssetPath: expect.stringContaining("assets/backgrounds/"),
+          durationSeconds: expect.any(Number),
+          overlayAssetPaths: expect.arrayContaining([
+            "assets/overlays/subtitle_panel_blank_1700x190.png",
+          ]),
+          sceneIndex: expect.any(Number),
+        }),
+      ]),
       timing: {
         averageSceneDurationSeconds: expect.any(Number),
         bookendDurationSeconds: expect.any(Number),
@@ -88,6 +118,11 @@ describe("render-plan operator review", () => {
     expect(consoleResult.stdout).toContain("Render plan: production/render_plan.json");
     expect(consoleResult.stdout).toContain("Scene duration range:");
     expect(consoleResult.stdout).toContain("Background reuse:");
+    expect(consoleResult.stdout).toContain("Bookends:");
+    expect(consoleResult.stdout).toContain("assets/intro/frames/intro_frame_00.jpg");
+    expect(consoleResult.stdout).toContain("assets/outro/frames/outro_frame_00.jpg");
+    expect(consoleResult.stdout).toContain("Scene asset map:");
+    expect(consoleResult.stdout).toContain("assets/overlays/subtitle_panel_blank_1700x190.png");
     expect(consoleResult.stdout).toContain("Review checklist:");
     expect(consoleResult.stdout).toContain("Revision guidance:");
     expect(consoleResult.stdout).toContain("Still blocked:");

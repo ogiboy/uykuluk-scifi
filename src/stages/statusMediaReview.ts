@@ -50,7 +50,7 @@ function renderPlanReviewAction(artifact: ProductionMediaStatus): string {
   const reviewPrefix = artifact.reviewCommand
     ? `Review with ${artifact.reviewCommand}; `
     : "Review the contact sheet locally; ";
-  return `${reviewPrefix}confirm scene-to-asset mapping and the contact sheet before voiceover or render approval.`;
+  return `${reviewPrefix}confirm scene-to-asset mapping, bookend/source-frame paths, and the contact sheet before voiceover or render approval.`;
 }
 
 function voiceoverReviewAction(artifact: ProductionMediaStatus): string {

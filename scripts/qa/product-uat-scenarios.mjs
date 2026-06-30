@@ -52,11 +52,23 @@ export async function createVoiceReadyRun({ assertCondition, pnpm, run, scenario
     label: "generate render plan",
     scenario,
   });
-  run([pnpm, "producer", "review", "render-plan", "--run", runId], {
+  const renderPlanReview = run([pnpm, "producer", "review", "render-plan", "--run", runId], {
     expectOutput: "Contact sheet:",
     label: "render-plan review handoff is available",
     scenario,
   });
+  assertCondition?.(
+    renderPlanReview.stdout.includes("Bookends:") &&
+      renderPlanReview.stdout.includes("Scene asset map:"),
+    "render-plan review shows bookends and scene asset map",
+    scenario,
+  );
+  assertCondition?.(
+    renderPlanReview.stdout.includes("assets/intro/frames/intro_frame_00.jpg") &&
+      renderPlanReview.stdout.includes("assets/outro/frames/outro_frame_00.jpg"),
+    "render-plan review shows committed source-frame paths",
+    scenario,
+  );
   run([pnpm, "producer", "estimate", "--run", runId], { label: "estimate cost", scenario });
   run([pnpm, "producer", "evidence", "--run", runId], { label: "generate evidence", scenario });
   run([pnpm, "producer", "readiness", "--run", runId], {

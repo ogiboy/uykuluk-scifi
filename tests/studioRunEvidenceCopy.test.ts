@@ -41,7 +41,7 @@ describe("Studio run evidence copy", () => {
         status: "pass",
       }),
     ).toBe(
-      "Review with pnpm producer review render-plan --run run_studio_copy; confirm scene-to-asset mapping and the contact sheet before voiceover or render approval.",
+      "Review with pnpm producer review render-plan --run run_studio_copy; confirm scene-to-asset mapping, bookend/source-frame paths, and the contact sheet before voiceover or render approval.",
     );
     expect(
       productionMediaReviewAction("available", {

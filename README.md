@@ -620,8 +620,9 @@ approval command, and approval scope without adding a web mutation.
 `producer review render-plan --run <run_id>` prints a read-only render-plan/contact-sheet handoff
 from validated render-plan evidence. It points operators to `production/storyboard_contact_sheet.md`
 and `production/asset_provenance.json`, summarizes scenes, assets, timing ranges, visual rhythm,
-background reuse, asset role counts, and revision guidance, and keeps TTS, render, upload, publish,
-and paid/generative media work behind their separate gates.
+scene-to-asset mapping, intro/outro source-frame paths, background reuse, asset role counts, and
+revision guidance, and keeps TTS, render, upload, publish, and paid/generative media work behind
+their separate gates.
 
 `producer render` requires `ffmpeg` on `PATH` unless called through a test harness with an explicit
 binary. The draft render is a local review artifact and may be regenerated after approval; its

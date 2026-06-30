@@ -69,7 +69,7 @@ describe("status evidence validity", () => {
     expect(output).not.toContain("artifact-record fallback");
     expect(output).toContain("- Render plan: pass (11 assets, 3 artifacts)");
     expect(output).toContain(
-      `  Review: Review with pnpm producer review render-plan --run ${run.runId}; confirm scene-to-asset mapping and the contact sheet before voiceover or render approval.`,
+      `  Review: Review with pnpm producer review render-plan --run ${run.runId}; confirm scene-to-asset mapping, bookend/source-frame paths, and the contact sheet before voiceover or render approval.`,
     );
   });
 
