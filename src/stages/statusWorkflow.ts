@@ -1,5 +1,26 @@
-import { orderedStates, type RunState } from "../core/state.js";
+import type { RunState } from "../core/state.js";
 import type { ProductionMediaStatus } from "./statusMediaSummary.js";
+
+const workflowStates: RunState[] = [
+  "NEW",
+  "IDEAS_GENERATED",
+  "IDEA_APPROVED",
+  "SCRIPT_GENERATED",
+  "SCRIPT_REVIEWED",
+  "SCRIPT_APPROVED",
+  "PRODUCTION_PACKAGE_GENERATED",
+  "COST_ESTIMATED",
+  "PAID_GENERATION_COST_APPROVED",
+  "READY_FOR_MANUAL_PRODUCTION",
+  "RENDER_APPROVED",
+  "RENDERED",
+  "UPLOAD_APPROVED",
+  "UPLOADED_PRIVATE",
+  "PUBLISH_APPROVED",
+  "SCHEDULED_OR_PUBLIC",
+  "ARCHIVED",
+  "FAILED",
+];
 
 export type StatusWorkflowStepStatus = "blocked" | "current" | "done" | "pending";
 
@@ -200,5 +221,5 @@ function mediaByKey(mediaArtifacts: readonly ProductionMediaStatus[]): {
 }
 
 function stateAtLeast(currentState: RunState, targetState: RunState): boolean {
-  return orderedStates.indexOf(currentState) >= orderedStates.indexOf(targetState);
+  return workflowStates.indexOf(currentState) >= workflowStates.indexOf(targetState);
 }
