@@ -9,6 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
+_No unreleased changes yet._
+
+## v0.52.0 (2026-06-30)
+
 ### Features
 
 - expand render-plan review handoffs with visual rhythm checks, timing ranges, asset role counts,
