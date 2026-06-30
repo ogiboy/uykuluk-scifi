@@ -73,6 +73,12 @@ export function RunDetailView({ run }: Readonly<{ run: StudioRunDetail }>) {
                 <strong>{diagnostic.stage}</strong>: {diagnostic.message}
                 <br />
                 <span>{diagnostic.path}</span>
+                {diagnostic.nextAction ? (
+                  <>
+                    <br />
+                    <span>Next action: {diagnostic.nextAction}</span>
+                  </>
+                ) : null}
               </li>
             ))}
           </ul>

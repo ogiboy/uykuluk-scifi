@@ -39,9 +39,11 @@ export function formatOperatorDeskDiagnosticLines(
   }
   return [
     "Diagnostics:",
-    ...diagnostics.map(
-      (diagnostic) => `- ${diagnostic.path} [${diagnostic.stage}]: ${diagnostic.message}`,
-    ),
+    ...diagnostics.flatMap((diagnostic) => {
+      const detail = diagnostic.failureKind ? ` (${diagnostic.failureKind})` : "";
+      const line = `- ${diagnostic.path} [${diagnostic.stage}]: ${diagnostic.message}${detail}`;
+      return diagnostic.nextAction ? [line, `  Next action: ${diagnostic.nextAction}`] : [line];
+    }),
   ];
 }
 

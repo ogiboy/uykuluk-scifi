@@ -43,20 +43,24 @@ describe("script generation failure diagnostics", () => {
     expect((await loadRun(runId)).state).toBe("IDEA_APPROVED");
     expect(await pathExists(artifactPath(runId, "script.md"))).toBe(false);
     const diagnostics = await readJsonFile<{
+      failureKind: string;
       runId: string;
       stage: string;
       state: string;
       providerMode: string;
       model: string;
       message: string;
+      nextAction: string;
     }>(artifactPath(runId, "diagnostics/script_generation_failure.json"));
     expect(diagnostics).toMatchObject({
+      failureKind: "provider_contract",
       runId,
       stage: "script",
       state: "IDEA_APPROVED",
       providerMode: "mock",
       model: "mock-invalid-script-json",
       message: expect.stringContaining("Invalid script section draft provider response"),
+      nextAction: `Review provider/model configuration, then rerun pnpm producer script --run ${runId}.`,
     });
   });
 

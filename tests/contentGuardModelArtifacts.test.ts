@@ -66,4 +66,47 @@ describe("content guard model artifact blockers", () => {
       ]),
     );
   });
+
+  it("blocks repeated word stutter from local model output", () => {
+    const warnings = reviewScriptContent(
+      [
+        "# Kuşak Gemisi",
+        "",
+        "Anlatıcı: Bu durum, Kuşak Gemisi’nin kor kor kor kor kor kor kor kor kor kor yapısını bozuyor.",
+        "",
+        "UykulukSciFi'de yeniden buluşalım.",
+      ].join("\n"),
+    );
+
+    expect(warnings).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: "repeated_word_stutter",
+          severity: "blocker",
+        }),
+      ]),
+    );
+  });
+
+  it("blocks provider artifact metadata from persisted script text", () => {
+    const warnings = reviewScriptContent(
+      [
+        "# Kuşak Gemisi",
+        "",
+        "Anlatıcı: Arşivci bahçedeki değişimi sakin ve ihtiyatlı biçimde inceler.",
+        "Görsel: Ekranda bitkilerin renk geçişi görünür.”} id=hook, section_id=idea_003, targetDuration=20 dakika.",
+        "",
+        "UykulukSciFi'de yeniden buluşalım.",
+      ].join("\n"),
+    );
+
+    expect(warnings).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: "provider_artifact_metadata",
+          severity: "blocker",
+        }),
+      ]),
+    );
+  });
 });

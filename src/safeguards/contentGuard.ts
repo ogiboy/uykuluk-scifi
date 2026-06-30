@@ -65,6 +65,21 @@ function appendBlockingScriptWarnings(warnings: ScriptReviewWarning[], script: s
         "Script contains literal escaped control text from the model response; regenerate before review.",
     });
   }
+  if (containsProviderArtifactMetadata(script)) {
+    warnings.push({
+      code: "provider_artifact_metadata",
+      severity: "blocker",
+      message:
+        "Script contains provider artifact metadata instead of clean narration; regenerate before review.",
+    });
+  }
+  if (containsRepeatedWordStutter(script)) {
+    warnings.push({
+      code: "repeated_word_stutter",
+      severity: "blocker",
+      message: "Script contains a repeated word stutter; regenerate before review.",
+    });
+  }
   const malformedLabelDetails = malformedProductionLabelDetails(script);
   if (malformedLabelDetails) {
     warnings.push({
@@ -233,4 +248,27 @@ function containsModelMetaCommentary(script: string): boolean {
 
 function containsLiteralModelEscapes(script: string): boolean {
   return /(?:\\[nrt]|\\u[0-9a-f]{4})/iu.test(script);
+}
+
+function containsProviderArtifactMetadata(script: string): boolean {
+  return /\b(?:id|section_id|targetDuration|estimatedDifficulty|riskLevel)=/u.test(script);
+}
+
+function containsRepeatedWordStutter(script: string): boolean {
+  const words = script.match(/[\p{L}\p{M}]{2,}/gu) ?? [];
+  let previous = "";
+  let repeatCount = 0;
+  for (const word of words) {
+    const normalized = word.toLocaleLowerCase("tr");
+    if (normalized === previous) {
+      repeatCount += 1;
+      if (repeatCount >= 8) {
+        return true;
+      }
+      continue;
+    }
+    previous = normalized;
+    repeatCount = 1;
+  }
+  return false;
 }
