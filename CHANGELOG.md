@@ -16,6 +16,23 @@ future generated release notes can be inserted predictably.
 - surface the generated voiceover WAV playback path in evidence, status, Operator Desk, and Studio
   media review rows
 
+## v0.55.0 (2026-06-30)
+
+### Tests
+
+- split run summary fixtures (b2eb6ad)
+- assert render plan review maps (e72d64d)
+
+### Fixes
+
+- clarify contact sheet preview scope (2525a19)
+- mention render plan frame review (80da80e)
+
+### Features
+
+- show bookend frame sources in review (91d2719)
+- show scene asset map in review (d2c90de)
+
 ## v0.54.0 (2026-06-30)
 
 ### Refactoring
