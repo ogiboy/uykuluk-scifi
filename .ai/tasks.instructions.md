@@ -56,6 +56,9 @@
   rendered draft, persist reviewer/notes/decision evidence, and never imply upload or publish
   approval. Status, the operator desk, and product UAT should surface the recorded decision and next
   safe action.
+- Keep Studio render-decision visibility read-only: it may show copy-pasteable local
+  `producer decide render` command templates for rendered runs with current draft-render evidence,
+  but must not write the decision or bypass the CLI/core approval and evidence contracts.
 - Keep all run-root filesystem access behind canonical bounded run-ID validation.
 - Keep run artifact reads, writes, and persisted lists behind canonical relative-path validation.
 - Keep state, ledger, cost, reservation, lock, and artifact access behind canonical

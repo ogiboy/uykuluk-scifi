@@ -27,10 +27,10 @@ coherent, tested slices until the safe core and its evidence contracts are genui
   - `e216a7f fix(operator): use desk render status in ink`
   - `9e0e2d9 feat(render): expand plan review guidance`
   - `6e59ef1 feat(render): guide draft decisions`
-- Current branch state: no active implementation slice after the draft-render decision-command
-  handoff. Branch has been rebased onto `v0.51.0`; push the rebased branch to
-  `origin/feat/render-review-polish`, then continue only with related render-review/product polish
-  before opening the grouped PR.
+- Current in-progress slice: Studio read-only run detail now exposes local render-decision command
+  templates for rendered runs that have current draft-render evidence and no recorded decision.
+  Finish validation, commit the Studio slice, then push `origin/feat/render-review-polish` before
+  opening the grouped render-review/product-polish PR.
 - 2026-06-29 continuation branch/worktree: `feat/render-review-command` at
   `/Users/ogiboy/.codex/worktrees/894d/uykuluk-scifi`, pushed to
   `origin/feat/render-review-command`.
@@ -229,6 +229,15 @@ coherent, tested slices until the safe core and its evidence contracts are genui
   - `pnpm typecheck`, `pnpm lint`, `pnpm changelog:check`, and `pnpm release:check` passed for the
     same decision-command slice; `.ai/checkpoints/producer-core-hardening.md` then required Prettier
     formatting.
+  - `pnpm exec vitest run tests/operatorDesk.test.ts tests/renderDecision.test.ts tests/studioRuns.test.ts tests/studioWorkflowProgress.test.ts tests/studioRunEvidenceCopy.test.ts`
+    passed for the operator-desk/render-decision/Studio command-template surface after the local
+    TypeScript diagnostics were checked.
+  - `pnpm typecheck`, `pnpm studio:typecheck`, `pnpm lint`, `pnpm studio:lint`, `pnpm studio:build`,
+    `pnpm changelog:check`, and `pnpm release:check` passed after moving render-decision command
+    templates to a Studio bundle-safe contract module.
+  - `pnpm format:check` passed after formatting `.ai/current-state.instructions.md`.
+  - `pnpm test:coverage` passed with 109 test files and 506 tests, regenerating the ignored Sonar
+    LCOV artifact under `.ai/qa/artifacts/sonar/coverage`.
 - 2026-06-29 render-operator branch targeted verification:
   - Verified render handoff and read-only render review command changes with
     `pnpm test tests/renderCli.test.ts tests/render.test.ts tests/renderApprovalGate.test.ts`.

@@ -217,6 +217,9 @@
   JSON/Markdown evidence under `production/render/`. It does not approve upload or publish and keeps
   the run in `RENDERED`. `producer status`, `producer desk`, and product UAT surface the recorded
   decision so operators do not loop back to render review after a decision is recorded.
+- Studio run detail remains read-only but now shows the same local render-decision command templates
+  for rendered runs with current draft-render evidence and no recorded decision, so the operator can
+  copy the CLI command without Studio becoming a mutation surface.
 - Readiness diagnostics that strictly parse and revalidate persisted cost quotes, live hard budgets,
   complete production-package integrity, and exact paid-generation cost approval when required.
 - Final readiness diagnostics agree with the post-transition run state.

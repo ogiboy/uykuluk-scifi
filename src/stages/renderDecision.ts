@@ -6,13 +6,20 @@ import { loadRun, saveRun } from "../core/runStore.js";
 import { pathExists } from "../utils/fs.js";
 import { nowIso } from "../utils/time.js";
 import { bulletList, table } from "../utils/markdown.js";
+import {
+  renderDecisionJsonPath,
+  renderDecisionMarkdownPath,
+  renderDecisionValues,
+  type RenderDecision,
+} from "./renderDecisionCommands.js";
 import { reviewDraftRender } from "./reviewRender.js";
 
-export const renderDecisionValues = [
-  "accepted-for-local-review",
-  "needs-revision",
-  "rejected",
-] as const;
+export {
+  renderDecisionJsonPath,
+  renderDecisionMarkdownPath,
+  renderDecisionValues,
+  type RenderDecision,
+} from "./renderDecisionCommands.js";
 
 export const renderDecisionInputSchema = z.strictObject({
   decision: z.enum(renderDecisionValues),
@@ -22,7 +29,6 @@ export const renderDecisionInputSchema = z.strictObject({
 });
 
 export type RenderDecisionInput = z.input<typeof renderDecisionInputSchema>;
-export type RenderDecision = (typeof renderDecisionValues)[number];
 
 const digestSchema = z.string().regex(/^[a-f0-9]{64}$/);
 
@@ -189,9 +195,6 @@ function nextSafeAction(decision: RenderDecision): string {
   }
   return "Do not use this draft. Revise upstream artifacts before any new render approval.";
 }
-
-export const renderDecisionJsonPath = "production/render/render_decision.json";
-export const renderDecisionMarkdownPath = "production/render/render_decision.md";
 
 /**
  * Resolves the render decision artifact paths for a run.

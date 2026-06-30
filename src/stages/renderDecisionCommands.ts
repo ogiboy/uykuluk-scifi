@@ -1,5 +1,13 @@
-import { shellCommand } from "../utils/shell.js";
-import { renderDecisionValues, type RenderDecision } from "./renderDecision.js";
+export const renderDecisionValues = [
+  "accepted-for-local-review",
+  "needs-revision",
+  "rejected",
+] as const;
+
+export type RenderDecision = (typeof renderDecisionValues)[number];
+
+export const renderDecisionJsonPath = "production/render/render_decision.json";
+export const renderDecisionMarkdownPath = "production/render/render_decision.md";
 
 export type RenderDecisionCommandTemplate = {
   command: string;
@@ -15,7 +23,7 @@ export type RenderDecisionCommandTemplate = {
  */
 export function renderDecisionCommandTemplates(runId: string): RenderDecisionCommandTemplate[] {
   return renderDecisionValues.map((decision) => ({
-    command: shellCommand("pnpm", [
+    command: renderShellCommand("pnpm", [
       "producer",
       "decide",
       "render",
@@ -31,6 +39,19 @@ export function renderDecisionCommandTemplates(runId: string): RenderDecisionCom
     decision,
     guidance: decisionGuidance(decision),
   }));
+}
+
+const POSIX_SINGLE_QUOTE_ESCAPE = "'\"'\"'";
+
+function renderShellCommand(binary: string, args: string[]): string {
+  return [binary, ...args].map(shellQuote).join(" ");
+}
+
+function shellQuote(value: string): string {
+  if (/^[A-Za-z0-9_./:@%+=,-]+$/.test(value)) {
+    return value;
+  }
+  return `'${value.replaceAll("'", POSIX_SINGLE_QUOTE_ESCAPE)}'`;
 }
 
 function decisionGuidance(decision: RenderDecision): string {
