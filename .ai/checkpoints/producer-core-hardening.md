@@ -27,6 +27,9 @@ coherent, tested slices until the safe core and its evidence contracts are genui
   - `e216a7f fix(operator): use desk render status in ink`
   - `9e0e2d9 feat(render): expand plan review guidance`
   - `6e59ef1 feat(render): guide draft decisions`
+  - `0cd4767 feat(studio): show render decision commands`
+  - CI modularity cleanup for PR #101 split oversized render-decision, render-plan, Studio run
+    summary, and run-detail view surfaces without changing workflow semantics.
 - Current branch slice is pushed and represented by PR #101. Studio read-only run detail now exposes
   local render-decision command templates for rendered runs that have current draft-render evidence
   and no recorded decision.
@@ -237,6 +240,15 @@ coherent, tested slices until the safe core and its evidence contracts are genui
   - `pnpm format:check` passed after formatting `.ai/current-state.instructions.md`.
   - `pnpm test:coverage` passed with 109 test files and 506 tests, regenerating the ignored Sonar
     LCOV artifact under `.ai/qa/artifacts/sonar/coverage`.
+  - Hosted Sonar for PR #101 passed with 84.5% new-code coverage and 0 new issues.
+  - Hosted CI failed only on `pnpm qa:modularity`; local reproduction showed oversized files in
+    `tests/renderDecision.test.ts`, `tests/renderPlan.test.ts`, `tests/studioRuns.test.ts`, and
+    `apps/studio/src/components/runs/RunDetailView.tsx`.
+  - `pnpm qa:modularity` passed after splitting the oversized tests and Studio panel into smaller
+    owner files.
+  - `pnpm check` passed after the modularity cleanup and formatting fix.
+  - `pnpm qa:product` and `pnpm qa:usage` passed locally for PR #101 while hosted checks were
+    running, writing ignored reports under `.ai/qa/artifacts/`.
 - 2026-06-29 render-operator branch targeted verification:
   - Verified render handoff and read-only render review command changes with
     `pnpm test tests/renderCli.test.ts tests/render.test.ts tests/renderApprovalGate.test.ts`.

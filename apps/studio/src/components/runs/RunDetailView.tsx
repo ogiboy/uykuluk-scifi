@@ -4,7 +4,9 @@ import { artifactPreviewsIntro } from "@/lib/runEvidenceCopy";
 import { RunBlockedActionsPanel } from "./RunBlockedActionsPanel";
 import { RunLedgerPanel } from "./RunLedgerPanel";
 import { RunProductionMediaPanel } from "./RunProductionMediaPanel";
+import { RunRenderDecisionCommandsPanel } from "./RunRenderDecisionCommandsPanel";
 import { RunWorkflowProgressPanel } from "./RunWorkflowProgressPanel";
+import { readinessStatusClassName } from "./readinessStatusClassName";
 
 /**
  * Renders a read-only detail view for a run.
@@ -89,24 +91,7 @@ export function RunDetailView({ run }: Readonly<{ run: StudioRunDetail }>) {
 
       <RunWorkflowProgressPanel workflowProgress={run.workflowProgress} />
 
-      {run.renderDecisionCommands.length > 0 ? (
-        <section className='panel' aria-labelledby='render-decision-commands-heading'>
-          <h2 id='render-decision-commands-heading'>Local Render Decision</h2>
-          <p>
-            After watching the local draft MP4, record exactly one durable CLI decision. These
-            commands do not approve upload or publish.
-          </p>
-          <ul>
-            {run.renderDecisionCommands.map((item) => (
-              <li key={item.decision}>
-                <strong>{item.decision}</strong>
-                <p>{item.guidance}</p>
-                <code className='command'>{item.command}</code>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
+      <RunRenderDecisionCommandsPanel commands={run.renderDecisionCommands} />
 
       <section className='panel' aria-labelledby='artifact-heading'>
         <h2 id='artifact-heading'>Artifact Previews</h2>
@@ -205,19 +190,6 @@ function groupedArtifactPreviews(
     artifacts: groupedArtifacts,
     label,
   }));
-}
-
-/**
- * Maps a readiness status to its status pill class name.
- *
- * @param status - The readiness status value
- * @returns The CSS class name for the corresponding status pill
- */
-function readinessStatusClassName(status: string): string {
-  if (status === "block") {
-    return "status-pill small blocked";
-  }
-  return "status-pill small";
 }
 
 /**

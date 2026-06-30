@@ -115,25 +115,6 @@ describe("Studio read-only run summaries", () => {
         status: "pass",
       },
     ]);
-    expect(detail?.renderDecisionCommands).toEqual(
-      expect.arrayContaining([
-        {
-          command: expect.stringContaining(`pnpm producer decide render --run ${runId}`),
-          decision: "accepted-for-local-review",
-          guidance: expect.stringContaining("complete local draft"),
-        },
-        {
-          command: expect.stringContaining("--decision needs-revision"),
-          decision: "needs-revision",
-          guidance: expect.stringContaining("another pass"),
-        },
-        {
-          command: expect.stringContaining("--decision rejected"),
-          decision: "rejected",
-          guidance: expect.stringContaining("should not be used"),
-        },
-      ]),
-    );
     expect(detail?.artifacts).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -204,19 +185,6 @@ describe("Studio read-only run summaries", () => {
       ]),
     );
     expect((await loadRun(runId)).state).toBe("RENDERED");
-  });
-
-  it("hides Studio render decision commands after a decision artifact is recorded", async () => {
-    const runId = await createRenderedStudioRunFixture();
-    const run = await loadRun(runId);
-    await saveRun({
-      ...run,
-      artifacts: [...run.artifacts, "production/render/render_decision.json"],
-    });
-
-    const detail = await getStudioRunDetail(runId);
-
-    expect(detail?.renderDecisionCommands).toEqual([]);
   });
 
   it("shows readiness remediation commands from CLI diagnostics", async () => {
