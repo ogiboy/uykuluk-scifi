@@ -21,7 +21,7 @@ export function blockedRenderedEvidence(runId: string): Record<string, unknown> 
     nextRecommendedCommand:
       "Regenerate evidence with pnpm producer evidence --run <run_id>; if draft artifacts remain blocked, revise upstream artifacts before a new render approval.",
     renderPlan: passRenderPlanEvidence(),
-    voiceoverAudio: passVoiceoverEvidence(),
+    voiceoverAudio: passVoiceoverEvidence(runId),
   });
 }
 
@@ -63,7 +63,7 @@ export function passingRenderedEvidence(runId: string): Record<string, unknown> 
     },
     nextRecommendedCommand: "pnpm producer review render --run <run_id>",
     renderPlan: passRenderPlanEvidence(),
-    voiceoverAudio: passVoiceoverEvidence(),
+    voiceoverAudio: passVoiceoverEvidence(runId),
   });
 }
 
@@ -77,12 +77,13 @@ function passRenderPlanEvidence(): Record<string, unknown> {
   };
 }
 
-function passVoiceoverEvidence(): Record<string, unknown> {
+function passVoiceoverEvidence(runId: string): Record<string, unknown> {
   return {
     status: "pass",
     path: "production/audio/voiceover.wav",
     digest: "b".repeat(64),
     durationSeconds: 8.2,
+    localPlaybackPath: `runs/${runId}/production/audio/voiceover.wav`,
     mode: "local-piper",
     productionVoiceCandidate: true,
     quality: "local-piper",

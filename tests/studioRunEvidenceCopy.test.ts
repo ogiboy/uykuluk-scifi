@@ -49,11 +49,12 @@ describe("Studio run evidence copy", () => {
         detail: "8s, deterministic-local, timing/reference only",
         evidenceKey: "voiceoverAudio",
         label: "Voiceover audio",
+        localPlaybackPath: "runs/run_studio_copy/production/audio/voiceover.wav",
         reviewCommand: "pnpm producer review voice --run run_studio_copy",
         status: "pass",
       }),
     ).toBe(
-      "Review with pnpm producer review voice --run run_studio_copy; use this audio only for local timing review; regenerate reviewed production voice before final render review.",
+      "Review with pnpm producer review voice --run run_studio_copy; listen to runs/run_studio_copy/production/audio/voiceover.wav; use this audio only for local timing review; regenerate reviewed production voice before final render review.",
     );
     expect(
       productionMediaReviewAction("available", {
@@ -61,11 +62,12 @@ describe("Studio run evidence copy", () => {
         detail: "8s, local-piper, production voice candidate",
         evidenceKey: "voiceoverAudio",
         label: "Voiceover audio",
+        localPlaybackPath: "runs/run_studio_copy/production/audio/voiceover.wav",
         reviewCommand: "pnpm producer review voice --run run_studio_copy",
         status: "pass",
       }),
     ).toBe(
-      "Review with pnpm producer review voice --run run_studio_copy; listen locally and verify pronunciation, pacing, and tone before render approval.",
+      "Review with pnpm producer review voice --run run_studio_copy; listen to runs/run_studio_copy/production/audio/voiceover.wav and verify pronunciation, pacing, and tone before render approval.",
     );
     expect(
       productionMediaReviewAction("available", {

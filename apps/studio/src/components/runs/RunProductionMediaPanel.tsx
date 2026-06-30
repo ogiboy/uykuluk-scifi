@@ -45,6 +45,9 @@ export function RunProductionMediaPanel({
             <p className='artifact-action'>
               Review: {productionMediaReviewAction(evidenceStatus, artifact)}
             </p>
+            {artifact.localPlaybackPath ? (
+              <p className='artifact-action'>Local playback path: {artifact.localPlaybackPath}</p>
+            ) : null}
             {artifact.renderApprovalScope ? (
               <p className='artifact-action'>
                 Render approval scope: {artifact.renderApprovalScope}

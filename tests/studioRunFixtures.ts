@@ -126,6 +126,7 @@ export async function createRenderedStudioRunFixture(): Promise<string> {
       path: "production/audio/voiceover.wav",
       digest: "c".repeat(64),
       durationSeconds: 8.2,
+      localPlaybackPath: `runs/${run.runId}/production/audio/voiceover.wav`,
       mode: "local-piper",
       productionVoiceCandidate: true,
       quality: "local-piper",

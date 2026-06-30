@@ -22,6 +22,7 @@ export function expectRenderedProductionMedia(detail: StudioRunDetail | null, ru
       detail: "8s, local-piper, production voice candidate, 42 source words",
       evidenceKey: "voiceoverAudio",
       label: "Voiceover audio",
+      localPlaybackPath: `runs/${runId}/production/audio/voiceover.wav`,
       renderApprovalCommand: `pnpm producer approve render --run ${runId}`,
       renderApprovalScope: "production-voice-candidate",
       reviewCommand: `pnpm producer review voice --run ${runId}`,

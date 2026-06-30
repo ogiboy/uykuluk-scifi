@@ -35,7 +35,7 @@ describe("operator desk command and diagnostic summaries", () => {
       `- Render plan: pass (11 assets, 3 artifacts) | Review command: pnpm producer review render-plan --run ${run.runId}`,
     );
     expect(output).toContain(
-      `- Voiceover audio: pass (8s, local-piper, production voice candidate, 42 source words) | Review command: pnpm producer review voice --run ${run.runId}`,
+      `- Voiceover audio: pass (8s, local-piper, production voice candidate, 42 source words) | Local playback path: runs/${run.runId}/production/audio/voiceover.wav | Review command: pnpm producer review voice --run ${run.runId}`,
     );
     expect(output).toContain(
       `- Draft render: pass (8s, intro -> scene -> outro, source frames intro:2/outro:2, frame cadence intro#1=1s assets/intro/frames/intro_frame_00.jpg; intro#2=1s assets/intro/frames/intro_frame_01.jpg; outro#1=1.5s assets/outro/frames/outro_frame_00.jpg; outro#2=1.5s assets/outro/frames/outro_frame_01.jpg, voiceover local-piper production candidate, approval approval_render_status, ffprobe 1280x720 audio) | Review command: pnpm producer review render --run ${run.runId}`,
@@ -89,6 +89,7 @@ describe("operator desk command and diagnostic summaries", () => {
           voiceoverAudio: {
             digest: "b".repeat(64),
             durationSeconds: 8.2,
+            localPlaybackPath: `runs/${run.runId}/production/audio/voiceover.wav`,
             mode: "local-piper",
             path: "production/audio/voiceover.wav",
             productionVoiceCandidate: true,
@@ -107,6 +108,9 @@ describe("operator desk command and diagnostic summaries", () => {
     expect(output).toContain(`- Next safe action: pnpm producer approve render --run ${run.runId}`);
     expect(output).toContain(
       `- Review voiceover audio: pnpm producer review voice --run ${run.runId}`,
+    );
+    expect(output).toContain(
+      `Local playback path: runs/${run.runId}/production/audio/voiceover.wav`,
     );
     expect(output).toContain(`pnpm producer approve render --run ${run.runId}`);
   });

@@ -13,6 +13,8 @@ future generated release notes can be inserted predictably.
 
 - point voiceover review handoffs at the generated WAV playback path instead of the review Markdown
   artifact
+- surface the generated voiceover WAV playback path in evidence, status, Operator Desk, and Studio
+  media review rows
 
 ## v0.54.0 (2026-06-30)
 

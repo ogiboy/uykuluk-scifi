@@ -168,7 +168,10 @@ export function formatOperatorDeskPlain(model: OperatorDeskViewModel): string {
  */
 export function formatOperatorDeskMediaArtifactLine(artifact: ProductionMediaStatus): string {
   const review = artifact.reviewCommand ? ` | Review command: ${artifact.reviewCommand}` : "";
-  return `${formatProductionMediaStatus(artifact)}${review}`;
+  const playback = artifact.localPlaybackPath
+    ? ` | Local playback path: ${artifact.localPlaybackPath}`
+    : "";
+  return `${formatProductionMediaStatus(artifact)}${playback}${review}`;
 }
 
 /**

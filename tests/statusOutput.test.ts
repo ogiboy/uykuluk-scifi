@@ -140,6 +140,9 @@ describe("operator status output", () => {
       "- Voiceover audio: pass (8s, local-piper, production voice candidate, 42 source words)",
     );
     expect(output).toContain(
+      `  Review: Review with pnpm producer review voice --run ${run.runId}; listen to runs/${run.runId}/production/audio/voiceover.wav and verify pronunciation, pacing, and tone before render approval.`,
+    );
+    expect(output).toContain(
       "- Draft render: pass (8s, intro -> scene -> outro, source frames intro:2/outro:2, frame cadence intro#1=1s assets/intro/frames/intro_frame_00.jpg; intro#2=1s assets/intro/frames/intro_frame_01.jpg; outro#1=1.5s assets/outro/frames/outro_frame_00.jpg; outro#2=1.5s assets/outro/frames/outro_frame_01.jpg, voiceover local-piper production candidate, approval approval_render_status, ffprobe 1280x720 audio)",
     );
     expect(output).toContain(
