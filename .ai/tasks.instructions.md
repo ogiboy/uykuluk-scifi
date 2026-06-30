@@ -7,8 +7,8 @@
 - Keep `pnpm qa:usage` passing after workflow changes.
 - Keep `pnpm qa:product` passing before broad production-loop PRs or merge-adjacent handoff; it is
   the optional product UAT gate for happy-path, malicious, stale, tampered, and publish-blocked
-  local workflows plus manual analytics import/report feedback, durable render decisions, and Studio
-  read-only service visibility.
+  local workflows plus manual analytics import/report feedback, operator desk command/diagnostic
+  visibility, durable render decisions, and Studio read-only service visibility.
 - Keep visual asset inventory and the read-only Studio `/assets` page current.
 - Keep content and asset guard coverage aligned with the operator checklist.
 - Keep `apps/studio` thin until shared service contracts exist.
@@ -50,8 +50,9 @@
   and Studio.
 - Keep `producer desk` as an Ink-based operator surface over CLI/core status contracts. It may make
   review and next-action navigation easier with readiness attention, blocked actions, production
-  media review commands, render decisions, and read-only workflow progress, but it must not become a
-  second workflow engine or bypass approval/cost/evidence gates.
+  media review commands, safe run diagnostics, copyable operator commands, render decisions, and
+  read-only workflow progress, but it must not become a second workflow engine or bypass
+  approval/cost/evidence gates.
 - Keep `producer decide render` as local review evidence only. Render decisions must require a valid
   rendered draft, persist reviewer/notes/decision evidence, and never imply upload or publish
   approval. Status, the operator desk, and product UAT should surface the recorded decision and next

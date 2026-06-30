@@ -213,9 +213,9 @@
 - `producer desk` provides an Ink-based local terminal workbench over the same
   status/readiness/media contracts, with `--plain` for scriptable or non-TTY output. It opens by
   default when `producer` is run without a subcommand, shows readiness attention, blocked actions,
-  production media review commands, recent artifacts, render decisions, and a read-only v1 workflow
-  progress projection. It is an operator surface only and does not own workflow transitions or
-  mutate run state.
+  safe run diagnostics, copyable operator commands, production media review commands, recent
+  artifacts, render decisions, and a read-only v1 workflow progress projection. It is an operator
+  surface only and does not own workflow transitions or mutate run state.
 - `producer decide render` records the human decision after local draft-render review as durable
   JSON/Markdown evidence under `production/render/`. It does not approve upload or publish and keeps
   the run in `RENDERED`. `producer status`, `producer desk`, and product UAT surface the recorded
@@ -237,9 +237,9 @@
 - Optional clean-copy product UAT smoke script via `pnpm qa:product`, covering rendered happy path,
   traversal rejection, incorrect ordering, stale evidence recovery, tampered render review command
   rejection, post-approval voiceover tamper blocking, disabled upload/publish safeguards, manual
-  analytics import/report malformed-input recovery, durable local render decisions, and Studio
-  read-only service visibility for runs, production media, analytics, and disabled mutation
-  contracts.
+  analytics import/report malformed-input recovery, operator desk command/diagnostic visibility,
+  durable local render decisions, and Studio read-only service visibility for runs, production
+  media, analytics, and disabled mutation contracts.
 - Production build emits a Node-runnable `dist/cli.js` and `pnpm build:smoke` verifies the built CLI
   starts and can initialize a fresh project from an arbitrary working directory.
 - Direct mock/Ollama/llama.cpp provider diagnostics and upload/publish safeguard tests.

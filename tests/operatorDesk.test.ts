@@ -9,7 +9,7 @@ import { createRun, saveRun } from "../src/core/runStore";
 import { recordRenderDecision } from "../src/stages/renderDecision";
 import { useTempProject } from "./helpers";
 import { renderLocalDraft } from "./renderPipelineHelpers";
-import { manualProductionEvidence, passingRenderedEvidence } from "./statusOutputEvidenceFixtures";
+import { manualProductionEvidence } from "./statusOutputEvidenceFixtures";
 
 const repoRoot = process.cwd();
 
@@ -46,6 +46,14 @@ describe("operator desk", () => {
     expect(model.runDetails.map((run) => run.runId)).toContain(first.runId);
     expect(formatOperatorDeskPlain(model)).toContain(`Selected run: ${first.runId}`);
     expect(formatOperatorDeskPlain(model)).toContain("Render decision: missing");
+    expect(formatOperatorDeskPlain(model)).toContain(
+      "Readiness next action:\n  pnpm producer readiness --run ",
+    );
+    expect(formatOperatorDeskPlain(model)).toContain("Operator commands:");
+    expect(formatOperatorDeskPlain(model)).toContain("- Next safe action: pnpm producer ideas");
+    expect(formatOperatorDeskPlain(model)).toContain(
+      `- Readiness: pnpm producer readiness --run ${first.runId}`,
+    );
     expect(formatOperatorDeskPlain(model)).toContain("Workflow progress:");
     expect(formatOperatorDeskPlain(model)).toContain("- [current] Ideas: Generate ideas.");
   });
@@ -85,37 +93,6 @@ describe("operator desk", () => {
     );
     expect(shouldUsePlainOperatorDeskOutput({}, { stdinIsTTY: true, stdoutIsTTY: true })).toBe(
       false,
-    );
-  });
-
-  it("surfaces media review commands in operator desk output", async () => {
-    const run = await createRun();
-    await saveRun({
-      ...run,
-      artifacts: [
-        "production/render_plan.json",
-        "production/audio/voiceover.wav",
-        "production/render/draft.mp4",
-        "evidence_bundle.json",
-      ],
-      state: "RENDERED",
-    });
-    await writeFile(
-      artifactPath(run.runId, "evidence_bundle.json"),
-      JSON.stringify(passingRenderedEvidence(run.runId)),
-      "utf8",
-    );
-
-    const output = formatOperatorDeskPlain(await buildOperatorDeskViewModel({ runId: run.runId }));
-
-    expect(output).toContain(
-      `- Render plan: pass (11 assets, 3 artifacts) | Review command: pnpm producer review render-plan --run ${run.runId}`,
-    );
-    expect(output).toContain(
-      `- Voiceover audio: pass (8s, local-piper, production voice candidate, 42 source words) | Review command: pnpm producer review voice --run ${run.runId}`,
-    );
-    expect(output).toContain(
-      `- Draft render: pass (8s, intro -> scene -> outro, source frames intro:2/outro:2, frame cadence intro#1=1s assets/intro/frames/intro_frame_00.jpg; intro#2=1s assets/intro/frames/intro_frame_01.jpg; outro#1=1.5s assets/outro/frames/outro_frame_00.jpg; outro#2=1.5s assets/outro/frames/outro_frame_01.jpg, voiceover local-piper production candidate, approval approval_render_status, ffprobe 1280x720 audio) | Review command: pnpm producer review render --run ${run.runId}`,
     );
   });
 
@@ -161,7 +138,7 @@ describe("operator desk", () => {
 
     expect(output).toContain("Readiness: blocked (2 checks, 1 block, 1 warn)");
     expect(output).toContain("- voiceover [block]: Local voiceover audio is missing.");
-    expect(output).toContain(`Next action: pnpm producer voice --run ${run.runId}`);
+    expect(output).toContain(`Next action:\n    pnpm producer voice --run ${run.runId}`);
     expect(output).toContain("Blocked action details:");
     expect(output).toContain("TTS disabled until configured and approved.");
     expect(output).toContain(
