@@ -4,26 +4,27 @@ import { ProducerConfig } from "../config/schema.js";
 import { createLlmProvider } from "../providers/index.js";
 import { GenerateTextResult, LlmProvider } from "../providers/llmProvider.js";
 import { parseIdeasProviderPayload } from "../stages/providerPayloads.js";
+import { ideasResponseFormat } from "../stages/providerResponseFormats.js";
 import {
   parseScriptSectionProviderPayload,
   renderScriptSectionPrompt,
   scriptSectionPlans,
   scriptSectionResponseFormat,
 } from "../stages/scriptSections.js";
-import { sha256 } from "../utils/hash.js";
-import { nowIso } from "../utils/time.js";
 import { writeTextFile } from "../utils/fs.js";
+import { sha256 } from "../utils/hash.js";
 import { writeJsonFile } from "../utils/json.js";
-import { renderLocalModelEvalMarkdown } from "./localModelEvalFormatting.js";
+import { nowIso } from "../utils/time.js";
 import {
   applyLocalModelEvalOverrides,
   LocalModelEvalLlmOverrides,
 } from "./localModelEvalConfig.js";
+import { renderLocalModelEvalMarkdown } from "./localModelEvalFormatting.js";
+import { renderIdeaEvalPrompt, renderScriptEvalBasePrompt } from "./localModelEvalPrompts.js";
 import {
-  ideaEvalResponseFormat,
-  renderIdeaEvalPrompt,
-  renderScriptEvalBasePrompt,
-} from "./localModelEvalPrompts.js";
+  maxOutputTokensForEvalCheck,
+  safeLocalModelEvalErrorMessage,
+} from "./localModelEvalSafety.js";
 
 export type LocalModelEvalCheck = {
   name: "ideas-json" | "script-section-json";
@@ -128,7 +129,7 @@ async function evaluateIdeas(
 ): Promise<LocalModelEvalCheck> {
   const prompt = renderIdeaEvalPrompt();
   const result = await requestProvider(provider, config, prompt, "ideas-json", {
-    responseFormat: ideaEvalResponseFormat,
+    responseFormat: ideasResponseFormat,
   });
   if (!result.ok) {
     return result.check;
@@ -137,7 +138,12 @@ async function evaluateIdeas(
     const ideas = parseIdeasProviderPayload(result.result.text);
     return passingCheck("ideas-json", prompt, result.result, `${ideas.length} ideas parsed.`);
   } catch (error) {
-    return blockingCheck("ideas-json", prompt, result.result, safeErrorMessage(error));
+    return blockingCheck(
+      "ideas-json",
+      prompt,
+      result.result,
+      safeLocalModelEvalErrorMessage(error),
+    );
   }
 }
 
@@ -161,7 +167,12 @@ async function evaluateScriptSection(
       `${countWords(text)} words parsed.`,
     );
   } catch (error) {
-    return blockingCheck("script-section-json", prompt, result.result, safeErrorMessage(error));
+    return blockingCheck(
+      "script-section-json",
+      prompt,
+      result.result,
+      safeLocalModelEvalErrorMessage(error),
+    );
   }
 }
 
@@ -180,7 +191,7 @@ async function requestProvider(
     const result = await provider.generateText({
       model: config.providers.llm.model,
       prompt,
-      maxTokens: Math.min(config.providers.llm.maxOutputTokens.ideas, 1600),
+      maxTokens: maxOutputTokensForEvalCheck(config, name),
       temperature: 0.2,
       responseFormat: options.responseFormat,
     });
@@ -191,7 +202,7 @@ async function requestProvider(
       check: {
         name,
         status: "block",
-        message: safeErrorMessage(error),
+        message: safeLocalModelEvalErrorMessage(error),
         promptHash: sha256(prompt),
       },
     };
@@ -228,19 +239,6 @@ function blockingCheck(
     ...passingCheck(name, prompt, result, message),
     status: "block",
   };
-}
-
-function safeErrorMessage(error: unknown): string {
-  if (!(error instanceof Error)) {
-    return "Provider evaluation failed.";
-  }
-  if (/^Ollama request failed \(\d+\)/u.test(error.message)) {
-    return error.message.replace(/^(Ollama request failed \(\d+\)).*$/u, "$1.");
-  }
-  if (error.message.startsWith("Ollama provider error:")) {
-    return "Ollama provider reported an error.";
-  }
-  return error.message;
 }
 
 function countWords(text: string): number {

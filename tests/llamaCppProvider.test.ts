@@ -132,7 +132,7 @@ describe("llama.cpp provider", () => {
     const provider = new LlamaCppProvider("http://localhost:8080/", "local-model.gguf");
 
     await expect(provider.generateText({ prompt: "hello" })).rejects.toThrow(
-      "llama.cpp server unavailable at http://localhost:8080: ECONNREFUSED",
+      "llama.cpp server unavailable at http://localhost:8080 (transport error).",
     );
   });
 

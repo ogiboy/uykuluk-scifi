@@ -162,8 +162,18 @@ function candidateRecommendationSort(
     right.passedChecks - left.passedChecks ||
     left.blockedChecks - right.blockedChecks ||
     left.durationMs - right.durationMs ||
-    left.configuredModel.localeCompare(right.configuredModel)
+    compareStrings(left.configuredModel, right.configuredModel)
   );
+}
+
+function compareStrings(left: string, right: string): number {
+  if (left < right) {
+    return -1;
+  }
+  if (left > right) {
+    return 1;
+  }
+  return 0;
 }
 
 function localModelCandidateOperatorGuidance(

@@ -15,6 +15,8 @@ future generated release notes can be inserted predictably.
   artifact
 - surface the generated voiceover WAV playback path in evidence, status, Operator Desk, and Studio
   media review rows
+- harden local model eval diagnostics by redacting llama.cpp endpoint details, using stage-specific
+  token caps, and keeping persisted eval artifacts raw-output-free
 
 ## v0.55.0 (2026-06-30)
 
