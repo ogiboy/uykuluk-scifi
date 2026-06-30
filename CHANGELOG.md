@@ -11,6 +11,30 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.54.0 (2026-06-30)
+
+### Refactoring
+
+- split operator desk helpers (b5f12f1)
+
+### Tests
+
+- cover operator desk product uat (cd00618)
+
+### Documentation
+
+- align operator desk contract (e69d8f5)
+
+### Features
+
+- show run diagnostics in desk (3c2b6a9)
+- surface desk command queue (9f3b9e8)
+
+### Fixes
+
+- read version from package metadata (eb1aad3)
+- improve desk command readability (0b19434)
+
 ## v0.53.0 (2026-06-30)
 
 ### Features
