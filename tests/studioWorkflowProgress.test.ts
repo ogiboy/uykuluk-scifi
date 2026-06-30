@@ -36,6 +36,7 @@ describe("Studio workflow progress", () => {
     expect(detail?.renderDecision).toMatchObject({
       kind: "present",
       message: "Render decision recorded: accepted-for-local-review.",
+      reviewCommand: `pnpm producer review render-decision --run ${runId}`,
     });
     expect(detail?.workflowProgress).toEqual(
       expect.arrayContaining([

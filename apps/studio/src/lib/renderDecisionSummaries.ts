@@ -3,6 +3,7 @@ import { z } from "zod";
 import {
   renderDecisionJsonPath,
   renderDecisionNextAction,
+  renderDecisionReviewCommand,
 } from "../../../../src/stages/renderDecisionCommands";
 import {
   renderDecisionRecordSchema,
@@ -21,6 +22,7 @@ export type StudioRenderDecisionSummary =
       kind: "present";
       message: string;
       nextAction: string;
+      reviewCommand: string;
     };
 
 const evidenceDraftRenderSchema = z.looseObject({
@@ -116,6 +118,7 @@ function validateStudioRenderDecision(
     kind: "present",
     message: `Render decision recorded: ${decision.decision}.`,
     nextAction: decision.nextSafeAction,
+    reviewCommand: renderDecisionReviewCommand(decision.runId),
   };
 }
 

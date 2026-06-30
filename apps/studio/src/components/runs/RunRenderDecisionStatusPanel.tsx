@@ -40,6 +40,9 @@ export function RunRenderDecisionStatusPanel({
       {renderDecision.nextAction ? (
         <p className='artifact-action'>Next action: {renderDecision.nextAction}</p>
       ) : null}
+      {renderDecision.kind === "present" ? (
+        <p className='artifact-action'>Review command: {renderDecision.reviewCommand}</p>
+      ) : null}
       <p>Read-only display. Use the CLI to record or repair local render decisions.</p>
     </section>
   );

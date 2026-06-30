@@ -52,6 +52,7 @@ describe("Studio run summary table copy", () => {
           kind: "present",
           message: "Render decision recorded: needs-revision.",
           nextAction: "Revise the draft.",
+          reviewCommand: "pnpm producer review render-decision --run run_202606280001_decision",
         },
       }),
     ).toBe("needs-revision by operator");

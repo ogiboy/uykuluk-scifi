@@ -4,6 +4,7 @@ import {
   renderDecisionJsonPath,
   renderDecisionMarkdownPath,
   renderDecisionNextAction,
+  renderDecisionReviewCommand,
 } from "../src/stages/renderDecisionCommands";
 
 describe("render decision command templates", () => {
@@ -37,6 +38,12 @@ describe("render decision command templates", () => {
   it("reuses the accepted-decision command for default next-action guidance", () => {
     expect(renderDecisionNextAction("run_template")).toBe(
       "pnpm producer decide render --run run_template --decision accepted-for-local-review --notes '<operator notes>' --reviewed-by operator",
+    );
+  });
+
+  it("builds the read-only recorded-decision review command", () => {
+    expect(renderDecisionReviewCommand("run_template")).toBe(
+      "pnpm producer review render-decision --run run_template",
     );
   });
 });

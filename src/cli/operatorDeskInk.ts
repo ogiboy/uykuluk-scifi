@@ -137,6 +137,9 @@ function SelectedRun({ run }: { run: OperatorDeskSelectedRun }): React.ReactElem
       React.createElement(Text, { key: `readiness:${index}:${line}` }, line),
     ),
     React.createElement(Text, null, `Render decision: ${run.renderDecisionStatus}`),
+    ...renderDecisionReviewLines(run).map((line) =>
+      React.createElement(Text, { key: "render-decision-review" }, line),
+    ),
     React.createElement(
       Text,
       null,
@@ -183,6 +186,12 @@ function formatRecentRunLine(run: OperatorDeskRun, selectionMarker: string): str
     run.readinessStatus,
     `decision:${run.renderDecisionStatus}`,
   ].join("  ");
+}
+
+function renderDecisionReviewLines(run: OperatorDeskSelectedRun): string[] {
+  return run.renderDecision.kind === "present"
+    ? [`Render decision review: ${run.renderDecision.reviewCommand}`]
+    : [];
 }
 
 /**

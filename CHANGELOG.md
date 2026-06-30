@@ -25,6 +25,7 @@ _No unreleased changes yet._
 ### Fixes
 
 - keep Studio workflow progress and next action aligned with recorded local render decisions
+- surface the recorded render-decision review command in status, desk, and Studio views
 
 ## v0.51.0 (2026-06-30)
 
