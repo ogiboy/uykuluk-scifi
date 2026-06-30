@@ -24,11 +24,13 @@ coherent, tested slices until the safe core and its evidence contracts are genui
 - Current branch is intentionally grouping related render-review/product polish before opening the
   next PR.
 - Completed current-branch slices:
-  - `0c5e1f9 fix(operator): use desk render status in ink`
-  - `09acc80 feat(render): expand plan review guidance`
-  - `d0943ce feat(render): guide draft decisions`
+  - `e216a7f fix(operator): use desk render status in ink`
+  - `9e0e2d9 feat(render): expand plan review guidance`
+  - `6e59ef1 feat(render): guide draft decisions`
 - Current branch state: no active implementation slice after the draft-render decision-command
-  handoff; continue only with related render-review/product polish before opening the grouped PR.
+  handoff. Branch has been rebased onto `v0.51.0`; push the rebased branch to
+  `origin/feat/render-review-polish`, then continue only with related render-review/product polish
+  before opening the grouped PR.
 - 2026-06-29 continuation branch/worktree: `feat/render-review-command` at
   `/Users/ogiboy/.codex/worktrees/894d/uykuluk-scifi`, pushed to
   `origin/feat/render-review-command`.
@@ -332,7 +334,7 @@ coherent, tested slices until the safe core and its evidence contracts are genui
 
 ## Remaining Work
 
-1. Push `d0943ce feat(render): guide draft decisions` to `origin/feat/render-review-polish`.
+1. Push the rebased `feat/render-review-polish` branch to `origin/feat/render-review-polish`.
 2. Continue one or two more product-facing local production-loop slices only if they materially
    improve reviewable draft production or operator decision clarity.
 3. Before opening the grouped PR, refresh from `origin/main`, run broader gates in proportion to
