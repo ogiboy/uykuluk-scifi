@@ -31,6 +31,7 @@ export function renderFinalReviewBundleMarkdown(bundle: FinalReviewBundle): stri
           "Timestamped map",
           "Open the draft review document and check each MP4 segment against its timestamped review row.",
         ],
+        ["YouTube chapter draft", bundle.draftRender.chapters.markdownPath],
         ["Review command", bundle.draftRender.reviewCommand],
       ],
     ),

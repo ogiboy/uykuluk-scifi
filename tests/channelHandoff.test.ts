@@ -38,6 +38,7 @@ describe("manual channel handoff", () => {
         status: "accepted-for-local-review",
       },
       media: {
+        chaptersPath: "production/render/youtube_chapters.md",
         draftRenderPath: "production/render/draft.mp4",
         subtitlesPath: "production/subtitles.srt",
       },
@@ -60,6 +61,7 @@ describe("manual channel handoff", () => {
     expect(markdown).toContain("```text");
     expect(markdown).toContain("production/render/draft.mp4");
     expect(markdown).toContain("production/subtitles.srt");
+    expect(markdown).toContain("production/render/youtube_chapters.md");
     expect(markdown).toContain("production/youtube_metadata.json");
     expect(markdown).toContain("## Thumbnail Preparation");
     expect(markdown).toContain("assets/thumbnails/");
@@ -120,6 +122,7 @@ describe("manual channel handoff", () => {
     expect(result.status).toBe(0);
     expect(result.stdout).toContain("Package: production/channel_handoff.md");
     expect(result.stdout).toContain("Subtitles: production/subtitles.srt");
+    expect(result.stdout).toContain("Chapters: production/render/youtube_chapters.md");
     expect(result.stdout).toContain("Metadata: production/youtube_metadata.json");
     expect(result.stdout).toContain("Title: ");
     expect(result.stdout).toContain("Upload and publish remain disabled.");

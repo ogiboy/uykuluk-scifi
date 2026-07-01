@@ -35,6 +35,10 @@ describe("local final review bundle", () => {
         nextAction: expect.stringContaining(`--run ${runId}`),
       },
       draftRender: {
+        chapters: {
+          jsonPath: "production/render/youtube_chapters.json",
+          markdownPath: "production/render/youtube_chapters.md",
+        },
         path: "production/render/draft.mp4",
         reviewPath: "production/render/draft_review.md",
         manifestPath: "production/render/render_manifest.json",
@@ -53,6 +57,8 @@ describe("local final review bundle", () => {
         "production/audio/voiceover_review.md",
         "production/render/draft.mp4",
         "production/render/draft_review.md",
+        "production/render/youtube_chapters.md",
+        "production/render/youtube_chapters.json",
         "evidence_bundle.md",
         "diagnostics/readiness.md",
       ]),
@@ -68,6 +74,7 @@ describe("local final review bundle", () => {
     const markdown = await readFile(artifactPath(runId, finalReviewBundleMarkdownPath), "utf8");
     expect(markdown).toContain("# Local Final Review Handoff");
     expect(markdown).toContain("production/render/draft_review.md");
+    expect(markdown).toContain("production/render/youtube_chapters.md");
     expect(markdown).toContain("Timestamped map");
     expect(markdown).toContain("Decision: pending");
     expect(markdown.toLowerCase()).toContain("upload");

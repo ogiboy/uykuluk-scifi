@@ -27,6 +27,8 @@ _No unreleased changes yet._
 - add a timestamped review map to draft-render review Markdown.
 - surface the timestamped draft-render review map from the final review bundle.
 - show the timestamped draft-review map path in the Studio final review panel.
+- add manifest-bound YouTube chapter draft artifacts to local draft renders and manual channel
+  handoff.
 
 ## v0.59.0 (2026-07-01)
 

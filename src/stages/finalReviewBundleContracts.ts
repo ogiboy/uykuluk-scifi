@@ -49,6 +49,12 @@ export const finalReviewBundleSchema = z.strictObject({
     sha256: z.string().regex(/^[a-f0-9]{64}$/),
     durationSeconds: z.number().positive(),
     reviewCommand: z.string().min(1),
+    chapters: z.strictObject({
+      jsonPath: z.string().min(1),
+      markdownPath: z.string().min(1),
+      jsonSha256: z.string().regex(/^[a-f0-9]{64}$/),
+      markdownSha256: z.string().regex(/^[a-f0-9]{64}$/),
+    }),
     media: z.strictObject({
       audioCodec: z.string().min(1),
       videoCodec: z.string().min(1),

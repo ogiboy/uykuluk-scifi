@@ -89,13 +89,13 @@ Next Real Production Loop slices:
   MP4 from the current render plan, intro/outro source cards or committed source-frame sequences,
   scene-timed background plates, voiceover audio, subtitles, lower-third, popup, waveform, and
   watermark overlays, then writes a render manifest with the exact timeline, source-frame cadence,
-  and an operator-readable draft review checklist. Local final review bundle generation now ties the
-  script, package, render plan, voiceover, draft render, evidence, readiness, and any recorded
-  render decision into one operator handoff index without approving upload or publish. A manual
-  channel handoff package can then bind the accepted final review, draft MP4, subtitles, and YouTube
-  metadata draft into a local checklist without calling YouTube APIs or approving upload/publish.
-  `producer doctor` also warns when local FFmpeg/ffprobe tools are unavailable before operators
-  reach render execution;
+  an operator-readable draft review checklist, and a manifest-bound YouTube chapter draft. Local
+  final review bundle generation now ties the script, package, render plan, voiceover, draft render,
+  evidence, readiness, and any recorded render decision into one operator handoff index without
+  approving upload or publish. A manual channel handoff package can then bind the accepted final
+  review, draft MP4, subtitles, YouTube metadata draft, and chapter draft into a local checklist
+  without calling YouTube APIs or approving upload/publish. `producer doctor` also warns when local
+  FFmpeg/ffprobe tools are unavailable before operators reach render execution;
 - define separate private-upload approval only after local final review is reliable.
 
 ## Phase C - Operator Studio

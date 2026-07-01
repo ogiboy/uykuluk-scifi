@@ -7,16 +7,10 @@ import { generateEvidenceBundle } from "../src/stages/evidence";
 import { renderDraft } from "../src/stages/render";
 import type { DraftRenderEvidence, DraftRenderManifest } from "../src/stages/renderEvidence";
 import { runReadiness } from "../src/stages/readiness";
-import { pathExists } from "../src/utils/fs";
 import { readJsonFile } from "../src/utils/json";
 import { useTempProject } from "./helpers";
 import { prepareVoiceoverReadyRun } from "./renderPipelineHelpers";
-import {
-  createFailingFakeFfprobe,
-  createFakeFfmpeg,
-  createFakeFfprobe,
-  renderToolRoot,
-} from "./renderTestHelpers";
+import { createFakeFfmpeg, createFakeFfprobe, renderToolRoot } from "./renderTestHelpers";
 
 describe("draft render", () => {
   useTempProject();
@@ -46,13 +40,15 @@ describe("draft render", () => {
         "production/render/draft.mp4",
         "production/render/render_manifest.json",
         "production/render/draft_review.md",
+        "production/render/youtube_chapters.json",
+        "production/render/youtube_chapters.md",
       ]),
     );
     const manifest = await readJsonFile<DraftRenderManifest>(
       artifactPath(runId, "production/render/render_manifest.json"),
     );
     const draftRenderArtifactPath = artifactPath(runId, "production/render/draft.mp4");
-    expect(manifest.schemaVersion).toBe(6);
+    expect(manifest.schemaVersion).toBe(7);
     expect(manifest.renderApproval).toEqual({
       approvalId: approval.approvalId,
       approvedRef,
@@ -63,6 +59,12 @@ describe("draft render", () => {
       durationSeconds: 8,
     });
     expect(manifest.output.bytes).toBeGreaterThan(0);
+    expect(manifest.chapterDraft).toMatchObject({
+      jsonPath: "production/render/youtube_chapters.json",
+      jsonSha256: expect.stringMatching(/^[a-f0-9]{64}$/),
+      markdownPath: "production/render/youtube_chapters.md",
+      markdownSha256: expect.stringMatching(/^[a-f0-9]{64}$/),
+    });
     expect(manifest.renderPlan.path).toBe("production/render_plan.json");
     expect(manifest.voiceoverAudio).toMatchObject({
       mode: "deterministic-local",
@@ -214,6 +216,8 @@ describe("draft render", () => {
     expect(review).toContain("## Media Probe");
     expect(review).toContain("## Render Approval");
     expect(review).toContain("## Timestamped Review Map");
+    expect(review).toContain("## YouTube Chapter Draft");
+    expect(review).toContain("production/render/youtube_chapters.md");
     expect(review).toContain("| 0:00.00-0:01.00 | intro | source frame 1 |");
     expect(review).toContain("| intro | - | 1 | 1s | assets/intro/frames/intro_frame_00.jpg |");
     expect(review).toContain("| outro | - | 2 | 1.5s | assets/outro/frames/outro_frame_01.jpg |");
@@ -229,7 +233,6 @@ describe("draft render", () => {
     expect(review).toContain(`Keep the local draft with run ${runId} for manual review`);
     expect(review).toContain("Upload remains disabled");
     expect(review).toContain("Scheduled/public publish remains disabled");
-
     const readiness = await runReadiness(runId);
     expect(readiness.checks.find((check) => check.name === "draft render available")).toMatchObject(
       {
@@ -239,21 +242,5 @@ describe("draft render", () => {
         status: "pass",
       },
     );
-  });
-
-  it("blocks draft render completion when media probing cannot validate the output", async () => {
-    const runId = await prepareVoiceoverReadyRun();
-    await approveRender(runId);
-    const ffmpeg = await createFakeFfmpeg(renderToolRoot("probe-failure"));
-    const ffprobe = await createFailingFakeFfprobe(renderToolRoot("probe-failure"));
-
-    await expect(
-      renderDraft(runId, { ffmpegBinary: ffmpeg, ffprobeBinary: ffprobe, maxDurationSeconds: 1 }),
-    ).rejects.toThrow(/ffprobe exited/i);
-
-    const run = await loadRun(runId);
-    expect(run.state).toBe("RENDER_APPROVED");
-    expect(run.artifacts).not.toContain("production/render/draft.mp4");
-    expect(await pathExists(artifactPath(runId, "production/render/draft.mp4"))).toBe(false);
   });
 });

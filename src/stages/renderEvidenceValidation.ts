@@ -83,8 +83,25 @@ export async function readValidatedDraftRenderManifest(
   if (digest !== manifest.output.sha256 || info.size !== manifest.output.bytes) {
     throw new SafeExitError("Draft render output does not match manifest.");
   }
+  await assertDraftRenderChapterDrafts(run, manifest);
   await assertDraftRenderInputs(run, manifest);
   return { digest, manifest: trustedReviewManifest(run.runId, manifest) };
+}
+
+async function assertDraftRenderChapterDrafts(
+  run: RunRecord,
+  manifest: DraftRenderManifest,
+): Promise<void> {
+  const json = await readFile(artifactPath(run.runId, manifest.chapterDraft.jsonPath));
+  const markdown = await readFile(artifactPath(run.runId, manifest.chapterDraft.markdownPath));
+  if (createHash("sha256").update(json).digest("hex") !== manifest.chapterDraft.jsonSha256) {
+    throw new SafeExitError("Draft render chapter JSON does not match manifest.");
+  }
+  if (
+    createHash("sha256").update(markdown).digest("hex") !== manifest.chapterDraft.markdownSha256
+  ) {
+    throw new SafeExitError("Draft render chapter Markdown does not match manifest.");
+  }
 }
 
 async function assertDraftRenderInputs(

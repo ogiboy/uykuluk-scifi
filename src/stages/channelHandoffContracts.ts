@@ -28,6 +28,8 @@ export const channelHandoffSchema = z.strictObject({
     durationSeconds: z.number().positive(),
     subtitlesPath: z.literal("production/subtitles.srt"),
     renderReviewPath: z.string().min(1),
+    chaptersPath: z.string().min(1),
+    chaptersJsonPath: z.string().min(1),
   }),
   youtube: z.strictObject({
     metadataPath: z.literal("production/youtube_metadata.json"),
@@ -73,6 +75,8 @@ export function buildChannelHandoffPayload(input: {
       durationSeconds: input.finalReviewBundle.draftRender.durationSeconds,
       subtitlesPath: "production/subtitles.srt",
       renderReviewPath: input.finalReviewBundle.draftRender.reviewPath,
+      chaptersPath: input.finalReviewBundle.draftRender.chapters.markdownPath,
+      chaptersJsonPath: input.finalReviewBundle.draftRender.chapters.jsonPath,
     },
     youtube: {
       metadataPath: "production/youtube_metadata.json",
@@ -100,6 +104,7 @@ export function channelHandoffOperatorChecklist(): string[] {
   return [
     "Watch the draft MP4 from start to finish outside the app.",
     "Verify subtitles, voiceover timing, popup cards, and visual rhythm against the final review bundle.",
+    "Review and revise the YouTube chapter draft before copying it into any future upload workflow.",
     "Review the YouTube title, description, and tags for channel tone, accuracy, and policy risk.",
     "Choose or revise the thumbnail manually from tracked brand assets before any upload workflow.",
     "Keep upload and public/scheduled publish disabled unless a future explicit approval/config path exists.",

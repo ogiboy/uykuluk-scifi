@@ -77,6 +77,7 @@ export async function createFinalReviewBundle(runId: string): Promise<FinalRevie
       sha256: draftRender.output.sha256,
       durationSeconds: draftRender.output.durationSeconds,
       reviewCommand: draftRender.ffmpeg.reviewCommand,
+      chapters: draftRender.chapterDraft,
       media: {
         audioCodec: draftRender.mediaProbe.audio.codecName,
         videoCodec: draftRender.mediaProbe.video.codecName,

@@ -17,6 +17,7 @@ export function formatRenderDraftConsole(manifest: DraftRenderManifest): string 
     `Draft render available: ${manifest.output.path}`,
     `Review document: ${draftRenderReviewPath}`,
     `Manifest: ${draftRenderManifestPath}`,
+    `YouTube chapter draft: ${manifest.chapterDraft.markdownPath}`,
     `FFmpeg review command: ${manifest.ffmpeg.reviewCommand}`,
     "Next safe action: review the MP4 locally with the manifest and draft checklist; upload and publish remain disabled.",
     "After review, record exactly one local decision:",

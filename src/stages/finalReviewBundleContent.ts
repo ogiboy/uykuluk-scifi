@@ -72,6 +72,18 @@ const finalReviewArtifactSpecs = [
     "Use as machine-readable proof for the local render inputs and output.",
   ],
   [
+    "YouTube chapter draft",
+    "production/render/youtube_chapters.md",
+    "Draft render",
+    "Review and revise the local chapter copy before any future upload workflow.",
+  ],
+  [
+    "YouTube chapter JSON",
+    "production/render/youtube_chapters.json",
+    "Draft render",
+    "Use as machine-readable chapter-prep evidence bound by the render manifest.",
+  ],
+  [
     "Evidence bundle",
     "evidence_bundle.md",
     "Evidence",

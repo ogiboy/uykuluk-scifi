@@ -110,6 +110,12 @@ export async function writeStudioFinalReviewBundle(
     ],
     createdAt: "2026-06-28T00:05:00.000Z",
     draftRender: {
+      chapters: {
+        jsonPath: "production/render/youtube_chapters.json",
+        jsonSha256: "b".repeat(64),
+        markdownPath: "production/render/youtube_chapters.md",
+        markdownSha256: "c".repeat(64),
+      },
       durationSeconds: 8.2,
       manifestPath: "production/render/render_manifest.json",
       media: {

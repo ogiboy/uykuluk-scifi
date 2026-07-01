@@ -42,8 +42,14 @@ describe("producer render CLI", () => {
 
     expect(result.status).toBe(0);
     expect(JSON.parse(result.stdout) as unknown).toMatchObject({
-      schemaVersion: 6,
+      schemaVersion: 7,
       runId,
+      chapterDraft: {
+        jsonPath: "production/render/youtube_chapters.json",
+        jsonSha256: expect.stringMatching(/^[a-f0-9]{64}$/),
+        markdownPath: "production/render/youtube_chapters.md",
+        markdownSha256: expect.stringMatching(/^[a-f0-9]{64}$/),
+      },
       renderApproval: {
         approvalId: expect.stringMatching(/^approval_/),
         approvedRef: expect.stringMatching(/^[a-f0-9]{64}$/),

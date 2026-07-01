@@ -77,6 +77,12 @@ describe("Studio run summary table copy", () => {
             blockedActions: [],
             createdAt: "2026-06-28T00:00:00.000Z",
             draftRender: {
+              chapters: {
+                jsonPath: "production/render/youtube_chapters.json",
+                jsonSha256: "b".repeat(64),
+                markdownPath: "production/render/youtube_chapters.md",
+                markdownSha256: "c".repeat(64),
+              },
               durationSeconds: 8,
               manifestPath: "production/render/render_manifest.json",
               media: { audioCodec: "aac", height: 720, videoCodec: "h264", width: 1280 },

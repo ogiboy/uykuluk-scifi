@@ -27,6 +27,7 @@ export function renderChannelHandoffMarkdown(handoff: ChannelHandoff): string {
         ["Duration", `${handoff.media.durationSeconds}s`],
         ["Subtitles", handoff.media.subtitlesPath],
         ["Render review", handoff.media.renderReviewPath],
+        ["YouTube chapter draft", handoff.media.chaptersPath],
       ],
     ),
     "",
@@ -66,6 +67,7 @@ export function renderChannelHandoffMarkdown(handoff: ChannelHandoff): string {
       [
         ["Video file", handoff.media.draftRenderPath],
         ["Subtitle file", handoff.media.subtitlesPath],
+        ["Chapter draft", handoff.media.chaptersPath],
         ["Metadata JSON", handoff.youtube.metadataPath],
         ["Final review Markdown", handoff.finalReviewBundle.markdownPath],
         ["Manual handoff Markdown", "production/channel_handoff.md"],
