@@ -14,10 +14,15 @@ import { formatDiagnostics } from "./statusDiagnostics.js";
 import { readEvidenceStatus, type EvidenceReadResult } from "./statusEvidence.js";
 import { readRenderDecisionStatus, type RenderDecisionStatus } from "./renderDecisionStatus.js";
 import {
+  readFinalReviewBundleStatus,
+  type FinalReviewBundleStatus,
+} from "./finalReviewBundleStatus.js";
+import {
   formatStatusReadiness,
   readStatusReadiness,
   type StatusReadinessSummary,
 } from "./statusReadiness.js";
+import { formatFinalReviewBundleStatus } from "./statusFinalReviewBundle.js";
 import { formatApprovalLedger, formatWarningDetails } from "./statusLedger.js";
 
 export type RunStatusSummary = {
@@ -30,6 +35,7 @@ export type RunStatusSummary = {
   evidenceStatus: EvidenceReadResult["kind"];
   mediaArtifacts: ProductionMediaStatus[];
   diagnostics: RunDiagnosticSummary[];
+  finalReviewBundle: FinalReviewBundleStatus;
   nextRecommendedCommand: string;
   readiness: StatusReadinessSummary;
   recentArtifacts: string[];
@@ -48,12 +54,14 @@ export type RunStatusSummary = {
  */
 export async function readRunStatus(runId: string): Promise<RunStatusSummary> {
   const run = await loadRun(runId);
-  const [evidenceResult, diagnostics, readiness, renderDecision] = await Promise.all([
-    readEvidenceStatus(run.runId, run.state),
-    readRunDiagnosticSummaries(run.runId, run.artifacts),
-    readStatusReadiness(run.runId, run.state),
-    readRenderDecisionStatus(run),
-  ]);
+  const [evidenceResult, diagnostics, readiness, renderDecision, finalReviewBundle] =
+    await Promise.all([
+      readEvidenceStatus(run.runId, run.state),
+      readRunDiagnosticSummaries(run.runId, run.artifacts),
+      readStatusReadiness(run.runId, run.state),
+      readRenderDecisionStatus(run),
+      readFinalReviewBundleStatus(run),
+    ]);
   const evidence = evidenceResult.kind === "present" ? evidenceResult.evidence : null;
   const blockedActions = evidenceBlockedActionMessages(evidence, run.runId);
   return {
@@ -65,12 +73,14 @@ export async function readRunStatus(runId: string): Promise<RunStatusSummary> {
     evidenceMessage: "message" in evidenceResult ? evidenceResult.message : null,
     evidencePresent: Boolean(evidence),
     evidenceStatus: evidenceResult.kind,
+    finalReviewBundle,
     mediaArtifacts: productionMediaStatus(run, evidence),
     nextRecommendedCommand: statusNextRecommendedCommand(
       run.runId,
       run.state,
       evidenceResult,
       renderDecision,
+      finalReviewBundle,
     ),
     readiness,
     recentArtifacts: run.artifacts.slice(-5).reverse(),
@@ -104,6 +114,7 @@ export function formatRunStatus(status: RunStatusSummary): string {
     `Next safe action: ${status.nextRecommendedCommand}`,
     ...formatStatusReadiness(status.readiness),
     ...formatRenderDecisionStatus(status.renderDecision),
+    ...formatFinalReviewBundleStatus(status.finalReviewBundle),
     ...formatBlockedActions(status.blockedActions),
     ...formatDiagnostics(status.diagnostics),
     ...formatProductionMediaEvidenceForRun(status),
@@ -220,7 +231,14 @@ function statusNextRecommendedCommand(
   state: RunState,
   evidenceResult: EvidenceReadResult,
   renderDecision: RenderDecisionStatus,
+  finalReviewBundle: FinalReviewBundleStatus,
 ): string {
+  if (finalReviewBundle.kind === "present") {
+    return finalReviewBundle.nextAction;
+  }
+  if (finalReviewBundle.kind === "invalid" || finalReviewBundle.kind === "stale") {
+    return finalReviewBundle.nextAction;
+  }
   if (renderDecision.kind === "present") {
     return renderDecision.nextAction;
   }

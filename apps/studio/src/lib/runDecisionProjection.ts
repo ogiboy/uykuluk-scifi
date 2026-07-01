@@ -6,6 +6,7 @@ import {
 import type { StatusWorkflowStep } from "../../../../src/stages/statusWorkflow";
 import { buildStatusWorkflowProgress } from "../../../../src/stages/statusWorkflow";
 import { evidenceNextRecommendedCommand, type StudioEvidenceSummary } from "./evidenceSummaries";
+import type { StudioFinalReviewBundleSummary } from "./finalReviewBundleSummaries";
 import type { StudioRenderDecisionSummary } from "./renderDecisionSummaries";
 import type { RunRecord, StudioRunState } from "./runSummaries";
 
@@ -36,6 +37,7 @@ export function studioWorkflowProgress(input: {
  * @param state - The run state.
  * @param runId - The run identifier.
  * @param renderDecision - The local render decision summary.
+ * @param finalReviewBundle - The local final review bundle summary.
  * @returns A command or operator action for the next safe step.
  */
 export function studioNextRecommendedCommand(
@@ -43,7 +45,14 @@ export function studioNextRecommendedCommand(
   state: string,
   runId: string,
   renderDecision: StudioRenderDecisionSummary,
+  finalReviewBundle: StudioFinalReviewBundleSummary,
 ): string | null {
+  if (finalReviewBundle.kind === "present") {
+    return finalReviewBundle.nextAction;
+  }
+  if (finalReviewBundle.kind === "invalid" || finalReviewBundle.kind === "stale") {
+    return finalReviewBundle.nextAction;
+  }
   if (renderDecision.kind === "present") {
     return renderDecision.nextAction;
   }

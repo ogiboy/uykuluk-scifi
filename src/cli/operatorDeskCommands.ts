@@ -29,8 +29,22 @@ export function buildOperatorDeskCommandQueue(status: RunStatusSummary): Operato
   addReadinessCommands(status.readiness, addCommand);
   addMediaCommands(status, addCommand);
   addRenderDecisionCommands(status.renderDecision, addCommand);
+  addFinalReviewBundleCommand(status, addCommand);
 
   return commands;
+}
+
+function addFinalReviewBundleCommand(
+  status: RunStatusSummary,
+  addCommand: (label: string, command: string | null | undefined) => void,
+): void {
+  if (
+    status.finalReviewBundle.kind === "missing" ||
+    status.finalReviewBundle.kind === "invalid" ||
+    status.finalReviewBundle.kind === "stale"
+  ) {
+    addCommand("Final review bundle", status.finalReviewBundle.nextAction);
+  }
 }
 
 /**

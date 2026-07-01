@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Box, render, Text, useApp, useInput } from "ink";
+import { finalReviewBundleLines } from "./operatorDeskFinalReview.js";
 import {
   formatOperatorDeskBlockedActionLines,
   formatOperatorDeskDiagnosticLines,
@@ -142,6 +143,10 @@ function SelectedRun({ run }: { run: OperatorDeskSelectedRun }): React.ReactElem
     ...renderDecisionReviewLines(run).map((line) =>
       React.createElement(Text, { key: "render-decision-review" }, line),
     ),
+    React.createElement(Text, null, `Final review bundle: ${run.finalReviewBundleStatus}`),
+    ...finalReviewBundleLines(run.finalReviewBundle).map((line) =>
+      React.createElement(Text, { key: `final-review:${line}` }, line),
+    ),
     React.createElement(
       Text,
       null,
@@ -193,6 +198,7 @@ function formatRecentRunLine(run: OperatorDeskRun, selectionMarker: string): str
     run.state,
     run.readinessStatus,
     `decision:${run.renderDecisionStatus}`,
+    `bundle:${run.finalReviewBundleStatus}`,
   ].join("  ");
 }
 

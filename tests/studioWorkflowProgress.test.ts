@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { getStudioRunDetail } from "../apps/studio/src/lib/runSummaries";
-import { writeStudioRenderDecision } from "./studioRenderDecisionFixtures";
+import {
+  writeStudioFinalReviewBundle,
+  writeStudioRenderDecision,
+} from "./studioRenderDecisionFixtures";
 import { createRenderedStudioRunFixture } from "./studioRunFixtures";
 import { useTempProject } from "./helpers";
 
@@ -45,6 +48,29 @@ describe("Studio workflow progress", () => {
           label: "Operator decision",
           status: "done",
         },
+      ]),
+    );
+  });
+
+  it("surfaces the local final review bundle after operator decision handoff", async () => {
+    const runId = await createRenderedStudioRunFixture();
+    await writeStudioFinalReviewBundle(runId, "accepted-for-local-review");
+    const detail = await getStudioRunDetail(runId);
+
+    expect(detail?.finalReviewBundle).toMatchObject({
+      kind: "present",
+      bundle: { status: "accepted-for-local-review" },
+      reviewPath: "production/review_bundle.md",
+    });
+    expect(detail?.nextRecommendedCommand).toContain("Local final review handoff is ready");
+    expect(detail?.nextRecommendedCommand).not.toContain("producer review-bundle");
+    expect(detail?.artifacts).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          exists: true,
+          label: "Final review handoff",
+          path: "production/review_bundle.md",
+        }),
       ]),
     );
   });

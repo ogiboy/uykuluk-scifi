@@ -6,7 +6,10 @@ import { artifactPath } from "../src/core/artifacts";
 import { loadRun, saveRun } from "../src/core/runStore";
 import { renderDecisionJsonPath } from "../src/stages/renderDecisionCommands";
 import { useTempProject } from "./helpers";
-import { writeStudioRenderDecision } from "./studioRenderDecisionFixtures";
+import {
+  writeStudioFinalReviewBundle,
+  writeStudioRenderDecision,
+} from "./studioRenderDecisionFixtures";
 import { createRenderedStudioRunFixture, writeEvidence } from "./studioRunFixtures";
 
 describe("Studio render decision commands", () => {
@@ -179,6 +182,33 @@ describe("Studio render decision commands", () => {
     expect(detail?.renderDecision).toMatchObject({
       kind: "invalid",
       message: expect.stringContaining("Render decision could not be trusted:"),
+    });
+  });
+
+  it("marks final review bundles stale when draft digest or decision binding changes", async () => {
+    const digestRunId = await createRenderedStudioRunFixture();
+    await writeStudioFinalReviewBundle(digestRunId);
+    await writeEvidence(digestRunId, {
+      currentState: "RENDERED",
+      draftRender: validDraftRenderEvidence({ digest: "f".repeat(64) }),
+    });
+
+    const digestMismatch = await getStudioRunDetail(digestRunId);
+
+    expect(digestMismatch?.finalReviewBundle).toMatchObject({
+      kind: "stale",
+      message: "Final review bundle was created for a different draft render digest.",
+    });
+
+    const decisionRunId = await createRenderedStudioRunFixture();
+    await writeStudioFinalReviewBundle(decisionRunId, "accepted-for-local-review");
+    await writeStudioRenderDecision(decisionRunId, "needs-revision");
+
+    const decisionMismatch = await getStudioRunDetail(decisionRunId);
+
+    expect(decisionMismatch?.finalReviewBundle).toMatchObject({
+      kind: "stale",
+      message: "Final review bundle was created for a different render decision outcome.",
     });
   });
 });

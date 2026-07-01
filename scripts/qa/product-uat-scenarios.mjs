@@ -247,6 +247,8 @@ export async function assertRenderedArtifacts({ assertFile, runId }) {
     "production/render/draft_review.md",
     "production/render/render_decision.json",
     "production/render/render_decision.md",
+    "production/review_bundle.json",
+    "production/review_bundle.md",
   ]) {
     await assertFile(path.join("runs", runId, artifact), `rendered artifact exists: ${artifact}`);
   }
