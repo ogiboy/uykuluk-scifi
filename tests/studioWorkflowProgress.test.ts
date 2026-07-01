@@ -50,7 +50,10 @@ describe("Studio workflow progress", () => {
 
     expect(detail?.finalReviewBundle).toMatchObject({
       kind: "present",
-      bundle: { status: "accepted-for-local-review" },
+      bundle: {
+        draftRender: { reviewPath: "production/render/draft_review.md" },
+        status: "accepted-for-local-review",
+      },
       reviewPath: "production/review_bundle.md",
     });
     expect(detail?.nextRecommendedCommand).toContain(

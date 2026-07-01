@@ -30,6 +30,10 @@ export function RunFinalReviewBundlePanel({ finalReviewBundle }: RunFinalReviewB
             <dd>{finalReviewBundle.reviewPath}</dd>
           </div>
           <div>
+            <dt>Timestamped draft map</dt>
+            <dd>{finalReviewBundle.bundle.draftRender.reviewPath}</dd>
+          </div>
+          <div>
             <dt>Created</dt>
             <dd>{finalReviewBundle.bundle.createdAt}</dd>
           </div>

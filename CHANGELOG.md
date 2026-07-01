@@ -26,6 +26,7 @@ _No unreleased changes yet._
   thumbnail review guidance.
 - add a timestamped review map to draft-render review Markdown.
 - surface the timestamped draft-render review map from the final review bundle.
+- show the timestamped draft-review map path in the Studio final review panel.
 
 ## v0.59.0 (2026-07-01)
 
