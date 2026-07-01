@@ -25,6 +25,7 @@ _No unreleased changes yet._
 - make the manual channel handoff copy-ready with upload-prep fields, local input paths, and
   thumbnail review guidance.
 - add a timestamped review map to draft-render review Markdown.
+- surface the timestamped draft-render review map from the final review bundle.
 
 ## v0.59.0 (2026-07-01)
 

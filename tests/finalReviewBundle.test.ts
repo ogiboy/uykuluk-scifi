@@ -67,6 +67,8 @@ describe("local final review bundle", () => {
     );
     const markdown = await readFile(artifactPath(runId, finalReviewBundleMarkdownPath), "utf8");
     expect(markdown).toContain("# Local Final Review Handoff");
+    expect(markdown).toContain("production/render/draft_review.md");
+    expect(markdown).toContain("Timestamped map");
     expect(markdown).toContain("Decision: pending");
     expect(markdown.toLowerCase()).toContain("upload");
     expect(markdown.toLowerCase()).toContain("publish");

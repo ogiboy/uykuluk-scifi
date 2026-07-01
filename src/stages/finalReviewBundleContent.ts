@@ -63,7 +63,7 @@ const finalReviewArtifactSpecs = [
     "Draft render review",
     "production/render/draft_review.md",
     "Draft render",
-    "Review FFmpeg proof, ffprobe evidence, overlays, and blocked upload/publish actions.",
+    "Review FFmpeg proof, timestamped map, ffprobe evidence, overlays, and blocked upload/publish actions.",
   ],
   [
     "Render manifest",
