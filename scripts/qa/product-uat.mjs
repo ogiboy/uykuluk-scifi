@@ -12,6 +12,7 @@ import {
 import {
   assertRenderedArtifacts,
   assertStaleEvidenceRecovery,
+  assertTamperedFinalReviewBlocksChannelHandoff,
   assertTamperedRenderReviewCommandBlocks,
   createIdeaOnlyRun,
   createVoiceReadyRun,
@@ -139,6 +140,13 @@ try {
     expectOutput: "Local final review bundle generated.",
     label: "final local review bundle is generated",
     scenario: "happy path",
+  });
+  await assertTamperedFinalReviewBlocksChannelHandoff({
+    assertCondition,
+    pnpm,
+    run,
+    runId: renderedRunId,
+    workdir,
   });
   run([pnpm, "producer", "status", "--run", renderedRunId], {
     expectOutput: "Final review bundle: accepted-for-local-review",

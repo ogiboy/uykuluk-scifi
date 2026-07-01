@@ -3,10 +3,13 @@ import { artifactPath } from "../src/core/artifacts";
 import { loadRun, saveRun } from "../src/core/runStore";
 import { sha256 } from "../src/utils/hash";
 import {
+  buildChannelHandoffPayload,
   channelHandoffJsonPath,
   channelHandoffMarkdownPath,
+  channelHandoffSchema,
   type ChannelHandoff,
 } from "../src/stages/channelHandoffContracts";
+import { renderChannelHandoffMarkdown } from "../src/stages/channelHandoffMarkdown";
 import {
   finalReviewBundleJsonPath,
   finalReviewBundleMarkdownPath,
@@ -180,46 +183,32 @@ export async function writeStudioFinalReviewBundle(
  * @returns The persisted manual channel handoff.
  */
 export async function writeStudioChannelHandoff(runId: string): Promise<ChannelHandoff> {
-  await writeStudioFinalReviewBundle(runId, "accepted-for-local-review");
+  const finalReviewBundle = await writeStudioFinalReviewBundle(runId, "accepted-for-local-review");
   const finalReviewJson = await readFixtureText(runId, finalReviewBundleJsonPath);
   const run = await loadRun(runId);
-  const handoff: ChannelHandoff = {
-    blockedActions: [
-      "This handoff does not call YouTube APIs or create a private upload.",
-      "This handoff does not approve public or scheduled publishing.",
-    ],
-    createdAt: "2026-06-28T00:10:00.000Z",
-    finalReviewBundle: {
-      digest: sha256(finalReviewJson),
-      markdownPath: finalReviewBundleMarkdownPath,
-      path: finalReviewBundleJsonPath,
-      status: "accepted-for-local-review",
-    },
-    manualOnly: true,
-    media: {
-      draftRenderPath: "production/render/draft.mp4",
-      draftRenderSha256: "a".repeat(64),
-      durationSeconds: 8.2,
-      renderReviewPath: "production/render/draft_review.md",
-      subtitlesPath: "production/subtitles.srt",
-    },
-    nextSafeAction:
-      "Manually review production/channel_handoff.md, the MP4, subtitles, metadata, and thumbnail assets before any future private-upload approval path is used.",
-    operatorChecklist: ["Watch the draft MP4 from start to finish outside the app."],
-    runId,
-    schemaVersion: 1,
-    status: "ready-for-manual-channel-review",
-    youtube: {
-      description: "Fixture description.",
-      metadataPath: "production/youtube_metadata.json",
-      tags: ["uykuluk", "scifi"],
-      title: "Fixture title",
-    },
+  const youtube = {
+    description: "Fixture description.",
+    tags: ["uykuluk", "scifi"],
+    title: "Fixture title",
   };
+  await writeFile(
+    artifactPath(runId, "production/youtube_metadata.json"),
+    JSON.stringify(youtube),
+    "utf8",
+  );
+  const handoff = channelHandoffSchema.parse({
+    createdAt: "2026-06-28T00:10:00.000Z",
+    ...buildChannelHandoffPayload({
+      finalReviewBundle,
+      finalReviewBundleDigest: sha256(finalReviewJson),
+      runId,
+      youtube,
+    }),
+  });
   await writeFile(artifactPath(runId, channelHandoffJsonPath), JSON.stringify(handoff), "utf8");
   await writeFile(
     artifactPath(runId, channelHandoffMarkdownPath),
-    "# Manual Channel Handoff\n\nUpload remains disabled.",
+    renderChannelHandoffMarkdown(handoff),
     "utf8",
   );
   await saveRun({

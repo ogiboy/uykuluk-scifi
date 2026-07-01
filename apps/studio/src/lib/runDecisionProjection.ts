@@ -54,16 +54,16 @@ export function studioNextRecommendedCommand(
   finalReviewBundle: StudioFinalReviewBundleSummary,
   channelHandoff: StudioChannelHandoffSummary,
 ): string | null {
-  if (channelHandoff.kind === "present") {
-    return channelHandoff.nextAction;
-  }
-  if (channelHandoff.kind === "invalid" || channelHandoff.kind === "stale") {
-    return channelHandoff.nextAction;
-  }
-  if (finalReviewBundle.kind === "present") {
+  if (finalReviewBundle.kind === "invalid" || finalReviewBundle.kind === "stale") {
     return finalReviewBundle.nextAction;
   }
-  if (finalReviewBundle.kind === "invalid" || finalReviewBundle.kind === "stale") {
+  if (finalReviewBundle.kind === "present") {
+    if (channelHandoff.kind === "present") {
+      return channelHandoff.nextAction;
+    }
+    if (channelHandoff.kind === "invalid" || channelHandoff.kind === "stale") {
+      return channelHandoff.nextAction;
+    }
     return finalReviewBundle.nextAction;
   }
   if (finalReviewBundle.kind === "missing" && renderDecision.kind === "present") {
@@ -133,6 +133,7 @@ function studioWorkflowArtifactStatus(
     return {
       kind: "present",
       message: artifact.message,
+      status: "bundle" in artifact ? artifact.bundle.status : artifact.handoff.status,
     };
   }
   if (artifact.kind === "invalid" || artifact.kind === "stale") {

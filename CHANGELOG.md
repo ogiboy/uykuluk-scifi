@@ -9,6 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
+### Fixes
+
+- harden manual channel handoff staleness, status ordering, and Markdown rendering after review.
+
 ### Features
 
 - add a manual-only channel handoff package after accepted local final review.

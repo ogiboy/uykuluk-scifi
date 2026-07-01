@@ -1,4 +1,5 @@
 import type { FinalReviewBundle } from "./finalReviewBundleContracts.js";
+import { channelHandoffCommand } from "./channelHandoffContracts.js";
 
 const finalReviewBundleMarkdownPath = "production/review_bundle.md";
 
@@ -86,13 +87,13 @@ export function finalReviewBundleReadyAction(bundle: FinalReviewBundle): string 
     return bundle.nextSafeAction;
   }
   if (bundle.status === "accepted-for-local-review") {
-    return `Prepare the manual channel handoff with ${localChannelHandoffCommand(bundle.runId)}. Review ${finalReviewBundleMarkdownPath} first; upload remains disabled until a future private-upload approval/config path exists.`;
+    return acceptedFinalReviewNextSafeAction(bundle.runId);
   }
   return bundle.nextSafeAction;
 }
 
-function localChannelHandoffCommand(runId: string): string {
-  return `pnpm producer channel-handoff --run ${runId}`;
+export function acceptedFinalReviewNextSafeAction(runId: string): string {
+  return `Prepare the manual channel handoff with ${channelHandoffCommand(runId)}. Review ${finalReviewBundleMarkdownPath} first; upload remains disabled until a future private-upload approval/config path exists.`;
 }
 
 function presentDecisionStaleReason(

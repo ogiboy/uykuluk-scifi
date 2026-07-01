@@ -1,52 +1,27 @@
 import { readFile } from "node:fs/promises";
-import { z } from "zod";
+import {
+  buildChannelHandoffPayload,
+  channelHandoffCommand,
+  channelHandoffJsonPath,
+  channelHandoffMarkdownPath,
+  channelHandoffSchema,
+  comparableChannelHandoffPayload,
+  type ChannelHandoff,
+  youtubeMetadataSchema,
+} from "../../../../src/stages/channelHandoffContracts";
 import { sha256 } from "../../../../src/utils/hash";
 import type { StudioFinalReviewBundleSummary } from "./finalReviewBundleSummaries";
 import { studioRunFilePath } from "./runFilePaths";
 import type { RunRecord } from "./runRecordTypes";
 
-const channelHandoffJsonPath = "production/channel_handoff.json";
-const channelHandoffMarkdownPath = "production/channel_handoff.md";
 const finalReviewBundleJsonPath = "production/review_bundle.json";
-
-const channelHandoffSchema = z.strictObject({
-  schemaVersion: z.literal(1),
-  runId: z.string().min(1),
-  createdAt: z.string().min(1),
-  status: z.literal("ready-for-manual-channel-review"),
-  manualOnly: z.literal(true),
-  finalReviewBundle: z.strictObject({
-    path: z.literal(finalReviewBundleJsonPath),
-    markdownPath: z.literal("production/review_bundle.md"),
-    digest: z.string().regex(/^[a-f0-9]{64}$/),
-    status: z.literal("accepted-for-local-review"),
-  }),
-  media: z.strictObject({
-    draftRenderPath: z.string().min(1),
-    draftRenderSha256: z.string().regex(/^[a-f0-9]{64}$/),
-    durationSeconds: z.number().positive(),
-    subtitlesPath: z.literal("production/subtitles.srt"),
-    renderReviewPath: z.string().min(1),
-  }),
-  youtube: z.strictObject({
-    metadataPath: z.literal("production/youtube_metadata.json"),
-    title: z.string().min(1),
-    description: z.string().min(1),
-    tags: z.array(z.string().min(1)),
-  }),
-  operatorChecklist: z.array(z.string().min(1)).min(1),
-  blockedActions: z.array(z.string().min(1)).min(1),
-  nextSafeAction: z.string().min(1),
-});
-
-type StudioChannelHandoff = z.infer<typeof channelHandoffSchema>;
 
 export type StudioChannelHandoffSummary =
   | { kind: "missing"; message: string; nextAction: string | null }
   | { kind: "invalid"; message: string; nextAction: string }
   | { kind: "stale"; message: string; nextAction: string }
   | {
-      handoff: StudioChannelHandoff;
+      handoff: ChannelHandoff;
       kind: "present";
       message: string;
       nextAction: string;
@@ -104,7 +79,7 @@ async function channelHandoffStaleReason(
   root: string,
   record: RunRecord,
   finalReviewBundle: StudioFinalReviewBundleSummary,
-  handoff: StudioChannelHandoff,
+  handoff: ChannelHandoff,
 ): Promise<string | null> {
   const runId = record.runId ?? "unknown";
   if (handoff.runId !== runId) {
@@ -124,9 +99,23 @@ async function channelHandoffStaleReason(
     return "Manual channel handoff final review path is invalid.";
   }
   const currentFinalReviewDigest = sha256(await readFile(finalReviewFile, "utf8"));
-  return handoff.finalReviewBundle.digest === currentFinalReviewDigest
+  if (handoff.finalReviewBundle.digest !== currentFinalReviewDigest) {
+    return "Manual channel handoff was created for a different final review bundle digest.";
+  }
+  const metadataFile = studioRunFilePath(root, runId, "production/youtube_metadata.json");
+  if (!metadataFile) {
+    return "Manual channel handoff metadata path is invalid.";
+  }
+  const youtube = youtubeMetadataSchema.parse(JSON.parse(await readFile(metadataFile, "utf8")));
+  const expected = buildChannelHandoffPayload({
+    finalReviewBundle: finalReviewBundle.bundle,
+    finalReviewBundleDigest: currentFinalReviewDigest,
+    runId,
+    youtube,
+  });
+  return JSON.stringify(comparableChannelHandoffPayload(handoff)) === JSON.stringify(expected)
     ? null
-    : "Manual channel handoff was created for a different final review bundle digest.";
+    : "Manual channel handoff no longer matches current final review or metadata inputs.";
 }
 
 function missingHandoff(
@@ -157,12 +146,12 @@ function invalidHandoff(
   runId: string,
   message: string,
 ): Extract<StudioChannelHandoffSummary, { kind: "invalid" }> {
-  return { kind: "invalid", message, nextAction: `pnpm producer channel-handoff --run ${runId}` };
+  return { kind: "invalid", message, nextAction: channelHandoffCommand(runId) };
 }
 
 function staleHandoff(
   runId: string,
   message: string,
 ): Extract<StudioChannelHandoffSummary, { kind: "stale" }> {
-  return { kind: "stale", message, nextAction: `pnpm producer channel-handoff --run ${runId}` };
+  return { kind: "stale", message, nextAction: channelHandoffCommand(runId) };
 }

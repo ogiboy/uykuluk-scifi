@@ -1,4 +1,6 @@
 import { z } from "zod";
+import type { FinalReviewBundle } from "./finalReviewBundleContracts.js";
+import { digestSchema } from "./renderPlanSchemas.js";
 
 export const channelHandoffJsonPath = "production/channel_handoff.json";
 export const channelHandoffMarkdownPath = "production/channel_handoff.md";
@@ -6,8 +8,6 @@ export const channelHandoffMarkdownPath = "production/channel_handoff.md";
 export function channelHandoffCommand(runId: string): string {
   return `pnpm producer channel-handoff --run ${runId}`;
 }
-
-const digestSchema = z.string().regex(/^[a-f0-9]{64}$/);
 
 export const channelHandoffSchema = z.strictObject({
   schemaVersion: z.literal(1),
@@ -40,3 +40,79 @@ export const channelHandoffSchema = z.strictObject({
 });
 
 export type ChannelHandoff = z.infer<typeof channelHandoffSchema>;
+
+export const youtubeMetadataSchema = z.strictObject({
+  title: z.string().min(1),
+  description: z.string().min(1),
+  tags: z.array(z.string().min(1)),
+});
+
+export type YoutubeMetadataDraft = z.infer<typeof youtubeMetadataSchema>;
+
+export function buildChannelHandoffPayload(input: {
+  finalReviewBundle: FinalReviewBundle;
+  finalReviewBundleDigest: string;
+  runId: string;
+  youtube: YoutubeMetadataDraft;
+}): Omit<ChannelHandoff, "createdAt"> {
+  return {
+    schemaVersion: 1,
+    runId: input.runId,
+    status: "ready-for-manual-channel-review",
+    manualOnly: true,
+    finalReviewBundle: {
+      path: "production/review_bundle.json",
+      markdownPath: "production/review_bundle.md",
+      digest: input.finalReviewBundleDigest,
+      status: "accepted-for-local-review",
+    },
+    media: {
+      draftRenderPath: input.finalReviewBundle.draftRender.path,
+      draftRenderSha256: input.finalReviewBundle.draftRender.sha256,
+      durationSeconds: input.finalReviewBundle.draftRender.durationSeconds,
+      subtitlesPath: "production/subtitles.srt",
+      renderReviewPath: input.finalReviewBundle.draftRender.reviewPath,
+    },
+    youtube: {
+      metadataPath: "production/youtube_metadata.json",
+      title: input.youtube.title,
+      description: input.youtube.description,
+      tags: input.youtube.tags,
+    },
+    operatorChecklist: channelHandoffOperatorChecklist(),
+    blockedActions: channelHandoffBlockedActions(input.finalReviewBundle.blockedActions),
+    nextSafeAction: channelHandoffNextSafeAction,
+  };
+}
+
+export function comparableChannelHandoffPayload(
+  handoff: ChannelHandoff,
+): Omit<ChannelHandoff, "createdAt"> {
+  const { createdAt: _createdAt, ...payload } = handoff;
+  return payload;
+}
+
+export const channelHandoffNextSafeAction =
+  "Manually review production/channel_handoff.md, the MP4, subtitles, metadata, and thumbnail assets before any future private-upload approval path is used.";
+
+export function channelHandoffOperatorChecklist(): string[] {
+  return [
+    "Watch the draft MP4 from start to finish outside the app.",
+    "Verify subtitles, voiceover timing, popup cards, and visual rhythm against the final review bundle.",
+    "Review the YouTube title, description, and tags for channel tone, accuracy, and policy risk.",
+    "Choose or revise the thumbnail manually from tracked brand assets before any upload workflow.",
+    "Keep upload and public/scheduled publish disabled unless a future explicit approval/config path exists.",
+  ];
+}
+
+export function channelHandoffBlockedActions(
+  finalReviewBlockedActions: readonly string[],
+): string[] {
+  return Array.from(
+    new Set([
+      ...finalReviewBlockedActions,
+      "This handoff does not call YouTube APIs or create a private upload.",
+      "This handoff does not approve public or scheduled publishing.",
+    ]),
+  );
+}

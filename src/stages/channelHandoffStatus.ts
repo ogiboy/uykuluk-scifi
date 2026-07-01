@@ -4,11 +4,14 @@ import type { RunRecord } from "../core/state.js";
 import { sha256 } from "../utils/hash.js";
 import { readJsonFile } from "../utils/json.js";
 import {
+  buildChannelHandoffPayload,
   channelHandoffCommand,
   channelHandoffJsonPath,
   channelHandoffMarkdownPath,
   channelHandoffSchema,
+  comparableChannelHandoffPayload,
   type ChannelHandoff,
+  youtubeMetadataSchema,
 } from "./channelHandoffContracts.js";
 import { finalReviewBundleJsonPath } from "./finalReviewBundleContracts.js";
 import type { FinalReviewBundleStatus } from "./finalReviewBundleStatus.js";
@@ -43,14 +46,14 @@ export async function readChannelHandoffStatus(
     finalReviewBundle.kind === "present" &&
     finalReviewBundle.bundle.status === "accepted-for-local-review"
       ? channelHandoffCommand(run.runId)
-      : null;
+      : finalReviewBundle.nextAction;
   try {
     const handoff = channelHandoffSchema.parse(
       await readJsonFile<unknown>(artifactPath(run.runId, channelHandoffJsonPath)),
     );
     const staleReason = await channelHandoffStaleReason(run, finalReviewBundle, handoff);
     if (staleReason) {
-      return stale(staleReason, run.runId);
+      return stale(staleReason, run.runId, nextAction);
     }
     return {
       handoff,
@@ -68,7 +71,7 @@ export async function readChannelHandoffStatus(
       message: `Manual channel handoff could not be trusted: ${
         error instanceof Error ? error.message : String(error)
       }`,
-      nextAction: channelHandoffCommand(run.runId),
+      nextAction: nextAction ?? "Regenerate trusted final review evidence before channel handoff.",
     };
   }
 }
@@ -97,15 +100,28 @@ async function channelHandoffStaleReason(
     artifactPath(run.runId, finalReviewBundleJsonPath),
     "utf8",
   );
-  return handoff.finalReviewBundle.digest === sha256(finalReviewJson)
+  const finalReviewBundleDigest = sha256(finalReviewJson);
+  if (handoff.finalReviewBundle.digest !== finalReviewBundleDigest) {
+    return "Manual channel handoff was created for a different final review bundle digest.";
+  }
+  const youtube = youtubeMetadataSchema.parse(
+    await readJsonFile<unknown>(artifactPath(run.runId, "production/youtube_metadata.json")),
+  );
+  const expected = buildChannelHandoffPayload({
+    finalReviewBundle: finalReviewBundle.bundle,
+    finalReviewBundleDigest,
+    runId: run.runId,
+    youtube,
+  });
+  return JSON.stringify(comparableChannelHandoffPayload(handoff)) === JSON.stringify(expected)
     ? null
-    : "Manual channel handoff was created for a different final review bundle digest.";
+    : "Manual channel handoff no longer matches current final review or metadata inputs.";
 }
 
-function stale(message: string, runId: string): ChannelHandoffStatus {
+function stale(message: string, runId: string, nextAction: string | null): ChannelHandoffStatus {
   return {
     kind: "stale",
     message,
-    nextAction: channelHandoffCommand(runId),
+    nextAction: nextAction ?? `Regenerate trusted final review evidence for ${runId}.`,
   };
 }

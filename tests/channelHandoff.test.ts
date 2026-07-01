@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { readFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { buildOperatorDeskViewModel, formatOperatorDeskPlain } from "../src/cli/operatorDeskModel";
@@ -69,8 +69,30 @@ describe("manual channel handoff", () => {
   it("rejects final-review bundles without an accepted render decision", async () => {
     const runId = await renderLocalDraft("channel-handoff-pending");
     await createFinalReviewBundle(runId);
+    const before = await loadRun(runId);
 
     await expect(createChannelHandoff(runId)).rejects.toThrow(/accepted local final review/i);
+    const after = await loadRun(runId);
+    expect(after.artifacts).toEqual(before.artifacts);
+    await expect(readFile(artifactPath(runId, channelHandoffJsonPath), "utf8")).rejects.toThrow();
+    await expect(
+      readFile(artifactPath(runId, channelHandoffMarkdownPath), "utf8"),
+    ).rejects.toThrow();
+  });
+
+  it("marks modified channel handoff payloads stale", async () => {
+    const runId = await acceptedFinalReviewRun("channel-handoff-tamper");
+    const handoff = await createChannelHandoff(runId);
+    await writeFile(
+      artifactPath(runId, channelHandoffJsonPath),
+      JSON.stringify({ ...handoff, youtube: { ...handoff.youtube, title: "tampered" } }),
+      "utf8",
+    );
+
+    const status = await readRunStatus(runId);
+
+    expect(status.channelHandoff).toMatchObject({ kind: "stale" });
+    expect(status.nextRecommendedCommand).toBe(`pnpm producer channel-handoff --run ${runId}`);
   });
 
   it("prints parseable CLI JSON and persists the package artifacts", async () => {

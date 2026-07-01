@@ -36,8 +36,8 @@ export function renderChannelHandoffMarkdown(handoff: ChannelHandoff): string {
       ["Field", "Value"],
       [
         ["Metadata JSON", handoff.youtube.metadataPath],
-        ["Title", handoff.youtube.title],
-        ["Tags", handoff.youtube.tags.join(", ")],
+        ["Title", escapeTableCell(handoff.youtube.title)],
+        ["Tags", escapeTableCell(handoff.youtube.tags.join(", "))],
       ],
     ),
     "",
@@ -107,5 +107,18 @@ export function renderChannelHandoffMarkdown(handoff: ChannelHandoff): string {
 }
 
 function codeBlock(value: string): string {
-  return ["```text", value, "```"].join("\n");
+  const fence = fenceFor(value);
+  return [`${fence}text`, value, fence].join("\n");
+}
+
+function escapeTableCell(value: string): string {
+  return value.replaceAll("|", String.raw`\|`).replaceAll("\n", "<br>");
+}
+
+function fenceFor(value: string): string {
+  let fence = "```";
+  while (value.includes(fence)) {
+    fence += "`";
+  }
+  return fence;
 }

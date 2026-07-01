@@ -24,17 +24,20 @@ export function statusNextRecommendedCommand(
   finalReviewBundle: FinalReviewBundleStatus,
   channelHandoff: ChannelHandoffStatus,
 ): string {
-  if (channelHandoff.kind === "present") {
-    return channelHandoff.nextAction;
-  }
-  if (channelHandoff.kind === "invalid" || channelHandoff.kind === "stale") {
-    return channelHandoff.nextAction;
-  }
-  if (finalReviewBundle.kind === "present") {
-    return finalReviewBundle.nextAction;
-  }
   if (finalReviewBundle.kind === "invalid" || finalReviewBundle.kind === "stale") {
     return finalReviewBundle.nextAction;
+  }
+  if (finalReviewBundle.kind === "present") {
+    if (channelHandoff.kind === "present") {
+      return channelHandoff.nextAction;
+    }
+    if (channelHandoff.kind === "invalid" || channelHandoff.kind === "stale") {
+      return channelHandoff.nextAction;
+    }
+    return finalReviewBundle.nextAction;
+  }
+  if (finalReviewBundle.kind === "missing" && renderDecision.kind === "present") {
+    return finalReviewBundle.nextAction ?? renderDecision.nextAction;
   }
   if (renderDecision.kind === "present") {
     return renderDecision.nextAction;

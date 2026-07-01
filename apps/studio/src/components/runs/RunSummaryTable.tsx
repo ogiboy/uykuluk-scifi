@@ -69,7 +69,7 @@ export function RunSummaryTable({ runs }: RunSummaryTableProps) {
             <span className='run-cell-stack' role='cell'>
               <strong>{formatRunChannelHandoff(run)}</strong>
               {run.channelHandoff.kind === "present" ? (
-                <small>{run.channelHandoff.handoff.status}</small>
+                <small>{run.channelHandoff.reviewPath}</small>
               ) : null}
             </span>
             <span role='cell'>{run.nextRecommendedCommand ?? "Generate evidence from CLI"}</span>

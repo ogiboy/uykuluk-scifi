@@ -1,6 +1,6 @@
-import { channelHandoffCommand } from "./channelHandoffContracts.js";
 import { productionPackageManifestPath } from "./productionPackageIntegrity.js";
 import type { FinalReviewBundle } from "./finalReviewBundleContracts.js";
+import { acceptedFinalReviewNextSafeAction } from "./finalReviewBundleValidation.js";
 
 type FinalReviewArtifact = FinalReviewBundle["artifacts"][number];
 type FinalReviewArtifactSpec = readonly [
@@ -115,7 +115,7 @@ export function finalReviewNextSafeAction(
     return decision.nextAction;
   }
   if (decision.decision === "accepted-for-local-review") {
-    return `Prepare the manual channel handoff with ${channelHandoffCommand(runId)}. Upload remains disabled until a future private-upload approval/config path exists.`;
+    return acceptedFinalReviewNextSafeAction(runId);
   }
   return decision.nextSafeAction;
 }

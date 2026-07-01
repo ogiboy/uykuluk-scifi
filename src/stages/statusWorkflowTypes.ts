@@ -9,7 +9,8 @@ export type StatusWorkflowRenderDecision =
 
 export type StatusWorkflowArtifactStatus =
   | { kind: "invalid" | "stale"; message: string }
-  | { kind: "missing" | "present"; message?: string };
+  | { kind: "missing" }
+  | { kind: "present"; message?: string; status?: string };
 
 export type StatusWorkflowInput = {
   channelHandoff: StatusWorkflowArtifactStatus;

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getStudioRunDetail } from "../apps/studio/src/lib/runSummaries";
+import type { StatusWorkflowStep } from "../src/stages/statusWorkflow";
 import {
   writeStudioChannelHandoff,
   writeStudioFinalReviewBundle,
@@ -15,30 +16,12 @@ describe("Studio workflow progress", () => {
     const runId = await createRenderedStudioRunFixture();
     const detail = await getStudioRunDetail(runId);
 
-    expect(detail?.workflowProgress).toEqual(
-      expect.arrayContaining([
-        {
-          detail: "Verified by current evidence.",
-          label: "Draft render",
-          status: "done",
-        },
-        {
-          detail: "Record the operator decision after local draft review.",
-          label: "Operator decision",
-          status: "current",
-        },
-        {
-          detail: "Create the local final review handoff after recording the operator decision.",
-          label: "Final review handoff",
-          status: "pending",
-        },
-        {
-          detail: "Prepare the manual channel package after accepted local final review.",
-          label: "Manual channel handoff",
-          status: "pending",
-        },
-      ]),
-    );
+    expectWorkflowSteps(detail?.workflowProgress, [
+      ["Draft render", "done"],
+      ["Operator decision", "current"],
+      ["Final review handoff", "pending"],
+      ["Manual channel handoff", "pending"],
+    ]);
   });
 
   it("marks Studio workflow operator decision done after a trusted local decision is recorded", async () => {
@@ -53,20 +36,11 @@ describe("Studio workflow progress", () => {
       message: "Render decision recorded: accepted-for-local-review.",
       reviewCommand: `pnpm producer review render-decision --run ${runId}`,
     });
-    expect(detail?.workflowProgress).toEqual(
-      expect.arrayContaining([
-        {
-          detail: "Render decision recorded: accepted-for-local-review.",
-          label: "Operator decision",
-          status: "done",
-        },
-        {
-          detail: "Create the local final review handoff after recording the operator decision.",
-          label: "Final review handoff",
-          status: "current",
-        },
-      ]),
-    );
+    expectWorkflowSteps(detail?.workflowProgress, [
+      ["Operator decision", "done"],
+      ["Final review handoff", "current"],
+      ["Manual channel handoff", "pending"],
+    ]);
   });
 
   it("surfaces the local final review bundle after operator decision handoff", async () => {
@@ -92,20 +66,11 @@ describe("Studio workflow progress", () => {
         }),
       ]),
     );
-    expect(detail?.workflowProgress).toEqual(
-      expect.arrayContaining([
-        {
-          detail: "Final review bundle ready: accepted-for-local-review.",
-          label: "Final review handoff",
-          status: "done",
-        },
-        {
-          detail: "Prepare the manual channel package after accepted local final review.",
-          label: "Manual channel handoff",
-          status: "current",
-        },
-      ]),
-    );
+    expectWorkflowSteps(detail?.workflowProgress, [
+      ["Operator decision", "done"],
+      ["Final review handoff", "done"],
+      ["Manual channel handoff", "current"],
+    ]);
   });
 
   it("surfaces the completed manual channel handoff as the final local review action", async () => {
@@ -131,14 +96,24 @@ describe("Studio workflow progress", () => {
         }),
       ]),
     );
-    expect(detail?.workflowProgress).toEqual(
-      expect.arrayContaining([
-        {
-          detail: "Manual channel handoff package is ready for local operator review.",
-          label: "Manual channel handoff",
-          status: "done",
-        },
-      ]),
-    );
+    expectWorkflowSteps(detail?.workflowProgress, [
+      ["Operator decision", "done"],
+      ["Final review handoff", "done"],
+      ["Manual channel handoff", "done"],
+    ]);
   });
 });
+
+function expectWorkflowSteps(
+  steps: readonly StatusWorkflowStep[] | undefined,
+  expected: readonly (readonly [label: string, status: StatusWorkflowStep["status"]])[],
+): void {
+  expect(steps).toBeDefined();
+  const actual = steps ?? [];
+  const labels = actual.map((step) => step.label);
+  const start = labels.indexOf(expected[0]?.[0] ?? "");
+  expect(start).toBeGreaterThanOrEqual(0);
+  expect(
+    actual.slice(start, start + expected.length).map((step) => [step.label, step.status]),
+  ).toEqual(expected);
+}

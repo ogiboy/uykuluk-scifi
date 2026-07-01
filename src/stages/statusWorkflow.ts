@@ -1,4 +1,4 @@
-import type { RunState } from "../core/state.js";
+import { orderedStates, type RunState } from "../core/state.js";
 import type { ProductionMediaStatus } from "./statusMediaSummary.js";
 import type {
   StatusWorkflowArtifactStatus,
@@ -14,27 +14,6 @@ export type {
   StatusWorkflowStep,
   StatusWorkflowStepStatus,
 } from "./statusWorkflowTypes.js";
-
-const workflowStates: RunState[] = [
-  "NEW",
-  "IDEAS_GENERATED",
-  "IDEA_APPROVED",
-  "SCRIPT_GENERATED",
-  "SCRIPT_REVIEWED",
-  "SCRIPT_APPROVED",
-  "PRODUCTION_PACKAGE_GENERATED",
-  "COST_ESTIMATED",
-  "PAID_GENERATION_COST_APPROVED",
-  "READY_FOR_MANUAL_PRODUCTION",
-  "RENDER_APPROVED",
-  "RENDERED",
-  "UPLOAD_APPROVED",
-  "UPLOADED_PRIVATE",
-  "PUBLISH_APPROVED",
-  "SCHEDULED_OR_PUBLIC",
-  "ARCHIVED",
-  "FAILED",
-];
 
 /**
  * Builds read-only progress rows for the v1 local production workflow.
@@ -206,7 +185,7 @@ function finalReviewStep(
     return {
       detail: finalReview.message ?? "Local final review handoff is ready.",
       label: "Final review handoff",
-      status: "done",
+      status: finalReviewWorkflowStatus(finalReview),
     };
   }
   if (finalReview.kind === "invalid" || finalReview.kind === "stale") {
@@ -236,8 +215,19 @@ function channelHandoffStep(
   return {
     detail: "Prepare the manual channel package after accepted local final review.",
     label: "Manual channel handoff",
-    status: finalReview.kind === "present" ? "current" : "pending",
+    status: isAcceptedFinalReview(finalReview) ? "current" : "pending",
   };
+}
+
+function isAcceptedFinalReview(finalReview: StatusWorkflowArtifactStatus): boolean {
+  return finalReview.kind === "present" && finalReview.status === "accepted-for-local-review";
+}
+
+function finalReviewWorkflowStatus(
+  finalReview: Extract<StatusWorkflowArtifactStatus, { kind: "present" }>,
+): StatusWorkflowStep["status"] {
+  if (isAcceptedFinalReview(finalReview)) return "done";
+  return finalReview.status === "decision-pending" ? "current" : "blocked";
 }
 
 function mediaByKey(mediaArtifacts: readonly ProductionMediaStatus[]): {
@@ -249,5 +239,5 @@ function mediaByKey(mediaArtifacts: readonly ProductionMediaStatus[]): {
 }
 
 function stateAtLeast(currentState: RunState, targetState: RunState): boolean {
-  return workflowStates.indexOf(currentState) >= workflowStates.indexOf(targetState);
+  return orderedStates.indexOf(currentState) >= orderedStates.indexOf(targetState);
 }

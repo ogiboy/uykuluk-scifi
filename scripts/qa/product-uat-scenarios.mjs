@@ -228,6 +228,49 @@ export async function assertTamperedRenderReviewCommandBlocks({ pnpm, run, runId
 }
 
 /**
+ * Verifies channel handoff refuses stale or invalid final-review evidence without writing handoff artifacts.
+ *
+ * @param {Object} input - Scenario input.
+ * @param {(condition: boolean, label: string, scenario: string) => void} input.assertCondition - Assertion recorder.
+ * @param {string} input.pnpm - The package runner executable.
+ * @param {(args: string[], options: Object) => {stdout: string, stderr: string}} input.run - Command runner.
+ * @param {string} input.runId - Rendered run id with a final review bundle.
+ * @param {string} input.workdir - Isolated workdir containing the final-review bundle.
+ */
+export async function assertTamperedFinalReviewBlocksChannelHandoff({
+  assertCondition,
+  pnpm,
+  run,
+  runId,
+  workdir,
+}) {
+  const target = path.join(workdir, "runs", runId, "production", "review_bundle.json");
+  const original = await readFile(target, "utf8");
+  const bundle = JSON.parse(original);
+  bundle.runId = "tampered-run";
+  await writeFile(target, `${JSON.stringify(bundle, null, 2)}\n`, "utf8");
+  run([pnpm, "producer", "channel-handoff", "--run", runId], {
+    expectFailure: true,
+    expectOutput: "trusted final review bundle",
+    label: "channel handoff rejects tampered final review",
+    scenario: "tamper",
+  });
+  assertCondition(
+    !productFileExists({
+      relativePath: path.join("runs", runId, "production", "channel_handoff.json"),
+      workdir,
+    }) &&
+      !productFileExists({
+        relativePath: path.join("runs", runId, "production", "channel_handoff.md"),
+        workdir,
+      }),
+    "tampered final review writes no channel handoff artifacts",
+    "tamper",
+  );
+  await writeFile(target, original, "utf8");
+}
+
+/**
  * Verifies the expected rendered artifacts exist.
  *
  * @param {Object} input - Scenario input.
