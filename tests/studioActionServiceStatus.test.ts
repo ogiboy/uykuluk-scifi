@@ -2,16 +2,16 @@ import { describe, expect, it } from "vitest";
 import { getStudioActionServiceStatus } from "../apps/studio/src/lib/actionServiceStatus";
 
 describe("Studio action service status", () => {
-  it("summarizes disabled web mutations and shared CLI contracts", () => {
+  it("summarizes the guarded local mutation and disabled risky routes", () => {
     const status = getStudioActionServiceStatus();
 
     expect(status).toMatchObject({
       actionCount: 7,
-      disabledRouteCount: 7,
+      disabledRouteCount: 6,
       findings: [],
       readyForCliCount: 5,
       riskyExternalCount: 2,
-      webMutationsEnabled: false,
+      webMutationsEnabled: true,
     });
     expect(status.summaries).toContainEqual(
       expect.objectContaining({

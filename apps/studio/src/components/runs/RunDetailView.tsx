@@ -4,6 +4,7 @@ import { artifactPreviewsIntro } from "@/lib/runEvidenceCopy";
 import { RunBlockedActionsPanel } from "./RunBlockedActionsPanel";
 import { RunLedgerPanel } from "./RunLedgerPanel";
 import { RunProductionMediaPanel } from "./RunProductionMediaPanel";
+import { RunRenderDecisionActionPanel } from "./RunRenderDecisionActionPanel";
 import { RunRenderDecisionCommandsPanel } from "./RunRenderDecisionCommandsPanel";
 import { RunRenderDecisionStatusPanel } from "./RunRenderDecisionStatusPanel";
 import { RunWorkflowProgressPanel } from "./RunWorkflowProgressPanel";
@@ -99,7 +100,7 @@ export function RunDetailView({ run }: Readonly<{ run: StudioRunDetail }>) {
       <RunWorkflowProgressPanel workflowProgress={run.workflowProgress} />
 
       <RunRenderDecisionStatusPanel renderDecision={run.renderDecision} />
-
+      <RunRenderDecisionActionPanel commands={run.renderDecisionCommands} runId={run.runId} />
       <RunRenderDecisionCommandsPanel commands={run.renderDecisionCommands} />
 
       <section className='panel' aria-labelledby='artifact-heading'>

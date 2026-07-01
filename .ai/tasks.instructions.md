@@ -144,8 +144,9 @@
 - Keep CLI status evidence panels equally conservative: production media rows may fall back to
   artifact records for visibility, but the text must say they are not current evidence proof and
   reuse the shared production-media review guidance.
-- Keep the read-only Studio mutation-service status panel aligned with route-security and service
-  contract changes; it must not become an approval form or route handler.
+- Keep the Studio mutation-service status panel aligned with route-security and service contract
+  changes; it may show the guarded local render-decision route, but approval/upload/publish actions
+  must remain disabled or CLI-only.
 - Harden manual analytics feedback with import edge cases and richer comparisons while keeping data
   operator-provided and local-only. Run-linked summaries, unmapped-record visibility, non-causal
   repeat / avoid-without-revision / mixed-signal inspect / test-next prompts, simple
@@ -153,9 +154,8 @@
   the shared CLI/Studio import data-quality summary plus read-only Studio analytics overview with
   report freshness summaries are implemented.
 - Maintain typed Studio mutation service contracts that both CLI and web can use before adding
-  Studio mutations. Current contracts cover future idea/script/cost/render approvals, local
-  render-decision evidence writes, plus disabled upload/publish actions; concrete CSRF/session
-  handling and route implementations remain deferred.
+  additional Studio mutations. Current contracts cover future idea/script/cost/render approvals, the
+  guarded local render-decision evidence write, plus disabled upload/publish actions.
 - Keep local prompt overrides safe before adding a prompt editor. Tracked `prompts/defaults/`
   runtime defaults, typed keys, source paths, and prompt hashes are implemented; ignored
   `prompts/local/*.md` overrides are now explicit `producer.config.json` inputs and must remain
@@ -166,9 +166,9 @@
   production-package manifest, invalidates stale evidence/readiness/render-plan artifacts, and
   records revision evidence. Future work can extend this to richer editor UX and per-field diffs
   without weakening the cost/render approval boundary.
-- Maintain route security requirements before any web action routes exist; current tests cover
-  read-only page routes, disabled future action routes, and absence of App Router `route.ts`
-  handlers, and bind each disabled action route to a shared service contract.
+- Maintain route security requirements before any additional web action routes exist; current tests
+  cover read-only page routes, the guarded local render-decision route, disabled future action
+  routes, and bind each action route to a shared service contract.
 - Keep the internal reserved-provider execution contract ready for a separately approved real
   adapter without adding paid SDKs, credentials, or operator execution commands.
 
@@ -182,8 +182,8 @@
 
 ## Do Not Do Yet
 
-- Do not implement Studio mutations before shared service contracts, route security requirements,
-  and negative tests exist.
+- Do not implement additional Studio mutations before shared service contracts, route security
+  requirements, and negative tests exist.
 - Do not add paid APIs.
 - Do not add paid/generative media providers before deterministic local planning, TTS, and render
   flows are useful.

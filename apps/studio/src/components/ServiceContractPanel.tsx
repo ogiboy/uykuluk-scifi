@@ -13,8 +13,8 @@ export function ServiceContractPanel() {
     <section id='actions' aria-labelledby='actions-heading'>
       <h2 id='actions-heading'>Mutation Service Contracts</h2>
       <p>
-        Future approval, local review decision, and upload/publish actions are represented as shared
-        CLI/core contracts, but the Studio does not expose mutating route handlers yet.
+        Studio exposes one guarded local render-decision route over the shared CLI/core contract.
+        Approval, upload, and publish actions remain disabled or CLI-only.
       </p>
       <div className='status-grid'>
         <article className='status-card'>
@@ -37,7 +37,7 @@ export function ServiceContractPanel() {
         <article className='status-card'>
           <p>Contract Findings</p>
           <strong>{status.findings.length}</strong>
-          <p>Route security findings must stay at zero before mutation work.</p>
+          <p>Route security findings must stay at zero before any additional mutation work.</p>
         </article>
       </div>
       <div className='command-grid'>

@@ -1,6 +1,6 @@
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { disabledStudioActionRoutes } from "../apps/studio/src/lib/routeSecurity";
+import { studioActionRoutes } from "../apps/studio/src/lib/routeSecurity";
 import {
   getStudioMutationServiceContract,
   parseStudioMutationRequest,
@@ -8,9 +8,13 @@ import {
 } from "../src/studio/actionServiceContracts";
 
 describe("Studio mutation service contracts", () => {
-  it("covers every disabled Studio action route with a shared core contract", () => {
-    const routeContractIds = disabledStudioActionRoutes.map((route) => route.serviceContractId);
-    const serviceContractIds = studioMutationServiceContracts.map((contract) => contract.actionId);
+  it("covers every Studio action route with a shared core contract", () => {
+    const routeContractIds = studioActionRoutes
+      .map((route) => route.serviceContractId)
+      .sort(routeSort);
+    const serviceContractIds = studioMutationServiceContracts
+      .map((contract) => contract.actionId)
+      .sort(routeSort);
 
     expect(routeContractIds).toEqual(serviceContractIds);
     expect(studioMutationServiceContracts).toEqual(
@@ -117,3 +121,7 @@ describe("Studio mutation service contracts", () => {
     });
   });
 });
+
+function routeSort(left: string | null, right: string | null): number {
+  return String(left).localeCompare(String(right));
+}

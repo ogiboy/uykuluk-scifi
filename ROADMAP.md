@@ -98,8 +98,8 @@ Next Real Production Loop slices:
 Status: read-only run review, artifact preview, asset inventory, home-page latest-run readiness,
 home-page manual analytics feedback summary, home-page and `/doctor` producer doctor diagnostics,
 runtime prompt inventory, mutation-service status, manual analytics overview, route-security
-contract foundations, and shared mutation service contract foundations exist. Guarded route
-implementation still comes later.
+contract foundations, shared mutation service contract foundations, and the first guarded local
+render-decision route exist. Approval, upload, and publish route implementations remain deferred.
 
 The Studio should be a local operator surface over CLI/core contracts.
 
@@ -119,14 +119,15 @@ Priority order:
 - maintain read-only runtime prompt source/status visibility for tracked defaults and explicit local
   overrides before any prompt editor work, including the `/prompts` operator route;
 - maintain read-only mutation-service status so operators can see that future
-  approval/upload/publish actions are contract-defined but not routable;
+  approval/upload/publish actions are contract-defined but not routable, while the local
+  render-decision route is guarded and evidence-only;
 - maintain the read-only manual analytics overview and import data-quality summary backed by ignored
   local CLI analytics artifacts;
-- maintain shared service contracts for any future Studio read/write operation;
-- maintain route security requirements and negative tests for current read-only routes and disabled
-  future action routes;
+- maintain shared service contracts for any Studio read/write operation;
+- maintain route security requirements and negative tests for current read-only routes, the guarded
+  local render-decision route, and disabled future action routes;
 - only after the contracts have concrete CSRF/session handling and negative route tests: approval
-  forms and guarded mutations.
+  forms and additional guarded mutations.
 
 Frontend constraints:
 
@@ -134,7 +135,7 @@ Frontend constraints:
 - no arbitrary shell execution;
 - no hidden provider calls;
 - no upload, render, or publish bypasses;
-- no mutating routes before route security requirements and negative tests.
+- no additional mutating routes before route security requirements and negative tests.
 
 ## Phase D - Monetization Feedback Loop
 
