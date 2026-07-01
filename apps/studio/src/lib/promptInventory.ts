@@ -174,8 +174,7 @@ function resolvePromptOverride(
 }
 
 type PromptFileReadResult =
-  | { hash: string; status: "ready" }
-  | { hash: null; status: "empty" | "missing" };
+  { hash: string; status: "ready" } | { hash: null; status: "empty" | "missing" };
 
 async function readPromptFile(root: string, relativePath: string): Promise<PromptFileReadResult> {
   const target = path.join(/* turbopackIgnore: true */ root, relativePath);

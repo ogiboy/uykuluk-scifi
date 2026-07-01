@@ -56,12 +56,7 @@ export const costReservationEventSchema = z.discriminatedUnion("type", [
 
 export type CostReservationEvent = z.infer<typeof costReservationEventSchema>;
 export type CostReservationStatus =
-  | "RESERVED"
-  | "EXECUTION_STARTED"
-  | "SETTLEMENT_PENDING"
-  | "SETTLED"
-  | "RELEASED"
-  | "UNCERTAIN";
+  "RESERVED" | "EXECUTION_STARTED" | "SETTLEMENT_PENDING" | "SETTLED" | "RELEASED" | "UNCERTAIN";
 
 export type CostReservationSummary = {
   reservationId: string;
