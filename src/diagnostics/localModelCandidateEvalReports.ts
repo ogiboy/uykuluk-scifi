@@ -18,32 +18,10 @@ export function llamaCppDiagnosticFailureReport(
   diagnosticMessage: string,
 ): LocalModelEvalReport {
   const message = `llama.cpp candidate preflight failed: ${diagnosticMessage}`;
-  return {
-    appliedOverrides: [...baseOverrides, "model"],
-    checks: [
-      {
-        message,
-        name: "ideas-json",
-        status: "block",
-      },
-      {
-        message,
-        name: "script-section-json",
-        status: "block",
-      },
-      {
-        message: "Skipped because llama.cpp served-model diagnostics failed.",
-        name: "script-quality-guard",
-        status: "block",
-      },
-    ],
-    configSource: baseOverrides.length > 0 ? "cli-overrides" : "project",
-    configuredModel: candidate,
-    createdAt: nowIso(),
-    durationMs: 0,
-    passed: false,
-    providerMode: config.providers.llm.mode,
-  };
+  return blockedLlamaCppCandidateReport(config, baseOverrides, candidate, {
+    parserMessage: message,
+    qualityMessage: "Skipped because llama.cpp served-model diagnostics failed.",
+  });
 }
 
 /**
@@ -61,24 +39,29 @@ export function unservedLlamaCppCandidateReport(
 ): LocalModelEvalReport {
   const message =
     "llama.cpp candidate model is not served by the current local server. Start llama-server with this GGUF, then rerun candidate eval.";
+  return blockedLlamaCppCandidateReport(config, baseOverrides, candidate, {
+    parserMessage: message,
+    qualityMessage: "Skipped because the llama.cpp candidate model is not served.",
+  });
+}
+
+type BlockedLlamaCppCandidateMessages = {
+  parserMessage: string;
+  qualityMessage: string;
+};
+
+function blockedLlamaCppCandidateReport(
+  config: ProducerConfig,
+  baseOverrides: string[],
+  candidate: string,
+  messages: BlockedLlamaCppCandidateMessages,
+): LocalModelEvalReport {
   return {
     appliedOverrides: [...baseOverrides, "model"],
     checks: [
-      {
-        message,
-        name: "ideas-json",
-        status: "block",
-      },
-      {
-        message,
-        name: "script-section-json",
-        status: "block",
-      },
-      {
-        message: "Skipped because the llama.cpp candidate model is not served.",
-        name: "script-quality-guard",
-        status: "block",
-      },
+      blockedEvalCheck("ideas-json", messages.parserMessage),
+      blockedEvalCheck("script-section-json", messages.parserMessage),
+      blockedEvalCheck("script-quality-guard", messages.qualityMessage),
     ],
     configSource: baseOverrides.length > 0 ? "cli-overrides" : "project",
     configuredModel: candidate,
@@ -86,5 +69,16 @@ export function unservedLlamaCppCandidateReport(
     durationMs: 0,
     passed: false,
     providerMode: config.providers.llm.mode,
+  };
+}
+
+function blockedEvalCheck(
+  name: LocalModelEvalReport["checks"][number]["name"],
+  message: string,
+): LocalModelEvalReport["checks"][number] {
+  return {
+    message,
+    name,
+    status: "block",
   };
 }
