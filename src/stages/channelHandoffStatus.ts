@@ -15,6 +15,11 @@ import {
 } from "./channelHandoffContracts.js";
 import { finalReviewBundleJsonPath } from "./finalReviewBundleContracts.js";
 import type { FinalReviewBundleStatus } from "./finalReviewBundleStatus.js";
+import {
+  thumbnailCandidatePackSchema,
+  thumbnailCandidatesJsonPath,
+  thumbnailCandidatesMarkdownPath,
+} from "./thumbnailCandidates.js";
 
 export type ChannelHandoffStatus =
   | { kind: "missing"; nextAction: string | null }
@@ -104,6 +109,10 @@ async function channelHandoffStaleReason(
   if (handoff.finalReviewBundle.digest !== finalReviewBundleDigest) {
     return "Manual channel handoff was created for a different final review bundle digest.";
   }
+  const thumbnailCandidates = await trustedThumbnailCandidateBinding(
+    run.runId,
+    finalReviewBundleDigest,
+  );
   const youtube = youtubeMetadataSchema.parse(
     await readJsonFile<unknown>(artifactPath(run.runId, "production/youtube_metadata.json")),
   );
@@ -111,11 +120,34 @@ async function channelHandoffStaleReason(
     finalReviewBundle: finalReviewBundle.bundle,
     finalReviewBundleDigest,
     runId: run.runId,
+    thumbnailCandidates,
     youtube,
   });
   return JSON.stringify(comparableChannelHandoffPayload(handoff)) === JSON.stringify(expected)
     ? null
     : "Manual channel handoff no longer matches current final review or metadata inputs.";
+}
+
+async function trustedThumbnailCandidateBinding(
+  runId: string,
+  finalReviewBundleDigest: string,
+): Promise<ChannelHandoff["thumbnailCandidates"]> {
+  const json = await readFile(artifactPath(runId, thumbnailCandidatesJsonPath), "utf8");
+  const markdown = await readFile(artifactPath(runId, thumbnailCandidatesMarkdownPath), "utf8");
+  const pack = thumbnailCandidatePackSchema.parse(JSON.parse(json) as unknown);
+  if (pack.runId !== runId) {
+    throw new Error("Thumbnail candidates belong to a different run.");
+  }
+  if (pack.source.finalReviewBundleDigest !== finalReviewBundleDigest) {
+    throw new Error("Thumbnail candidates were created for a different final review bundle.");
+  }
+  return {
+    jsonPath: thumbnailCandidatesJsonPath,
+    markdownPath: thumbnailCandidatesMarkdownPath,
+    jsonSha256: sha256(json),
+    markdownSha256: sha256(markdown),
+    recommendedCandidateId: pack.recommendedCandidateId,
+  };
 }
 
 function stale(message: string, runId: string, nextAction: string | null): ChannelHandoffStatus {

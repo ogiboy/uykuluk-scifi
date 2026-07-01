@@ -21,6 +21,11 @@ import {
   renderDecisionMarkdownPath,
 } from "../src/stages/renderDecisionCommands";
 import type { RenderDecisionRecord } from "../src/stages/renderDecisionContracts";
+import {
+  thumbnailCandidatesJsonPath,
+  thumbnailCandidatesMarkdownPath,
+} from "../src/stages/thumbnailCandidates";
+import { writeStudioThumbnailCandidates } from "./studioThumbnailFixtures";
 
 /**
  * Writes a Studio-valid render decision artifact for a rendered fixture run.
@@ -202,12 +207,14 @@ export async function writeStudioChannelHandoff(runId: string): Promise<ChannelH
     JSON.stringify(youtube),
     "utf8",
   );
+  const thumbnailCandidates = await writeStudioThumbnailCandidates(runId, sha256(finalReviewJson));
   const handoff = channelHandoffSchema.parse({
     createdAt: "2026-06-28T00:10:00.000Z",
     ...buildChannelHandoffPayload({
       finalReviewBundle,
       finalReviewBundleDigest: sha256(finalReviewJson),
       runId,
+      thumbnailCandidates,
       youtube,
     }),
   });
@@ -220,7 +227,14 @@ export async function writeStudioChannelHandoff(runId: string): Promise<ChannelH
   await saveRun({
     ...run,
     artifacts: Array.from(
-      new Set([...run.artifacts, channelHandoffJsonPath, channelHandoffMarkdownPath]),
+      new Set(
+        run.artifacts.concat(
+          thumbnailCandidatesJsonPath,
+          thumbnailCandidatesMarkdownPath,
+          channelHandoffJsonPath,
+          channelHandoffMarkdownPath,
+        ),
+      ),
     ),
   });
   return handoff;

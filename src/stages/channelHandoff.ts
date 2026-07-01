@@ -17,6 +17,12 @@ import { finalReviewBundleJsonPath } from "./finalReviewBundleContracts.js";
 import { readFinalReviewBundleStatus } from "./finalReviewBundleStatus.js";
 import { renderChannelHandoffMarkdown } from "./channelHandoffMarkdown.js";
 import { verifyProductionPackage } from "./productionPackageIntegrity.js";
+import {
+  buildThumbnailCandidatePack,
+  renderThumbnailCandidateMarkdown,
+  thumbnailCandidatesJsonPath,
+  thumbnailCandidatesMarkdownPath,
+} from "./thumbnailCandidates.js";
 
 export {
   channelHandoffJsonPath,
@@ -52,12 +58,43 @@ export async function createChannelHandoff(runId: string): Promise<ChannelHandof
   const youtube = youtubeMetadataSchema.parse(
     await readJsonFile<unknown>(artifactPath(run.runId, "production/youtube_metadata.json")),
   );
+  const thumbnailCandidates = await buildThumbnailCandidatePack({
+    finalReviewBundleDigest: sha256(finalReviewText),
+    runId: run.runId,
+  });
+  run = await writeRunJson(
+    run,
+    "channel-handoff",
+    thumbnailCandidatesJsonPath,
+    thumbnailCandidates,
+  );
+  run = await writeRunText(
+    run,
+    "channel-handoff",
+    thumbnailCandidatesMarkdownPath,
+    renderThumbnailCandidateMarkdown(thumbnailCandidates),
+  );
+  const thumbnailJson = await readFile(
+    artifactPath(run.runId, thumbnailCandidatesJsonPath),
+    "utf8",
+  );
+  const thumbnailMarkdown = await readFile(
+    artifactPath(run.runId, thumbnailCandidatesMarkdownPath),
+    "utf8",
+  );
   const handoff = channelHandoffSchema.parse({
     createdAt: nowIso(),
     ...buildChannelHandoffPayload({
       finalReviewBundle: finalReview.bundle,
       finalReviewBundleDigest: sha256(finalReviewText),
       runId: run.runId,
+      thumbnailCandidates: {
+        jsonPath: thumbnailCandidatesJsonPath,
+        markdownPath: thumbnailCandidatesMarkdownPath,
+        jsonSha256: sha256(thumbnailJson),
+        markdownSha256: sha256(thumbnailMarkdown),
+        recommendedCandidateId: thumbnailCandidates.recommendedCandidateId,
+      },
       youtube,
     }),
   });

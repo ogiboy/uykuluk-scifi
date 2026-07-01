@@ -68,6 +68,7 @@ export function renderChannelHandoffMarkdown(handoff: ChannelHandoff): string {
         ["Video file", handoff.media.draftRenderPath],
         ["Subtitle file", handoff.media.subtitlesPath],
         ["Chapter draft", handoff.media.chaptersPath],
+        ["Thumbnail candidates", handoff.thumbnailCandidates.markdownPath],
         ["Metadata JSON", handoff.youtube.metadataPath],
         ["Final review Markdown", handoff.finalReviewBundle.markdownPath],
         ["Manual handoff Markdown", "production/channel_handoff.md"],
@@ -77,7 +78,8 @@ export function renderChannelHandoffMarkdown(handoff: ChannelHandoff): string {
     "## Thumbnail Preparation",
     "",
     bulletList([
-      "Choose or revise the thumbnail manually from tracked `assets/thumbnails/` templates.",
+      `Review ${handoff.thumbnailCandidates.markdownPath} and choose or revise one tracked thumbnail candidate manually.`,
+      `Recommended starting candidate: ${handoff.thumbnailCandidates.recommendedCandidateId}.`,
       "Confirm title-safe areas, contrast, channel tone, and no misleading visual claim.",
       "Keep the selected thumbnail path as operator evidence before any future upload approval.",
     ]),

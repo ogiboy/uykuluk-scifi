@@ -111,10 +111,10 @@ agent-tracking state only; runtime code must not require it.
   `production/review_bundle.md` as the operator's local handoff index. It does not approve upload or
   publish.
 - Manual channel handoff package generation after an accepted local final review. It writes
-  `production/channel_handoff.json` and `production/channel_handoff.md` with the local MP4,
-  subtitles, YouTube metadata draft, YouTube chapter draft, checklist, and final-review digest
-  binding. It does not call YouTube APIs, upload, schedule, publish, or grant upload/publish
-  approval.
+  `production/thumbnail_candidates.*` plus `production/channel_handoff.*` with the local MP4,
+  subtitles, YouTube metadata draft, chapter draft, thumbnail candidates, checklist, and
+  final-review digest binding. It does not call YouTube APIs, upload, schedule, publish, or grant
+  upload/publish approval.
 - Manual analytics import/report commands for operator-provided CSV/JSON performance exports, plus a
   read-only Studio view over the ignored local analytics artifacts and import data-quality summary.
 - Typed Studio route-security contract covering read-only routes, the guarded local render-decision
@@ -681,9 +681,10 @@ bundle after it exists so the operator does not loop back to the bundle command.
 
 `producer channel-handoff --run <run_id>` creates a manual channel preparation package only after
 the final review bundle is trusted and accepted for local review. It writes
-`production/channel_handoff.json` and `production/channel_handoff.md` with the draft MP4 path,
+`production/thumbnail_candidates.json`, `production/thumbnail_candidates.md`,
+`production/channel_handoff.json`, and `production/channel_handoff.md` with the draft MP4 path,
 subtitle path, copy-ready title/description/tags, YouTube metadata draft, YouTube chapter draft,
-final-review digest binding, thumbnail review guidance, and manual checklist. It is not an upload
+tracked thumbnail candidates, final-review digest binding, and manual checklist. It is not an upload
 command and does not approve private upload, scheduled publish, or public publish.
 
 `thinkingMode` can be `default`, `think`, or `no_think`. Token caps are sent to Ollama as

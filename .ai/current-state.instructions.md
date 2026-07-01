@@ -232,8 +232,8 @@
   It revalidates render-plan, voiceover, draft-render, and render-decision status; missing decisions
   are `decision-pending`, while stale/invalid evidence blocks. The bundle points to the timestamped
   review map and remains a local operator index only.
-- `producer channel-handoff` writes `production/channel_handoff.*` from accepted final review with
-  copy-ready upload-prep fields, local paths, chapter paths, thumbnail guidance, and digest binding.
+- `producer channel-handoff` writes accepted-review `production/channel_handoff.*` with copy-ready
+  upload-prep fields, local paths, chapters, thumbnail candidates, and digest binding.
 - Studio run detail now shows the same local render-decision command templates for rendered runs
   with current draft-render evidence and no recorded decision, and exposes one guarded local
   `render.decide` route that writes the same durable decision evidence as the CLI. It does not

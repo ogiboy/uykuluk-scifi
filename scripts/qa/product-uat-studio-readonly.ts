@@ -95,6 +95,12 @@ assert(
   "Studio artifact previews include manual channel handoff markdown.",
 );
 assert(
+  detail.artifacts.some(
+    (item) => item.path === "production/thumbnail_candidates.md" && item.exists,
+  ),
+  "Studio artifact previews include thumbnail candidate handoff markdown.",
+);
+assert(
   detail.channelHandoff.kind === "present",
   "Studio run detail surfaces completed manual channel handoff.",
 );

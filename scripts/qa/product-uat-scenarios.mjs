@@ -294,6 +294,8 @@ export async function assertRenderedArtifacts({ assertFile, runId }) {
     "production/render/render_decision.md",
     "production/review_bundle.json",
     "production/review_bundle.md",
+    "production/thumbnail_candidates.json",
+    "production/thumbnail_candidates.md",
     "production/channel_handoff.json",
     "production/channel_handoff.md",
   ]) {
