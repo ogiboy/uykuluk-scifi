@@ -3,6 +3,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   disabledStudioActionRoutes,
+  enabledStudioActionRoutes,
   readOnlyStudioRoutes,
   routeSecurityFindings,
 } from "../apps/studio/src/lib/routeSecurity";
@@ -32,9 +33,25 @@ describe("Studio route security contract", () => {
     );
   });
 
-  it("does not expose Studio route handlers or enabled mutating actions", async () => {
-    await expect(discoverRouteHandlers(appRoot)).resolves.toEqual([]);
+  it("exposes only the guarded local render-decision action route", async () => {
+    await expect(discoverRouteHandlers(appRoot)).resolves.toEqual([
+      path.join(appRoot, "actions/decide-render/route.ts"),
+    ]);
     expect(routeSecurityFindings()).toEqual([]);
+    expect(enabledStudioActionRoutes).toEqual([
+      expect.objectContaining({
+        allowedMethods: ["POST"],
+        disabledReason: null,
+        enabled: true,
+        path: "/actions/decide-render",
+        requiredApproval: "review",
+        requiresCoreServiceContract: true,
+        requiresCsrfProtection: true,
+        requiresEvidenceWrite: true,
+        risk: "local-mutation",
+        serviceContractId: "render.decide",
+      }),
+    ]);
     expect(disabledStudioActionRoutes).toEqual(
       expect.arrayContaining([
         expect.objectContaining({

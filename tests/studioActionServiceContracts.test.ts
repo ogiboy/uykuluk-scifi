@@ -1,6 +1,6 @@
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { disabledStudioActionRoutes } from "../apps/studio/src/lib/routeSecurity";
+import { studioActionRoutes } from "../apps/studio/src/lib/routeSecurity";
 import {
   getStudioMutationServiceContract,
   parseStudioMutationRequest,
@@ -8,9 +8,13 @@ import {
 } from "../src/studio/actionServiceContracts";
 
 describe("Studio mutation service contracts", () => {
-  it("covers every disabled Studio action route with a shared core contract", () => {
-    const routeContractIds = disabledStudioActionRoutes.map((route) => route.serviceContractId);
-    const serviceContractIds = studioMutationServiceContracts.map((contract) => contract.actionId);
+  it("covers every Studio action route with a shared core contract", () => {
+    const routeContractIds = studioActionRoutes
+      .map((route) => route.serviceContractId)
+      .sort(routeSort);
+    const serviceContractIds = studioMutationServiceContracts
+      .map((contract) => contract.actionId)
+      .sort(routeSort);
 
     expect(routeContractIds).toEqual(serviceContractIds);
     expect(studioMutationServiceContracts).toEqual(
@@ -26,6 +30,12 @@ describe("Studio mutation service contracts", () => {
           availability: "disabled-external",
           coreExport: "runPublishPlaceholder",
           coreModule: "src/youtube/uploadDisabled.ts",
+        }),
+        expect.objectContaining({
+          actionId: "render.decide",
+          availability: "ready-for-cli",
+          coreExport: "recordRenderDecision",
+          coreModule: "src/stages/renderDecision.ts",
         }),
       ]),
     );
@@ -58,6 +68,27 @@ describe("Studio mutation service contracts", () => {
         runId: "run_operator_review",
       }),
     ).toEqual({ acknowledgeWarnings: false, runId: "run_operator_review" });
+    expect(
+      parseStudioMutationRequest("render.decide", {
+        decision: "needs-revision",
+        notes: "Subtitle timing needs another pass.",
+        reviewedBy: "operator",
+        runId: "run_operator_review",
+      }),
+    ).toEqual({
+      decision: "needs-revision",
+      notes: "Subtitle timing needs another pass.",
+      reviewedBy: "operator",
+      runId: "run_operator_review",
+    });
+    expect(() =>
+      parseStudioMutationRequest("render.decide", {
+        decision: "accepted-for-local-review",
+        notes: "",
+        reviewedBy: "operator",
+        runId: "run_operator_review",
+      }),
+    ).toThrow();
 
     expect(() => parseStudioMutationRequest("render.approve", { runId: "../run_escape" })).toThrow(
       /Invalid run id/,
@@ -90,3 +121,7 @@ describe("Studio mutation service contracts", () => {
     });
   });
 });
+
+function routeSort(left: string | null, right: string | null): number {
+  return String(left).localeCompare(String(right));
+}

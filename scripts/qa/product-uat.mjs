@@ -119,28 +119,12 @@ try {
     label: "rendered readiness is current",
     scenario: "happy path",
   });
-  run(
-    [
-      pnpm,
-      "producer",
-      "decide",
-      "render",
-      "--run",
-      renderedRunId,
-      "--decision",
-      "accepted-for-local-review",
-      "--notes",
-      "Product UAT accepted this local draft for manual channel review.",
-      "--reviewed-by",
-      "product-uat",
-      "--json",
-    ],
-    {
-      expectOutput: '"decision": "accepted-for-local-review"',
-      label: "record local render review decision",
-      scenario: "happy path",
-    },
-  );
+  run([pnpm, "exec", "tsx", "scripts/qa/product-uat-studio-action.ts", renderedRunId], {
+    env: { UYKULUK_SCIFI_ROOT: workdir },
+    expectOutput: "Studio render-decision action UAT passed.",
+    label: "record local render review decision through Studio action",
+    scenario: "happy path",
+  });
   run([pnpm, "producer", "status", "--run", renderedRunId], {
     expectOutput: "Render decision: accepted-for-local-review by product-uat",
     label: "status surfaces local render decision",

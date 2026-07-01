@@ -1,5 +1,9 @@
 import { studioMutationServiceMetadata } from "../../../../src/studio/actionServiceMetadata";
-import { disabledStudioActionRoutes, routeSecurityFindings } from "./routeSecurity";
+import {
+  disabledStudioActionRoutes,
+  routeSecurityFindings,
+  studioActionRoutes,
+} from "./routeSecurity";
 
 export type StudioActionServiceStatus = {
   actionCount: number;
@@ -27,7 +31,7 @@ export type StudioActionServiceSummary = {
 export function getStudioActionServiceStatus(): StudioActionServiceStatus {
   const summaries = studioMutationServiceMetadata
     .map((contract) => {
-      const route = disabledStudioActionRoutes.find(
+      const route = studioActionRoutes.find(
         (candidate) => candidate.serviceContractId === contract.actionId,
       );
       return {
@@ -48,6 +52,6 @@ export function getStudioActionServiceStatus(): StudioActionServiceStatus {
     riskyExternalCount: summaries.filter((summary) => summary.availability === "disabled-external")
       .length,
     summaries,
-    webMutationsEnabled: disabledStudioActionRoutes.some((route) => route.enabled),
+    webMutationsEnabled: studioActionRoutes.some((route) => route.enabled),
   };
 }

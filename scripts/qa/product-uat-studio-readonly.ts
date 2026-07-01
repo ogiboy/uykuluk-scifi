@@ -101,8 +101,23 @@ assert(
 
 const actions = getStudioActionServiceStatus();
 assert(actions.actionCount > 0, "Studio action contracts are discoverable.");
-assert(actions.webMutationsEnabled === false, "Studio web mutations remain disabled.");
+assert(
+  actions.webMutationsEnabled === true,
+  "Studio exposes only the guarded local render-decision mutation.",
+);
 assert(actions.findings.length === 0, "Studio action service has no route-security findings.");
+assert(
+  actions.summaries.some(
+    (item) => item.actionId === "render.decide" && item.routePath === "/actions/decide-render",
+  ),
+  "Studio action service exposes the guarded render-decision route.",
+);
+assert(
+  actions.summaries.some(
+    (item) => item.actionId === "publish.schedule" && item.availability === "disabled-external",
+  ),
+  "Studio action service keeps publish disabled.",
+);
 
 console.log("Studio read-only UAT passed.");
 

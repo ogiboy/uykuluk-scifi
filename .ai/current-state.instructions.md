@@ -229,9 +229,10 @@
   JSON/Markdown evidence under `production/render/`. It does not approve upload or publish and keeps
   the run in `RENDERED`. `producer status`, `producer desk`, and product UAT surface the recorded
   decision so operators do not loop back to render review after a decision is recorded.
-- Studio run detail remains read-only but now shows the same local render-decision command templates
-  for rendered runs with current draft-render evidence and no recorded decision, so the operator can
-  copy the CLI command without Studio becoming a mutation surface.
+- Studio run detail now shows the same local render-decision command templates for rendered runs
+  with current draft-render evidence and no recorded decision, and exposes one guarded local
+  `render.decide` route that writes the same durable decision evidence as the CLI. It does not
+  approve upload or publish.
 - Readiness diagnostics that strictly parse and revalidate persisted cost quotes, live hard budgets,
   complete production-package integrity, and exact paid-generation cost approval when required.
 - Final readiness diagnostics agree with the post-transition run state.
@@ -312,19 +313,19 @@
 - Studio home and `/analytics` surface read-only manual analytics feedback from ignored local
   analytics artifacts. They show import/report status, data-quality guidance, and the next safe CLI
   command without calling YouTube APIs or mutating run state.
-- Studio has a typed route-security contract for current read-only pages and disabled future action
-  routes. Tests assert that all current App Router pages are covered as read-only, no Studio
-  `route.ts` handlers exist, disabled actions require shared CLI/core service contracts, CSRF
-  protection, durable evidence writes, and explicit approval targets, and public/scheduled publish
-  risk remains disabled.
+- Studio has a typed route-security contract for current read-only pages, the guarded local
+  render-decision route, and disabled future action routes. Tests assert that all current App Router
+  pages are covered as read-only, the only current route handler is `/actions/decide-render`,
+  enabled local mutations require POST-only same-origin JSON service-contract handling, disabled
+  actions require shared CLI/core service contracts, CSRF protection, durable evidence writes, and
+  explicit approval targets, and public/scheduled publish risk remains disabled.
 - Shared Studio mutation service contract foundations exist for future idea/script/cost/render
-  approval actions and disabled upload/publish actions. Contracts validate future request payloads,
-  bind each action to the CLI/core module/export, require CSRF protection, durable evidence, and
-  explicit approval, and remain non-routable until guarded Studio action routes are intentionally
-  implemented.
-- Studio home renders a read-only mutation-service status panel showing disabled future action
-  routes, CLI-ready approval contracts, route-security findings, and upload/publish risk boundaries
-  without exposing web mutations.
+  approval actions, the active local render-decision evidence write, and disabled upload/publish
+  actions. Contracts validate request payloads, bind each action to the CLI/core module/export, and
+  require CSRF protection, durable evidence, and explicit approval.
+- Studio home renders a mutation-service status panel showing the guarded local render-decision
+  route, disabled future action routes, CLI-ready approval contracts, route-security findings, and
+  upload/publish risk boundaries without exposing approval/upload/publish web mutations.
 - Manual analytics feedback foundation. `producer analytics import --file <path>` accepts
   operator-provided CSV/JSON performance exports and writes ignored local
   `analytics/performance.json`, `analytics/performance_report.md`, and a fillable
