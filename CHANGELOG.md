@@ -11,6 +11,17 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.62.0 (2026-07-01)
+
+### Tests
+
+- cover handoff decision review states (3808b9e)
+
+### Features
+
+- surface channel handoff decisions (e58e617)
+- record manual handoff decisions (cf344d1)
+
 ## v0.61.1 (2026-07-01)
 
 ### Styles
