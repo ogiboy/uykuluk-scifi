@@ -52,7 +52,7 @@ function scanWavChunks(buffer: Buffer): {
   sampleRateHz: number;
 } {
   const info = { byteRate: 0, channels: 0, dataBytes: 0, sampleRateHz: 0 };
-  for (let offset = 12; offset + 8 <= buffer.length; ) {
+  for (let offset = 12; offset + 8 <= buffer.length;) {
     const chunkId = buffer.subarray(offset, offset + 4).toString("ascii");
     const chunkSize = buffer.readUInt32LE(offset + 4);
     const dataOffset = offset + 8;

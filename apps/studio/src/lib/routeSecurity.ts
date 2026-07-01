@@ -5,10 +5,7 @@ import {
 
 export type StudioRouteMethod = "DELETE" | "GET" | "PATCH" | "POST" | "PUT";
 export type StudioRouteRisk =
-  | "external-side-effect"
-  | "local-mutation"
-  | "publish-risk"
-  | "read-only";
+  "external-side-effect" | "local-mutation" | "publish-risk" | "read-only";
 
 export type StudioRouteSecurityContract = {
   allowedMethods: readonly StudioRouteMethod[];
@@ -17,14 +14,7 @@ export type StudioRouteSecurityContract = {
   id: string;
   path: string;
   requiredApproval:
-    | "cost"
-    | "idea"
-    | "none"
-    | "publish"
-    | "render"
-    | "review"
-    | "script"
-    | "upload";
+    "cost" | "idea" | "none" | "publish" | "render" | "review" | "script" | "upload";
   requiresCoreServiceContract: boolean;
   requiresCsrfProtection: boolean;
   requiresEvidenceWrite: boolean;
