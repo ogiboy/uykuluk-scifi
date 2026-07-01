@@ -9,6 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
+_No unreleased changes yet._
+
+## v0.60.0 (2026-07-01)
+
 ### Fixes
 
 - harden manual channel handoff staleness, status ordering, and Markdown rendering after review.
