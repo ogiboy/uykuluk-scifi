@@ -9,6 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
+_No unreleased changes yet._
+
+## v0.61.0 (2026-07-01)
+
 ### Features
 
 - add a timestamped review map to draft-render review Markdown.
