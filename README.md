@@ -323,6 +323,9 @@ pnpm producer review-bundle --run <run_id>
 pnpm producer review-bundle --run <run_id> --json
 pnpm producer channel-handoff --run <run_id>
 pnpm producer channel-handoff --run <run_id> --json
+pnpm producer decide channel-handoff --run <run_id> --decision accepted-for-manual-channel-prep --thumbnail-candidate <candidate_id> --notes "<operator notes>" --reviewed-by operator
+pnpm producer decide channel-handoff --run <run_id> --decision needs-revision --notes "<operator notes>" --reviewed-by operator
+pnpm producer decide channel-handoff --run <run_id> --decision rejected --notes "<operator notes>" --reviewed-by operator
 ```
 
 Blocked readiness checks print and persist next-action guidance for common operator steps such as
@@ -686,6 +689,8 @@ the final review bundle is trusted and accepted for local review. It writes
 subtitle path, copy-ready title/description/tags, YouTube metadata draft, YouTube chapter draft,
 tracked thumbnail candidates, final-review digest binding, and manual checklist. It is not an upload
 command and does not approve private upload, scheduled publish, or public publish.
+`producer decide channel-handoff` then records the selected thumbnail candidate and channel-prep
+decision as durable local evidence while keeping upload and publish disabled.
 
 `thinkingMode` can be `default`, `think`, or `no_think`. Token caps are sent to Ollama as
 `num_predict` so local generation cannot run unbounded. Script generation splits the approved idea

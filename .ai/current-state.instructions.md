@@ -233,7 +233,8 @@
   are `decision-pending`, while stale/invalid evidence blocks. The bundle points to the timestamped
   review map and remains a local operator index only.
 - `producer channel-handoff` writes accepted-review `production/channel_handoff.*` with copy-ready
-  upload-prep fields, local paths, chapters, thumbnail candidates, and digest binding.
+  fields, chapters, thumbnails, digest binding, and a selected-thumbnail decision without
+  upload/publish approval.
 - Studio run detail now shows the same local render-decision command templates for rendered runs
   with current draft-render evidence and no recorded decision, and exposes one guarded local
   `render.decide` route that writes the same durable decision evidence as the CLI. It does not
@@ -437,7 +438,6 @@ Corepack/PATH before treating failures as product failures.
   handling and guarded mutation routes are not implemented yet.
 - Locale infrastructure is ready, but full translation catalogs and a language selector are
   intentionally deferred.
-- Prompt editing UI is planned but not implemented.
 - Local prompt overrides are implemented as explicit ignored `prompts/local/*.md` paths configured
   in `producer.config.json` and recorded in prompt provenance. Prompt editing UI and prompt revision
   history remain future work; tracked defaults stay read-only runtime inputs, and Studio visibility

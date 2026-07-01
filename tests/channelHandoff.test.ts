@@ -186,9 +186,8 @@ describe("manual channel handoff", () => {
       handoff: { status: "ready-for-manual-channel-review" },
       reviewPath: "production/channel_handoff.md",
     });
-    expect(status.nextRecommendedCommand).toContain(
-      "Manually review production/channel_handoff.md",
-    );
+    expect(status.nextRecommendedCommand).toContain("pnpm producer decide channel-handoff");
+    expect(status.nextRecommendedCommand).toContain("--thumbnail-candidate <candidate_id>");
     expect(status.nextRecommendedCommand).not.toContain("producer channel-handoff");
     expect(statusOutput).toContain("Manual channel handoff: ready-for-manual-channel-review");
     expect(statusOutput).toContain(
