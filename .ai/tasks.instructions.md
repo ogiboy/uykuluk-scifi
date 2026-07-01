@@ -105,8 +105,10 @@
   one-off bake-offs and `producer eval local-model-candidates` for same-runtime candidate
   comparisons so the project config does not churn between local model tests. Candidate comparison
   reports should keep surfacing deterministic recommendations and next operator commands without
-  editing config. `llama.cpp` support is the local OpenAI-compatible runtime path for this work;
-  live model runs remain manual/local and outside CI.
+  editing config. In `llama.cpp` mode, keep `/v1/models` preflight and served-model mismatch checks
+  fail-closed so one loaded GGUF cannot masquerade as another candidate. `llama.cpp` support is the
+  local OpenAI-compatible runtime path for this work; live model runs remain manual/local and
+  outside CI.
 - Preserve Qwen/Ollama regressions as known-bad safety evidence. Current blockers reject repeated
   fit frames, generic boilerplate, repeated uncertainty openers, generic unknown-species phrasing,
   weak premise action frames, English scientific leftovers, malformed labels, repeated sentence

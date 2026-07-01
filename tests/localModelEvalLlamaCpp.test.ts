@@ -82,10 +82,11 @@ describe("local model evaluation with llama.cpp", () => {
   it("redacts endpoint details from blocked eval artifacts", async () => {
     await writeLlmConfig({
       mode: "llama.cpp",
-      llamaCppBaseUrl: "http://user:local-secret@localhost:8080/private?token=local-secret",
+      llamaCppBaseUrl:
+        "http://fixture-user:fixture-password@localhost:8080/private?sample=fixture-value",
       model: "local-model.gguf",
     });
-    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("ECONNREFUSED local-secret")));
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("ECONNREFUSED fixture-password")));
 
     const report = await runLocalModelEval();
 
@@ -103,9 +104,49 @@ describe("local model evaluation with llama.cpp", () => {
       await readFile(localModelEvalJsonPath(), "utf8"),
       await readFile(localModelEvalMarkdownPath(), "utf8"),
     ]) {
-      expect(value).not.toContain("local-secret");
-      expect(value).not.toContain("user:");
+      expect(value).not.toContain("fixture-password");
+      expect(value).not.toContain("fixture-user");
       expect(value).not.toContain("/private");
     }
+  });
+
+  it("blocks eval reports when llama.cpp serves a different model than requested", async () => {
+    await writeLlmConfig({
+      mode: "llama.cpp",
+      llamaCppBaseUrl: "http://localhost:8080",
+      model: "requested-model.gguf",
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockImplementation(() =>
+        Promise.resolve(
+          jsonResponse({
+            choices: [{ message: { content: generateMockIdeasText() } }],
+            model: "served-model.gguf",
+          }),
+        ),
+      ),
+    );
+
+    const report = await runLocalModelEval();
+
+    expect(report.passed).toBe(false);
+    expect(report.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: "ideas-json",
+          status: "block",
+          message: "llama.cpp provider served a different model than requested.",
+        }),
+        expect.objectContaining({
+          name: "script-section-json",
+          status: "block",
+          message: "llama.cpp provider served a different model than requested.",
+        }),
+      ]),
+    );
+    expect(JSON.stringify(report)).not.toContain("served-model.gguf");
+    expect(await readFile(localModelEvalJsonPath(), "utf8")).not.toContain("served-model.gguf");
+    expect(await readFile(localModelEvalMarkdownPath(), "utf8")).not.toContain("served-model.gguf");
   });
 });

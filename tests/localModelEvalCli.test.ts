@@ -60,6 +60,7 @@ describe("producer local-model eval CLI", () => {
       passed: false,
       providerMode: "mock",
       operatorGuidance: expect.objectContaining({
+        decision: "candidate-ready-with-blockers",
         nextCommand: "pnpm producer eval local-model --llm-mode mock --model mock-deterministic",
       }),
       recommendedCandidate: expect.objectContaining({

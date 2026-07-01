@@ -24,6 +24,9 @@ export function safeLocalModelEvalErrorMessage(error: unknown): string {
   if (error.message.startsWith("llama.cpp provider error")) {
     return "llama.cpp provider reported an error.";
   }
+  if (error.message.startsWith("llama.cpp served model mismatch")) {
+    return "llama.cpp provider served a different model than requested.";
+  }
   if (
     /^Invalid (?:ideas|script section|production package) provider response:/u.test(error.message)
   ) {

@@ -30,6 +30,7 @@ type LlamaCppChatCompletionResponse = {
 export type LlamaCppDiagnostic = {
   available: boolean;
   baseUrl: string;
+  kind: "available" | "diagnostic-failure" | "unserved";
   model: string;
   servedModels: string[];
   message: string;
@@ -60,6 +61,7 @@ export class LlamaCppProvider implements LlmProvider {
       return {
         available: false,
         baseUrl: displayBaseUrl,
+        kind: "diagnostic-failure",
         model: this.defaultModel,
         servedModels: [],
         message: `llama.cpp server unavailable at ${displayBaseUrl} (${transportFailureReason(
@@ -71,6 +73,7 @@ export class LlamaCppProvider implements LlmProvider {
       return {
         available: false,
         baseUrl: displayBaseUrl,
+        kind: "diagnostic-failure",
         model: this.defaultModel,
         servedModels: [],
         message: `llama.cpp diagnostics failed (${response.status} ${response.statusText || "HTTP error"}).`,
@@ -85,6 +88,7 @@ export class LlamaCppProvider implements LlmProvider {
       return {
         available,
         baseUrl: displayBaseUrl,
+        kind: available ? "available" : "unserved",
         model: this.defaultModel,
         servedModels,
         message: available
@@ -95,6 +99,7 @@ export class LlamaCppProvider implements LlmProvider {
       return {
         available: false,
         baseUrl: displayBaseUrl,
+        kind: "diagnostic-failure",
         model: this.defaultModel,
         servedModels: [],
         message: `llama.cpp diagnostics returned invalid JSON: ${
@@ -149,11 +154,15 @@ export class LlamaCppProvider implements LlmProvider {
     if (raw.error) {
       throw new Error("llama.cpp provider error.");
     }
+    const servedModel = raw.model ?? model;
+    if (servedModel !== model) {
+      throw new Error("llama.cpp served model mismatch.");
+    }
     const text = raw.choices?.[0]?.message?.content ?? raw.choices?.[0]?.text ?? "";
     return {
       text,
       provider: "llama.cpp",
-      model: raw.model ?? model,
+      model: servedModel,
       inputTokensApprox:
         raw.usage?.prompt_tokens ?? approximateTokens(`${input.system ?? ""}\n${input.prompt}`),
       outputTokensApprox: raw.usage?.completion_tokens ?? approximateTokens(text),

@@ -1,6 +1,7 @@
 import path from "node:path";
 import { loadConfig } from "../config/config.js";
 import { ProducerConfig } from "../config/schema.js";
+import { LlamaCppProvider } from "../providers/llamaCppProvider.js";
 import { writeTextFile } from "../utils/fs.js";
 import { nowIso } from "../utils/time.js";
 import { writeJsonFile } from "../utils/json.js";
@@ -11,6 +12,10 @@ import {
 } from "./localModelEvalConfig.js";
 import { LocalModelEvalReport, runLocalModelEvalWithConfig } from "./localModelEval.js";
 import { renderLocalModelCandidateEvalMarkdown } from "./localModelCandidateEvalFormatting.js";
+import {
+  llamaCppDiagnosticFailureReport,
+  unservedLlamaCppCandidateReport,
+} from "./localModelCandidateEvalReports.js";
 
 export type LocalModelCandidateEvalOptions = {
   candidates: string[];
@@ -30,7 +35,7 @@ export type LocalModelCandidateEvalReport = {
 };
 
 export type LocalModelCandidateOperatorGuidance = {
-  decision: "candidate-ready" | "try-more-candidates";
+  decision: "candidate-ready" | "candidate-ready-with-blockers" | "try-more-candidates";
   message: string;
   nextCommand: string;
 };
@@ -41,6 +46,16 @@ export type LocalModelCandidateRecommendation = {
   durationMs: number;
   passedChecks: number;
 };
+
+type ServedLlamaCppModelsResult =
+  | {
+      models: string[];
+      status: "pass";
+    }
+  | {
+      message: string;
+      status: "block";
+    };
 
 /**
  * Gets the absolute path to the local model candidate evaluation JSON report.
@@ -76,17 +91,19 @@ export async function runLocalModelCandidateEval(
   );
   const candidates = await evaluateCandidates(config, baseOverrides, options.candidates);
   const recommendedCandidate = selectRecommendedLocalModelCandidate(candidates);
+  const passed = candidates.length > 0 && candidates.every((candidate) => candidate.passed);
   const report: LocalModelCandidateEvalReport = {
     baseOverrides,
     candidates,
     configSource: baseOverrides.length > 0 ? "cli-overrides" : "project",
     createdAt: nowIso(),
     durationMs: Date.now() - startedAt,
-    passed: candidates.every((candidate) => candidate.passed),
+    passed,
     providerMode: config.providers.llm.mode,
     operatorGuidance: localModelCandidateOperatorGuidance(
       config.providers.llm.mode,
       recommendedCandidate,
+      passed,
     ),
     recommendedCandidate,
   };
@@ -104,8 +121,27 @@ async function evaluateCandidates(
   candidates: string[],
 ): Promise<LocalModelEvalReport[]> {
   const uniqueCandidates = Array.from(new Set(candidates));
+  const servedLlamaCppModels =
+    config.providers.llm.mode === "llama.cpp" ? await readServedLlamaCppModels(config) : null;
+  if (servedLlamaCppModels?.status === "block") {
+    return uniqueCandidates.map((candidate) =>
+      llamaCppDiagnosticFailureReport(
+        config,
+        baseOverrides,
+        candidate,
+        servedLlamaCppModels.message,
+      ),
+    );
+  }
   const reports: LocalModelEvalReport[] = [];
   for (const candidate of uniqueCandidates) {
+    if (
+      servedLlamaCppModels?.status === "pass" &&
+      !servedLlamaCppModels.models.includes(candidate)
+    ) {
+      reports.push(unservedLlamaCppCandidateReport(config, baseOverrides, candidate));
+      continue;
+    }
     reports.push(
       await runLocalModelEvalWithConfig(
         {
@@ -123,6 +159,20 @@ async function evaluateCandidates(
     );
   }
   return reports;
+}
+
+async function readServedLlamaCppModels(
+  config: ProducerConfig,
+): Promise<ServedLlamaCppModelsResult> {
+  const diagnostic = await new LlamaCppProvider(
+    config.providers.llm.llamaCppBaseUrl,
+    config.providers.llm.model,
+    config.providers.llm.requestTimeoutMs,
+  ).diagnose();
+  if (diagnostic.kind === "diagnostic-failure") {
+    return { message: diagnostic.message, status: "block" };
+  }
+  return { models: diagnostic.servedModels, status: "pass" };
 }
 
 /**
@@ -179,12 +229,14 @@ function compareStrings(left: string, right: string): number {
 function localModelCandidateOperatorGuidance(
   providerMode: ProducerConfig["providers"]["llm"]["mode"],
   recommendation: LocalModelCandidateRecommendation | null,
+  passed: boolean,
 ): LocalModelCandidateOperatorGuidance {
   if (recommendation) {
     return {
-      decision: "candidate-ready",
-      message:
-        "A candidate passed the parser-contract checks. Review the report, then run a single-model eval before changing producer.config.json.",
+      decision: passed ? "candidate-ready" : "candidate-ready-with-blockers",
+      message: passed
+        ? "All compared candidates passed the parser-contract checks. Review the report, then run a single-model eval before changing producer.config.json."
+        : "At least one candidate passed, but the comparison still has blocked candidates. Review blocked rows before changing producer.config.json.",
       nextCommand: `pnpm producer eval local-model --llm-mode ${shellQuote(
         providerMode,
       )} --model ${shellQuote(recommendation.configuredModel)}`,
