@@ -4,13 +4,13 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { ZodError } from "zod";
 import { projectRoot } from "../../../lib/projectRoot";
+import { parseStudioRenderDecisionRequest } from "../../../lib/renderDecisionActionContract";
 import { validateStudioMutationRequest } from "../../../lib/studioMutationSecurity";
-import { parseStudioMutationRequest } from "../../../../../../src/studio/actionServiceContracts";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-type RenderDecisionRequest = ReturnType<typeof parseRenderDecisionRequest>;
+type RenderDecisionRequest = ReturnType<typeof parseStudioRenderDecisionRequest>;
 
 type CliResult = Readonly<{
   stderr: string;
@@ -38,7 +38,7 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   try {
-    const input = parseRenderDecisionRequest(payload);
+    const input = parseStudioRenderDecisionRequest(payload);
     const result = await runRenderDecisionCli(input);
     if (result.status !== 0) {
       return jsonError(cliErrorMessage(result.stderr), 409);
@@ -67,10 +67,6 @@ function jsonError(message: string, status: number): Response {
     },
     { status },
   );
-}
-
-function parseRenderDecisionRequest(payload: unknown) {
-  return parseStudioMutationRequest("render.decide", payload);
 }
 
 /**
