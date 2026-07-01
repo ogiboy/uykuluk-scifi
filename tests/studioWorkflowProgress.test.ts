@@ -1,5 +1,9 @@
+import { readFile, writeFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { getStudioRunDetail } from "../apps/studio/src/lib/runSummaries";
+import { artifactPath } from "../src/core/artifacts";
+import { channelHandoffJsonPath } from "../src/stages/channelHandoffContracts";
+import { channelHandoffDecisionJsonPath } from "../src/stages/channelHandoffDecision";
 import type { StatusWorkflowStep } from "../src/stages/statusWorkflow";
 import {
   writeStudioFinalReviewBundle,
@@ -136,6 +140,42 @@ describe("Studio workflow progress", () => {
         }),
       ]),
     );
+  });
+
+  it("marks stale or malformed manual channel handoff decisions as untrusted in Studio", async () => {
+    const staleRunId = await createRenderedStudioRunFixture();
+    await writeStudioChannelHandoffDecision(staleRunId);
+    const staleHandoffPath = artifactPath(staleRunId, channelHandoffJsonPath);
+    const staleHandoff = JSON.parse(await readFile(staleHandoffPath, "utf8")) as {
+      operatorChecklist: string[];
+    };
+    await writeFile(
+      staleHandoffPath,
+      JSON.stringify({
+        ...staleHandoff,
+        operatorChecklist: [...staleHandoff.operatorChecklist, "Tampered after decision."],
+      }),
+      "utf8",
+    );
+
+    const staleDetail = await getStudioRunDetail(staleRunId);
+
+    expect(staleDetail?.channelHandoffDecision).toMatchObject({
+      kind: "stale",
+      message: "Manual channel-handoff decision depends on stale channel handoff evidence.",
+    });
+    expect(staleDetail?.nextRecommendedCommand).toContain("pnpm producer channel-handoff");
+
+    const invalidRunId = await createRenderedStudioRunFixture();
+    await writeStudioChannelHandoff(invalidRunId);
+    await writeFile(artifactPath(invalidRunId, channelHandoffDecisionJsonPath), "{", "utf8");
+
+    const invalidDetail = await getStudioRunDetail(invalidRunId);
+
+    expect(invalidDetail?.channelHandoffDecision).toMatchObject({
+      kind: "invalid",
+    });
+    expect(invalidDetail?.nextRecommendedCommand).toContain("pnpm producer decide channel-handoff");
   });
 });
 

@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { readFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { artifactPath } from "../src/core/artifacts";
@@ -121,6 +121,81 @@ describe("manual channel handoff decision", () => {
     await expect(
       readFile(artifactPath(runId, channelHandoffDecisionJsonPath), "utf8"),
     ).rejects.toThrow();
+  });
+
+  it("requires a selected thumbnail for accepted manual channel prep", async () => {
+    const runId = await acceptedChannelHandoffRun("channel-decision-missing-thumbnail");
+
+    await expect(
+      recordChannelHandoffDecision({
+        decision: "accepted-for-manual-channel-prep",
+        notes: "Missing selected thumbnail.",
+        reviewedBy: "operator",
+        runId,
+      }),
+    ).rejects.toThrow(/thumbnail-candidate/i);
+  });
+
+  it("records revision decisions without selecting a thumbnail", async () => {
+    const runId = await acceptedChannelHandoffRun("channel-decision-revision");
+
+    const decision = await recordChannelHandoffDecision({
+      decision: "needs-revision",
+      notes: "Metadata needs another manual pass before channel prep.",
+      reviewedBy: "operator",
+      runId,
+    });
+
+    expect(decision.selectedThumbnailCandidate).toBeNull();
+    expect(decision.nextSafeAction).toContain("Revise the channel handoff inputs");
+    const markdown = await readFile(
+      artifactPath(runId, channelHandoffDecisionMarkdownPath),
+      "utf8",
+    );
+    expect(markdown).toContain("No thumbnail candidate selected for this decision outcome.");
+  });
+
+  it("marks manual channel handoff decisions stale when the handoff digest changes", async () => {
+    const runId = await acceptedChannelHandoffRun("channel-decision-stale");
+    await recordChannelHandoffDecision({
+      decision: "accepted-for-manual-channel-prep",
+      notes: "Ready before tamper.",
+      reviewedBy: "operator",
+      runId,
+      thumbnailCandidateId: "thumbnail-01-left",
+    });
+    const handoffPath = artifactPath(runId, "production/channel_handoff.json");
+    const handoff = JSON.parse(await readFile(handoffPath, "utf8")) as {
+      operatorChecklist: string[];
+    };
+    await writeFile(
+      handoffPath,
+      JSON.stringify({
+        ...handoff,
+        operatorChecklist: [...handoff.operatorChecklist, "Tampered after decision."],
+      }),
+      "utf8",
+    );
+
+    const status = await readRunStatus(runId);
+
+    expect(status.channelHandoffDecision).toMatchObject({
+      kind: "stale",
+      message: "Channel handoff decision depends on stale channel handoff evidence.",
+    });
+    expect(status.nextRecommendedCommand).toContain("pnpm producer channel-handoff");
+  });
+
+  it("marks malformed manual channel handoff decisions invalid", async () => {
+    const runId = await acceptedChannelHandoffRun("channel-decision-invalid");
+    await writeFile(artifactPath(runId, channelHandoffDecisionJsonPath), "{", "utf8");
+
+    const status = await readRunStatus(runId);
+
+    expect(status.channelHandoffDecision).toMatchObject({
+      kind: "invalid",
+    });
+    expect(status.nextRecommendedCommand).toContain("pnpm producer decide channel-handoff");
   });
 });
 
