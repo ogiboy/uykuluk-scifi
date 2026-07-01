@@ -11,6 +11,22 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.58.0 (2026-07-01)
+
+### Tests
+
+- cover studio render decision action (4aa629e)
+
+### Fixes
+
+- keep render action build compatible (3d56b67)
+- reuse render decision contract (ed5f493)
+
+### Features
+
+- record guarded render decisions (5d29cca)
+- contract render decisions (279b8ad)
+
 ## v0.57.1 (2026-07-01)
 
 ### Refactoring
