@@ -14,6 +14,10 @@ import {
 import { createFinalReviewBundle } from "../src/stages/finalReviewBundle";
 import { recordRenderDecision } from "../src/stages/renderDecision";
 import { formatRunStatus, readRunStatus } from "../src/stages/status";
+import {
+  thumbnailCandidatesJsonPath,
+  thumbnailCandidatesMarkdownPath,
+} from "../src/stages/thumbnailCandidates";
 import { useTempProject } from "./helpers";
 import { renderLocalDraft } from "./renderPipelineHelpers";
 
@@ -29,7 +33,7 @@ describe("manual channel handoff", () => {
 
     expect(handoff).toMatchObject({
       runId,
-      schemaVersion: 1,
+      schemaVersion: 2,
       status: "ready-for-manual-channel-review",
       manualOnly: true,
       finalReviewBundle: {
@@ -38,21 +42,40 @@ describe("manual channel handoff", () => {
         status: "accepted-for-local-review",
       },
       media: {
+        chaptersPath: "production/render/youtube_chapters.md",
         draftRenderPath: "production/render/draft.mp4",
         subtitlesPath: "production/subtitles.srt",
       },
       youtube: {
         metadataPath: "production/youtube_metadata.json",
       },
+      thumbnailCandidates: {
+        jsonPath: thumbnailCandidatesJsonPath,
+        markdownPath: thumbnailCandidatesMarkdownPath,
+        recommendedCandidateId: "thumbnail-01-left",
+      },
     });
     expect(handoff.youtube.title).toContain("UykulukSciFi");
     expect(handoff.operatorChecklist.join(" ")).toContain("Watch the draft MP4");
+    expect(handoff.operatorChecklist.join(" ")).toContain("tracked thumbnail candidate");
     expect(handoff.blockedActions.join(" ").toLowerCase()).toContain("does not call youtube");
 
     const run = await loadRun(runId);
     expect(run.artifacts).toEqual(
-      expect.arrayContaining([channelHandoffJsonPath, channelHandoffMarkdownPath]),
+      expect.arrayContaining([
+        channelHandoffJsonPath,
+        channelHandoffMarkdownPath,
+        thumbnailCandidatesJsonPath,
+        thumbnailCandidatesMarkdownPath,
+      ]),
     );
+    const thumbnailJson = JSON.parse(
+      await readFile(artifactPath(runId, thumbnailCandidatesJsonPath), "utf8"),
+    ) as { recommendedCandidateId: string };
+    expect(thumbnailJson.recommendedCandidateId).toBe("thumbnail-01-left");
+    await expect(
+      readFile(artifactPath(runId, thumbnailCandidatesMarkdownPath), "utf8"),
+    ).resolves.toContain("Recommended candidate: thumbnail-01-left");
     const markdown = await readFile(artifactPath(runId, channelHandoffMarkdownPath), "utf8");
     expect(markdown).toContain("# Manual Channel Handoff");
     expect(markdown).toContain("Local preparation artifact only");
@@ -60,9 +83,11 @@ describe("manual channel handoff", () => {
     expect(markdown).toContain("```text");
     expect(markdown).toContain("production/render/draft.mp4");
     expect(markdown).toContain("production/subtitles.srt");
+    expect(markdown).toContain("production/render/youtube_chapters.md");
     expect(markdown).toContain("production/youtube_metadata.json");
+    expect(markdown).toContain("production/thumbnail_candidates.md");
     expect(markdown).toContain("## Thumbnail Preparation");
-    expect(markdown).toContain("assets/thumbnails/");
+    expect(markdown).toContain("Recommended starting candidate: thumbnail-01-left.");
     expect(markdown.toLowerCase()).toContain("does not upload");
   });
 
@@ -78,6 +103,12 @@ describe("manual channel handoff", () => {
     await expect(
       readFile(artifactPath(runId, channelHandoffMarkdownPath), "utf8"),
     ).rejects.toThrow();
+    await expect(
+      readFile(artifactPath(runId, thumbnailCandidatesJsonPath), "utf8"),
+    ).rejects.toThrow();
+    await expect(
+      readFile(artifactPath(runId, thumbnailCandidatesMarkdownPath), "utf8"),
+    ).rejects.toThrow();
   });
 
   it("marks modified channel handoff payloads stale", async () => {
@@ -86,6 +117,21 @@ describe("manual channel handoff", () => {
     await writeFile(
       artifactPath(runId, channelHandoffJsonPath),
       JSON.stringify({ ...handoff, youtube: { ...handoff.youtube, title: "tampered" } }),
+      "utf8",
+    );
+
+    const status = await readRunStatus(runId);
+
+    expect(status.channelHandoff).toMatchObject({ kind: "stale" });
+    expect(status.nextRecommendedCommand).toBe(`pnpm producer channel-handoff --run ${runId}`);
+  });
+
+  it("marks modified thumbnail candidate handoffs stale", async () => {
+    const runId = await acceptedFinalReviewRun("channel-handoff-thumbnail-tamper");
+    await createChannelHandoff(runId);
+    await writeFile(
+      artifactPath(runId, thumbnailCandidatesMarkdownPath),
+      "# Thumbnail Candidate Handoff\n\ntampered\n",
       "utf8",
     );
 
@@ -120,6 +166,8 @@ describe("manual channel handoff", () => {
     expect(result.status).toBe(0);
     expect(result.stdout).toContain("Package: production/channel_handoff.md");
     expect(result.stdout).toContain("Subtitles: production/subtitles.srt");
+    expect(result.stdout).toContain("Chapters: production/render/youtube_chapters.md");
+    expect(result.stdout).toContain("Thumbnails: production/thumbnail_candidates.md");
     expect(result.stdout).toContain("Metadata: production/youtube_metadata.json");
     expect(result.stdout).toContain("Title: ");
     expect(result.stdout).toContain("Upload and publish remain disabled.");

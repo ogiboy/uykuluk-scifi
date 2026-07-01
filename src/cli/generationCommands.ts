@@ -165,6 +165,8 @@ function formatChannelHandoffConsole(
     "Package: production/channel_handoff.md",
     `Draft render: ${handoff.media.draftRenderPath}`,
     `Subtitles: ${handoff.media.subtitlesPath}`,
+    `Chapters: ${handoff.media.chaptersPath}`,
+    `Thumbnails: ${handoff.thumbnailCandidates.markdownPath}`,
     `Metadata: ${handoff.youtube.metadataPath}`,
     `Title: ${handoff.youtube.title}`,
     `Next safe action: ${handoff.nextSafeAction}`,

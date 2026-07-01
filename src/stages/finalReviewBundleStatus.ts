@@ -6,6 +6,7 @@ import {
   finalReviewBundleJsonPath,
   finalReviewBundleMarkdownPath,
   finalReviewBundleSchema,
+  isLegacyFinalReviewBundle,
   type FinalReviewBundle,
 } from "./finalReviewBundleContracts.js";
 import {
@@ -43,9 +44,13 @@ export async function readFinalReviewBundleStatus(
   const nextAction = run.state === "RENDERED" ? finalReviewBundleCommand(run.runId) : null;
   let bundle: FinalReviewBundle;
   try {
-    bundle = finalReviewBundleSchema.parse(
-      await readJsonFile<unknown>(artifactPath(run.runId, finalReviewBundleJsonPath)),
+    const rawBundle = await readJsonFile<unknown>(
+      artifactPath(run.runId, finalReviewBundleJsonPath),
     );
+    if (isLegacyFinalReviewBundle(rawBundle)) {
+      return stale("Final review bundle uses legacy schema version 1; regenerate it.", run.runId);
+    }
+    bundle = finalReviewBundleSchema.parse(rawBundle);
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") {
       return { kind: "missing", nextAction };

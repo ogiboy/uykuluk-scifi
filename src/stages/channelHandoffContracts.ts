@@ -10,8 +10,12 @@ export function channelHandoffCommand(runId: string): string {
 
 const digestSchema = z.string().regex(/^[a-f0-9]{64}$/);
 
-export const channelHandoffSchema = z.strictObject({
+const legacyChannelHandoffSchema = z.looseObject({
   schemaVersion: z.literal(1),
+});
+
+export const channelHandoffSchema = z.strictObject({
+  schemaVersion: z.literal(2),
   runId: z.string().min(1),
   createdAt: z.iso.datetime(),
   status: z.literal("ready-for-manual-channel-review"),
@@ -28,12 +32,21 @@ export const channelHandoffSchema = z.strictObject({
     durationSeconds: z.number().positive(),
     subtitlesPath: z.literal("production/subtitles.srt"),
     renderReviewPath: z.string().min(1),
+    chaptersPath: z.string().min(1),
+    chaptersJsonPath: z.string().min(1),
   }),
   youtube: z.strictObject({
     metadataPath: z.literal("production/youtube_metadata.json"),
     title: z.string().min(1),
     description: z.string().min(1),
     tags: z.array(z.string().min(1)),
+  }),
+  thumbnailCandidates: z.strictObject({
+    jsonPath: z.literal("production/thumbnail_candidates.json"),
+    markdownPath: z.literal("production/thumbnail_candidates.md"),
+    jsonSha256: digestSchema,
+    markdownSha256: digestSchema,
+    recommendedCandidateId: z.string().min(1),
   }),
   operatorChecklist: z.array(z.string().min(1)).min(1),
   blockedActions: z.array(z.string().min(1)).min(1),
@@ -54,10 +67,11 @@ export function buildChannelHandoffPayload(input: {
   finalReviewBundle: FinalReviewBundle;
   finalReviewBundleDigest: string;
   runId: string;
+  thumbnailCandidates: ChannelHandoff["thumbnailCandidates"];
   youtube: YoutubeMetadataDraft;
 }): Omit<ChannelHandoff, "createdAt"> {
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     runId: input.runId,
     status: "ready-for-manual-channel-review",
     manualOnly: true,
@@ -73,6 +87,8 @@ export function buildChannelHandoffPayload(input: {
       durationSeconds: input.finalReviewBundle.draftRender.durationSeconds,
       subtitlesPath: "production/subtitles.srt",
       renderReviewPath: input.finalReviewBundle.draftRender.reviewPath,
+      chaptersPath: input.finalReviewBundle.draftRender.chapters.markdownPath,
+      chaptersJsonPath: input.finalReviewBundle.draftRender.chapters.jsonPath,
     },
     youtube: {
       metadataPath: "production/youtube_metadata.json",
@@ -80,10 +96,15 @@ export function buildChannelHandoffPayload(input: {
       description: input.youtube.description,
       tags: input.youtube.tags,
     },
+    thumbnailCandidates: input.thumbnailCandidates,
     operatorChecklist: channelHandoffOperatorChecklist(),
     blockedActions: channelHandoffBlockedActions(input.finalReviewBundle.blockedActions),
     nextSafeAction: channelHandoffNextSafeAction,
   };
+}
+
+export function isLegacyChannelHandoff(value: unknown): boolean {
+  return legacyChannelHandoffSchema.safeParse(value).success;
 }
 
 export function comparableChannelHandoffPayload(
@@ -100,8 +121,9 @@ export function channelHandoffOperatorChecklist(): string[] {
   return [
     "Watch the draft MP4 from start to finish outside the app.",
     "Verify subtitles, voiceover timing, popup cards, and visual rhythm against the final review bundle.",
+    "Review and revise the YouTube chapter draft before copying it into any future upload workflow.",
     "Review the YouTube title, description, and tags for channel tone, accuracy, and policy risk.",
-    "Choose or revise the thumbnail manually from tracked brand assets before any upload workflow.",
+    "Choose or revise one tracked thumbnail candidate before any upload workflow.",
     "Keep upload and public/scheduled publish disabled unless a future explicit approval/config path exists.",
   ];
 }

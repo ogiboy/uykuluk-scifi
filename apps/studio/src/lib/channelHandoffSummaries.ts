@@ -6,9 +6,15 @@ import {
   channelHandoffMarkdownPath,
   channelHandoffSchema,
   comparableChannelHandoffPayload,
+  isLegacyChannelHandoff,
   type ChannelHandoff,
   youtubeMetadataSchema,
 } from "../../../../src/stages/channelHandoffContracts";
+import {
+  thumbnailCandidatePackSchema,
+  thumbnailCandidatesJsonPath,
+  thumbnailCandidatesMarkdownPath,
+} from "../../../../src/stages/thumbnailCandidateContracts";
 import { sha256 } from "../../../../src/utils/hash";
 import type { StudioFinalReviewBundleSummary } from "./finalReviewBundleSummaries";
 import { studioRunFilePath } from "./runFilePaths";
@@ -50,7 +56,14 @@ export async function readStudioChannelHandoffSummary(
     return invalidHandoff(runId, "Manual channel handoff path is invalid.");
   }
   try {
-    const handoff = channelHandoffSchema.parse(JSON.parse(await readFile(target, "utf8")));
+    const rawHandoff = JSON.parse(await readFile(target, "utf8")) as unknown;
+    if (isLegacyChannelHandoff(rawHandoff)) {
+      return staleHandoff(
+        runId,
+        "Manual channel handoff uses legacy schema version 1; regenerate it.",
+      );
+    }
+    const handoff = channelHandoffSchema.parse(rawHandoff);
     const staleReason = await channelHandoffStaleReason(root, record, finalReviewBundle, handoff);
     if (staleReason) {
       return staleHandoff(runId, staleReason);
@@ -102,6 +115,11 @@ async function channelHandoffStaleReason(
   if (handoff.finalReviewBundle.digest !== currentFinalReviewDigest) {
     return "Manual channel handoff was created for a different final review bundle digest.";
   }
+  const thumbnailCandidates = await trustedThumbnailCandidateBinding(
+    root,
+    runId,
+    currentFinalReviewDigest,
+  );
   const metadataFile = studioRunFilePath(root, runId, "production/youtube_metadata.json");
   if (!metadataFile) {
     return "Manual channel handoff metadata path is invalid.";
@@ -111,11 +129,40 @@ async function channelHandoffStaleReason(
     finalReviewBundle: finalReviewBundle.bundle,
     finalReviewBundleDigest: currentFinalReviewDigest,
     runId,
+    thumbnailCandidates,
     youtube,
   });
   return JSON.stringify(comparableChannelHandoffPayload(handoff)) === JSON.stringify(expected)
     ? null
     : "Manual channel handoff no longer matches current final review or metadata inputs.";
+}
+
+async function trustedThumbnailCandidateBinding(
+  root: string,
+  runId: string,
+  finalReviewBundleDigest: string,
+): Promise<ChannelHandoff["thumbnailCandidates"]> {
+  const jsonFile = studioRunFilePath(root, runId, thumbnailCandidatesJsonPath);
+  const markdownFile = studioRunFilePath(root, runId, thumbnailCandidatesMarkdownPath);
+  if (!jsonFile || !markdownFile) {
+    throw new Error("Manual channel handoff thumbnail candidate path is invalid.");
+  }
+  const json = await readFile(jsonFile, "utf8");
+  const markdown = await readFile(markdownFile, "utf8");
+  const pack = thumbnailCandidatePackSchema.parse(JSON.parse(json) as unknown);
+  if (pack.runId !== runId) {
+    throw new Error("Thumbnail candidates belong to a different run.");
+  }
+  if (pack.source.finalReviewBundleDigest !== finalReviewBundleDigest) {
+    throw new Error("Thumbnail candidates were created for a different final review bundle.");
+  }
+  return {
+    jsonPath: thumbnailCandidatesJsonPath,
+    markdownPath: thumbnailCandidatesMarkdownPath,
+    jsonSha256: sha256(json),
+    markdownSha256: sha256(markdown),
+    recommendedCandidateId: pack.recommendedCandidateId,
+  };
 }
 
 function missingHandoff(

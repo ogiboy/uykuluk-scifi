@@ -83,24 +83,25 @@
   path/content problems, disabled TTS, deterministic reference audio, valid local Piper config, and
   local Piper remediation.
 - Approval-gated local FFmpeg draft render. `producer approve render` records approval for the exact
-  current render-plan digest, voiceover digest, and voiceover mode/quality/candidate classification,
-  then `producer render` requires `RENDER_APPROVED` before writing `production/render/draft.mp4`,
-  `production/render/render_manifest.json`, and `production/render/draft_review.md`. The draft
-  render now builds an FFmpeg concat timeline from render-plan intro/outro bookends and scenes,
-  expands committed intro/outro source-frame sequences into FFmpeg inputs when enough review time
-  exists, composes lower-third, scene-timed popup-card text, waveform, and watermark overlays when
-  available, records the exact intro-to-outro timeline, source-frame counts/cadence, overlay
-  roles/placements, render approval ID/reference, voiceover classification, actual temporary-output
-  FFmpeg execution args, and read-only FFmpeg review command for the final draft artifact in the
-  manifest, evidence, and readiness summaries, validates the output with `ffprobe` media stream
-  evidence, and writes an operator-readable final local review checklist. The non-JSON CLI handoff
-  and read-only `producer review render` command point to the MP4, manifest, review document, and
-  local-only next action plus copy-pasteable `producer decide render` command templates for
-  recording exactly one durable local operator decision, with deterministic-reference audio labeled
-  as a local timing draft. CLI status, evidence Markdown, and the read-only Studio production-media
-  panel surface the same review command only when current draft-render evidence passes, and rendered
-  runs use the read-only review command as their next safe action with upload/public-scheduled
-  publish still disabled.
+  current render-plan digest, voiceover digest, and voiceover classification, then `producer render`
+  requires `RENDER_APPROVED` before writing `production/render/draft.mp4`,
+  `production/render/render_manifest.json`, `production/render/draft_review.md`, and manifest-bound
+  `production/render/youtube_chapters.*` artifacts. The draft render builds an FFmpeg concat
+  timeline from render-plan intro/outro bookends and scenes, expands committed intro/outro
+  source-frame sequences into FFmpeg inputs when enough review time exists, composes lower-third,
+  scene-timed popup-card text, waveform, and watermark overlays when available, records the exact
+  intro-to-outro timeline, source-frame counts/cadence, overlay roles/placements, render approval
+  ID/reference, voiceover classification, actual temporary-output FFmpeg execution args, and
+  read-only FFmpeg review command for the final draft artifact in the manifest, evidence, and
+  readiness summaries, validates the output with `ffprobe` media evidence, and writes an
+  operator-readable final local review checklist with a timestamped review map. The non-JSON CLI
+  handoff and read-only `producer review render` command point to the MP4, manifest, review
+  document, local-only next action, and copy-pasteable `producer decide render` command templates
+  for one durable local operator decision, with deterministic-reference audio labeled as a local
+  timing draft. CLI status, evidence Markdown, and the read-only Studio production-media panel
+  surface the same review command only when current draft-render evidence passes, and rendered runs
+  use the read-only review command as their next safe action with upload/public-scheduled publish
+  still disabled.
 - Provider-backed idea and production-package stages schema-validate and normalize common local
   model JSON variants before artifact writes, while rejecting malformed or English operator-facing
   payloads fail-closed.
@@ -225,15 +226,14 @@
   safe run diagnostics, copyable operator commands, production media review commands, recent
   artifacts, render decisions, and a read-only v1 workflow progress projection. It is an operator
   surface only and does not own workflow transitions or mutate run state.
-- `producer decide render` records the human decision after local draft-render review as durable
-  JSON/Markdown evidence under `production/render/`, keeps the run in `RENDERED`, and does not
-  approve upload or publish. Status, desk, and UAT surface the recorded decision.
-- `producer review-bundle` writes a local final review handoff under `production/review_bundle.*`
-  after current draft-render evidence. It revalidates render-plan, voiceover, draft-render, and
-  render-decision status; stale/invalid evidence blocks. The bundle is a local operator index only.
-- `producer channel-handoff` writes `production/channel_handoff.*` from accepted final review
-  evidence, including copy-ready upload-prep fields, local paths, thumbnail guidance, and digest
-  binding.
+- `producer decide render` records the human draft-render decision as durable `production/render/`
+  evidence, keeps the run in `RENDERED`, and never approves upload or publish.
+- `producer review-bundle` writes `production/review_bundle.*` after current draft-render evidence.
+  It revalidates render-plan, voiceover, draft-render, and render-decision status; missing decisions
+  are `decision-pending`, while stale/invalid evidence blocks. The bundle points to the timestamped
+  review map and remains a local operator index only.
+- `producer channel-handoff` writes accepted-review `production/channel_handoff.*` with copy-ready
+  upload-prep fields, local paths, chapters, thumbnail candidates, and digest binding.
 - Studio run detail now shows the same local render-decision command templates for rendered runs
   with current draft-render evidence and no recorded decision, and exposes one guarded local
   `render.decide` route that writes the same durable decision evidence as the CLI. It does not

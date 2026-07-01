@@ -5,10 +5,14 @@ import { assetRefSchema, digestSchema } from "./renderPlanSchemas.js";
 export const draftRenderPath = "production/render/draft.mp4";
 export const draftRenderManifestPath = "production/render/render_manifest.json";
 export const draftRenderReviewPath = "production/render/draft_review.md";
+export const draftRenderChaptersJsonPath = "production/render/youtube_chapters.json";
+export const draftRenderChaptersMarkdownPath = "production/render/youtube_chapters.md";
 export const draftRenderArtifactPaths = [
   draftRenderPath,
   draftRenderManifestPath,
   draftRenderReviewPath,
+  draftRenderChaptersJsonPath,
+  draftRenderChaptersMarkdownPath,
 ] as const;
 
 const renderCompositionOverlaySchema = z.strictObject({
@@ -47,7 +51,7 @@ const ffmpegTimelineInputSchema = z.strictObject({
 });
 
 export const draftRenderManifestSchema = z.strictObject({
-  schemaVersion: z.literal(6),
+  schemaVersion: z.literal(7),
   runId: z.string().min(1),
   createdAt: z.iso.datetime(),
   renderPlan: z.strictObject({
@@ -73,6 +77,12 @@ export const draftRenderManifestSchema = z.strictObject({
     sha256: digestSchema,
     bytes: z.int().positive(),
     durationSeconds: z.number().positive(),
+  }),
+  chapterDraft: z.strictObject({
+    jsonPath: z.literal(draftRenderChaptersJsonPath),
+    markdownPath: z.literal(draftRenderChaptersMarkdownPath),
+    jsonSha256: digestSchema,
+    markdownSha256: digestSchema,
   }),
   ffmpeg: z.strictObject({
     binary: z.string().min(1),

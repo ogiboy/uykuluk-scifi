@@ -21,6 +21,11 @@ import {
   renderDecisionMarkdownPath,
 } from "../src/stages/renderDecisionCommands";
 import type { RenderDecisionRecord } from "../src/stages/renderDecisionContracts";
+import {
+  thumbnailCandidatesJsonPath,
+  thumbnailCandidatesMarkdownPath,
+} from "../src/stages/thumbnailCandidates";
+import { writeStudioThumbnailCandidates } from "./studioThumbnailFixtures";
 
 /**
  * Writes a Studio-valid render decision artifact for a rendered fixture run.
@@ -110,6 +115,12 @@ export async function writeStudioFinalReviewBundle(
     ],
     createdAt: "2026-06-28T00:05:00.000Z",
     draftRender: {
+      chapters: {
+        jsonPath: "production/render/youtube_chapters.json",
+        jsonSha256: "b".repeat(64),
+        markdownPath: "production/render/youtube_chapters.md",
+        markdownSha256: "c".repeat(64),
+      },
       durationSeconds: 8.2,
       manifestPath: "production/render/render_manifest.json",
       media: {
@@ -149,7 +160,7 @@ export async function writeStudioFinalReviewBundle(
       sceneCount: 1,
     },
     runId,
-    schemaVersion: 1,
+    schemaVersion: 2,
     status: decision,
     summary: "Local final review handoff is ready for operator review.",
     voiceover: {
@@ -196,12 +207,14 @@ export async function writeStudioChannelHandoff(runId: string): Promise<ChannelH
     JSON.stringify(youtube),
     "utf8",
   );
+  const thumbnailCandidates = await writeStudioThumbnailCandidates(runId, sha256(finalReviewJson));
   const handoff = channelHandoffSchema.parse({
     createdAt: "2026-06-28T00:10:00.000Z",
     ...buildChannelHandoffPayload({
       finalReviewBundle,
       finalReviewBundleDigest: sha256(finalReviewJson),
       runId,
+      thumbnailCandidates,
       youtube,
     }),
   });
@@ -214,7 +227,14 @@ export async function writeStudioChannelHandoff(runId: string): Promise<ChannelH
   await saveRun({
     ...run,
     artifacts: Array.from(
-      new Set([...run.artifacts, channelHandoffJsonPath, channelHandoffMarkdownPath]),
+      new Set(
+        run.artifacts.concat(
+          thumbnailCandidatesJsonPath,
+          thumbnailCandidatesMarkdownPath,
+          channelHandoffJsonPath,
+          channelHandoffMarkdownPath,
+        ),
+      ),
     ),
   });
   return handoff;

@@ -74,6 +74,12 @@ assert(
 );
 assert(
   detail.artifacts.some(
+    (item) => item.path === "production/render/youtube_chapters.md" && item.exists,
+  ),
+  "Studio artifact previews include YouTube chapter draft markdown.",
+);
+assert(
+  detail.artifacts.some(
     (item) => item.path === "production/render/render_manifest.json" && item.exists,
   ),
   "Studio artifact previews include render manifest.",
@@ -87,6 +93,12 @@ assert(
 assert(
   detail.artifacts.some((item) => item.path === "production/channel_handoff.md" && item.exists),
   "Studio artifact previews include manual channel handoff markdown.",
+);
+assert(
+  detail.artifacts.some(
+    (item) => item.path === "production/thumbnail_candidates.md" && item.exists,
+  ),
+  "Studio artifact previews include thumbnail candidate handoff markdown.",
 );
 assert(
   detail.channelHandoff.kind === "present",

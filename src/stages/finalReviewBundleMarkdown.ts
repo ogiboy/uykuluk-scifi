@@ -26,6 +26,12 @@ export function renderFinalReviewBundleMarkdown(bundle: FinalReviewBundle): stri
         ["SHA-256", bundle.draftRender.sha256],
         ["Duration", `${bundle.draftRender.durationSeconds}s`],
         ["Media", mediaSummary(bundle)],
+        ["Review document", bundle.draftRender.reviewPath],
+        [
+          "Timestamped map",
+          "Open the draft review document and check each MP4 segment against its timestamped review row.",
+        ],
+        ["YouTube chapter draft", bundle.draftRender.chapters.markdownPath],
         ["Review command", bundle.draftRender.reviewCommand],
       ],
     ),

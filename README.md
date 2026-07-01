@@ -100,20 +100,21 @@ agent-tracking state only; runtime code must not require it.
   production-readiness warnings, operator review Markdown, and an optional Piper binary/model-path
   adapter.
 - Approval-gated local FFmpeg draft render that writes a review MP4, manifest, operator review
-  Markdown, and `ffprobe` media-validation evidence from the current render plan, intro/outro source
-  cards or source-frame sequences, scene-timed background plates, voiceover audio, subtitles,
-  lower-third, popup-card text, waveform, watermark overlays, source-frame counts/cadence, and
-  voiceover mode/quality/candidate classification surfaced in evidence/readiness summaries, plus a
-  stable read-only FFmpeg review command for the final draft artifact in the manifest, evidence
-  JSON, and review Markdown.
+  Markdown, YouTube chapter draft, and `ffprobe` media-validation evidence from the current render
+  plan, intro/outro source cards or source-frame sequences, scene-timed background plates, voiceover
+  audio, subtitles, lower-third, popup-card text, waveform, watermark overlays, source-frame
+  counts/cadence, and voiceover mode/quality/candidate classification surfaced in evidence/readiness
+  summaries, plus a stable read-only FFmpeg review command for the final draft artifact in the
+  manifest, evidence JSON, and review Markdown.
 - Local final review bundle generation that revalidates the render plan, voiceover, draft render,
   and any recorded render decision, then writes `production/review_bundle.json` and
   `production/review_bundle.md` as the operator's local handoff index. It does not approve upload or
   publish.
 - Manual channel handoff package generation after an accepted local final review. It writes
-  `production/channel_handoff.json` and `production/channel_handoff.md` with the local MP4,
-  subtitles, YouTube metadata draft, checklist, and final-review digest binding. It does not call
-  YouTube APIs, upload, schedule, publish, or grant upload/publish approval.
+  `production/thumbnail_candidates.*` plus `production/channel_handoff.*` with the local MP4,
+  subtitles, YouTube metadata draft, chapter draft, thumbnail candidates, checklist, and
+  final-review digest binding. It does not call YouTube APIs, upload, schedule, publish, or grant
+  upload/publish approval.
 - Manual analytics import/report commands for operator-provided CSV/JSON performance exports, plus a
   read-only Studio view over the ignored local analytics artifacts and import data-quality summary.
 - Typed Studio route-security contract covering read-only routes, the guarded local render-decision
@@ -665,7 +666,8 @@ recording exactly one durable local operator decision. After that decision exist
 mutating state. Status, evidence Markdown, and the read-only Studio production-media panel surface
 that same safe review command when draft-render evidence is current, and rendered runs use the
 read-only review command as their next safe action. `production/render/draft_review.md` summarizes
-the final operator checklist, shows that review command, includes the decision command templates,
+the final operator checklist, shows that review command, includes a timestamped review map and
+decision command templates, links the bound `production/render/youtube_chapters.md` chapter draft,
 and labels deterministic-reference audio renders as local timing drafts. It does not upload,
 schedule, or publish anything.
 
@@ -673,16 +675,17 @@ schedule, or publish anything.
 exists. The bundle revalidates the current render-plan, voiceover, draft-render, and render-decision
 status; missing decisions are shown as `decision-pending`, while stale or invalid decision evidence
 blocks bundle generation. The resulting `production/review_bundle.md` is an index for local channel
-review only and still keeps upload and public/scheduled publish disabled. `producer status` and
-`producer desk` validate and surface the bundle after it exists so the operator does not loop back
-to the bundle command.
+review only, points back to the timestamped draft-render review map, and still keeps upload and
+public/scheduled publish disabled. `producer status` and `producer desk` validate and surface the
+bundle after it exists so the operator does not loop back to the bundle command.
 
 `producer channel-handoff --run <run_id>` creates a manual channel preparation package only after
 the final review bundle is trusted and accepted for local review. It writes
-`production/channel_handoff.json` and `production/channel_handoff.md` with the draft MP4 path,
-subtitle path, copy-ready title/description/tags, YouTube metadata draft, final-review digest
-binding, thumbnail review guidance, and manual checklist. It is not an upload command and does not
-approve private upload, scheduled publish, or public publish.
+`production/thumbnail_candidates.json`, `production/thumbnail_candidates.md`,
+`production/channel_handoff.json`, and `production/channel_handoff.md` with the draft MP4 path,
+subtitle path, copy-ready title/description/tags, YouTube metadata draft, YouTube chapter draft,
+tracked thumbnail candidates, final-review digest binding, and manual checklist. It is not an upload
+command and does not approve private upload, scheduled publish, or public publish.
 
 `thinkingMode` can be `default`, `think`, or `no_think`. Token caps are sent to Ollama as
 `num_predict` so local generation cannot run unbounded. Script generation splits the approved idea
@@ -765,10 +768,14 @@ Each run can write:
 - `production/audio/voiceover.wav`, `production/audio/voiceover.meta.json`, and
   `production/audio/voiceover_review.md` when local TTS is explicitly enabled and run after
   readiness;
-- `production/render/draft.mp4`, `production/render/render_manifest.json`, and
-  `production/render/draft_review.md` after exact render approval and local FFmpeg execution;
+- `production/render/draft.mp4`, `production/render/render_manifest.json`,
+  `production/render/draft_review.md`, `production/render/youtube_chapters.json`, and
+  `production/render/youtube_chapters.md` after exact render approval and local FFmpeg execution;
 - `production/review_bundle.json` and `production/review_bundle.md` after local draft-render
   evidence is current and the final review handoff is generated;
+- `production/thumbnail_candidates.json`, `production/thumbnail_candidates.md`,
+  `production/channel_handoff.json`, and `production/channel_handoff.md` after accepted local final
+  review and manual channel handoff generation;
 - `costs/estimate.json` and `costs/estimate.md`;
 - `costs/ledger.jsonl`;
 - `costs/reservations.jsonl`;

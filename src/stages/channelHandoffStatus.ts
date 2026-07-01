@@ -1,4 +1,6 @@
+import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
+import path from "node:path";
 import { artifactPath } from "../core/artifacts.js";
 import type { RunRecord } from "../core/state.js";
 import { sha256 } from "../utils/hash.js";
@@ -10,11 +12,17 @@ import {
   channelHandoffMarkdownPath,
   channelHandoffSchema,
   comparableChannelHandoffPayload,
+  isLegacyChannelHandoff,
   type ChannelHandoff,
   youtubeMetadataSchema,
 } from "./channelHandoffContracts.js";
 import { finalReviewBundleJsonPath } from "./finalReviewBundleContracts.js";
 import type { FinalReviewBundleStatus } from "./finalReviewBundleStatus.js";
+import {
+  thumbnailCandidatePackSchema,
+  thumbnailCandidatesJsonPath,
+  thumbnailCandidatesMarkdownPath,
+} from "./thumbnailCandidates.js";
 
 export type ChannelHandoffStatus =
   | { kind: "missing"; nextAction: string | null }
@@ -48,9 +56,15 @@ export async function readChannelHandoffStatus(
       ? channelHandoffCommand(run.runId)
       : finalReviewBundle.nextAction;
   try {
-    const handoff = channelHandoffSchema.parse(
-      await readJsonFile<unknown>(artifactPath(run.runId, channelHandoffJsonPath)),
-    );
+    const rawHandoff = await readJsonFile<unknown>(artifactPath(run.runId, channelHandoffJsonPath));
+    if (isLegacyChannelHandoff(rawHandoff)) {
+      return stale(
+        "Manual channel handoff uses legacy schema version 1; regenerate it.",
+        run.runId,
+        nextAction,
+      );
+    }
+    const handoff = channelHandoffSchema.parse(rawHandoff);
     const staleReason = await channelHandoffStaleReason(run, finalReviewBundle, handoff);
     if (staleReason) {
       return stale(staleReason, run.runId, nextAction);
@@ -104,6 +118,13 @@ async function channelHandoffStaleReason(
   if (handoff.finalReviewBundle.digest !== finalReviewBundleDigest) {
     return "Manual channel handoff was created for a different final review bundle digest.";
   }
+  const thumbnailCandidates = await trustedThumbnailCandidateBinding(
+    run.runId,
+    finalReviewBundleDigest,
+  );
+  if (thumbnailCandidates.kind === "stale") {
+    return thumbnailCandidates.message;
+  }
   const youtube = youtubeMetadataSchema.parse(
     await readJsonFile<unknown>(artifactPath(run.runId, "production/youtube_metadata.json")),
   );
@@ -111,11 +132,80 @@ async function channelHandoffStaleReason(
     finalReviewBundle: finalReviewBundle.bundle,
     finalReviewBundleDigest,
     runId: run.runId,
+    thumbnailCandidates: thumbnailCandidates.binding,
     youtube,
   });
   return JSON.stringify(comparableChannelHandoffPayload(handoff)) === JSON.stringify(expected)
     ? null
     : "Manual channel handoff no longer matches current final review or metadata inputs.";
+}
+
+async function trustedThumbnailCandidateBinding(
+  runId: string,
+  finalReviewBundleDigest: string,
+): Promise<
+  | { binding: ChannelHandoff["thumbnailCandidates"]; kind: "present" }
+  | { kind: "stale"; message: string }
+> {
+  const json = await readFile(artifactPath(runId, thumbnailCandidatesJsonPath), "utf8");
+  const markdown = await readFile(artifactPath(runId, thumbnailCandidatesMarkdownPath), "utf8");
+  const pack = thumbnailCandidatePackSchema.parse(JSON.parse(json) as unknown);
+  if (pack.runId !== runId) {
+    throw new Error("Thumbnail candidates belong to a different run.");
+  }
+  if (pack.source.finalReviewBundleDigest !== finalReviewBundleDigest) {
+    return {
+      kind: "stale",
+      message: "Thumbnail candidates were created for a different final review bundle.",
+    };
+  }
+  for (const candidate of pack.candidates) {
+    const templateStale = await assetDigestMismatch(
+      candidate.template.path,
+      candidate.template.digest,
+    );
+    if (templateStale) {
+      return { kind: "stale", message: templateStale };
+    }
+    if (candidate.textSafeOverlay) {
+      const overlayStale = await assetDigestMismatch(
+        candidate.textSafeOverlay.path,
+        candidate.textSafeOverlay.digest,
+      );
+      if (overlayStale) {
+        return { kind: "stale", message: overlayStale };
+      }
+    }
+  }
+  return {
+    binding: {
+      jsonPath: thumbnailCandidatesJsonPath,
+      markdownPath: thumbnailCandidatesMarkdownPath,
+      jsonSha256: sha256(json),
+      markdownSha256: sha256(markdown),
+      recommendedCandidateId: pack.recommendedCandidateId,
+    },
+    kind: "present",
+  };
+}
+
+async function assetDigestMismatch(
+  relativePath: string,
+  expectedDigest: string,
+): Promise<string | null> {
+  let bytes;
+  try {
+    bytes = await readFile(path.join(process.cwd(), relativePath));
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+      return `Thumbnail asset is missing: ${relativePath}`;
+    }
+    throw error;
+  }
+  const currentDigest = createHash("sha256").update(bytes).digest("hex");
+  return currentDigest === expectedDigest
+    ? null
+    : `Thumbnail asset changed since handoff candidate generation: ${relativePath}`;
 }
 
 function stale(message: string, runId: string, nextAction: string | null): ChannelHandoffStatus {

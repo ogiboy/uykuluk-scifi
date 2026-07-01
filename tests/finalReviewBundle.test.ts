@@ -28,13 +28,17 @@ describe("local final review bundle", () => {
 
     expect(bundle).toMatchObject({
       runId,
-      schemaVersion: 1,
+      schemaVersion: 2,
       status: "decision-pending",
       renderDecision: {
         kind: "missing",
         nextAction: expect.stringContaining(`--run ${runId}`),
       },
       draftRender: {
+        chapters: {
+          jsonPath: "production/render/youtube_chapters.json",
+          markdownPath: "production/render/youtube_chapters.md",
+        },
         path: "production/render/draft.mp4",
         reviewPath: "production/render/draft_review.md",
         manifestPath: "production/render/render_manifest.json",
@@ -53,6 +57,8 @@ describe("local final review bundle", () => {
         "production/audio/voiceover_review.md",
         "production/render/draft.mp4",
         "production/render/draft_review.md",
+        "production/render/youtube_chapters.md",
+        "production/render/youtube_chapters.json",
         "evidence_bundle.md",
         "diagnostics/readiness.md",
       ]),
@@ -67,6 +73,9 @@ describe("local final review bundle", () => {
     );
     const markdown = await readFile(artifactPath(runId, finalReviewBundleMarkdownPath), "utf8");
     expect(markdown).toContain("# Local Final Review Handoff");
+    expect(markdown).toContain("production/render/draft_review.md");
+    expect(markdown).toContain("production/render/youtube_chapters.md");
+    expect(markdown).toContain("Timestamped map");
     expect(markdown).toContain("Decision: pending");
     expect(markdown.toLowerCase()).toContain("upload");
     expect(markdown.toLowerCase()).toContain("publish");
@@ -119,6 +128,27 @@ describe("local final review bundle", () => {
     );
 
     await expect(createFinalReviewBundle(runId)).rejects.toThrow(/different draft render digest/);
+  });
+
+  it("treats legacy schema v1 final-review bundles as stale instead of invalid", async () => {
+    const runId = await renderLocalDraft("final-review-legacy");
+    const bundle = await createFinalReviewBundle(runId);
+    await writeFile(
+      artifactPath(runId, finalReviewBundleJsonPath),
+      JSON.stringify({
+        ...bundle,
+        draftRender: { ...bundle.draftRender, chapters: undefined },
+        schemaVersion: 1,
+      }),
+      "utf8",
+    );
+
+    const status = await readRunStatus(runId);
+
+    expect(status.finalReviewBundle).toMatchObject({
+      kind: "stale",
+      message: expect.stringContaining("legacy schema version 1"),
+    });
   });
 
   it("prints parseable CLI JSON and persists the bundle artifacts", async () => {

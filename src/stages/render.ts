@@ -15,6 +15,8 @@ import { renderApprovalRef } from "./renderApproval.js";
 import { buildDraftRenderComposition } from "./renderComposition.js";
 import {
   DraftRenderManifest,
+  draftRenderChaptersJsonPath,
+  draftRenderChaptersMarkdownPath,
   draftRenderManifestPath,
   draftRenderManifestSchema,
   draftRenderPath,
@@ -30,6 +32,10 @@ import {
 import { readRenderPlanEvidence } from "./renderPlan.js";
 import { RenderPlan, renderPlanSchema } from "./renderPlanSchemas.js";
 import { probeDraftRender } from "./renderProbe.js";
+import {
+  buildDraftRenderChapterDraft,
+  renderDraftRenderChaptersMarkdown,
+} from "./renderChapters.js";
 import { renderDraftReviewMarkdown } from "./renderReviewMarkdown.js";
 import { readVoiceoverAudioEvidence, voiceoverAudioPath } from "./voiceoverEvidence.js";
 
@@ -114,8 +120,8 @@ export async function renderDraft(
     temporaryOutput = undefined;
     const outputBytes = await readFile(output);
     run = await recordRunArtifact(run, "render", draftRenderPath);
-    const manifest = draftRenderManifestSchema.parse({
-      schemaVersion: 6,
+    const manifestBase = {
+      schemaVersion: 7,
       runId: run.runId,
       createdAt: nowIso(),
       renderPlan: {
@@ -157,6 +163,27 @@ export async function renderDraft(
         reviewCommand: shellCommand(ffmpegBinary, reviewArgs),
       },
       mediaProbe,
+    };
+    const chapterDraft = buildDraftRenderChapterDraft(manifestBase);
+    run = await writeRunJson(run, "render", draftRenderChaptersJsonPath, chapterDraft);
+    run = await writeRunText(
+      run,
+      "render",
+      draftRenderChaptersMarkdownPath,
+      renderDraftRenderChaptersMarkdown(chapterDraft),
+    );
+    const chapterJsonBytes = await readFile(artifactPath(run.runId, draftRenderChaptersJsonPath));
+    const chapterMarkdownBytes = await readFile(
+      artifactPath(run.runId, draftRenderChaptersMarkdownPath),
+    );
+    const manifest = draftRenderManifestSchema.parse({
+      ...manifestBase,
+      chapterDraft: {
+        jsonPath: draftRenderChaptersJsonPath,
+        markdownPath: draftRenderChaptersMarkdownPath,
+        jsonSha256: createHash("sha256").update(chapterJsonBytes).digest("hex"),
+        markdownSha256: createHash("sha256").update(chapterMarkdownBytes).digest("hex"),
+      },
     });
     run = await writeRunJson(run, "render", draftRenderManifestPath, manifest);
     run = await writeRunText(

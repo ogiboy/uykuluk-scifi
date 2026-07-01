@@ -11,6 +11,8 @@ const mediaRequiredArtifacts = [
   "production/render/draft.mp4",
   "production/render/render_manifest.json",
   "production/render/draft_review.md",
+  "production/render/youtube_chapters.json",
+  "production/render/youtube_chapters.md",
 ];
 
 /**
@@ -187,10 +189,15 @@ async function assertRenderedEvidence({ workdir, runId, assert }) {
     "render manifest records reference audio classification",
   );
   assert(
-    renderManifest.schemaVersion === 6 &&
+    renderManifest.schemaVersion === 7 &&
       typeof renderManifest.ffmpeg?.reviewCommand === "string" &&
       renderManifest.ffmpeg.reviewCommand.includes("production/render/draft.mp4"),
     "render manifest records final-artifact FFmpeg review command",
+  );
+  assert(
+    renderManifest.chapterDraft?.markdownPath === "production/render/youtube_chapters.md" &&
+      renderManifest.chapterDraft?.jsonPath === "production/render/youtube_chapters.json",
+    "render manifest records chapter draft artifacts",
   );
   assert(
     renderManifest.ffmpeg.reviewCommand.includes(" -f null -") &&
