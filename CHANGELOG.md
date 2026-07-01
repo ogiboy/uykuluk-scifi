@@ -11,6 +11,17 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.57.1 (2026-07-01)
+
+### Refactoring
+
+- reduce candidate report duplication (0fa077a)
+
+### Fixes
+
+- preserve llama candidate diagnostics (970ef8d)
+- verify llama served models (2b72fd8)
+
 ## v0.57.0 (2026-07-01)
 
 ### Tests
