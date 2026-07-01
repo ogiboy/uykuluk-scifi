@@ -3,6 +3,10 @@ import { z } from "zod";
 export const finalReviewBundleJsonPath = "production/review_bundle.json";
 export const finalReviewBundleMarkdownPath = "production/review_bundle.md";
 
+export function finalReviewBundleCommand(runId: string): string {
+  return `pnpm producer review-bundle --run ${runId}`;
+}
+
 const finalReviewBundleStatusValues = [
   "decision-pending",
   "accepted-for-local-review",

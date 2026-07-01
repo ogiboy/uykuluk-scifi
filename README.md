@@ -667,7 +667,9 @@ schedule, or publish anything.
 exists. The bundle revalidates the current render-plan, voiceover, draft-render, and render-decision
 status; missing decisions are shown as `decision-pending`, while stale or invalid decision evidence
 blocks bundle generation. The resulting `production/review_bundle.md` is an index for local channel
-review only and still keeps upload and public/scheduled publish disabled.
+review only and still keeps upload and public/scheduled publish disabled. `producer status` and
+`producer desk` validate and surface the bundle after it exists so the operator does not loop back
+to the bundle command.
 
 `thinkingMode` can be `default`, `think`, or `no_think`. Token caps are sent to Ollama as
 `num_predict` so local generation cannot run unbounded. Script generation splits the approved idea

@@ -2,6 +2,7 @@ import { spawnSync } from "node:child_process";
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
+import { buildOperatorDeskViewModel, formatOperatorDeskPlain } from "../src/cli/operatorDeskModel";
 import { artifactPath } from "../src/core/artifacts";
 import { loadRun } from "../src/core/runStore";
 import {
@@ -11,6 +12,7 @@ import {
   type FinalReviewBundle,
 } from "../src/stages/finalReviewBundle";
 import { recordRenderDecision, renderDecisionArtifactPaths } from "../src/stages/renderDecision";
+import { formatRunStatus, readRunStatus } from "../src/stages/status";
 import { useTempProject } from "./helpers";
 import { renderLocalDraft } from "./renderPipelineHelpers";
 
@@ -134,6 +136,33 @@ describe("local final review bundle", () => {
     await expect(
       readFile(artifactPath(runId, finalReviewBundleJsonPath), "utf8"),
     ).resolves.toContain('"status": "decision-pending"');
+  });
+
+  it("surfaces the ready final review handoff in status and operator desk output", async () => {
+    const runId = await renderLocalDraft("final-review-status");
+    await recordRenderDecision({
+      decision: "accepted-for-local-review",
+      notes: "Draft is acceptable for local channel review.",
+      reviewedBy: "operator",
+      runId,
+    });
+    await createFinalReviewBundle(runId);
+
+    const status = await readRunStatus(runId);
+    const statusOutput = formatRunStatus(status);
+    const deskOutput = formatOperatorDeskPlain(await buildOperatorDeskViewModel({ runId }));
+
+    expect(status.finalReviewBundle).toMatchObject({
+      kind: "present",
+      bundle: { status: "accepted-for-local-review" },
+      reviewPath: "production/review_bundle.md",
+    });
+    expect(status.nextRecommendedCommand).toContain("Local final review handoff is ready");
+    expect(status.nextRecommendedCommand).not.toContain("producer review-bundle");
+    expect(statusOutput).toContain("Final review bundle: accepted-for-local-review");
+    expect(statusOutput).toContain("Final review bundle artifact: production/review_bundle.md");
+    expect(deskOutput).toContain("Final review bundle: accepted-for-local-review");
+    expect(deskOutput).toContain("Final review bundle artifact: production/review_bundle.md");
   });
 });
 

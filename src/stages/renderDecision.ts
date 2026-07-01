@@ -4,8 +4,8 @@ import { appendLedgerEvent } from "../core/ledger.js";
 import { loadRun, saveRun } from "../core/runStore.js";
 import { pathExists } from "../utils/fs.js";
 import { nowIso } from "../utils/time.js";
-import { shellCommand } from "../utils/shell.js";
 import { bulletList, table } from "../utils/markdown.js";
+import { finalReviewBundleCommand } from "./finalReviewBundleContracts.js";
 import {
   renderDecisionJsonPath,
   renderDecisionMarkdownPath,
@@ -158,12 +158,7 @@ export function renderDecisionMarkdown(record: RenderDecisionRecord): string {
  */
 function nextSafeAction(decision: RenderDecision, runId: string): string {
   if (decision === "accepted-for-local-review") {
-    return `Create the local final review handoff with ${shellCommand("pnpm", [
-      "producer",
-      "review-bundle",
-      "--run",
-      runId,
-    ])}. Upload remains disabled until a future private-upload approval/config path exists.`;
+    return `Create the local final review handoff with ${finalReviewBundleCommand(runId)}. Upload remains disabled until a future private-upload approval/config path exists.`;
   }
   if (decision === "needs-revision") {
     return "Revise package, render plan, voiceover, subtitles, or assets; then regenerate evidence/readiness and render a new local draft.";

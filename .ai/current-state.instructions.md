@@ -232,8 +232,9 @@
 - `producer review-bundle` writes a local final review handoff under `production/review_bundle.*`
   after draft-render evidence is current. It revalidates render-plan, voiceover, draft-render, and
   render-decision status; missing decisions are labeled `decision-pending`, while stale or invalid
-  decision evidence blocks the bundle. The bundle is a local operator index only and does not
-  approve upload or publish.
+  decision evidence blocks the bundle. Status and the operator desk validate and surface the bundle
+  after it exists so operators do not loop back to the bundle command. The bundle is a local
+  operator index only and does not approve upload or publish.
 - Studio run detail now shows the same local render-decision command templates for rendered runs
   with current draft-render evidence and no recorded decision, and exposes one guarded local
   `render.decide` route that writes the same durable decision evidence as the CLI. It does not

@@ -141,6 +141,11 @@ try {
     scenario: "happy path",
   });
   run([pnpm, "producer", "status", "--run", renderedRunId], {
+    expectOutput: "Final review bundle: accepted-for-local-review",
+    label: "status surfaces final review bundle",
+    scenario: "happy path",
+  });
+  run([pnpm, "producer", "status", "--run", renderedRunId], {
     expectOutput: `Render decision review: pnpm producer review render-decision --run ${renderedRunId}`,
     label: "status surfaces render-decision review command",
     scenario: "happy path",
