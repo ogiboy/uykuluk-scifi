@@ -86,7 +86,7 @@ export async function createFinalReviewBundle(runId: string): Promise<FinalRevie
     },
     renderDecision,
     artifacts: finalReviewArtifacts(renderDecision),
-    nextSafeAction: finalReviewNextSafeAction(renderDecision),
+    nextSafeAction: finalReviewNextSafeAction(run.runId, renderDecision),
     blockedActions: finalReviewBlockedActions(renderDecision),
   });
   run = await writeRunJson(run, "final-review-bundle", finalReviewBundleJsonPath, bundle);

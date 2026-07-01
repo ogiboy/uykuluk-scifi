@@ -110,6 +110,10 @@ agent-tracking state only; runtime code must not require it.
   and any recorded render decision, then writes `production/review_bundle.json` and
   `production/review_bundle.md` as the operator's local handoff index. It does not approve upload or
   publish.
+- Manual channel handoff package generation after an accepted local final review. It writes
+  `production/channel_handoff.json` and `production/channel_handoff.md` with the local MP4,
+  subtitles, YouTube metadata draft, checklist, and final-review digest binding. It does not call
+  YouTube APIs, upload, schedule, publish, or grant upload/publish approval.
 - Manual analytics import/report commands for operator-provided CSV/JSON performance exports, plus a
   read-only Studio view over the ignored local analytics artifacts and import data-quality summary.
 - Typed Studio route-security contract covering read-only routes, the guarded local render-decision
@@ -316,6 +320,8 @@ pnpm producer review render-decision --run <run_id>
 pnpm producer review render-decision --run <run_id> --json
 pnpm producer review-bundle --run <run_id>
 pnpm producer review-bundle --run <run_id> --json
+pnpm producer channel-handoff --run <run_id>
+pnpm producer channel-handoff --run <run_id> --json
 ```
 
 Blocked readiness checks print and persist next-action guidance for common operator steps such as
@@ -670,6 +676,12 @@ blocks bundle generation. The resulting `production/review_bundle.md` is an inde
 review only and still keeps upload and public/scheduled publish disabled. `producer status` and
 `producer desk` validate and surface the bundle after it exists so the operator does not loop back
 to the bundle command.
+
+`producer channel-handoff --run <run_id>` creates a manual channel preparation package only after
+the final review bundle is trusted and accepted for local review. It writes
+`production/channel_handoff.json` and `production/channel_handoff.md` with the draft MP4 path,
+subtitle path, YouTube metadata draft, final-review digest binding, and manual checklist. It is not
+an upload command and does not approve private upload, scheduled publish, or public publish.
 
 `thinkingMode` can be `default`, `think`, or `no_think`. Token caps are sent to Ollama as
 `num_predict` so local generation cannot run unbounded. Script generation splits the approved idea

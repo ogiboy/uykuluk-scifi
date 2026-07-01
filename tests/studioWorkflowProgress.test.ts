@@ -62,7 +62,9 @@ describe("Studio workflow progress", () => {
       bundle: { status: "accepted-for-local-review" },
       reviewPath: "production/review_bundle.md",
     });
-    expect(detail?.nextRecommendedCommand).toContain("Local final review handoff is ready");
+    expect(detail?.nextRecommendedCommand).toContain(
+      `pnpm producer channel-handoff --run ${runId}`,
+    );
     expect(detail?.nextRecommendedCommand).not.toContain("producer review-bundle");
     expect(detail?.artifacts).toEqual(
       expect.arrayContaining([

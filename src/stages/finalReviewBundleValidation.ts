@@ -1,3 +1,4 @@
+import { channelHandoffCommand } from "./channelHandoffContracts.js";
 import type { FinalReviewBundle } from "./finalReviewBundleContracts.js";
 
 const finalReviewBundleMarkdownPath = "production/review_bundle.md";
@@ -86,7 +87,7 @@ export function finalReviewBundleReadyAction(bundle: FinalReviewBundle): string 
     return bundle.nextSafeAction;
   }
   if (bundle.status === "accepted-for-local-review") {
-    return `Local final review handoff is ready at ${finalReviewBundleMarkdownPath}. Upload remains disabled until a future private-upload approval/config path exists.`;
+    return `Prepare the manual channel handoff with ${channelHandoffCommand(bundle.runId)}. Review ${finalReviewBundleMarkdownPath} first; upload remains disabled until a future private-upload approval/config path exists.`;
   }
   return bundle.nextSafeAction;
 }

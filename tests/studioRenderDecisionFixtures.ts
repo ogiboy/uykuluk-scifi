@@ -170,7 +170,7 @@ function nextSafeAction(decision: RenderDecisionRecord["decision"], runId: strin
 
 function finalReviewNextSafeAction(decision: RenderDecisionRecord["decision"]): string {
   if (decision === "accepted-for-local-review") {
-    return "Local final review handoff is ready. Keep upload disabled.";
+    return "Prepare the manual channel handoff with pnpm producer channel-handoff --run <run_id>. Keep upload disabled.";
   }
   if (decision === "needs-revision") {
     return "Revise the local draft before regenerating the final review bundle.";

@@ -9,7 +9,9 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Features
+
+- add a manual-only channel handoff package after accepted local final review.
 
 ## v0.59.0 (2026-07-01)
 

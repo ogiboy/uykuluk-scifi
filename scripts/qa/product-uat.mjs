@@ -145,6 +145,11 @@ try {
     label: "status surfaces final review bundle",
     scenario: "happy path",
   });
+  run([pnpm, "producer", "channel-handoff", "--run", renderedRunId], {
+    expectOutput: "Manual channel handoff package generated.",
+    label: "manual channel handoff is generated",
+    scenario: "happy path",
+  });
   run([pnpm, "producer", "status", "--run", renderedRunId], {
     expectOutput: `Render decision review: pnpm producer review render-decision --run ${renderedRunId}`,
     label: "status surfaces render-decision review command",
