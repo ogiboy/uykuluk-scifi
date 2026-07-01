@@ -1,6 +1,7 @@
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import { RunArtifactPreviewsPanel } from "./RunArtifactPreviewsPanel";
 import { RunBlockedActionsPanel } from "./RunBlockedActionsPanel";
+import { RunChannelHandoffPanel } from "./RunChannelHandoffPanel";
 import { RunFinalReviewBundlePanel } from "./RunFinalReviewBundlePanel";
 import { RunLedgerPanel } from "./RunLedgerPanel";
 import { RunProductionMediaPanel } from "./RunProductionMediaPanel";
@@ -101,6 +102,7 @@ export function RunDetailView({ run }: Readonly<{ run: StudioRunDetail }>) {
       <RunRenderDecisionActionPanel commands={run.renderDecisionCommands} runId={run.runId} />
       <RunRenderDecisionCommandsPanel commands={run.renderDecisionCommands} />
       <RunFinalReviewBundlePanel finalReviewBundle={run.finalReviewBundle} />
+      <RunChannelHandoffPanel channelHandoff={run.channelHandoff} />
 
       <RunArtifactPreviewsPanel artifacts={run.artifacts} evidenceStatus={run.evidenceStatus} />
 

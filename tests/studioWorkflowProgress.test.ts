@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { getStudioRunDetail } from "../apps/studio/src/lib/runSummaries";
 import {
+  writeStudioChannelHandoff,
   writeStudioFinalReviewBundle,
   writeStudioRenderDecision,
 } from "./studioRenderDecisionFixtures";
@@ -72,6 +73,31 @@ describe("Studio workflow progress", () => {
           exists: true,
           label: "Final review handoff",
           path: "production/review_bundle.md",
+        }),
+      ]),
+    );
+  });
+
+  it("surfaces the completed manual channel handoff as the final local review action", async () => {
+    const runId = await createRenderedStudioRunFixture();
+    await writeStudioChannelHandoff(runId);
+    const detail = await getStudioRunDetail(runId);
+
+    expect(detail?.channelHandoff).toMatchObject({
+      kind: "present",
+      handoff: { status: "ready-for-manual-channel-review" },
+      reviewPath: "production/channel_handoff.md",
+    });
+    expect(detail?.nextRecommendedCommand).toContain(
+      "Manually review production/channel_handoff.md",
+    );
+    expect(detail?.nextRecommendedCommand).not.toContain("producer channel-handoff");
+    expect(detail?.artifacts).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          exists: true,
+          label: "Manual channel handoff",
+          path: "production/channel_handoff.md",
         }),
       ]),
     );

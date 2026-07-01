@@ -1,11 +1,13 @@
 import { SafeExitError } from "../core/errors.js";
 import { listRuns } from "../core/runStore.js";
 import type { RunState } from "../core/state.js";
+import type { ChannelHandoffStatus } from "../stages/channelHandoffStatus.js";
 import type { FinalReviewBundleStatus } from "../stages/finalReviewBundleStatus.js";
 import type { RenderDecisionStatus } from "../stages/renderDecisionStatus.js";
 import { readRunStatus, type RunStatusSummary } from "../stages/status.js";
 import { formatProductionMediaStatus, type ProductionMediaStatus } from "../stages/statusMedia.js";
 import { buildStatusWorkflowProgress, type StatusWorkflowStep } from "../stages/statusWorkflow.js";
+import { channelHandoffLines, channelHandoffSummary } from "./operatorDeskChannelHandoff.js";
 import { finalReviewBundleLines, finalReviewBundleSummary } from "./operatorDeskFinalReview.js";
 import {
   buildOperatorDeskCommandQueue,
@@ -31,6 +33,7 @@ export type OperatorDeskRun = {
   approvalCount: number;
   artifactCount: number;
   blockedActionCount: number | null;
+  channelHandoffStatus: string;
   evidenceStatus: string;
   nextRecommendedCommand: string;
   finalReviewBundleStatus: string;
@@ -44,6 +47,7 @@ export type OperatorDeskRun = {
 
 export type OperatorDeskSelectedRun = OperatorDeskRun & {
   blockedActions: string[];
+  channelHandoff: ChannelHandoffStatus;
   commandQueue: OperatorDeskCommand[];
   diagnostics: RunStatusSummary["diagnostics"];
   mediaArtifacts: RunStatusSummary["mediaArtifacts"];
@@ -141,6 +145,8 @@ export function formatOperatorDeskPlain(model: OperatorDeskViewModel): string {
     ...renderDecisionReviewLines(run.renderDecision),
     `Final review bundle: ${finalReviewBundleSummary(run.finalReviewBundle)}`,
     ...finalReviewBundleLines(run.finalReviewBundle),
+    `Manual channel handoff: ${channelHandoffSummary(run.channelHandoff)}`,
+    ...channelHandoffLines(run.channelHandoff),
     `Approvals/artifacts/warnings: ${run.approvalCount} approvals, ${run.artifactCount} artifacts, ${run.warningCount} warnings`,
     `Blocked actions: ${run.blockedActionCount ?? "unknown"}`,
     ...formatOperatorDeskBlockedActionLines(run.blockedActions),
@@ -191,6 +197,7 @@ function compactRun(status: RunStatusSummary): OperatorDeskRun {
     approvalCount: status.approvalCount,
     artifactCount: status.artifactCount,
     blockedActionCount: status.blockedActionCount,
+    channelHandoffStatus: channelHandoffSummary(status.channelHandoff),
     evidenceStatus: status.evidenceStatus,
     finalReviewBundleStatus: finalReviewBundleSummary(status.finalReviewBundle),
     nextRecommendedCommand: status.nextRecommendedCommand,
@@ -213,6 +220,7 @@ function selectedRun(status: RunStatusSummary): OperatorDeskSelectedRun {
   return {
     ...compactRun(status),
     blockedActions: status.blockedActions,
+    channelHandoff: status.channelHandoff,
     commandQueue: buildOperatorDeskCommandQueue(status),
     diagnostics: status.diagnostics,
     finalReviewBundle: status.finalReviewBundle,

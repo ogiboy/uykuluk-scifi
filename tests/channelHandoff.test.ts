@@ -2,6 +2,7 @@ import { spawnSync } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
+import { buildOperatorDeskViewModel, formatOperatorDeskPlain } from "../src/cli/operatorDeskModel";
 import { artifactPath } from "../src/core/artifacts";
 import { loadRun } from "../src/core/runStore";
 import {
@@ -12,6 +13,7 @@ import {
 } from "../src/stages/channelHandoff";
 import { createFinalReviewBundle } from "../src/stages/finalReviewBundle";
 import { recordRenderDecision } from "../src/stages/renderDecision";
+import { formatRunStatus, readRunStatus } from "../src/stages/status";
 import { useTempProject } from "./helpers";
 import { renderLocalDraft } from "./renderPipelineHelpers";
 
@@ -81,6 +83,31 @@ describe("manual channel handoff", () => {
     await expect(readFile(artifactPath(runId, channelHandoffJsonPath), "utf8")).resolves.toContain(
       '"ready-for-manual-channel-review"',
     );
+  });
+
+  it("surfaces completed manual handoff in status and operator desk output", async () => {
+    const runId = await acceptedFinalReviewRun("channel-handoff-status");
+    await createChannelHandoff(runId);
+
+    const status = await readRunStatus(runId);
+    const statusOutput = formatRunStatus(status);
+    const deskOutput = formatOperatorDeskPlain(await buildOperatorDeskViewModel({ runId }));
+
+    expect(status.channelHandoff).toMatchObject({
+      kind: "present",
+      handoff: { status: "ready-for-manual-channel-review" },
+      reviewPath: "production/channel_handoff.md",
+    });
+    expect(status.nextRecommendedCommand).toContain(
+      "Manually review production/channel_handoff.md",
+    );
+    expect(status.nextRecommendedCommand).not.toContain("producer channel-handoff");
+    expect(statusOutput).toContain("Manual channel handoff: ready-for-manual-channel-review");
+    expect(statusOutput).toContain(
+      "Manual channel handoff artifact: production/channel_handoff.md",
+    );
+    expect(deskOutput).toContain("Manual channel handoff: ready-for-manual-channel-review");
+    expect(deskOutput).toContain("Manual channel handoff artifact: production/channel_handoff.md");
   });
 });
 

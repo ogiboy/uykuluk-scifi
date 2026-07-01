@@ -150,11 +150,23 @@ try {
     label: "manual channel handoff is generated",
     scenario: "happy path",
   });
-  run([pnpm, "producer", "status", "--run", renderedRunId], {
+  const channelHandoffStatus = run([pnpm, "producer", "status", "--run", renderedRunId], {
     expectOutput: `Render decision review: pnpm producer review render-decision --run ${renderedRunId}`,
     label: "status surfaces render-decision review command",
     scenario: "happy path",
   });
+  assertCondition(
+    channelHandoffStatus.stdout.includes("Manual channel handoff: ready-for-manual-channel-review"),
+    "status surfaces completed manual channel handoff",
+    "happy path",
+  );
+  assertCondition(
+    channelHandoffStatus.stdout.includes(
+      "Manual channel handoff artifact: production/channel_handoff.md",
+    ),
+    "status surfaces manual channel handoff artifact",
+    "happy path",
+  );
   const renderedDesk = run([pnpm, "producer", "desk", "--run", renderedRunId, "--plain"], {
     expectOutput: "Operator commands:",
     label: "operator desk surfaces review command queue",

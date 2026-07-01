@@ -6,6 +6,7 @@ import {
 import type { StatusWorkflowStep } from "../../../../src/stages/statusWorkflow";
 import { buildStatusWorkflowProgress } from "../../../../src/stages/statusWorkflow";
 import { evidenceNextRecommendedCommand, type StudioEvidenceSummary } from "./evidenceSummaries";
+import type { StudioChannelHandoffSummary } from "./channelHandoffSummaries";
 import type { StudioFinalReviewBundleSummary } from "./finalReviewBundleSummaries";
 import type { StudioRenderDecisionSummary } from "./renderDecisionSummaries";
 import type { RunRecord, StudioRunState } from "./runSummaries";
@@ -38,6 +39,7 @@ export function studioWorkflowProgress(input: {
  * @param runId - The run identifier.
  * @param renderDecision - The local render decision summary.
  * @param finalReviewBundle - The local final review bundle summary.
+ * @param channelHandoff - The manual channel handoff summary.
  * @returns A command or operator action for the next safe step.
  */
 export function studioNextRecommendedCommand(
@@ -46,7 +48,14 @@ export function studioNextRecommendedCommand(
   runId: string,
   renderDecision: StudioRenderDecisionSummary,
   finalReviewBundle: StudioFinalReviewBundleSummary,
+  channelHandoff: StudioChannelHandoffSummary,
 ): string | null {
+  if (channelHandoff.kind === "present") {
+    return channelHandoff.nextAction;
+  }
+  if (channelHandoff.kind === "invalid" || channelHandoff.kind === "stale") {
+    return channelHandoff.nextAction;
+  }
   if (finalReviewBundle.kind === "present") {
     return finalReviewBundle.nextAction;
   }

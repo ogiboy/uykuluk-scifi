@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { StudioRunSummary } from "@/lib/runSummaries";
 import {
+  formatRunChannelHandoff,
   formatRunFinalReviewBundle,
   formatRunRenderDecision,
   formatRunReviewCounts,
@@ -34,6 +35,7 @@ export function RunSummaryTable({ runs }: RunSummaryTableProps) {
           <span role='columnheader'>Evidence</span>
           <span role='columnheader'>Render decision</span>
           <span role='columnheader'>Final bundle</span>
+          <span role='columnheader'>Channel handoff</span>
           <span role='columnheader'>Next action</span>
         </div>
         {runs.map((run) => (
@@ -62,6 +64,12 @@ export function RunSummaryTable({ runs }: RunSummaryTableProps) {
               <strong>{formatRunFinalReviewBundle(run)}</strong>
               {run.finalReviewBundle.kind === "present" ? (
                 <small>{run.finalReviewBundle.bundle.status}</small>
+              ) : null}
+            </span>
+            <span className='run-cell-stack' role='cell'>
+              <strong>{formatRunChannelHandoff(run)}</strong>
+              {run.channelHandoff.kind === "present" ? (
+                <small>{run.channelHandoff.handoff.status}</small>
               ) : null}
             </span>
             <span role='cell'>{run.nextRecommendedCommand ?? "Generate evidence from CLI"}</span>

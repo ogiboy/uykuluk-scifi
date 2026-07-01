@@ -12,6 +12,7 @@ future generated release notes can be inserted predictably.
 ### Features
 
 - add a manual-only channel handoff package after accepted local final review.
+- surface completed manual channel handoff status in CLI, operator desk, Studio, and product UAT.
 
 ## v0.59.0 (2026-07-01)
 

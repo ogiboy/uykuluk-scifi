@@ -9,6 +9,10 @@ import type { RenderDecisionCommandTemplate } from "../../../../src/stages/rende
 import type { StatusWorkflowStep } from "../../../../src/stages/statusWorkflow";
 import { evidenceBlockedActionMessages } from "../../../../src/stages/statusBlockedActions";
 import { readReviewArtifactPreviews, type StudioArtifactPreview } from "./artifactPreviews";
+import {
+  readStudioChannelHandoffSummary,
+  type StudioChannelHandoffSummary,
+} from "./channelHandoffSummaries";
 import { readStudioEvidenceSummary, type StudioEvidenceSummary } from "./evidenceSummaries";
 import {
   readStudioFinalReviewBundleSummary,
@@ -38,6 +42,7 @@ export type StudioRunSummary = {
   artifactCount: number;
   blockedActions: string[];
   blockedActionCount: number;
+  channelHandoff: StudioChannelHandoffSummary;
   createdAt: string;
   evidenceMessage: string;
   evidenceNextAction?: string;
@@ -125,6 +130,7 @@ export async function getStudioRunDetail(runId: string): Promise<StudioRunDetail
     evidence.snapshot,
     renderDecision,
   );
+  const channelHandoff = await readStudioChannelHandoffSummary(root, record, finalReviewBundle);
   const readinessSummary = summarizeReadinessSnapshot(
     readiness.snapshot,
     record.runId,
@@ -137,6 +143,7 @@ export async function getStudioRunDetail(runId: string): Promise<StudioRunDetail
     readinessSummary,
     renderDecision,
     finalReviewBundle,
+    channelHandoff,
   );
   return {
     ...summary,
@@ -178,12 +185,14 @@ async function readRunSummary(root: string, runId: string): Promise<StudioRunSum
     evidence.snapshot,
     renderDecision,
   );
+  const channelHandoff = await readStudioChannelHandoffSummary(root, record, finalReviewBundle);
   return summarizeRun(
     record,
     evidence,
     summarizeReadinessSnapshot(readiness.snapshot, record.runId, record.state, readiness.malformed),
     renderDecision,
     finalReviewBundle,
+    channelHandoff,
   );
 }
 
@@ -195,6 +204,7 @@ async function readRunSummary(root: string, runId: string): Promise<StudioRunSum
  * @param readiness - The readiness summary for the run.
  * @param renderDecision - The local render decision summary for the run.
  * @param finalReviewBundle - The local final review bundle summary for the run.
+ * @param channelHandoff - The manual channel handoff summary for the run.
  * @returns The combined run summary.
  */
 function summarizeRun(
@@ -203,6 +213,7 @@ function summarizeRun(
   readiness: StudioReadinessSummary,
   renderDecision: StudioRenderDecisionSummary,
   finalReviewBundle: StudioFinalReviewBundleSummary,
+  channelHandoff: StudioChannelHandoffSummary,
 ): StudioRunSummary {
   const runId = record.runId ?? "unknown";
   const blockedActions = evidenceBlockedActionMessages(evidence.snapshot, runId);
@@ -215,6 +226,7 @@ function summarizeRun(
     artifactCount: record.artifacts?.length ?? 0,
     blockedActionCount: blockedActions.length,
     blockedActions,
+    channelHandoff,
     createdAt: record.createdAt ?? "",
     evidenceMessage: evidence.message,
     evidenceNextAction: evidence.nextAction,
@@ -226,6 +238,7 @@ function summarizeRun(
       runId,
       renderDecision,
       finalReviewBundle,
+      channelHandoff,
     ),
     readinessMessage: readiness.message,
     readinessNextAction: readiness.nextAction,
