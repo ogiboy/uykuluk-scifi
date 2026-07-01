@@ -89,7 +89,7 @@ describe("local final review bundle", () => {
         reviewedBy: "operator",
         reviewCommand: `pnpm producer review render-decision --run ${runId}`,
       },
-      nextSafeAction: expect.stringContaining("Upload remains disabled"),
+      nextSafeAction: expect.stringContaining(`pnpm producer review-bundle --run ${runId}`),
     });
     expect(bundle.artifacts.map((artifact) => artifact.path)).toContain(
       "production/render/render_decision.md",

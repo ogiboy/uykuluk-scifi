@@ -4,6 +4,7 @@ import { appendLedgerEvent } from "../core/ledger.js";
 import { loadRun, saveRun } from "../core/runStore.js";
 import { pathExists } from "../utils/fs.js";
 import { nowIso } from "../utils/time.js";
+import { shellCommand } from "../utils/shell.js";
 import { bulletList, table } from "../utils/markdown.js";
 import {
   renderDecisionJsonPath,
@@ -63,7 +64,7 @@ export async function recordRenderDecision(
       reviewCommand: manifest.ffmpeg.reviewCommand,
       sha256: manifest.output.sha256,
     },
-    nextSafeAction: nextSafeAction(parsed.decision),
+    nextSafeAction: nextSafeAction(parsed.decision, run.runId),
     notes: parsed.notes,
     renderApproval: manifest.renderApproval,
     reviewedBy: parsed.reviewedBy,
@@ -155,9 +156,14 @@ export function renderDecisionMarkdown(record: RenderDecisionRecord): string {
  * @param decision - The recorded render decision
  * @returns Guidance for the next allowed step based on `decision`
  */
-function nextSafeAction(decision: RenderDecision): string {
+function nextSafeAction(decision: RenderDecision, runId: string): string {
   if (decision === "accepted-for-local-review") {
-    return "Keep the local draft for manual channel review. Upload remains disabled until a future private-upload approval/config path exists.";
+    return `Create the local final review handoff with ${shellCommand("pnpm", [
+      "producer",
+      "review-bundle",
+      "--run",
+      runId,
+    ])}. Upload remains disabled until a future private-upload approval/config path exists.`;
   }
   if (decision === "needs-revision") {
     return "Revise package, render plan, voiceover, subtitles, or assets; then regenerate evidence/readiness and render a new local draft.";

@@ -32,7 +32,7 @@ export async function writeStudioRenderDecision(
       reviewCommand: "ffmpeg -v error -i production/render/draft.mp4 -f null -",
       sha256: "a".repeat(64),
     },
-    nextSafeAction: nextSafeAction(decision),
+    nextSafeAction: nextSafeAction(decision, runId),
     notes: "Reviewed locally from Studio fixture.",
     renderApproval: {
       approvalId: "approval_render_fixture",
@@ -62,9 +62,9 @@ export async function writeStudioRenderDecision(
   return record;
 }
 
-function nextSafeAction(decision: RenderDecisionRecord["decision"]): string {
+function nextSafeAction(decision: RenderDecisionRecord["decision"], runId: string): string {
   if (decision === "accepted-for-local-review") {
-    return "Keep the local draft for manual channel review. Upload remains disabled until a future private-upload approval/config path exists.";
+    return `Create the local final review handoff with pnpm producer review-bundle --run ${runId}. Upload remains disabled until a future private-upload approval/config path exists.`;
   }
   if (decision === "needs-revision") {
     return "Revise package, render plan, voiceover, subtitles, or assets; then regenerate evidence/readiness and render a new local draft.";

@@ -41,7 +41,7 @@ describe("render operator decision", () => {
     const decision = JSON.parse(result.stdout) as RenderDecisionRecord;
     expect(decision).toMatchObject({
       decision: "accepted-for-local-review",
-      nextSafeAction: expect.stringContaining("Upload remains disabled"),
+      nextSafeAction: expect.stringContaining(`pnpm producer review-bundle --run ${runId}`),
       reviewedBy: "operator",
       runId,
       schemaVersion: 1,
@@ -77,7 +77,7 @@ describe("render operator decision", () => {
       decision: { decision: "accepted-for-local-review", reviewedBy: "operator" },
       reviewCommand: `pnpm producer review render-decision --run ${runId}`,
     });
-    expect(status.nextRecommendedCommand).toContain("Upload remains disabled");
+    expect(status.nextRecommendedCommand).toContain(`pnpm producer review-bundle --run ${runId}`);
     expect(formatRunStatus(status)).toContain(
       "Render decision: accepted-for-local-review by operator",
     );
@@ -114,7 +114,7 @@ describe("render operator decision", () => {
     });
     expect(accepted).toMatchObject({
       decision: "accepted-for-local-review",
-      nextSafeAction: expect.stringContaining("Upload remains disabled"),
+      nextSafeAction: expect.stringContaining(`pnpm producer review-bundle --run ${acceptedRunId}`),
       notes: "Draft timing is acceptable.",
       reviewedBy: "operator",
       runId: acceptedRunId,
