@@ -318,10 +318,10 @@
   protection, durable evidence writes, and explicit approval targets, and public/scheduled publish
   risk remains disabled.
 - Shared Studio mutation service contract foundations exist for future idea/script/cost/render
-  approval actions and disabled upload/publish actions. Contracts validate future request payloads,
-  bind each action to the CLI/core module/export, require CSRF protection, durable evidence, and
-  explicit approval, and remain non-routable until guarded Studio action routes are intentionally
-  implemented.
+  approval actions, local render-decision evidence writes, and disabled upload/publish actions.
+  Contracts validate future request payloads, bind each action to the CLI/core module/export,
+  require CSRF protection, durable evidence, and explicit approval, and remain non-routable until
+  guarded Studio action routes are intentionally implemented.
 - Studio home renders a read-only mutation-service status panel showing disabled future action
   routes, CLI-ready approval contracts, route-security findings, and upload/publish risk boundaries
   without exposing web mutations.

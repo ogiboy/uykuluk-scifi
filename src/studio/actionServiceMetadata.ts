@@ -3,6 +3,7 @@ export const studioMutationActionIds = [
   "script.approve",
   "cost.approve",
   "render.approve",
+  "render.decide",
   "upload.private",
   "publish.schedule",
 ] as const;
@@ -52,6 +53,16 @@ export const studioMutationServiceMetadata = [
     coreExport: "approveRender",
     coreModule: "src/stages/approveRender.ts",
     description: "Approve render execution for the current render-plan and voiceover digests.",
+  },
+  {
+    actionId: "render.decide",
+    availability: "ready-for-cli",
+    cliCommand:
+      "pnpm producer decide render --run <run_id> --decision <decision> --notes <notes> --reviewed-by <name>",
+    coreExport: "recordRenderDecision",
+    coreModule: "src/stages/renderDecision.ts",
+    description:
+      "Record exactly one local draft-render review decision without approving upload or publish.",
   },
   {
     actionId: "upload.private",

@@ -110,8 +110,9 @@ agent-tracking state only; runtime code must not require it.
   read-only Studio view over the ignored local analytics artifacts and import data-quality summary.
 - Typed Studio route-security contract covering current read-only routes and disabled future action
   routes.
-- Typed Studio mutation service contracts for future approval/upload/publish actions, including
-  request validation and CLI/core binding metadata, without enabling web mutations.
+- Typed Studio mutation service contracts for future approval, local render-decision, and
+  upload/publish actions, including request validation and CLI/core binding metadata, without
+  enabling web mutations.
 - Read-only Studio home visibility for disabled future action routes, latest-run readiness, manual
   analytics feedback, CLI-ready approval contracts, and upload/publish risk boundaries.
 - Disabled private upload and public/scheduled publish placeholders.
@@ -243,8 +244,8 @@ agent-tracking state only; runtime code must not require it.
 - Upload and publish remain intentionally blocked scaffolds.
 - Upload and public/scheduled publish require future explicit config and separate approval gates.
 - Studio must call typed local service contracts; it must not duplicate workflow state.
-- Studio mutation service contracts exist for future guarded actions, but no Studio action route is
-  enabled yet.
+- Studio mutation service contracts exist for future guarded actions, including local
+  render-decision evidence writes, but no Studio action route is enabled yet.
 
 Paid generation providers are not implemented. `producer approve cost` approves one exact future
 paid-production quote; it does not authorize or execute spending. The internal reservation and

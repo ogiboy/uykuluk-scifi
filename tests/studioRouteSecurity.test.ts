@@ -39,6 +39,16 @@ describe("Studio route security contract", () => {
       expect.arrayContaining([
         expect.objectContaining({
           enabled: false,
+          path: "/actions/decide-render",
+          requiredApproval: "review",
+          requiresCoreServiceContract: true,
+          requiresCsrfProtection: true,
+          requiresEvidenceWrite: true,
+          risk: "local-mutation",
+          serviceContractId: "render.decide",
+        }),
+        expect.objectContaining({
+          enabled: false,
           path: "/actions/publish-schedule",
           requiredApproval: "publish",
           requiresCoreServiceContract: true,

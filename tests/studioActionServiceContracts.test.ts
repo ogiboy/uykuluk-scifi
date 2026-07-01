@@ -27,6 +27,12 @@ describe("Studio mutation service contracts", () => {
           coreExport: "runPublishPlaceholder",
           coreModule: "src/youtube/uploadDisabled.ts",
         }),
+        expect.objectContaining({
+          actionId: "render.decide",
+          availability: "ready-for-cli",
+          coreExport: "recordRenderDecision",
+          coreModule: "src/stages/renderDecision.ts",
+        }),
       ]),
     );
   });
@@ -58,6 +64,27 @@ describe("Studio mutation service contracts", () => {
         runId: "run_operator_review",
       }),
     ).toEqual({ acknowledgeWarnings: false, runId: "run_operator_review" });
+    expect(
+      parseStudioMutationRequest("render.decide", {
+        decision: "needs-revision",
+        notes: "Subtitle timing needs another pass.",
+        reviewedBy: "operator",
+        runId: "run_operator_review",
+      }),
+    ).toEqual({
+      decision: "needs-revision",
+      notes: "Subtitle timing needs another pass.",
+      reviewedBy: "operator",
+      runId: "run_operator_review",
+    });
+    expect(() =>
+      parseStudioMutationRequest("render.decide", {
+        decision: "accepted-for-local-review",
+        notes: "",
+        reviewedBy: "operator",
+        runId: "run_operator_review",
+      }),
+    ).toThrow();
 
     expect(() => parseStudioMutationRequest("render.approve", { runId: "../run_escape" })).toThrow(
       /Invalid run id/,

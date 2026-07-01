@@ -153,8 +153,9 @@
   the shared CLI/Studio import data-quality summary plus read-only Studio analytics overview with
   report freshness summaries are implemented.
 - Maintain typed Studio mutation service contracts that both CLI and web can use before adding
-  Studio mutations. Current contracts cover future idea/script/cost/render approvals plus disabled
-  upload/publish actions; concrete CSRF/session handling and route implementations remain deferred.
+  Studio mutations. Current contracts cover future idea/script/cost/render approvals, local
+  render-decision evidence writes, plus disabled upload/publish actions; concrete CSRF/session
+  handling and route implementations remain deferred.
 - Keep local prompt overrides safe before adding a prompt editor. Tracked `prompts/defaults/`
   runtime defaults, typed keys, source paths, and prompt hashes are implemented; ignored
   `prompts/local/*.md` overrides are now explicit `producer.config.json` inputs and must remain

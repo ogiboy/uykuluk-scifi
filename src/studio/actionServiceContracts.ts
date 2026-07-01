@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { isValidRunId } from "../core/runId.js";
+import { renderDecisionValues } from "../stages/renderDecisionCommands.js";
 import {
   studioMutationServiceMetadata,
   type StudioMutationActionId,
@@ -24,11 +25,19 @@ const runOnlyRequestSchema = z.strictObject({
   runId: runIdSchema,
 });
 
+const renderDecisionRequestSchema = z.strictObject({
+  decision: z.enum(renderDecisionValues),
+  notes: z.string().trim().min(1).max(4_000),
+  reviewedBy: z.string().trim().min(1).max(200),
+  runId: runIdSchema,
+});
+
 type StudioActionRequestById = {
   "cost.approve": z.infer<typeof runOnlyRequestSchema>;
   "idea.approve": z.infer<typeof ideaApprovalRequestSchema>;
   "publish.schedule": z.infer<typeof runOnlyRequestSchema>;
   "render.approve": z.infer<typeof runOnlyRequestSchema>;
+  "render.decide": z.infer<typeof renderDecisionRequestSchema>;
   "script.approve": z.infer<typeof scriptApprovalRequestSchema>;
   "upload.private": z.infer<typeof runOnlyRequestSchema>;
 };
@@ -110,6 +119,9 @@ function requestSchemaForAction(actionId: StudioMutationActionId): z.ZodType {
   }
   if (actionId === "script.approve") {
     return scriptApprovalRequestSchema;
+  }
+  if (actionId === "render.decide") {
+    return renderDecisionRequestSchema;
   }
   return runOnlyRequestSchema;
 }

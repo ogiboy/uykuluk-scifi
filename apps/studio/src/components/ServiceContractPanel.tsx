@@ -13,8 +13,8 @@ export function ServiceContractPanel() {
     <section id='actions' aria-labelledby='actions-heading'>
       <h2 id='actions-heading'>Mutation Service Contracts</h2>
       <p>
-        Future approval and upload/publish actions are represented as shared CLI/core contracts, but
-        the Studio does not expose mutating route handlers yet.
+        Future approval, local review decision, and upload/publish actions are represented as shared
+        CLI/core contracts, but the Studio does not expose mutating route handlers yet.
       </p>
       <div className='status-grid'>
         <article className='status-card'>
@@ -27,7 +27,7 @@ export function ServiceContractPanel() {
         <article className='status-card'>
           <p>CLI-ready Contracts</p>
           <strong>{status.readyForCliCount}</strong>
-          <p>Approval actions are bound to existing CLI/core functions.</p>
+          <p>Approval and local review actions are bound to existing CLI/core functions.</p>
         </article>
         <article className='status-card'>
           <p>External Risk</p>

@@ -16,7 +16,15 @@ export type StudioRouteSecurityContract = {
   enabled: boolean;
   id: string;
   path: string;
-  requiredApproval: "cost" | "idea" | "none" | "publish" | "render" | "script" | "upload";
+  requiredApproval:
+    | "cost"
+    | "idea"
+    | "none"
+    | "publish"
+    | "render"
+    | "review"
+    | "script"
+    | "upload";
   requiresCoreServiceContract: boolean;
   requiresCsrfProtection: boolean;
   requiresEvidenceWrite: boolean;
@@ -40,6 +48,7 @@ export const disabledStudioActionRoutes = [
   action("script.approve", "/actions/approve-script", "script", "local-mutation"),
   action("cost.approve", "/actions/approve-cost", "cost", "local-mutation"),
   action("render.approve", "/actions/approve-render", "render", "local-mutation"),
+  action("render.decide", "/actions/decide-render", "review", "local-mutation"),
   action("upload.private", "/actions/upload-private", "upload", "external-side-effect"),
   action("publish.schedule", "/actions/publish-schedule", "publish", "publish-risk"),
 ] as const satisfies readonly StudioRouteSecurityContract[];
