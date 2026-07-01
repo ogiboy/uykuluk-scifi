@@ -3,7 +3,7 @@ import type {
   LocalModelEvalReportPersisted,
 } from "../../../../src/diagnostics/localModelEvalSchema";
 
-export type StudioModelEvalStatus = "blocked" | "invalid" | "missing" | "passing";
+export type StudioModelEvalStatus = "blocked" | "invalid" | "missing" | "passing" | "recommended";
 
 export type StudioModelEvalOverview = {
   candidateMarkdownPath: string;

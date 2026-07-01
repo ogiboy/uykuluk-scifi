@@ -715,9 +715,12 @@ slot-specific, while the script-section contract parsed; this keeps Qwen as regr
 rather than the recommended production default. `producer eval local-model-candidates` runs the same
 checks for repeated `--candidate` model names and produces a local comparison report so operators
 can compare served Ollama or `llama.cpp` candidates without editing config between attempts. The
-comparison report recommends only candidates that pass all parser-contract checks. `llama.cpp`
-candidate comparisons are one-loaded-server checks: start `llama-server` with the GGUF under test,
-or the candidate is blocked as not served before generation.
+comparison report recommends only candidates that pass all parser-contract checks. Mixed comparisons
+that find a recommended passing candidate are treated as useful operator evidence even when other
+candidates block; comparisons with no passing candidate still exit non-zero and tell the operator to
+try more candidates. Studio shows these mixed reports as `recommended` instead of fully blocked.
+`llama.cpp` candidate comparisons are one-loaded-server checks: start `llama-server` with the GGUF
+under test, or the candidate is blocked as not served before generation.
 
 Run `pnpm producer doctor` before starting production work. Mock mode passes without network access.
 Ollama mode checks `/api/tags`; `llama.cpp` mode checks `/v1/models`. Both use bounded timeouts and

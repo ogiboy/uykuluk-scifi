@@ -1,7 +1,10 @@
 import { Command } from "commander";
 import { z } from "zod";
 import { SafeExitError } from "../core/errors.js";
-import { runLocalModelCandidateEval } from "../diagnostics/localModelCandidateEval.js";
+import {
+  localModelCandidateEvalRequiresMoreCandidates,
+  runLocalModelCandidateEval,
+} from "../diagnostics/localModelCandidateEval.js";
 import { formatLocalModelCandidateEvalConsole } from "../diagnostics/localModelCandidateEvalFormatting.js";
 import { runLocalModelEval } from "../diagnostics/localModelEval.js";
 import { LocalModelEvalLlmOverrides } from "../diagnostics/localModelEvalConfig.js";
@@ -82,8 +85,8 @@ export function registerEvaluationCommands(program: Command, wrap: Wrap): void {
             ? JSON.stringify(report, null, 2)
             : formatLocalModelCandidateEvalConsole(report),
         );
-        if (!report.passed) {
-          throw new SafeExitError("Local model candidate eval blocked.", 1);
+        if (localModelCandidateEvalRequiresMoreCandidates(report)) {
+          throw new SafeExitError("Local model candidate eval needs more candidates.", 1);
         }
       }),
     );

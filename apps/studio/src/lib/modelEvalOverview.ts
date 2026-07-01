@@ -211,6 +211,9 @@ function modelEvalStatus(
   if (!singleReport && !candidateReport) {
     return "missing";
   }
+  if (candidateReport?.recommendedCandidate && candidateReport.passed === false) {
+    return "recommended";
+  }
   return singleReport?.passed === false || candidateReport?.passed === false
     ? "blocked"
     : "passing";

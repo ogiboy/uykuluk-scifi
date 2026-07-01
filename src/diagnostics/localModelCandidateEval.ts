@@ -193,6 +193,22 @@ export function selectRecommendedLocalModelCandidate(
   return [...passingCandidates].sort(candidateRecommendationSort)[0] ?? null;
 }
 
+/**
+ * Determines whether a candidate comparison should fail the CLI process.
+ *
+ * Mixed comparisons can still be useful when at least one candidate passes; those should remain
+ * reviewable reports instead of hard command failures. The CLI fails only when no candidate is
+ * ready and the operator needs to try more candidates.
+ *
+ * @param report - The completed candidate comparison report.
+ * @returns True when the CLI should exit non-zero.
+ */
+export function localModelCandidateEvalRequiresMoreCandidates(
+  report: LocalModelCandidateEvalReport,
+): boolean {
+  return report.operatorGuidance.decision === "try-more-candidates";
+}
+
 function candidateRecommendationSummary(
   candidate: LocalModelEvalReport,
 ): LocalModelCandidateRecommendation {

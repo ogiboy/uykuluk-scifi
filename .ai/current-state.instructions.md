@@ -117,11 +117,14 @@
   `producer eval local-model-candidates` runs the same checks for repeated `--candidate` model names
   and writes ignored `diagnostics/local_model_candidates_eval.json` and Markdown reports with a
   deterministic recommendation and next operator command only when a candidate passes all
-  parser-contract checks. In `llama.cpp` mode, candidate evaluation first checks `/v1/models`;
-  candidates not currently served by the local server are blocked without generation, and provider
-  responses that report a different served model than requested fail closed. A 2026-06-28 qwen3:8b
-  run stayed fail-closed on non-slot-specific idea `fit` explanations while its script-section
-  sample parsed.
+  parser-contract checks. Mixed candidate comparisons that include a recommended passing candidate
+  are useful operator evidence and do not fail the CLI process; comparisons with no passing
+  candidate still exit non-zero. Studio reports mixed comparisons with a recommended passing
+  candidate as `recommended` rather than fully blocked. In `llama.cpp` mode, candidate evaluation
+  first checks `/v1/models`; candidates not currently served by the local server are blocked without
+  generation, and provider responses that report a different served model than requested fail
+  closed. A 2026-06-28 qwen3:8b run stayed fail-closed on non-slot-specific idea `fit` explanations
+  while its script-section sample parsed.
 - Studio reads the ignored local model evaluation JSON/Markdown artifacts on the home page and
   `/eval`, distinguishing missing, malformed, schema-invalid, passing, and blocked reports without
   calling Ollama, `llama.cpp`, hosted APIs, or mutating configuration.

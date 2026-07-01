@@ -9,7 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Fixes
+
+- make mixed local model candidate evals exit successfully when they produce a recommended passing
+  candidate while still failing when no candidate passes.
 
 ## v0.62.0 (2026-07-01)
 

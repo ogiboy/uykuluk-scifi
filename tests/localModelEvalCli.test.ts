@@ -34,7 +34,7 @@ describe("producer local-model eval CLI", () => {
     await expect(readFile("producer.config.json", "utf8")).resolves.toBe(beforeConfig);
   });
 
-  it("prints candidate comparison JSON without mutating project config", async () => {
+  it("prints useful mixed candidate comparisons without failing the process", async () => {
     const beforeConfig = await readFile("producer.config.json", "utf8");
 
     const result = runCli([
@@ -49,8 +49,8 @@ describe("producer local-model eval CLI", () => {
       "--json",
     ]);
 
-    expect(result.status).not.toBe(0);
-    expect(result.stderr).toContain("Local model candidate eval blocked.");
+    expect(result.status).toBe(0);
+    expect(result.stderr).toBe("");
     expect(JSON.parse(result.stdout) as unknown).toMatchObject({
       baseOverrides: ["mode"],
       candidates: [
@@ -69,6 +69,28 @@ describe("producer local-model eval CLI", () => {
       }),
     });
     await expect(readFile("producer.config.json", "utf8")).resolves.toBe(beforeConfig);
+  });
+
+  it("fails candidate comparison only when no candidate passes", async () => {
+    const result = runCli([
+      "eval",
+      "local-model-candidates",
+      "--llm-mode",
+      "mock",
+      "--candidate",
+      "mock-invalid-script-json",
+      "--json",
+    ]);
+
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain("Local model candidate eval needs more candidates.");
+    expect(JSON.parse(result.stdout) as unknown).toMatchObject({
+      passed: false,
+      operatorGuidance: expect.objectContaining({
+        decision: "try-more-candidates",
+      }),
+      recommendedCandidate: null,
+    });
   });
 });
 
