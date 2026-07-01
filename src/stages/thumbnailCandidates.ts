@@ -5,8 +5,6 @@ import { SafeExitError } from "../core/errors.js";
 import { table } from "../utils/markdown.js";
 import {
   thumbnailCandidatePackSchema,
-  thumbnailCandidatesJsonPath,
-  thumbnailCandidatesMarkdownPath,
   type AssetRef,
   type ThumbnailCandidatePack,
 } from "./thumbnailCandidateContracts.js";
@@ -15,8 +13,8 @@ export {
   thumbnailCandidatePackSchema,
   thumbnailCandidatesJsonPath,
   thumbnailCandidatesMarkdownPath,
-};
-export type { AssetRef, ThumbnailCandidatePack };
+} from "./thumbnailCandidateContracts.js";
+export type { AssetRef, ThumbnailCandidatePack } from "./thumbnailCandidateContracts.js";
 
 /**
  * Builds local thumbnail candidates from tracked thumbnail assets.
@@ -135,7 +133,7 @@ function matchingOverlay(
   template: AssetRef,
   overlays: readonly AssetRef[],
 ): { textSafeOverlay?: AssetRef } {
-  const templateKey = template.path.match(/_(\d{2})_([a-z]+)_/);
+  const templateKey = /_(\d{2})_([a-z]+)_/.exec(template.path);
   if (!templateKey) {
     return {};
   }
@@ -145,6 +143,6 @@ function matchingOverlay(
 }
 
 function thumbnailCandidateId(templatePath: string, index: number): string {
-  const parsed = path.basename(templatePath).match(/thumbnail_template_(\d{2})_([a-z]+)/);
+  const parsed = /thumbnail_template_(\d{2})_([a-z]+)/.exec(path.basename(templatePath));
   return parsed ? `thumbnail-${parsed[1]}-${parsed[2]}` : `thumbnail-${index + 1}`;
 }
