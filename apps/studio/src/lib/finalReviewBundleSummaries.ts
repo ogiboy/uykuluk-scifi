@@ -7,6 +7,14 @@ import {
   finalReviewBundleSchema,
   type FinalReviewBundle,
 } from "../../../../src/stages/finalReviewBundleContracts";
+import {
+  finalReviewBundleDecisionStaleReason,
+  finalReviewBundleDraftDigestStaleReason,
+  finalReviewBundleReadyAction,
+  finalReviewBundleRunIdStaleReason,
+  finalReviewBundleStateStaleReason,
+  type FinalReviewDecisionBinding,
+} from "../../../../src/stages/finalReviewBundleValidation";
 import type { EvidenceStatus } from "../../../../src/stages/statusMediaSummary";
 import { studioRunFilePath } from "./runFilePaths";
 import type { StudioRenderDecisionSummary } from "./renderDecisionSummaries";
@@ -85,42 +93,18 @@ function finalReviewBundleStaleReason(
   renderDecision: StudioRenderDecisionSummary,
   bundle: FinalReviewBundle,
 ): string | null {
-  if (bundle.runId !== record.runId) {
-    return "Final review bundle belongs to a different run.";
-  }
-  if (record.state !== "RENDERED") {
-    return `Final review bundle was created, but the run is ${record.state ?? "unknown"}.`;
-  }
+  const runMismatch = finalReviewBundleRunIdStaleReason(bundle.runId, record.runId ?? "unknown");
+  if (runMismatch) return runMismatch;
+  const stateMismatch = finalReviewBundleStateStaleReason(record.state);
+  if (stateMismatch) return stateMismatch;
   const draftRender = draftRenderDigestSchema.safeParse(evidence?.draftRender);
-  if (!draftRender.success || bundle.draftRender.sha256 !== draftRender.data.digest) {
-    return "Final review bundle was created for a different draft render digest.";
-  }
-  return renderDecisionBundleMismatch(renderDecision, bundle);
-}
-
-function renderDecisionBundleMismatch(
-  renderDecision: StudioRenderDecisionSummary,
-  bundle: FinalReviewBundle,
-): string | null {
-  if (renderDecision.kind === "present") {
-    if (bundle.renderDecision.kind !== "present") {
-      return "Final review bundle is missing the recorded render decision.";
-    }
-    if (bundle.renderDecision.createdAt !== renderDecision.decision.createdAt) {
-      return "Final review bundle was created for a different render decision.";
-    }
-    if (bundle.renderDecision.decision !== renderDecision.decision.decision) {
-      return "Final review bundle was created for a different render decision outcome.";
-    }
-    return null;
-  }
-  if (bundle.renderDecision.kind === "present") {
-    return "Final review bundle includes a render decision that is no longer trusted.";
-  }
-  if (renderDecision.kind === "invalid" || renderDecision.kind === "stale") {
-    return `Final review bundle depends on ${renderDecision.kind} render decision evidence.`;
-  }
-  return null;
+  const currentDigest = draftRender.success ? draftRender.data.digest : null;
+  const digestMismatch = finalReviewBundleDraftDigestStaleReason(bundle, currentDigest);
+  if (digestMismatch) return digestMismatch;
+  return finalReviewBundleDecisionStaleReason(
+    bundle,
+    studioFinalReviewDecisionBinding(renderDecision),
+  );
 }
 
 function missingBundle(
@@ -156,9 +140,15 @@ function staleBundle(
   return { kind: "stale", message, nextAction: finalReviewBundleCommand(runId) };
 }
 
-function finalReviewBundleReadyAction(bundle: FinalReviewBundle): string {
-  if (bundle.status === "accepted-for-local-review") {
-    return `Local final review handoff is ready at ${finalReviewBundleMarkdownPath}. Upload remains disabled until a future private-upload approval/config path exists.`;
+function studioFinalReviewDecisionBinding(
+  renderDecision: StudioRenderDecisionSummary,
+): FinalReviewDecisionBinding {
+  if (renderDecision.kind !== "present") {
+    return { kind: renderDecision.kind };
   }
-  return bundle.nextSafeAction;
+  return {
+    createdAt: renderDecision.decision.createdAt,
+    decision: renderDecision.decision.decision,
+    kind: "present",
+  };
 }
