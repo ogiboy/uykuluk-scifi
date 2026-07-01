@@ -52,3 +52,18 @@ export function formatRunChannelHandoff(run: Pick<StudioRunSummary, "channelHand
   }
   return run.channelHandoff.kind;
 }
+
+/**
+ * Formats the manual channel-handoff decision status for compact run surfaces.
+ *
+ * @param run - The run summary containing the channel-handoff decision state.
+ * @returns Operator-facing channel-handoff decision copy for list and latest-run cards.
+ */
+export function formatRunChannelHandoffDecision(
+  run: Pick<StudioRunSummary, "channelHandoffDecision">,
+): string {
+  if (run.channelHandoffDecision.kind === "present") {
+    return `${run.channelHandoffDecision.decision.decision} by ${run.channelHandoffDecision.decision.reviewedBy}`;
+  }
+  return run.channelHandoffDecision.kind;
+}

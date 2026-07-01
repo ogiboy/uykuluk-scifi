@@ -31,6 +31,9 @@ _No unreleased changes yet._
 - add manifest-bound YouTube chapter draft artifacts to local draft renders and manual channel
   handoff.
 - add tracked thumbnail candidate artifacts to the manual channel handoff.
+- record durable manual channel-handoff decisions with selected thumbnail evidence.
+- surface manual channel-handoff decisions in status, operator desk, Studio read-only views, and
+  artifact previews.
 
 ## v0.60.0 (2026-07-01)
 

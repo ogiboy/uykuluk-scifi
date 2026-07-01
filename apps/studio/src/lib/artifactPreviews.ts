@@ -45,6 +45,8 @@ production/thumbnail_candidates.json	Thumbnail candidates	json	Final Review	Mach
 production/thumbnail_candidates.md	Thumbnail candidate handoff	markdown	Final Review	Operator-readable tracked thumbnail candidate checklist.	Pick or revise manually before any future upload workflow; upload remains disabled.
 production/channel_handoff.json	Manual channel handoff	json	Final Review	Local manual channel-review package with MP4, subtitle, metadata, and final-review binding.	Use this for manual channel preparation only; it is not upload or publish approval.
 production/channel_handoff.md	Manual channel handoff	markdown	Final Review	Operator checklist for manual channel preparation after accepted local final review.	Review manually before any future private-upload approval path; upload remains disabled.
+production/channel_handoff_decision.json	Manual channel handoff decision	json	Final Review	Durable operator decision for manual channel preparation and selected thumbnail candidate.	Use as local review evidence only; it is not upload or publish approval.
+production/channel_handoff_decision.md	Manual channel handoff decision	markdown	Final Review	Operator-readable manual channel-prep decision notes and next safe action.	Keep with the handoff package; upload and publish remain disabled.
 evidence_bundle.json	Evidence bundle	json	Evidence And Readiness	Current run evidence, blocked actions, and next safe command.	Use evidence as the review handoff before any next CLI action.
 diagnostics/readiness.json	Readiness diagnostics	json	Evidence And Readiness	Readiness checks for package, cost, render plan, TTS, and publish safety.	Resolve failed checks before production or render work.
 `);

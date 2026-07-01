@@ -104,8 +104,10 @@
   script/package/render-plan/voiceover/draft-render/evidence/readiness/decision artifacts together
   without approving upload or publish. `producer channel-handoff` then prepares a manual-only local
   channel checklist from an accepted final review bundle, binding the MP4, subtitles, metadata,
-  chapter draft, thumbnail candidates, and final-review digest without calling YouTube APIs or
-  granting upload/publish approval.
+  chapter draft, thumbnail candidates, and final-review digest. `producer decide channel-handoff`
+  records the selected thumbnail/manual channel-prep decision, and status/operator desk/Studio
+  surface the durable local decision without calling YouTube APIs or granting upload/publish
+  approval.
 - Use `producer eval local-model` before more Qwen-specific tuning. Compare configured local
   candidates through the same idea/script gates, receipt evidence, JSON compliance, repetition
   checks, Turkish label discipline, and operator quality review. Prefer eval-only CLI overrides for

@@ -1,15 +1,6 @@
-import { readFile, writeFile } from "node:fs/promises";
+import { writeFile } from "node:fs/promises";
 import { artifactPath } from "../src/core/artifacts";
 import { loadRun, saveRun } from "../src/core/runStore";
-import { sha256 } from "../src/utils/hash";
-import {
-  buildChannelHandoffPayload,
-  channelHandoffJsonPath,
-  channelHandoffMarkdownPath,
-  channelHandoffSchema,
-  type ChannelHandoff,
-} from "../src/stages/channelHandoffContracts";
-import { renderChannelHandoffMarkdown } from "../src/stages/channelHandoffMarkdown";
 import {
   finalReviewBundleJsonPath,
   finalReviewBundleMarkdownPath,
@@ -21,11 +12,6 @@ import {
   renderDecisionMarkdownPath,
 } from "../src/stages/renderDecisionCommands";
 import type { RenderDecisionRecord } from "../src/stages/renderDecisionContracts";
-import {
-  thumbnailCandidatesJsonPath,
-  thumbnailCandidatesMarkdownPath,
-} from "../src/stages/thumbnailCandidates";
-import { writeStudioThumbnailCandidates } from "./studioThumbnailFixtures";
 
 /**
  * Writes a Studio-valid render decision artifact for a rendered fixture run.
@@ -187,59 +173,6 @@ export async function writeStudioFinalReviewBundle(
   return bundle;
 }
 
-/**
- * Writes a Studio-valid manual channel handoff for a rendered fixture run.
- *
- * @param runId - The run identifier.
- * @returns The persisted manual channel handoff.
- */
-export async function writeStudioChannelHandoff(runId: string): Promise<ChannelHandoff> {
-  const finalReviewBundle = await writeStudioFinalReviewBundle(runId, "accepted-for-local-review");
-  const finalReviewJson = await readFixtureText(runId, finalReviewBundleJsonPath);
-  const run = await loadRun(runId);
-  const youtube = {
-    description: "Fixture description.",
-    tags: ["uykuluk", "scifi"],
-    title: "Fixture title",
-  };
-  await writeFile(
-    artifactPath(runId, "production/youtube_metadata.json"),
-    JSON.stringify(youtube),
-    "utf8",
-  );
-  const thumbnailCandidates = await writeStudioThumbnailCandidates(runId, sha256(finalReviewJson));
-  const handoff = channelHandoffSchema.parse({
-    createdAt: "2026-06-28T00:10:00.000Z",
-    ...buildChannelHandoffPayload({
-      finalReviewBundle,
-      finalReviewBundleDigest: sha256(finalReviewJson),
-      runId,
-      thumbnailCandidates,
-      youtube,
-    }),
-  });
-  await writeFile(artifactPath(runId, channelHandoffJsonPath), JSON.stringify(handoff), "utf8");
-  await writeFile(
-    artifactPath(runId, channelHandoffMarkdownPath),
-    renderChannelHandoffMarkdown(handoff),
-    "utf8",
-  );
-  await saveRun({
-    ...run,
-    artifacts: Array.from(
-      new Set(
-        run.artifacts.concat(
-          thumbnailCandidatesJsonPath,
-          thumbnailCandidatesMarkdownPath,
-          channelHandoffJsonPath,
-          channelHandoffMarkdownPath,
-        ),
-      ),
-    ),
-  });
-  return handoff;
-}
-
 function nextSafeAction(decision: RenderDecisionRecord["decision"], runId: string): string {
   if (decision === "accepted-for-local-review") {
     return `Create the local final review handoff with pnpm producer review-bundle --run ${runId}. Upload remains disabled until a future private-upload approval/config path exists.`;
@@ -248,8 +181,4 @@ function nextSafeAction(decision: RenderDecisionRecord["decision"], runId: strin
     return "Revise package, render plan, voiceover, subtitles, or assets; then regenerate evidence/readiness and render a new local draft.";
   }
   return "Do not use this draft. Revise upstream artifacts before any new render approval.";
-}
-
-async function readFixtureText(runId: string, relativePath: string): Promise<string> {
-  return readFile(artifactPath(runId, relativePath), "utf8");
 }

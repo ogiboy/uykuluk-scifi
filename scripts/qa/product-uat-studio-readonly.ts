@@ -12,15 +12,19 @@ const reviewCommand = `pnpm producer review render --run ${runId}`;
 const voiceReviewCommand = `pnpm producer review voice --run ${runId}`;
 const renderApprovalCommand = `pnpm producer approve render --run ${runId}`;
 const decisionReviewCommand = `pnpm producer review render-decision --run ${runId}`;
+const channelHandoffDecisionCommand = `pnpm producer decide channel-handoff --run ${runId}`;
 const summaries = await listStudioRuns();
 const summary = summaries.find((candidate) => candidate.runId === runId);
 
 assert(summary !== undefined, "Studio run index includes rendered run.");
 assert(summary.state === "RENDERED", "Studio run index shows rendered state.");
 assert(
-  summary.nextRecommendedCommand?.includes("Manually review production/channel_handoff.md") ===
-    true,
-  "Studio run index exposes manual channel handoff review as the next safe action.",
+  summary.nextRecommendedCommand?.includes(channelHandoffDecisionCommand) === true,
+  "Studio run index exposes manual channel handoff decision as the next safe action.",
+);
+assert(
+  summary.nextRecommendedCommand?.includes("--thumbnail-candidate <candidate_id>") === true,
+  "Studio run index keeps selected-thumbnail review explicit.",
 );
 assert(
   summary.renderDecision.kind === "present",
@@ -34,8 +38,12 @@ const detail = await getStudioRunDetail(runId);
 assert(detail !== null, "Studio run detail loads rendered run.");
 assert(detail.state === "RENDERED", "Studio run detail shows rendered state.");
 assert(
-  detail.nextRecommendedCommand?.includes("Manually review production/channel_handoff.md") === true,
-  "Studio run detail exposes manual channel handoff review as the next safe action.",
+  detail.nextRecommendedCommand?.includes(channelHandoffDecisionCommand) === true,
+  "Studio run detail exposes manual channel handoff decision as the next safe action.",
+);
+assert(
+  detail.nextRecommendedCommand?.includes("--thumbnail-candidate <candidate_id>") === true,
+  "Studio run detail keeps selected-thumbnail review explicit.",
 );
 assert(
   detail.renderDecision.kind === "present",
@@ -105,8 +113,13 @@ assert(
   "Studio run detail surfaces completed manual channel handoff.",
 );
 assert(
-  detail.nextRecommendedCommand?.includes("Manually review production/channel_handoff.md") === true,
-  "Studio next action moves to manual channel handoff review after package generation.",
+  detail.channelHandoffDecision.kind === "missing" &&
+    detail.channelHandoffDecision.nextAction?.includes(channelHandoffDecisionCommand) === true,
+  "Studio run detail surfaces the missing manual channel handoff decision.",
+);
+assert(
+  detail.nextRecommendedCommand?.includes(channelHandoffDecisionCommand) === true,
+  "Studio next action moves to manual channel handoff decision after package generation.",
 );
 assert(
   detail.workflowProgress.some(

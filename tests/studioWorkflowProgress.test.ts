@@ -1,11 +1,18 @@
+import { readFile, writeFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { getStudioRunDetail } from "../apps/studio/src/lib/runSummaries";
+import { artifactPath } from "../src/core/artifacts";
+import { channelHandoffJsonPath } from "../src/stages/channelHandoffContracts";
+import { channelHandoffDecisionJsonPath } from "../src/stages/channelHandoffDecision";
 import type { StatusWorkflowStep } from "../src/stages/statusWorkflow";
 import {
-  writeStudioChannelHandoff,
   writeStudioFinalReviewBundle,
   writeStudioRenderDecision,
 } from "./studioRenderDecisionFixtures";
+import {
+  writeStudioChannelHandoff,
+  writeStudioChannelHandoffDecision,
+} from "./studioChannelHandoffFixtures";
 import { createRenderedStudioRunFixture } from "./studioRunFixtures";
 import { useTempProject } from "./helpers";
 
@@ -86,9 +93,12 @@ describe("Studio workflow progress", () => {
       handoff: { status: "ready-for-manual-channel-review" },
       reviewPath: "production/channel_handoff.md",
     });
-    expect(detail?.nextRecommendedCommand).toContain(
-      "Manually review production/channel_handoff.md",
-    );
+    expect(detail?.channelHandoffDecision).toMatchObject({
+      kind: "missing",
+      message: "Manual channel-handoff decision has not been recorded.",
+    });
+    expect(detail?.nextRecommendedCommand).toContain("pnpm producer decide channel-handoff");
+    expect(detail?.nextRecommendedCommand).toContain("--thumbnail-candidate <candidate_id>");
     expect(detail?.nextRecommendedCommand).not.toContain("producer channel-handoff");
     expect(detail?.artifacts).toEqual(
       expect.arrayContaining([
@@ -104,6 +114,68 @@ describe("Studio workflow progress", () => {
       ["Final review handoff", "done"],
       ["Manual channel handoff", "done"],
     ]);
+  });
+
+  it("surfaces the recorded manual channel handoff decision in Studio read-only views", async () => {
+    const runId = await createRenderedStudioRunFixture();
+    await writeStudioChannelHandoffDecision(runId);
+    const detail = await getStudioRunDetail(runId);
+
+    expect(detail?.channelHandoffDecision).toMatchObject({
+      kind: "present",
+      decision: {
+        decision: "accepted-for-manual-channel-prep",
+        reviewedBy: "operator",
+        selectedThumbnailCandidate: { candidateId: "thumbnail-01-left" },
+      },
+      reviewPath: "production/channel_handoff_decision.md",
+    });
+    expect(detail?.nextRecommendedCommand).toContain("Private upload remains disabled");
+    expect(detail?.artifacts).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          exists: true,
+          label: "Manual channel handoff decision",
+          path: "production/channel_handoff_decision.md",
+        }),
+      ]),
+    );
+  });
+
+  it("marks stale or malformed manual channel handoff decisions as untrusted in Studio", async () => {
+    const staleRunId = await createRenderedStudioRunFixture();
+    await writeStudioChannelHandoffDecision(staleRunId);
+    const staleHandoffPath = artifactPath(staleRunId, channelHandoffJsonPath);
+    const staleHandoff = JSON.parse(await readFile(staleHandoffPath, "utf8")) as {
+      operatorChecklist: string[];
+    };
+    await writeFile(
+      staleHandoffPath,
+      JSON.stringify({
+        ...staleHandoff,
+        operatorChecklist: [...staleHandoff.operatorChecklist, "Tampered after decision."],
+      }),
+      "utf8",
+    );
+
+    const staleDetail = await getStudioRunDetail(staleRunId);
+
+    expect(staleDetail?.channelHandoffDecision).toMatchObject({
+      kind: "stale",
+      message: "Manual channel-handoff decision depends on stale channel handoff evidence.",
+    });
+    expect(staleDetail?.nextRecommendedCommand).toContain("pnpm producer channel-handoff");
+
+    const invalidRunId = await createRenderedStudioRunFixture();
+    await writeStudioChannelHandoff(invalidRunId);
+    await writeFile(artifactPath(invalidRunId, channelHandoffDecisionJsonPath), "{", "utf8");
+
+    const invalidDetail = await getStudioRunDetail(invalidRunId);
+
+    expect(invalidDetail?.channelHandoffDecision).toMatchObject({
+      kind: "invalid",
+    });
+    expect(invalidDetail?.nextRecommendedCommand).toContain("pnpm producer decide channel-handoff");
   });
 });
 

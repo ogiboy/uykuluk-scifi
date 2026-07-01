@@ -232,11 +232,12 @@
   It revalidates render-plan, voiceover, draft-render, and render-decision status; missing decisions
   are `decision-pending`, while stale/invalid evidence blocks. The bundle points to the timestamped
   review map and remains a local operator index only.
-- `producer channel-handoff` writes accepted-review `production/channel_handoff.*` with copy-ready
-  upload-prep fields, local paths, chapters, thumbnail candidates, and digest binding.
-- Studio run detail now shows the same local render-decision command templates for rendered runs
-  with current draft-render evidence and no recorded decision, and exposes one guarded local
-  `render.decide` route that writes the same durable decision evidence as the CLI. It does not
+- `producer channel-handoff` writes accepted-review `production/channel_handoff.*` and
+  `production/thumbnail_candidates.*` with copy-ready, digest-bound manual prep fields.
+- `producer decide channel-handoff` writes durable `production/channel_handoff_decision.*` evidence
+  for selected-thumbnail/manual prep surfaced without YouTube APIs or upload/publish approval.
+- Studio run detail shows local render-decision commands for rendered runs without a recorded
+  decision and exposes one guarded `render.decide` route matching CLI evidence writes. It does not
   approve upload or publish.
 - Readiness diagnostics that strictly parse and revalidate persisted cost quotes, live hard budgets,
   complete production-package integrity, and exact paid-generation cost approval when required.
@@ -437,7 +438,6 @@ Corepack/PATH before treating failures as product failures.
   handling and guarded mutation routes are not implemented yet.
 - Locale infrastructure is ready, but full translation catalogs and a language selector are
   intentionally deferred.
-- Prompt editing UI is planned but not implemented.
 - Local prompt overrides are implemented as explicit ignored `prompts/local/*.md` paths configured
   in `producer.config.json` and recorded in prompt provenance. Prompt editing UI and prompt revision
   history remain future work; tracked defaults stay read-only runtime inputs, and Studio visibility

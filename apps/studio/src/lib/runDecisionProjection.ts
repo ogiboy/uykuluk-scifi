@@ -6,6 +6,7 @@ import {
 import type { StatusWorkflowStep } from "../../../../src/stages/statusWorkflow";
 import { buildStatusWorkflowProgress } from "../../../../src/stages/statusWorkflow";
 import { evidenceNextRecommendedCommand, type StudioEvidenceSummary } from "./evidenceSummaries";
+import type { StudioChannelHandoffDecisionSummary } from "./channelHandoffDecisionSummaries";
 import type { StudioChannelHandoffSummary } from "./channelHandoffSummaries";
 import type { StudioFinalReviewBundleSummary } from "./finalReviewBundleSummaries";
 import type { StudioRenderDecisionSummary } from "./renderDecisionSummaries";
@@ -44,6 +45,7 @@ export function studioWorkflowProgress(input: {
  * @param renderDecision - The local render decision summary.
  * @param finalReviewBundle - The local final review bundle summary.
  * @param channelHandoff - The manual channel handoff summary.
+ * @param channelHandoffDecision - The manual channel handoff decision summary.
  * @returns A command or operator action for the next safe step.
  */
 export function studioNextRecommendedCommand(
@@ -53,13 +55,14 @@ export function studioNextRecommendedCommand(
   renderDecision: StudioRenderDecisionSummary,
   finalReviewBundle: StudioFinalReviewBundleSummary,
   channelHandoff: StudioChannelHandoffSummary,
+  channelHandoffDecision: StudioChannelHandoffDecisionSummary,
 ): string | null {
   if (finalReviewBundle.kind === "invalid" || finalReviewBundle.kind === "stale") {
     return finalReviewBundle.nextAction;
   }
   if (finalReviewBundle.kind === "present") {
     if (channelHandoff.kind === "present") {
-      return channelHandoff.nextAction;
+      return channelHandoffDecision.nextAction ?? channelHandoff.nextAction;
     }
     if (channelHandoff.kind === "invalid" || channelHandoff.kind === "stale") {
       return channelHandoff.nextAction;

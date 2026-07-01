@@ -18,6 +18,10 @@ import {
 } from "./finalReviewBundleStatus.js";
 import { readChannelHandoffStatus, type ChannelHandoffStatus } from "./channelHandoffStatus.js";
 import {
+  readChannelHandoffDecisionStatus,
+  type ChannelHandoffDecisionStatus,
+} from "./channelHandoffDecisionStatus.js";
+import {
   formatStatusReadiness,
   readStatusReadiness,
   type StatusReadinessSummary,
@@ -38,6 +42,7 @@ export type RunStatusSummary = {
   mediaArtifacts: ProductionMediaStatus[];
   diagnostics: RunDiagnosticSummary[];
   channelHandoff: ChannelHandoffStatus;
+  channelHandoffDecision: ChannelHandoffDecisionStatus;
   finalReviewBundle: FinalReviewBundleStatus;
   nextRecommendedCommand: string;
   readiness: StatusReadinessSummary;
@@ -66,6 +71,7 @@ export async function readRunStatus(runId: string): Promise<RunStatusSummary> {
       readFinalReviewBundleStatus(run),
     ]);
   const channelHandoff = await readChannelHandoffStatus(run, finalReviewBundle);
+  const channelHandoffDecision = await readChannelHandoffDecisionStatus(run, channelHandoff);
   const evidence = evidenceResult.kind === "present" ? evidenceResult.evidence : null;
   const blockedActions = evidenceBlockedActionMessages(evidence, run.runId);
   return {
@@ -74,6 +80,7 @@ export async function readRunStatus(runId: string): Promise<RunStatusSummary> {
     blockedActionCount: evidence ? blockedActions.length : null,
     blockedActions,
     channelHandoff,
+    channelHandoffDecision,
     diagnostics,
     evidenceMessage: "message" in evidenceResult ? evidenceResult.message : null,
     evidencePresent: Boolean(evidence),
@@ -87,6 +94,7 @@ export async function readRunStatus(runId: string): Promise<RunStatusSummary> {
       renderDecision,
       finalReviewBundle,
       channelHandoff,
+      channelHandoffDecision,
     ),
     readiness,
     recentArtifacts: run.artifacts.slice(-5).reverse(),
@@ -122,6 +130,7 @@ export function formatRunStatus(status: RunStatusSummary): string {
     ...formatRenderDecisionStatus(status.renderDecision),
     ...formatFinalReviewBundleStatus(status.finalReviewBundle),
     ...formatChannelHandoffStatus(status.channelHandoff),
+    ...formatChannelHandoffDecisionStatus(status.channelHandoffDecision),
     ...formatBlockedActions(status.blockedActions),
     ...formatDiagnostics(status.diagnostics),
     ...formatProductionMediaEvidenceForRun(status),
@@ -132,6 +141,28 @@ export function formatRunStatus(status: RunStatusSummary): string {
       ? status.recentArtifacts.map((artifact) => `- ${artifact}`)
       : ["- none"]),
   ].join("\n");
+}
+
+function formatChannelHandoffDecisionStatus(decision: ChannelHandoffDecisionStatus): string[] {
+  if (decision.kind === "missing") {
+    return decision.nextAction
+      ? [
+          "Channel handoff decision: missing",
+          `Channel handoff decision next action: ${decision.nextAction}`,
+        ]
+      : ["Channel handoff decision: not applicable"];
+  }
+  if (decision.kind === "present") {
+    return [
+      `Channel handoff decision: ${decision.decision.decision} by ${decision.decision.reviewedBy}`,
+      `Channel handoff decision artifact: ${decision.reviewPath}`,
+      `Channel handoff decision next action: ${decision.nextAction}`,
+    ];
+  }
+  return [
+    `Channel handoff decision: ${decision.kind} (${decision.message})`,
+    `Channel handoff decision next action: ${decision.nextAction}`,
+  ];
 }
 
 /**

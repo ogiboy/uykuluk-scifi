@@ -323,6 +323,9 @@ pnpm producer review-bundle --run <run_id>
 pnpm producer review-bundle --run <run_id> --json
 pnpm producer channel-handoff --run <run_id>
 pnpm producer channel-handoff --run <run_id> --json
+pnpm producer decide channel-handoff --run <run_id> --decision accepted-for-manual-channel-prep --thumbnail-candidate <candidate_id> --notes "<operator notes>" --reviewed-by operator
+pnpm producer decide channel-handoff --run <run_id> --decision needs-revision --notes "<operator notes>" --reviewed-by operator
+pnpm producer decide channel-handoff --run <run_id> --decision rejected --notes "<operator notes>" --reviewed-by operator
 ```
 
 Blocked readiness checks print and persist next-action guidance for common operator steps such as
@@ -686,6 +689,10 @@ the final review bundle is trusted and accepted for local review. It writes
 subtitle path, copy-ready title/description/tags, YouTube metadata draft, YouTube chapter draft,
 tracked thumbnail candidates, final-review digest binding, and manual checklist. It is not an upload
 command and does not approve private upload, scheduled publish, or public publish.
+`producer decide channel-handoff` then records the selected thumbnail candidate and channel-prep
+decision as durable local evidence while keeping upload and publish disabled. `producer status`,
+`producer desk`, and the read-only Studio run detail surface the recorded decision and its local
+review artifact.
 
 `thinkingMode` can be `default`, `think`, or `no_think`. Token caps are sent to Ollama as
 `num_predict` so local generation cannot run unbounded. Script generation splits the approved idea
@@ -776,6 +783,8 @@ Each run can write:
 - `production/thumbnail_candidates.json`, `production/thumbnail_candidates.md`,
   `production/channel_handoff.json`, and `production/channel_handoff.md` after accepted local final
   review and manual channel handoff generation;
+- `production/channel_handoff_decision.json` and `production/channel_handoff_decision.md` after a
+  manual channel-prep decision is recorded;
 - `costs/estimate.json` and `costs/estimate.md`;
 - `costs/ledger.jsonl`;
 - `costs/reservations.jsonl`;

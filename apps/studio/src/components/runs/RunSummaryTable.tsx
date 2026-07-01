@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { StudioRunSummary } from "@/lib/runSummaries";
 import {
   formatRunChannelHandoff,
+  formatRunChannelHandoffDecision,
   formatRunFinalReviewBundle,
   formatRunRenderDecision,
   formatRunReviewCounts,
@@ -70,6 +71,9 @@ export function RunSummaryTable({ runs }: RunSummaryTableProps) {
               <strong>{formatRunChannelHandoff(run)}</strong>
               {run.channelHandoff.kind === "present" ? (
                 <small>{run.channelHandoff.reviewPath}</small>
+              ) : null}
+              {run.channelHandoffDecision.kind === "present" ? (
+                <small>{formatRunChannelHandoffDecision(run)}</small>
               ) : null}
             </span>
             <span role='cell'>{run.nextRecommendedCommand ?? "Generate evidence from CLI"}</span>

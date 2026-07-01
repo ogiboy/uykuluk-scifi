@@ -1,5 +1,7 @@
 import type { StudioChannelHandoffSummary } from "./channelHandoffSummaries";
 import { readStudioChannelHandoffSummary } from "./channelHandoffSummaries";
+import type { StudioChannelHandoffDecisionSummary } from "./channelHandoffDecisionSummaries";
+import { readStudioChannelHandoffDecisionSummary } from "./channelHandoffDecisionSummaries";
 import type { StudioEvidenceSummary } from "./evidenceSummaries";
 import { readStudioEvidenceSummary } from "./evidenceSummaries";
 import type { StudioFinalReviewBundleSummary } from "./finalReviewBundleSummaries";
@@ -17,6 +19,7 @@ type LoadedRunRecord = RunRecord & {
 
 export type RunSummaryInputs = {
   channelHandoff: StudioChannelHandoffSummary;
+  channelHandoffDecision: StudioChannelHandoffDecisionSummary;
   evidence: StudioEvidenceSummary;
   finalReviewBundle: StudioFinalReviewBundleSummary;
   readiness: Awaited<ReturnType<typeof readStudioReadinessSnapshot>>;
@@ -49,8 +52,14 @@ export async function loadRunSummaryInputs(
     renderDecision,
   );
   const channelHandoff = await readStudioChannelHandoffSummary(root, record, finalReviewBundle);
+  const channelHandoffDecision = await readStudioChannelHandoffDecisionSummary(
+    root,
+    record,
+    channelHandoff,
+  );
   return {
     channelHandoff,
+    channelHandoffDecision,
     evidence,
     finalReviewBundle,
     readiness,

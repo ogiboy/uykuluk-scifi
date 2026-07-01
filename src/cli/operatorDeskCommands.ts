@@ -30,8 +30,22 @@ export function buildOperatorDeskCommandQueue(status: RunStatusSummary): Operato
   addMediaCommands(status, addCommand);
   addRenderDecisionCommands(status.renderDecision, addCommand);
   addFinalReviewBundleCommand(status, addCommand);
+  addChannelHandoffDecisionCommand(status, addCommand);
 
   return commands;
+}
+
+function addChannelHandoffDecisionCommand(
+  status: RunStatusSummary,
+  addCommand: (label: string, command: string | null | undefined) => void,
+): void {
+  if (
+    status.channelHandoffDecision.kind === "missing" ||
+    status.channelHandoffDecision.kind === "invalid" ||
+    status.channelHandoffDecision.kind === "stale"
+  ) {
+    addCommand("Channel handoff decision", status.channelHandoffDecision.nextAction);
+  }
 }
 
 function addFinalReviewBundleCommand(
