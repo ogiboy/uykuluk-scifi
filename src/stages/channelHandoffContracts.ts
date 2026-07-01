@@ -1,6 +1,5 @@
 import { z } from "zod";
 import type { FinalReviewBundle } from "./finalReviewBundleContracts.js";
-import { digestSchema } from "./renderPlanSchemas.js";
 
 export const channelHandoffJsonPath = "production/channel_handoff.json";
 export const channelHandoffMarkdownPath = "production/channel_handoff.md";
@@ -8,6 +7,8 @@ export const channelHandoffMarkdownPath = "production/channel_handoff.md";
 export function channelHandoffCommand(runId: string): string {
   return `pnpm producer channel-handoff --run ${runId}`;
 }
+
+const digestSchema = z.string().regex(/^[a-f0-9]{64}$/);
 
 export const channelHandoffSchema = z.strictObject({
   schemaVersion: z.literal(1),

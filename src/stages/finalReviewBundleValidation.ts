@@ -1,5 +1,4 @@
 import type { FinalReviewBundle } from "./finalReviewBundleContracts.js";
-import { channelHandoffCommand } from "./channelHandoffContracts.js";
 
 const finalReviewBundleMarkdownPath = "production/review_bundle.md";
 
@@ -93,7 +92,7 @@ export function finalReviewBundleReadyAction(bundle: FinalReviewBundle): string 
 }
 
 export function acceptedFinalReviewNextSafeAction(runId: string): string {
-  return `Prepare the manual channel handoff with ${channelHandoffCommand(runId)}. Review ${finalReviewBundleMarkdownPath} first; upload remains disabled until a future private-upload approval/config path exists.`;
+  return `Prepare the manual channel handoff with pnpm producer channel-handoff --run ${runId}. Review ${finalReviewBundleMarkdownPath} first; upload remains disabled until a future private-upload approval/config path exists.`;
 }
 
 function presentDecisionStaleReason(
