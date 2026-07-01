@@ -9,7 +9,14 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Features
+
+- add a timestamped review map to draft-render review Markdown.
+- surface the timestamped draft-render review map from the final review bundle.
+- show the timestamped draft-review map path in the Studio final review panel.
+- add manifest-bound YouTube chapter draft artifacts to local draft renders and manual channel
+  handoff.
+- add tracked thumbnail candidate artifacts to the manual channel handoff.
 
 ## v0.60.0 (2026-07-01)
 
@@ -24,12 +31,6 @@ _No unreleased changes yet._
 - show final-review and manual channel-handoff milestones in workflow progress.
 - make the manual channel handoff copy-ready with upload-prep fields, local input paths, and
   thumbnail review guidance.
-- add a timestamped review map to draft-render review Markdown.
-- surface the timestamped draft-render review map from the final review bundle.
-- show the timestamped draft-review map path in the Studio final review panel.
-- add manifest-bound YouTube chapter draft artifacts to local draft renders and manual channel
-  handoff.
-- add tracked thumbnail candidate artifacts to the manual channel handoff.
 
 ## v0.59.0 (2026-07-01)
 
