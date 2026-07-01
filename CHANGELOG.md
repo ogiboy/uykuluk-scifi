@@ -11,6 +11,16 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.61.1 (2026-07-01)
+
+### Styles
+
+- apply updated prettier output (0ed20b7)
+
+### Build
+
+- bump the tooling group with 3 updates (89bae57)
+
 ## v0.61.0 (2026-07-01)
 
 ### Features
