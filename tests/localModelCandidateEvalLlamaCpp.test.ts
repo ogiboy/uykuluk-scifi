@@ -84,4 +84,47 @@ describe("local model candidate evaluation with llama.cpp", () => {
     ]);
     expect(vi.mocked(fetch)).toHaveBeenCalledTimes(3);
   });
+
+  it("surfaces llama.cpp diagnostics failures separately from unserved candidates", async () => {
+    await writeLlmConfig({
+      mode: "llama.cpp",
+      llamaCppBaseUrl: "http://localhost:8080/private",
+      model: "served-model.gguf",
+    });
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("ECONNREFUSED")));
+
+    const report = await runLocalModelCandidateEval({
+      candidates: ["candidate-model.gguf"],
+      llmOverrides: { mode: "llama.cpp" },
+    });
+
+    expect(report).toMatchObject({
+      passed: false,
+      operatorGuidance: {
+        decision: "try-more-candidates",
+      },
+      candidates: [
+        expect.objectContaining({
+          configuredModel: "candidate-model.gguf",
+          passed: false,
+          checks: expect.arrayContaining([
+            expect.objectContaining({
+              name: "ideas-json",
+              message: expect.stringContaining("llama.cpp candidate preflight failed"),
+              status: "block",
+            }),
+            expect.objectContaining({
+              name: "script-quality-guard",
+              message: "Skipped because llama.cpp served-model diagnostics failed.",
+              status: "block",
+            }),
+          ]),
+        }),
+      ],
+    });
+    expect(report.candidates[0].checks[0].message).not.toContain(
+      "candidate model is not served by the current local server",
+    );
+    expect(vi.mocked(fetch)).toHaveBeenCalledTimes(1);
+  });
 });

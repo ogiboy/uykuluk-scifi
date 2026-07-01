@@ -119,6 +119,22 @@ describe("local model candidate evaluation", () => {
     );
   });
 
+  it("does not mark an empty candidate comparison as passing", async () => {
+    const report = await runLocalModelCandidateEval({
+      candidates: [],
+      llmOverrides: { mode: "mock" },
+    });
+
+    expect(report).toMatchObject({
+      candidates: [],
+      passed: false,
+      operatorGuidance: {
+        decision: "try-more-candidates",
+      },
+      recommendedCandidate: null,
+    });
+  });
+
   it("quotes unsafe model names in operator guidance commands", async () => {
     const report = await runLocalModelCandidateEval({
       candidates: ["mock candidate's model"],

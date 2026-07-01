@@ -82,10 +82,11 @@ describe("local model evaluation with llama.cpp", () => {
   it("redacts endpoint details from blocked eval artifacts", async () => {
     await writeLlmConfig({
       mode: "llama.cpp",
-      llamaCppBaseUrl: "http://user:local-secret@localhost:8080/private?token=local-secret",
+      llamaCppBaseUrl:
+        "http://fixture-user:fixture-password@localhost:8080/private?sample=fixture-value",
       model: "local-model.gguf",
     });
-    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("ECONNREFUSED local-secret")));
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("ECONNREFUSED fixture-password")));
 
     const report = await runLocalModelEval();
 
@@ -103,8 +104,8 @@ describe("local model evaluation with llama.cpp", () => {
       await readFile(localModelEvalJsonPath(), "utf8"),
       await readFile(localModelEvalMarkdownPath(), "utf8"),
     ]) {
-      expect(value).not.toContain("local-secret");
-      expect(value).not.toContain("user:");
+      expect(value).not.toContain("fixture-password");
+      expect(value).not.toContain("fixture-user");
       expect(value).not.toContain("/private");
     }
   });

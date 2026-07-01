@@ -30,6 +30,7 @@ type LlamaCppChatCompletionResponse = {
 export type LlamaCppDiagnostic = {
   available: boolean;
   baseUrl: string;
+  kind: "available" | "diagnostic-failure" | "unserved";
   model: string;
   servedModels: string[];
   message: string;
@@ -60,6 +61,7 @@ export class LlamaCppProvider implements LlmProvider {
       return {
         available: false,
         baseUrl: displayBaseUrl,
+        kind: "diagnostic-failure",
         model: this.defaultModel,
         servedModels: [],
         message: `llama.cpp server unavailable at ${displayBaseUrl} (${transportFailureReason(
@@ -71,6 +73,7 @@ export class LlamaCppProvider implements LlmProvider {
       return {
         available: false,
         baseUrl: displayBaseUrl,
+        kind: "diagnostic-failure",
         model: this.defaultModel,
         servedModels: [],
         message: `llama.cpp diagnostics failed (${response.status} ${response.statusText || "HTTP error"}).`,
@@ -85,6 +88,7 @@ export class LlamaCppProvider implements LlmProvider {
       return {
         available,
         baseUrl: displayBaseUrl,
+        kind: available ? "available" : "unserved",
         model: this.defaultModel,
         servedModels,
         message: available
@@ -95,6 +99,7 @@ export class LlamaCppProvider implements LlmProvider {
       return {
         available: false,
         baseUrl: displayBaseUrl,
+        kind: "diagnostic-failure",
         model: this.defaultModel,
         servedModels: [],
         message: `llama.cpp diagnostics returned invalid JSON: ${

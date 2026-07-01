@@ -12,6 +12,10 @@ import {
 } from "./localModelEvalConfig.js";
 import { LocalModelEvalReport, runLocalModelEvalWithConfig } from "./localModelEval.js";
 import { renderLocalModelCandidateEvalMarkdown } from "./localModelCandidateEvalFormatting.js";
+import {
+  llamaCppDiagnosticFailureReport,
+  unservedLlamaCppCandidateReport,
+} from "./localModelCandidateEvalReports.js";
 
 export type LocalModelCandidateEvalOptions = {
   candidates: string[];
@@ -42,6 +46,16 @@ export type LocalModelCandidateRecommendation = {
   durationMs: number;
   passedChecks: number;
 };
+
+type ServedLlamaCppModelsResult =
+  | {
+      models: string[];
+      status: "pass";
+    }
+  | {
+      message: string;
+      status: "block";
+    };
 
 /**
  * Gets the absolute path to the local model candidate evaluation JSON report.
@@ -77,7 +91,7 @@ export async function runLocalModelCandidateEval(
   );
   const candidates = await evaluateCandidates(config, baseOverrides, options.candidates);
   const recommendedCandidate = selectRecommendedLocalModelCandidate(candidates);
-  const passed = candidates.every((candidate) => candidate.passed);
+  const passed = candidates.length > 0 && candidates.every((candidate) => candidate.passed);
   const report: LocalModelCandidateEvalReport = {
     baseOverrides,
     candidates,
@@ -109,9 +123,22 @@ async function evaluateCandidates(
   const uniqueCandidates = Array.from(new Set(candidates));
   const servedLlamaCppModels =
     config.providers.llm.mode === "llama.cpp" ? await readServedLlamaCppModels(config) : null;
+  if (servedLlamaCppModels?.status === "block") {
+    return uniqueCandidates.map((candidate) =>
+      llamaCppDiagnosticFailureReport(
+        config,
+        baseOverrides,
+        candidate,
+        servedLlamaCppModels.message,
+      ),
+    );
+  }
   const reports: LocalModelEvalReport[] = [];
   for (const candidate of uniqueCandidates) {
-    if (servedLlamaCppModels && !servedLlamaCppModels.includes(candidate)) {
+    if (
+      servedLlamaCppModels?.status === "pass" &&
+      !servedLlamaCppModels.models.includes(candidate)
+    ) {
       reports.push(unservedLlamaCppCandidateReport(config, baseOverrides, candidate));
       continue;
     }
@@ -134,48 +161,18 @@ async function evaluateCandidates(
   return reports;
 }
 
-async function readServedLlamaCppModels(config: ProducerConfig): Promise<string[] | null> {
+async function readServedLlamaCppModels(
+  config: ProducerConfig,
+): Promise<ServedLlamaCppModelsResult> {
   const diagnostic = await new LlamaCppProvider(
     config.providers.llm.llamaCppBaseUrl,
     config.providers.llm.model,
     config.providers.llm.requestTimeoutMs,
   ).diagnose();
-  return diagnostic.servedModels;
-}
-
-function unservedLlamaCppCandidateReport(
-  config: ProducerConfig,
-  baseOverrides: string[],
-  candidate: string,
-): LocalModelEvalReport {
-  const message =
-    "llama.cpp candidate model is not served by the current local server. Start llama-server with this GGUF, then rerun candidate eval.";
-  return {
-    appliedOverrides: [...baseOverrides, "model"],
-    checks: [
-      {
-        message,
-        name: "ideas-json",
-        status: "block",
-      },
-      {
-        message,
-        name: "script-section-json",
-        status: "block",
-      },
-      {
-        message: "Skipped because the llama.cpp candidate model is not served.",
-        name: "script-quality-guard",
-        status: "block",
-      },
-    ],
-    configSource: baseOverrides.length > 0 ? "cli-overrides" : "project",
-    configuredModel: candidate,
-    createdAt: nowIso(),
-    durationMs: 0,
-    passed: false,
-    providerMode: config.providers.llm.mode,
-  };
+  if (diagnostic.kind === "diagnostic-failure") {
+    return { message: diagnostic.message, status: "block" };
+  }
+  return { models: diagnostic.servedModels, status: "pass" };
 }
 
 /**
