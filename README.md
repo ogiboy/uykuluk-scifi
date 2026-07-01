@@ -349,10 +349,13 @@ Ollama/`llama.cpp` candidates without mutating `producer.config.json`. The repor
 `diagnostics/local_model_eval.json` and `.md` with hashes, token/duration metadata, applied override
 names, and parser results. Use `local-model-candidates` with repeated `--candidate` values for a
 single comparison report at `diagnostics/local_model_candidates_eval.*`, including a deterministic
-recommended passing candidate and next operator command when one exists. Raw provider text is
-intentionally not persisted. For automation that parses `--json` output through pnpm, prefer
-`pnpm --silent producer ... --json`; blocked evaluations still exit nonzero, but pnpm lifecycle text
-stays out of stdout.
+recommended passing candidate and next operator command when one exists. In `llama.cpp` mode, the
+candidate command first checks `/v1/models`; a GGUF candidate that is not currently served is
+blocked without spending time on generation. If at least one candidate passes while another blocks,
+the report still exits nonzero and labels the decision as a blocked comparison with a recommended
+single-model follow-up command. Raw provider text is intentionally not persisted. For automation
+that parses `--json` output through pnpm, prefer `pnpm --silent producer ... --json`; blocked
+evaluations still exit nonzero, but pnpm lifecycle text stays out of stdout.
 
 Manual analytics feedback:
 
@@ -669,7 +672,9 @@ slot-specific, while the script-section contract parsed; this keeps Qwen as regr
 rather than the recommended production default. `producer eval local-model-candidates` runs the same
 checks for repeated `--candidate` model names and produces a local comparison report so operators
 can compare served Ollama or `llama.cpp` candidates without editing config between attempts. The
-comparison report recommends only candidates that pass all parser-contract checks.
+comparison report recommends only candidates that pass all parser-contract checks. `llama.cpp`
+candidate comparisons are one-loaded-server checks: start `llama-server` with the GGUF under test,
+or the candidate is blocked as not served before generation.
 
 Run `pnpm producer doctor` before starting production work. Mock mode passes without network access.
 Ollama mode checks `/api/tags`; `llama.cpp` mode checks `/v1/models`. Both use bounded timeouts and

@@ -149,11 +149,15 @@ export class LlamaCppProvider implements LlmProvider {
     if (raw.error) {
       throw new Error("llama.cpp provider error.");
     }
+    const servedModel = raw.model ?? model;
+    if (servedModel !== model) {
+      throw new Error("llama.cpp served model mismatch.");
+    }
     const text = raw.choices?.[0]?.message?.content ?? raw.choices?.[0]?.text ?? "";
     return {
       text,
       provider: "llama.cpp",
-      model: raw.model ?? model,
+      model: servedModel,
       inputTokensApprox:
         raw.usage?.prompt_tokens ?? approximateTokens(`${input.system ?? ""}\n${input.prompt}`),
       outputTokensApprox: raw.usage?.completion_tokens ?? approximateTokens(text),

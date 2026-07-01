@@ -108,4 +108,44 @@ describe("local model evaluation with llama.cpp", () => {
       expect(value).not.toContain("/private");
     }
   });
+
+  it("blocks eval reports when llama.cpp serves a different model than requested", async () => {
+    await writeLlmConfig({
+      mode: "llama.cpp",
+      llamaCppBaseUrl: "http://localhost:8080",
+      model: "requested-model.gguf",
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockImplementation(() =>
+        Promise.resolve(
+          jsonResponse({
+            choices: [{ message: { content: generateMockIdeasText() } }],
+            model: "served-model.gguf",
+          }),
+        ),
+      ),
+    );
+
+    const report = await runLocalModelEval();
+
+    expect(report.passed).toBe(false);
+    expect(report.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: "ideas-json",
+          status: "block",
+          message: "llama.cpp provider served a different model than requested.",
+        }),
+        expect.objectContaining({
+          name: "script-section-json",
+          status: "block",
+          message: "llama.cpp provider served a different model than requested.",
+        }),
+      ]),
+    );
+    expect(JSON.stringify(report)).not.toContain("served-model.gguf");
+    expect(await readFile(localModelEvalJsonPath(), "utf8")).not.toContain("served-model.gguf");
+    expect(await readFile(localModelEvalMarkdownPath(), "utf8")).not.toContain("served-model.gguf");
+  });
 });

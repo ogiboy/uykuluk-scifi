@@ -64,8 +64,9 @@ const blockedCandidateReport = {
   passed: false,
   providerMode: "mock",
   operatorGuidance: {
-    decision: "candidate-ready",
-    message: "A candidate passed the parser-contract checks.",
+    decision: "candidate-ready-with-blockers",
+    message:
+      "At least one candidate passed, but the comparison still has blocked candidates. Review blocked rows before changing producer.config.json.",
     nextCommand: "pnpm producer eval local-model --llm-mode mock --model mock-deterministic",
   },
   recommendedCandidate: {

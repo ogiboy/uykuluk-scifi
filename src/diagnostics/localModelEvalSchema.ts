@@ -32,7 +32,7 @@ export const localModelCandidateRecommendationSchema = z.object({
 });
 
 export const localModelCandidateOperatorGuidanceSchema = z.object({
-  decision: z.enum(["candidate-ready", "try-more-candidates"]),
+  decision: z.enum(["candidate-ready", "candidate-ready-with-blockers", "try-more-candidates"]),
   message: z.string(),
   nextCommand: z.string(),
 });

@@ -44,7 +44,7 @@ describe("local model candidate evaluation", () => {
       passed: false,
       providerMode: "mock",
       operatorGuidance: {
-        decision: "candidate-ready",
+        decision: "candidate-ready-with-blockers",
         nextCommand: "pnpm producer eval local-model --llm-mode mock --model mock-deterministic",
       },
       recommendedCandidate: {
@@ -74,6 +74,9 @@ describe("local model candidate evaluation", () => {
     );
     expect(formatLocalModelCandidateEvalConsole(report)).toContain(
       "Next command: pnpm producer eval local-model --llm-mode mock --model mock-deterministic",
+    );
+    expect(formatLocalModelCandidateEvalConsole(report)).toContain(
+      "At least one candidate passed, but the comparison still has blocked candidates.",
     );
     expect(renderLocalModelCandidateEvalMarkdown(report)).toContain("mock-invalid-script-json");
     expect(renderLocalModelCandidateEvalMarkdown(report)).toContain(
@@ -125,6 +128,22 @@ describe("local model candidate evaluation", () => {
     expect(report.operatorGuidance.nextCommand).toBe(
       `pnpm producer eval local-model --llm-mode mock --model 'mock candidate'"'"'s model'`,
     );
+  });
+
+  it("marks guidance fully ready only when every candidate passes", async () => {
+    const report = await runLocalModelCandidateEval({
+      candidates: ["mock-deterministic"],
+      llmOverrides: { mode: "mock" },
+    });
+
+    expect(report).toMatchObject({
+      passed: true,
+      operatorGuidance: {
+        decision: "candidate-ready",
+        message:
+          "All compared candidates passed the parser-contract checks. Review the report, then run a single-model eval before changing producer.config.json.",
+      },
+    });
   });
 
   it("ranks passing candidate recommendations deterministically", () => {
