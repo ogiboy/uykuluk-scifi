@@ -18,8 +18,9 @@ const summary = summaries.find((candidate) => candidate.runId === runId);
 assert(summary !== undefined, "Studio run index includes rendered run.");
 assert(summary.state === "RENDERED", "Studio run index shows rendered state.");
 assert(
-  summary.nextRecommendedCommand?.includes("Upload remains disabled") === true,
-  "Studio run index exposes the recorded render decision next safe action.",
+  summary.nextRecommendedCommand?.includes("Manually review production/channel_handoff.md") ===
+    true,
+  "Studio run index exposes manual channel handoff review as the next safe action.",
 );
 assert(
   summary.renderDecision.kind === "present",
@@ -33,8 +34,8 @@ const detail = await getStudioRunDetail(runId);
 assert(detail !== null, "Studio run detail loads rendered run.");
 assert(detail.state === "RENDERED", "Studio run detail shows rendered state.");
 assert(
-  detail.nextRecommendedCommand?.includes("Upload remains disabled") === true,
-  "Studio run detail exposes the recorded render decision next safe action.",
+  detail.nextRecommendedCommand?.includes("Manually review production/channel_handoff.md") === true,
+  "Studio run detail exposes manual channel handoff review as the next safe action.",
 );
 assert(
   detail.renderDecision.kind === "present",
@@ -82,6 +83,27 @@ assert(
     (item) => item.path === "production/render/render_decision.md" && item.exists,
   ),
   "Studio artifact previews include render decision markdown.",
+);
+assert(
+  detail.artifacts.some((item) => item.path === "production/channel_handoff.md" && item.exists),
+  "Studio artifact previews include manual channel handoff markdown.",
+);
+assert(
+  detail.channelHandoff.kind === "present",
+  "Studio run detail surfaces completed manual channel handoff.",
+);
+assert(
+  detail.nextRecommendedCommand?.includes("Manually review production/channel_handoff.md") === true,
+  "Studio next action moves to manual channel handoff review after package generation.",
+);
+assert(
+  detail.workflowProgress.some(
+    (step) =>
+      step.label === "Manual channel handoff" &&
+      step.status === "done" &&
+      step.detail.includes("ready for local operator review"),
+  ),
+  "Studio workflow progress marks manual channel handoff done.",
 );
 
 const analytics = await getStudioAnalyticsOverview();

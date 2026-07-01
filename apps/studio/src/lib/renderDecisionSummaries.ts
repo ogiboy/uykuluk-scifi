@@ -11,7 +11,7 @@ import {
 } from "../../../../src/stages/renderDecisionContracts";
 import type { EvidenceStatus } from "../../../../src/stages/statusMediaSummary";
 import { studioRunFilePath } from "./runFilePaths";
-import type { RunRecord } from "./runSummaries";
+import type { RunRecord } from "./runRecordTypes";
 
 export type StudioRenderDecisionSummary =
   | { kind: "missing"; message: string; nextAction: string | null }

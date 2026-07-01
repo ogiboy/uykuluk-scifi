@@ -41,21 +41,11 @@ export async function readFinalReviewBundleStatus(
   run: RunRecord,
 ): Promise<FinalReviewBundleStatus> {
   const nextAction = run.state === "RENDERED" ? finalReviewBundleCommand(run.runId) : null;
+  let bundle: FinalReviewBundle;
   try {
-    const bundle = finalReviewBundleSchema.parse(
+    bundle = finalReviewBundleSchema.parse(
       await readJsonFile<unknown>(artifactPath(run.runId, finalReviewBundleJsonPath)),
     );
-    const staleReason = await finalReviewBundleStaleReason(run, bundle);
-    if (staleReason) {
-      return stale(staleReason, run.runId);
-    }
-    return {
-      bundle,
-      kind: "present",
-      message: `Final review bundle ready: ${bundle.status}.`,
-      nextAction: finalReviewBundleReadyAction(bundle),
-      reviewPath: finalReviewBundleMarkdownPath,
-    };
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") {
       return { kind: "missing", nextAction };
@@ -68,6 +58,27 @@ export async function readFinalReviewBundleStatus(
       nextAction: finalReviewBundleCommand(run.runId),
     };
   }
+  try {
+    const staleReason = await finalReviewBundleStaleReason(run, bundle);
+    if (staleReason) {
+      return stale(staleReason, run.runId);
+    }
+  } catch (error) {
+    return {
+      kind: "invalid",
+      message: `Final review bundle dependency check failed: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+      nextAction: finalReviewBundleCommand(run.runId),
+    };
+  }
+  return {
+    bundle,
+    kind: "present",
+    message: `Final review bundle ready: ${bundle.status}.`,
+    nextAction: finalReviewBundleReadyAction(bundle),
+    reviewPath: finalReviewBundleMarkdownPath,
+  };
 }
 
 async function finalReviewBundleStaleReason(

@@ -91,7 +91,7 @@ describe("local final review bundle", () => {
         reviewedBy: "operator",
         reviewCommand: `pnpm producer review render-decision --run ${runId}`,
       },
-      nextSafeAction: expect.stringContaining(`pnpm producer review-bundle --run ${runId}`),
+      nextSafeAction: expect.stringContaining(`pnpm producer channel-handoff --run ${runId}`),
     });
     expect(bundle.artifacts.map((artifact) => artifact.path)).toContain(
       "production/render/render_decision.md",
@@ -157,7 +157,7 @@ describe("local final review bundle", () => {
       bundle: { status: "accepted-for-local-review" },
       reviewPath: "production/review_bundle.md",
     });
-    expect(status.nextRecommendedCommand).toContain("Local final review handoff is ready");
+    expect(status.nextRecommendedCommand).toContain(`pnpm producer channel-handoff --run ${runId}`);
     expect(status.nextRecommendedCommand).not.toContain("producer review-bundle");
     expect(statusOutput).toContain("Final review bundle: accepted-for-local-review");
     expect(statusOutput).toContain("Final review bundle artifact: production/review_bundle.md");

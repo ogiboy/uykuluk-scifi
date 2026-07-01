@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { getStudioRunDetail } from "../apps/studio/src/lib/runSummaries";
+import type { StatusWorkflowStep } from "../src/stages/statusWorkflow";
 import {
+  writeStudioChannelHandoff,
   writeStudioFinalReviewBundle,
   writeStudioRenderDecision,
 } from "./studioRenderDecisionFixtures";
@@ -14,20 +16,12 @@ describe("Studio workflow progress", () => {
     const runId = await createRenderedStudioRunFixture();
     const detail = await getStudioRunDetail(runId);
 
-    expect(detail?.workflowProgress).toEqual(
-      expect.arrayContaining([
-        {
-          detail: "Verified by current evidence.",
-          label: "Draft render",
-          status: "done",
-        },
-        {
-          detail: "Record the operator decision after local draft review.",
-          label: "Operator decision",
-          status: "current",
-        },
-      ]),
-    );
+    expectWorkflowSteps(detail?.workflowProgress, [
+      ["Draft render", "done"],
+      ["Operator decision", "current"],
+      ["Final review handoff", "pending"],
+      ["Manual channel handoff", "pending"],
+    ]);
   });
 
   it("marks Studio workflow operator decision done after a trusted local decision is recorded", async () => {
@@ -35,21 +29,18 @@ describe("Studio workflow progress", () => {
     const decision = await writeStudioRenderDecision(runId, "accepted-for-local-review");
     const detail = await getStudioRunDetail(runId);
 
-    expect(detail?.nextRecommendedCommand).toBe(decision.nextSafeAction);
+    expect(decision.nextSafeAction).toContain(`pnpm producer review-bundle --run ${runId}`);
+    expect(detail?.nextRecommendedCommand).toBe(`pnpm producer review-bundle --run ${runId}`);
     expect(detail?.renderDecision).toMatchObject({
       kind: "present",
       message: "Render decision recorded: accepted-for-local-review.",
       reviewCommand: `pnpm producer review render-decision --run ${runId}`,
     });
-    expect(detail?.workflowProgress).toEqual(
-      expect.arrayContaining([
-        {
-          detail: "Render decision recorded: accepted-for-local-review.",
-          label: "Operator decision",
-          status: "done",
-        },
-      ]),
-    );
+    expectWorkflowSteps(detail?.workflowProgress, [
+      ["Operator decision", "done"],
+      ["Final review handoff", "current"],
+      ["Manual channel handoff", "pending"],
+    ]);
   });
 
   it("surfaces the local final review bundle after operator decision handoff", async () => {
@@ -62,7 +53,9 @@ describe("Studio workflow progress", () => {
       bundle: { status: "accepted-for-local-review" },
       reviewPath: "production/review_bundle.md",
     });
-    expect(detail?.nextRecommendedCommand).toContain("Local final review handoff is ready");
+    expect(detail?.nextRecommendedCommand).toContain(
+      `pnpm producer channel-handoff --run ${runId}`,
+    );
     expect(detail?.nextRecommendedCommand).not.toContain("producer review-bundle");
     expect(detail?.artifacts).toEqual(
       expect.arrayContaining([
@@ -73,5 +66,54 @@ describe("Studio workflow progress", () => {
         }),
       ]),
     );
+    expectWorkflowSteps(detail?.workflowProgress, [
+      ["Operator decision", "done"],
+      ["Final review handoff", "done"],
+      ["Manual channel handoff", "current"],
+    ]);
+  });
+
+  it("surfaces the completed manual channel handoff as the final local review action", async () => {
+    const runId = await createRenderedStudioRunFixture();
+    await writeStudioChannelHandoff(runId);
+    const detail = await getStudioRunDetail(runId);
+
+    expect(detail?.channelHandoff).toMatchObject({
+      kind: "present",
+      handoff: { status: "ready-for-manual-channel-review" },
+      reviewPath: "production/channel_handoff.md",
+    });
+    expect(detail?.nextRecommendedCommand).toContain(
+      "Manually review production/channel_handoff.md",
+    );
+    expect(detail?.nextRecommendedCommand).not.toContain("producer channel-handoff");
+    expect(detail?.artifacts).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          exists: true,
+          label: "Manual channel handoff",
+          path: "production/channel_handoff.md",
+        }),
+      ]),
+    );
+    expectWorkflowSteps(detail?.workflowProgress, [
+      ["Operator decision", "done"],
+      ["Final review handoff", "done"],
+      ["Manual channel handoff", "done"],
+    ]);
   });
 });
+
+function expectWorkflowSteps(
+  steps: readonly StatusWorkflowStep[] | undefined,
+  expected: readonly (readonly [label: string, status: StatusWorkflowStep["status"]])[],
+): void {
+  expect(steps).toBeDefined();
+  const actual = steps ?? [];
+  const labels = actual.map((step) => step.label);
+  const start = labels.indexOf(expected[0]?.[0] ?? "");
+  expect(start).toBeGreaterThanOrEqual(0);
+  expect(
+    actual.slice(start, start + expected.length).map((step) => [step.label, step.status]),
+  ).toEqual(expected);
+}

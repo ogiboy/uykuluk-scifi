@@ -1,5 +1,6 @@
 import { productionPackageManifestPath } from "./productionPackageIntegrity.js";
 import type { FinalReviewBundle } from "./finalReviewBundleContracts.js";
+import { acceptedFinalReviewNextSafeAction } from "./finalReviewBundleValidation.js";
 
 type FinalReviewArtifact = FinalReviewBundle["artifacts"][number];
 type FinalReviewArtifactSpec = readonly [
@@ -106,8 +107,17 @@ export function finalReviewSummary(decision: FinalReviewBundle["renderDecision"]
   return "The local draft render was rejected and should not be used for channel review.";
 }
 
-export function finalReviewNextSafeAction(decision: FinalReviewBundle["renderDecision"]): string {
-  return decision.kind === "missing" ? decision.nextAction : decision.nextSafeAction;
+export function finalReviewNextSafeAction(
+  runId: string,
+  decision: FinalReviewBundle["renderDecision"],
+): string {
+  if (decision.kind === "missing") {
+    return decision.nextAction;
+  }
+  if (decision.decision === "accepted-for-local-review") {
+    return acceptedFinalReviewNextSafeAction(runId);
+  }
+  return decision.nextSafeAction;
 }
 
 export function finalReviewBlockedActions(decision: FinalReviewBundle["renderDecision"]): string[] {

@@ -18,7 +18,7 @@ import {
 import type { EvidenceStatus } from "../../../../src/stages/statusMediaSummary";
 import { studioRunFilePath } from "./runFilePaths";
 import type { StudioRenderDecisionSummary } from "./renderDecisionSummaries";
-import type { RunRecord } from "./runSummaries";
+import type { RunRecord } from "./runRecordTypes";
 
 const draftRenderDigestSchema = z.looseObject({
   digest: z.string().regex(/^[a-f0-9]{64}$/),
