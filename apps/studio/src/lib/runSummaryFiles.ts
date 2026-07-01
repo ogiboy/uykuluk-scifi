@@ -6,7 +6,7 @@ import {
 } from "../../../../src/stages/runDiagnosticSummaryContracts";
 import { isValidRunId } from "../../../../src/core/runId";
 import { studioRunFilePath } from "./runFilePaths";
-import type { RunRecord, StudioRunState } from "./runSummaries";
+import type { RunRecord, StudioRunState } from "./runRecordTypes";
 
 export type ValidRunRecord = RunRecord & {
   runId: string;

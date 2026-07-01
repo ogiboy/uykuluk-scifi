@@ -39,3 +39,16 @@ export function formatRunFinalReviewBundle(
   }
   return run.finalReviewBundle.kind;
 }
+
+/**
+ * Formats the manual channel-handoff status for compact run surfaces.
+ *
+ * @param run - The run summary containing the channel-handoff state.
+ * @returns Operator-facing channel-handoff copy for list and latest-run cards.
+ */
+export function formatRunChannelHandoff(run: Pick<StudioRunSummary, "channelHandoff">): string {
+  if (run.channelHandoff.kind === "present") {
+    return run.channelHandoff.handoff.status;
+  }
+  return run.channelHandoff.kind;
+}

@@ -50,7 +50,7 @@ export async function createFinalReviewBundle(runId: string): Promise<FinalRevie
   const draftRender = await reviewDraftRender(run.runId);
   const renderDecision = await finalReviewDecision(run);
   const bundle = finalReviewBundleSchema.parse({
-    schemaVersion: 1,
+    schemaVersion: 2,
     runId: run.runId,
     createdAt: nowIso(),
     status: finalReviewStatus(renderDecision),
@@ -77,6 +77,7 @@ export async function createFinalReviewBundle(runId: string): Promise<FinalRevie
       sha256: draftRender.output.sha256,
       durationSeconds: draftRender.output.durationSeconds,
       reviewCommand: draftRender.ffmpeg.reviewCommand,
+      chapters: draftRender.chapterDraft,
       media: {
         audioCodec: draftRender.mediaProbe.audio.codecName,
         videoCodec: draftRender.mediaProbe.video.codecName,
@@ -86,7 +87,7 @@ export async function createFinalReviewBundle(runId: string): Promise<FinalRevie
     },
     renderDecision,
     artifacts: finalReviewArtifacts(renderDecision),
-    nextSafeAction: finalReviewNextSafeAction(renderDecision),
+    nextSafeAction: finalReviewNextSafeAction(run.runId, renderDecision),
     blockedActions: finalReviewBlockedActions(renderDecision),
   });
   run = await writeRunJson(run, "final-review-bundle", finalReviewBundleJsonPath, bundle);

@@ -47,9 +47,7 @@ export function registerDecisionCommands(program: Command, wrap: WrapDecisionAct
         }
         console.log(`Render decision recorded: ${record.decision}`);
         console.log("Decision artifact: production/render/render_decision.md");
-        if (record.decision === "accepted-for-local-review") {
-          console.log(`Next safe action: ${record.nextSafeAction}`);
-        }
+        console.log(`Next safe action: ${record.nextSafeAction}`);
         console.log("Upload and publish remain disabled.");
       }),
     );

@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { readFile, stat } from "node:fs/promises";
+import { z } from "zod";
 import { artifactPath } from "../core/artifacts.js";
 import { SafeExitError } from "../core/errors.js";
 import { RunRecord } from "../core/state.js";
@@ -26,6 +27,19 @@ export type DraftRenderValidationResult =
   | { status: "missing"; requiredArtifacts: readonly string[] }
   | ({ status: "pass" } & ValidatedDraftRenderManifest)
   | { status: "block"; path: string; message: string };
+
+const draftRenderChapterDraftSchema = z.strictObject({
+  schemaVersion: z.literal(1),
+  runId: z.string().min(1),
+  source: z.strictObject({
+    draftRenderPath: z.string().min(1),
+    draftRenderSha256: z.string().regex(/^[a-f0-9]{64}$/),
+  }),
+  chapters: z.array(z.unknown()),
+  copyBlock: z.string(),
+  operatorNotes: z.array(z.string()),
+  blockedActions: z.array(z.string()),
+});
 
 /**
  * Reads draft render validation state without exposing untrusted persisted commands.
@@ -83,8 +97,32 @@ export async function readValidatedDraftRenderManifest(
   if (digest !== manifest.output.sha256 || info.size !== manifest.output.bytes) {
     throw new SafeExitError("Draft render output does not match manifest.");
   }
+  await assertDraftRenderChapterDrafts(run, manifest);
   await assertDraftRenderInputs(run, manifest);
   return { digest, manifest: trustedReviewManifest(run.runId, manifest) };
+}
+
+async function assertDraftRenderChapterDrafts(
+  run: RunRecord,
+  manifest: DraftRenderManifest,
+): Promise<void> {
+  const json = await readFile(artifactPath(run.runId, manifest.chapterDraft.jsonPath));
+  const markdown = await readFile(artifactPath(run.runId, manifest.chapterDraft.markdownPath));
+  if (createHash("sha256").update(json).digest("hex") !== manifest.chapterDraft.jsonSha256) {
+    throw new SafeExitError("Draft render chapter JSON does not match manifest.");
+  }
+  if (
+    createHash("sha256").update(markdown).digest("hex") !== manifest.chapterDraft.markdownSha256
+  ) {
+    throw new SafeExitError("Draft render chapter Markdown does not match manifest.");
+  }
+  const chapterDraft = draftRenderChapterDraftSchema.parse(JSON.parse(json.toString("utf8")));
+  if (chapterDraft.runId !== run.runId) {
+    throw new SafeExitError("Draft render chapter JSON run id does not match this run.");
+  }
+  if (chapterDraft.source.draftRenderSha256 !== manifest.output.sha256) {
+    throw new SafeExitError("Draft render chapter JSON does not match draft render output.");
+  }
 }
 
 async function assertDraftRenderInputs(

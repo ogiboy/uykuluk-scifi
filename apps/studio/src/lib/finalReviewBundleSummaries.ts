@@ -5,6 +5,7 @@ import {
   finalReviewBundleJsonPath,
   finalReviewBundleMarkdownPath,
   finalReviewBundleSchema,
+  isLegacyFinalReviewBundle,
   type FinalReviewBundle,
 } from "../../../../src/stages/finalReviewBundleContracts";
 import {
@@ -18,7 +19,7 @@ import {
 import type { EvidenceStatus } from "../../../../src/stages/statusMediaSummary";
 import { studioRunFilePath } from "./runFilePaths";
 import type { StudioRenderDecisionSummary } from "./renderDecisionSummaries";
-import type { RunRecord } from "./runSummaries";
+import type { RunRecord } from "./runRecordTypes";
 
 const draftRenderDigestSchema = z.looseObject({
   digest: z.string().regex(/^[a-f0-9]{64}$/),
@@ -62,7 +63,11 @@ export async function readStudioFinalReviewBundleSummary(
   }
 
   try {
-    const bundle = finalReviewBundleSchema.parse(JSON.parse(await readFile(target, "utf8")));
+    const rawBundle = JSON.parse(await readFile(target, "utf8")) as unknown;
+    if (isLegacyFinalReviewBundle(rawBundle)) {
+      return staleBundle(runId, "Final review bundle uses legacy schema version 1; regenerate it.");
+    }
+    const bundle = finalReviewBundleSchema.parse(rawBundle);
     const staleReason = finalReviewBundleStaleReason(record, evidence, renderDecision, bundle);
     if (staleReason) {
       return staleBundle(runId, staleReason);

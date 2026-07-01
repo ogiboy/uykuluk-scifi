@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Box, render, Text, useApp, useInput } from "ink";
+import { channelHandoffLines } from "./operatorDeskChannelHandoff.js";
 import { finalReviewBundleLines } from "./operatorDeskFinalReview.js";
 import {
   formatOperatorDeskBlockedActionLines,
@@ -147,6 +148,10 @@ function SelectedRun({ run }: { run: OperatorDeskSelectedRun }): React.ReactElem
     ...finalReviewBundleLines(run.finalReviewBundle).map((line) =>
       React.createElement(Text, { key: `final-review:${line}` }, line),
     ),
+    React.createElement(Text, null, `Manual channel handoff: ${run.channelHandoffStatus}`),
+    ...channelHandoffLines(run.channelHandoff).map((line) =>
+      React.createElement(Text, { key: `channel-handoff:${line}` }, line),
+    ),
     React.createElement(
       Text,
       null,
@@ -199,6 +204,7 @@ function formatRecentRunLine(run: OperatorDeskRun, selectionMarker: string): str
     run.readinessStatus,
     `decision:${run.renderDecisionStatus}`,
     `bundle:${run.finalReviewBundleStatus}`,
+    `channel:${run.channelHandoffStatus}`,
   ].join("  ");
 }
 

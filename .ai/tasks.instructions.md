@@ -95,12 +95,17 @@
   source-frame cadence, render approval ID/reference plus voiceover mode/quality/candidate
   classification preserved from approval through evidence, fail-closed `ffprobe` media validation,
   stable read-only FFmpeg review command evidence, and an operator-readable
-  `production/render/draft_review.md` checklist plus render/review CLI handoffs with exact local
-  `producer decide render` command templates, read-only `producer review render-decision` evidence
-  readback, local-only decision guidance surfaced through CLI status, evidence Markdown, and
-  read-only Studio panels, plus `producer review-bundle` as the local final handoff index tying
+  `production/render/draft_review.md` checklist plus manifest-bound
+  `production/render/youtube_chapters.*` upload-prep drafts and render/review CLI handoffs with
+  exact local `producer decide render` command templates, read-only
+  `producer review render-decision` evidence readback, local-only decision guidance surfaced through
+  CLI status, evidence Markdown, and read-only Studio panels, plus `producer review-bundle` as the
+  local final handoff index tying
   script/package/render-plan/voiceover/draft-render/evidence/readiness/decision artifacts together
-  without approving upload or publish.
+  without approving upload or publish. `producer channel-handoff` then prepares a manual-only local
+  channel checklist from an accepted final review bundle, binding the MP4, subtitles, metadata,
+  chapter draft, thumbnail candidates, and final-review digest without calling YouTube APIs or
+  granting upload/publish approval.
 - Use `producer eval local-model` before more Qwen-specific tuning. Compare configured local
   candidates through the same idea/script gates, receipt evidence, JSON compliance, repetition
   checks, Turkish label discipline, and operator quality review. Prefer eval-only CLI overrides for

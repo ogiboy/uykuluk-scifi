@@ -1,6 +1,5 @@
 import { loadRun } from "../core/runStore.js";
-import type { RunRecord, RunState } from "../core/state.js";
-import { materializeRunCommand, staticEvidenceNextCommand } from "./evidenceNextCommand.js";
+import type { RunRecord } from "../core/state.js";
 import type { RunDiagnosticSummary } from "./runDiagnosticSummaryContracts.js";
 import { readRunDiagnosticSummaries } from "./runDiagnosticSummaries.js";
 import {
@@ -17,13 +16,16 @@ import {
   readFinalReviewBundleStatus,
   type FinalReviewBundleStatus,
 } from "./finalReviewBundleStatus.js";
+import { readChannelHandoffStatus, type ChannelHandoffStatus } from "./channelHandoffStatus.js";
 import {
   formatStatusReadiness,
   readStatusReadiness,
   type StatusReadinessSummary,
 } from "./statusReadiness.js";
 import { formatFinalReviewBundleStatus } from "./statusFinalReviewBundle.js";
+import { formatChannelHandoffStatus } from "./statusChannelHandoff.js";
 import { formatApprovalLedger, formatWarningDetails } from "./statusLedger.js";
+import { statusNextRecommendedCommand } from "./statusNextRecommended.js";
 
 export type RunStatusSummary = {
   approvalCount: number;
@@ -35,6 +37,7 @@ export type RunStatusSummary = {
   evidenceStatus: EvidenceReadResult["kind"];
   mediaArtifacts: ProductionMediaStatus[];
   diagnostics: RunDiagnosticSummary[];
+  channelHandoff: ChannelHandoffStatus;
   finalReviewBundle: FinalReviewBundleStatus;
   nextRecommendedCommand: string;
   readiness: StatusReadinessSummary;
@@ -62,6 +65,7 @@ export async function readRunStatus(runId: string): Promise<RunStatusSummary> {
       readRenderDecisionStatus(run),
       readFinalReviewBundleStatus(run),
     ]);
+  const channelHandoff = await readChannelHandoffStatus(run, finalReviewBundle);
   const evidence = evidenceResult.kind === "present" ? evidenceResult.evidence : null;
   const blockedActions = evidenceBlockedActionMessages(evidence, run.runId);
   return {
@@ -69,6 +73,7 @@ export async function readRunStatus(runId: string): Promise<RunStatusSummary> {
     artifactCount: run.artifacts.length,
     blockedActionCount: evidence ? blockedActions.length : null,
     blockedActions,
+    channelHandoff,
     diagnostics,
     evidenceMessage: "message" in evidenceResult ? evidenceResult.message : null,
     evidencePresent: Boolean(evidence),
@@ -81,6 +86,7 @@ export async function readRunStatus(runId: string): Promise<RunStatusSummary> {
       evidenceResult,
       renderDecision,
       finalReviewBundle,
+      channelHandoff,
     ),
     readiness,
     recentArtifacts: run.artifacts.slice(-5).reverse(),
@@ -115,6 +121,7 @@ export function formatRunStatus(status: RunStatusSummary): string {
     ...formatStatusReadiness(status.readiness),
     ...formatRenderDecisionStatus(status.renderDecision),
     ...formatFinalReviewBundleStatus(status.finalReviewBundle),
+    ...formatChannelHandoffStatus(status.channelHandoff),
     ...formatBlockedActions(status.blockedActions),
     ...formatDiagnostics(status.diagnostics),
     ...formatProductionMediaEvidenceForRun(status),
@@ -215,44 +222,4 @@ function formatRenderDecisionStatus(decision: RenderDecisionStatus): string[] {
     `Render decision: ${decision.kind} (${decision.message})`,
     `Render decision next action: ${decision.nextAction}`,
   ];
-}
-
-/**
- * Chooses the next recommended command for a run.
- *
- * @param runId - The run identifier used to fill command templates
- * @param state - The current run state used when evidence is missing
- * @param evidenceResult - The resolved evidence status for the run
- * @param renderDecision - The resolved durable render decision for the run
- * @returns The command string for the next recommended action
- */
-function statusNextRecommendedCommand(
-  runId: string,
-  state: RunState,
-  evidenceResult: EvidenceReadResult,
-  renderDecision: RenderDecisionStatus,
-  finalReviewBundle: FinalReviewBundleStatus,
-): string {
-  if (finalReviewBundle.kind === "present") {
-    return finalReviewBundle.nextAction;
-  }
-  if (finalReviewBundle.kind === "invalid" || finalReviewBundle.kind === "stale") {
-    return finalReviewBundle.nextAction;
-  }
-  if (renderDecision.kind === "present") {
-    return renderDecision.nextAction;
-  }
-  if (
-    evidenceResult.kind === "present" &&
-    typeof evidenceResult.evidence.nextRecommendedCommand === "string"
-  ) {
-    return materializeRunCommand(evidenceResult.evidence.nextRecommendedCommand, runId);
-  }
-  if (evidenceResult.kind === "missing") {
-    return materializeRunCommand(
-      staticEvidenceNextCommand(state) ?? "pnpm producer evidence --run <run_id>",
-      runId,
-    );
-  }
-  return `pnpm producer evidence --run ${runId}`;
 }
