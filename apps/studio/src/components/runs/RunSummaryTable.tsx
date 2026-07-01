@@ -63,7 +63,7 @@ export function RunSummaryTable({ runs }: RunSummaryTableProps) {
             <span className='run-cell-stack' role='cell'>
               <strong>{formatRunFinalReviewBundle(run)}</strong>
               {run.finalReviewBundle.kind === "present" ? (
-                <small>{run.finalReviewBundle.bundle.status}</small>
+                <small>{run.finalReviewBundle.reviewPath}</small>
               ) : null}
             </span>
             <span className='run-cell-stack' role='cell'>

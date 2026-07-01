@@ -12,6 +12,7 @@ import {
   finalReviewBundleMarkdownPath,
   type FinalReviewBundle,
 } from "../src/stages/finalReviewBundleContracts";
+import { finalReviewNextSafeAction } from "../src/stages/finalReviewBundleContent";
 import {
   renderDecisionJsonPath,
   renderDecisionMarkdownPath,
@@ -119,7 +120,15 @@ export async function writeStudioFinalReviewBundle(
       reviewPath: "production/render/draft_review.md",
       sha256: "a".repeat(64),
     },
-    nextSafeAction: finalReviewNextSafeAction(decision),
+    nextSafeAction: finalReviewNextSafeAction(runId, {
+      createdAt: renderDecision.createdAt,
+      decision: renderDecision.decision,
+      kind: "present",
+      nextSafeAction: renderDecision.nextSafeAction,
+      notes: renderDecision.notes,
+      reviewCommand: `pnpm producer review render-decision --run ${runId}`,
+      reviewedBy: renderDecision.reviewedBy,
+    }),
     renderDecision: {
       createdAt: renderDecision.createdAt,
       decision: renderDecision.decision,
@@ -230,16 +239,6 @@ function nextSafeAction(decision: RenderDecisionRecord["decision"], runId: strin
     return "Revise package, render plan, voiceover, subtitles, or assets; then regenerate evidence/readiness and render a new local draft.";
   }
   return "Do not use this draft. Revise upstream artifacts before any new render approval.";
-}
-
-function finalReviewNextSafeAction(decision: RenderDecisionRecord["decision"]): string {
-  if (decision === "accepted-for-local-review") {
-    return "Prepare the manual channel handoff with pnpm producer channel-handoff --run <run_id>. Keep upload disabled.";
-  }
-  if (decision === "needs-revision") {
-    return "Revise the local draft before regenerating the final review bundle.";
-  }
-  return "Do not use this local draft.";
 }
 
 async function readFixtureText(runId: string, relativePath: string): Promise<string> {

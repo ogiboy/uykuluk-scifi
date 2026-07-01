@@ -27,6 +27,16 @@ describe("Studio workflow progress", () => {
           label: "Operator decision",
           status: "current",
         },
+        {
+          detail: "Create the local final review handoff after recording the operator decision.",
+          label: "Final review handoff",
+          status: "pending",
+        },
+        {
+          detail: "Prepare the manual channel package after accepted local final review.",
+          label: "Manual channel handoff",
+          status: "pending",
+        },
       ]),
     );
   });
@@ -36,7 +46,8 @@ describe("Studio workflow progress", () => {
     const decision = await writeStudioRenderDecision(runId, "accepted-for-local-review");
     const detail = await getStudioRunDetail(runId);
 
-    expect(detail?.nextRecommendedCommand).toBe(decision.nextSafeAction);
+    expect(decision.nextSafeAction).toContain(`pnpm producer review-bundle --run ${runId}`);
+    expect(detail?.nextRecommendedCommand).toBe(`pnpm producer review-bundle --run ${runId}`);
     expect(detail?.renderDecision).toMatchObject({
       kind: "present",
       message: "Render decision recorded: accepted-for-local-review.",
@@ -48,6 +59,11 @@ describe("Studio workflow progress", () => {
           detail: "Render decision recorded: accepted-for-local-review.",
           label: "Operator decision",
           status: "done",
+        },
+        {
+          detail: "Create the local final review handoff after recording the operator decision.",
+          label: "Final review handoff",
+          status: "current",
         },
       ]),
     );
@@ -76,6 +92,20 @@ describe("Studio workflow progress", () => {
         }),
       ]),
     );
+    expect(detail?.workflowProgress).toEqual(
+      expect.arrayContaining([
+        {
+          detail: "Final review bundle ready: accepted-for-local-review.",
+          label: "Final review handoff",
+          status: "done",
+        },
+        {
+          detail: "Prepare the manual channel package after accepted local final review.",
+          label: "Manual channel handoff",
+          status: "current",
+        },
+      ]),
+    );
   });
 
   it("surfaces the completed manual channel handoff as the final local review action", async () => {
@@ -99,6 +129,15 @@ describe("Studio workflow progress", () => {
           label: "Manual channel handoff",
           path: "production/channel_handoff.md",
         }),
+      ]),
+    );
+    expect(detail?.workflowProgress).toEqual(
+      expect.arrayContaining([
+        {
+          detail: "Manual channel handoff package is ready for local operator review.",
+          label: "Manual channel handoff",
+          status: "done",
+        },
       ]),
     );
   });

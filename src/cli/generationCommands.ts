@@ -3,6 +3,7 @@ import { createChannelHandoff } from "../stages/channelHandoff.js";
 import { estimateCost } from "../stages/estimate.js";
 import { generateEvidenceBundle } from "../stages/evidence.js";
 import { createFinalReviewBundle } from "../stages/finalReviewBundle.js";
+import { finalReviewBundleMarkdownPath } from "../stages/finalReviewBundleContracts.js";
 import { runIdeas } from "../stages/ideas.js";
 import { generateProductionPackage } from "../stages/productionPackage.js";
 import { generateRenderPlan } from "../stages/renderPlan.js";
@@ -148,7 +149,7 @@ function formatFinalReviewBundleConsole(
   return [
     "Local final review bundle generated.",
     `Status: ${bundle.status}`,
-    "Bundle: production/review_bundle.md",
+    `Bundle: ${finalReviewBundleMarkdownPath}`,
     `Draft render: ${bundle.draftRender.path}`,
     `Next safe action: ${bundle.nextSafeAction}`,
     "Upload and publish remain disabled.",

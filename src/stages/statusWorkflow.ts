@@ -1,5 +1,19 @@
 import type { RunState } from "../core/state.js";
 import type { ProductionMediaStatus } from "./statusMediaSummary.js";
+import type {
+  StatusWorkflowArtifactStatus,
+  StatusWorkflowInput,
+  StatusWorkflowRenderDecision,
+  StatusWorkflowStep,
+} from "./statusWorkflowTypes.js";
+
+export type {
+  StatusWorkflowArtifactStatus,
+  StatusWorkflowInput,
+  StatusWorkflowRenderDecision,
+  StatusWorkflowStep,
+  StatusWorkflowStepStatus,
+} from "./statusWorkflowTypes.js";
 
 const workflowStates: RunState[] = [
   "NEW",
@@ -22,25 +36,6 @@ const workflowStates: RunState[] = [
   "FAILED",
 ];
 
-export type StatusWorkflowStepStatus = "blocked" | "current" | "done" | "pending";
-
-export type StatusWorkflowRenderDecision =
-  | { kind: "invalid" | "stale"; message: string }
-  | { kind: "missing" | "present"; message?: string };
-
-export type StatusWorkflowInput = {
-  mediaArtifacts: readonly ProductionMediaStatus[];
-  readinessStatus: "blocked" | "invalid" | "missing" | "passed" | "stale";
-  renderDecision: StatusWorkflowRenderDecision;
-  state: RunState;
-};
-
-export type StatusWorkflowStep = {
-  detail: string;
-  label: string;
-  status: StatusWorkflowStepStatus;
-};
-
 /**
  * Builds read-only progress rows for the v1 local production workflow.
  *
@@ -52,38 +47,27 @@ export type StatusWorkflowStep = {
  */
 export function buildStatusWorkflowProgress(input: StatusWorkflowInput): StatusWorkflowStep[] {
   const media = mediaByKey(input.mediaArtifacts);
+  const state = input.state;
   return [
-    stateStep(input.state, "Ideas", "IDEAS_GENERATED", "NEW", "Generate ideas."),
+    stateStep(state, "Ideas", "IDEAS_GENERATED", "NEW", "Generate ideas."),
+    stateStep(state, "Idea approval", "IDEA_APPROVED", "IDEAS_GENERATED", "Approve one idea."),
+    stateStep(state, "Script draft", "SCRIPT_GENERATED", "IDEA_APPROVED", "Generate the script."),
     stateStep(
-      input.state,
-      "Idea approval",
-      "IDEA_APPROVED",
-      "IDEAS_GENERATED",
-      "Approve one idea.",
-    ),
-    stateStep(
-      input.state,
-      "Script draft",
-      "SCRIPT_GENERATED",
-      "IDEA_APPROVED",
-      "Generate the script.",
-    ),
-    stateStep(
-      input.state,
+      state,
       "Script review",
       "SCRIPT_REVIEWED",
       "SCRIPT_GENERATED",
       "Review script blockers and warnings.",
     ),
     stateStep(
-      input.state,
+      state,
       "Script approval",
       "SCRIPT_APPROVED",
       "SCRIPT_REVIEWED",
       "Approve the reviewed script digest.",
     ),
     stateStep(
-      input.state,
+      state,
       "Production package",
       "PRODUCTION_PACKAGE_GENERATED",
       "SCRIPT_APPROVED",
@@ -92,7 +76,7 @@ export function buildStatusWorkflowProgress(input: StatusWorkflowInput): StatusW
     mediaStep(
       "Render plan",
       media.renderPlan,
-      stateAtLeast(input.state, "PRODUCTION_PACKAGE_GENERATED"),
+      stateAtLeast(state, "PRODUCTION_PACKAGE_GENERATED"),
       "Generate and review the contact sheet.",
     ),
     readinessStep(input),
@@ -102,14 +86,16 @@ export function buildStatusWorkflowProgress(input: StatusWorkflowInput): StatusW
       input.readinessStatus === "passed",
       "Generate and review local audio.",
     ),
-    renderApprovalStep(input.state, media.voiceoverAudio),
+    renderApprovalStep(state, media.voiceoverAudio),
     mediaStep(
       "Draft render",
       media.draftRender,
-      stateAtLeast(input.state, "RENDER_APPROVED"),
+      stateAtLeast(state, "RENDER_APPROVED"),
       "Render the local MP4 draft.",
     ),
-    renderDecisionStep(input.renderDecision, input.state),
+    renderDecisionStep(input.renderDecision, state),
+    finalReviewStep(input.finalReviewBundle, input.renderDecision),
+    channelHandoffStep(input.channelHandoff, input.finalReviewBundle),
   ];
 }
 
@@ -209,6 +195,48 @@ function renderDecisionStep(
     detail: "Record the operator decision after local draft review.",
     label: "Operator decision",
     status: state === "RENDERED" ? "current" : "pending",
+  };
+}
+
+function finalReviewStep(
+  finalReview: StatusWorkflowArtifactStatus,
+  decision: StatusWorkflowRenderDecision,
+): StatusWorkflowStep {
+  if (finalReview.kind === "present") {
+    return {
+      detail: finalReview.message ?? "Local final review handoff is ready.",
+      label: "Final review handoff",
+      status: "done",
+    };
+  }
+  if (finalReview.kind === "invalid" || finalReview.kind === "stale") {
+    return { detail: finalReview.message, label: "Final review handoff", status: "blocked" };
+  }
+  return {
+    detail: "Create the local final review handoff after recording the operator decision.",
+    label: "Final review handoff",
+    status: decision.kind === "present" ? "current" : "pending",
+  };
+}
+
+function channelHandoffStep(
+  channelHandoff: StatusWorkflowArtifactStatus,
+  finalReview: StatusWorkflowArtifactStatus,
+): StatusWorkflowStep {
+  if (channelHandoff.kind === "present") {
+    return {
+      detail: channelHandoff.message ?? "Manual channel handoff package is ready.",
+      label: "Manual channel handoff",
+      status: "done",
+    };
+  }
+  if (channelHandoff.kind === "invalid" || channelHandoff.kind === "stale") {
+    return { detail: channelHandoff.message, label: "Manual channel handoff", status: "blocked" };
+  }
+  return {
+    detail: "Prepare the manual channel package after accepted local final review.",
+    label: "Manual channel handoff",
+    status: finalReview.kind === "present" ? "current" : "pending",
   };
 }
 

@@ -96,6 +96,15 @@ assert(
   detail.nextRecommendedCommand?.includes("Manually review production/channel_handoff.md") === true,
   "Studio next action moves to manual channel handoff review after package generation.",
 );
+assert(
+  detail.workflowProgress.some(
+    (step) =>
+      step.label === "Manual channel handoff" &&
+      step.status === "done" &&
+      step.detail.includes("ready for local operator review"),
+  ),
+  "Studio workflow progress marks manual channel handoff done.",
+);
 
 const analytics = await getStudioAnalyticsOverview();
 assert(analytics.status === "ready", "Studio analytics overview is ready.");

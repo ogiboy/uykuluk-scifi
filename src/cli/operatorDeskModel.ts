@@ -229,6 +229,8 @@ function selectedRun(status: RunStatusSummary): OperatorDeskSelectedRun {
     recentArtifacts: status.recentArtifacts,
     renderDecision: status.renderDecision,
     workflowProgress: buildStatusWorkflowProgress({
+      channelHandoff: status.channelHandoff,
+      finalReviewBundle: status.finalReviewBundle,
       mediaArtifacts: status.mediaArtifacts,
       readinessStatus: status.readiness.status,
       renderDecision: status.renderDecision,

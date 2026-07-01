@@ -3,7 +3,7 @@ import { z } from "zod";
 import { sha256 } from "../../../../src/utils/hash";
 import type { StudioFinalReviewBundleSummary } from "./finalReviewBundleSummaries";
 import { studioRunFilePath } from "./runFilePaths";
-import type { RunRecord } from "./runSummaries";
+import type { RunRecord } from "./runRecordTypes";
 
 const channelHandoffJsonPath = "production/channel_handoff.json";
 const channelHandoffMarkdownPath = "production/channel_handoff.md";

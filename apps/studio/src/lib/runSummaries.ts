@@ -1,5 +1,4 @@
 import path from "node:path";
-import type { RunState } from "../../../../src/core/state";
 import type { RunDiagnosticSummary } from "../../../../src/stages/runDiagnosticSummaryContracts";
 import {
   productionMediaStatus,
@@ -9,32 +8,23 @@ import type { RenderDecisionCommandTemplate } from "../../../../src/stages/rende
 import type { StatusWorkflowStep } from "../../../../src/stages/statusWorkflow";
 import { evidenceBlockedActionMessages } from "../../../../src/stages/statusBlockedActions";
 import { readReviewArtifactPreviews, type StudioArtifactPreview } from "./artifactPreviews";
-import {
-  readStudioChannelHandoffSummary,
-  type StudioChannelHandoffSummary,
-} from "./channelHandoffSummaries";
-import { readStudioEvidenceSummary, type StudioEvidenceSummary } from "./evidenceSummaries";
-import {
-  readStudioFinalReviewBundleSummary,
-  type StudioFinalReviewBundleSummary,
-} from "./finalReviewBundleSummaries";
+import type { StudioChannelHandoffSummary } from "./channelHandoffSummaries";
+import type { StudioEvidenceSummary } from "./evidenceSummaries";
+import type { StudioFinalReviewBundleSummary } from "./finalReviewBundleSummaries";
 import { projectRoot } from "./projectRoot";
 import {
-  readStudioReadinessSnapshot,
   type ReadinessSnapshot,
   type StudioReadinessCheck,
   type StudioReadinessSummary,
-  summarizeReadinessSnapshot,
 } from "./readinessSummaries";
-import {
-  readStudioRenderDecisionSummary,
-  type StudioRenderDecisionSummary,
-} from "./renderDecisionSummaries";
+import type { StudioRenderDecisionSummary } from "./renderDecisionSummaries";
 import {
   studioNextRecommendedCommand,
   studioRenderDecisionCommands,
   studioWorkflowProgress,
 } from "./runDecisionProjection";
+import { loadRunSummaryInputs } from "./runSummaryInputs";
+import type { RunRecord, StudioRunState } from "./runRecordTypes";
 import { isRunId, readRunRecord, readStudioRunDiagnostics, safeReaddir } from "./runSummaryFiles";
 
 export type StudioRunSummary = {
@@ -61,8 +51,6 @@ export type StudioRunSummary = {
   workflowProgress: StatusWorkflowStep[];
 };
 
-export type StudioRunState = RunState;
-
 export type StudioRunDetail = StudioRunSummary & {
   approvals: unknown[];
   artifacts: StudioArtifactPreview[];
@@ -73,16 +61,6 @@ export type StudioRunDetail = StudioRunSummary & {
   readinessChecks: StudioReadinessCheck[];
   renderDecisionCommands: RenderDecisionCommandTemplate[];
   warnings: string[];
-};
-
-export type RunRecord = {
-  approvals?: unknown[];
-  artifacts?: string[];
-  createdAt?: string;
-  runId?: string;
-  state?: StudioRunState;
-  updatedAt?: string;
-  warnings?: string[];
 };
 
 /**
@@ -119,45 +97,32 @@ export async function getStudioRunDetail(runId: string): Promise<StudioRunDetail
   if (!record) {
     return null;
   }
-  const [evidence, readiness] = await Promise.all([
-    readStudioEvidenceSummary(root, runId, record.state),
-    readStudioReadinessSnapshot(root, runId),
-  ]);
-  const renderDecision = await readStudioRenderDecisionSummary(root, record, evidence.snapshot);
-  const finalReviewBundle = await readStudioFinalReviewBundleSummary(
-    root,
-    record,
-    evidence.snapshot,
-    renderDecision,
-  );
-  const channelHandoff = await readStudioChannelHandoffSummary(root, record, finalReviewBundle);
-  const readinessSummary = summarizeReadinessSnapshot(
-    readiness.snapshot,
-    record.runId,
-    record.state,
-    readiness.malformed,
-  );
+  const inputs = await loadRunSummaryInputs(root, runId, record);
   const summary = summarizeRun(
     record,
-    evidence,
-    readinessSummary,
-    renderDecision,
-    finalReviewBundle,
-    channelHandoff,
+    inputs.evidence,
+    inputs.readinessSummary,
+    inputs.renderDecision,
+    inputs.finalReviewBundle,
+    inputs.channelHandoff,
   );
   return {
     ...summary,
     approvals: record.approvals ?? [],
     artifacts: await readReviewArtifactPreviews(root, runId),
     diagnostics: await readStudioRunDiagnostics(root, runId, record.artifacts ?? []),
-    evidence: evidence.snapshot,
+    evidence: inputs.evidence.snapshot,
     productionMedia: productionMediaStatus(
       { artifacts: record.artifacts ?? [], runId: record.runId },
-      evidence.snapshot,
+      inputs.evidence.snapshot,
     ),
-    readiness: readiness.snapshot,
-    readinessChecks: readinessSummary.checks,
-    renderDecisionCommands: studioRenderDecisionCommands(record, evidence, renderDecision),
+    readiness: inputs.readiness.snapshot,
+    readinessChecks: inputs.readinessSummary.checks,
+    renderDecisionCommands: studioRenderDecisionCommands(
+      record,
+      inputs.evidence,
+      inputs.renderDecision,
+    ),
     warnings: record.warnings ?? [],
   };
 }
@@ -174,25 +139,14 @@ async function readRunSummary(root: string, runId: string): Promise<StudioRunSum
   if (!record) {
     return null;
   }
-  const [evidence, readiness] = await Promise.all([
-    readStudioEvidenceSummary(root, runId, record.state),
-    readStudioReadinessSnapshot(root, runId),
-  ]);
-  const renderDecision = await readStudioRenderDecisionSummary(root, record, evidence.snapshot);
-  const finalReviewBundle = await readStudioFinalReviewBundleSummary(
-    root,
-    record,
-    evidence.snapshot,
-    renderDecision,
-  );
-  const channelHandoff = await readStudioChannelHandoffSummary(root, record, finalReviewBundle);
+  const inputs = await loadRunSummaryInputs(root, runId, record);
   return summarizeRun(
     record,
-    evidence,
-    summarizeReadinessSnapshot(readiness.snapshot, record.runId, record.state, readiness.malformed),
-    renderDecision,
-    finalReviewBundle,
-    channelHandoff,
+    inputs.evidence,
+    inputs.readinessSummary,
+    inputs.renderDecision,
+    inputs.finalReviewBundle,
+    inputs.channelHandoff,
   );
 }
 
@@ -250,6 +204,8 @@ function summarizeRun(
     updatedAt: record.updatedAt ?? record.createdAt ?? "",
     warningCount: record.warnings?.length ?? 0,
     workflowProgress: studioWorkflowProgress({
+      channelHandoff,
+      finalReviewBundle,
       mediaArtifacts: productionMedia,
       readinessStatus: readiness.status,
       renderDecision,

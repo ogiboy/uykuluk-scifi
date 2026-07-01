@@ -9,7 +9,7 @@ import { evidenceNextRecommendedCommand, type StudioEvidenceSummary } from "./ev
 import type { StudioChannelHandoffSummary } from "./channelHandoffSummaries";
 import type { StudioFinalReviewBundleSummary } from "./finalReviewBundleSummaries";
 import type { StudioRenderDecisionSummary } from "./renderDecisionSummaries";
-import type { RunRecord, StudioRunState } from "./runSummaries";
+import type { RunRecord, StudioRunState } from "./runRecordTypes";
 
 /**
  * Builds the read-only workflow progress projection for a Studio run.
@@ -18,12 +18,16 @@ import type { RunRecord, StudioRunState } from "./runSummaries";
  * @returns Ordered v1 workflow progress rows.
  */
 export function studioWorkflowProgress(input: {
+  channelHandoff: StudioChannelHandoffSummary;
+  finalReviewBundle: StudioFinalReviewBundleSummary;
   mediaArtifacts: Parameters<typeof buildStatusWorkflowProgress>[0]["mediaArtifacts"];
   readinessStatus: Parameters<typeof buildStatusWorkflowProgress>[0]["readinessStatus"];
   renderDecision: StudioRenderDecisionSummary;
   state: StudioRunState;
 }): StatusWorkflowStep[] {
   return buildStatusWorkflowProgress({
+    channelHandoff: studioWorkflowArtifactStatus(input.channelHandoff),
+    finalReviewBundle: studioWorkflowArtifactStatus(input.finalReviewBundle),
     mediaArtifacts: input.mediaArtifacts,
     readinessStatus: input.readinessStatus,
     renderDecision: studioWorkflowRenderDecision(input.renderDecision),
@@ -59,7 +63,11 @@ export function studioNextRecommendedCommand(
   if (finalReviewBundle.kind === "present") {
     return finalReviewBundle.nextAction;
   }
-  if (finalReviewBundle.kind === "invalid" || finalReviewBundle.kind === "stale") {
+  if (
+    finalReviewBundle.kind === "missing" ||
+    finalReviewBundle.kind === "invalid" ||
+    finalReviewBundle.kind === "stale"
+  ) {
     return finalReviewBundle.nextAction;
   }
   if (renderDecision.kind === "present") {
@@ -114,6 +122,24 @@ function studioWorkflowRenderDecision(
     return {
       kind: renderDecision.kind,
       message: renderDecision.message,
+    };
+  }
+  return { kind: "missing" };
+}
+
+function studioWorkflowArtifactStatus(
+  artifact: StudioChannelHandoffSummary | StudioFinalReviewBundleSummary,
+): Parameters<typeof buildStatusWorkflowProgress>[0]["finalReviewBundle"] {
+  if (artifact.kind === "present") {
+    return {
+      kind: "present",
+      message: artifact.message,
+    };
+  }
+  if (artifact.kind === "invalid" || artifact.kind === "stale") {
+    return {
+      kind: artifact.kind,
+      message: artifact.message,
     };
   }
   return { kind: "missing" };
