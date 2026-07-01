@@ -72,6 +72,16 @@ describe("Studio render decision action route", () => {
       }),
       400,
     );
+    await expectRouteError(
+      studioJsonRequest({
+        decision: "accepted-for-local-review",
+        extra: true,
+        notes: "Unknown fields should fail.",
+        reviewedBy: "operator",
+        runId: "run_unknown_field",
+      }),
+      400,
+    );
   });
 
   it("maps core render-decision blockers to a conflict response", async () => {

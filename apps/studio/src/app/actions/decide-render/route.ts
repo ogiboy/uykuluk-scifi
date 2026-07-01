@@ -2,23 +2,15 @@ import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { z, ZodError } from "zod";
+import { ZodError } from "zod";
 import { projectRoot } from "../../../lib/projectRoot";
 import { validateStudioMutationRequest } from "../../../lib/studioMutationSecurity";
-import { isValidRunId } from "../../../../../../src/core/runId";
-import { renderDecisionValues } from "../../../../../../src/stages/renderDecisionCommands";
+import { parseStudioMutationRequest } from "../../../../../../src/studio/actionServiceContracts";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-const renderDecisionRequestSchema = z.strictObject({
-  decision: z.enum(renderDecisionValues),
-  notes: z.string().trim().min(1).max(4_000),
-  reviewedBy: z.string().trim().min(1).max(200),
-  runId: z.string().refine(isValidRunId, { message: "Invalid run id." }),
-});
-
-type RenderDecisionRequest = z.infer<typeof renderDecisionRequestSchema>;
+type RenderDecisionRequest = ReturnType<typeof parseRenderDecisionRequest>;
 
 type CliResult = Readonly<{
   stderr: string;
@@ -46,7 +38,7 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   try {
-    const input = renderDecisionRequestSchema.parse(payload);
+    const input = parseRenderDecisionRequest(payload);
     const result = await runRenderDecisionCli(input);
     if (result.status !== 0) {
       return jsonError(cliErrorMessage(result.stderr), 409);
@@ -75,6 +67,10 @@ function jsonError(message: string, status: number): Response {
     },
     { status },
   );
+}
+
+function parseRenderDecisionRequest(payload: unknown) {
+  return parseStudioMutationRequest("render.decide", payload);
 }
 
 /**

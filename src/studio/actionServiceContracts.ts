@@ -1,13 +1,13 @@
 import { z } from "zod";
-import { isValidRunId } from "../core/runId.js";
-import { renderDecisionValues } from "../stages/renderDecisionCommands.js";
+import { isValidRunId } from "../core/runId";
+import { renderDecisionValues } from "../stages/renderDecisionCommands";
 import {
   studioMutationServiceMetadata,
   type StudioMutationActionId,
   type StudioMutationAvailability,
-} from "./actionServiceMetadata.js";
+} from "./actionServiceMetadata";
 
-export { studioMutationActionIds } from "./actionServiceMetadata.js";
+export { studioMutationActionIds } from "./actionServiceMetadata";
 
 const runIdSchema = z.string().refine(isValidRunId, { message: "Invalid run id." });
 
