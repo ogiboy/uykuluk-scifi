@@ -1,7 +1,6 @@
-import {
-  finalReviewBundleMarkdownPath,
-  type FinalReviewBundle,
-} from "./finalReviewBundleContracts.js";
+import type { FinalReviewBundle } from "./finalReviewBundleContracts.js";
+
+const finalReviewBundleMarkdownPath = "production/review_bundle.md";
 
 export type FinalReviewDecisionBinding =
   | {

@@ -1,6 +1,89 @@
 import { productionPackageManifestPath } from "./productionPackageIntegrity.js";
 import type { FinalReviewBundle } from "./finalReviewBundleContracts.js";
 
+type FinalReviewArtifact = FinalReviewBundle["artifacts"][number];
+type FinalReviewArtifactSpec = readonly [
+  label: string,
+  path: string,
+  reviewPhase: string,
+  operatorAction: string,
+];
+
+const finalReviewArtifactSpecs = [
+  [
+    "Script",
+    "script.md",
+    "Script",
+    "Review the final script text and scientific caution before channel use.",
+  ],
+  [
+    "Production package",
+    "production/production_package.md",
+    "Package",
+    "Review voiceover text, subtitles, scene plan, popup cards, and YouTube metadata.",
+  ],
+  [
+    "Production manifest",
+    productionPackageManifestPath,
+    "Package",
+    "Use as integrity evidence for package artifacts.",
+  ],
+  [
+    "Render plan",
+    "production/render_plan.json",
+    "Render plan",
+    "Confirm scene-to-asset mapping and timing before trusting the draft render.",
+  ],
+  [
+    "Storyboard contact sheet",
+    "production/storyboard_contact_sheet.md",
+    "Render plan",
+    "Review visual rhythm, background reuse, and popup placement.",
+  ],
+  [
+    "Asset provenance",
+    "production/asset_provenance.json",
+    "Render plan",
+    "Confirm tracked local assets used by the draft render.",
+  ],
+  [
+    "Voiceover review",
+    "production/audio/voiceover_review.md",
+    "Voiceover",
+    "Listen locally before using the draft as anything beyond a timing review.",
+  ],
+  [
+    "Draft render MP4",
+    "production/render/draft.mp4",
+    "Draft render",
+    "Watch the full local draft before recording or trusting a decision.",
+  ],
+  [
+    "Draft render review",
+    "production/render/draft_review.md",
+    "Draft render",
+    "Review FFmpeg proof, ffprobe evidence, overlays, and blocked upload/publish actions.",
+  ],
+  [
+    "Render manifest",
+    "production/render/render_manifest.json",
+    "Draft render",
+    "Use as machine-readable proof for the local render inputs and output.",
+  ],
+  [
+    "Evidence bundle",
+    "evidence_bundle.md",
+    "Evidence",
+    "Review current blockers and next safe action.",
+  ],
+  [
+    "Readiness diagnostics",
+    "diagnostics/readiness.md",
+    "Evidence",
+    "Confirm readiness checks and remediation commands.",
+  ],
+] as const satisfies readonly FinalReviewArtifactSpec[];
+
 export function finalReviewStatus(
   decision: FinalReviewBundle["renderDecision"],
 ): FinalReviewBundle["status"] {
@@ -50,80 +133,9 @@ export function finalReviewBlockedActions(decision: FinalReviewBundle["renderDec
 export function finalReviewArtifacts(
   decision: FinalReviewBundle["renderDecision"],
 ): FinalReviewBundle["artifacts"] {
-  const artifacts: FinalReviewBundle["artifacts"] = [
-    artifact(
-      "Script",
-      "script.md",
-      "Script",
-      "Review the final script text and scientific caution before channel use.",
-    ),
-    artifact(
-      "Production package",
-      "production/production_package.md",
-      "Package",
-      "Review voiceover text, subtitles, scene plan, popup cards, and YouTube metadata.",
-    ),
-    artifact(
-      "Production manifest",
-      productionPackageManifestPath,
-      "Package",
-      "Use as integrity evidence for package artifacts.",
-    ),
-    artifact(
-      "Render plan",
-      "production/render_plan.json",
-      "Render plan",
-      "Confirm scene-to-asset mapping and timing before trusting the draft render.",
-    ),
-    artifact(
-      "Storyboard contact sheet",
-      "production/storyboard_contact_sheet.md",
-      "Render plan",
-      "Review visual rhythm, background reuse, and popup placement.",
-    ),
-    artifact(
-      "Asset provenance",
-      "production/asset_provenance.json",
-      "Render plan",
-      "Confirm tracked local assets used by the draft render.",
-    ),
-    artifact(
-      "Voiceover review",
-      "production/audio/voiceover_review.md",
-      "Voiceover",
-      "Listen locally before using the draft as anything beyond a timing review.",
-    ),
-    artifact(
-      "Draft render MP4",
-      "production/render/draft.mp4",
-      "Draft render",
-      "Watch the full local draft before recording or trusting a decision.",
-    ),
-    artifact(
-      "Draft render review",
-      "production/render/draft_review.md",
-      "Draft render",
-      "Review FFmpeg proof, ffprobe evidence, overlays, and blocked upload/publish actions.",
-    ),
-    artifact(
-      "Render manifest",
-      "production/render/render_manifest.json",
-      "Draft render",
-      "Use as machine-readable proof for the local render inputs and output.",
-    ),
-    artifact(
-      "Evidence bundle",
-      "evidence_bundle.md",
-      "Evidence",
-      "Review current blockers and next safe action.",
-    ),
-    artifact(
-      "Readiness diagnostics",
-      "diagnostics/readiness.md",
-      "Evidence",
-      "Confirm readiness checks and remediation commands.",
-    ),
-  ];
+  const artifacts = finalReviewArtifactSpecs.map((spec) =>
+    artifact(spec[0], spec[1], spec[2], spec[3]),
+  );
   if (decision.kind === "present") {
     artifacts.push(
       artifact(
@@ -142,6 +154,6 @@ function artifact(
   path: string,
   reviewPhase: string,
   operatorAction: string,
-): FinalReviewBundle["artifacts"][number] {
+): FinalReviewArtifact {
   return { label, operatorAction, path, reviewPhase };
 }
