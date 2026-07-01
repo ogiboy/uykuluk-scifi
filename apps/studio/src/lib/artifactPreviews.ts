@@ -6,6 +6,7 @@ const PREVIEW_BYTE_LIMIT = 2_400;
 export type StudioArtifactGroup =
   | "Audio And Render"
   | "Evidence And Readiness"
+  | "Final Review"
   | "Production Package"
   | "Render Planning"
   | "Script Review";
@@ -36,6 +37,8 @@ production/render/draft_review.md	Draft render review	markdown	Audio And Render	
 production/render/draft.mp4	Draft render video	binary	Audio And Render	Local MP4 review draft generated after exact render approval.	Review locally outside Studio; binary preview is metadata-only.
 production/render/render_decision.json	Render decision	json	Audio And Render	Durable operator decision after local draft-render review.	Use this as local review evidence; it is not upload or publish approval.
 production/render/render_decision.md	Render decision review	markdown	Audio And Render	Operator-readable render decision notes and next safe action.	Keep this with the local draft review; upload remains disabled.
+production/review_bundle.json	Final review bundle	json	Final Review	Local final review bundle tying together script, package, render plan, voiceover, draft render, evidence, readiness, and any render decision.	Use this as the local operator handoff; upload and publish remain disabled.
+production/review_bundle.md	Final review handoff	markdown	Final Review	Operator-readable index for the local final draft review package.	Review before manual channel decisions; it is not upload or publish approval.
 evidence_bundle.json	Evidence bundle	json	Evidence And Readiness	Current run evidence, blocked actions, and next safe command.	Use evidence as the review handoff before any next CLI action.
 diagnostics/readiness.json	Readiness diagnostics	json	Evidence And Readiness	Readiness checks for package, cost, render plan, TTS, and publish safety.	Resolve failed checks before production or render work.
 `);
@@ -83,6 +86,7 @@ function isStudioArtifactGroup(value: string | undefined): value is StudioArtifa
   return (
     value === "Audio And Render" ||
     value === "Evidence And Readiness" ||
+    value === "Final Review" ||
     value === "Production Package" ||
     value === "Render Planning" ||
     value === "Script Review"

@@ -106,6 +106,10 @@ agent-tracking state only; runtime code must not require it.
   voiceover mode/quality/candidate classification surfaced in evidence/readiness summaries, plus a
   stable read-only FFmpeg review command for the final draft artifact in the manifest, evidence
   JSON, and review Markdown.
+- Local final review bundle generation that revalidates the render plan, voiceover, draft render,
+  and any recorded render decision, then writes `production/review_bundle.json` and
+  `production/review_bundle.md` as the operator's local handoff index. It does not approve upload or
+  publish.
 - Manual analytics import/report commands for operator-provided CSV/JSON performance exports, plus a
   read-only Studio view over the ignored local analytics artifacts and import data-quality summary.
 - Typed Studio route-security contract covering read-only routes, the guarded local render-decision
@@ -310,6 +314,8 @@ pnpm producer decide render --run <run_id> --decision needs-revision --notes "<o
 pnpm producer decide render --run <run_id> --decision rejected --notes "<operator notes>" --reviewed-by operator
 pnpm producer review render-decision --run <run_id>
 pnpm producer review render-decision --run <run_id> --json
+pnpm producer review-bundle --run <run_id>
+pnpm producer review-bundle --run <run_id> --json
 ```
 
 Blocked readiness checks print and persist next-action guidance for common operator steps such as
@@ -657,6 +663,12 @@ the final operator checklist, shows that review command, includes the decision c
 and labels deterministic-reference audio renders as local timing drafts. It does not upload,
 schedule, or publish anything.
 
+`producer review-bundle --run <run_id>` creates a local final review handoff after a draft render
+exists. The bundle revalidates the current render-plan, voiceover, draft-render, and render-decision
+status; missing decisions are shown as `decision-pending`, while stale or invalid decision evidence
+blocks bundle generation. The resulting `production/review_bundle.md` is an index for local channel
+review only and still keeps upload and public/scheduled publish disabled.
+
 `thinkingMode` can be `default`, `think`, or `no_think`. Token caps are sent to Ollama as
 `num_predict` so local generation cannot run unbounded. Script generation splits the approved idea
 into bounded hook, context, development, and outro sections. Each section is drafted once and then
@@ -740,6 +752,8 @@ Each run can write:
   readiness;
 - `production/render/draft.mp4`, `production/render/render_manifest.json`, and
   `production/render/draft_review.md` after exact render approval and local FFmpeg execution;
+- `production/review_bundle.json` and `production/review_bundle.md` after local draft-render
+  evidence is current and the final review handoff is generated;
 - `costs/estimate.json` and `costs/estimate.md`;
 - `costs/ledger.jsonl`;
 - `costs/reservations.jsonl`;

@@ -1,6 +1,7 @@
 import { Command } from "commander";
 import { estimateCost } from "../stages/estimate.js";
 import { generateEvidenceBundle } from "../stages/evidence.js";
+import { createFinalReviewBundle } from "../stages/finalReviewBundle.js";
 import { runIdeas } from "../stages/ideas.js";
 import { generateProductionPackage } from "../stages/productionPackage.js";
 import { generateRenderPlan } from "../stages/renderPlan.js";
@@ -93,6 +94,20 @@ export function registerGenerationCommands(program: Command, wrap: Wrap): void {
         console.log(options.json ? JSON.stringify(bundle, null, 2) : "Evidence bundle generated.");
       }),
     );
+
+  program
+    .command("review-bundle")
+    .requiredOption("--run <run_id>")
+    .option("--json", "Print the raw local final review bundle JSON for automation.")
+    .description("Create a local final review handoff bundle for a rendered draft.")
+    .action(
+      wrap(async (options: { json?: boolean; run: string }) => {
+        const bundle = await createFinalReviewBundle(options.run);
+        console.log(
+          options.json ? JSON.stringify(bundle, null, 2) : formatFinalReviewBundleConsole(bundle),
+        );
+      }),
+    );
 }
 
 /**
@@ -109,5 +124,18 @@ function formatRenderPlanGeneratedConsole(plan: RenderPlan): string {
     `Contact sheet: ${contactSheetPath}`,
     `Asset provenance: ${assetProvenancePath}`,
     `Next safe action: pnpm producer review render-plan --run ${plan.runId}`,
+  ].join("\n");
+}
+
+function formatFinalReviewBundleConsole(
+  bundle: Awaited<ReturnType<typeof createFinalReviewBundle>>,
+): string {
+  return [
+    "Local final review bundle generated.",
+    `Status: ${bundle.status}`,
+    "Bundle: production/review_bundle.md",
+    `Draft render: ${bundle.draftRender.path}`,
+    `Next safe action: ${bundle.nextSafeAction}`,
+    "Upload and publish remain disabled.",
   ].join("\n");
 }
