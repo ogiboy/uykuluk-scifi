@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  formatRunChannelHandoffDecision,
   formatRunFinalReviewBundle,
   formatRunRenderDecision,
   formatRunReviewCounts,
@@ -128,5 +129,55 @@ describe("Studio run summary table copy", () => {
         },
       }),
     ).toBe("accepted-for-local-review");
+  });
+
+  it("formats manual channel handoff decisions for compact run surfaces", () => {
+    expect(
+      formatRunChannelHandoffDecision({
+        channelHandoffDecision: {
+          kind: "missing",
+          message: "Manual channel-handoff decision has not been recorded.",
+          nextAction:
+            "pnpm producer decide channel-handoff --run run_202606280001_channel --decision accepted-for-manual-channel-prep --thumbnail-candidate <candidate_id> --notes '<operator notes>' --reviewed-by operator",
+        },
+      }),
+    ).toBe("missing");
+    expect(
+      formatRunChannelHandoffDecision({
+        channelHandoffDecision: {
+          decision: {
+            blockedActions: [
+              "This decision does not call YouTube APIs or create a private upload.",
+            ],
+            channelHandoff: {
+              digest: "a".repeat(64),
+              path: "production/channel_handoff.json",
+              status: "ready-for-manual-channel-review",
+            },
+            createdAt: "2026-06-28T00:00:00.000Z",
+            decision: "accepted-for-manual-channel-prep",
+            manualOnly: true,
+            nextSafeAction: "Private upload remains disabled.",
+            notes: "Reviewed.",
+            reviewedBy: "operator",
+            runId: "run_202606280001_channel",
+            schemaVersion: 1,
+            selectedThumbnailCandidate: {
+              candidateId: "thumbnail-01-left",
+              templatePath: "assets/thumbnails/thumbnail_template_01_left_1280x720.jpg",
+              templateSha256: "b".repeat(64),
+            },
+            youtube: {
+              metadataPath: "production/youtube_metadata.json",
+              title: "Fixture title",
+            },
+          },
+          kind: "present",
+          message: "Channel handoff decision recorded: accepted-for-manual-channel-prep.",
+          nextAction: "Private upload remains disabled.",
+          reviewPath: "production/channel_handoff_decision.md",
+        },
+      }),
+    ).toBe("accepted-for-manual-channel-prep by operator");
   });
 });

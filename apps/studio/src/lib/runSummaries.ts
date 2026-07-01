@@ -8,6 +8,7 @@ import type { RenderDecisionCommandTemplate } from "../../../../src/stages/rende
 import type { StatusWorkflowStep } from "../../../../src/stages/statusWorkflow";
 import { evidenceBlockedActionMessages } from "../../../../src/stages/statusBlockedActions";
 import { readReviewArtifactPreviews, type StudioArtifactPreview } from "./artifactPreviews";
+import type { StudioChannelHandoffDecisionSummary } from "./channelHandoffDecisionSummaries";
 import type { StudioChannelHandoffSummary } from "./channelHandoffSummaries";
 import type { StudioEvidenceSummary } from "./evidenceSummaries";
 import type { StudioFinalReviewBundleSummary } from "./finalReviewBundleSummaries";
@@ -33,6 +34,7 @@ export type StudioRunSummary = {
   blockedActions: string[];
   blockedActionCount: number;
   channelHandoff: StudioChannelHandoffSummary;
+  channelHandoffDecision: StudioChannelHandoffDecisionSummary;
   createdAt: string;
   evidenceMessage: string;
   evidenceNextAction?: string;
@@ -105,6 +107,7 @@ export async function getStudioRunDetail(runId: string): Promise<StudioRunDetail
     inputs.renderDecision,
     inputs.finalReviewBundle,
     inputs.channelHandoff,
+    inputs.channelHandoffDecision,
   );
   return {
     ...summary,
@@ -147,6 +150,7 @@ async function readRunSummary(root: string, runId: string): Promise<StudioRunSum
     inputs.renderDecision,
     inputs.finalReviewBundle,
     inputs.channelHandoff,
+    inputs.channelHandoffDecision,
   );
 }
 
@@ -159,6 +163,7 @@ async function readRunSummary(root: string, runId: string): Promise<StudioRunSum
  * @param renderDecision - The local render decision summary for the run.
  * @param finalReviewBundle - The local final review bundle summary for the run.
  * @param channelHandoff - The manual channel handoff summary for the run.
+ * @param channelHandoffDecision - The manual channel handoff decision summary for the run.
  * @returns The combined run summary.
  */
 function summarizeRun(
@@ -168,6 +173,7 @@ function summarizeRun(
   renderDecision: StudioRenderDecisionSummary,
   finalReviewBundle: StudioFinalReviewBundleSummary,
   channelHandoff: StudioChannelHandoffSummary,
+  channelHandoffDecision: StudioChannelHandoffDecisionSummary,
 ): StudioRunSummary {
   const runId = record.runId ?? "unknown";
   const blockedActions = evidenceBlockedActionMessages(evidence.snapshot, runId);
@@ -181,6 +187,7 @@ function summarizeRun(
     blockedActionCount: blockedActions.length,
     blockedActions,
     channelHandoff,
+    channelHandoffDecision,
     createdAt: record.createdAt ?? "",
     evidenceMessage: evidence.message,
     evidenceNextAction: evidence.nextAction,
@@ -193,6 +200,7 @@ function summarizeRun(
       renderDecision,
       finalReviewBundle,
       channelHandoff,
+      channelHandoffDecision,
     ),
     readinessMessage: readiness.message,
     readinessNextAction: readiness.nextAction,

@@ -5,8 +5,13 @@ import type { ChannelHandoffStatus } from "../stages/channelHandoffStatus.js";
 import type { FinalReviewBundleStatus } from "../stages/finalReviewBundleStatus.js";
 import type { RenderDecisionStatus } from "../stages/renderDecisionStatus.js";
 import { readRunStatus, type RunStatusSummary } from "../stages/status.js";
+import type { ChannelHandoffDecisionStatus } from "../stages/channelHandoffDecisionStatus.js";
 import { formatProductionMediaStatus, type ProductionMediaStatus } from "../stages/statusMedia.js";
 import { buildStatusWorkflowProgress, type StatusWorkflowStep } from "../stages/statusWorkflow.js";
+import {
+  channelHandoffDecisionLines,
+  channelHandoffDecisionSummary,
+} from "./operatorDeskChannelHandoffDecision.js";
 import { channelHandoffLines, channelHandoffSummary } from "./operatorDeskChannelHandoff.js";
 import { finalReviewBundleLines, finalReviewBundleSummary } from "./operatorDeskFinalReview.js";
 import {
@@ -21,6 +26,7 @@ import {
   formatOperatorDeskRecentArtifactLines,
   formatOperatorDeskWorkflowLines,
 } from "./operatorDeskFormatting.js";
+import { renderDecisionReviewLines, renderDecisionSummary } from "./operatorDeskRenderDecision.js";
 
 const RECENT_RUN_LIMIT = 8;
 
@@ -33,6 +39,7 @@ export type OperatorDeskRun = {
   approvalCount: number;
   artifactCount: number;
   blockedActionCount: number | null;
+  channelHandoffDecisionStatus: string;
   channelHandoffStatus: string;
   evidenceStatus: string;
   nextRecommendedCommand: string;
@@ -48,6 +55,7 @@ export type OperatorDeskRun = {
 export type OperatorDeskSelectedRun = OperatorDeskRun & {
   blockedActions: string[];
   channelHandoff: ChannelHandoffStatus;
+  channelHandoffDecision: ChannelHandoffDecisionStatus;
   commandQueue: OperatorDeskCommand[];
   diagnostics: RunStatusSummary["diagnostics"];
   mediaArtifacts: RunStatusSummary["mediaArtifacts"];
@@ -147,6 +155,8 @@ export function formatOperatorDeskPlain(model: OperatorDeskViewModel): string {
     ...finalReviewBundleLines(run.finalReviewBundle),
     `Manual channel handoff: ${channelHandoffSummary(run.channelHandoff)}`,
     ...channelHandoffLines(run.channelHandoff),
+    `Manual channel handoff decision: ${channelHandoffDecisionSummary(run.channelHandoffDecision)}`,
+    ...channelHandoffDecisionLines(run.channelHandoffDecision),
     `Approvals/artifacts/warnings: ${run.approvalCount} approvals, ${run.artifactCount} artifacts, ${run.warningCount} warnings`,
     `Blocked actions: ${run.blockedActionCount ?? "unknown"}`,
     ...formatOperatorDeskBlockedActionLines(run.blockedActions),
@@ -167,7 +177,7 @@ export function formatOperatorDeskPlain(model: OperatorDeskViewModel): string {
     "Recent runs:",
     ...model.runs.map((candidate) => {
       const marker = candidate.runId === run.runId ? ">" : " ";
-      return `${marker} ${candidate.runId}  ${candidate.state}  ${candidate.updatedAt}  decision:${candidate.renderDecisionStatus}`;
+      return `${marker} ${candidate.runId}  ${candidate.state}  ${candidate.updatedAt}  decision:${candidate.renderDecisionStatus}  channel-decision:${candidate.channelHandoffDecisionStatus}`;
     }),
   ].join("\n");
 }
@@ -197,6 +207,7 @@ function compactRun(status: RunStatusSummary): OperatorDeskRun {
     approvalCount: status.approvalCount,
     artifactCount: status.artifactCount,
     blockedActionCount: status.blockedActionCount,
+    channelHandoffDecisionStatus: channelHandoffDecisionSummary(status.channelHandoffDecision),
     channelHandoffStatus: channelHandoffSummary(status.channelHandoff),
     evidenceStatus: status.evidenceStatus,
     finalReviewBundleStatus: finalReviewBundleSummary(status.finalReviewBundle),
@@ -221,6 +232,7 @@ function selectedRun(status: RunStatusSummary): OperatorDeskSelectedRun {
     ...compactRun(status),
     blockedActions: status.blockedActions,
     channelHandoff: status.channelHandoff,
+    channelHandoffDecision: status.channelHandoffDecision,
     commandQueue: buildOperatorDeskCommandQueue(status),
     diagnostics: status.diagnostics,
     finalReviewBundle: status.finalReviewBundle,
@@ -237,21 +249,4 @@ function selectedRun(status: RunStatusSummary): OperatorDeskSelectedRun {
       state: status.run.state,
     }),
   };
-}
-
-/**
- * Summarizes a render decision for display.
- *
- * @param decision - The render decision status to summarize
- * @returns A display string for the render decision
- */
-function renderDecisionSummary(decision: RenderDecisionStatus): string {
-  if (decision.kind === "present") {
-    return `${decision.decision.decision} by ${decision.decision.reviewedBy}`;
-  }
-  return decision.kind;
-}
-
-function renderDecisionReviewLines(decision: RenderDecisionStatus): string[] {
-  return decision.kind === "present" ? [`Render decision review: ${decision.reviewCommand}`] : [];
 }

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Box, render, Text, useApp, useInput } from "ink";
+import { channelHandoffDecisionLines } from "./operatorDeskChannelHandoffDecision.js";
 import { channelHandoffLines } from "./operatorDeskChannelHandoff.js";
 import { finalReviewBundleLines } from "./operatorDeskFinalReview.js";
 import {
@@ -155,6 +156,14 @@ function SelectedRun({ run }: { run: OperatorDeskSelectedRun }): React.ReactElem
     React.createElement(
       Text,
       null,
+      `Manual channel handoff decision: ${run.channelHandoffDecisionStatus}`,
+    ),
+    ...channelHandoffDecisionLines(run.channelHandoffDecision).map((line) =>
+      React.createElement(Text, { key: `channel-handoff-decision:${line}` }, line),
+    ),
+    React.createElement(
+      Text,
+      null,
       `Approvals/artifacts/warnings: ${run.approvalCount}/${run.artifactCount}/${run.warningCount}`,
     ),
     React.createElement(Text, null, `Blocked actions: ${run.blockedActionCount ?? "unknown"}`),
@@ -205,6 +214,7 @@ function formatRecentRunLine(run: OperatorDeskRun, selectionMarker: string): str
     `decision:${run.renderDecisionStatus}`,
     `bundle:${run.finalReviewBundleStatus}`,
     `channel:${run.channelHandoffStatus}`,
+    `channel-decision:${run.channelHandoffDecisionStatus}`,
   ].join("  ");
 }
 

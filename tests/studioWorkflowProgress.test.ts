@@ -2,10 +2,13 @@ import { describe, expect, it } from "vitest";
 import { getStudioRunDetail } from "../apps/studio/src/lib/runSummaries";
 import type { StatusWorkflowStep } from "../src/stages/statusWorkflow";
 import {
-  writeStudioChannelHandoff,
   writeStudioFinalReviewBundle,
   writeStudioRenderDecision,
 } from "./studioRenderDecisionFixtures";
+import {
+  writeStudioChannelHandoff,
+  writeStudioChannelHandoffDecision,
+} from "./studioChannelHandoffFixtures";
 import { createRenderedStudioRunFixture } from "./studioRunFixtures";
 import { useTempProject } from "./helpers";
 
@@ -86,9 +89,12 @@ describe("Studio workflow progress", () => {
       handoff: { status: "ready-for-manual-channel-review" },
       reviewPath: "production/channel_handoff.md",
     });
-    expect(detail?.nextRecommendedCommand).toContain(
-      "Manually review production/channel_handoff.md",
-    );
+    expect(detail?.channelHandoffDecision).toMatchObject({
+      kind: "missing",
+      message: "Manual channel-handoff decision has not been recorded.",
+    });
+    expect(detail?.nextRecommendedCommand).toContain("pnpm producer decide channel-handoff");
+    expect(detail?.nextRecommendedCommand).toContain("--thumbnail-candidate <candidate_id>");
     expect(detail?.nextRecommendedCommand).not.toContain("producer channel-handoff");
     expect(detail?.artifacts).toEqual(
       expect.arrayContaining([
@@ -104,6 +110,32 @@ describe("Studio workflow progress", () => {
       ["Final review handoff", "done"],
       ["Manual channel handoff", "done"],
     ]);
+  });
+
+  it("surfaces the recorded manual channel handoff decision in Studio read-only views", async () => {
+    const runId = await createRenderedStudioRunFixture();
+    await writeStudioChannelHandoffDecision(runId);
+    const detail = await getStudioRunDetail(runId);
+
+    expect(detail?.channelHandoffDecision).toMatchObject({
+      kind: "present",
+      decision: {
+        decision: "accepted-for-manual-channel-prep",
+        reviewedBy: "operator",
+        selectedThumbnailCandidate: { candidateId: "thumbnail-01-left" },
+      },
+      reviewPath: "production/channel_handoff_decision.md",
+    });
+    expect(detail?.nextRecommendedCommand).toContain("Private upload remains disabled");
+    expect(detail?.artifacts).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          exists: true,
+          label: "Manual channel handoff decision",
+          path: "production/channel_handoff_decision.md",
+        }),
+      ]),
+    );
   });
 });
 

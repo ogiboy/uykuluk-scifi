@@ -690,7 +690,9 @@ subtitle path, copy-ready title/description/tags, YouTube metadata draft, YouTub
 tracked thumbnail candidates, final-review digest binding, and manual checklist. It is not an upload
 command and does not approve private upload, scheduled publish, or public publish.
 `producer decide channel-handoff` then records the selected thumbnail candidate and channel-prep
-decision as durable local evidence while keeping upload and publish disabled.
+decision as durable local evidence while keeping upload and publish disabled. `producer status`,
+`producer desk`, and the read-only Studio run detail surface the recorded decision and its local
+review artifact.
 
 `thinkingMode` can be `default`, `think`, or `no_think`. Token caps are sent to Ollama as
 `num_predict` so local generation cannot run unbounded. Script generation splits the approved idea
@@ -781,6 +783,8 @@ Each run can write:
 - `production/thumbnail_candidates.json`, `production/thumbnail_candidates.md`,
   `production/channel_handoff.json`, and `production/channel_handoff.md` after accepted local final
   review and manual channel handoff generation;
+- `production/channel_handoff_decision.json` and `production/channel_handoff_decision.md` after a
+  manual channel-prep decision is recorded;
 - `costs/estimate.json` and `costs/estimate.md`;
 - `costs/ledger.jsonl`;
 - `costs/reservations.jsonl`;
