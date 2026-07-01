@@ -213,7 +213,8 @@ describe("draft render", () => {
     expect(review).toContain("atomic temporary output");
     expect(review).toContain("## Media Probe");
     expect(review).toContain("## Render Approval");
-    expect(review).toContain("## Source Frame Cadence");
+    expect(review).toContain("## Timestamped Review Map");
+    expect(review).toContain("| 0:00.00-0:01.00 | intro | source frame 1 |");
     expect(review).toContain("| intro | - | 1 | 1s | assets/intro/frames/intro_frame_00.jpg |");
     expect(review).toContain("| outro | - | 2 | 1.5s | assets/outro/frames/outro_frame_01.jpg |");
     expect(review).toContain(approval.approvalId);

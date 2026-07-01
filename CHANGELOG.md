@@ -24,6 +24,7 @@ _No unreleased changes yet._
 - show final-review and manual channel-handoff milestones in workflow progress.
 - make the manual channel handoff copy-ready with upload-prep fields, local input paths, and
   thumbnail review guidance.
+- add a timestamped review map to draft-render review Markdown.
 
 ## v0.59.0 (2026-07-01)
 

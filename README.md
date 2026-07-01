@@ -665,9 +665,9 @@ recording exactly one durable local operator decision. After that decision exist
 mutating state. Status, evidence Markdown, and the read-only Studio production-media panel surface
 that same safe review command when draft-render evidence is current, and rendered runs use the
 read-only review command as their next safe action. `production/render/draft_review.md` summarizes
-the final operator checklist, shows that review command, includes the decision command templates,
-and labels deterministic-reference audio renders as local timing drafts. It does not upload,
-schedule, or publish anything.
+the final operator checklist, shows that review command, includes a timestamped review map and
+decision command templates, and labels deterministic-reference audio renders as local timing drafts.
+It does not upload, schedule, or publish anything.
 
 `producer review-bundle --run <run_id>` creates a local final review handoff after a draft render
 exists. The bundle revalidates the current render-plan, voiceover, draft-render, and render-decision

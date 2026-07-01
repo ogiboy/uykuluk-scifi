@@ -2,6 +2,7 @@ import { bulletList, table } from "../utils/markdown.js";
 import { renderOperatorDecisionSection } from "./operatorReviewMarkdown.js";
 import { renderDecisionCommandTemplates } from "./renderDecisionCommands.js";
 import type { DraftRenderManifest } from "./renderEvidence.js";
+import { renderTimestampedReviewMap } from "./renderReviewTimelineMap.js";
 
 /**
  * Builds the draft render review markdown document.
@@ -95,6 +96,7 @@ export function renderDraftReviewMarkdown(manifest: DraftRenderManifest): string
       ]),
     ),
     "",
+    ...renderTimestampedReviewMap(manifest),
     ...frameCadenceSection(manifest),
     "## Overlays",
     "",
