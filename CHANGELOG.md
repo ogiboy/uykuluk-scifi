@@ -11,6 +11,20 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.57.0 (2026-07-01)
+
+### Tests
+
+- align candidate guard count (70b4829)
+
+### Features
+
+- add script quality guard check (a88e627)
+
+### Fixes
+
+- surface local model failures (81761a5)
+
 ## v0.56.1 (2026-06-30)
 
 ### Fixes
