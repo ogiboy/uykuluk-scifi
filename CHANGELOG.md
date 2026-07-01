@@ -11,6 +11,24 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.59.0 (2026-07-01)
+
+### Fixes
+
+- keep final handoff checks green (6ecb46d)
+
+### Tests
+
+- cover final bundle status guards (3ef411e)
+- cover final review bundle handoff (dd8e1d3)
+
+### Features
+
+- show final review bundle handoff (9b616c6)
+- surface final review bundle (5cb1063)
+- surface final bundle next action (868c522)
+- add local final handoff bundle (4c917d4)
+
 ## v0.58.0 (2026-07-01)
 
 ### Tests
