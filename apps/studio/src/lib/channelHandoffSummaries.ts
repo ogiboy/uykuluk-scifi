@@ -6,6 +6,7 @@ import {
   channelHandoffMarkdownPath,
   channelHandoffSchema,
   comparableChannelHandoffPayload,
+  isLegacyChannelHandoff,
   type ChannelHandoff,
   youtubeMetadataSchema,
 } from "../../../../src/stages/channelHandoffContracts";
@@ -55,7 +56,14 @@ export async function readStudioChannelHandoffSummary(
     return invalidHandoff(runId, "Manual channel handoff path is invalid.");
   }
   try {
-    const handoff = channelHandoffSchema.parse(JSON.parse(await readFile(target, "utf8")));
+    const rawHandoff = JSON.parse(await readFile(target, "utf8")) as unknown;
+    if (isLegacyChannelHandoff(rawHandoff)) {
+      return staleHandoff(
+        runId,
+        "Manual channel handoff uses legacy schema version 1; regenerate it.",
+      );
+    }
+    const handoff = channelHandoffSchema.parse(rawHandoff);
     const staleReason = await channelHandoffStaleReason(root, record, finalReviewBundle, handoff);
     if (staleReason) {
       return staleHandoff(runId, staleReason);

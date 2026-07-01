@@ -50,7 +50,7 @@ export async function createFinalReviewBundle(runId: string): Promise<FinalRevie
   const draftRender = await reviewDraftRender(run.runId);
   const renderDecision = await finalReviewDecision(run);
   const bundle = finalReviewBundleSchema.parse({
-    schemaVersion: 1,
+    schemaVersion: 2,
     runId: run.runId,
     createdAt: nowIso(),
     status: finalReviewStatus(renderDecision),

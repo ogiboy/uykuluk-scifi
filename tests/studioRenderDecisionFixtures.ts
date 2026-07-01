@@ -160,7 +160,7 @@ export async function writeStudioFinalReviewBundle(
       sceneCount: 1,
     },
     runId,
-    schemaVersion: 1,
+    schemaVersion: 2,
     status: decision,
     summary: "Local final review handoff is ready for operator review.",
     voiceover: {

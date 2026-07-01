@@ -33,7 +33,7 @@ describe("manual channel handoff", () => {
 
     expect(handoff).toMatchObject({
       runId,
-      schemaVersion: 1,
+      schemaVersion: 2,
       status: "ready-for-manual-channel-review",
       manualOnly: true,
       finalReviewBundle: {

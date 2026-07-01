@@ -109,7 +109,7 @@ describe("Studio run summary table copy", () => {
               sceneCount: 1,
             },
             runId: "run_202606280001_bundle",
-            schemaVersion: 1,
+            schemaVersion: 2,
             status: "accepted-for-local-review",
             summary: "Ready.",
             voiceover: {

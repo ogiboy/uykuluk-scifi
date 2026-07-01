@@ -21,8 +21,22 @@ const finalReviewArtifactSchema = z.strictObject({
   reviewPhase: z.string().min(1),
 });
 
-export const finalReviewBundleSchema = z.strictObject({
+const draftRenderChapterBindingSchema = z.strictObject({
+  jsonPath: z.string().min(1),
+  markdownPath: z.string().min(1),
+  jsonSha256: z.string().regex(/^[a-f0-9]{64}$/),
+  markdownSha256: z.string().regex(/^[a-f0-9]{64}$/),
+});
+
+const finalReviewBundleV1Schema = z.looseObject({
   schemaVersion: z.literal(1),
+  draftRender: z.looseObject({
+    chapters: z.undefined().optional(),
+  }),
+});
+
+export const finalReviewBundleSchema = z.strictObject({
+  schemaVersion: z.literal(2),
   runId: z.string().min(1),
   createdAt: z.iso.datetime(),
   status: z.enum(finalReviewBundleStatusValues),
@@ -49,12 +63,7 @@ export const finalReviewBundleSchema = z.strictObject({
     sha256: z.string().regex(/^[a-f0-9]{64}$/),
     durationSeconds: z.number().positive(),
     reviewCommand: z.string().min(1),
-    chapters: z.strictObject({
-      jsonPath: z.string().min(1),
-      markdownPath: z.string().min(1),
-      jsonSha256: z.string().regex(/^[a-f0-9]{64}$/),
-      markdownSha256: z.string().regex(/^[a-f0-9]{64}$/),
-    }),
+    chapters: draftRenderChapterBindingSchema,
     media: z.strictObject({
       audioCodec: z.string().min(1),
       videoCodec: z.string().min(1),
@@ -90,3 +99,7 @@ export const finalReviewBundleSchema = z.strictObject({
 });
 
 export type FinalReviewBundle = z.infer<typeof finalReviewBundleSchema>;
+
+export function isLegacyFinalReviewBundle(value: unknown): boolean {
+  return finalReviewBundleV1Schema.safeParse(value).success;
+}

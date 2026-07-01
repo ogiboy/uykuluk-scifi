@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { readFile, writeFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { artifactPath } from "../src/core/artifacts";
@@ -60,6 +61,35 @@ describe("draft render chapter draft evidence", () => {
 
     expect(evidence.draftRender).toMatchObject({
       message: expect.stringContaining("chapter Markdown"),
+      status: "block",
+    });
+  });
+
+  it("blocks copied chapter JSON even when the manifest digest is updated", async () => {
+    const runId = await prepareVoiceoverReadyRun();
+    await approveRender(runId);
+    await renderDraft(runId, {
+      ffmpegBinary: await createFakeFfmpeg(renderToolRoot("chapter-copied-json")),
+      ffprobeBinary: await createFakeFfprobe(renderToolRoot("chapter-copied-json")),
+      maxDurationSeconds: 8,
+    });
+    const chapterPath = artifactPath(runId, "production/render/youtube_chapters.json");
+    const manifestPath = artifactPath(runId, "production/render/render_manifest.json");
+    const chapterJson = JSON.parse(await readFile(chapterPath, "utf8")) as Record<string, unknown>;
+    const copiedChapterJson = `${JSON.stringify({ ...chapterJson, runId: "run_other" })}\n`;
+    const manifest = JSON.parse(await readFile(manifestPath, "utf8")) as {
+      chapterDraft: { jsonSha256: string };
+    };
+    manifest.chapterDraft.jsonSha256 = createHash("sha256").update(copiedChapterJson).digest("hex");
+    await writeFile(chapterPath, copiedChapterJson, "utf8");
+    await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
+
+    const evidence = (await generateEvidenceBundle(runId)) as {
+      draftRender: Extract<DraftRenderEvidence, { status: "block" }>;
+    };
+
+    expect(evidence.draftRender).toMatchObject({
+      message: expect.stringContaining("chapter JSON run id"),
       status: "block",
     });
   });

@@ -10,8 +10,12 @@ export function channelHandoffCommand(runId: string): string {
 
 const digestSchema = z.string().regex(/^[a-f0-9]{64}$/);
 
-export const channelHandoffSchema = z.strictObject({
+const legacyChannelHandoffSchema = z.looseObject({
   schemaVersion: z.literal(1),
+});
+
+export const channelHandoffSchema = z.strictObject({
+  schemaVersion: z.literal(2),
   runId: z.string().min(1),
   createdAt: z.iso.datetime(),
   status: z.literal("ready-for-manual-channel-review"),
@@ -67,7 +71,7 @@ export function buildChannelHandoffPayload(input: {
   youtube: YoutubeMetadataDraft;
 }): Omit<ChannelHandoff, "createdAt"> {
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     runId: input.runId,
     status: "ready-for-manual-channel-review",
     manualOnly: true,
@@ -97,6 +101,10 @@ export function buildChannelHandoffPayload(input: {
     blockedActions: channelHandoffBlockedActions(input.finalReviewBundle.blockedActions),
     nextSafeAction: channelHandoffNextSafeAction,
   };
+}
+
+export function isLegacyChannelHandoff(value: unknown): boolean {
+  return legacyChannelHandoffSchema.safeParse(value).success;
 }
 
 export function comparableChannelHandoffPayload(

@@ -773,6 +773,9 @@ Each run can write:
   `production/render/youtube_chapters.md` after exact render approval and local FFmpeg execution;
 - `production/review_bundle.json` and `production/review_bundle.md` after local draft-render
   evidence is current and the final review handoff is generated;
+- `production/thumbnail_candidates.json`, `production/thumbnail_candidates.md`,
+  `production/channel_handoff.json`, and `production/channel_handoff.md` after accepted local final
+  review and manual channel handoff generation;
 - `costs/estimate.json` and `costs/estimate.md`;
 - `costs/ledger.jsonl`;
 - `costs/reservations.jsonl`;

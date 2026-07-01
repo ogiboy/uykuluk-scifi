@@ -28,7 +28,7 @@ describe("local final review bundle", () => {
 
     expect(bundle).toMatchObject({
       runId,
-      schemaVersion: 1,
+      schemaVersion: 2,
       status: "decision-pending",
       renderDecision: {
         kind: "missing",
@@ -128,6 +128,27 @@ describe("local final review bundle", () => {
     );
 
     await expect(createFinalReviewBundle(runId)).rejects.toThrow(/different draft render digest/);
+  });
+
+  it("treats legacy schema v1 final-review bundles as stale instead of invalid", async () => {
+    const runId = await renderLocalDraft("final-review-legacy");
+    const bundle = await createFinalReviewBundle(runId);
+    await writeFile(
+      artifactPath(runId, finalReviewBundleJsonPath),
+      JSON.stringify({
+        ...bundle,
+        draftRender: { ...bundle.draftRender, chapters: undefined },
+        schemaVersion: 1,
+      }),
+      "utf8",
+    );
+
+    const status = await readRunStatus(runId);
+
+    expect(status.finalReviewBundle).toMatchObject({
+      kind: "stale",
+      message: expect.stringContaining("legacy schema version 1"),
+    });
   });
 
   it("prints parseable CLI JSON and persists the bundle artifacts", async () => {
