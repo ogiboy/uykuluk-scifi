@@ -86,9 +86,13 @@ export function finalReviewBundleReadyAction(bundle: FinalReviewBundle): string 
     return bundle.nextSafeAction;
   }
   if (bundle.status === "accepted-for-local-review") {
-    return `Local final review handoff is ready at ${finalReviewBundleMarkdownPath}. Upload remains disabled until a future private-upload approval/config path exists.`;
+    return acceptedFinalReviewNextSafeAction(bundle.runId);
   }
   return bundle.nextSafeAction;
+}
+
+export function acceptedFinalReviewNextSafeAction(runId: string): string {
+  return `Prepare the manual channel handoff with pnpm producer channel-handoff --run ${runId}. Review ${finalReviewBundleMarkdownPath} first; upload remains disabled until a future private-upload approval/config path exists.`;
 }
 
 function presentDecisionStaleReason(

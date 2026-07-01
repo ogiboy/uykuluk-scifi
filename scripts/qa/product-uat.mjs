@@ -12,6 +12,7 @@ import {
 import {
   assertRenderedArtifacts,
   assertStaleEvidenceRecovery,
+  assertTamperedFinalReviewBlocksChannelHandoff,
   assertTamperedRenderReviewCommandBlocks,
   createIdeaOnlyRun,
   createVoiceReadyRun,
@@ -140,16 +141,40 @@ try {
     label: "final local review bundle is generated",
     scenario: "happy path",
   });
+  await assertTamperedFinalReviewBlocksChannelHandoff({
+    assertCondition,
+    pnpm,
+    run,
+    runId: renderedRunId,
+    workdir,
+  });
   run([pnpm, "producer", "status", "--run", renderedRunId], {
     expectOutput: "Final review bundle: accepted-for-local-review",
     label: "status surfaces final review bundle",
     scenario: "happy path",
   });
-  run([pnpm, "producer", "status", "--run", renderedRunId], {
+  run([pnpm, "producer", "channel-handoff", "--run", renderedRunId], {
+    expectOutput: "Manual channel handoff package generated.",
+    label: "manual channel handoff is generated",
+    scenario: "happy path",
+  });
+  const channelHandoffStatus = run([pnpm, "producer", "status", "--run", renderedRunId], {
     expectOutput: `Render decision review: pnpm producer review render-decision --run ${renderedRunId}`,
     label: "status surfaces render-decision review command",
     scenario: "happy path",
   });
+  assertCondition(
+    channelHandoffStatus.stdout.includes("Manual channel handoff: ready-for-manual-channel-review"),
+    "status surfaces completed manual channel handoff",
+    "happy path",
+  );
+  assertCondition(
+    channelHandoffStatus.stdout.includes(
+      "Manual channel handoff artifact: production/channel_handoff.md",
+    ),
+    "status surfaces manual channel handoff artifact",
+    "happy path",
+  );
   const renderedDesk = run([pnpm, "producer", "desk", "--run", renderedRunId, "--plain"], {
     expectOutput: "Operator commands:",
     label: "operator desk surfaces review command queue",

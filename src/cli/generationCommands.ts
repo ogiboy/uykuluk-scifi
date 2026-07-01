@@ -1,7 +1,9 @@
 import { Command } from "commander";
+import { createChannelHandoff } from "../stages/channelHandoff.js";
 import { estimateCost } from "../stages/estimate.js";
 import { generateEvidenceBundle } from "../stages/evidence.js";
 import { createFinalReviewBundle } from "../stages/finalReviewBundle.js";
+import { finalReviewBundleMarkdownPath } from "../stages/finalReviewBundleContracts.js";
 import { runIdeas } from "../stages/ideas.js";
 import { generateProductionPackage } from "../stages/productionPackage.js";
 import { generateRenderPlan } from "../stages/renderPlan.js";
@@ -108,6 +110,20 @@ export function registerGenerationCommands(program: Command, wrap: Wrap): void {
         );
       }),
     );
+
+  program
+    .command("channel-handoff")
+    .requiredOption("--run <run_id>")
+    .option("--json", "Print the raw manual channel handoff JSON for automation.")
+    .description("Create a local manual channel handoff package after accepted final review.")
+    .action(
+      wrap(async (options: { json?: boolean; run: string }) => {
+        const handoff = await createChannelHandoff(options.run);
+        console.log(
+          options.json ? JSON.stringify(handoff, null, 2) : formatChannelHandoffConsole(handoff),
+        );
+      }),
+    );
 }
 
 /**
@@ -133,9 +149,27 @@ function formatFinalReviewBundleConsole(
   return [
     "Local final review bundle generated.",
     `Status: ${bundle.status}`,
-    "Bundle: production/review_bundle.md",
+    `Bundle: ${finalReviewBundleMarkdownPath}`,
     `Draft render: ${bundle.draftRender.path}`,
     `Next safe action: ${bundle.nextSafeAction}`,
+    "Upload and publish remain disabled.",
+  ].join("\n");
+}
+
+function formatChannelHandoffConsole(
+  handoff: Awaited<ReturnType<typeof createChannelHandoff>>,
+): string {
+  return [
+    "Manual channel handoff package generated.",
+    `Status: ${handoff.status}`,
+    "Package: production/channel_handoff.md",
+    `Draft render: ${handoff.media.draftRenderPath}`,
+    `Subtitles: ${handoff.media.subtitlesPath}`,
+    `Chapters: ${handoff.media.chaptersPath}`,
+    `Thumbnails: ${handoff.thumbnailCandidates.markdownPath}`,
+    `Metadata: ${handoff.youtube.metadataPath}`,
+    `Title: ${handoff.youtube.title}`,
+    `Next safe action: ${handoff.nextSafeAction}`,
     "Upload and publish remain disabled.",
   ].join("\n");
 }

@@ -117,6 +117,8 @@ export async function createMinimalRenderAssets(): Promise<void> {
     ["assets/outro/youtube_end_screen_1920x1080.jpg", "outro"],
     ["assets/outro/frames/outro_frame_00.jpg", "outro frame 0"],
     ["assets/outro/frames/outro_frame_01.jpg", "outro frame 1"],
+    ["assets/thumbnails/thumbnail_template_01_left_1280x720.jpg", "thumbnail template"],
+    ["assets/thumbnails/thumbnail_text_safe_overlay_01_left_1280x720.png", "thumbnail overlay"],
     ["assets/backgrounds/plate_test_1920x1080.jpg", "background"],
     ["assets/icons/icon_fact_check_512.png", "fact icon"],
     ["assets/waveforms/waveform_overlay_thin_panel_transparent_1920x240.png", "waveform"],

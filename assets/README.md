@@ -122,6 +122,10 @@ when present. The draft FFmpeg renderer can expand those committed frames into l
 bookend inputs for review MP4s. These frame sources remain tracked inputs, not generated run output
 or upload approval.
 
+The manual channel handoff derives `production/thumbnail_candidates.*` from tracked
+`thumbnails/thumbnail_template_*` and matching `thumbnail_text_safe_overlay_*` files. These are
+review candidates only; they do not generate images, upload media, or approve publishing.
+
 ## Still Useful To Create Later
 
 - Editable Figma, PSD, SVG, or layered source files for thumbnail and overlay text changes.

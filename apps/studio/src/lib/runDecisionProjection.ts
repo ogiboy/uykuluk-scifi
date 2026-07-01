@@ -6,9 +6,10 @@ import {
 import type { StatusWorkflowStep } from "../../../../src/stages/statusWorkflow";
 import { buildStatusWorkflowProgress } from "../../../../src/stages/statusWorkflow";
 import { evidenceNextRecommendedCommand, type StudioEvidenceSummary } from "./evidenceSummaries";
+import type { StudioChannelHandoffSummary } from "./channelHandoffSummaries";
 import type { StudioFinalReviewBundleSummary } from "./finalReviewBundleSummaries";
 import type { StudioRenderDecisionSummary } from "./renderDecisionSummaries";
-import type { RunRecord, StudioRunState } from "./runSummaries";
+import type { RunRecord, StudioRunState } from "./runRecordTypes";
 
 /**
  * Builds the read-only workflow progress projection for a Studio run.
@@ -17,12 +18,16 @@ import type { RunRecord, StudioRunState } from "./runSummaries";
  * @returns Ordered v1 workflow progress rows.
  */
 export function studioWorkflowProgress(input: {
+  channelHandoff: StudioChannelHandoffSummary;
+  finalReviewBundle: StudioFinalReviewBundleSummary;
   mediaArtifacts: Parameters<typeof buildStatusWorkflowProgress>[0]["mediaArtifacts"];
   readinessStatus: Parameters<typeof buildStatusWorkflowProgress>[0]["readinessStatus"];
   renderDecision: StudioRenderDecisionSummary;
   state: StudioRunState;
 }): StatusWorkflowStep[] {
   return buildStatusWorkflowProgress({
+    channelHandoff: studioWorkflowArtifactStatus(input.channelHandoff),
+    finalReviewBundle: studioWorkflowArtifactStatus(input.finalReviewBundle),
     mediaArtifacts: input.mediaArtifacts,
     readinessStatus: input.readinessStatus,
     renderDecision: studioWorkflowRenderDecision(input.renderDecision),
@@ -38,6 +43,7 @@ export function studioWorkflowProgress(input: {
  * @param runId - The run identifier.
  * @param renderDecision - The local render decision summary.
  * @param finalReviewBundle - The local final review bundle summary.
+ * @param channelHandoff - The manual channel handoff summary.
  * @returns A command or operator action for the next safe step.
  */
 export function studioNextRecommendedCommand(
@@ -46,11 +52,21 @@ export function studioNextRecommendedCommand(
   runId: string,
   renderDecision: StudioRenderDecisionSummary,
   finalReviewBundle: StudioFinalReviewBundleSummary,
+  channelHandoff: StudioChannelHandoffSummary,
 ): string | null {
-  if (finalReviewBundle.kind === "present") {
+  if (finalReviewBundle.kind === "invalid" || finalReviewBundle.kind === "stale") {
     return finalReviewBundle.nextAction;
   }
-  if (finalReviewBundle.kind === "invalid" || finalReviewBundle.kind === "stale") {
+  if (finalReviewBundle.kind === "present") {
+    if (channelHandoff.kind === "present") {
+      return channelHandoff.nextAction;
+    }
+    if (channelHandoff.kind === "invalid" || channelHandoff.kind === "stale") {
+      return channelHandoff.nextAction;
+    }
+    return finalReviewBundle.nextAction;
+  }
+  if (finalReviewBundle.kind === "missing" && renderDecision.kind === "present") {
     return finalReviewBundle.nextAction;
   }
   if (renderDecision.kind === "present") {
@@ -105,6 +121,25 @@ function studioWorkflowRenderDecision(
     return {
       kind: renderDecision.kind,
       message: renderDecision.message,
+    };
+  }
+  return { kind: "missing" };
+}
+
+function studioWorkflowArtifactStatus(
+  artifact: StudioChannelHandoffSummary | StudioFinalReviewBundleSummary,
+): Parameters<typeof buildStatusWorkflowProgress>[0]["finalReviewBundle"] {
+  if (artifact.kind === "present") {
+    return {
+      kind: "present",
+      message: artifact.message,
+      status: "bundle" in artifact ? artifact.bundle.status : artifact.handoff.status,
+    };
+  }
+  if (artifact.kind === "invalid" || artifact.kind === "stale") {
+    return {
+      kind: artifact.kind,
+      message: artifact.message,
     };
   }
   return { kind: "missing" };

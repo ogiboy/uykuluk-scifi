@@ -142,8 +142,7 @@ async function evaluateIdeas(
 }
 
 type ProviderRequestResult =
-  | { ok: true; result: GenerateTextResult }
-  | { check: LocalModelEvalCheck; ok: false };
+  { ok: true; result: GenerateTextResult } | { check: LocalModelEvalCheck; ok: false };
 
 async function requestProvider(
   provider: LlmProvider,

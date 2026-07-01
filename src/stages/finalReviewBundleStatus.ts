@@ -6,6 +6,7 @@ import {
   finalReviewBundleJsonPath,
   finalReviewBundleMarkdownPath,
   finalReviewBundleSchema,
+  isLegacyFinalReviewBundle,
   type FinalReviewBundle,
 } from "./finalReviewBundleContracts.js";
 import {
@@ -41,21 +42,15 @@ export async function readFinalReviewBundleStatus(
   run: RunRecord,
 ): Promise<FinalReviewBundleStatus> {
   const nextAction = run.state === "RENDERED" ? finalReviewBundleCommand(run.runId) : null;
+  let bundle: FinalReviewBundle;
   try {
-    const bundle = finalReviewBundleSchema.parse(
-      await readJsonFile<unknown>(artifactPath(run.runId, finalReviewBundleJsonPath)),
+    const rawBundle = await readJsonFile<unknown>(
+      artifactPath(run.runId, finalReviewBundleJsonPath),
     );
-    const staleReason = await finalReviewBundleStaleReason(run, bundle);
-    if (staleReason) {
-      return stale(staleReason, run.runId);
+    if (isLegacyFinalReviewBundle(rawBundle)) {
+      return stale("Final review bundle uses legacy schema version 1; regenerate it.", run.runId);
     }
-    return {
-      bundle,
-      kind: "present",
-      message: `Final review bundle ready: ${bundle.status}.`,
-      nextAction: finalReviewBundleReadyAction(bundle),
-      reviewPath: finalReviewBundleMarkdownPath,
-    };
+    bundle = finalReviewBundleSchema.parse(rawBundle);
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") {
       return { kind: "missing", nextAction };
@@ -68,6 +63,27 @@ export async function readFinalReviewBundleStatus(
       nextAction: finalReviewBundleCommand(run.runId),
     };
   }
+  try {
+    const staleReason = await finalReviewBundleStaleReason(run, bundle);
+    if (staleReason) {
+      return stale(staleReason, run.runId);
+    }
+  } catch (error) {
+    return {
+      kind: "invalid",
+      message: `Final review bundle dependency check failed: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+      nextAction: finalReviewBundleCommand(run.runId),
+    };
+  }
+  return {
+    bundle,
+    kind: "present",
+    message: `Final review bundle ready: ${bundle.status}.`,
+    nextAction: finalReviewBundleReadyAction(bundle),
+    reviewPath: finalReviewBundleMarkdownPath,
+  };
 }
 
 async function finalReviewBundleStaleReason(

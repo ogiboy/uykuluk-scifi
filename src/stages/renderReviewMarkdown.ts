@@ -2,6 +2,7 @@ import { bulletList, table } from "../utils/markdown.js";
 import { renderOperatorDecisionSection } from "./operatorReviewMarkdown.js";
 import { renderDecisionCommandTemplates } from "./renderDecisionCommands.js";
 import type { DraftRenderManifest } from "./renderEvidence.js";
+import { renderTimestampedReviewMap } from "./renderReviewTimelineMap.js";
 
 /**
  * Builds the draft render review markdown document.
@@ -27,6 +28,7 @@ export function renderDraftReviewMarkdown(manifest: DraftRenderManifest): string
         ["Duration", `${manifest.output.durationSeconds}s`],
         ["Bytes", String(manifest.output.bytes)],
         ["SHA-256", manifest.output.sha256],
+        ["YouTube chapter draft", manifest.chapterDraft.markdownPath],
       ],
     ),
     "",
@@ -94,6 +96,19 @@ export function renderDraftReviewMarkdown(manifest: DraftRenderManifest): string
         item.sourceFrameAssets ? String(item.sourceFrameAssets.length) : "-",
       ]),
     ),
+    "",
+    ...renderTimestampedReviewMap(manifest),
+    "## YouTube Chapter Draft",
+    "",
+    table(
+      ["Artifact", "SHA-256"],
+      [
+        [manifest.chapterDraft.jsonPath, manifest.chapterDraft.jsonSha256],
+        [manifest.chapterDraft.markdownPath, manifest.chapterDraft.markdownSha256],
+      ],
+    ),
+    "",
+    "Review the chapter draft locally before copying it into any future upload workflow. It does not approve upload or publish.",
     "",
     ...frameCadenceSection(manifest),
     "## Overlays",
