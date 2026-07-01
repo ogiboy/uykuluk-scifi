@@ -1,4 +1,5 @@
 import path from "node:path";
+import type { RunState } from "../../../../src/core/state";
 import type { RunDiagnosticSummary } from "../../../../src/stages/runDiagnosticSummaryContracts";
 import {
   productionMediaStatus,
@@ -9,6 +10,10 @@ import type { StatusWorkflowStep } from "../../../../src/stages/statusWorkflow";
 import { evidenceBlockedActionMessages } from "../../../../src/stages/statusBlockedActions";
 import { readReviewArtifactPreviews, type StudioArtifactPreview } from "./artifactPreviews";
 import { readStudioEvidenceSummary, type StudioEvidenceSummary } from "./evidenceSummaries";
+import {
+  readStudioFinalReviewBundleSummary,
+  type StudioFinalReviewBundleSummary,
+} from "./finalReviewBundleSummaries";
 import { projectRoot } from "./projectRoot";
 import {
   readStudioReadinessSnapshot,
@@ -28,26 +33,6 @@ import {
 } from "./runDecisionProjection";
 import { isRunId, readRunRecord, readStudioRunDiagnostics, safeReaddir } from "./runSummaryFiles";
 
-export type StudioRunState =
-  | "NEW"
-  | "IDEAS_GENERATED"
-  | "IDEA_APPROVED"
-  | "SCRIPT_GENERATED"
-  | "SCRIPT_REVIEWED"
-  | "SCRIPT_APPROVED"
-  | "PRODUCTION_PACKAGE_GENERATED"
-  | "COST_ESTIMATED"
-  | "PAID_GENERATION_COST_APPROVED"
-  | "READY_FOR_MANUAL_PRODUCTION"
-  | "RENDER_APPROVED"
-  | "RENDERED"
-  | "UPLOAD_APPROVED"
-  | "UPLOADED_PRIVATE"
-  | "PUBLISH_APPROVED"
-  | "SCHEDULED_OR_PUBLIC"
-  | "ARCHIVED"
-  | "FAILED";
-
 export type StudioRunSummary = {
   approvalCount: number;
   artifactCount: number;
@@ -57,6 +42,7 @@ export type StudioRunSummary = {
   evidenceMessage: string;
   evidenceNextAction?: string;
   evidenceStatus: StudioEvidenceSummary["status"];
+  finalReviewBundle: StudioFinalReviewBundleSummary;
   nextRecommendedCommand: string | null;
   readinessPassed: boolean | null;
   readinessMessage: string;
@@ -69,6 +55,8 @@ export type StudioRunSummary = {
   warningCount: number;
   workflowProgress: StatusWorkflowStep[];
 };
+
+export type StudioRunState = RunState;
 
 export type StudioRunDetail = StudioRunSummary & {
   approvals: unknown[];
@@ -131,13 +119,25 @@ export async function getStudioRunDetail(runId: string): Promise<StudioRunDetail
     readStudioReadinessSnapshot(root, runId),
   ]);
   const renderDecision = await readStudioRenderDecisionSummary(root, record, evidence.snapshot);
+  const finalReviewBundle = await readStudioFinalReviewBundleSummary(
+    root,
+    record,
+    evidence.snapshot,
+    renderDecision,
+  );
   const readinessSummary = summarizeReadinessSnapshot(
     readiness.snapshot,
     record.runId,
     record.state,
     readiness.malformed,
   );
-  const summary = summarizeRun(record, evidence, readinessSummary, renderDecision);
+  const summary = summarizeRun(
+    record,
+    evidence,
+    readinessSummary,
+    renderDecision,
+    finalReviewBundle,
+  );
   return {
     ...summary,
     approvals: record.approvals ?? [],
@@ -172,11 +172,18 @@ async function readRunSummary(root: string, runId: string): Promise<StudioRunSum
     readStudioReadinessSnapshot(root, runId),
   ]);
   const renderDecision = await readStudioRenderDecisionSummary(root, record, evidence.snapshot);
+  const finalReviewBundle = await readStudioFinalReviewBundleSummary(
+    root,
+    record,
+    evidence.snapshot,
+    renderDecision,
+  );
   return summarizeRun(
     record,
     evidence,
     summarizeReadinessSnapshot(readiness.snapshot, record.runId, record.state, readiness.malformed),
     renderDecision,
+    finalReviewBundle,
   );
 }
 
@@ -187,6 +194,7 @@ async function readRunSummary(root: string, runId: string): Promise<StudioRunSum
  * @param evidence - The evidence summary for the run.
  * @param readiness - The readiness summary for the run.
  * @param renderDecision - The local render decision summary for the run.
+ * @param finalReviewBundle - The local final review bundle summary for the run.
  * @returns The combined run summary.
  */
 function summarizeRun(
@@ -194,6 +202,7 @@ function summarizeRun(
   evidence: StudioEvidenceSummary,
   readiness: StudioReadinessSummary,
   renderDecision: StudioRenderDecisionSummary,
+  finalReviewBundle: StudioFinalReviewBundleSummary,
 ): StudioRunSummary {
   const runId = record.runId ?? "unknown";
   const blockedActions = evidenceBlockedActionMessages(evidence.snapshot, runId);
@@ -210,11 +219,13 @@ function summarizeRun(
     evidenceMessage: evidence.message,
     evidenceNextAction: evidence.nextAction,
     evidenceStatus: evidence.status,
+    finalReviewBundle,
     nextRecommendedCommand: studioNextRecommendedCommand(
       evidence,
       record.state ?? "FAILED",
       runId,
       renderDecision,
+      finalReviewBundle,
     ),
     readinessMessage: readiness.message,
     readinessNextAction: readiness.nextAction,

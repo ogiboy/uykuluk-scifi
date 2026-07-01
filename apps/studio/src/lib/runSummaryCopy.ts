@@ -24,3 +24,18 @@ export function formatRunRenderDecision(run: Pick<StudioRunSummary, "renderDecis
   }
   return run.renderDecision.kind;
 }
+
+/**
+ * Formats the local final-review bundle status for compact run surfaces.
+ *
+ * @param run - The run summary containing the final review bundle state.
+ * @returns Operator-facing final-review bundle copy for list and latest-run cards.
+ */
+export function formatRunFinalReviewBundle(
+  run: Pick<StudioRunSummary, "finalReviewBundle">,
+): string {
+  if (run.finalReviewBundle.kind === "present") {
+    return run.finalReviewBundle.bundle.status;
+  }
+  return run.finalReviewBundle.kind;
+}
