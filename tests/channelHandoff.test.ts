@@ -56,8 +56,13 @@ describe("manual channel handoff", () => {
     const markdown = await readFile(artifactPath(runId, channelHandoffMarkdownPath), "utf8");
     expect(markdown).toContain("# Manual Channel Handoff");
     expect(markdown).toContain("Local preparation artifact only");
+    expect(markdown).toContain("## Manual Upload Preparation");
+    expect(markdown).toContain("```text");
     expect(markdown).toContain("production/render/draft.mp4");
+    expect(markdown).toContain("production/subtitles.srt");
     expect(markdown).toContain("production/youtube_metadata.json");
+    expect(markdown).toContain("## Thumbnail Preparation");
+    expect(markdown).toContain("assets/thumbnails/");
     expect(markdown.toLowerCase()).toContain("does not upload");
   });
 
@@ -83,6 +88,19 @@ describe("manual channel handoff", () => {
     await expect(readFile(artifactPath(runId, channelHandoffJsonPath), "utf8")).resolves.toContain(
       '"ready-for-manual-channel-review"',
     );
+  });
+
+  it("prints a copy-ready non-JSON CLI handoff summary", async () => {
+    const runId = await acceptedFinalReviewRun("channel-handoff-cli-summary");
+
+    const result = runCli(["channel-handoff", "--run", runId]);
+
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain("Package: production/channel_handoff.md");
+    expect(result.stdout).toContain("Subtitles: production/subtitles.srt");
+    expect(result.stdout).toContain("Metadata: production/youtube_metadata.json");
+    expect(result.stdout).toContain("Title: ");
+    expect(result.stdout).toContain("Upload and publish remain disabled.");
   });
 
   it("surfaces completed manual handoff in status and operator desk output", async () => {

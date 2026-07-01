@@ -63,11 +63,10 @@ export function studioNextRecommendedCommand(
   if (finalReviewBundle.kind === "present") {
     return finalReviewBundle.nextAction;
   }
-  if (
-    finalReviewBundle.kind === "missing" ||
-    finalReviewBundle.kind === "invalid" ||
-    finalReviewBundle.kind === "stale"
-  ) {
+  if (finalReviewBundle.kind === "invalid" || finalReviewBundle.kind === "stale") {
+    return finalReviewBundle.nextAction;
+  }
+  if (finalReviewBundle.kind === "missing" && renderDecision.kind === "present") {
     return finalReviewBundle.nextAction;
   }
   if (renderDecision.kind === "present") {

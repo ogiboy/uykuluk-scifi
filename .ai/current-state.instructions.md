@@ -226,14 +226,14 @@
   artifacts, render decisions, and a read-only v1 workflow progress projection. It is an operator
   surface only and does not own workflow transitions or mutate run state.
 - `producer decide render` records the human decision after local draft-render review as durable
-  JSON/Markdown evidence under `production/render/`. It does not approve upload or publish and keeps
-  the run in `RENDERED`. `producer status`, `producer desk`, and product UAT surface the recorded
-  decision so operators do not loop back to render review after a decision is recorded.
+  JSON/Markdown evidence under `production/render/`, keeps the run in `RENDERED`, and does not
+  approve upload or publish. Status, desk, and UAT surface the recorded decision.
 - `producer review-bundle` writes a local final review handoff under `production/review_bundle.*`
   after current draft-render evidence. It revalidates render-plan, voiceover, draft-render, and
   render-decision status; stale/invalid evidence blocks. The bundle is a local operator index only.
 - `producer channel-handoff` writes `production/channel_handoff.*` from accepted final review
-  evidence without YouTube API calls or approval authority.
+  evidence, including copy-ready upload-prep fields, local paths, thumbnail guidance, and digest
+  binding.
 - Studio run detail now shows the same local render-decision command templates for rendered runs
   with current draft-render evidence and no recorded decision, and exposes one guarded local
   `render.decide` route that writes the same durable decision evidence as the CLI. It does not

@@ -45,6 +45,41 @@ export function renderChannelHandoffMarkdown(handoff: ChannelHandoff): string {
     "",
     handoff.youtube.description,
     "",
+    "## Manual Upload Preparation",
+    "",
+    "> Copy these fields only after the local review is complete and a future private-upload approval path exists.",
+    "",
+    "Title:",
+    "",
+    codeBlock(handoff.youtube.title),
+    "",
+    "Description:",
+    "",
+    codeBlock(handoff.youtube.description),
+    "",
+    "Tags:",
+    "",
+    codeBlock(handoff.youtube.tags.join(", ")),
+    "",
+    table(
+      ["Input", "Local path"],
+      [
+        ["Video file", handoff.media.draftRenderPath],
+        ["Subtitle file", handoff.media.subtitlesPath],
+        ["Metadata JSON", handoff.youtube.metadataPath],
+        ["Final review Markdown", handoff.finalReviewBundle.markdownPath],
+        ["Manual handoff Markdown", "production/channel_handoff.md"],
+      ],
+    ),
+    "",
+    "## Thumbnail Preparation",
+    "",
+    bulletList([
+      "Choose or revise the thumbnail manually from tracked `assets/thumbnails/` templates.",
+      "Confirm title-safe areas, contrast, channel tone, and no misleading visual claim.",
+      "Keep the selected thumbnail path as operator evidence before any future upload approval.",
+    ]),
+    "",
     "## Source Review Evidence",
     "",
     table(
@@ -69,4 +104,8 @@ export function renderChannelHandoffMarkdown(handoff: ChannelHandoff): string {
     "",
     handoff.nextSafeAction,
   ].join("\n");
+}
+
+function codeBlock(value: string): string {
+  return ["```text", value, "```"].join("\n");
 }

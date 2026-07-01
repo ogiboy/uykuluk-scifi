@@ -680,8 +680,9 @@ to the bundle command.
 `producer channel-handoff --run <run_id>` creates a manual channel preparation package only after
 the final review bundle is trusted and accepted for local review. It writes
 `production/channel_handoff.json` and `production/channel_handoff.md` with the draft MP4 path,
-subtitle path, YouTube metadata draft, final-review digest binding, and manual checklist. It is not
-an upload command and does not approve private upload, scheduled publish, or public publish.
+subtitle path, copy-ready title/description/tags, YouTube metadata draft, final-review digest
+binding, thumbnail review guidance, and manual checklist. It is not an upload command and does not
+approve private upload, scheduled publish, or public publish.
 
 `thinkingMode` can be `default`, `think`, or `no_think`. Token caps are sent to Ollama as
 `num_predict` so local generation cannot run unbounded. Script generation splits the approved idea

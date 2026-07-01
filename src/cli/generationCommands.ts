@@ -164,7 +164,9 @@ function formatChannelHandoffConsole(
     `Status: ${handoff.status}`,
     "Package: production/channel_handoff.md",
     `Draft render: ${handoff.media.draftRenderPath}`,
+    `Subtitles: ${handoff.media.subtitlesPath}`,
     `Metadata: ${handoff.youtube.metadataPath}`,
+    `Title: ${handoff.youtube.title}`,
     `Next safe action: ${handoff.nextSafeAction}`,
     "Upload and publish remain disabled.",
   ].join("\n");

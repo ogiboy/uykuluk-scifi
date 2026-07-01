@@ -14,6 +14,8 @@ future generated release notes can be inserted predictably.
 - add a manual-only channel handoff package after accepted local final review.
 - surface completed manual channel handoff status in CLI, operator desk, Studio, and product UAT.
 - show final-review and manual channel-handoff milestones in workflow progress.
+- make the manual channel handoff copy-ready with upload-prep fields, local input paths, and
+  thumbnail review guidance.
 
 ## v0.59.0 (2026-07-01)
 

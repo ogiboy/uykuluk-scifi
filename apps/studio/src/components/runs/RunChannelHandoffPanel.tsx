@@ -30,6 +30,22 @@ export function RunChannelHandoffPanel({ channelHandoff }: RunChannelHandoffPane
             <dd>{channelHandoff.reviewPath}</dd>
           </div>
           <div>
+            <dt>Draft MP4</dt>
+            <dd>{channelHandoff.handoff.media.draftRenderPath}</dd>
+          </div>
+          <div>
+            <dt>Subtitles</dt>
+            <dd>{channelHandoff.handoff.media.subtitlesPath}</dd>
+          </div>
+          <div>
+            <dt>YouTube title</dt>
+            <dd>{channelHandoff.handoff.youtube.title}</dd>
+          </div>
+          <div>
+            <dt>Metadata JSON</dt>
+            <dd>{channelHandoff.handoff.youtube.metadataPath}</dd>
+          </div>
+          <div>
             <dt>Created</dt>
             <dd>{channelHandoff.handoff.createdAt}</dd>
           </div>
