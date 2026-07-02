@@ -1,6 +1,6 @@
 import path from "node:path";
 import { spawnSync } from "node:child_process";
-import { readFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { useTempProject } from "./helpers";
 
@@ -91,6 +91,34 @@ describe("producer local-model eval CLI", () => {
       }),
       recommendedCandidate: null,
     });
+  });
+
+  it("can discover ignored local GGUF candidates without mutating project config", async () => {
+    const beforeConfig = await readFile("producer.config.json", "utf8");
+    await mkdir("models/llm", { recursive: true });
+    await writeFile("models/llm/zeta.Q4_K_M.gguf", "gguf fixture", "utf8");
+    await writeFile("models/llm/alpha.Q4_K_M.gguf", "gguf fixture", "utf8");
+    await writeFile("models/llm/not-a-model.txt", "ignored", "utf8");
+
+    const result = runCli([
+      "eval",
+      "local-model-candidates",
+      "--llm-mode",
+      "mock",
+      "--include-local-gguf",
+      "--json",
+    ]);
+
+    expect(result.status).toBe(0);
+    expect(result.stderr).toBe("");
+    expect(JSON.parse(result.stdout) as unknown).toMatchObject({
+      candidates: [
+        expect.objectContaining({ configuredModel: "models/llm/alpha.Q4_K_M.gguf" }),
+        expect.objectContaining({ configuredModel: "models/llm/zeta.Q4_K_M.gguf" }),
+      ],
+      providerMode: "mock",
+    });
+    await expect(readFile("producer.config.json", "utf8")).resolves.toBe(beforeConfig);
   });
 });
 
