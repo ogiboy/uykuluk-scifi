@@ -64,7 +64,7 @@ export async function recordRenderDecision(
       reviewCommand: manifest.ffmpeg.reviewCommand,
       sha256: manifest.output.sha256,
     },
-    nextSafeAction: nextSafeAction(parsed.decision, run.runId),
+    nextSafeAction: renderDecisionNextSafeAction(parsed.decision, run.runId),
     notes: parsed.notes,
     renderApproval: manifest.renderApproval,
     reviewedBy: parsed.reviewedBy,
@@ -154,9 +154,10 @@ export function renderDecisionMarkdown(record: RenderDecisionRecord): string {
  * Computes the next safe action for a render decision.
  *
  * @param decision - The recorded render decision
+ * @param runId - The run identifier used in follow-up commands
  * @returns Guidance for the next allowed step based on `decision`
  */
-function nextSafeAction(decision: RenderDecision, runId: string): string {
+export function renderDecisionNextSafeAction(decision: RenderDecision, runId: string): string {
   if (decision === "accepted-for-local-review") {
     return `Create the local final review handoff with ${finalReviewBundleCommand(runId)}. Upload remains disabled until a future private-upload approval/config path exists.`;
   }
