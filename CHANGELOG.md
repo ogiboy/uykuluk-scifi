@@ -26,6 +26,20 @@ _No unreleased changes yet._
 - refresh Studio run detail automatically after guarded local approval or render-decision actions
   succeed.
 - add a shadcn-powered Studio run queue explorer with operator filters and run search.
+- extend the Studio run queue into an operator workbench with shadcn sort, blocker-limit, density,
+  popover, slider, radio, and result-summary controls while keeping it read-only.
+- keep run-detail next safe action, blockers, mutation session, and guarded review controls visible
+  in a persistent review rail, with a mobile action-summary sheet and accordion diagnostics.
+- show generated idea choices as shadcn radio-card options before guarded Studio idea approval,
+  while retaining the typed local approval route.
+- stream allowlisted local voiceover and draft-render artifacts into Studio media cards for
+  browser-based operator review without exposing arbitrary run files or approving upload/publish.
+- add a compact Studio run-review brief that ties blockers, readiness, evidence, media verification,
+  render decisions, final review, and the next safe action into one operator-facing summary.
+- show guarded Studio render-decision choices as explicit radio cards with CLI-equivalent command
+  previews before confirmation.
+- add status badges to Studio run-detail review tabs so operators can jump to the panels that need
+  attention.
 - convert guarded Studio approval, render-decision, and session controls to shadcn primitives with
   local operator toast feedback.
 - introduce a shadcn modal command palette for Studio navigation and safe CLI command copying.
@@ -40,8 +54,12 @@ _No unreleased changes yet._
 ### Fixes
 
 - align script/planner prompts and script review floor with the v1 8-12 minute local draft target.
+- add WebVTT caption tracks to Studio local media previews while keeping subtitle access
+  allowlisted.
 - keep Studio Turbopack builds resolving shared source contracts without pulling the full CLI
   integrity dependency chain into render-plan schemas.
+- stabilize Studio shadcn primitive class output and Sonner styling so the operator workbench stays
+  clean under IDE type checks.
 - tighten Studio operator review controls so ready queues exclude blocked runs, confirmations expose
   pending payloads, command fallbacks stay shared, and short-lived mutation sessions fail closed.
 - share production-package path constants without pulling CLI integrity dependencies into Studio

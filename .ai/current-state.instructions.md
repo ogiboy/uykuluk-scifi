@@ -297,14 +297,17 @@
 - Studio has a type-safe `next-intl` request/provider foundation with English and Turkish locale
   selection through a local cookie. Existing operator copy has not been migrated yet.
 - Studio can list local persisted runs with counts, readiness/evidence status, remediation, and
-  next-action visibility, then show a read-only run detail page with next action, readiness checks,
-  warnings, approvals, ledger entries, blockers, production media evidence, shared review guidance,
-  shared v1 workflow progress, and review artifacts. Missing/stale readiness points to
-  `producer readiness --run <run_id>`; malformed or stale evidence points to
-  `producer evidence --run <run_id>` and is not proof for blockers, production-media readiness, or
-  next actions. Studio labels media rows as persisted artifact-record fallback until evidence is
-  current, does not mutate run state or call providers, and reuses the CLI/core next-action contract
-  in early states.
+  next-action visibility, then refine the operator queue with read-only shadcn sort, search, filter,
+  blocker-limit, density, and tuning controls. Studio run detail shows a persistent action rail over
+  next safe action, blockers, mutation session, guarded local approvals/review decisions, readiness
+  checks, generated idea approval choices, a compact run-review brief, warnings, approvals, ledger
+  entries, blockers, production media evidence, shared review guidance, shared v1 workflow progress,
+  and review artifacts. Missing/stale readiness points to `producer readiness --run <run_id>`;
+  malformed or stale evidence points to `producer evidence --run <run_id>` and is not proof for
+  blockers, production-media readiness, or next actions. Studio labels media rows as persisted
+  artifact-record fallback until evidence is current, streams only allowlisted local
+  voiceover/draft-render artifacts for browser playback, does not mutate run state or call
+  providers, and reuses the CLI/core next-action contract in early states.
 - Studio run detail includes read-only artifact preview excerpts for scripts, reviews, production
   packages, render plans, contact sheets, asset provenance, evidence, readiness, voiceover metadata,
   and render manifests. Previews are grouped by operator review phase with per-artifact review
@@ -455,19 +458,16 @@ Corepack/PATH before treating failures as product failures.
   post-estimate repair flows remain future work.
 - Render planning does not render media, approve render execution, or reserve spend. It is a local
   review/planning artifact only.
-- Local TTS currently provides a deterministic timing/reference WAV, a configured Piper shell-out,
-  ignored-model setup helper, model/config digest provenance, and operator audio review Markdown. It
-  does not commit voice models, approve render execution, upload, or publish. Deterministic-local
-  evidence remains valid for timing/pipeline proof but is explicitly not a production voice
-  candidate. A 2026-06-25 local Piper smoke generated WAV evidence successfully; subjective voice
-  quality, pacing, and pronunciation still require operator listening before production use.
+- Local TTS provides deterministic/reference WAV, Piper shell-out, ignored-model setup, digest
+  provenance, and review Markdown. It does not commit voice models, approve render execution,
+  upload, or publish. Deterministic-local evidence is timing proof only; production voice quality
+  still requires operator listening.
 - FFmpeg draft render creates a local review MP4 from intro/outro source cards or frames,
   scene-timed plates, subtitles, overlays, voiceover audio, manifest/source-frame evidence, a stable
   read-only review command, and an operator checklist. Reusable intro/outro MP4 clips and broader
   visual polish remain follow-up work.
-- Upload and publish are intentionally disabled scaffolds.
-- Manual analytics import/reporting and the read-only Studio analytics overview are local-only and
-  operator-provided; richer comparisons, scoring, and YouTube Analytics API are not implemented.
+- Upload/publish are disabled scaffolds; manual/Studio analytics are local-only; richer APIs are not
+  implemented.
 - Run-path containment blocks pre-existing symlinks; hostile concurrent replacement remains a local
   TOCTOU limitation because portable Node APIs lack directory-handle `openat` semantics.
 - Brand, overlay, thumbnail, background, transition, icon, waveform, intro-frame, and outro-frame

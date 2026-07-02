@@ -8,9 +8,8 @@ import {
   TriangleAlertIcon,
 } from "lucide-react";
 import { Toaster as Sonner, type ToasterProps } from "sonner";
-import type { CSSProperties } from "react";
 
-function Toaster(props: ToasterProps) {
+function Toaster(props: Readonly<ToasterProps>) {
   return (
     <Sonner
       theme='dark'
@@ -22,14 +21,6 @@ function Toaster(props: ToasterProps) {
         error: <OctagonXIcon className='size-4' />,
         loading: <Loader2Icon className='size-4 animate-spin' />,
       }}
-      style={
-        {
-          "--normal-bg": "var(--panel)",
-          "--normal-text": "var(--text)",
-          "--normal-border": "var(--line)",
-          "--border-radius": "8px",
-        } as CSSProperties
-      }
       {...props}
     />
   );

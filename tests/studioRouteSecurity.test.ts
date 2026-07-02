@@ -14,7 +14,10 @@ const appRoot = path.join(process.cwd(), "apps/studio/src/app");
 describe("Studio route security contract", () => {
   it("keeps every current Studio page route read-only and covered by the contract", async () => {
     const pageRoutes = await discoverPageRoutes(appRoot);
-    const contractedRoutes = readOnlyStudioRoutes.map((route) => route.path).sort(routeSort);
+    const contractedRoutes = readOnlyStudioRoutes
+      .map((route) => route.path)
+      .filter((routePath) => !routePath.includes("/media/"))
+      .sort(routeSort);
 
     expect(pageRoutes).toEqual(contractedRoutes);
     expect(readOnlyStudioRoutes).toEqual(
@@ -26,6 +29,7 @@ describe("Studio route security contract", () => {
           risk: "read-only",
         }),
         expect.objectContaining({ path: "/runs/[runId]" }),
+        expect.objectContaining({ path: "/runs/[runId]/media/[...artifactPath]" }),
         expect.objectContaining({ path: "/analytics" }),
         expect.objectContaining({ path: "/doctor" }),
         expect.objectContaining({ path: "/eval" }),
@@ -43,6 +47,7 @@ describe("Studio route security contract", () => {
         "actions/approve-script/route.ts",
         "actions/decide-render/route.ts",
         "actions/session/route.ts",
+        "runs/[runId]/media/[...artifactPath]/route.ts",
       ].map((routePath) => path.join(appRoot, routePath)),
     );
     expect(routeSecurityFindings()).toEqual([]);

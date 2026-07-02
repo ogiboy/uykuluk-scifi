@@ -7,15 +7,20 @@ import {
   formatRunRenderDecision,
   formatRunReviewCounts,
 } from "@/lib/runSummaryCopy";
+import type { RunQueueDensity } from "@/lib/runQueueWorkbench";
 
-type RunSummaryTableProps = Readonly<{ runs: readonly StudioRunSummary[] }>;
+type RunSummaryTableProps = Readonly<{
+  density?: RunQueueDensity;
+  runs: readonly StudioRunSummary[];
+}>;
 
 /**
  * Displays a summary table of saved producer runs.
  *
+ * @param density - The operator-selected table density.
  * @param runs - The runs to display
  */
-export function RunSummaryTable({ runs }: RunSummaryTableProps) {
+export function RunSummaryTable({ density = "comfortable", runs }: RunSummaryTableProps) {
   if (runs.length === 0) {
     return (
       <section className='panel' aria-labelledby='runs-empty-heading'>
@@ -28,7 +33,12 @@ export function RunSummaryTable({ runs }: RunSummaryTableProps) {
   return (
     <section className='panel' aria-labelledby='runs-index-heading'>
       <h2 id='runs-index-heading'>Run Index</h2>
-      <div className='run-table' role='table' aria-label='Saved producer runs'>
+      <div
+        className='run-table'
+        data-density={density}
+        role='table'
+        aria-label='Saved producer runs'
+      >
         <div className='run-row run-row-head' role='row'>
           <span role='columnheader'>Run</span>
           <span role='columnheader'>State</span>

@@ -4,6 +4,7 @@ import {
   shouldShowEvidenceRemediation,
 } from "@/lib/runEvidenceCopy";
 import type { StudioRunDetail } from "@/lib/runSummaries";
+import { studioCaptionArtifactUrl, studioMediaArtifactUrl } from "@/lib/studioMediaArtifacts";
 import { CopyableCommand } from "../studio/CopyableCommand";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { Badge } from "../ui/badge";
@@ -15,6 +16,7 @@ type RunProductionMediaPanelProps = Readonly<{
   evidenceNextAction?: string;
   evidenceStatus: StudioRunDetail["evidenceStatus"];
   productionMedia: StudioRunDetail["productionMedia"];
+  runId: string;
 }>;
 
 /**
@@ -24,12 +26,14 @@ type RunProductionMediaPanelProps = Readonly<{
  * @param evidenceNextAction - The next action to display with the remediation message.
  * @param evidenceStatus - The current evidence status used to choose the intro and remediation state.
  * @param productionMedia - The production media artifacts to list.
+ * @param runId - The current run identifier used to build local media preview URLs.
  */
 export function RunProductionMediaPanel({
   evidenceMessage,
   evidenceNextAction,
   evidenceStatus,
   productionMedia,
+  runId,
 }: RunProductionMediaPanelProps) {
   return (
     <section className='panel' aria-labelledby='production-media-heading'>
@@ -44,6 +48,7 @@ export function RunProductionMediaPanel({
             artifact={artifact}
             evidenceStatus={evidenceStatus}
             key={artifact.artifactPath}
+            runId={runId}
           />
         ))}
       </div>
@@ -75,10 +80,13 @@ function EvidenceRemediation({
 function ProductionMediaCard({
   artifact,
   evidenceStatus,
+  runId,
 }: Readonly<{
   artifact: ProductionMediaStatus;
   evidenceStatus: StudioRunDetail["evidenceStatus"];
+  runId: string;
 }>) {
+  const mediaUrl = mediaPreviewUrl(runId, artifact);
   return (
     <Card className='production-media-card'>
       <CardHeader>
@@ -92,6 +100,9 @@ function ProductionMediaCard({
       </CardHeader>
       <CardContent>
         {artifact.detail ? <p>{artifact.detail}</p> : null}
+        {mediaUrl ? (
+          <ProductionMediaPreview artifact={artifact} mediaUrl={mediaUrl} runId={runId} />
+        ) : null}
         <p className='artifact-action'>
           Review: {productionMediaReviewAction(evidenceStatus, artifact)}
         </p>
@@ -99,6 +110,46 @@ function ProductionMediaCard({
       </CardContent>
     </Card>
   );
+}
+
+function ProductionMediaPreview({
+  artifact,
+  mediaUrl,
+  runId,
+}: Readonly<{ artifact: ProductionMediaStatus; mediaUrl: string; runId: string }>) {
+  const captionUrl = studioCaptionArtifactUrl(runId);
+  if (artifact.evidenceKey === "voiceoverAudio") {
+    return (
+      <div className='production-media-preview'>
+        <audio controls preload='metadata' src={mediaUrl}>
+          <track default kind='captions' label='Türkçe altyazı' src={captionUrl} srcLang='tr' />
+          <a href={mediaUrl}>Open voiceover audio</a>
+        </audio>
+        <p>
+          Browser playback is local review only; evidence and approval gates remain authoritative.
+        </p>
+      </div>
+    );
+  }
+  if (artifact.evidenceKey === "draftRender") {
+    return (
+      <div className='production-media-preview'>
+        <video controls preload='metadata' src={mediaUrl}>
+          <track default kind='captions' label='Türkçe altyazı' src={captionUrl} srcLang='tr' />
+          <a href={mediaUrl}>Open draft render video</a>
+        </video>
+        <p>Playback does not approve upload, schedule, public publish, or final channel handoff.</p>
+      </div>
+    );
+  }
+  return null;
+}
+
+function mediaPreviewUrl(runId: string, artifact: ProductionMediaStatus): string | null {
+  if (artifact.status === "block" || artifact.status === "missing") {
+    return null;
+  }
+  return studioMediaArtifactUrl(runId, artifact.artifactPath);
 }
 
 function MediaCommandList({ artifact }: Readonly<{ artifact: ProductionMediaStatus }>) {

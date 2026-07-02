@@ -1,17 +1,17 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import { submitStudioJsonMutation } from "@/lib/studioMutationSubmit";
 import { RunApprovalConfirmationDialog } from "./RunApprovalConfirmationDialog";
+import { RunIdeaApprovalSelector } from "./RunIdeaApprovalSelector";
 
 type RunApprovalActionPanelProps = Readonly<{
-  run: Pick<StudioRunDetail, "nextRecommendedCommand" | "runId" | "state">;
+  run: Pick<StudioRunDetail, "generatedIdeas" | "nextRecommendedCommand" | "runId" | "state">;
 }>;
 
 type SubmitState =
@@ -28,6 +28,10 @@ type ApprovalActionConfig = Readonly<{
   routePath: string;
 }>;
 
+type FormSubmitEvent = Readonly<{
+  preventDefault: () => void;
+}>;
+
 /**
  * Renders guarded Studio approval forms for local workflow approval gates.
  *
@@ -36,7 +40,7 @@ type ApprovalActionConfig = Readonly<{
 export function RunApprovalActionPanel({ run }: RunApprovalActionPanelProps) {
   const config = approvalActionForRun(run);
   const router = useRouter();
-  const [ideaId, setIdeaId] = useState("");
+  const [ideaId, setIdeaId] = useState(run.generatedIdeas[0]?.id ?? "");
   const [acknowledgeWarnings, setAcknowledgeWarnings] = useState(false);
   const [confirmationOpen, setConfirmationOpen] = useState(false);
   const [pendingPayload, setPendingPayload] = useState<Record<string, boolean | string> | null>(
@@ -51,7 +55,7 @@ export function RunApprovalActionPanel({ run }: RunApprovalActionPanelProps) {
     return null;
   }
 
-  function requestApprovalConfirmation(event: FormEvent<HTMLFormElement>): void {
+  function requestApprovalConfirmation(event: FormSubmitEvent): void {
     event.preventDefault();
     if (!config) return;
     setPendingPayload(approvalPayload(config.actionId, run.runId, ideaId, acknowledgeWarnings));
@@ -93,17 +97,11 @@ export function RunApprovalActionPanel({ run }: RunApprovalActionPanelProps) {
       </p>
       <form className='studio-form' onSubmit={requestApprovalConfirmation}>
         {config.actionId === "idea.approve" ? (
-          <label>
-            Idea ID
-            <Input
-              maxLength={200}
-              minLength={1}
-              placeholder='idea_001'
-              required
-              value={ideaId}
-              onChange={(event) => setIdeaId(event.target.value)}
-            />
-          </label>
+          <RunIdeaApprovalSelector
+            ideas={run.generatedIdeas}
+            ideaId={ideaId}
+            onIdeaIdChange={setIdeaId}
+          />
         ) : null}
         {config.actionId === "script.approve" ? (
           <label className='checkbox-label'>
@@ -114,7 +112,10 @@ export function RunApprovalActionPanel({ run }: RunApprovalActionPanelProps) {
             Acknowledge non-blocking script review warnings if present
           </label>
         ) : null}
-        <Button disabled={state.kind === "submitting"} type='submit'>
+        <Button
+          disabled={state.kind === "submitting" || !approvalFormReady(config, ideaId)}
+          type='submit'
+        >
           {config.buttonLabel}
         </Button>
       </form>
@@ -178,6 +179,10 @@ function approvalActionForRun(
     };
   }
   return null;
+}
+
+function approvalFormReady(config: ApprovalActionConfig, ideaId: string): boolean {
+  return config.actionId !== "idea.approve" || ideaId.trim().length > 0;
 }
 
 function approvalPayload(

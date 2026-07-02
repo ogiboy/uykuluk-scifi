@@ -4,6 +4,12 @@ import {
   shouldShowEvidenceRemediation,
 } from "@/lib/runEvidenceCopy";
 import type { StudioRunDetail } from "@/lib/runSummaries";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 type RunBlockedActionsPanelProps = Readonly<{
   blockedActions: readonly string[];
@@ -31,11 +37,18 @@ export function RunBlockedActionsPanel({
       <h2 id='blocked-actions-heading'>Blocked Actions</h2>
       <p>{blockedActionsIntro(evidenceStatus)}</p>
       {evidenceStatus === "available" && blockedActions.length > 0 ? (
-        <ul>
-          {blockedActions.map((action, index) => (
-            <li key={`blocked-action-${index}-${action}`}>{action}</li>
-          ))}
-        </ul>
+        <Accordion className='run-blocker-accordion' type='single' collapsible>
+          <AccordionItem value='blocked-actions'>
+            <AccordionTrigger>{blockedActions.length} blocked action(s)</AccordionTrigger>
+            <AccordionContent>
+              <ul>
+                {blockedActions.map((action, index) => (
+                  <li key={`blocked-action-${index}-${action}`}>{action}</li>
+                ))}
+              </ul>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       ) : (
         <p>{blockedActionsEmptyMessage(evidenceStatus)}</p>
       )}
