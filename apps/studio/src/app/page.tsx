@@ -35,12 +35,12 @@ export default async function StudioHomePage() {
     promptInventory,
     runs,
   ] = await Promise.all([
-    getStudioAnalyticsOverview(),
-    getStudioAssetInventory(),
-    getStudioDoctorOverview(),
-    getStudioModelEvalOverview(),
-    getStudioPromptInventory(),
-    listStudioRuns(),
+    Promise.resolve(getStudioAnalyticsOverview()),
+    Promise.resolve(getStudioAssetInventory()),
+    Promise.resolve(getStudioDoctorOverview()),
+    Promise.resolve(getStudioModelEvalOverview()),
+    Promise.resolve(getStudioPromptInventory()),
+    Promise.resolve(listStudioRuns()),
   ]);
 
   return (
