@@ -2,7 +2,12 @@ import Link from "next/link";
 import { CopyableCommand } from "@/components/studio/CopyableCommand";
 import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
 import type { StudioRunSummary } from "@/lib/runSummaries";
-import { formatRunRenderDecision, formatRunReviewCounts } from "@/lib/runSummaryCopy";
+import {
+  formatRunRenderDecision,
+  formatRunReviewCounts,
+  getNextSafeCommand,
+  NO_RUNS_NEXT_COMMAND,
+} from "@/lib/runSummaryCopy";
 
 type LatestRunReadinessPanelProps = Readonly<{
   latestRun: StudioRunSummary | null;
@@ -55,12 +60,7 @@ function LatestRunSummary({ latestRun }: Readonly<{ latestRun: StudioRunSummary 
       ) : null}
       <div className='artifact-action'>
         <strong>Next safe action</strong>
-        <CopyableCommand
-          command={
-            latestRun.nextRecommendedCommand ?? `pnpm producer evidence --run ${latestRun.runId}`
-          }
-          label='Next safe action'
-        />
+        <CopyableCommand command={getNextSafeCommand(latestRun)} label='Next safe action' />
       </div>
       <Link className='status-pill small' href={`/runs/${latestRun.runId}`}>
         Review latest run
@@ -75,7 +75,7 @@ function NoRunsSummary() {
       <MetricGrid metrics={[{ label: "Runs", value: "0" }]} />
       <div className='artifact-action'>
         <strong>Next safe action</strong>
-        <CopyableCommand command='pnpm producer ideas' label='Next safe action' />
+        <CopyableCommand command={NO_RUNS_NEXT_COMMAND} label='Next safe action' />
       </div>
       <p>Start a run from the CLI; Studio will only display persisted local state.</p>
     </>

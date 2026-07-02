@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import type { Route } from "next";
+import { useRouter } from "next/navigation";
 import { CopyIcon, ExternalLinkIcon, SearchIcon, TerminalIcon } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -22,6 +24,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { getNextSafeCommand } from "@/lib/runSummaryCopy";
 import type { StudioRunSummary } from "@/lib/runSummaries";
 
 type StudioCommandPaletteProps = Readonly<{
@@ -36,7 +39,7 @@ const navigationTargets = [
   { href: "/assets", label: "Assets", keywords: "brand render visuals inventory" },
   { href: "/analytics", label: "Analytics", keywords: "manual feedback import report" },
   { href: "/prompts", label: "Prompts", keywords: "runtime prompt inventory overrides" },
-] as const;
+] as const satisfies readonly { href: Route; keywords: string; label: string }[];
 
 /**
  * Renders a modal command palette for local Studio navigation and safe command copying.
@@ -45,8 +48,9 @@ const navigationTargets = [
  * @returns A keyboard-accessible operator action launcher.
  */
 export function StudioCommandPalette({ runs }: StudioCommandPaletteProps) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
-  const visibleRuns = useMemo(() => runs.slice(0, 8), [runs]);
+  const visibleRuns = useMemo(() => runs, [runs]);
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent): void {
@@ -59,13 +63,13 @@ export function StudioCommandPalette({ runs }: StudioCommandPaletteProps) {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
-  function navigateTo(href: string): void {
+  function navigateTo(href: Route): void {
     setOpen(false);
-    window.location.assign(href);
+    router.push(href);
   }
 
   async function copyCommand(run: StudioRunSummary): Promise<void> {
-    const command = run.nextRecommendedCommand ?? `pnpm producer evidence --run ${run.runId}`;
+    const command = getNextSafeCommand(run);
     try {
       await navigator.clipboard.writeText(command);
       setOpen(false);
@@ -116,7 +120,7 @@ export function StudioCommandPalette({ runs }: StudioCommandPaletteProps) {
                 <CommandItem
                   key={`open-${run.runId}`}
                   value={`${run.runId} ${run.state} ${run.readinessStatus} ${run.evidenceStatus}`}
-                  onSelect={() => navigateTo(`/runs/${run.runId}`)}
+                  onSelect={() => navigateTo(`/runs/${run.runId}` as Route)}
                 >
                   <TerminalIcon />
                   <span className='command-item-body'>
@@ -140,9 +144,7 @@ export function StudioCommandPalette({ runs }: StudioCommandPaletteProps) {
                   <CopyIcon />
                   <span className='command-item-body'>
                     <strong>{run.runId}</strong>
-                    <code>
-                      {run.nextRecommendedCommand ?? `pnpm producer evidence --run ${run.runId}`}
-                    </code>
+                    <code>{getNextSafeCommand(run)}</code>
                   </span>
                   <CommandShortcut>copy</CommandShortcut>
                 </CommandItem>

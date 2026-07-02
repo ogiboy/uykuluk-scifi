@@ -41,7 +41,7 @@ describe("Studio run queue filters", () => {
       all: 4,
       attention: 2,
       decision: 1,
-      ready: 3,
+      ready: 2,
       rendered: 2,
     });
   });
@@ -52,7 +52,7 @@ describe("Studio run queue filters", () => {
     ).toEqual(["run_blocked", "run_missing"]);
     expect(
       filterStudioRunQueue(runs, { filter: "ready", query: "" }).map((run) => run.runId),
-    ).toEqual(["run_blocked", "run_needs_decision", "run_ready"]);
+    ).toEqual(["run_needs_decision", "run_ready"]);
     expect(
       filterStudioRunQueue(runs, { filter: "rendered", query: "" }).map((run) => run.runId),
     ).toEqual(["run_blocked", "run_needs_decision"]);

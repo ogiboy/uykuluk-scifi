@@ -17,6 +17,7 @@ type RunApprovalConfirmationDialogProps = Readonly<{
   onConfirm: () => void;
   onOpenChange: (open: boolean) => void;
   open: boolean;
+  pendingPayload: Record<string, boolean | string> | null;
   runId: string;
 }>;
 
@@ -29,8 +30,11 @@ export function RunApprovalConfirmationDialog({
   onConfirm,
   onOpenChange,
   open,
+  pendingPayload,
   runId,
 }: RunApprovalConfirmationDialogProps) {
+  const payloadEntries = pendingPayloadEntries(pendingPayload);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -47,6 +51,12 @@ export function RunApprovalConfirmationDialog({
               <dt>Action</dt>
               <dd>{actionId}</dd>
             </div>
+            {payloadEntries.map(([key, value]) => (
+              <div key={key}>
+                <dt>{key}</dt>
+                <dd>{value}</dd>
+              </div>
+            ))}
             <div>
               <dt>Current state</dt>
               <dd>{currentState}</dd>
@@ -68,4 +78,15 @@ export function RunApprovalConfirmationDialog({
       </DialogContent>
     </Dialog>
   );
+}
+
+function pendingPayloadEntries(
+  pendingPayload: Record<string, boolean | string> | null,
+): Array<[string, string]> {
+  if (!pendingPayload) {
+    return [];
+  }
+  return Object.entries(pendingPayload)
+    .filter(([key]) => key !== "runId")
+    .map(([key, value]) => [key, String(value)]);
 }

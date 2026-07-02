@@ -23,7 +23,7 @@ upload/publish boundaries.
 - Branch/worktree: `feat/local-production-proof` at
   `/Users/ogiboy/.codex/worktrees/894d/uykuluk-scifi`.
 - Active PR: #120, `feat(studio): expand local production operator surface`, open against `main`.
-- Last completed slice/commit: `4168e10 feat(studio): improve media review cards`.
+- Last completed slice/commit: latest pushed `fix(studio): tighten operator review actions`.
 - Completed current-branch frontend slices include:
   - shadcn route/action primitives for guarded local actions;
   - Studio home control desk, queue filters, command palette, copyable safe commands;
@@ -32,6 +32,9 @@ upload/publish boundaries.
     decisions.
   - production-media review cards with copyable review, local playback, and render-approval handoff
     commands.
+  - PR review fixes for approval confirmation payload visibility, ready-queue blocked-run exclusion,
+    workflow overflow indicators, tooltip delay, full command-palette search, client-side palette
+    navigation, fail-closed short-lived Studio sessions, and shared Studio next-command fallbacks.
 - Verified commands for the latest slice:
   - `pnpm --filter @uykulukscifi/studio lint`
   - `pnpm --filter @uykulukscifi/studio typecheck`
@@ -40,6 +43,8 @@ upload/publish boundaries.
   - `pnpm changelog:check`
   - `pnpm release:check`
   - `pnpm format:check`
+  - `pnpm vitest run tests/studioRunQueueFilters.test.ts`
+  - `pnpm vitest run tests/studioMutationClient.test.ts`
   - browser smoke on `/runs/run_20260702013835_ada7ab` across Media, Artifacts, Readiness, and
     Decisions tabs.
   - browser smoke on `/runs/run_20260702013835_ada7ab` Media tab for rendered media cards and

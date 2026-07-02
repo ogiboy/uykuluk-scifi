@@ -2,7 +2,12 @@ import Link from "next/link";
 import { ActiveRunActions } from "@/components/studio/ActiveRunActions";
 import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
 import type { StudioRunSummary } from "@/lib/runSummaries";
-import { formatRunRenderDecision, formatRunReviewCounts } from "@/lib/runSummaryCopy";
+import {
+  formatRunRenderDecision,
+  formatRunReviewCounts,
+  getNextSafeCommand,
+  NO_RUNS_NEXT_COMMAND,
+} from "@/lib/runSummaryCopy";
 import type { StudioActionServiceStatus } from "@/lib/actionServiceStatus";
 import { CopyableCommand } from "./CopyableCommand";
 import { StudioMutationSessionPanel } from "./StudioMutationSessionPanel";
@@ -50,6 +55,8 @@ function ActiveRunCard({ run }: Readonly<{ run: StudioRunSummary }>) {
   const currentSteps = run.workflowProgress.filter((step) =>
     ["blocked", "current"].includes(step.status),
   );
+  const visibleCurrentSteps = currentSteps.slice(0, 4);
+  const hiddenCurrentStepCount = Math.max(0, currentSteps.length - visibleCurrentSteps.length);
   const completedSteps = run.workflowProgress.filter((step) => step.status === "done").length;
 
   return (
@@ -75,15 +82,12 @@ function ActiveRunCard({ run }: Readonly<{ run: StudioRunSummary }>) {
 
       <div className='operator-command-block'>
         <strong>Next safe action</strong>
-        <CopyableCommand
-          command={run.nextRecommendedCommand ?? `pnpm producer evidence --run ${run.runId}`}
-          label='Next safe action'
-        />
+        <CopyableCommand command={getNextSafeCommand(run)} label='Next safe action' />
       </div>
 
       <div className='workflow-strip' aria-label='Current workflow attention'>
-        {currentSteps.length > 0 ? (
-          currentSteps.slice(0, 4).map((step) => (
+        {visibleCurrentSteps.length > 0 ? (
+          visibleCurrentSteps.map((step) => (
             <div className={`workflow-chip workflow-chip-${step.status}`} key={step.label}>
               <strong>{step.label}</strong>
               <span>{step.detail}</span>
@@ -95,6 +99,12 @@ function ActiveRunCard({ run }: Readonly<{ run: StudioRunSummary }>) {
             <span>Review the run detail before the next irreversible action.</span>
           </div>
         )}
+        {hiddenCurrentStepCount > 0 ? (
+          <div className='workflow-chip workflow-chip-more'>
+            <strong>+{hiddenCurrentStepCount} more</strong>
+            <span>Open the run detail for the full list.</span>
+          </div>
+        ) : null}
       </div>
 
       <p className='artifact-description'>{formatRunReviewCounts(run)}</p>
@@ -112,7 +122,7 @@ function EmptyRunCard() {
       </p>
       <div className='operator-command-block'>
         <strong>Next safe action</strong>
-        <CopyableCommand command='pnpm producer ideas' label='Next safe action' />
+        <CopyableCommand command={NO_RUNS_NEXT_COMMAND} label='Next safe action' />
       </div>
     </article>
   );

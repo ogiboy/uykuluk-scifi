@@ -24,9 +24,9 @@ future generated release notes can be inserted predictably.
 - add a shadcn-powered Studio run queue explorer with operator filters and run search.
 - convert guarded Studio approval, render-decision, and session controls to shadcn primitives with
   local operator toast feedback.
-- add a shadcn modal command palette for Studio navigation and safe CLI command copying.
-- add shadcn tooltip-backed copy buttons for Studio safe CLI command blocks.
-- add shadcn dropdown, popover, card, badge, and confirmation dialog surfaces for the Studio
+- introduce a shadcn modal command palette for Studio navigation and safe CLI command copying.
+- wire shadcn tooltip-backed copy buttons into Studio safe CLI command blocks.
+- expand shadcn dropdown, popover, card, badge, and confirmation dialog surfaces for the Studio
   operator cockpit and guarded local review actions.
 - convert Studio run detail into a shadcn tabbed review cockpit for progress, media, artifacts,
   readiness, handoff, and guarded decisions.
@@ -38,6 +38,8 @@ future generated release notes can be inserted predictably.
 - align script/planner prompts and script review floor with the v1 8-12 minute local draft target.
 - keep Studio Turbopack builds resolving shared source contracts without pulling the full CLI
   integrity dependency chain into render-plan schemas.
+- tighten Studio operator review controls so ready queues exclude blocked runs, confirmations expose
+  pending payloads, command fallbacks stay shared, and short-lived mutation sessions fail closed.
 
 ## v0.63.0 (2026-07-02)
 

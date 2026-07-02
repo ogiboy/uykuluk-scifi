@@ -19,6 +19,7 @@ import {
   PopoverTitle,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { getNextSafeCommand } from "@/lib/runSummaryCopy";
 import type { StudioRunSummary } from "@/lib/runSummaries";
 
 export function ActiveRunActions({ run }: Readonly<{ run: StudioRunSummary }>) {
@@ -45,11 +46,11 @@ export function ActiveRunActions({ run }: Readonly<{ run: StudioRunSummary }>) {
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuLabel>Safety state</DropdownMenuLabel>
-          <DropdownMenuGroup>
-            <DropdownMenuItem disabled>State: {run.state}</DropdownMenuItem>
-            <DropdownMenuItem disabled>Readiness: {run.readinessStatus}</DropdownMenuItem>
-            <DropdownMenuItem disabled>Evidence: {run.evidenceStatus}</DropdownMenuItem>
-          </DropdownMenuGroup>
+          <div className='dropdown-status-list' aria-label='Current run safety state'>
+            <span>State: {run.state}</span>
+            <span>Readiness: {run.readinessStatus}</span>
+            <span>Evidence: {run.evidenceStatus}</span>
+          </div>
         </DropdownMenuContent>
       </DropdownMenu>
       <Popover>
@@ -66,10 +67,7 @@ export function ActiveRunActions({ run }: Readonly<{ run: StudioRunSummary }>) {
               artifact files.
             </PopoverDescription>
           </PopoverHeader>
-          <CopyableCommand
-            command={run.nextRecommendedCommand ?? `pnpm producer evidence --run ${run.runId}`}
-            label='Next safe action'
-          />
+          <CopyableCommand command={getNextSafeCommand(run)} label='Next safe action' />
         </PopoverContent>
       </Popover>
     </div>

@@ -125,6 +125,7 @@ export function RunApprovalActionPanel({ run }: RunApprovalActionPanelProps) {
         isSubmitting={state.kind === "submitting"}
         nextRecommendedCommand={run.nextRecommendedCommand}
         open={confirmationOpen}
+        pendingPayload={pendingPayload}
         runId={run.runId}
         onConfirm={confirmApproval}
         onOpenChange={setConfirmationOpen}

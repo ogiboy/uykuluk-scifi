@@ -97,6 +97,9 @@ describe("Studio local mutation sessions", () => {
     await refreshStudioMutationSession();
 
     expect(readStudioMutationSessionSnapshot()).toEqual({ status: "missing" });
+    await expect(studioMutationJsonHeaders("script.approve")).rejects.toThrow(
+      "Studio local session could not be established.",
+    );
   });
 
   it("fails closed when the Studio session endpoint cannot provide a token", async () => {

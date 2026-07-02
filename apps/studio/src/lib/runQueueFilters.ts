@@ -55,7 +55,11 @@ function runMatchesFilter(run: StudioRunSummary, filter: RunQueueFilter): boolea
         run.renderDecision.kind === "stale"
       );
     case "ready":
-      return run.readinessStatus === "passed" && run.evidenceStatus === "available";
+      return (
+        run.readinessStatus === "passed" &&
+        run.evidenceStatus === "available" &&
+        run.blockedActionCount === 0
+      );
     case "rendered":
       return run.state === "RENDERED";
     case "decision":

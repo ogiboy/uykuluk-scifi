@@ -1,6 +1,7 @@
 import { CopyableCommand } from "@/components/studio/CopyableCommand";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { getNextSafeCommand } from "@/lib/runSummaryCopy";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 
 type RunReviewCockpitHeaderProps = Readonly<{
@@ -41,10 +42,7 @@ export function RunReviewCockpitHeader({ run }: RunReviewCockpitHeaderProps) {
       <CardContent>
         <div className='operator-command-block'>
           <strong>Next safe action</strong>
-          <CopyableCommand
-            command={run.nextRecommendedCommand ?? `pnpm producer evidence --run ${run.runId}`}
-            label='Next safe action'
-          />
+          <CopyableCommand command={getNextSafeCommand(run)} label='Next safe action' />
           <p>
             Studio can record guarded local approvals where route security is enabled. Generation,
             artifact creation, upload, and publish stay with CLI/core gates.

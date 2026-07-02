@@ -1,5 +1,29 @@
 import type { StudioRunSummary } from "./runSummaries";
 
+export const NO_RUNS_NEXT_COMMAND = "pnpm producer ideas";
+
+/**
+ * Builds the default evidence regeneration command for a run.
+ *
+ * @param runId - The run identifier to include in the command.
+ * @returns A copy-pasteable evidence command.
+ */
+export function defaultEvidenceCommand(runId: string): string {
+  return `pnpm producer evidence --run ${runId}`;
+}
+
+/**
+ * Selects the persisted next command, falling back to evidence regeneration.
+ *
+ * @param run - The run summary containing next-action command state.
+ * @returns A copy-pasteable next safe command for Studio operator surfaces.
+ */
+export function getNextSafeCommand(
+  run: Pick<StudioRunSummary, "nextRecommendedCommand" | "runId">,
+): string {
+  return run.nextRecommendedCommand ?? defaultEvidenceCommand(run.runId);
+}
+
 /**
  * Formats review counts for a run.
  *

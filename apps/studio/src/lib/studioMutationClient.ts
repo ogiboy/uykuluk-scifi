@@ -86,6 +86,10 @@ export async function refreshStudioMutationSession(): Promise<StudioMutationSess
     expiresAtMs: Date.now() + expiresInSeconds * 1000,
     token,
   };
+  if (sessionIsExpiring(cachedStudioMutationSession)) {
+    cachedStudioMutationSession = null;
+    return { status: "missing" };
+  }
   return readStudioMutationSessionSnapshot();
 }
 
