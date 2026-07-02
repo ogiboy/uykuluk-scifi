@@ -14,6 +14,8 @@ future generated release notes can be inserted predictably.
 - add guarded Studio approval routes and run-detail forms for local idea, script, cost, and render
   approvals with short-lived local session proof while keeping upload and publish disabled.
 
+## v0.62.1 (2026-07-02)
+
 ### Fixes
 
 - make mixed local model candidate evals exit successfully when they produce a recommended passing
