@@ -49,3 +49,4 @@ docs.
 Current long-running workstreams:
 
 - `producer-core-hardening.md`
+- `studio-frontend-product.md`
