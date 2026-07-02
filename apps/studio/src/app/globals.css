@@ -496,6 +496,7 @@ h3 {
 
 .queue-search {
   display: grid;
+  flex: 1 1 360px;
   gap: 6px;
   max-width: 560px;
   color: var(--muted);
@@ -504,10 +505,6 @@ h3 {
 
 .queue-controls-grid {
   align-items: end;
-}
-
-.queue-search {
-  flex: 1 1 360px;
 }
 
 .queue-select-control {
