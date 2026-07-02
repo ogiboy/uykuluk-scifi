@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { studioMutationJsonHeaders } from "@/lib/studioMutationClient";
 import type { StudioRunDetail } from "@/lib/runSummaries";
+import { submitStudioJsonMutation } from "@/lib/studioMutationSubmit";
 
 type RunRenderDecisionActionPanelProps = Readonly<{
   commands: StudioRunDetail["renderDecisionCommands"];
@@ -42,27 +42,14 @@ export function RunRenderDecisionActionPanel({
   async function submitDecision(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
     setState({ kind: "submitting", message: "Recording local render decision..." });
-    let headers;
-    try {
-      headers = await studioMutationJsonHeaders("render.decide");
-    } catch (error) {
-      setState({
-        kind: "error",
-        message: error instanceof Error ? error.message : "Studio local session failed.",
-      });
-      return;
-    }
-    const response = await fetch("/actions/decide-render", {
-      body: JSON.stringify({ decision, notes, reviewedBy, runId }),
-      headers,
-      method: "POST",
+    const result = await submitStudioJsonMutation({
+      actionId: "render.decide",
+      body: { decision, notes, reviewedBy, runId },
+      fallbackError: "Render decision could not be recorded.",
+      routePath: "/actions/decide-render",
     });
-    const payload = (await response.json().catch(() => null)) as { message?: string } | null;
-    if (!response.ok) {
-      setState({
-        kind: "error",
-        message: payload?.message ?? "Render decision could not be recorded.",
-      });
+    if (result.kind === "error") {
+      setState(result);
       return;
     }
     setState({

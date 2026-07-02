@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { studioMutationJsonHeaders } from "@/lib/studioMutationClient";
 import type { StudioRunDetail } from "@/lib/runSummaries";
+import { submitStudioJsonMutation } from "@/lib/studioMutationSubmit";
 
 type RunApprovalActionPanelProps = Readonly<{
   run: Pick<StudioRunDetail, "nextRecommendedCommand" | "runId" | "state">;
@@ -44,29 +44,14 @@ export function RunApprovalActionPanel({ run }: RunApprovalActionPanelProps) {
     event.preventDefault();
     if (!config) return;
     setState({ kind: "submitting", message: "Recording local approval..." });
-    let headers;
-    try {
-      headers = await studioMutationJsonHeaders(config.actionId);
-    } catch (error) {
-      setState({
-        kind: "error",
-        message: error instanceof Error ? error.message : "Studio local session failed.",
-      });
-      return;
-    }
-    const response = await fetch(config.routePath, {
-      body: JSON.stringify(
-        approvalPayload(config.actionId, run.runId, ideaId, acknowledgeWarnings),
-      ),
-      headers,
-      method: "POST",
+    const result = await submitStudioJsonMutation({
+      actionId: config.actionId,
+      body: approvalPayload(config.actionId, run.runId, ideaId, acknowledgeWarnings),
+      fallbackError: "Approval could not be recorded.",
+      routePath: config.routePath,
     });
-    const payload = (await response.json().catch(() => null)) as { message?: string } | null;
-    if (!response.ok) {
-      setState({
-        kind: "error",
-        message: payload?.message ?? "Approval could not be recorded.",
-      });
+    if (result.kind === "error") {
+      setState(result);
       return;
     }
     setState({

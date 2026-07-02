@@ -29,30 +29,12 @@ function isMutationRisk(risk: StudioRouteRisk): boolean {
  * @returns A list of findings describing unsafe enabled mutation-route settings
  */
 function enabledActionFindings(contract: StudioRouteSecurityContract): string[] {
-  const findings: string[] = [];
+  const findings = commonMutationFindings(contract);
   if (contract.risk === "publish-risk" || contract.risk === "external-side-effect") {
     findings.push(`${contract.id} exposes external or publish risk from Studio.`);
   }
   if (contract.allowedMethods.length !== 1 || contract.allowedMethods[0] !== "POST") {
     findings.push(`${contract.id} must only expose POST.`);
-  }
-  if (!contract.requiresCoreServiceContract) {
-    findings.push(`${contract.id} needs a shared CLI/core service contract.`);
-  }
-  if (
-    !contract.serviceContractId ||
-    !studioMutationActionIds.includes(contract.serviceContractId)
-  ) {
-    findings.push(`${contract.id} needs a valid Studio mutation service contract.`);
-  }
-  if (!contract.requiresCsrfProtection) {
-    findings.push(`${contract.id} needs CSRF protection.`);
-  }
-  if (!contract.requiresEvidenceWrite) {
-    findings.push(`${contract.id} needs durable evidence writes.`);
-  }
-  if (contract.requiredApproval === "none") {
-    findings.push(`${contract.id} needs an explicit approval target.`);
   }
   if (contract.disabledReason) {
     findings.push(`${contract.id} is enabled but still has a disabled reason.`);
@@ -67,6 +49,14 @@ function enabledActionFindings(contract: StudioRouteSecurityContract): string[] 
  * @returns A list of findings describing missing mutation-route requirements
  */
 function disabledActionFindings(contract: StudioRouteSecurityContract): string[] {
+  const findings = commonMutationFindings(contract);
+  if (!contract.disabledReason) {
+    findings.push(`${contract.id} needs a disabled reason.`);
+  }
+  return findings;
+}
+
+function commonMutationFindings(contract: StudioRouteSecurityContract): string[] {
   const findings: string[] = [];
   if (!contract.requiresCoreServiceContract) {
     findings.push(`${contract.id} needs a shared CLI/core service contract.`);
@@ -85,9 +75,6 @@ function disabledActionFindings(contract: StudioRouteSecurityContract): string[]
   }
   if (contract.requiredApproval === "none") {
     findings.push(`${contract.id} needs an explicit approval target.`);
-  }
-  if (!contract.disabledReason) {
-    findings.push(`${contract.id} needs a disabled reason.`);
   }
   return findings;
 }
