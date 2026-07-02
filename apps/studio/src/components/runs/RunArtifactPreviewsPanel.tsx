@@ -1,4 +1,5 @@
 import type { StudioArtifactPreview } from "@/lib/artifactPreviews";
+import { buildArtifactReviewHandoff } from "@/lib/artifactReviewHandoff";
 import { artifactPreviewsIntro } from "@/lib/runEvidenceCopy";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 
@@ -18,6 +19,7 @@ export function RunArtifactPreviewsPanel({
   evidenceStatus,
 }: RunArtifactPreviewsPanelProps) {
   const artifactGroups = groupedArtifactPreviews(artifacts);
+  const reviewHandoff = buildArtifactReviewHandoff(artifacts);
 
   return (
     <section className='panel' aria-labelledby='artifact-heading'>
@@ -27,6 +29,37 @@ export function RunArtifactPreviewsPanel({
         state.
       </p>
       <p>{artifactPreviewsIntro(evidenceStatus)}</p>
+      <div className='artifact-review-handoff' aria-label='Artifact review handoff milestones'>
+        <div className='artifact-review-handoff-heading'>
+          <div>
+            <h3>Review handoff path</h3>
+            <p>
+              {reviewHandoff.availableCount}/{reviewHandoff.totalCount} review milestones are
+              available as local artifacts.
+            </p>
+          </div>
+          {reviewHandoff.nextFocus ? (
+            <span className='status-pill small pending'>next: {reviewHandoff.nextFocus.label}</span>
+          ) : (
+            <span className='status-pill small done'>all review docs available</span>
+          )}
+        </div>
+        <ol className='artifact-review-milestones'>
+          {reviewHandoff.milestones.map((milestone) => (
+            <li key={milestone.path}>
+              <span
+                className={
+                  milestone.available ? "status-pill small done" : "status-pill small pending"
+                }
+              >
+                {milestone.available ? "available" : "pending"}
+              </span>
+              <strong>{milestone.label}</strong>
+              <small>{milestone.path}</small>
+            </li>
+          ))}
+        </ol>
+      </div>
       <div className='artifact-preview-groups'>
         {artifactGroups.map((group, groupIndex) => (
           <details className='artifact-preview-group' key={group.label} open={groupIndex === 0}>

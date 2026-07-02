@@ -14,6 +14,8 @@ future generated release notes can be inserted predictably.
 - add Studio guarded-action preflight summaries so operators can see current evidence, readiness,
   blocked-action, payload, and upload/publish boundaries before local web approvals or render
   decisions.
+- add a Studio artifact review handoff path so operators can see which local review documents are
+  available before the final draft decision.
 
 ## v0.65.4 (2026-07-03)
 

@@ -1151,6 +1151,51 @@ h3 {
   font-family: var(--font-mono), SFMono-Regular, Consolas, "Liberation Mono", monospace;
 }
 
+.artifact-review-handoff {
+  display: grid;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #0b0f14;
+  padding: 12px;
+}
+
+.artifact-review-handoff-heading {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.artifact-review-handoff-heading h3,
+.artifact-review-handoff-heading p {
+  margin-bottom: 0;
+}
+
+.artifact-review-milestones {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.artifact-review-milestones li {
+  display: grid;
+  gap: 5px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 10px;
+}
+
+.artifact-review-milestones small {
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  font-size: 11px;
+}
+
 .blocked {
   color: var(--danger);
 }
