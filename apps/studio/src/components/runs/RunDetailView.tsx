@@ -12,6 +12,7 @@ import { RunRenderDecisionCommandsPanel } from "./RunRenderDecisionCommandsPanel
 import { RunRenderDecisionStatusPanel } from "./RunRenderDecisionStatusPanel";
 import { RunWorkflowProgressPanel } from "./RunWorkflowProgressPanel";
 import { readinessStatusClassName } from "./readinessStatusClassName";
+import { StudioMutationSessionPanel } from "../studio/StudioMutationSessionPanel";
 
 /**
  * Renders a read-only detail view for a run.
@@ -104,6 +105,7 @@ export function RunDetailView({ run }: Readonly<{ run: StudioRunDetail }>) {
           className='run-review-rail review-section'
           aria-label='Run decisions and blocked actions'
         >
+          <StudioMutationSessionPanel />
           <RunBlockedActionsPanel
             blockedActions={run.blockedActions}
             evidenceMessage={run.evidenceMessage}

@@ -17,6 +17,8 @@ future generated release notes can be inserted predictably.
   decision/action rail.
 - add run-detail section navigation and collapsible artifact previews so large review artifacts do
   not bury operator decisions.
+- surface the guarded local web-control session on Studio home and run detail before approval or
+  render-decision actions.
 
 ### Fixes
 

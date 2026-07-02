@@ -3,6 +3,7 @@ import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid"
 import type { StudioRunSummary } from "@/lib/runSummaries";
 import { formatRunRenderDecision, formatRunReviewCounts } from "@/lib/runSummaryCopy";
 import type { StudioActionServiceStatus } from "@/lib/actionServiceStatus";
+import { StudioMutationSessionPanel } from "./StudioMutationSessionPanel";
 
 type StudioControlDeskProps = Readonly<{
   actionStatus: StudioActionServiceStatus;
@@ -35,6 +36,7 @@ export function StudioControlDesk({ actionStatus, runs }: StudioControlDeskProps
       </div>
 
       <aside className='control-desk-rail' aria-label='Studio safety and queue summary'>
+        <StudioMutationSessionPanel />
         <SafetyGateSummary actionStatus={actionStatus} />
         <QueueSnapshot runs={runs} />
       </aside>
