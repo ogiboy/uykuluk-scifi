@@ -15,6 +15,8 @@ future generated release notes can be inserted predictably.
   safety gates, and queue snapshot.
 - reorganize Studio run detail as a review workspace with evidence/artifact flow and a sticky
   decision/action rail.
+- add run-detail section navigation and collapsible artifact previews so large review artifacts do
+  not bury operator decisions.
 
 ### Fixes
 

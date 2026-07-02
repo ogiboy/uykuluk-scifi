@@ -60,24 +60,50 @@ export function RunDetailView({ run }: Readonly<{ run: StudioRunDetail }>) {
         </div>
       </section>
 
+      <nav className='review-section-tabs' aria-label='Run review sections'>
+        <a href='#review-progress'>Progress</a>
+        <a href='#review-media'>Media</a>
+        <a href='#review-artifacts'>Artifacts</a>
+        <a href='#review-handoff'>Handoff</a>
+        <a href='#review-readiness'>Readiness</a>
+        <a href='#review-actions'>Actions</a>
+      </nav>
+
       <div className='run-review-workspace'>
         <main className='run-review-main' aria-label='Run evidence and artifacts'>
-          <RunWorkflowProgressPanel workflowProgress={run.workflowProgress} />
-          <RunProductionMediaPanel
-            evidenceMessage={run.evidenceMessage}
-            evidenceNextAction={run.evidenceNextAction}
-            evidenceStatus={run.evidenceStatus}
-            productionMedia={run.productionMedia}
-          />
-          <RunArtifactPreviewsPanel artifacts={run.artifacts} evidenceStatus={run.evidenceStatus} />
-          <RunFinalReviewBundlePanel finalReviewBundle={run.finalReviewBundle} />
-          <RunChannelHandoffPanel channelHandoff={run.channelHandoff} />
-          <ReadinessChecksPanel run={run} />
-          <RunLedgerPanel approvals={run.approvals} warnings={run.warnings} />
-          <DiagnosticsPanel run={run} />
+          <div id='review-progress' className='review-section'>
+            <RunWorkflowProgressPanel workflowProgress={run.workflowProgress} />
+          </div>
+          <div id='review-media' className='review-section'>
+            <RunProductionMediaPanel
+              evidenceMessage={run.evidenceMessage}
+              evidenceNextAction={run.evidenceNextAction}
+              evidenceStatus={run.evidenceStatus}
+              productionMedia={run.productionMedia}
+            />
+          </div>
+          <div id='review-artifacts' className='review-section'>
+            <RunArtifactPreviewsPanel
+              artifacts={run.artifacts}
+              evidenceStatus={run.evidenceStatus}
+            />
+          </div>
+          <div id='review-handoff' className='review-section'>
+            <RunFinalReviewBundlePanel finalReviewBundle={run.finalReviewBundle} />
+            <RunChannelHandoffPanel channelHandoff={run.channelHandoff} />
+          </div>
+          <div id='review-readiness' className='review-section'>
+            <ReadinessChecksPanel run={run} />
+            <RunLedgerPanel approvals={run.approvals} warnings={run.warnings} />
+            <DiagnosticsPanel run={run} />
+          </div>
         </main>
 
-        <aside className='run-review-rail' aria-label='Run decisions and blocked actions'>
+        <aside
+          id='review-actions'
+          className='run-review-rail review-section'
+          aria-label='Run decisions and blocked actions'
+        >
           <RunBlockedActionsPanel
             blockedActions={run.blockedActions}
             evidenceMessage={run.evidenceMessage}
