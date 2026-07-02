@@ -45,6 +45,9 @@ export function statusNextRecommendedCommand(
   if (renderDecision.kind === "present") {
     return renderDecision.nextAction;
   }
+  if (renderDecision.kind === "invalid" || renderDecision.kind === "stale") {
+    return renderDecision.nextAction;
+  }
   if (
     evidenceResult.kind === "present" &&
     typeof evidenceResult.evidence.nextRecommendedCommand === "string"
