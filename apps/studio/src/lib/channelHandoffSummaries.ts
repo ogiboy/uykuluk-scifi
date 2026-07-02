@@ -1,4 +1,6 @@
+import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
+import path from "node:path";
 import {
   buildChannelHandoffPayload,
   channelHandoffCommand,
@@ -120,6 +122,9 @@ async function channelHandoffStaleReason(
     runId,
     currentFinalReviewDigest,
   );
+  if (thumbnailCandidates.kind === "stale") {
+    return thumbnailCandidates.message;
+  }
   const metadataFile = studioRunFilePath(root, runId, "production/youtube_metadata.json");
   if (!metadataFile) {
     return "Manual channel handoff metadata path is invalid.";
@@ -129,7 +134,7 @@ async function channelHandoffStaleReason(
     finalReviewBundle: finalReviewBundle.bundle,
     finalReviewBundleDigest: currentFinalReviewDigest,
     runId,
-    thumbnailCandidates,
+    thumbnailCandidates: thumbnailCandidates.binding,
     youtube,
   });
   return JSON.stringify(comparableChannelHandoffPayload(handoff)) === JSON.stringify(expected)
@@ -141,7 +146,10 @@ async function trustedThumbnailCandidateBinding(
   root: string,
   runId: string,
   finalReviewBundleDigest: string,
-): Promise<ChannelHandoff["thumbnailCandidates"]> {
+): Promise<
+  | { binding: ChannelHandoff["thumbnailCandidates"]; kind: "present" }
+  | { kind: "stale"; message: string }
+> {
   const jsonFile = studioRunFilePath(root, runId, thumbnailCandidatesJsonPath);
   const markdownFile = studioRunFilePath(root, runId, thumbnailCandidatesMarkdownPath);
   if (!jsonFile || !markdownFile) {
@@ -154,15 +162,61 @@ async function trustedThumbnailCandidateBinding(
     throw new Error("Thumbnail candidates belong to a different run.");
   }
   if (pack.source.finalReviewBundleDigest !== finalReviewBundleDigest) {
-    throw new Error("Thumbnail candidates were created for a different final review bundle.");
+    return {
+      kind: "stale",
+      message: "Thumbnail candidates were created for a different final review bundle.",
+    };
+  }
+  for (const candidate of pack.candidates) {
+    const templateStale = await assetDigestMismatch(
+      root,
+      candidate.template.path,
+      candidate.template.digest,
+    );
+    if (templateStale) {
+      return { kind: "stale", message: templateStale };
+    }
+    if (candidate.textSafeOverlay) {
+      const overlayStale = await assetDigestMismatch(
+        root,
+        candidate.textSafeOverlay.path,
+        candidate.textSafeOverlay.digest,
+      );
+      if (overlayStale) {
+        return { kind: "stale", message: overlayStale };
+      }
+    }
   }
   return {
-    jsonPath: thumbnailCandidatesJsonPath,
-    markdownPath: thumbnailCandidatesMarkdownPath,
-    jsonSha256: sha256(json),
-    markdownSha256: sha256(markdown),
-    recommendedCandidateId: pack.recommendedCandidateId,
+    binding: {
+      jsonPath: thumbnailCandidatesJsonPath,
+      markdownPath: thumbnailCandidatesMarkdownPath,
+      jsonSha256: sha256(json),
+      markdownSha256: sha256(markdown),
+      recommendedCandidateId: pack.recommendedCandidateId,
+    },
+    kind: "present",
   };
+}
+
+async function assetDigestMismatch(
+  root: string,
+  relativePath: string,
+  expectedDigest: string,
+): Promise<string | null> {
+  let bytes;
+  try {
+    bytes = await readFile(path.join(root, relativePath));
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+      return `Thumbnail asset is missing: ${relativePath}`;
+    }
+    throw error;
+  }
+  const currentDigest = createHash("sha256").update(bytes).digest("hex");
+  return currentDigest === expectedDigest
+    ? null
+    : `Thumbnail asset changed since handoff candidate generation: ${relativePath}`;
 }
 
 function missingHandoff(

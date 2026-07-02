@@ -120,7 +120,7 @@ describe("Studio local model evaluation overview", () => {
     expect(overview).toMatchObject({
       error: null,
       nextCommand: "pnpm producer eval local-model --llm-mode mock --model mock-deterministic",
-      status: "blocked",
+      status: "recommended",
       singleReport: {
         blockCount: 0,
         checkCount: 3,

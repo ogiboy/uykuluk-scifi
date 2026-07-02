@@ -156,7 +156,7 @@ async function requestProvider(
       model: config.providers.llm.model,
       prompt,
       maxTokens: maxOutputTokensForEvalCheck(config, name),
-      temperature: 0.2,
+      temperature: 0,
       responseFormat: options.responseFormat,
     });
     return { ok: true, result };
