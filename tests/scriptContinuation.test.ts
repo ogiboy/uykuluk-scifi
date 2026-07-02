@@ -144,8 +144,8 @@ describe("script continuation parsing", () => {
       },
     );
 
-    expect(prompt).toContain("Target length: 120-170 Turkish words.");
-    expect(prompt).toContain("Hard limit: 1800 characters.");
+    expect(prompt).toContain("Target length: 150-220 Turkish words.");
+    expect(prompt).toContain("Hard limit: 2400 characters.");
     expect(scriptContinuationTokenCap(3200)).toBe(700);
   });
 });

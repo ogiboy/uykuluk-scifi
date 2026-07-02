@@ -9,7 +9,9 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Fixes
+
+- align script/planner prompts and script review floor with the v1 8-12 minute local draft target.
 
 ## v0.63.0 (2026-07-02)
 

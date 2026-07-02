@@ -38,7 +38,7 @@ describe("sectional script generation", () => {
       providerCallCount: number;
       sections: Array<{
         id: string;
-        pass: "draft" | "expansion";
+        pass: "draft" | "expansion" | "continuation";
         chunk?: number;
         heading: string;
         promptHash: string;
@@ -47,14 +47,14 @@ describe("sectional script generation", () => {
       }>;
     };
     expect(meta.sectionCount).toBe(4);
-    expect(meta.wordCount).toBeGreaterThanOrEqual(1200);
+    expect(meta.wordCount).toBeGreaterThanOrEqual(1500);
     expect(sections.sectionCount).toBe(4);
-    expect(sections.providerCallCount).toBe(16);
-    expect(sections.sections).toHaveLength(16);
+    expect(sections.providerCallCount).toBe(17);
+    expect(sections.sections).toHaveLength(17);
     expect(
       sections.sections
         .map((section) =>
-          section.pass === "expansion"
+          section.pass === "expansion" || section.pass === "continuation"
             ? `${section.id}:${section.pass}:${section.chunk}`
             : `${section.id}:${section.pass}`,
         )
@@ -64,6 +64,7 @@ describe("sectional script generation", () => {
       "context:expansion:1",
       "context:expansion:2",
       "context:expansion:3",
+      "development:continuation:1",
       "development:draft",
       "development:expansion:1",
       "development:expansion:2",
@@ -132,7 +133,7 @@ describe("sectional script generation", () => {
       (section) => section.pass === "continuation",
     );
 
-    expect(meta.wordCount).toBeGreaterThanOrEqual(1200);
+    expect(meta.wordCount).toBeGreaterThanOrEqual(1500);
     expect(sections.providerCallCount).toBeGreaterThanOrEqual(17);
     expect(continuationReceipts.length).toBeGreaterThanOrEqual(1);
     expect(continuationReceipts.length).toBeLessThanOrEqual(3);
@@ -147,8 +148,8 @@ describe("sectional script generation", () => {
   it("keeps section prompts short enough for local models to finish", () => {
     const basePrompt = [
       "SCRIPT_MARKDOWN",
-      "Target at least 20 minutes of estimated narration time.",
-      "Prefer 1,600+ words for local model drafts.",
+      "Target an 8-12 minute local draft.",
+      "Prefer 1,500+ total script words for local model drafts.",
       "## Approved Idea",
       '{"title":"Deneme"}',
     ].join("\n\n");
@@ -162,26 +163,26 @@ describe("sectional script generation", () => {
     expect(sectionTokenCap(3200)).toBe(500);
     expect(prompt).toContain("SCRIPT_SECTION_JSON");
     expect(prompt).toContain("## Approved Idea");
-    expect(prompt).not.toContain("Target at least 20 minutes");
-    expect(prompt).not.toContain("1,600+ words");
+    expect(prompt).not.toContain("Target an 8-12 minute local draft");
+    expect(prompt).not.toContain("1,500+ total script words");
     expect(prompt).toContain("50-90 kelime");
     expect(prompt).toContain("Tek paragraf");
     expect(prompt).toContain('"text"');
     expect(prompt).toContain("Do not append compliance checklists");
     expect(expansionPrompt).toContain("Do not write the full script");
     expect(expansionPrompt).toContain("Expansion chunk: 1/3");
-    expect(expansionPrompt).toContain("80-110 Turkish words");
-    expect(expansionPrompt).toContain("Write exactly 4 complete Turkish sentences");
+    expect(expansionPrompt).toContain("110-150 Turkish words");
+    expect(expansionPrompt).toContain("Write exactly 5 complete Turkish sentences");
     expect(expansionPrompt).toContain("Sentence plan:");
     expect(expansionPrompt).toContain("Do not start two sentences with the same first four words");
     expect(expansionPrompt).toContain("Avoid generic filler openers");
-    expect(expansionPrompt).toContain("900 characters");
+    expect(expansionPrompt).toContain("1200 characters");
     expect(expansionPrompt).toContain("Each sentence must add a new concrete beat");
     expect(expansionPrompt).toContain("replace repeated structures with new images or decisions");
     expect(expansionPrompt).toContain("Exact label checklist");
     expect(expansionPrompt).toContain("Only `Anlatıcı:` and `Görsel:` are valid labels");
     expect(expansionPrompt).toContain("Do not append compliance checklists");
-    expect(expansionPrompt).not.toContain("Target at least 20 minutes");
+    expect(expansionPrompt).not.toContain("Target an 8-12 minute local draft");
     expect(scriptSectionResponseFormat.properties.text).toMatchObject({ maxLength: 750 });
     expect(scriptSectionExpansionChunks).toHaveLength(3);
     expect(sectionExpansionTokenCap(3200)).toBe(1000);

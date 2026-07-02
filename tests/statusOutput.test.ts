@@ -183,7 +183,7 @@ describe("operator status output", () => {
         message:
           "Invalid script continuation chunk 1 provider response: continuation has no complete sentence.",
         nextAction: `Try a stronger or larger local script model, or raise providers.llm.maxOutputTokens.script in producer.config.json, then rerun pnpm producer script --run ${run.runId}.`,
-        requiredWordCount: 1200,
+        requiredWordCount: 1500,
         wordCount: 999,
         createdAt: "2026-06-25T00:00:00.000Z",
       }),
@@ -201,7 +201,7 @@ describe("operator status output", () => {
     expect(output).toContain(`Next safe action: pnpm producer script --run ${run.runId}`);
     expect(output).toContain("Diagnostics:");
     expect(output).toContain(
-      "- diagnostics/script_generation_failure.json [script]: Invalid script continuation chunk 1 provider response: continuation has no complete sentence. (below_long_form_floor: 999/1200 words)",
+      "- diagnostics/script_generation_failure.json [script]: Invalid script continuation chunk 1 provider response: continuation has no complete sentence. (below_long_form_floor: 999/1500 words)",
     );
     expect(output).toContain(
       `Next action: Try a stronger or larger local script model, or raise providers.llm.maxOutputTokens.script in producer.config.json, then rerun pnpm producer script --run ${run.runId}.`,

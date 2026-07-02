@@ -14,8 +14,8 @@ Requirements:
   fiction, a hypothesis, or a question; do not present it as established science.
 - Include visual beat hints through the narration.
 - End with a gentle outro or call to action.
-- Target at least 20 minutes of estimated narration time.
-- Prefer 1,600+ words for local model drafts so review can judge long-form structure.
+- Target an 8-12 minute local draft.
+- Prefer 1,500+ total script words for local model drafts so review can judge long-form structure.
 - If the output budget is tight, return a complete shorter draft with hook, body, and outro instead
   of stopping mid-sentence.
 - Use Turkish production labels only, such as `Anlatıcı:` and `Görsel:`. Never use labels such as
