@@ -21,7 +21,7 @@ describe("script blocker retry", () => {
       (section) => section.id === "hook" && section.pass === "expansion" && section.chunk === 1,
     );
 
-    expect(sections.providerCallCount).toBe(17);
+    expect(sections.providerCallCount).toBe(18);
     expect(retriedReceipt?.blockerRetry).toMatchObject({
       attemptCount: 2,
       blockers: expect.stringContaining("repeated_sentence_loop"),
@@ -49,7 +49,7 @@ describe("script blocker retry", () => {
       (section) => section.id === "hook" && section.pass === "expansion" && section.chunk === 1,
     );
 
-    expect(sections.providerCallCount).toBe(17);
+    expect(sections.providerCallCount).toBe(18);
     expect(retriedReceipt?.blockerRetry?.blockers).toContain("repeated_sentence_loop");
   });
 
@@ -61,7 +61,7 @@ describe("script blocker retry", () => {
       (section) => section.id === "hook" && section.pass === "expansion" && section.chunk === 1,
     );
 
-    expect(sections.providerCallCount).toBe(18);
+    expect(sections.providerCallCount).toBe(19);
     expect(retriedReceipt?.blockerRetry).toMatchObject({
       attemptCount: 3,
       blockers: expect.stringContaining("attempt 2: content_blockers: repeated_sentence_loop"),
@@ -82,7 +82,7 @@ describe("script blocker retry", () => {
       (section) => section.pass === "continuation" && section.blockerRetry,
     );
 
-    expect(sections.providerCallCount).toBe(19);
+    expect(sections.providerCallCount).toBe(20);
     expect(retriedContinuation?.blockerRetry).toMatchObject({
       attemptCount: 2,
       blockers: expect.stringContaining("repeated_sentence_loop"),

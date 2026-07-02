@@ -5,17 +5,10 @@ import { useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import { submitStudioJsonMutation } from "@/lib/studioMutationSubmit";
+import { RunApprovalConfirmationDialog } from "./RunApprovalConfirmationDialog";
 
 type RunApprovalActionPanelProps = Readonly<{
   run: Pick<StudioRunDetail, "nextRecommendedCommand" | "runId" | "state">;
@@ -125,41 +118,17 @@ export function RunApprovalActionPanel({ run }: RunApprovalActionPanelProps) {
           {config.buttonLabel}
         </Button>
       </form>
-      <Dialog open={confirmationOpen} onOpenChange={setConfirmationOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirm local approval evidence</DialogTitle>
-            <DialogDescription>
-              This records an explicit local approval for {run.runId}. It does not upload, publish,
-              or schedule content.
-            </DialogDescription>
-          </DialogHeader>
-          <div className='confirmation-summary'>
-            <dl className='decision-list'>
-              <div>
-                <dt>Action</dt>
-                <dd>{config.actionId}</dd>
-              </div>
-              <div>
-                <dt>Current state</dt>
-                <dd>{run.state}</dd>
-              </div>
-              <div>
-                <dt>Run</dt>
-                <dd>{run.runId}</dd>
-              </div>
-            </dl>
-            {run.nextRecommendedCommand ? (
-              <p className='artifact-action'>CLI equivalent: {run.nextRecommendedCommand}</p>
-            ) : null}
-          </div>
-          <DialogFooter showCloseButton>
-            <Button disabled={state.kind === "submitting"} type='button' onClick={confirmApproval}>
-              Confirm {config.buttonLabel.toLowerCase()}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <RunApprovalConfirmationDialog
+        actionId={config.actionId}
+        buttonLabel={config.buttonLabel}
+        currentState={run.state}
+        isSubmitting={state.kind === "submitting"}
+        nextRecommendedCommand={run.nextRecommendedCommand}
+        open={confirmationOpen}
+        runId={run.runId}
+        onConfirm={confirmApproval}
+        onOpenChange={setConfirmationOpen}
+      />
       <p className={state.kind === "error" ? "blocked" : undefined}>{state.message}</p>
       {run.nextRecommendedCommand ? (
         <p className='artifact-action'>CLI equivalent: {run.nextRecommendedCommand}</p>
