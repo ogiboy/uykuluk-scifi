@@ -23,13 +23,15 @@ upload/publish boundaries.
 - Branch/worktree: `feat/local-production-proof` at
   `/Users/ogiboy/.codex/worktrees/894d/uykuluk-scifi`.
 - Active PR: #120, `feat(studio): expand local production operator surface`, open against `main`.
-- Last completed slice/commit: `113336eb feat(studio): add tabbed run review cockpit`.
+- Last completed slice/commit: `4168e10 feat(studio): improve media review cards`.
 - Completed current-branch frontend slices include:
   - shadcn route/action primitives for guarded local actions;
   - Studio home control desk, queue filters, command palette, copyable safe commands;
   - shadcn dropdown/popover/card/badge/dialog overlays;
   - run-detail tabbed review cockpit for progress, media, artifacts, handoff, readiness, and guarded
     decisions.
+  - production-media review cards with copyable review, local playback, and render-approval handoff
+    commands.
 - Verified commands for the latest slice:
   - `pnpm --filter @uykulukscifi/studio lint`
   - `pnpm --filter @uykulukscifi/studio typecheck`
@@ -40,6 +42,8 @@ upload/publish boundaries.
   - `pnpm format:check`
   - browser smoke on `/runs/run_20260702013835_ada7ab` across Media, Artifacts, Readiness, and
     Decisions tabs.
+  - browser smoke on `/runs/run_20260702013835_ada7ab` Media tab for rendered media cards and
+    copyable review/playback controls.
 - Dirty or external changes to preserve: none at the checkpoint update point.
 
 ## Decisions

@@ -30,6 +30,8 @@ future generated release notes can be inserted predictably.
   operator cockpit and guarded local review actions.
 - convert Studio run detail into a shadcn tabbed review cockpit for progress, media, artifacts,
   readiness, handoff, and guarded decisions.
+- improve Studio production-media review cards with copyable review, playback, and render-approval
+  handoff commands.
 
 ### Fixes
 

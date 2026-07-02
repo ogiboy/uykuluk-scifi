@@ -716,6 +716,34 @@ h3 {
   margin-top: 14px;
 }
 
+.production-media-grid,
+.production-media-commands {
+  display: grid;
+  gap: 12px;
+}
+
+.production-media-grid {
+  align-items: start;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  margin-top: 14px;
+}
+
+.production-media-card {
+  align-self: start;
+}
+
+.production-media-card-title {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.production-media-alert {
+  margin: 12px 0;
+}
+
 .artifact-preview-group,
 .artifact-preview-toggle {
   display: grid;

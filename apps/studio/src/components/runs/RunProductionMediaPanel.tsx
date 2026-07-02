@@ -4,6 +4,10 @@ import {
   shouldShowEvidenceRemediation,
 } from "@/lib/runEvidenceCopy";
 import type { StudioRunDetail } from "@/lib/runSummaries";
+import { CopyableCommand } from "../studio/CopyableCommand";
+import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
+import { Badge } from "../ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import type { ProductionMediaStatus } from "../../../../../src/stages/statusMediaSummary";
 
 type RunProductionMediaPanelProps = Readonly<{
@@ -34,33 +38,15 @@ export function RunProductionMediaPanel({
       {shouldShowEvidenceRemediation(evidenceStatus) ? (
         <EvidenceRemediation message={evidenceMessage} nextAction={evidenceNextAction} />
       ) : null}
-      <ul>
+      <div className='production-media-grid'>
         {productionMedia.map((artifact) => (
-          <li key={artifact.artifactPath}>
-            <strong>{artifact.label}</strong>:{" "}
-            <span className={mediaStatusClassName(artifact.status)}>{artifact.status}</span>
-            {artifact.detail ? ` — ${artifact.detail}` : ""}
-            <br />
-            <span>{artifact.artifactPath}</span>
-            <p className='artifact-action'>
-              Review: {productionMediaReviewAction(evidenceStatus, artifact)}
-            </p>
-            {artifact.localPlaybackPath ? (
-              <p className='artifact-action'>Local playback path: {artifact.localPlaybackPath}</p>
-            ) : null}
-            {artifact.renderApprovalScope ? (
-              <p className='artifact-action'>
-                Render approval scope: {artifact.renderApprovalScope}
-              </p>
-            ) : null}
-            {artifact.renderApprovalCommand ? (
-              <p className='artifact-action'>
-                Render approval command: {artifact.renderApprovalCommand}
-              </p>
-            ) : null}
-          </li>
+          <ProductionMediaCard
+            artifact={artifact}
+            evidenceStatus={evidenceStatus}
+            key={artifact.artifactPath}
+          />
         ))}
-      </ul>
+      </div>
     </section>
   );
 }
@@ -76,26 +62,93 @@ function EvidenceRemediation({
   nextAction,
 }: Readonly<{ message: string; nextAction?: string }>) {
   return (
-    <>
-      <p>Evidence: {message}</p>
-      {nextAction ? <p className='artifact-action'>Evidence action: {nextAction}</p> : null}
-    </>
+    <Alert className='production-media-alert'>
+      <AlertTitle>Evidence needs attention</AlertTitle>
+      <AlertDescription>
+        <p>{message}</p>
+        {nextAction ? <CopyableCommand command={nextAction} label='Evidence action' /> : null}
+      </AlertDescription>
+    </Alert>
   );
 }
 
+function ProductionMediaCard({
+  artifact,
+  evidenceStatus,
+}: Readonly<{
+  artifact: ProductionMediaStatus;
+  evidenceStatus: StudioRunDetail["evidenceStatus"];
+}>) {
+  return (
+    <Card className='production-media-card'>
+      <CardHeader>
+        <CardDescription>{artifact.artifactPath}</CardDescription>
+        <div className='production-media-card-title'>
+          <CardTitle>
+            <h3>{artifact.label}</h3>
+          </CardTitle>
+          <Badge variant={mediaStatusBadgeVariant(artifact.status)}>{artifact.status}</Badge>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {artifact.detail ? <p>{artifact.detail}</p> : null}
+        <p className='artifact-action'>
+          Review: {productionMediaReviewAction(evidenceStatus, artifact)}
+        </p>
+        <MediaCommandList artifact={artifact} />
+      </CardContent>
+    </Card>
+  );
+}
+
+function MediaCommandList({ artifact }: Readonly<{ artifact: ProductionMediaStatus }>) {
+  const commands = mediaCommands(artifact);
+  if (commands.length === 0) {
+    return null;
+  }
+  return (
+    <div className='production-media-commands'>
+      {commands.map((command) => (
+        <div key={command.label}>
+          <strong>{command.label}</strong>
+          <CopyableCommand command={command.value} label={command.label} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function mediaCommands(artifact: ProductionMediaStatus): Array<{ label: string; value: string }> {
+  return [
+    artifact.reviewCommand ? { label: "Review command", value: artifact.reviewCommand } : null,
+    artifact.localPlaybackPath
+      ? { label: "Local playback path", value: artifact.localPlaybackPath }
+      : null,
+    artifact.renderApprovalCommand
+      ? {
+          label: `Render approval command (${artifact.renderApprovalScope ?? "scope unknown"})`,
+          value: artifact.renderApprovalCommand,
+        }
+      : null,
+  ].filter((command): command is { label: string; value: string } => Boolean(command));
+}
+
 /**
- * Maps a media status to its display class name.
+ * Maps a media status to the shadcn badge variant used in the review panel.
  *
  * @param status - The artifact status value.
- * @returns The CSS class name for the status pill.
+ * @returns The badge variant for the status pill.
  */
-function mediaStatusClassName(status: ProductionMediaStatus["status"]): string {
+function mediaStatusBadgeVariant(
+  status: ProductionMediaStatus["status"],
+): "destructive" | "outline" | "secondary" {
   switch (status) {
     case "block":
-      return "status-pill small blocked";
+      return "destructive";
     case "missing":
-    case "pass":
     case "recorded":
-      return "status-pill small";
+      return "outline";
+    case "pass":
+      return "secondary";
   }
 }
