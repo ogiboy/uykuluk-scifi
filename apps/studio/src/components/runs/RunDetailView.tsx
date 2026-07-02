@@ -1,5 +1,5 @@
 import type { StudioRunDetail } from "@/lib/runSummaries";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { RunArtifactPreviewsPanel } from "./RunArtifactPreviewsPanel";
 import { RunChannelHandoffPanel } from "./RunChannelHandoffPanel";
 import { RunFinalReviewBundlePanel } from "./RunFinalReviewBundlePanel";
@@ -8,6 +8,7 @@ import { RunReadinessDiagnosticsPanels } from "./RunReadinessDiagnosticsPanels";
 import { RunReviewActionSummarySheet } from "./RunReviewActionSummarySheet";
 import { RunReviewCockpitHeader } from "./RunReviewCockpitHeader";
 import { RunReviewDecisionRail } from "./RunReviewDecisionRail";
+import { RunReviewSectionTabs } from "./RunReviewSectionTabs";
 import { RunWorkflowProgressPanel } from "./RunWorkflowProgressPanel";
 
 /**
@@ -23,13 +24,7 @@ export function RunDetailView({ run }: Readonly<{ run: StudioRunDetail }>) {
 
       <div className='run-review-cockpit'>
         <Tabs defaultValue='progress' className='run-review-tabs'>
-          <TabsList className='review-section-tabs' aria-label='Run review sections'>
-            <TabsTrigger value='progress'>Progress</TabsTrigger>
-            <TabsTrigger value='media'>Media</TabsTrigger>
-            <TabsTrigger value='artifacts'>Artifacts</TabsTrigger>
-            <TabsTrigger value='handoff'>Handoff</TabsTrigger>
-            <TabsTrigger value='readiness'>Readiness</TabsTrigger>
-          </TabsList>
+          <RunReviewSectionTabs run={run} />
 
           <TabsContent value='progress'>
             <div className='run-review-workspace'>

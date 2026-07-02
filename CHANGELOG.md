@@ -34,6 +34,8 @@ future generated release notes can be inserted predictably.
   render decisions, final review, and the next safe action into one operator-facing summary.
 - show guarded Studio render-decision choices as explicit radio cards with CLI-equivalent command
   previews before confirmation.
+- add status badges to Studio run-detail review tabs so operators can jump to the panels that need
+  attention.
 - convert guarded Studio approval, render-decision, and session controls to shadcn primitives with
   local operator toast feedback.
 - introduce a shadcn modal command palette for Studio navigation and safe CLI command copying.
