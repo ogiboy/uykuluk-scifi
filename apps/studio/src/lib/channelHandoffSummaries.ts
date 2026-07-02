@@ -1,6 +1,4 @@
-import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
-import path from "node:path";
 import {
   buildChannelHandoffPayload,
   channelHandoffCommand,
@@ -17,6 +15,7 @@ import {
   thumbnailCandidatesJsonPath,
   thumbnailCandidatesMarkdownPath,
 } from "../../../../src/stages/thumbnailCandidateContracts";
+import { thumbnailAssetStaleReason } from "../../../../src/stages/thumbnailCandidateTrust";
 import { sha256 } from "../../../../src/utils/hash";
 import type { StudioFinalReviewBundleSummary } from "./finalReviewBundleSummaries";
 import { studioRunFilePath } from "./runFilePaths";
@@ -167,25 +166,9 @@ async function trustedThumbnailCandidateBinding(
       message: "Thumbnail candidates were created for a different final review bundle.",
     };
   }
-  for (const candidate of pack.candidates) {
-    const templateStale = await assetDigestMismatch(
-      root,
-      candidate.template.path,
-      candidate.template.digest,
-    );
-    if (templateStale) {
-      return { kind: "stale", message: templateStale };
-    }
-    if (candidate.textSafeOverlay) {
-      const overlayStale = await assetDigestMismatch(
-        root,
-        candidate.textSafeOverlay.path,
-        candidate.textSafeOverlay.digest,
-      );
-      if (overlayStale) {
-        return { kind: "stale", message: overlayStale };
-      }
-    }
+  const assetStaleReason = await thumbnailAssetStaleReason(pack, root);
+  if (assetStaleReason) {
+    return { kind: "stale", message: assetStaleReason };
   }
   return {
     binding: {
@@ -197,26 +180,6 @@ async function trustedThumbnailCandidateBinding(
     },
     kind: "present",
   };
-}
-
-async function assetDigestMismatch(
-  root: string,
-  relativePath: string,
-  expectedDigest: string,
-): Promise<string | null> {
-  let bytes;
-  try {
-    bytes = await readFile(path.join(root, relativePath));
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-      return `Thumbnail asset is missing: ${relativePath}`;
-    }
-    throw error;
-  }
-  const currentDigest = createHash("sha256").update(bytes).digest("hex");
-  return currentDigest === expectedDigest
-    ? null
-    : `Thumbnail asset changed since handoff candidate generation: ${relativePath}`;
 }
 
 function missingHandoff(

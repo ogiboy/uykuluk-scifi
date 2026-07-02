@@ -1,5 +1,6 @@
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import { RunArtifactPreviewsPanel } from "./RunArtifactPreviewsPanel";
+import { RunApprovalActionPanel } from "./RunApprovalActionPanel";
 import { RunChannelHandoffDecisionPanel } from "./RunChannelHandoffDecisionPanel";
 import { RunBlockedActionsPanel } from "./RunBlockedActionsPanel";
 import { RunChannelHandoffPanel } from "./RunChannelHandoffPanel";
@@ -51,7 +52,10 @@ export function RunDetailView({ run }: Readonly<{ run: StudioRunDetail }>) {
         <code className='command'>
           {run.nextRecommendedCommand ?? `Run pnpm producer evidence --run ${run.runId}`}
         </code>
-        <p>Read-only display. Use the CLI for approvals, artifacts, render, upload, or publish.</p>
+        <p>
+          Studio can record guarded local approvals where route security is enabled. Use CLI/core
+          commands for generation, artifacts, render execution, upload, and publish.
+        </p>
         <p>Evidence: {run.evidenceMessage}</p>
         {run.evidenceNextAction ? (
           <p className='artifact-action'>Evidence action: {run.evidenceNextAction}</p>
@@ -64,6 +68,8 @@ export function RunDetailView({ run }: Readonly<{ run: StudioRunDetail }>) {
         evidenceNextAction={run.evidenceNextAction}
         evidenceStatus={run.evidenceStatus}
       />
+
+      <RunApprovalActionPanel run={run} />
 
       <section className='panel' aria-labelledby='diagnostics-heading'>
         <h2 id='diagnostics-heading'>Diagnostics</h2>

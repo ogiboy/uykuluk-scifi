@@ -1,12 +1,21 @@
 import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { POST } from "../apps/studio/src/app/actions/decide-render/route";
-import { studioActionHeaderName } from "../apps/studio/src/lib/studioMutationSecurity";
+import {
+  studioActionHeaderName,
+  studioSessionCookieName,
+  studioSessionHeaderName,
+} from "../apps/studio/src/lib/studioMutationSecurity";
 import { artifactPath } from "../src/core/artifacts";
 import { loadRun } from "../src/core/runStore";
 import { renderDecisionJsonPath } from "../src/stages/renderDecisionCommands";
 import { useTempProject } from "./helpers";
 import { renderLocalDraft } from "./renderPipelineHelpers";
+import {
+  studioJsonMutationRequest,
+  type StudioMutationRequestOptions,
+  testStudioSessionToken,
+} from "./studioMutationRouteTestHelpers";
 
 describe("Studio render decision action route", () => {
   useTempProject();
@@ -56,6 +65,8 @@ describe("Studio render decision action route", () => {
         body: "decision=accepted-for-local-review",
         headers: {
           [studioActionHeaderName]: "render.decide",
+          [studioSessionHeaderName]: testStudioSessionToken,
+          cookie: `${studioSessionCookieName}=${testStudioSessionToken}`,
           "content-type": "application/x-www-form-urlencoded",
           origin: "http://localhost:3000",
         },
@@ -82,6 +93,11 @@ describe("Studio render decision action route", () => {
       }),
       400,
     );
+    await expectRouteError(studioJsonRequest({}, { sessionToken: null }), 403);
+    await expectRouteError(
+      studioJsonRequest({}, { cookieToken: "other_session_token_1234567890ABCDEFGH" }),
+      403,
+    );
   });
 
   it("maps core render-decision blockers to a conflict response", async () => {
@@ -102,11 +118,6 @@ describe("Studio render decision action route", () => {
   });
 });
 
-type StudioRequestOptions = Readonly<{
-  actionHeader?: string;
-  origin?: string;
-}>;
-
 /**
  * Builds a same-origin JSON request for the Studio render-decision route.
  *
@@ -114,16 +125,8 @@ type StudioRequestOptions = Readonly<{
  * @param options - Header overrides for negative security tests.
  * @returns A Request object suitable for calling the route handler directly.
  */
-function studioJsonRequest(body: unknown, options: StudioRequestOptions = {}): Request {
-  return new Request("http://localhost:3000/actions/decide-render", {
-    body: JSON.stringify(body),
-    headers: {
-      [studioActionHeaderName]: options.actionHeader ?? "render.decide",
-      "content-type": "application/json",
-      origin: options.origin ?? "http://localhost:3000",
-    },
-    method: "POST",
-  });
+function studioJsonRequest(body: unknown, options: StudioMutationRequestOptions = {}): Request {
+  return studioJsonMutationRequest("/actions/decide-render", "render.decide", body, options);
 }
 
 /**

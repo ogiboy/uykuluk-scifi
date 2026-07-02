@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import type { StudioRunDetail } from "@/lib/runSummaries";
-import { studioActionHeaderName } from "@/lib/studioMutationSecurity";
+import { submitStudioJsonMutation } from "@/lib/studioMutationSubmit";
 
 type RunRenderDecisionActionPanelProps = Readonly<{
   commands: StudioRunDetail["renderDecisionCommands"];
@@ -42,20 +42,14 @@ export function RunRenderDecisionActionPanel({
   async function submitDecision(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
     setState({ kind: "submitting", message: "Recording local render decision..." });
-    const response = await fetch("/actions/decide-render", {
-      body: JSON.stringify({ decision, notes, reviewedBy, runId }),
-      headers: {
-        "content-type": "application/json",
-        [studioActionHeaderName]: "render.decide",
-      },
-      method: "POST",
+    const result = await submitStudioJsonMutation({
+      actionId: "render.decide",
+      body: { decision, notes, reviewedBy, runId },
+      fallbackError: "Render decision could not be recorded.",
+      routePath: "/actions/decide-render",
     });
-    const payload = (await response.json().catch(() => null)) as { message?: string } | null;
-    if (!response.ok) {
-      setState({
-        kind: "error",
-        message: payload?.message ?? "Render decision could not be recorded.",
-      });
+    if (result.kind === "error") {
+      setState(result);
       return;
     }
     setState({

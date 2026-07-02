@@ -11,8 +11,8 @@ import {
   renderDecisionJsonPath,
   renderDecisionMarkdownPath,
 } from "../src/stages/renderDecisionCommands";
-import type { RenderDecisionRecord } from "../src/stages/renderDecisionContracts";
 import { renderDecisionNextSafeAction } from "../src/stages/renderDecision";
+import type { RenderDecisionRecord } from "../src/stages/renderDecisionContracts";
 
 /**
  * Writes a Studio-valid render decision artifact for a rendered fixture run.

@@ -141,6 +141,25 @@ describe("manual channel handoff", () => {
     expect(status.nextRecommendedCommand).toBe(`pnpm producer channel-handoff --run ${runId}`);
   });
 
+  it("marks handoffs stale when referenced thumbnail assets change", async () => {
+    const runId = await acceptedFinalReviewRun("channel-handoff-thumbnail-asset-drift");
+    await createChannelHandoff(runId);
+    await writeFile(
+      path.join(process.cwd(), "assets/thumbnails/thumbnail_template_01_left_1280x720.jpg"),
+      "modified thumbnail template",
+      "utf8",
+    );
+
+    const status = await readRunStatus(runId);
+
+    expect(status.channelHandoff).toMatchObject({
+      kind: "stale",
+      message:
+        "Thumbnail asset changed since handoff candidate generation: assets/thumbnails/thumbnail_template_01_left_1280x720.jpg",
+    });
+    expect(status.nextRecommendedCommand).toBe(`pnpm producer channel-handoff --run ${runId}`);
+  });
+
   it("prints parseable CLI JSON and persists the package artifacts", async () => {
     const runId = await acceptedFinalReviewRun("channel-handoff-cli");
 

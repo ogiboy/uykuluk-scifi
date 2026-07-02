@@ -4,11 +4,11 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 /**
- * Records the local draft-render decision through the shared guarded Studio mutation path.
+ * Records explicit idea approval through the shared guarded Studio mutation path.
  *
  * @param request - The Studio JSON mutation request.
- * @returns A JSON response with the persisted render decision, or a safe error message.
+ * @returns A JSON response with the persisted approval, or a safe error message.
  */
 export async function POST(request: Request): Promise<Response> {
-  return runStudioCliMutationRoute(request, "render.decide");
+  return runStudioCliMutationRoute(request, "idea.approve");
 }

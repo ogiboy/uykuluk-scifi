@@ -27,10 +27,11 @@ Production desk for Turkish sci-fi YouTube episodes.
 
 UykulukSciFi Producer is a local-first, approval-gated, cost-aware production desk for building
 reviewable UykulukSciFi YouTube video draft packages. The TypeScript CLI is the source of truth; the
-Next.js Producer Studio is a read-only operator surface over the same local contracts. The system
-generates ideas, scripts, reviews, production packages, render plans, local voiceover, local draft
-renders, cost estimates, evidence bundles, and readiness diagnostics. It does not upload or publish
-to YouTube in the MVP.
+Next.js Producer Studio is an operator surface over the same local contracts, with guarded local
+approval/review mutations only where route security and service contracts are implemented. The
+system generates ideas, scripts, reviews, production packages, render plans, local voiceover, local
+draft renders, cost estimates, evidence bundles, and readiness diagnostics. It does not upload or
+publish to YouTube in the MVP.
 
 ## Product Direction
 
@@ -69,7 +70,8 @@ agent-tracking state only; runtime code must not require it.
 ## What Exists
 
 - TypeScript CLI workflow under `src/`.
-- Basic Next.js App Router Studio under `apps/studio/` with read-only run index/detail, visual asset
+- Basic Next.js App Router Studio under `apps/studio/` with run index/detail, guarded local
+  idea/script/cost/render approval actions, guarded render-decision evidence writes, visual asset
   inventory, producer doctor diagnostics on the home page and `/doctor`, latest-run readiness
   visibility, local model evaluation summaries, manual analytics feedback summary on the home page,
   runtime prompt inventory, mutation-service status, and manual analytics feedback routes.
@@ -117,13 +119,13 @@ agent-tracking state only; runtime code must not require it.
   upload/publish approval.
 - Manual analytics import/report commands for operator-provided CSV/JSON performance exports, plus a
   read-only Studio view over the ignored local analytics artifacts and import data-quality summary.
-- Typed Studio route-security contract covering read-only routes, the guarded local render-decision
-  route, and disabled future approval/upload/publish action routes.
-- Typed Studio mutation service contracts for future approval and upload/publish actions plus the
-  current guarded local render-decision evidence write.
-- Studio home visibility for guarded local-review actions, disabled future action routes, latest-run
-  readiness, manual analytics feedback, CLI-ready approval contracts, and upload/publish risk
-  boundaries.
+- Typed Studio route-security contract covering read-only routes, guarded local approval/review
+  action routes, and disabled upload/publish action routes.
+- Typed Studio mutation service contracts for guarded local approval/review actions and disabled
+  upload/publish actions.
+- Studio home visibility for guarded local actions, disabled upload/publish action routes,
+  latest-run readiness, manual analytics feedback, CLI-ready action contracts, and upload/publish
+  risk boundaries.
 - Disabled private upload and public/scheduled publish placeholders.
 - UykulukSciFi visual assets under `assets/`.
 - `.ai/` operating contract for agents, workflows, design, QA, security, and roadmap state.
@@ -253,8 +255,8 @@ agent-tracking state only; runtime code must not require it.
 - Upload and publish remain intentionally blocked scaffolds.
 - Upload and public/scheduled publish require future explicit config and separate approval gates.
 - Studio must call typed local service contracts; it must not duplicate workflow state.
-- Studio mutation service contracts exist for future guarded actions, including local
-  render-decision evidence writes, but no Studio action route is enabled yet.
+- Guarded Studio local approval/review routes exist only for CLI/core-backed local evidence writes;
+  they require same-origin JSON, action headers, and short-lived local session proof.
 
 Paid generation providers are not implemented. `producer approve cost` approves one exact future
 paid-production quote; it does not authorize or execute spending. The internal reservation and
@@ -430,9 +432,9 @@ pnpm producer publish schedule --run <run_id>
 
 ## Producer Studio
 
-The Studio is intentionally local-only. Most surfaces are read-only; the only current guarded web
-mutation records a local draft-render decision through the same CLI/core contract as
-`producer decide render`. It does not approve upload or publish.
+The Studio is intentionally local-only. Most surfaces are read-only; guarded web mutations exist
+only for explicit local approvals and local review evidence that already have shared CLI/core
+contracts. They do not run generation, render media, upload, or publish.
 
 ```bash
 pnpm studio
@@ -446,13 +448,14 @@ Current Studio scope:
   readiness/evidence status, stale or invalid artifact remediation, and next safe action visibility;
 - `/runs/<run_id>` detail view with next action, readiness status, and review artifact availability
   plus approval ledger entries, warning lists, production media evidence details, shared v1 workflow
-  progress, per-row review guidance, local render-decision command templates for rendered runs that
-  have current draft-render evidence and no recorded decision, readiness check messages, and
-  readiness next-action commands from CLI/core artifacts. Malformed or stale evidence artifacts stay
-  read-only, are not used as proof for blocked actions, media readiness, or next-action guidance,
-  and point back to the CLI evidence command; media rows fall back to persisted artifact-record
-  visibility until evidence is current. Missing, malformed, or stale readiness artifacts stay
-  read-only and point back to the CLI readiness command;
+  progress, per-row review guidance, guarded idea/script/cost/render approval forms for eligible
+  states, local render-decision command templates for rendered runs that have current draft-render
+  evidence and no recorded decision, readiness check messages, and readiness next-action commands
+  from CLI/core artifacts. Malformed or stale evidence artifacts stay read-only, are not used as
+  proof for blocked actions, media readiness, or next-action guidance, and point back to the CLI
+  evidence command; media rows fall back to persisted artifact-record visibility until evidence is
+  current. Missing, malformed, or stale readiness artifacts stay read-only and point back to the CLI
+  readiness command;
 - read-only artifact preview excerpts for scripts, reviews, production packages, render plans,
   contact sheets, asset provenance, evidence, readiness, voiceover metadata, and render manifests,
   grouped by operator review phase, with binary media limited to metadata;
@@ -466,16 +469,20 @@ Current Studio scope:
 - read-only runtime prompt inventory and `/prompts` detail page for tracked defaults and configured
   ignored `prompts/local/*.md` overrides, with source paths, hashes, and doctor remediation but no
   editing;
+- guarded `POST /actions/approve-idea`, `/actions/approve-script`, `/actions/approve-cost`, and
+  `/actions/approve-render` routes that require same-origin JSON, a Studio action header, a
+  short-lived local session token/cookie pair, typed service-contract payloads, and the same
+  CLI/core approval gates as `producer approve ...`;
 - guarded `POST /actions/decide-render` route that requires same-origin JSON, a Studio action
-  header, the typed `render.decide` service contract, current draft-render evidence, and writes only
-  local render-decision JSON/Markdown evidence;
+  header, a short-lived local session token/cookie pair, the typed `render.decide` service contract,
+  current draft-render evidence, and writes only local render-decision JSON/Markdown evidence;
 - Radix module tabs for planned run, prompt, asset, and safety surfaces;
 - type-safe `next-intl` request/provider foundation for English and Turkish locales;
 - visible reminder that CLI/core remains the workflow source of truth.
 
 Next Studio work should keep artifact, asset, and prompt visibility aligned with new production
-artifacts, keep approval/upload/publish mutations disabled, and add further guarded routes only
-after shared service contracts, route security requirements, and negative tests exist.
+artifacts, keep upload/publish mutations disabled, and add further guarded routes only after shared
+service contracts, local-session route security, and negative tests exist.
 
 ## Visual Assets
 

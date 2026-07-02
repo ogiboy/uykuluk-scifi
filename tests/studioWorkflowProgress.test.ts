@@ -117,6 +117,24 @@ describe("Studio workflow progress", () => {
     ]);
   });
 
+  it("marks Studio manual channel handoff stale when thumbnail assets drift", async () => {
+    const runId = await createRenderedStudioRunFixture();
+    await writeStudioChannelHandoff(runId);
+    await writeFile(
+      path.join(process.cwd(), "assets/thumbnails/thumbnail_template_01_left_1280x720.jpg"),
+      "changed thumbnail template",
+      "utf8",
+    );
+
+    const detail = await getStudioRunDetail(runId);
+
+    expect(detail?.channelHandoff).toMatchObject({
+      kind: "stale",
+      message: expect.stringContaining("Thumbnail asset changed"),
+    });
+    expect(detail?.nextRecommendedCommand).toContain("pnpm producer channel-handoff");
+  });
+
   it("surfaces the recorded manual channel handoff decision in Studio read-only views", async () => {
     const runId = await createRenderedStudioRunFixture();
     await writeStudioChannelHandoffDecision(runId);
