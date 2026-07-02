@@ -25,6 +25,7 @@ future generated release notes can be inserted predictably.
 - convert guarded Studio approval, render-decision, and session controls to shadcn primitives with
   local operator toast feedback.
 - add a shadcn modal command palette for Studio navigation and safe CLI command copying.
+- add shadcn tooltip-backed copy buttons for Studio safe CLI command blocks.
 
 ### Fixes
 

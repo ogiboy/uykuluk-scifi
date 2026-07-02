@@ -3,6 +3,7 @@ import type {
   StudioDoctorOverview,
   StudioDoctorStatus,
 } from "@/lib/doctorOverview";
+import { CopyableCommand } from "@/components/studio/CopyableCommand";
 import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
 
 type DoctorOverviewViewProps = Readonly<{
@@ -39,7 +40,7 @@ export function DoctorOverviewView({ overview }: DoctorOverviewViewProps) {
 
       <section className='panel' aria-labelledby='doctor-action-heading'>
         <h2 id='doctor-action-heading'>Next Safe Action</h2>
-        <code className='command'>{overview.nextAction}</code>
+        <CopyableCommand command={overview.nextAction} label='Doctor command' />
         <p>
           Read-only display from local diagnostics artifacts. Studio does not run doctor, edit
           config, start providers, download models, upload media, publish content, or mutate

@@ -1,4 +1,5 @@
 import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
+import { CopyableCommand } from "@/components/studio/CopyableCommand";
 import type { StudioModelEvalOverview } from "@/lib/modelEvalOverview";
 
 type ModelEvalStatusPanelProps = Readonly<{
@@ -44,7 +45,7 @@ export function ModelEvalStatusPanel({ overview }: ModelEvalStatusPanelProps) {
       />
       <div className='artifact-action'>
         <strong>Next safe action</strong>
-        <code className='command'>{overview.nextCommand}</code>
+        <CopyableCommand command={overview.nextCommand} label='Model eval command' />
       </div>
       {overview.error ? <p className='blocked'>{overview.error}</p> : null}
     </section>

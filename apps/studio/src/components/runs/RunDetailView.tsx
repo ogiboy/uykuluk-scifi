@@ -1,4 +1,5 @@
 import type { StudioRunDetail } from "@/lib/runSummaries";
+import { CopyableCommand } from "../studio/CopyableCommand";
 import { RunArtifactPreviewsPanel } from "./RunArtifactPreviewsPanel";
 import { RunApprovalActionPanel } from "./RunApprovalActionPanel";
 import { RunChannelHandoffDecisionPanel } from "./RunChannelHandoffDecisionPanel";
@@ -51,9 +52,10 @@ export function RunDetailView({ run }: Readonly<{ run: StudioRunDetail }>) {
         </dl>
         <div className='operator-command-block'>
           <strong>Next safe action</strong>
-          <code className='command'>
-            {run.nextRecommendedCommand ?? `pnpm producer evidence --run ${run.runId}`}
-          </code>
+          <CopyableCommand
+            command={run.nextRecommendedCommand ?? `pnpm producer evidence --run ${run.runId}`}
+            label='Next safe action'
+          />
           <p>
             Studio can record guarded local approvals where route security is enabled. Generation,
             artifact creation, upload, and publish stay with CLI/core gates.

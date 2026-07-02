@@ -5,6 +5,7 @@ import { Inter, JetBrains_Mono } from "next/font/google";
 import type { ReactNode } from "react";
 
 import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 import "./globals.css";
 
@@ -34,8 +35,10 @@ export default async function RootLayout({
     <html lang={locale} className={`${inter.variable} ${jetBrainsMono.variable}`}>
       <body>
         <NextIntlClientProvider locale={locale} messages={messages}>
-          {children}
-          <Toaster closeButton richColors position='bottom-right' />
+          <TooltipProvider>
+            {children}
+            <Toaster closeButton richColors position='bottom-right' />
+          </TooltipProvider>
         </NextIntlClientProvider>
       </body>
     </html>

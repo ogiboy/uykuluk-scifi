@@ -250,6 +250,8 @@ h3 {
 
 .command {
   display: block;
+  min-width: 0;
+  flex: 1 1 auto;
   overflow-wrap: anywhere;
   border-radius: 6px;
   background: #0b0f14;
@@ -257,6 +259,18 @@ h3 {
   padding: 10px;
   font-family: var(--font-mono), SFMono-Regular, Consolas, "Liberation Mono", monospace;
   font-size: 12px;
+}
+
+.copyable-command {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.copy-command-button {
+  align-self: stretch;
+  height: auto;
+  min-width: max-content;
 }
 
 .control-desk {

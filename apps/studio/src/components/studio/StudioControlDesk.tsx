@@ -3,6 +3,7 @@ import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid"
 import type { StudioRunSummary } from "@/lib/runSummaries";
 import { formatRunRenderDecision, formatRunReviewCounts } from "@/lib/runSummaryCopy";
 import type { StudioActionServiceStatus } from "@/lib/actionServiceStatus";
+import { CopyableCommand } from "./CopyableCommand";
 import { StudioMutationSessionPanel } from "./StudioMutationSessionPanel";
 
 type StudioControlDeskProps = Readonly<{
@@ -75,9 +76,10 @@ function ActiveRunCard({ run }: Readonly<{ run: StudioRunSummary }>) {
 
       <div className='operator-command-block'>
         <strong>Next safe action</strong>
-        <code className='command'>
-          {run.nextRecommendedCommand ?? `pnpm producer evidence --run ${run.runId}`}
-        </code>
+        <CopyableCommand
+          command={run.nextRecommendedCommand ?? `pnpm producer evidence --run ${run.runId}`}
+          label='Next safe action'
+        />
       </div>
 
       <div className='workflow-strip' aria-label='Current workflow attention'>
@@ -111,7 +113,7 @@ function EmptyRunCard() {
       </p>
       <div className='operator-command-block'>
         <strong>Next safe action</strong>
-        <code className='command'>pnpm producer ideas</code>
+        <CopyableCommand command='pnpm producer ideas' label='Next safe action' />
       </div>
     </article>
   );

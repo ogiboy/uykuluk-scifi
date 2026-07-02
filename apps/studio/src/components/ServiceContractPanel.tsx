@@ -1,3 +1,4 @@
+import { CopyableCommand } from "@/components/studio/CopyableCommand";
 import { getStudioActionServiceStatus } from "@/lib/actionServiceStatus";
 
 /**
@@ -44,7 +45,7 @@ export function ServiceContractPanel() {
         {status.summaries.map((summary) => (
           <article className='panel' key={summary.actionId}>
             <h3>{summary.actionId}</h3>
-            <code className='command'>{summary.cliCommand}</code>
+            <CopyableCommand command={summary.cliCommand} label={`${summary.actionId} command`} />
             <p>{summary.description}</p>
             <p>
               Route: <code>{summary.routePath}</code> · {summary.availability}
