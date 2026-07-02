@@ -28,6 +28,8 @@ future generated release notes can be inserted predictably.
 - add shadcn tooltip-backed copy buttons for Studio safe CLI command blocks.
 - add shadcn dropdown, popover, card, badge, and confirmation dialog surfaces for the Studio
   operator cockpit and guarded local review actions.
+- convert Studio run detail into a shadcn tabbed review cockpit for progress, media, artifacts,
+  readiness, handoff, and guarded decisions.
 
 ### Fixes
 

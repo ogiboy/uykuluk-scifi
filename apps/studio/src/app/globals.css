@@ -540,6 +540,11 @@ h3 {
   gap: 16px;
 }
 
+.run-review-tabs {
+  display: grid;
+  gap: 16px;
+}
+
 .run-detail-hero {
   display: grid;
   grid-template-columns: minmax(220px, 0.5fr) minmax(0, 1fr) minmax(280px, 0.9fr);
@@ -553,20 +558,25 @@ h3 {
   padding: 16px;
 }
 
+.run-cockpit-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .run-detail-hero h2 {
   margin-bottom: 0;
 }
 
 .run-review-workspace {
   display: grid;
-  grid-template-columns: minmax(0, 1.5fr) minmax(320px, 0.8fr);
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 16px;
   align-items: start;
 }
 
 .run-review-rail {
-  position: sticky;
-  top: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
 }
 
 .review-section {
@@ -577,9 +587,11 @@ h3 {
   position: sticky;
   top: 0;
   z-index: 1;
-  display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  height: auto;
+  min-height: 52px;
+  width: 100%;
   border: 1px solid var(--line);
   border-radius: 10px;
   background: color-mix(in srgb, var(--bg) 92%, transparent);
@@ -587,15 +599,20 @@ h3 {
   backdrop-filter: blur(10px);
 }
 
-.review-section-tabs a {
+.review-section-tabs a,
+.review-section-tabs button {
+  min-height: 32px;
   border: 1px solid var(--line);
   border-radius: 999px;
   color: var(--muted);
+  flex: 1 1 140px;
   padding: 7px 10px;
   font-size: 12px;
 }
 
-.review-section-tabs a:hover {
+.review-section-tabs a:hover,
+.review-section-tabs button:hover,
+.review-section-tabs button[data-state="active"] {
   border-color: color-mix(in srgb, var(--accent) 50%, var(--line));
   color: var(--text);
 }
