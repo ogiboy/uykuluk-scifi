@@ -2,6 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import { submitStudioJsonMutation } from "@/lib/studioMutationSubmit";
 
@@ -54,11 +58,15 @@ export function RunApprovalActionPanel({ run }: RunApprovalActionPanelProps) {
     });
     if (result.kind === "error") {
       setState(result);
+      toast.error("Approval was not recorded", { description: result.message });
       return;
     }
     setState({
       kind: "success",
       message: "Approval recorded. Updating the run detail from persisted local state.",
+    });
+    toast.success("Approval recorded", {
+      description: "Studio is refreshing the persisted run detail.",
     });
     router.refresh();
   }
@@ -74,7 +82,7 @@ export function RunApprovalActionPanel({ run }: RunApprovalActionPanelProps) {
         {config.actionId === "idea.approve" ? (
           <label>
             Idea ID
-            <input
+            <Input
               maxLength={200}
               minLength={1}
               placeholder='idea_001'
@@ -86,17 +94,16 @@ export function RunApprovalActionPanel({ run }: RunApprovalActionPanelProps) {
         ) : null}
         {config.actionId === "script.approve" ? (
           <label className='checkbox-label'>
-            <input
+            <Checkbox
               checked={acknowledgeWarnings}
-              type='checkbox'
-              onChange={(event) => setAcknowledgeWarnings(event.target.checked)}
+              onCheckedChange={(checked) => setAcknowledgeWarnings(checked === true)}
             />
             Acknowledge non-blocking script review warnings if present
           </label>
         ) : null}
-        <button disabled={state.kind === "submitting"} type='submit'>
+        <Button disabled={state.kind === "submitting"} type='submit'>
           {config.buttonLabel}
-        </button>
+        </Button>
       </form>
       <p className={state.kind === "error" ? "blocked" : undefined}>{state.message}</p>
       {run.nextRecommendedCommand ? (

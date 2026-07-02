@@ -731,56 +731,6 @@ h3 {
   gap: 8px;
 }
 
-.studio-form .checkbox-label input {
-  width: auto;
-}
-
-.studio-form input,
-.studio-form select,
-.studio-form textarea {
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  background: #0b0f14;
-  color: var(--text);
-  padding: 10px 12px;
-  font: inherit;
-}
-
-.studio-form textarea {
-  resize: vertical;
-}
-
-.studio-form button {
-  width: fit-content;
-  border: 1px solid color-mix(in srgb, var(--accent-strong) 70%, var(--line));
-  border-radius: 6px;
-  background: #142034;
-  color: var(--text);
-  padding: 10px 14px;
-  font: inherit;
-}
-
-.studio-form button:disabled {
-  cursor: not-allowed;
-  opacity: 0.65;
-}
-
-.studio-action-button {
-  width: fit-content;
-  border: 1px solid color-mix(in srgb, var(--accent) 55%, var(--line));
-  border-radius: 6px;
-  background: #0f1d26;
-  color: var(--text);
-  padding: 9px 12px;
-  font: inherit;
-  font-size: 13px;
-}
-
-.studio-action-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.65;
-}
-
 .status-pill.small {
   padding: 5px 8px;
   font-size: 11px;

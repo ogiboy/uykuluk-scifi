@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import {
   readStudioMutationSessionSnapshot,
   refreshStudioMutationSession,
@@ -43,13 +45,18 @@ export function StudioMutationSessionPanel() {
         snapshot,
         tone: "ready",
       });
+      toast.success("Local session ready", {
+        description: "Approval and review actions can now submit guarded local mutations.",
+      });
     } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Studio local session could not be established.";
       setState({
-        message:
-          error instanceof Error ? error.message : "Studio local session could not be established.",
+        message,
         snapshot: { status: "missing" },
         tone: "error",
       });
+      toast.error("Local session refresh failed", { description: message });
     }
   }
 
@@ -76,14 +83,14 @@ export function StudioMutationSessionPanel() {
           No mutation is trusted without a matching HttpOnly cookie and session header.
         </p>
       )}
-      <button
-        className='studio-action-button'
+      <Button
         disabled={state.tone === "refreshing"}
         type='button'
+        variant='secondary'
         onClick={refreshSession}
       >
         {state.tone === "refreshing" ? "Refreshing..." : "Refresh local session"}
-      </button>
+      </Button>
     </section>
   );
 }

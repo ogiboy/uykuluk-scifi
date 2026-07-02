@@ -4,6 +4,8 @@ import { getLocale, getMessages } from "next-intl/server";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import type { ReactNode } from "react";
 
+import { Toaster } from "@/components/ui/sonner";
+
 import "./globals.css";
 
 const inter = Inter({
@@ -33,6 +35,7 @@ export default async function RootLayout({
       <body>
         <NextIntlClientProvider locale={locale} messages={messages}>
           {children}
+          <Toaster closeButton richColors position='bottom-right' />
         </NextIntlClientProvider>
       </body>
     </html>

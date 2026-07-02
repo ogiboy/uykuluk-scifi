@@ -2,6 +2,18 @@
 
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import { submitStudioJsonMutation } from "@/lib/studioMutationSubmit";
 
@@ -52,11 +64,15 @@ export function RunRenderDecisionActionPanel({
     });
     if (result.kind === "error") {
       setState(result);
+      toast.error("Render decision was not recorded", { description: result.message });
       return;
     }
     setState({
       kind: "success",
       message: "Render decision recorded. Updating the run detail from persisted local evidence.",
+    });
+    toast.success("Render decision recorded", {
+      description: "Studio is refreshing the persisted run detail.",
     });
     router.refresh();
   }
@@ -71,22 +87,27 @@ export function RunRenderDecisionActionPanel({
       <form className='studio-form' onSubmit={submitDecision}>
         <label>
           Decision
-          <select
+          <Select
             value={decision}
-            onChange={(event) =>
-              setDecisionFromSelectValue(event.target.value, commands, setDecision)
-            }
+            onValueChange={(value) => setDecisionFromSelectValue(value, commands, setDecision)}
           >
-            {commands.map((item) => (
-              <option key={item.decision} value={item.decision}>
-                {item.decision}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className='w-full'>
+              <SelectValue placeholder='Choose local decision' />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                {commands.map((item) => (
+                  <SelectItem key={item.decision} value={item.decision}>
+                    {item.decision}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
         </label>
         <label>
           Reviewed by
-          <input
+          <Input
             maxLength={200}
             minLength={1}
             required
@@ -96,7 +117,8 @@ export function RunRenderDecisionActionPanel({
         </label>
         <label>
           Notes
-          <textarea
+          <Textarea
+            className='resize-y'
             maxLength={4000}
             minLength={1}
             required
@@ -105,9 +127,9 @@ export function RunRenderDecisionActionPanel({
             onChange={(event) => setNotes(event.target.value)}
           />
         </label>
-        <button disabled={state.kind === "submitting"} type='submit'>
+        <Button disabled={state.kind === "submitting"} type='submit'>
           Record local decision
-        </button>
+        </Button>
       </form>
       <p className={state.kind === "error" ? "blocked" : undefined}>{state.message}</p>
     </section>
