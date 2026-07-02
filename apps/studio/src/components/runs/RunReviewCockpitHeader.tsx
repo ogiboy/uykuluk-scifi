@@ -2,6 +2,10 @@ import { CopyableCommand } from "@/components/studio/CopyableCommand";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getNextSafeCommand } from "@/lib/runSummaryCopy";
+import {
+  buildStudioRunReviewBrief,
+  type StudioRunReviewBriefCheckpoint,
+} from "@/lib/runReviewBrief";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 
 type RunReviewCockpitHeaderProps = Readonly<{
@@ -14,6 +18,7 @@ type RunReviewCockpitHeaderProps = Readonly<{
  * @param run - The Studio run detail projection to summarize.
  */
 export function RunReviewCockpitHeader({ run }: RunReviewCockpitHeaderProps) {
+  const brief = buildStudioRunReviewBrief(run);
   return (
     <Card className='run-detail-hero' aria-labelledby='run-overview-heading'>
       <CardHeader>
@@ -40,6 +45,20 @@ export function RunReviewCockpitHeader({ run }: RunReviewCockpitHeaderProps) {
         </dl>
       </CardContent>
       <CardContent>
+        <section className='run-review-brief' aria-labelledby='run-review-brief-heading'>
+          <div>
+            <p className={`review-brief-severity ${brief.severity}`}>{brief.severity}</p>
+            <h3 id='run-review-brief-heading'>{brief.title}</h3>
+            <p>{brief.summary}</p>
+          </div>
+          <ul className='review-brief-checkpoints'>
+            {brief.checkpoints.map((checkpoint) => (
+              <ReviewBriefCheckpoint checkpoint={checkpoint} key={checkpoint.label} />
+            ))}
+          </ul>
+        </section>
+      </CardContent>
+      <CardContent>
         <div className='operator-command-block'>
           <strong>Next safe action</strong>
           <CopyableCommand command={getNextSafeCommand(run)} label='Next safe action' />
@@ -50,6 +69,20 @@ export function RunReviewCockpitHeader({ run }: RunReviewCockpitHeaderProps) {
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+function ReviewBriefCheckpoint({
+  checkpoint,
+}: Readonly<{ checkpoint: StudioRunReviewBriefCheckpoint }>) {
+  return (
+    <li>
+      <span className={`status-pill small ${checkpoint.status}`}>{checkpoint.status}</span>
+      <div>
+        <strong>{checkpoint.label}</strong>
+        <p>{checkpoint.detail}</p>
+      </div>
+    </li>
   );
 }
 

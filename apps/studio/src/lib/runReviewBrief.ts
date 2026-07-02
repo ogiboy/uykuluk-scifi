@@ -1,0 +1,157 @@
+import type { StudioRunDetail } from "./runSummaries";
+
+export type StudioRunReviewBrief = Readonly<{
+  checkpoints: readonly StudioRunReviewBriefCheckpoint[];
+  primaryAction: string;
+  severity: "blocked" | "ready" | "review";
+  summary: string;
+  title: string;
+}>;
+
+export type StudioRunReviewBriefCheckpoint = Readonly<{
+  detail: string;
+  label: string;
+  status: "attention" | "done" | "pending" | "ready";
+}>;
+
+type BriefInput = Pick<
+  StudioRunDetail,
+  | "blockedActionCount"
+  | "channelHandoff"
+  | "channelHandoffDecision"
+  | "evidenceStatus"
+  | "finalReviewBundle"
+  | "nextRecommendedCommand"
+  | "productionMedia"
+  | "readinessStatus"
+  | "renderDecision"
+  | "state"
+>;
+
+/**
+ * Builds the compact operator decision brief for Studio run detail.
+ *
+ * @param run - The current Studio run detail projection.
+ * @returns A derived review brief; it does not own workflow state.
+ */
+export function buildStudioRunReviewBrief(run: BriefInput): StudioRunReviewBrief {
+  const checkpoints = reviewBriefCheckpoints(run);
+  if (run.blockedActionCount > 0) {
+    return {
+      checkpoints,
+      primaryAction: nextAction(run),
+      severity: "blocked",
+      summary:
+        "Resolve the projected blocked actions before trusting media, final review, upload prep, or any later handoff.",
+      title: `${run.blockedActionCount} blocked action${run.blockedActionCount === 1 ? "" : "s"}`,
+    };
+  }
+  if (run.state === "RENDERED" && run.renderDecision.kind !== "present") {
+    return {
+      checkpoints,
+      primaryAction: nextAction(run),
+      severity: "ready",
+      summary:
+        "Local draft media is ready for review. Record one durable operator decision after watching the draft.",
+      title: "Draft review decision needed",
+    };
+  }
+  if (run.renderDecision.kind === "present" && run.finalReviewBundle.kind !== "present") {
+    return {
+      checkpoints,
+      primaryAction: nextAction(run),
+      severity: "ready",
+      summary:
+        "The operator decision is recorded. Generate the local final review bundle before manual channel preparation.",
+      title: "Final review bundle next",
+    };
+  }
+  if (run.finalReviewBundle.kind === "present" && run.channelHandoff.kind !== "present") {
+    return {
+      checkpoints,
+      primaryAction: nextAction(run),
+      severity: "ready",
+      summary:
+        "The local final review handoff is ready. Prepare the manual channel package without upload or publish.",
+      title: "Manual channel handoff next",
+    };
+  }
+  return {
+    checkpoints,
+    primaryAction: nextAction(run),
+    severity: "review",
+    summary:
+      "Continue through the next safe CLI/core action. Studio summarizes local state but does not infer approval from files.",
+    title: "Follow the next safe action",
+  };
+}
+
+function reviewBriefCheckpoints(run: BriefInput): StudioRunReviewBrief["checkpoints"] {
+  const passedMediaCount = run.productionMedia.filter(
+    (artifact) => artifact.status === "pass",
+  ).length;
+  return [
+    {
+      detail: `Readiness is ${run.readinessStatus}.`,
+      label: "Readiness",
+      status: run.readinessStatus === "passed" ? "done" : "attention",
+    },
+    {
+      detail: `Evidence is ${run.evidenceStatus}.`,
+      label: "Evidence",
+      status: run.evidenceStatus === "available" ? "done" : "attention",
+    },
+    {
+      detail: `${passedMediaCount}/${run.productionMedia.length} media artifacts are verified by current evidence.`,
+      label: "Media",
+      status: mediaCheckpointStatus(passedMediaCount, run.productionMedia.length),
+    },
+    {
+      detail: renderDecisionDetail(run),
+      label: "Operator decision",
+      status: run.renderDecision.kind === "present" ? "done" : "pending",
+    },
+    {
+      detail: finalHandoffDetail(run),
+      label: "Final handoff",
+      status: run.channelHandoffDecision.kind === "present" ? "done" : "pending",
+    },
+  ];
+}
+
+function mediaCheckpointStatus(
+  passedMediaCount: number,
+  totalMediaCount: number,
+): StudioRunReviewBriefCheckpoint["status"] {
+  if (passedMediaCount === totalMediaCount) {
+    return "done";
+  }
+  return passedMediaCount > 0 ? "ready" : "pending";
+}
+
+function renderDecisionDetail(run: BriefInput): string {
+  if (run.renderDecision.kind === "present") {
+    return run.renderDecision.message;
+  }
+  if (run.renderDecision.kind === "invalid" || run.renderDecision.kind === "stale") {
+    return run.renderDecision.message;
+  }
+  return "No local draft-render decision is recorded yet.";
+}
+
+function finalHandoffDetail(run: BriefInput): string {
+  if (run.channelHandoffDecision.kind === "present") {
+    return run.channelHandoffDecision.message;
+  }
+  if (run.channelHandoff.kind === "present") {
+    return "Manual channel handoff is ready for a local decision.";
+  }
+  if (run.finalReviewBundle.kind === "present") {
+    return "Final review bundle is ready for manual channel handoff preparation.";
+  }
+  return "Final review and manual channel handoff are not complete yet.";
+}
+
+function nextAction(run: BriefInput): string {
+  return run.nextRecommendedCommand ?? "No safe next action is available from current evidence.";
+}

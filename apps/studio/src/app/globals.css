@@ -690,7 +690,7 @@ h3 {
 
 .run-detail-hero {
   display: grid;
-  grid-template-columns: minmax(220px, 0.5fr) minmax(0, 1fr) minmax(280px, 0.9fr);
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 16px;
   align-items: start;
   border: 1px solid var(--line);
@@ -709,6 +709,45 @@ h3 {
 
 .run-detail-hero h2 {
   margin-bottom: 0;
+}
+
+.run-review-brief {
+  display: grid;
+  gap: 12px;
+}
+
+.review-brief-severity {
+  margin: 0 0 6px;
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+.review-brief-severity.blocked {
+  color: var(--danger);
+}
+
+.review-brief-checkpoints {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.review-brief-checkpoints li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+}
+
+.review-brief-checkpoints p {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 12px;
 }
 
 .run-review-workspace {
@@ -1108,6 +1147,26 @@ h3 {
 .status-pill.small {
   padding: 5px 8px;
   font-size: 11px;
+}
+
+.status-pill.small.attention {
+  border-color: color-mix(in srgb, var(--danger) 70%, var(--line));
+  color: var(--danger);
+}
+
+.status-pill.small.done {
+  border-color: color-mix(in srgb, var(--accent) 70%, var(--line));
+  color: var(--accent);
+}
+
+.status-pill.small.pending {
+  border-color: var(--line);
+  color: var(--muted);
+}
+
+.status-pill.small.ready {
+  border-color: color-mix(in srgb, #f5c542 70%, var(--line));
+  color: #f5c542;
 }
 
 .tabs-root {
