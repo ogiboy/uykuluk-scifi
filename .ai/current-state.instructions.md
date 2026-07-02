@@ -458,19 +458,16 @@ Corepack/PATH before treating failures as product failures.
   post-estimate repair flows remain future work.
 - Render planning does not render media, approve render execution, or reserve spend. It is a local
   review/planning artifact only.
-- Local TTS currently provides a deterministic timing/reference WAV, a configured Piper shell-out,
-  ignored-model setup helper, model/config digest provenance, and operator audio review Markdown. It
-  does not commit voice models, approve render execution, upload, or publish. Deterministic-local
-  evidence remains valid for timing/pipeline proof but is explicitly not a production voice
-  candidate. A 2026-06-25 local Piper smoke generated WAV evidence successfully; subjective voice
-  quality, pacing, and pronunciation still require operator listening before production use.
+- Local TTS provides deterministic/reference WAV, Piper shell-out, ignored-model setup, digest
+  provenance, and review Markdown. It does not commit voice models, approve render execution,
+  upload, or publish. Deterministic-local evidence is timing proof only; production voice quality
+  still requires operator listening.
 - FFmpeg draft render creates a local review MP4 from intro/outro source cards or frames,
   scene-timed plates, subtitles, overlays, voiceover audio, manifest/source-frame evidence, a stable
   read-only review command, and an operator checklist. Reusable intro/outro MP4 clips and broader
   visual polish remain follow-up work.
-- Upload and publish are intentionally disabled scaffolds.
-- Manual analytics import/reporting and the read-only Studio analytics overview are local-only and
-  operator-provided; richer comparisons, scoring, and YouTube Analytics API are not implemented.
+- Upload/publish are disabled scaffolds; manual/Studio analytics are local-only; richer APIs are not
+  implemented.
 - Run-path containment blocks pre-existing symlinks; hostile concurrent replacement remains a local
   TOCTOU limitation because portable Node APIs lack directory-handle `openat` semantics.
 - Brand, overlay, thumbnail, background, transition, icon, waveform, intro-frame, and outro-frame

@@ -2,11 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
   SelectContent,
@@ -15,7 +12,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   countStudioRunQueueFilters,
@@ -27,10 +23,10 @@ import {
   applyRunQueueWorkbenchControls,
   type RunQueueDensity,
   type RunQueueSort,
-  runQueueDensityValues,
   runQueueSortValues,
 } from "@/lib/runQueueWorkbench";
 import type { StudioRunSummary } from "@/lib/runSummaries";
+import { maxBlockedActionSliderValue, RunQueueTunePopover } from "./RunQueueTunePopover";
 import { RunSummaryTable } from "./RunSummaryTable";
 
 type RunQueueExplorerProps = Readonly<{
@@ -51,13 +47,6 @@ const sortLabels = {
   "oldest-first": "Oldest first",
   "updated-desc": "Newest first",
 } as const satisfies Record<RunQueueSort, string>;
-
-const densityLabels = {
-  compact: "Compact",
-  comfortable: "Comfortable",
-} as const satisfies Record<RunQueueDensity, string>;
-
-const maxBlockedActionSliderValue = 5;
 
 /**
  * Renders a filterable operator queue for persisted Studio runs.
@@ -146,58 +135,13 @@ export function RunQueueExplorer({ runs }: RunQueueExplorerProps) {
                 </SelectContent>
               </Select>
             </div>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button className='queue-tune-button' type='button' variant='secondary'>
-                  Tune review surface
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent align='end' className='queue-tune-popover'>
-                <div className='queue-tune-stack'>
-                  <div>
-                    <h3>Review surface</h3>
-                    <p>
-                      Local projection only. These controls never approve, render, upload, or mutate
-                      a run.
-                    </p>
-                  </div>
-                  <div className='queue-slider-control'>
-                    <div className='queue-slider-header'>
-                      <Label htmlFor='max-blocked-actions'>Max blockers shown</Label>
-                      <strong>{maxBlockedActions}</strong>
-                    </div>
-                    <Slider
-                      id='max-blocked-actions'
-                      min={0}
-                      max={maxBlockedActionSliderValue}
-                      step={1}
-                      value={[maxBlockedActions]}
-                      onValueChange={(value) => setMaxBlockedActions(value[0] ?? 0)}
-                    />
-                    <small>
-                      Current data reaches {highestBlockedActionCount}. Set 0 to review only fully
-                      unblocked runs.
-                    </small>
-                  </div>
-                  <div className='queue-density-control'>
-                    <Label id='queue-density-label'>Table density</Label>
-                    <RadioGroup
-                      aria-labelledby='queue-density-label'
-                      className='queue-density-options'
-                      value={density}
-                      onValueChange={(value) => setSelectedDensity(value, setDensity)}
-                    >
-                      {runQueueDensityValues.map((value) => (
-                        <label className='queue-density-option' key={value}>
-                          <RadioGroupItem value={value} />
-                          <span>{densityLabels[value]}</span>
-                        </label>
-                      ))}
-                    </RadioGroup>
-                  </div>
-                </div>
-              </PopoverContent>
-            </Popover>
+            <RunQueueTunePopover
+              density={density}
+              highestBlockedActionCount={highestBlockedActionCount}
+              maxBlockedActions={maxBlockedActions}
+              onDensityChange={setDensity}
+              onMaxBlockedActionsChange={setMaxBlockedActions}
+            />
           </div>
         </div>
         <p>
@@ -219,11 +163,5 @@ function setSelectedFilter(value: string, setFilter: (filter: RunQueueFilter) =>
 function setSelectedSort(value: string, setSort: (sort: RunQueueSort) => void): void {
   if (runQueueSortValues.includes(value as RunQueueSort)) {
     setSort(value as RunQueueSort);
-  }
-}
-
-function setSelectedDensity(value: string, setDensity: (density: RunQueueDensity) => void): void {
-  if (runQueueDensityValues.includes(value as RunQueueDensity)) {
-    setDensity(value as RunQueueDensity);
   }
 }
