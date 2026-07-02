@@ -24,6 +24,7 @@ future generated release notes can be inserted predictably.
 - add a shadcn-powered Studio run queue explorer with operator filters and run search.
 - convert guarded Studio approval, render-decision, and session controls to shadcn primitives with
   local operator toast feedback.
+- add a shadcn modal command palette for Studio navigation and safe CLI command copying.
 
 ### Fixes
 

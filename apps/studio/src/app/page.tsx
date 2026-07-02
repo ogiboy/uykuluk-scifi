@@ -7,6 +7,7 @@ import { DoctorStatusPanel } from "@/components/doctor/DoctorStatusPanel";
 import { ModelEvalStatusPanel } from "@/components/eval/ModelEvalStatusPanel";
 import { LatestRunReadinessPanel } from "@/components/runs/LatestRunReadinessPanel";
 import { StudioControlDesk } from "@/components/studio/StudioControlDesk";
+import { StudioCommandPalette } from "@/components/studio/StudioCommandPalette";
 import { StudioTabs } from "@/components/studio/StudioTabs";
 import { getStudioAnalyticsOverview } from "@/lib/analyticsOverview";
 import { getStudioActionServiceStatus } from "@/lib/actionServiceStatus";
@@ -74,7 +75,10 @@ export default async function StudioHomePage() {
             <p className='eyebrow'>Local-first production desk</p>
             <h1>Control UykulukSciFi production from the web surface</h1>
           </div>
-          <span className='status-pill'>CLI source of truth</span>
+          <div className='studio-header-actions'>
+            <StudioCommandPalette runs={runs} />
+            <span className='status-pill'>CLI source of truth</span>
+          </div>
         </header>
 
         <StudioControlDesk actionStatus={actionStatus} runs={runs} />

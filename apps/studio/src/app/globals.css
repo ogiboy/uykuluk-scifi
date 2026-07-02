@@ -119,6 +119,24 @@ a {
   padding-bottom: 20px;
 }
 
+.studio-header-actions {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.keyboard-shortcut {
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  color: var(--muted);
+  padding: 1px 5px;
+  font-family: var(--font-mono), SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+}
+
 h1,
 h2,
 h3,
@@ -174,6 +192,35 @@ h3 {
   border-radius: 8px;
   background: var(--panel);
   padding: 16px;
+}
+
+.command-palette-dialog {
+  max-width: min(760px, calc(100vw - 2rem));
+}
+
+.command-item-body {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.command-item-body strong,
+.command-item-body span,
+.command-item-body code {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.command-item-body span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.command-item-body code {
+  max-width: 520px;
+  color: var(--accent-strong);
+  font-size: 12px;
 }
 
 .status-card strong {
