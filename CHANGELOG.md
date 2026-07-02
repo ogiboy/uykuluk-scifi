@@ -32,6 +32,8 @@ future generated release notes can be inserted predictably.
   browser-based operator review without exposing arbitrary run files or approving upload/publish.
 - add a compact Studio run-review brief that ties blockers, readiness, evidence, media verification,
   render decisions, final review, and the next safe action into one operator-facing summary.
+- show guarded Studio render-decision choices as explicit radio cards with CLI-equivalent command
+  previews before confirmation.
 - convert guarded Studio approval, render-decision, and session controls to shadcn primitives with
   local operator toast feedback.
 - introduce a shadcn modal command palette for Studio navigation and safe CLI command copying.

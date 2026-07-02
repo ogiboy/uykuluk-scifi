@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,17 +13,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import { submitStudioJsonMutation } from "@/lib/studioMutationSubmit";
+import { RunRenderDecisionSelector } from "./RunRenderDecisionSelector";
 
 type RunRenderDecisionActionPanelProps = Readonly<{
   commands: StudioRunDetail["renderDecisionCommands"];
@@ -43,6 +36,10 @@ type PendingRenderDecisionPayload = Readonly<{
   notes: string;
   reviewedBy: string;
   runId: string;
+}>;
+
+type FormSubmitEvent = Readonly<{
+  preventDefault: () => void;
 }>;
 
 /**
@@ -70,7 +67,7 @@ export function RunRenderDecisionActionPanel({
     return null;
   }
 
-  function requestDecisionConfirmation(event: FormEvent<HTMLFormElement>): void {
+  function requestDecisionConfirmation(event: FormSubmitEvent): void {
     event.preventDefault();
     setPendingPayload({ decision, notes, reviewedBy, runId });
     setConfirmationOpen(true);
@@ -110,26 +107,11 @@ export function RunRenderDecisionActionPanel({
         approve upload or publish.
       </p>
       <form className='studio-form' onSubmit={requestDecisionConfirmation}>
-        <label>
-          Decision
-          <Select
-            value={decision}
-            onValueChange={(value) => setDecisionFromSelectValue(value, commands, setDecision)}
-          >
-            <SelectTrigger className='w-full'>
-              <SelectValue placeholder='Choose local decision' />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                {commands.map((item) => (
-                  <SelectItem key={item.decision} value={item.decision}>
-                    {item.decision}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </label>
+        <RunRenderDecisionSelector
+          commands={commands}
+          decision={decision}
+          onDecisionChange={setDecision}
+        />
         <label>
           Reviewed by
           <Input
@@ -194,22 +176,4 @@ export function RunRenderDecisionActionPanel({
       <p className={state.kind === "error" ? "blocked" : undefined}>{state.message}</p>
     </section>
   );
-}
-
-/**
- * Applies a select value only when it matches an available render-decision command.
- *
- * @param value - The browser select value.
- * @param commands - The currently allowed render-decision commands.
- * @param setDecision - The state setter for a validated decision value.
- */
-function setDecisionFromSelectValue(
-  value: string,
-  commands: StudioRunDetail["renderDecisionCommands"],
-  setDecision: (decision: RenderDecisionValue) => void,
-): void {
-  const selected = commands.find((item) => item.decision === value);
-  if (selected) {
-    setDecision(selected.decision);
-  }
 }

@@ -1144,6 +1144,49 @@ h3 {
   gap: 6px !important;
 }
 
+.render-decision-selector {
+  display: grid;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  margin: 0;
+  padding: 12px;
+}
+
+.render-decision-selector legend {
+  padding: 0 6px;
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.render-decision-option {
+  display: grid !important;
+  grid-template-columns: auto 1fr;
+  gap: 10px !important;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 10px;
+  color: var(--text) !important;
+}
+
+.render-decision-option > span {
+  display: grid;
+  gap: 6px;
+}
+
+.render-decision-option strong {
+  color: var(--text);
+}
+
+.render-decision-option code {
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  font-size: 11px;
+}
+
 .status-pill.small {
   padding: 5px 8px;
   font-size: 11px;
