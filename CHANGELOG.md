@@ -9,6 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
+_No unreleased changes yet._
+
+## v0.64.0 (2026-07-02)
+
 ### Features
 
 - reshape the Studio home page into an operator control desk with active run, next safe action,
