@@ -40,6 +40,8 @@ future generated release notes can be inserted predictably.
   integrity dependency chain into render-plan schemas.
 - tighten Studio operator review controls so ready queues exclude blocked runs, confirmations expose
   pending payloads, command fallbacks stay shared, and short-lived mutation sessions fail closed.
+- share production-package path constants without pulling CLI integrity dependencies into Studio
+  render-plan schema imports.
 
 ## v0.63.0 (2026-07-02)
 

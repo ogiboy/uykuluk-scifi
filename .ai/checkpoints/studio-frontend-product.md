@@ -35,6 +35,8 @@ upload/publish boundaries.
   - PR review fixes for approval confirmation payload visibility, ready-queue blocked-run exclusion,
     workflow overflow indicators, tooltip delay, full command-palette search, client-side palette
     navigation, fail-closed short-lived Studio sessions, and shared Studio next-command fallbacks.
+  - dependency-free production-package path contract sharing for render-plan schemas and Studio
+    builds, plus the missing Skeleton React type import.
 - Verified commands for the latest slice:
   - `pnpm --filter @uykulukscifi/studio lint`
   - `pnpm --filter @uykulukscifi/studio typecheck`
@@ -45,6 +47,8 @@ upload/publish boundaries.
   - `pnpm format:check`
   - `pnpm vitest run tests/studioRunQueueFilters.test.ts`
   - `pnpm vitest run tests/studioMutationClient.test.ts`
+  - `pnpm typecheck`
+  - `pnpm vitest run tests/renderPlan.test.ts tests/renderPlanCli.test.ts tests/productionPackageIntegrity.test.ts`
   - browser smoke on `/runs/run_20260702013835_ada7ab` across Media, Artifacts, Readiness, and
     Decisions tabs.
   - browser smoke on `/runs/run_20260702013835_ada7ab` Media tab for rendered media cards and

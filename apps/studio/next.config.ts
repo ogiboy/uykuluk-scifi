@@ -6,6 +6,12 @@ import { fileURLToPath } from "node:url";
 const workspaceRoot = dirname(fileURLToPath(import.meta.url));
 const repoRoot = dirname(dirname(workspaceRoot));
 
+const stageSourceAliases = [
+  "finalReviewBundleContracts",
+  "productionPackagePaths",
+  "renderPlanSchemas",
+] as const;
+
 const nextConfig: NextConfig = {
   typedRoutes: true,
   allowedDevOrigins: ["127.0.0.1", "localhost"],
@@ -29,10 +35,9 @@ const nextConfig: NextConfig = {
         description: /whole project was traced unintentionally/,
       },
     ],
-    resolveAlias: {
-      "./finalReviewBundleContracts.js": "../../src/stages/finalReviewBundleContracts.ts",
-      "./renderPlanSchemas.js": "../../src/stages/renderPlanSchemas.ts",
-    },
+    resolveAlias: Object.fromEntries(
+      stageSourceAliases.map((name) => [`./${name}.js`, `../../src/stages/${name}.ts`]),
+    ),
     root: repoRoot,
   },
 };

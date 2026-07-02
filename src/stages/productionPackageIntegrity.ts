@@ -6,16 +6,12 @@ import { RunRecord } from "../core/state.js";
 import { PromptProvenance } from "../prompts/provenance.js";
 import { pathExists } from "../utils/fs.js";
 import { sha256 } from "../utils/hash.js";
+import {
+  productionPackageArtifactPaths,
+  productionPackageManifestPath,
+} from "./productionPackagePaths.js";
 
-export const productionPackageManifestPath = "production/production_package.meta.json";
-
-export const productionPackageArtifactPaths = [
-  "production/voiceover.txt",
-  "production/subtitles.srt",
-  "production/scenes.json",
-  "production/youtube_metadata.json",
-  "production/production_package.md",
-] as const;
+export { productionPackageArtifactPaths, productionPackageManifestPath };
 
 const digestSchema = z.string().regex(/^[a-f0-9]{64}$/);
 const promptProvenanceSchema = z.strictObject({
