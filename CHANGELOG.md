@@ -14,6 +14,15 @@ future generated release notes can be inserted predictably.
 - add guarded Studio approval routes and run-detail forms for local idea, script, cost, and render
   approvals while keeping upload and publish disabled.
 
+### Fixes
+
+- make mixed local model candidate evals exit successfully when they produce a recommended passing
+  candidate while still failing when no candidate passes.
+- add an eval-only `--include-local-gguf` candidate shortcut for ignored `models/llm/*.gguf` files.
+- make local model eval requests deterministic with temperature zero for repeatable comparisons.
+- keep Studio manual channel-handoff trust checks aligned with thumbnail asset digest drift.
+- reuse shared digest and render-decision next-action contracts in handoff/review helpers.
+
 ## v0.62.0 (2026-07-01)
 
 ### Tests

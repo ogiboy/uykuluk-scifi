@@ -4,6 +4,7 @@ import { defaultConfig } from "../src/config/config";
 import {
   localModelCandidateEvalJsonPath,
   localModelCandidateEvalMarkdownPath,
+  localModelCandidateEvalRequiresMoreCandidates,
   runLocalModelCandidateEval,
   selectRecommendedLocalModelCandidate,
 } from "../src/diagnostics/localModelCandidateEval";
@@ -78,6 +79,7 @@ describe("local model candidate evaluation", () => {
     expect(formatLocalModelCandidateEvalConsole(report)).toContain(
       "At least one candidate passed, but the comparison still has blocked candidates.",
     );
+    expect(localModelCandidateEvalRequiresMoreCandidates(report)).toBe(false);
     expect(renderLocalModelCandidateEvalMarkdown(report)).toContain("mock-invalid-script-json");
     expect(renderLocalModelCandidateEvalMarkdown(report)).toContain(
       "Recommended candidate: mock-deterministic",
@@ -109,8 +111,12 @@ describe("local model candidate evaluation", () => {
       recommendedCandidate: null,
     });
     expect(formatLocalModelCandidateEvalConsole(report)).toContain(
+      "Local model candidate eval: needs more candidates.",
+    );
+    expect(formatLocalModelCandidateEvalConsole(report)).toContain(
       "Recommended: none; no candidate passed all checks",
     );
+    expect(localModelCandidateEvalRequiresMoreCandidates(report)).toBe(true);
     expect(renderLocalModelCandidateEvalMarkdown(report)).toContain(
       "Recommended candidate: none; no candidate passed all checks",
     );
@@ -160,6 +166,9 @@ describe("local model candidate evaluation", () => {
           "All compared candidates passed the parser-contract checks. Review the report, then run a single-model eval before changing producer.config.json.",
       },
     });
+    expect(formatLocalModelCandidateEvalConsole(report)).toContain(
+      "Local model candidate eval: all candidates passed.",
+    );
   });
 
   it("ranks passing candidate recommendations deterministically", () => {

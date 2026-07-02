@@ -8,11 +8,11 @@ export function channelHandoffCommand(runId: string): string {
   return `pnpm producer channel-handoff --run ${runId}`;
 }
 
-const digestSchema = z.string().regex(/^[a-f0-9]{64}$/);
-
 const legacyChannelHandoffSchema = z.looseObject({
   schemaVersion: z.literal(1),
 });
+
+const digestSchema = z.string().regex(/^[a-f0-9]{64}$/);
 
 export const channelHandoffSchema = z.strictObject({
   schemaVersion: z.literal(2),

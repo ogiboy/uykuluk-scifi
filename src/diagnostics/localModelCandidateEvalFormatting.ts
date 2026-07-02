@@ -11,7 +11,7 @@ export function formatLocalModelCandidateEvalConsole(
   report: LocalModelCandidateEvalReport,
 ): string {
   return [
-    `Local model candidate eval ${report.passed ? "passed" : "blocked"}.`,
+    `Local model candidate eval: ${formatCandidateEvalStatus(report)}.`,
     `Provider: ${report.providerMode}`,
     `Config source: ${report.configSource}`,
     `Base overrides: ${report.baseOverrides.join(", ") || "none"}`,
@@ -26,6 +26,16 @@ export function formatLocalModelCandidateEvalConsole(
     ),
     "Report: diagnostics/local_model_candidates_eval.md",
   ].join("\n");
+}
+
+function formatCandidateEvalStatus(report: LocalModelCandidateEvalReport): string {
+  if (report.passed) {
+    return "all candidates passed";
+  }
+  if (report.recommendedCandidate) {
+    return "recommended candidate found with blockers";
+  }
+  return "needs more candidates";
 }
 
 /**

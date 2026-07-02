@@ -154,7 +154,7 @@ export function renderDecisionMarkdown(record: RenderDecisionRecord): string {
  * Computes the next safe action for a render decision.
  *
  * @param decision - The recorded render decision
- * @param runId - The run identifier used in follow-up commands
+ * @param runId - The run identifier used in copy-pasteable commands.
  * @returns Guidance for the next allowed step based on `decision`
  */
 export function renderDecisionNextSafeAction(decision: RenderDecision, runId: string): string {

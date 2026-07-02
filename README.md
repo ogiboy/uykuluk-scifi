@@ -359,6 +359,7 @@ pnpm --silent producer eval local-model --json
 pnpm producer eval local-model --llm-mode llama.cpp --model <served-model.gguf>
 pnpm producer eval local-model-candidates --llm-mode llama.cpp \
   --candidate <served-model-a.gguf> --candidate <served-model-b.gguf>
+pnpm producer eval local-model-candidates --llm-mode llama.cpp --include-local-gguf
 ```
 
 By default this uses the configured local provider and model, so keep `mock` for cheap
@@ -366,15 +367,16 @@ parser-contract checks. One-run overrides such as `--llm-mode`, `--model`, `--ol
 `--llama-cpp-base-url`, `--thinking-mode`, and `--request-timeout-ms` let operators compare local
 Ollama/`llama.cpp` candidates without mutating `producer.config.json`. The report writes ignored
 `diagnostics/local_model_eval.json` and `.md` with hashes, token/duration metadata, applied override
-names, and parser results. Use `local-model-candidates` with repeated `--candidate` values for a
-single comparison report at `diagnostics/local_model_candidates_eval.*`, including a deterministic
-recommended passing candidate and next operator command when one exists. In `llama.cpp` mode, the
-candidate command first checks `/v1/models`; a GGUF candidate that is not currently served is
-blocked without spending time on generation. If at least one candidate passes while another blocks,
-the report still exits nonzero and labels the decision as a blocked comparison with a recommended
-single-model follow-up command. Raw provider text is intentionally not persisted. For automation
-that parses `--json` output through pnpm, prefer `pnpm --silent producer ... --json`; blocked
-evaluations still exit nonzero, but pnpm lifecycle text stays out of stdout.
+names, and parser results. Use `local-model-candidates` with repeated `--candidate` values or
+`--include-local-gguf` for ignored `models/llm/*.gguf` files. The command writes one comparison
+report at `diagnostics/local_model_candidates_eval.*`, including a deterministic recommended passing
+candidate and next operator command when one exists. In `llama.cpp` mode, the candidate command
+first checks `/v1/models`; a GGUF candidate that is not currently served is blocked without spending
+time on generation. If at least one candidate passes while another blocks, the report exits
+successfully and labels the decision as a recommended comparison with blockers plus a single-model
+follow-up command. Raw provider text is intentionally not persisted. For automation that parses
+`--json` output through pnpm, prefer `pnpm --silent producer ... --json`; blocked evaluations still
+exit nonzero, but pnpm lifecycle text stays out of stdout.
 
 Manual analytics feedback:
 
@@ -715,15 +717,20 @@ failure diagnostic summaries so the next blocker is visible without opening JSON
 `producer eval local-model` is a lightweight manual bake-off surface for local model candidates. It
 does not create a run, advance workflow state, or edit config; it calls only the configured local
 LLM provider or the one-run CLI override, validates small idea/script samples through the production
-parsers, and writes ignored diagnostic reports without raw model output. A 2026-06-28 local qwen3:8b
-run remained fail-closed at the idea-contract check because `fit` explanations were not
-slot-specific, while the script-section contract parsed; this keeps Qwen as regression evidence
-rather than the recommended production default. `producer eval local-model-candidates` runs the same
-checks for repeated `--candidate` model names and produces a local comparison report so operators
-can compare served Ollama or `llama.cpp` candidates without editing config between attempts. The
-comparison report recommends only candidates that pass all parser-contract checks. `llama.cpp`
-candidate comparisons are one-loaded-server checks: start `llama-server` with the GGUF under test,
-or the candidate is blocked as not served before generation.
+parsers, and writes ignored diagnostic reports without raw model output. Eval requests use
+temperature `0` so candidate comparisons are repeatable. A 2026-06-28 local qwen3:8b run remained
+fail-closed at the idea-contract check because `fit` explanations were not slot-specific, while the
+script-section contract parsed; this keeps Qwen as regression evidence rather than the recommended
+production default. `producer eval local-model-candidates` runs the same checks for repeated
+`--candidate` model names and produces a local comparison report so operators can compare served
+Ollama or `llama.cpp` candidates without editing config between attempts. `--include-local-gguf`
+adds ignored `models/llm/*.gguf` files as candidate ids, which is useful after downloading local
+models. The comparison report recommends only candidates that pass all parser-contract checks. Mixed
+comparisons that find a recommended passing candidate are treated as useful operator evidence even
+when other candidates block; comparisons with no passing candidate still exit non-zero and tell the
+operator to try more candidates. Studio shows these mixed reports as `recommended` instead of fully
+blocked. `llama.cpp` candidate comparisons are one-loaded-server checks: start `llama-server` with
+the GGUF under test, or the candidate is blocked as not served before generation.
 
 Run `pnpm producer doctor` before starting production work. Mock mode passes without network access.
 Ollama mode checks `/api/tags`; `llama.cpp` mode checks `/v1/models`. Both use bounded timeouts and

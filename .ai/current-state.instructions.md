@@ -114,14 +114,19 @@
   writes ignored `diagnostics/local_model_eval.json` and Markdown reports with hashes,
   token/duration metadata, applied one-run CLI override names, and no raw provider output. Eval-only
   overrides can compare local Ollama/`llama.cpp` candidates without mutating `producer.config.json`.
+  Eval requests use temperature `0` for repeatable candidate comparisons.
   `producer eval local-model-candidates` runs the same checks for repeated `--candidate` model names
   and writes ignored `diagnostics/local_model_candidates_eval.json` and Markdown reports with a
   deterministic recommendation and next operator command only when a candidate passes all
-  parser-contract checks. In `llama.cpp` mode, candidate evaluation first checks `/v1/models`;
-  candidates not currently served by the local server are blocked without generation, and provider
-  responses that report a different served model than requested fail closed. A 2026-06-28 qwen3:8b
-  run stayed fail-closed on non-slot-specific idea `fit` explanations while its script-section
-  sample parsed.
+  parser-contract checks. `--include-local-gguf` discovers ignored `models/llm/*.gguf` files as
+  candidate ids without mutating project config. Mixed candidate comparisons that include a
+  recommended passing candidate are useful operator evidence and do not fail the CLI process;
+  comparisons with no passing candidate still exit non-zero. Studio reports mixed comparisons with a
+  recommended passing candidate as `recommended` rather than fully blocked. In `llama.cpp` mode,
+  candidate evaluation first checks `/v1/models`; candidates not currently served by the local
+  server are blocked without generation, and provider responses that report a different served model
+  than requested fail closed. A 2026-06-28 qwen3:8b run stayed fail-closed on non-slot-specific idea
+  `fit` explanations while its script-section sample parsed.
 - Studio reads the ignored local model evaluation JSON/Markdown artifacts on the home page and
   `/eval`, distinguishing missing, malformed, schema-invalid, passing, and blocked reports without
   calling Ollama, `llama.cpp`, hosted APIs, or mutating configuration.
@@ -444,11 +449,10 @@ Corepack/PATH before treating failures as product failures.
   in `producer.config.json` and recorded in prompt provenance. Prompt editing UI and prompt revision
   history remain future work; tracked defaults stay read-only runtime inputs. Locale infrastructure
   is ready, but full translation catalogs and a language selector are intentionally deferred.
-- Initial package artifact revision contracts are implemented for subtitles, scenes, popup-card
-  package Markdown, and YouTube metadata. They are intentionally limited to
-  `PRODUCTION_PACKAGE_GENERATED` before cost estimation or render work, refresh the
-  production-package manifest, and invalidate stale evidence/readiness/render-plan artifacts. Richer
-  per-field editing UX and post-estimate repair flows remain future work.
+- Initial package artifact revision contracts cover subtitles, scenes, popup-card package Markdown,
+  and YouTube metadata. They are limited to `PRODUCTION_PACKAGE_GENERATED`, refresh the manifest,
+  and invalidate stale evidence/readiness/render-plan artifacts; richer per-field editing UX and
+  post-estimate repair flows remain future work.
 - Render planning does not render media, approve render execution, or reserve spend. It is a local
   review/planning artifact only.
 - Local TTS currently provides a deterministic timing/reference WAV, a configured Piper shell-out,
@@ -457,23 +461,19 @@ Corepack/PATH before treating failures as product failures.
   evidence remains valid for timing/pipeline proof but is explicitly not a production voice
   candidate. A 2026-06-25 local Piper smoke generated WAV evidence successfully; subjective voice
   quality, pacing, and pronunciation still require operator listening before production use.
-- FFmpeg draft render currently focuses on a local review MP4 using intro/outro source-card bookends
-  or source-frame sequences, scene-timed background plates, subtitle burn-in, lower-third,
-  popup-card, waveform, watermark overlays, voiceover audio, render manifest evidence, source-frame
-  evidence/readiness summaries, a stable read-only FFmpeg review command in the manifest and
-  draft-render evidence JSON, and an operator review checklist. Render-ready intro/outro MP4 clips
-  for reuse outside the draft renderer and broader visual polish remain follow-up work.
-- Manual analytics import/reporting and the basic read-only Studio analytics overview are local-only
-  and operator-provided. Richer analytics comparisons, cohort-level confidence scoring, and YouTube
-  Analytics API integration are not implemented. Upload and publish are intentionally disabled
-  scaffolds.
-- Run-path containment blocks pre-existing symbolic links. Hostile concurrent path replacement
-  remains a local TOCTOU limitation because portable Node APIs do not expose directory-handle
-  `openat` semantics.
+- FFmpeg draft render creates a local review MP4 from intro/outro source cards or frames,
+  scene-timed plates, subtitles, overlays, voiceover audio, manifest/source-frame evidence, a stable
+  read-only review command, and an operator checklist. Reusable intro/outro MP4 clips and broader
+  visual polish remain follow-up work.
+- Upload and publish are intentionally disabled scaffolds.
+- Manual analytics import/reporting and the read-only Studio analytics overview are local-only and
+  operator-provided; richer comparisons, scoring, and YouTube Analytics API are not implemented.
+- Run-path containment blocks pre-existing symlinks; hostile concurrent replacement remains a local
+  TOCTOU limitation because portable Node APIs lack directory-handle `openat` semantics.
 - Brand, overlay, thumbnail, background, transition, icon, waveform, intro-frame, and outro-frame
   assets are present. The local draft renderer consumes intro/outro source frames when present.
   Editable source files, reusable rendered intro/outro clips, and font licensing notes remain useful
   additions.
-- Sonar scan upload requires a local/cloud token through `SONAR_TOKEN` or Keychain; never track it.
 - Stable git tags are present and release automation treats the latest reachable stable tag as the
-  release base. Release planning fails if `package.json` drifts from that latest stable tag.
+  release base. Release planning fails if `package.json` drifts from that latest stable tag. Sonar
+  scan upload requires `SONAR_TOKEN` or Keychain; tokens must never be tracked.

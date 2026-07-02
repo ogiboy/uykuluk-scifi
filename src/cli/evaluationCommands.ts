@@ -1,7 +1,12 @@
+import { readdir } from "node:fs/promises";
+import path from "node:path";
 import { Command } from "commander";
 import { z } from "zod";
 import { SafeExitError } from "../core/errors.js";
-import { runLocalModelCandidateEval } from "../diagnostics/localModelCandidateEval.js";
+import {
+  localModelCandidateEvalRequiresMoreCandidates,
+  runLocalModelCandidateEval,
+} from "../diagnostics/localModelCandidateEval.js";
 import { formatLocalModelCandidateEvalConsole } from "../diagnostics/localModelCandidateEvalFormatting.js";
 import { runLocalModelEval } from "../diagnostics/localModelEval.js";
 import { LocalModelEvalLlmOverrides } from "../diagnostics/localModelEvalConfig.js";
@@ -11,6 +16,7 @@ type Wrap = <T extends unknown[]>(handler: (...args: T) => Promise<void>) => (..
 
 type LocalModelEvalCliOptions = {
   candidate?: string[];
+  includeLocalGguf?: boolean;
   json?: boolean;
   llamaCppBaseUrl?: string;
   llmMode?: string;
@@ -64,6 +70,10 @@ export function registerEvaluationCommands(program: Command, wrap: Wrap): void {
       collectOption,
       [],
     )
+    .option(
+      "--include-local-gguf",
+      "Add ignored local GGUF files from models/llm as candidate model ids.",
+    )
     .option("--llm-mode <mode>", "Override only this eval run's LLM mode.")
     .option("--ollama-base-url <url>", "Override only this eval run's Ollama base URL.")
     .option("--llama-cpp-base-url <url>", "Override only this eval run's llama.cpp base URL.")
@@ -72,7 +82,10 @@ export function registerEvaluationCommands(program: Command, wrap: Wrap): void {
     .description("Compare local model candidates against small production parser contracts.")
     .action(
       wrap(async (options: LocalModelEvalCliOptions) => {
-        const candidates = parseCandidates(options.candidate ?? []);
+        const candidates = await parseCandidates(
+          options.candidate ?? [],
+          Boolean(options.includeLocalGguf),
+        );
         const report = await runLocalModelCandidateEval({
           candidates,
           llmOverrides: parseLocalModelEvalBaseOverrides(options),
@@ -82,8 +95,8 @@ export function registerEvaluationCommands(program: Command, wrap: Wrap): void {
             ? JSON.stringify(report, null, 2)
             : formatLocalModelCandidateEvalConsole(report),
         );
-        if (!report.passed) {
-          throw new SafeExitError("Local model candidate eval blocked.", 1);
+        if (localModelCandidateEvalRequiresMoreCandidates(report)) {
+          throw new SafeExitError("Local model candidate eval needs more candidates.", 1);
         }
       }),
     );
@@ -130,16 +143,45 @@ function parseLocalModelEvalBaseOverrides(
 }
 
 /**
- * Validates and de-duplicates candidate model names from repeated CLI options.
+ * Validates and de-duplicates candidate model names from repeated CLI options and local GGUF files.
  *
  * @param candidates - Candidate model names passed via `--candidate`.
+ * @param includeLocalGguf - Whether to include ignored `models/llm/*.gguf` files.
  * @returns A stable non-empty candidate list.
  */
-function parseCandidates(candidates: string[]): string[] {
-  const uniqueCandidates = Array.from(new Set(candidates.map((candidate) => candidate.trim())));
+async function parseCandidates(candidates: string[], includeLocalGguf: boolean): Promise<string[]> {
+  const localGgufCandidates = includeLocalGguf ? await listLocalGgufCandidates() : [];
+  const uniqueCandidates = Array.from(
+    new Set([...candidates.map((candidate) => candidate.trim()), ...localGgufCandidates]),
+  );
   const nonEmptyCandidates = uniqueCandidates.filter((candidate) => candidate.length > 0);
   if (nonEmptyCandidates.length === 0) {
-    throw new SafeExitError("At least one --candidate <model> is required.", 1);
+    throw new SafeExitError(
+      "At least one --candidate <model> or --include-local-gguf model is required.",
+      1,
+    );
   }
   return nonEmptyCandidates;
+}
+
+/**
+ * Lists ignored local GGUF files from the conventional project model directory.
+ *
+ * @returns Stable llama.cpp model ids using repo-relative `models/llm/<file>.gguf` paths.
+ */
+async function listLocalGgufCandidates(): Promise<string[]> {
+  const localModelDir = path.join(process.cwd(), "models", "llm");
+  let entries;
+  try {
+    entries = await readdir(localModelDir, { withFileTypes: true });
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+      return [];
+    }
+    throw error;
+  }
+  return entries
+    .filter((entry) => entry.isFile() && entry.name.endsWith(".gguf"))
+    .map((entry) => path.posix.join("models", "llm", entry.name))
+    .sort((left, right) => left.localeCompare(right));
 }
