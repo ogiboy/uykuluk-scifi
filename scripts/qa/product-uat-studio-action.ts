@@ -1,6 +1,10 @@
 import { POST } from "../../apps/studio/src/app/actions/decide-render/route";
+import { GET as issueStudioSession } from "../../apps/studio/src/app/actions/session/route";
 import { getStudioRunDetail } from "../../apps/studio/src/lib/runSummaries";
-import { studioActionHeaderName } from "../../apps/studio/src/lib/studioMutationSecurity";
+import {
+  studioActionHeaderName,
+  studioSessionHeaderName,
+} from "../../apps/studio/src/lib/studioMutationSecurity";
 
 const runId = process.argv[2];
 
@@ -8,6 +12,7 @@ if (!runId) {
   fail("Missing run id.");
 }
 
+const session = await studioSessionCookie();
 const response = await POST(
   new Request("http://localhost:3000/actions/decide-render", {
     body: JSON.stringify({
@@ -18,7 +23,9 @@ const response = await POST(
     }),
     headers: {
       [studioActionHeaderName]: "render.decide",
+      [studioSessionHeaderName]: session.token,
       "content-type": "application/json",
+      cookie: session.cookie,
       origin: "http://localhost:3000",
     },
     method: "POST",
@@ -56,6 +63,16 @@ assert(
 );
 
 console.log("Studio render-decision action UAT passed.");
+
+async function studioSessionCookie(): Promise<{ cookie: string; token: string }> {
+  const response = await issueStudioSession();
+  const payload = (await response.json().catch(() => null)) as { token?: unknown } | null;
+  const setCookie = response.headers.get("set-cookie");
+  assert(response.status === 200, `Studio session returned HTTP ${response.status}.`);
+  assert(typeof payload?.token === "string", "Studio session did not return a token.");
+  assert(typeof setCookie === "string", "Studio session did not return a cookie.");
+  return { cookie: setCookie.split(";")[0] ?? "", token: payload.token };
+}
 
 /**
  * Records a failed Studio action product UAT assertion.

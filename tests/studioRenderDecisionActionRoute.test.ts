@@ -11,6 +11,11 @@ import { loadRun } from "../src/core/runStore";
 import { renderDecisionJsonPath } from "../src/stages/renderDecisionCommands";
 import { useTempProject } from "./helpers";
 import { renderLocalDraft } from "./renderPipelineHelpers";
+import {
+  studioJsonMutationRequest,
+  type StudioMutationRequestOptions,
+  testStudioSessionToken,
+} from "./studioMutationRouteTestHelpers";
 
 describe("Studio render decision action route", () => {
   useTempProject();
@@ -113,15 +118,6 @@ describe("Studio render decision action route", () => {
   });
 });
 
-type StudioRequestOptions = Readonly<{
-  actionHeader?: string;
-  cookieToken?: string | null;
-  origin?: string;
-  sessionToken?: string | null;
-}>;
-
-const testStudioSessionToken = "test_session_token_1234567890ABCDEFGH";
-
 /**
  * Builds a same-origin JSON request for the Studio render-decision route.
  *
@@ -129,26 +125,8 @@ const testStudioSessionToken = "test_session_token_1234567890ABCDEFGH";
  * @param options - Header overrides for negative security tests.
  * @returns A Request object suitable for calling the route handler directly.
  */
-function studioJsonRequest(body: unknown, options: StudioRequestOptions = {}): Request {
-  const sessionToken =
-    options.sessionToken === undefined ? testStudioSessionToken : options.sessionToken;
-  const cookieToken = options.cookieToken === undefined ? sessionToken : options.cookieToken;
-  const headers: Record<string, string> = {
-    [studioActionHeaderName]: options.actionHeader ?? "render.decide",
-    "content-type": "application/json",
-    origin: options.origin ?? "http://localhost:3000",
-  };
-  if (sessionToken) {
-    headers[studioSessionHeaderName] = sessionToken;
-  }
-  if (cookieToken) {
-    headers.cookie = `${studioSessionCookieName}=${cookieToken}`;
-  }
-  return new Request("http://localhost:3000/actions/decide-render", {
-    body: JSON.stringify(body),
-    headers,
-    method: "POST",
-  });
+function studioJsonRequest(body: unknown, options: StudioMutationRequestOptions = {}): Request {
+  return studioJsonMutationRequest("/actions/decide-render", "render.decide", body, options);
 }
 
 /**

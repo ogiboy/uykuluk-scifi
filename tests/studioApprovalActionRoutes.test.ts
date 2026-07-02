@@ -13,6 +13,11 @@ import {
 import { artifactPath } from "../src/core/artifacts";
 import { createRun, loadRun, saveRun } from "../src/core/runStore";
 import { useTempProject } from "./helpers";
+import {
+  studioJsonMutationRequest,
+  type StudioMutationRequestOptions,
+  testStudioSessionToken,
+} from "./studioMutationRouteTestHelpers";
 
 describe("Studio approval action routes", () => {
   useTempProject();
@@ -175,14 +180,6 @@ describe("Studio approval action routes", () => {
   });
 });
 
-type StudioRequestOptions = Readonly<{
-  cookieToken?: string | null;
-  origin?: string;
-  sessionToken?: string | null;
-}>;
-
-const testStudioSessionToken = "test_session_token_1234567890ABCDEFGH";
-
 /**
  * Builds a same-origin JSON request for a Studio approval route.
  *
@@ -196,27 +193,9 @@ function studioJsonRequest(
   routePath: string,
   actionHeader: string,
   body: unknown,
-  options: StudioRequestOptions = {},
+  options: StudioMutationRequestOptions = {},
 ): Request {
-  const sessionToken =
-    options.sessionToken === undefined ? testStudioSessionToken : options.sessionToken;
-  const cookieToken = options.cookieToken === undefined ? sessionToken : options.cookieToken;
-  const headers: Record<string, string> = {
-    [studioActionHeaderName]: actionHeader,
-    "content-type": "application/json",
-    origin: options.origin ?? "http://localhost:3000",
-  };
-  if (sessionToken) {
-    headers[studioSessionHeaderName] = sessionToken;
-  }
-  if (cookieToken) {
-    headers.cookie = `${studioSessionCookieName}=${cookieToken}`;
-  }
-  return new Request(`http://localhost:3000${routePath}`, {
-    body: JSON.stringify(body),
-    headers,
-    method: "POST",
-  });
+  return studioJsonMutationRequest(routePath, actionHeader, body, options);
 }
 
 async function expectRouteError(responsePromise: Promise<Response>, status: number): Promise<void> {
