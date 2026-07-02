@@ -31,7 +31,7 @@ export function applyRunQueueWorkbenchControls(
 ): StudioRunSummary[] {
   return runs
     .filter((run) => run.blockedActionCount <= input.maxBlockedActions)
-    .toSorted((left, right) => compareRuns(left, right, input.sort));
+    .sort((left, right) => compareRuns(left, right, input.sort));
 }
 
 function compareRuns(left: StudioRunSummary, right: StudioRunSummary, sort: RunQueueSort): number {
