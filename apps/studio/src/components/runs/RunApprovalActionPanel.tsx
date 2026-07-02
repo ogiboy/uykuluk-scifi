@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,10 @@ type ApprovalActionConfig = Readonly<{
   routePath: string;
 }>;
 
+type FormSubmitEvent = Readonly<{
+  preventDefault: () => void;
+}>;
+
 /**
  * Renders guarded Studio approval forms for local workflow approval gates.
  *
@@ -53,7 +57,7 @@ export function RunApprovalActionPanel({ run }: RunApprovalActionPanelProps) {
     return null;
   }
 
-  function requestApprovalConfirmation(event: FormEvent<HTMLFormElement>): void {
+  function requestApprovalConfirmation(event: FormSubmitEvent): void {
     event.preventDefault();
     if (!config) return;
     setPendingPayload(approvalPayload(config.actionId, run.runId, ideaId, acknowledgeWarnings));

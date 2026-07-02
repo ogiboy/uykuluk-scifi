@@ -3,7 +3,9 @@ import { describe, expect, it } from "vitest";
 import { GET as getRunMedia } from "../apps/studio/src/app/runs/[runId]/media/[...artifactPath]/route";
 import {
   readStudioMediaArtifact,
+  studioCaptionArtifactUrl,
   studioMediaArtifactUrl,
+  srtToWebVtt,
 } from "../apps/studio/src/lib/studioMediaArtifacts";
 import { artifactPath } from "../src/core/artifacts";
 import { createRun, saveRun } from "../src/core/runStore";
@@ -18,6 +20,9 @@ describe("Studio local media artifacts", () => {
     );
     expect(studioMediaArtifactUrl("run_media_review", "production/render/draft.mp4")).toBe(
       "/runs/run_media_review/media/production/render/draft.mp4",
+    );
+    expect(studioCaptionArtifactUrl("run_media_review")).toBe(
+      "/runs/run_media_review/media/production/subtitles.vtt",
     );
     expect(studioMediaArtifactUrl("run_media_review", "evidence_bundle.json")).toBeNull();
   });
@@ -45,6 +50,39 @@ describe("Studio local media artifacts", () => {
       params: Promise.resolve({ artifactPath: ["evidence_bundle.json"], runId: run.runId }),
     });
     expect(blocked.status).toBe(404);
+  });
+
+  it("converts local SRT subtitles into WebVTT captions for media previews", async () => {
+    const run = await createRun();
+    await mkdir(artifactPath(run.runId, "production"), { recursive: true });
+    await writeFile(
+      artifactPath(run.runId, "production/subtitles.srt"),
+      "1\n00:00:01,000 --> 00:00:02,500\nMerhaba UykulukSciFi\n",
+      "utf8",
+    );
+
+    const response = await getRunMedia(mediaRequest(run.runId, "production/subtitles.vtt"), {
+      params: Promise.resolve({
+        artifactPath: ["production", "subtitles.vtt"],
+        runId: run.runId,
+      }),
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toBe("text/vtt; charset=utf-8");
+    expect(await response.text()).toBe(
+      "WEBVTT\n\n1\n00:00:01.000 --> 00:00:02.500\nMerhaba UykulukSciFi\n",
+    );
+  });
+
+  it("does not expose raw subtitle artifacts through the media route", async () => {
+    const run = await createRun();
+    await mkdir(artifactPath(run.runId, "production"), { recursive: true });
+    await writeFile(artifactPath(run.runId, "production/subtitles.srt"), "1\n", "utf8");
+
+    await expect(
+      readStudioMediaArtifact(process.cwd(), run.runId, "production/subtitles.srt", null),
+    ).resolves.toEqual({ status: 404 });
   });
 
   it("supports browser byte ranges for draft render playback", async () => {
@@ -86,6 +124,14 @@ describe("Studio local media artifacts", () => {
         "bytes=20-30",
       ),
     ).resolves.toEqual({ status: 416 });
+  });
+});
+
+describe("SRT to WebVTT conversion", () => {
+  it("normalizes line endings and timestamp separators", () => {
+    expect(srtToWebVtt("1\r\n00:00:00,000 --> 00:00:01,250\r\nAçılış\r\n")).toBe(
+      "WEBVTT\n\n1\n00:00:00.000 --> 00:00:01.250\nAçılış\n",
+    );
   });
 });
 

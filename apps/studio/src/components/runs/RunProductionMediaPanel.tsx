@@ -4,7 +4,7 @@ import {
   shouldShowEvidenceRemediation,
 } from "@/lib/runEvidenceCopy";
 import type { StudioRunDetail } from "@/lib/runSummaries";
-import { studioMediaArtifactUrl } from "@/lib/studioMediaArtifacts";
+import { studioCaptionArtifactUrl, studioMediaArtifactUrl } from "@/lib/studioMediaArtifacts";
 import { CopyableCommand } from "../studio/CopyableCommand";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { Badge } from "../ui/badge";
@@ -100,7 +100,9 @@ function ProductionMediaCard({
       </CardHeader>
       <CardContent>
         {artifact.detail ? <p>{artifact.detail}</p> : null}
-        {mediaUrl ? <ProductionMediaPreview artifact={artifact} mediaUrl={mediaUrl} /> : null}
+        {mediaUrl ? (
+          <ProductionMediaPreview artifact={artifact} mediaUrl={mediaUrl} runId={runId} />
+        ) : null}
         <p className='artifact-action'>
           Review: {productionMediaReviewAction(evidenceStatus, artifact)}
         </p>
@@ -113,11 +115,14 @@ function ProductionMediaCard({
 function ProductionMediaPreview({
   artifact,
   mediaUrl,
-}: Readonly<{ artifact: ProductionMediaStatus; mediaUrl: string }>) {
+  runId,
+}: Readonly<{ artifact: ProductionMediaStatus; mediaUrl: string; runId: string }>) {
+  const captionUrl = studioCaptionArtifactUrl(runId);
   if (artifact.evidenceKey === "voiceoverAudio") {
     return (
       <div className='production-media-preview'>
         <audio controls preload='metadata' src={mediaUrl}>
+          <track default kind='captions' label='Türkçe altyazı' src={captionUrl} srcLang='tr' />
           <a href={mediaUrl}>Open voiceover audio</a>
         </audio>
         <p>
@@ -130,6 +135,7 @@ function ProductionMediaPreview({
     return (
       <div className='production-media-preview'>
         <video controls preload='metadata' src={mediaUrl}>
+          <track default kind='captions' label='Türkçe altyazı' src={captionUrl} srcLang='tr' />
           <a href={mediaUrl}>Open draft render video</a>
         </video>
         <p>Playback does not approve upload, schedule, public publish, or final channel handoff.</p>

@@ -46,6 +46,8 @@ future generated release notes can be inserted predictably.
 ### Fixes
 
 - align script/planner prompts and script review floor with the v1 8-12 minute local draft target.
+- add WebVTT caption tracks to Studio local media previews while keeping subtitle access
+  allowlisted.
 - keep Studio Turbopack builds resolving shared source contracts without pulling the full CLI
   integrity dependency chain into render-plan schemas.
 - tighten Studio operator review controls so ready queues exclude blocked runs, confirmations expose

@@ -1,5 +1,5 @@
 import { createReadStream } from "node:fs";
-import { stat } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
 import { Readable } from "node:stream";
 import { studioRunFilePath } from "./runFilePaths";
 
@@ -7,6 +7,9 @@ const allowedStudioMediaArtifacts = {
   "production/audio/voiceover.wav": "audio/wav",
   "production/render/draft.mp4": "video/mp4",
 } as const;
+
+const studioCaptionArtifactPath = "production/subtitles.vtt";
+const studioCaptionSourcePath = "production/subtitles.srt";
 
 export type StudioMediaArtifactPath = keyof typeof allowedStudioMediaArtifacts;
 
@@ -32,6 +35,16 @@ export function studioMediaArtifactUrl(runId: string, artifactPath: string): str
 }
 
 /**
+ * Builds the Studio-local WebVTT captions URL for local media previews.
+ *
+ * @param runId - The run identifier owning the subtitle artifact.
+ * @returns A URL path for the generated WebVTT captions route.
+ */
+export function studioCaptionArtifactUrl(runId: string): string {
+  return `/runs/${encodeURIComponent(runId)}/media/${studioCaptionArtifactPath}`;
+}
+
+/**
  * Reads an allowlisted Studio-local media artifact as a stream response payload.
  *
  * @param root - The project root directory.
@@ -46,6 +59,9 @@ export async function readStudioMediaArtifact(
   artifactPath: string,
   rangeHeader: string | null,
 ): Promise<StudioMediaReadResult> {
+  if (artifactPath === studioCaptionArtifactPath) {
+    return readStudioCaptionArtifact(root, runId);
+  }
   if (!isStudioMediaArtifactPath(artifactPath)) {
     return { status: 404 };
   }
@@ -75,6 +91,47 @@ export async function readStudioMediaArtifact(
     }
     throw error;
   }
+}
+
+async function readStudioCaptionArtifact(
+  root: string,
+  runId: string,
+): Promise<StudioMediaReadResult> {
+  const target = studioRunFilePath(root, runId, studioCaptionSourcePath);
+  if (!target) {
+    return { status: 404 };
+  }
+  try {
+    return {
+      body: srtToWebVtt(await readFile(target, "utf8")),
+      headers: new Headers({
+        "Cache-Control": "no-store",
+        "Content-Type": "text/vtt; charset=utf-8",
+        "X-Content-Type-Options": "nosniff",
+      }),
+      status: 200,
+    };
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+      return { status: 404 };
+    }
+    throw error;
+  }
+}
+
+/**
+ * Converts the persisted SRT subtitle artifact into browser-readable WebVTT.
+ *
+ * @param input - The subtitle content in SRT format.
+ * @returns WebVTT content suitable for an HTML media track.
+ */
+export function srtToWebVtt(input: string): string {
+  const normalizedInput = input.replaceAll("\r\n", "\n").replaceAll("\r", "\n").trim();
+  const body = normalizedInput
+    .split("\n")
+    .map((line) => (line.includes("-->") ? line.replaceAll(",", ".") : line))
+    .join("\n");
+  return `WEBVTT\n\n${body}\n`;
 }
 
 function isStudioMediaArtifactPath(value: string): value is StudioMediaArtifactPath {
