@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { StudioAnalyticsOverview } from "@/lib/analyticsOverview";
 import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
+import { CopyableCommand } from "@/components/studio/CopyableCommand";
 
 type AnalyticsStatusPanelProps = Readonly<{
   overview: StudioAnalyticsOverview;
@@ -37,7 +38,7 @@ export function AnalyticsStatusPanel({ overview }: AnalyticsStatusPanelProps) {
       <p>{overview.dataQuality.nextDataQualityAction}</p>
       <div className='artifact-action'>
         <strong>Next safe action</strong>
-        <code className='command'>{overview.nextCommand}</code>
+        <CopyableCommand command={overview.nextCommand} label='Analytics command' />
       </div>
       {overview.error ? <p className='blocked'>{overview.error}</p> : null}
       {overview.reportWarning ? <p className='blocked'>{overview.reportWarning}</p> : null}

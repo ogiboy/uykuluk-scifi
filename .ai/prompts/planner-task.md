@@ -9,4 +9,4 @@ Requirements:
 - Use scientific caution.
 - Avoid overclaiming, clickbait, and unsupported certainty.
 - Prefer calm cinematic science-fiction premises.
-- The story should target at least 20 minutes of estimated narration time.
+- The story should target an 8-12 minute local draft.

@@ -22,7 +22,7 @@ export function renderScopedScriptSectionContext(basePrompt: string): string {
     "If a previous line used the same structure, replace it with a new beat instead of paraphrasing it.",
     "Do not append compliance checklists, self-evaluations, word/character counts, JSON-completeness notes, or model-quality commentary.",
     "If the approved idea contains an impossible mechanism, frame it as speculative fiction or a question, not established science.",
-    "Ignore full-script duration and 1600+ word requirements in the runtime prompt; this call writes only one bounded section.",
+    "This call writes one bounded section for an 8-12 minute local draft; do not try to complete the whole script in one response.",
     renderExactLabelChecklist(),
     extractApprovedIdeaBlock(basePrompt),
   ].join("\n\n");

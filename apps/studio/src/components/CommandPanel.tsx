@@ -1,3 +1,4 @@
+import { CopyableCommand } from "@/components/studio/CopyableCommand";
 import { commandGroups } from "@/lib/studioData";
 
 export function CommandPanel() {
@@ -8,7 +9,7 @@ export function CommandPanel() {
         {commandGroups.map((group) => (
           <article className='panel' key={group.title}>
             <h3>{group.title}</h3>
-            <code className='command'>{group.command}</code>
+            <CopyableCommand command={group.command} label={`${group.title} command`} />
             <p>{group.description}</p>
           </article>
         ))}

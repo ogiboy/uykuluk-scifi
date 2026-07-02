@@ -1,4 +1,5 @@
-import { RunSummaryTable } from "@/components/runs/RunSummaryTable";
+import { RunQueueExplorer } from "@/components/runs/RunQueueExplorer";
+import { StudioCommandPalette } from "@/components/studio/StudioCommandPalette";
 import { listStudioRuns } from "@/lib/runSummaries";
 import Link from "next/link";
 
@@ -12,11 +13,14 @@ export default async function RunsPage() {
           <p className='eyebrow'>Read-only local run review</p>
           <h1>Producer runs</h1>
         </div>
-        <Link className='status-pill' href='/'>
-          Studio home
-        </Link>
+        <div className='studio-header-actions'>
+          <StudioCommandPalette runs={runs} />
+          <Link className='status-pill' href='/'>
+            Studio home
+          </Link>
+        </div>
       </header>
-      <RunSummaryTable runs={runs} />
+      <RunQueueExplorer runs={runs} />
     </main>
   );
 }

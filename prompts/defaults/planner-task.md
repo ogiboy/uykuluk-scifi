@@ -12,7 +12,7 @@ Requirements:
 - Use these exact keys for every idea: `id`, `title`, `premise`, `targetDuration`, `style`,
   `estimatedDifficulty`, `riskLevel`, and `fit`.
 - Use exactly `low`, `medium`, or `high` for estimated difficulty and risk level.
-- Use `targetDuration` values like `20 dakika`, `25 dakika`, or `30 dakika`.
+- Use `targetDuration` values like `8-12 dakika`, `9-11 dakika`, or `10-12 dakika`.
 - Make `fit` a short Turkish sentence explaining why the idea fits UykulukSciFi; do not return
   `low`, `medium`, or `high` for `fit`.
 - Make every `fit` explanation specific to that idea's title, lane, visual promise, and scientific
@@ -62,6 +62,6 @@ Requirements:
   `gösteriyor olabilir mi`; state the concrete observation, experiment, dilemma, or visual review
   value for that slot.
 - Prefer calm cinematic science-fiction premises.
-- The story should target at least 20 minutes of estimated narration time.
+- The story should target an 8-12 minute local draft.
 - Return only the final JSON payload. Do not include markdown fences, commentary, or thinking
   traces.

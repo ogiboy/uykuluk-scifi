@@ -9,7 +9,39 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Features
+
+- reshape the Studio home page into an operator control desk with active run, next safe action,
+  safety gates, and queue snapshot.
+- reorganize Studio run detail as a review workspace with evidence/artifact flow and a sticky
+  decision/action rail.
+- add run-detail section navigation and collapsible artifact previews so large review artifacts do
+  not bury operator decisions.
+- surface the guarded local web-control session on Studio home and run detail before approval or
+  render-decision actions.
+- refresh Studio run detail automatically after guarded local approval or render-decision actions
+  succeed.
+- add a shadcn-powered Studio run queue explorer with operator filters and run search.
+- convert guarded Studio approval, render-decision, and session controls to shadcn primitives with
+  local operator toast feedback.
+- introduce a shadcn modal command palette for Studio navigation and safe CLI command copying.
+- wire shadcn tooltip-backed copy buttons into Studio safe CLI command blocks.
+- expand shadcn dropdown, popover, card, badge, and confirmation dialog surfaces for the Studio
+  operator cockpit and guarded local review actions.
+- convert Studio run detail into a shadcn tabbed review cockpit for progress, media, artifacts,
+  readiness, handoff, and guarded decisions.
+- improve Studio production-media review cards with copyable review, playback, and render-approval
+  handoff commands.
+
+### Fixes
+
+- align script/planner prompts and script review floor with the v1 8-12 minute local draft target.
+- keep Studio Turbopack builds resolving shared source contracts without pulling the full CLI
+  integrity dependency chain into render-plan schemas.
+- tighten Studio operator review controls so ready queues exclude blocked runs, confirmations expose
+  pending payloads, command fallbacks stay shared, and short-lived mutation sessions fail closed.
+- share production-package path constants without pulling CLI integrity dependencies into Studio
+  render-plan schema imports.
 
 ## v0.63.0 (2026-07-02)
 

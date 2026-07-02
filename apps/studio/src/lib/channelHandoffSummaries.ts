@@ -10,6 +10,7 @@ import {
   type ChannelHandoff,
   youtubeMetadataSchema,
 } from "../../../../src/stages/channelHandoffContracts";
+import { finalReviewBundleJsonPath } from "../../../../src/stages/finalReviewBundleContracts";
 import {
   thumbnailCandidatePackSchema,
   thumbnailCandidatesJsonPath,
@@ -20,8 +21,6 @@ import { sha256 } from "../../../../src/utils/hash";
 import type { StudioFinalReviewBundleSummary } from "./finalReviewBundleSummaries";
 import { studioRunFilePath } from "./runFilePaths";
 import type { RunRecord } from "./runRecordTypes";
-
-const finalReviewBundleJsonPath = "production/review_bundle.json";
 
 export type StudioChannelHandoffSummary =
   | { kind: "missing"; message: string; nextAction: string | null }

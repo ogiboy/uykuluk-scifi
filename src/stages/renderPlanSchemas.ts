@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { productionPackageManifestPath } from "./productionPackageIntegrity.js";
+import { productionPackageManifestPath } from "./productionPackagePaths.js";
 
 export const renderPlanArtifactPaths = [
   "production/render_plan.json",

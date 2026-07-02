@@ -1,3 +1,4 @@
+import { CopyableCommand } from "@/components/studio/CopyableCommand";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 
 type RunRenderDecisionCommandsPanelProps = Readonly<{
@@ -26,7 +27,7 @@ export function RunRenderDecisionCommandsPanel({ commands }: RunRenderDecisionCo
           <li key={item.decision}>
             <strong>{item.decision}</strong>
             <p>{item.guidance}</p>
-            <code className='command'>{item.command}</code>
+            <CopyableCommand command={item.command} label={`${item.decision} decision command`} />
           </li>
         ))}
       </ul>

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { digestSchema } from "./renderPlanSchemas.js";
 
 export const channelHandoffDecisionValues = [
   "accepted-for-manual-channel-prep",
@@ -10,8 +11,6 @@ export type ChannelHandoffDecision = (typeof channelHandoffDecisionValues)[numbe
 
 export const channelHandoffDecisionJsonPath = "production/channel_handoff_decision.json";
 export const channelHandoffDecisionMarkdownPath = "production/channel_handoff_decision.md";
-
-const digestSchema = z.string().regex(/^[a-f0-9]{64}$/);
 
 export const channelHandoffDecisionInputSchema = z.strictObject({
   decision: z.enum(channelHandoffDecisionValues),

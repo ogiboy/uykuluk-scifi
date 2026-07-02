@@ -28,9 +28,12 @@ export function RunArtifactPreviewsPanel({
       </p>
       <p>{artifactPreviewsIntro(evidenceStatus)}</p>
       <div className='artifact-preview-groups'>
-        {artifactGroups.map((group) => (
-          <section className='artifact-preview-group' key={group.label}>
-            <h3>{group.label}</h3>
+        {artifactGroups.map((group, groupIndex) => (
+          <details className='artifact-preview-group' key={group.label} open={groupIndex === 0}>
+            <summary>
+              <span>{group.label}</span>
+              <small>{group.artifacts.length} artifact(s)</small>
+            </summary>
             <ul className='artifact-preview-list'>
               {group.artifacts.map((artifact) => (
                 <li className='artifact-preview-card' key={artifact.path}>
@@ -54,7 +57,10 @@ export function RunArtifactPreviewsPanel({
                     {artifact.previewTruncated ? " · preview truncated" : ""}
                   </p>
                   {artifact.preview ? (
-                    <pre className='artifact-preview'>{artifact.preview}</pre>
+                    <details className='artifact-preview-toggle'>
+                      <summary>Preview excerpt</summary>
+                      <pre className='artifact-preview'>{artifact.preview}</pre>
+                    </details>
                   ) : (
                     <p>{artifactPreviewFallback(artifact)}</p>
                   )}
@@ -62,7 +68,7 @@ export function RunArtifactPreviewsPanel({
                 </li>
               ))}
             </ul>
-          </section>
+          </details>
         ))}
       </div>
     </section>

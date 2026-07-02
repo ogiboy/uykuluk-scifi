@@ -79,7 +79,6 @@ function malformedLabelExpansionJson(): string {
 
 type MockScriptSectionId = "hook" | "context" | "development" | "outro";
 const shortExpansionModels: ReadonlySet<string> = new Set([
-  "mock-short-script",
   "mock-invalid-continuation-json",
   "mock-repeated-continuation-then-repair",
   "mock-underfilled-continuations",

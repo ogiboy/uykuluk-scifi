@@ -1,4 +1,5 @@
 import type { StudioAnalyticsOverview } from "@/lib/analyticsOverview";
+import { CopyableCommand } from "@/components/studio/CopyableCommand";
 import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
 
 type AnalyticsOverviewViewProps = Readonly<{
@@ -35,7 +36,7 @@ export function AnalyticsOverviewView({ overview }: AnalyticsOverviewViewProps) 
 
       <section className='panel' aria-labelledby='analytics-action-heading'>
         <h2 id='analytics-action-heading'>Next Safe Action</h2>
-        <code className='command'>{overview.nextCommand}</code>
+        <CopyableCommand command={overview.nextCommand} label='Analytics command' />
         <p>
           Read-only display from local operator-provided analytics artifacts. Studio does not call
           YouTube APIs, infer causality, upload media, publish content, or mutate workflow state.

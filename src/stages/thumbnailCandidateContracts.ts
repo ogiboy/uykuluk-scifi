@@ -1,9 +1,9 @@
 import { z } from "zod";
+import { digestSchema } from "./renderPlanSchemas.js";
 
 export const thumbnailCandidatesJsonPath = "production/thumbnail_candidates.json";
 export const thumbnailCandidatesMarkdownPath = "production/thumbnail_candidates.md";
 
-const digestSchema = z.string().regex(/^[a-f0-9]{64}$/);
 const assetRefSchema = z.strictObject({
   digest: digestSchema,
   path: z.string().min(1),

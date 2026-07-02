@@ -1,5 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { studioMutationJsonHeaders } from "../apps/studio/src/lib/studioMutationClient";
+import {
+  clearCachedStudioMutationSession,
+  readStudioMutationSessionSnapshot,
+  refreshStudioMutationSession,
+  studioMutationJsonHeaders,
+} from "../apps/studio/src/lib/studioMutationClient";
 import {
   studioActionHeaderName,
   studioSessionCookieName,
@@ -12,7 +17,9 @@ import {
 
 describe("Studio local mutation sessions", () => {
   afterEach(() => {
+    clearCachedStudioMutationSession();
     vi.unstubAllGlobals();
+    vi.useRealTimers();
   });
 
   it("creates an HttpOnly same-site session cookie with a bearer header token", () => {
@@ -31,7 +38,11 @@ describe("Studio local mutation sessions", () => {
 
   it("fetches a no-store Studio session token before building mutation headers", async () => {
     const fetchMock = vi.fn(async () =>
-      Response.json({ status: "ok", token: "session_token_1234567890ABCDEFGH" }),
+      Response.json({
+        expiresInSeconds: 900,
+        status: "ok",
+        token: "session_token_1234567890ABCDEFGH",
+      }),
     );
     vi.stubGlobal("fetch", fetchMock);
 
@@ -46,6 +57,49 @@ describe("Studio local mutation sessions", () => {
       [studioSessionHeaderName]: "session_token_1234567890ABCDEFGH",
       "content-type": "application/json",
     });
+  });
+
+  it("reuses a non-expiring local session for guarded mutation headers", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-07-02T08:00:00.000Z"));
+    const fetchMock = vi.fn(async () =>
+      Response.json({
+        expiresInSeconds: 900,
+        status: "ok",
+        token: "session_token_cached_1234567890",
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(refreshStudioMutationSession()).resolves.toMatchObject({
+      expiresInSeconds: 900,
+      status: "ready",
+    });
+    const headers = await studioMutationJsonHeaders("script.approve");
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(readStudioMutationSessionSnapshot()).toMatchObject({ status: "ready" });
+    expect(headers[studioSessionHeaderName]).toBe("session_token_cached_1234567890");
+  });
+
+  it("treats sessions inside the expiry skew as missing", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-07-02T08:00:00.000Z"));
+    const fetchMock = vi.fn(async () =>
+      Response.json({
+        expiresInSeconds: 20,
+        status: "ok",
+        token: "session_token_short_1234567890",
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await refreshStudioMutationSession();
+
+    expect(readStudioMutationSessionSnapshot()).toEqual({ status: "missing" });
+    await expect(studioMutationJsonHeaders("script.approve")).rejects.toThrow(
+      "Studio local session could not be established.",
+    );
   });
 
   it("fails closed when the Studio session endpoint cannot provide a token", async () => {

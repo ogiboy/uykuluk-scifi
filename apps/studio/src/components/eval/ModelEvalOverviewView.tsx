@@ -1,4 +1,5 @@
 import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
+import { CopyableCommand } from "@/components/studio/CopyableCommand";
 import type {
   StudioCandidateEvalSummary,
   StudioModelEvalCheckSummary,
@@ -55,7 +56,7 @@ export function ModelEvalOverviewView({ overview }: ModelEvalOverviewViewProps) 
 
       <section className='panel' aria-labelledby='model-eval-action-heading'>
         <h2 id='model-eval-action-heading'>Next Safe Action</h2>
-        <code className='command'>{overview.nextCommand}</code>
+        <CopyableCommand command={overview.nextCommand} label='Model eval command' />
         <p>
           Read-only display from local diagnostics artifacts. Studio does not call Ollama,
           llama.cpp, hosted APIs, edit config, create runs, approve stages, upload media, or publish
@@ -117,10 +118,13 @@ function CandidatePanel({
             {candidateReport.recommendedCandidate?.configuredModel ?? "none yet"}
           </p>
           {candidateReport.operatorGuidance ? (
-            <p className='artifact-meta'>
-              {candidateReport.operatorGuidance.message} Next:{" "}
-              <code className='command'>{candidateReport.operatorGuidance.nextCommand}</code>
-            </p>
+            <div className='artifact-action'>
+              <p>{candidateReport.operatorGuidance.message}</p>
+              <CopyableCommand
+                command={candidateReport.operatorGuidance.nextCommand}
+                label='Candidate eval command'
+              />
+            </div>
           ) : null}
           <ul className='artifact-preview-list'>
             {candidateReport.candidates.map((candidate, index) => (

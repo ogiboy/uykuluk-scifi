@@ -136,10 +136,10 @@
 - Script expansion prompts include the previous expansion chunks from the same section so local
   models have explicit context to continue from rather than repeating section-level sentence loops.
 - Script generation now runs up to three bounded long-form continuation passes when the assembled
-  script remains below the 1200-word review floor. Continuations extend the existing
+  script remains below the 1500-word review floor. Continuations extend the existing
   `Sinematik Gelişme` section, add `continuation` receipts to `script.sections.json`, and are
   included in prompt provenance, token totals, cost recording, and blocker checks.
-- If bounded continuation passes still leave the assembled provider draft below the 1200-word floor,
+- If bounded continuation passes still leave the assembled provider draft below the 1500-word floor,
   script generation now fails closed before script artifacts are written and persists a safe
   diagnostic message without raw provider text.
 - Script continuation parsing remains JSON-first but accepts bounded raw Turkish continuation text

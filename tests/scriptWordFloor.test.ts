@@ -48,14 +48,14 @@ describe("script word-floor enforcement", () => {
       wordCount: number;
     }>(artifactPath(runId, "diagnostics/script_generation_failure.json"));
     expect(diagnostics.message).toMatch(
-      /Invalid assembled script provider response: remains below the long-form floor after bounded continuation passes \(\d+\/1200 words\)/,
+      /Invalid assembled script provider response: remains below the long-form floor after bounded continuation passes \(\d+\/1500 words\)/,
     );
     expect(diagnostics).toMatchObject({
       failureKind: "below_long_form_floor",
-      requiredWordCount: 1200,
+      requiredWordCount: 1500,
       nextAction: expect.stringContaining(`pnpm producer script --run ${runId}`),
     });
-    expect(diagnostics.wordCount).toBeLessThan(1200);
+    expect(diagnostics.wordCount).toBeLessThan(1500);
     expect(diagnostics.message).not.toContain("kısa bir ölçüm notuyla");
   });
 });

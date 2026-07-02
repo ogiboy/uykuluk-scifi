@@ -1,4 +1,5 @@
 import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
+import { CopyableCommand } from "@/components/studio/CopyableCommand";
 import type { StudioDoctorOverview } from "@/lib/doctorOverview";
 
 type DoctorStatusPanelProps = Readonly<{
@@ -35,7 +36,7 @@ export function DoctorStatusPanel({ overview }: DoctorStatusPanelProps) {
       />
       <div className='artifact-action'>
         <strong>Next safe action</strong>
-        <code className='command'>{overview.nextAction}</code>
+        <CopyableCommand command={overview.nextAction} label='Doctor command' />
       </div>
       {overview.error ? <p className='blocked'>{overview.error}</p> : null}
     </section>

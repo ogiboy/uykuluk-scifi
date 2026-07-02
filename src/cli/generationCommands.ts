@@ -1,5 +1,6 @@
 import { Command } from "commander";
 import { createChannelHandoff } from "../stages/channelHandoff.js";
+import { channelHandoffMarkdownPath } from "../stages/channelHandoffContracts.js";
 import { estimateCost } from "../stages/estimate.js";
 import { generateEvidenceBundle } from "../stages/evidence.js";
 import { createFinalReviewBundle } from "../stages/finalReviewBundle.js";
@@ -162,7 +163,7 @@ function formatChannelHandoffConsole(
   return [
     "Manual channel handoff package generated.",
     `Status: ${handoff.status}`,
-    "Package: production/channel_handoff.md",
+    `Package: ${channelHandoffMarkdownPath}`,
     `Draft render: ${handoff.media.draftRenderPath}`,
     `Subtitles: ${handoff.media.subtitlesPath}`,
     `Chapters: ${handoff.media.chaptersPath}`,

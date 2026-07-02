@@ -2,6 +2,7 @@ import type { ProducerConfig } from "../config/schema.js";
 import { SafeExitError } from "../core/errors.js";
 import type { LlmProvider } from "../providers/llmProvider.js";
 import { parseScriptContinuationProviderPayload } from "./scriptContinuationParsing.js";
+import { scriptLongFormWordFloor } from "../safeguards/scriptLengthContract.js";
 import { generateScriptContentWithBlockerRetry } from "./scriptContentRetry.js";
 import {
   assembleScriptFromSections,
@@ -30,7 +31,7 @@ type ScriptContinuationChunk = {
   index: 1 | 2 | 3;
 };
 
-export const longFormWordFloor = 1200;
+export const longFormWordFloor = scriptLongFormWordFloor;
 const developmentSectionId = "development";
 const developmentPlan = scriptSectionPlans.find((section) => section.id === developmentSectionId);
 export const scriptContinuationResponseFormat = {
@@ -141,9 +142,9 @@ export function renderScriptContinuationPrompt(
     `Continuation chunk: ${options.chunk.index}/${scriptContinuationChunks.length}`,
     `Chunk focus: ${options.chunk.focus}.`,
     `Current missing long-form floor estimate: ${Math.max(0, options.missingWords)} words.`,
-    "Target length: 120-170 Turkish words.",
-    "Hard limit: 1800 characters. Stop early rather than exceeding this limit.",
-    "Write 4-6 complete Turkish sentences total.",
+    "Target length: 150-220 Turkish words.",
+    "Hard limit: 2400 characters. Stop early rather than exceeding this limit.",
+    "Write 5-7 complete Turkish sentences total.",
     "Keep complete sentences, calm cinematic pacing, scientific caution, and Turkish production labels only.",
     "Spell production labels exactly as `Anlatıcı:` and `Görsel:`.",
     "Do not repeat any sentence or visual direction already present in the current script.",

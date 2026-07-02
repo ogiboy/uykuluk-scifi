@@ -5,6 +5,11 @@ import {
   containsProviderArtifactMetadata,
   containsRepeatedWordStutter,
 } from "./modelArtifactText.js";
+import {
+  scriptLongFormUpperWarning,
+  scriptLongFormWordFloor,
+  scriptTargetDurationLabel,
+} from "./scriptLengthContract.js";
 
 export type ScriptReviewWarning = {
   code: string;
@@ -106,18 +111,18 @@ function appendBlockingScriptWarnings(warnings: ScriptReviewWarning[], script: s
 }
 
 function appendLengthWarnings(warnings: ScriptReviewWarning[], wordCount: number): void {
-  if (wordCount < 1200) {
+  if (wordCount < scriptLongFormWordFloor) {
     warnings.push({
       code: "too_short",
       severity: "warning",
-      message: `Script is short for the 20-minute target (${wordCount} words).`,
+      message: `Script is short for the ${scriptTargetDurationLabel} (${wordCount}/${scriptLongFormWordFloor} words).`,
     });
   }
-  if (wordCount > 1800) {
+  if (wordCount > scriptLongFormUpperWarning) {
     warnings.push({
       code: "too_long",
       severity: "warning",
-      message: `Script may be too long for the MVP target (${wordCount} words).`,
+      message: `Script may be too long for the ${scriptTargetDurationLabel} (${wordCount}/${scriptLongFormUpperWarning} words).`,
     });
   }
 }
