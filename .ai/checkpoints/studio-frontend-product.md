@@ -20,10 +20,14 @@ upload/publish boundaries.
 
 ## Current State
 
-- Branch/worktree: `feat/local-production-proof` at
+- Branch/worktree: `feat/studio-operator-actions` at
   `/Users/ogiboy/.codex/worktrees/894d/uykuluk-scifi`.
-- Active PR: #120, `feat(studio): expand local production operator surface`, open against `main`.
-- Last completed slice/commit: latest pushed `fix(studio): tighten operator review actions`.
+- Merged PR: #121, `feat(studio): expand operator workbench controls`, merged into `main` as
+  `97a6ebb6` on 2026-07-02.
+- Active local slice: guarded-action preflight summaries for Studio approval and render-decision
+  panels.
+- Last completed slice/commit before this checkpoint:
+  `fix(studio): stabilize operator ui primitives`.
 - Completed current-branch frontend slices include:
   - shadcn route/action primitives for guarded local actions;
   - Studio home control desk, queue filters, command palette, copyable safe commands;
@@ -32,6 +36,8 @@ upload/publish boundaries.
     decisions.
   - production-media review cards with copyable review, local playback, and render-approval handoff
     commands.
+  - guarded-action preflight summaries for approval and render-decision panels, showing payload,
+    evidence, readiness, blocked-action, and upload/publish boundaries before submission.
   - PR review fixes for approval confirmation payload visibility, ready-queue blocked-run exclusion,
     workflow overflow indicators, tooltip delay, full command-palette search, client-side palette
     navigation, fail-closed short-lived Studio sessions, and shared Studio next-command fallbacks.
@@ -56,7 +62,8 @@ upload/publish boundaries.
     Decisions tabs.
   - browser smoke on `/runs/run_20260702013835_ada7ab` Media tab for rendered media cards and
     copyable review/playback controls.
-- Dirty or external changes to preserve: none at the checkpoint update point.
+- Dirty or external changes to preserve: current local branch contains the uncommitted
+  guarded-action preflight slice pending commit.
 
 ## Decisions
 
@@ -69,11 +76,10 @@ upload/publish boundaries.
 
 ## Remaining Work
 
-1. Inspect PR #120 hosted checks and CodeRabbit comments when they finish; fix only valid findings.
-2. Continue the next frontend slice inside the same broad PR if it is still coherent: likely run
-   artifact preview ergonomics, media playback/download handoff, or route-security/session UX.
-3. After the PR is stable, merge or hand off according to current branch rules, then start the next
-   broader product slice.
+1. Commit the guarded-action preflight slice after focused validation.
+2. Continue the next frontend slice on the same broad branch if coherent: likely route-security
+   session UX, artifact preview ergonomics, or media playback/download handoff.
+3. Open a PR only after related frontend/operator-action work is grouped and locally validated.
 
 ## Blockers And Risks
 

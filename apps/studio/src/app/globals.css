@@ -455,6 +455,56 @@ h3 {
   gap: 12px;
 }
 
+.action-preflight {
+  display: grid;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #0b0f14;
+  padding: 12px;
+}
+
+.action-preflight-heading {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.action-preflight-heading h3,
+.action-preflight-heading p {
+  margin-bottom: 0;
+}
+
+.action-preflight-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.action-preflight-list div {
+  display: grid;
+  gap: 5px;
+  border-top: 1px solid var(--line);
+  padding-top: 8px;
+}
+
+.action-preflight-list dt {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.action-preflight-list dd {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 .queue-list {
   display: grid;
   gap: 8px;

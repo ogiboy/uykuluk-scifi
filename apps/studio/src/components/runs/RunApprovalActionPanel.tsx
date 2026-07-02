@@ -6,12 +6,30 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { StudioRunDetail } from "@/lib/runSummaries";
+import {
+  approvalActionForRun,
+  approvalFormReady,
+  approvalPayload,
+} from "@/lib/studioApprovalAction";
+import { buildStudioActionPreflight } from "@/lib/studioActionPreflight";
 import { submitStudioJsonMutation } from "@/lib/studioMutationSubmit";
+import { RunActionPreflightPanel } from "./RunActionPreflightPanel";
 import { RunApprovalConfirmationDialog } from "./RunApprovalConfirmationDialog";
 import { RunIdeaApprovalSelector } from "./RunIdeaApprovalSelector";
 
 type RunApprovalActionPanelProps = Readonly<{
-  run: Pick<StudioRunDetail, "generatedIdeas" | "nextRecommendedCommand" | "runId" | "state">;
+  run: Pick<
+    StudioRunDetail,
+    | "blockedActionCount"
+    | "evidenceMessage"
+    | "evidenceStatus"
+    | "generatedIdeas"
+    | "nextRecommendedCommand"
+    | "readinessMessage"
+    | "readinessStatus"
+    | "runId"
+    | "state"
+  >;
 }>;
 
 type SubmitState =
@@ -19,14 +37,6 @@ type SubmitState =
   | { kind: "submitting"; message: string }
   | { kind: "success"; message: string }
   | { kind: "error"; message: string };
-
-type ApprovalActionConfig = Readonly<{
-  actionId: "cost.approve" | "idea.approve" | "render.approve" | "script.approve";
-  buttonLabel: string;
-  description: string;
-  heading: string;
-  routePath: string;
-}>;
 
 type FormSubmitEvent = Readonly<{
   preventDefault: () => void;
@@ -54,6 +64,13 @@ export function RunApprovalActionPanel({ run }: RunApprovalActionPanelProps) {
   if (!config) {
     return null;
   }
+
+  const preflight = buildStudioActionPreflight({
+    acknowledgeWarnings,
+    actionId: config.actionId,
+    run,
+    selectedIdeaId: ideaId,
+  });
 
   function requestApprovalConfirmation(event: FormSubmitEvent): void {
     event.preventDefault();
@@ -95,6 +112,7 @@ export function RunApprovalActionPanel({ run }: RunApprovalActionPanelProps) {
       <p>
         This guarded Studio action uses the same CLI/core approval gate as the copy-paste command.
       </p>
+      <RunActionPreflightPanel preflight={preflight} />
       <form className='studio-form' onSubmit={requestApprovalConfirmation}>
         {config.actionId === "idea.approve" ? (
           <RunIdeaApprovalSelector
@@ -137,65 +155,4 @@ export function RunApprovalActionPanel({ run }: RunApprovalActionPanelProps) {
       ) : null}
     </section>
   );
-}
-
-function approvalActionForRun(
-  run: Pick<StudioRunDetail, "runId" | "state">,
-): ApprovalActionConfig | null {
-  if (run.state === "IDEAS_GENERATED") {
-    return {
-      actionId: "idea.approve",
-      buttonLabel: "Approve idea",
-      description: "Choose exactly one generated idea for this run.",
-      heading: "Approve Idea",
-      routePath: "/actions/approve-idea",
-    };
-  }
-  if (run.state === "SCRIPT_REVIEWED") {
-    return {
-      actionId: "script.approve",
-      buttonLabel: "Approve script",
-      description: "Approve the currently reviewed script digest.",
-      heading: "Approve Script",
-      routePath: "/actions/approve-script",
-    };
-  }
-  if (run.state === "COST_ESTIMATED") {
-    return {
-      actionId: "cost.approve",
-      buttonLabel: "Approve cost",
-      description: "Approve the exact current paid-generation cost quote digest.",
-      heading: "Approve Cost",
-      routePath: "/actions/approve-cost",
-    };
-  }
-  if (run.state === "READY_FOR_MANUAL_PRODUCTION") {
-    return {
-      actionId: "render.approve",
-      buttonLabel: "Approve render",
-      description: "Approve local draft render execution for the current render inputs.",
-      heading: "Approve Local Render",
-      routePath: "/actions/approve-render",
-    };
-  }
-  return null;
-}
-
-function approvalFormReady(config: ApprovalActionConfig, ideaId: string): boolean {
-  return config.actionId !== "idea.approve" || ideaId.trim().length > 0;
-}
-
-function approvalPayload(
-  actionId: ApprovalActionConfig["actionId"],
-  runId: string,
-  ideaId: string,
-  acknowledgeWarnings: boolean,
-): Record<string, boolean | string> {
-  if (actionId === "idea.approve") {
-    return { ideaId, runId };
-  }
-  if (actionId === "script.approve") {
-    return { acknowledgeWarnings, runId };
-  }
-  return { runId };
 }

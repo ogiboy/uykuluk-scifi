@@ -28,7 +28,11 @@ export function RunReviewDecisionRail({ run }: RunReviewDecisionRailProps) {
       />
       <RunApprovalActionPanel run={run} />
       <RunRenderDecisionStatusPanel renderDecision={run.renderDecision} />
-      <RunRenderDecisionActionPanel commands={run.renderDecisionCommands} runId={run.runId} />
+      <RunRenderDecisionActionPanel
+        commands={run.renderDecisionCommands}
+        run={run}
+        runId={run.runId}
+      />
       <RunRenderDecisionCommandsPanel commands={run.renderDecisionCommands} />
       <RunChannelHandoffDecisionPanel channelHandoffDecision={run.channelHandoffDecision} />
     </div>
