@@ -37,6 +37,8 @@ upload/publish boundaries.
     navigation, fail-closed short-lived Studio sessions, and shared Studio next-command fallbacks.
   - dependency-free production-package path contract sharing for render-plan schemas and Studio
     builds, plus the missing Skeleton React type import.
+  - hosted browser-smoke fallout fix for the Studio home heading assertion after the operator
+    control desk redesign.
 - Verified commands for the latest slice:
   - `pnpm --filter @uykulukscifi/studio lint`
   - `pnpm --filter @uykulukscifi/studio typecheck`
@@ -49,6 +51,7 @@ upload/publish boundaries.
   - `pnpm vitest run tests/studioMutationClient.test.ts`
   - `pnpm typecheck`
   - `pnpm vitest run tests/renderPlan.test.ts tests/renderPlanCli.test.ts tests/productionPackageIntegrity.test.ts`
+  - `pnpm qa:browser`
   - browser smoke on `/runs/run_20260702013835_ada7ab` across Media, Artifacts, Readiness, and
     Decisions tabs.
   - browser smoke on `/runs/run_20260702013835_ada7ab` Media tab for rendered media cards and
