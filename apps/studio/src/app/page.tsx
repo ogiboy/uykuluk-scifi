@@ -26,8 +26,8 @@ export const dynamic = "force-dynamic";
  * @returns The Studio page layout with navigation, status panels, and the current asset inventory.
  */
 export default async function StudioHomePage() {
+  const actionStatus = getStudioActionServiceStatus();
   const [
-    actionStatus,
     analyticsOverview,
     assetInventory,
     doctorOverview,
@@ -35,7 +35,6 @@ export default async function StudioHomePage() {
     promptInventory,
     runs,
   ] = await Promise.all([
-    getStudioActionServiceStatus(),
     getStudioAnalyticsOverview(),
     getStudioAssetInventory(),
     getStudioDoctorOverview(),

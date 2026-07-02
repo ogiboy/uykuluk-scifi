@@ -54,6 +54,8 @@ future generated release notes can be inserted predictably.
   allowlisted.
 - keep Studio Turbopack builds resolving shared source contracts without pulling the full CLI
   integrity dependency chain into render-plan schemas.
+- stabilize Studio shadcn primitive class output and Sonner styling so the operator workbench stays
+  clean under IDE type checks.
 - tighten Studio operator review controls so ready queues exclude blocked runs, confirmations expose
   pending payloads, command fallbacks stay shared, and short-lived mutation sessions fail closed.
 - share production-package path constants without pulling CLI integrity dependencies into Studio

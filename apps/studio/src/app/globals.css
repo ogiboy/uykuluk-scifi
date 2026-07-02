@@ -165,6 +165,13 @@ a {
   font-size: 11px;
 }
 
+.toaster {
+  --normal-bg: var(--panel);
+  --normal-text: var(--text);
+  --normal-border: var(--line);
+  --border-radius: 8px;
+}
+
 h1,
 h2,
 h3,
