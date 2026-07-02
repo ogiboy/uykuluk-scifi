@@ -400,6 +400,42 @@ h3 {
   font-weight: 700;
 }
 
+.run-review-page,
+.run-review-main,
+.run-review-rail {
+  display: grid;
+  gap: 16px;
+}
+
+.run-detail-hero {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.5fr) minmax(0, 1fr) minmax(280px, 0.9fr);
+  gap: 16px;
+  align-items: start;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--accent) 7%, transparent), transparent 50%),
+    var(--panel);
+  padding: 16px;
+}
+
+.run-detail-hero h2 {
+  margin-bottom: 0;
+}
+
+.run-review-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(320px, 0.8fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.run-review-rail {
+  position: sticky;
+  top: 16px;
+}
+
 .run-detail-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -710,6 +746,8 @@ h3 {
   .asset-grid,
   .command-grid,
   .control-desk,
+  .run-detail-hero,
+  .run-review-workspace,
   .run-detail-grid,
   .analytics-detail-grid,
   .asset-categories,

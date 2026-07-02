@@ -13,6 +13,8 @@ future generated release notes can be inserted predictably.
 
 - reshape the Studio home page into an operator control desk with active run, next safe action,
   safety gates, and queue snapshot.
+- reorganize Studio run detail as a review workspace with evidence/artifact flow and a sticky
+  decision/action rail.
 
 ### Fixes
 
