@@ -16,6 +16,12 @@ import {
   llamaCppDiagnosticFailureReport,
   unservedLlamaCppCandidateReport,
 } from "./localModelCandidateEvalReports.js";
+import {
+  selectRecommendedLocalModelCandidate,
+  type LocalModelCandidateRecommendation,
+} from "./localModelCandidateRecommendation.js";
+
+export { selectRecommendedLocalModelCandidate } from "./localModelCandidateRecommendation.js";
 
 export type LocalModelCandidateEvalOptions = {
   candidates: string[];
@@ -38,13 +44,6 @@ export type LocalModelCandidateOperatorGuidance = {
   decision: "candidate-ready" | "candidate-ready-with-blockers" | "try-more-candidates";
   message: string;
   nextCommand: string;
-};
-
-export type LocalModelCandidateRecommendation = {
-  blockedChecks: number;
-  configuredModel: string;
-  durationMs: number;
-  passedChecks: number;
 };
 
 type ServedLlamaCppModelsResult =
@@ -176,24 +175,6 @@ async function readServedLlamaCppModels(
 }
 
 /**
- * Selects the strongest passing candidate from a local model comparison report.
- *
- * @param candidates - Evaluated model candidates.
- * @returns The deterministic recommendation summary, or `null` when no candidate passed.
- */
-export function selectRecommendedLocalModelCandidate(
-  candidates: LocalModelEvalReport[],
-): LocalModelCandidateRecommendation | null {
-  const passingCandidates = candidates.flatMap((candidate) =>
-    candidate.passed ? [candidateRecommendationSummary(candidate)] : [],
-  );
-  if (passingCandidates.length === 0) {
-    return null;
-  }
-  return [...passingCandidates].sort(candidateRecommendationSort)[0] ?? null;
-}
-
-/**
  * Determines whether a candidate comparison should fail the CLI process.
  *
  * Mixed comparisons can still be useful when at least one candidate passes; those should remain
@@ -207,39 +188,6 @@ export function localModelCandidateEvalRequiresMoreCandidates(
   report: LocalModelCandidateEvalReport,
 ): boolean {
   return report.operatorGuidance.decision === "try-more-candidates";
-}
-
-function candidateRecommendationSummary(
-  candidate: LocalModelEvalReport,
-): LocalModelCandidateRecommendation {
-  return {
-    blockedChecks: candidate.checks.filter((check) => check.status === "block").length,
-    configuredModel: candidate.configuredModel,
-    durationMs: candidate.durationMs,
-    passedChecks: candidate.checks.filter((check) => check.status === "pass").length,
-  };
-}
-
-function candidateRecommendationSort(
-  left: LocalModelCandidateRecommendation,
-  right: LocalModelCandidateRecommendation,
-): number {
-  return (
-    right.passedChecks - left.passedChecks ||
-    left.blockedChecks - right.blockedChecks ||
-    left.durationMs - right.durationMs ||
-    compareStrings(left.configuredModel, right.configuredModel)
-  );
-}
-
-function compareStrings(left: string, right: string): number {
-  if (left < right) {
-    return -1;
-  }
-  if (left > right) {
-    return 1;
-  }
-  return 0;
 }
 
 function localModelCandidateOperatorGuidance(
