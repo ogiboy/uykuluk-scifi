@@ -11,6 +11,30 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.65.0 (2026-07-02)
+
+### Fixes
+
+- stabilize operator ui primitives (70ca19e)
+- split oversized workbench components (b7350cf)
+- add captions to media previews (a44fd39)
+- resolve workbench sonar issues (52c3dee)
+- support root typecheck queue sorting (ccfc515)
+
+### Features
+
+- add review tab status badges (f933ab7)
+- show render decision choices (2089af0)
+- add run review brief (5f3dcd0)
+- preview local review media (ed2986c)
+- select generated ideas for approval (26530fa)
+- add persistent run review rail (269c788)
+- add operator queue controls (2f57c11)
+
+### Documentation
+
+- document operator workbench updates (fa67aa8)
+
 ## v0.64.0 (2026-07-02)
 
 ### Features
