@@ -9,6 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
+_No unreleased changes yet._
+
+## v0.63.0 (2026-07-02)
+
 ### Features
 
 - add guarded Studio approval routes and run-detail forms for local idea, script, cost, and render
