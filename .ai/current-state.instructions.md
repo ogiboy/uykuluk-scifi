@@ -297,9 +297,11 @@
 - Studio has a type-safe `next-intl` request/provider foundation with English and Turkish locale
   selection through a local cookie. Existing operator copy has not been migrated yet.
 - Studio can list local persisted runs with counts, readiness/evidence status, remediation, and
-  next-action visibility, then show a read-only run detail page with next action, readiness checks,
-  warnings, approvals, ledger entries, blockers, production media evidence, shared review guidance,
-  shared v1 workflow progress, and review artifacts. Missing/stale readiness points to
+  next-action visibility, then refine the operator queue with read-only shadcn sort, search, filter,
+  blocker-limit, density, and tuning controls. Studio run detail shows a persistent action rail over
+  next safe action, blockers, mutation session, guarded local approvals/review decisions, readiness
+  checks, warnings, approvals, ledger entries, blockers, production media evidence, shared review
+  guidance, shared v1 workflow progress, and review artifacts. Missing/stale readiness points to
   `producer readiness --run <run_id>`; malformed or stale evidence points to
   `producer evidence --run <run_id>` and is not proof for blockers, production-media readiness, or
   next actions. Studio labels media rows as persisted artifact-record fallback until evidence is

@@ -22,6 +22,10 @@ future generated release notes can be inserted predictably.
 - refresh Studio run detail automatically after guarded local approval or render-decision actions
   succeed.
 - add a shadcn-powered Studio run queue explorer with operator filters and run search.
+- extend the Studio run queue into an operator workbench with shadcn sort, blocker-limit, density,
+  popover, slider, radio, and result-summary controls while keeping it read-only.
+- keep run-detail next safe action, blockers, mutation session, and guarded review controls visible
+  in a persistent review rail, with a mobile action-summary sheet and accordion diagnostics.
 - convert guarded Studio approval, render-decision, and session controls to shadcn primitives with
   local operator toast feedback.
 - introduce a shadcn modal command palette for Studio navigation and safe CLI command copying.
