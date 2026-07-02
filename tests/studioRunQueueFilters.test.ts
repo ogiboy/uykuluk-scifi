@@ -3,6 +3,7 @@ import {
   countStudioRunQueueFilters,
   filterStudioRunQueue,
 } from "../apps/studio/src/lib/runQueueFilters";
+import { applyRunQueueWorkbenchControls } from "../apps/studio/src/lib/runQueueWorkbench";
 import type { StudioRunSummary } from "../apps/studio/src/lib/runSummaries";
 
 describe("Studio run queue filters", () => {
@@ -68,6 +69,27 @@ describe("Studio run queue filters", () => {
     expect(
       filterStudioRunQueue(runs, { filter: "ready", query: "manual" }).map((run) => run.runId),
     ).toEqual(["run_ready"]);
+  });
+
+  it("applies operator workbench controls without mutating persisted run order", () => {
+    expect(
+      applyRunQueueWorkbenchControls(runs, {
+        maxBlockedActions: 0,
+        sort: "decision-first",
+      }).map((run) => run.runId),
+    ).toEqual(["run_needs_decision", "run_missing", "run_ready"]);
+    expect(
+      applyRunQueueWorkbenchControls(runs, {
+        maxBlockedActions: 5,
+        sort: "blocked-first",
+      }).map((run) => run.runId),
+    ).toEqual(["run_blocked", "run_needs_decision", "run_missing", "run_ready"]);
+    expect(runs.map((run) => run.runId)).toEqual([
+      "run_blocked",
+      "run_missing",
+      "run_needs_decision",
+      "run_ready",
+    ]);
   });
 });
 
