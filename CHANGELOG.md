@@ -26,6 +26,8 @@ future generated release notes can be inserted predictably.
   popover, slider, radio, and result-summary controls while keeping it read-only.
 - keep run-detail next safe action, blockers, mutation session, and guarded review controls visible
   in a persistent review rail, with a mobile action-summary sheet and accordion diagnostics.
+- show generated idea choices as shadcn radio-card options before guarded Studio idea approval,
+  while retaining the typed local approval route.
 - convert guarded Studio approval, render-decision, and session controls to shadcn primitives with
   local operator toast feedback.
 - introduce a shadcn modal command palette for Studio navigation and safe CLI command copying.

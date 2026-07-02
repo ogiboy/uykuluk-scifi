@@ -3,15 +3,17 @@
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import { submitStudioJsonMutation } from "@/lib/studioMutationSubmit";
 import { RunApprovalConfirmationDialog } from "./RunApprovalConfirmationDialog";
 
 type RunApprovalActionPanelProps = Readonly<{
-  run: Pick<StudioRunDetail, "nextRecommendedCommand" | "runId" | "state">;
+  run: Pick<StudioRunDetail, "generatedIdeas" | "nextRecommendedCommand" | "runId" | "state">;
 }>;
 
 type SubmitState =
@@ -36,7 +38,7 @@ type ApprovalActionConfig = Readonly<{
 export function RunApprovalActionPanel({ run }: RunApprovalActionPanelProps) {
   const config = approvalActionForRun(run);
   const router = useRouter();
-  const [ideaId, setIdeaId] = useState("");
+  const [ideaId, setIdeaId] = useState(run.generatedIdeas[0]?.id ?? "");
   const [acknowledgeWarnings, setAcknowledgeWarnings] = useState(false);
   const [confirmationOpen, setConfirmationOpen] = useState(false);
   const [pendingPayload, setPendingPayload] = useState<Record<string, boolean | string> | null>(
@@ -93,17 +95,11 @@ export function RunApprovalActionPanel({ run }: RunApprovalActionPanelProps) {
       </p>
       <form className='studio-form' onSubmit={requestApprovalConfirmation}>
         {config.actionId === "idea.approve" ? (
-          <label>
-            Idea ID
-            <Input
-              maxLength={200}
-              minLength={1}
-              placeholder='idea_001'
-              required
-              value={ideaId}
-              onChange={(event) => setIdeaId(event.target.value)}
-            />
-          </label>
+          <IdeaApprovalSelector
+            ideas={run.generatedIdeas}
+            ideaId={ideaId}
+            onIdeaIdChange={setIdeaId}
+          />
         ) : null}
         {config.actionId === "script.approve" ? (
           <label className='checkbox-label'>
@@ -114,7 +110,10 @@ export function RunApprovalActionPanel({ run }: RunApprovalActionPanelProps) {
             Acknowledge non-blocking script review warnings if present
           </label>
         ) : null}
-        <Button disabled={state.kind === "submitting"} type='submit'>
+        <Button
+          disabled={state.kind === "submitting" || !approvalFormReady(config, ideaId)}
+          type='submit'
+        >
           {config.buttonLabel}
         </Button>
       </form>
@@ -178,6 +177,64 @@ function approvalActionForRun(
     };
   }
   return null;
+}
+
+function approvalFormReady(config: ApprovalActionConfig, ideaId: string): boolean {
+  return config.actionId !== "idea.approve" || ideaId.trim().length > 0;
+}
+
+function IdeaApprovalSelector({
+  ideaId,
+  ideas,
+  onIdeaIdChange,
+}: Readonly<{
+  ideaId: string;
+  ideas: StudioRunDetail["generatedIdeas"];
+  onIdeaIdChange: (ideaId: string) => void;
+}>) {
+  if (ideas.length === 0) {
+    return (
+      <label>
+        Idea ID
+        <Input
+          maxLength={200}
+          minLength={1}
+          placeholder='idea_001'
+          required
+          value={ideaId}
+          onChange={(event) => onIdeaIdChange(event.target.value)}
+        />
+      </label>
+    );
+  }
+
+  return (
+    <fieldset className='idea-approval-selector'>
+      <legend>Generated idea</legend>
+      <RadioGroup value={ideaId} onValueChange={onIdeaIdChange}>
+        {ideas.map((idea) => (
+          <label className='idea-approval-option' key={idea.id}>
+            <RadioGroupItem value={idea.id} />
+            <span>
+              <strong>
+                {idea.id}: {idea.title}
+              </strong>
+              {idea.premise ? <span>{idea.premise}</span> : null}
+              <span className='idea-approval-meta'>
+                {idea.targetDuration ? (
+                  <Badge variant='outline'>{idea.targetDuration}</Badge>
+                ) : null}
+                {idea.estimatedDifficulty ? (
+                  <Badge variant='outline'>difficulty {idea.estimatedDifficulty}</Badge>
+                ) : null}
+                {idea.riskLevel ? <Badge variant='outline'>risk {idea.riskLevel}</Badge> : null}
+              </span>
+            </span>
+          </label>
+        ))}
+      </RadioGroup>
+    </fieldset>
+  );
 }
 
 function approvalPayload(

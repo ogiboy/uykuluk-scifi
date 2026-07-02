@@ -123,6 +123,44 @@ describe("Studio read-only run summaries", () => {
     ]);
   });
 
+  it("projects generated ideas for guarded Studio idea approval", async () => {
+    const run = await createRun();
+    await saveRun({ ...run, artifacts: ["ideas.json"], state: "IDEAS_GENERATED" });
+    await writeFile(
+      artifactPath(run.runId, "ideas.json"),
+      JSON.stringify({
+        ideas: [
+          {
+            estimatedDifficulty: "medium",
+            fit: "Kanalın bilimsel dikkat ve sinematik anlatım çizgisine uyar.",
+            id: "idea_001",
+            premise: "Bir uyku laboratuvarı uzak bir gezegenden rüya sinyalleri yakalar.",
+            riskLevel: "low",
+            style: "sinematik anlatım",
+            targetDuration: "8-10 dakika",
+            title: "Rüya Sinyali",
+          },
+        ],
+      }),
+      "utf8",
+    );
+
+    const detail = await getStudioRunDetail(run.runId);
+
+    expect(detail?.generatedIdeas).toEqual([
+      {
+        estimatedDifficulty: "medium",
+        fit: "Kanalın bilimsel dikkat ve sinematik anlatım çizgisine uyar.",
+        id: "idea_001",
+        premise: "Bir uyku laboratuvarı uzak bir gezegenden rüya sinyalleri yakalar.",
+        riskLevel: "low",
+        style: "sinematik anlatım",
+        targetDuration: "8-10 dakika",
+        title: "Rüya Sinyali",
+      },
+    ]);
+  });
+
   it("shows canonical early next actions before evidence exists", async () => {
     const run = await createRun();
     await mkdir(`runs/${run.runId}/diagnostics`, { recursive: true });
