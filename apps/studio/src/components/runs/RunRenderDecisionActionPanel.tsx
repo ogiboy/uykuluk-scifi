@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import { submitStudioJsonMutation } from "@/lib/studioMutationSubmit";
@@ -27,6 +28,7 @@ export function RunRenderDecisionActionPanel({
   commands,
   runId,
 }: RunRenderDecisionActionPanelProps) {
+  const router = useRouter();
   const [decision, setDecision] = useState(commands[0]?.decision ?? "accepted-for-local-review");
   const [notes, setNotes] = useState("");
   const [reviewedBy, setReviewedBy] = useState("operator");
@@ -54,8 +56,9 @@ export function RunRenderDecisionActionPanel({
     }
     setState({
       kind: "success",
-      message: "Render decision recorded. Refresh the run detail to view persisted evidence.",
+      message: "Render decision recorded. Updating the run detail from persisted local evidence.",
     });
+    router.refresh();
   }
 
   return (

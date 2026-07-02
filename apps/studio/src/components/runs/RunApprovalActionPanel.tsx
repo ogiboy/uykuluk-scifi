@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import { submitStudioJsonMutation } from "@/lib/studioMutationSubmit";
@@ -29,6 +30,7 @@ type ApprovalActionConfig = Readonly<{
  */
 export function RunApprovalActionPanel({ run }: RunApprovalActionPanelProps) {
   const config = approvalActionForRun(run);
+  const router = useRouter();
   const [ideaId, setIdeaId] = useState("");
   const [acknowledgeWarnings, setAcknowledgeWarnings] = useState(false);
   const [state, setState] = useState<SubmitState>({
@@ -56,8 +58,9 @@ export function RunApprovalActionPanel({ run }: RunApprovalActionPanelProps) {
     }
     setState({
       kind: "success",
-      message: "Approval recorded. Refresh the run detail to view the updated state and evidence.",
+      message: "Approval recorded. Updating the run detail from persisted local state.",
     });
+    router.refresh();
   }
 
   return (
