@@ -15,11 +15,24 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import type { StudioRunDetail } from "@/lib/runSummaries";
+import { buildStudioActionPreflight } from "@/lib/studioActionPreflight";
 import { submitStudioJsonMutation } from "@/lib/studioMutationSubmit";
+import { RunActionPreflightPanel } from "./RunActionPreflightPanel";
 import { RunRenderDecisionSelector } from "./RunRenderDecisionSelector";
 
 type RunRenderDecisionActionPanelProps = Readonly<{
   commands: StudioRunDetail["renderDecisionCommands"];
+  run: Pick<
+    StudioRunDetail,
+    | "blockedActionCount"
+    | "evidenceMessage"
+    | "evidenceStatus"
+    | "nextRecommendedCommand"
+    | "readinessMessage"
+    | "readinessStatus"
+    | "runId"
+    | "state"
+  >;
   runId: string;
 }>;
 
@@ -50,6 +63,7 @@ type FormSubmitEvent = Readonly<{
  */
 export function RunRenderDecisionActionPanel({
   commands,
+  run,
   runId,
 }: RunRenderDecisionActionPanelProps) {
   const router = useRouter();
@@ -66,6 +80,11 @@ export function RunRenderDecisionActionPanel({
   if (commands.length === 0) {
     return null;
   }
+
+  const preflight = buildStudioActionPreflight({
+    actionId: "render.decide",
+    run,
+  });
 
   function requestDecisionConfirmation(event: FormSubmitEvent): void {
     event.preventDefault();
@@ -106,6 +125,7 @@ export function RunRenderDecisionActionPanel({
         This guarded Studio action writes the same local decision evidence as the CLI. It does not
         approve upload or publish.
       </p>
+      <RunActionPreflightPanel preflight={preflight} />
       <form className='studio-form' onSubmit={requestDecisionConfirmation}>
         <RunRenderDecisionSelector
           commands={commands}

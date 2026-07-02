@@ -9,7 +9,11 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Features
+
+- add Studio guarded-action preflight summaries so operators can see current evidence, readiness,
+  blocked-action, payload, and upload/publish boundaries before local web approvals or render
+  decisions.
 
 ## v0.65.4 (2026-07-03)
 
