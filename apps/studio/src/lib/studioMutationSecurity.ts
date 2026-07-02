@@ -1,4 +1,6 @@
 export const studioActionHeaderName = "x-uykuluk-studio-action";
+export const studioSessionCookieName = "uykuluk_studio_session";
+export const studioSessionHeaderName = "x-uykuluk-studio-session";
 
 export type StudioMutationSecurityResult =
   | {
@@ -43,6 +45,13 @@ export function validateStudioMutationRequest(
       status: 403,
     };
   }
+  if (!hasValidStudioSession(request)) {
+    return {
+      message: "Studio mutations require a valid local session token.",
+      ok: false,
+      status: 403,
+    };
+  }
   return { ok: true };
 }
 
@@ -58,4 +67,26 @@ function isSameOriginMutation(request: Request): boolean {
     return false;
   }
   return origin === requestOrigin;
+}
+
+function hasValidStudioSession(request: Request): boolean {
+  const headerToken = request.headers.get(studioSessionHeaderName);
+  if (!headerToken || !isStudioSessionToken(headerToken)) {
+    return false;
+  }
+  return cookieValue(request.headers.get("cookie") ?? "", studioSessionCookieName) === headerToken;
+}
+
+function cookieValue(cookieHeader: string, name: string): string | null {
+  for (const part of cookieHeader.split(";")) {
+    const [rawKey, ...rawValue] = part.trim().split("=");
+    if (rawKey === name) {
+      return decodeURIComponent(rawValue.join("="));
+    }
+  }
+  return null;
+}
+
+function isStudioSessionToken(value: string): boolean {
+  return /^[A-Za-z0-9_-]{32,128}$/.test(value);
 }

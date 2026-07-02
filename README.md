@@ -255,8 +255,8 @@ agent-tracking state only; runtime code must not require it.
 - Upload and publish remain intentionally blocked scaffolds.
 - Upload and public/scheduled publish require future explicit config and separate approval gates.
 - Studio must call typed local service contracts; it must not duplicate workflow state.
-- Studio mutation service contracts exist for future guarded actions, including local
-  render-decision evidence writes, but no Studio action route is enabled yet.
+- Guarded Studio local approval/review routes exist only for CLI/core-backed local evidence writes;
+  they require same-origin JSON, action headers, and short-lived local session proof.
 
 Paid generation providers are not implemented. `producer approve cost` approves one exact future
 paid-production quote; it does not authorize or execute spending. The internal reservation and
@@ -470,18 +470,19 @@ Current Studio scope:
   ignored `prompts/local/*.md` overrides, with source paths, hashes, and doctor remediation but no
   editing;
 - guarded `POST /actions/approve-idea`, `/actions/approve-script`, `/actions/approve-cost`, and
-  `/actions/approve-render` routes that require same-origin JSON, a Studio action header, typed
-  service-contract payloads, and the same CLI/core approval gates as `producer approve ...`;
+  `/actions/approve-render` routes that require same-origin JSON, a Studio action header, a
+  short-lived local session token/cookie pair, typed service-contract payloads, and the same
+  CLI/core approval gates as `producer approve ...`;
 - guarded `POST /actions/decide-render` route that requires same-origin JSON, a Studio action
-  header, the typed `render.decide` service contract, current draft-render evidence, and writes only
-  local render-decision JSON/Markdown evidence;
+  header, a short-lived local session token/cookie pair, the typed `render.decide` service contract,
+  current draft-render evidence, and writes only local render-decision JSON/Markdown evidence;
 - Radix module tabs for planned run, prompt, asset, and safety surfaces;
 - type-safe `next-intl` request/provider foundation for English and Turkish locales;
 - visible reminder that CLI/core remains the workflow source of truth.
 
 Next Studio work should keep artifact, asset, and prompt visibility aligned with new production
 artifacts, keep upload/publish mutations disabled, and add further guarded routes only after shared
-service contracts, route security requirements, and negative tests exist.
+service contracts, local-session route security, and negative tests exist.
 
 ## Visual Assets
 

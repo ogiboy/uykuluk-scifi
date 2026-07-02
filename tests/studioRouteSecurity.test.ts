@@ -6,6 +6,7 @@ import {
   enabledStudioActionRoutes,
   readOnlyStudioRoutes,
   routeSecurityFindings,
+  studioSessionRoutes,
 } from "../apps/studio/src/lib/routeSecurity";
 
 const appRoot = path.join(process.cwd(), "apps/studio/src/app");
@@ -41,6 +42,7 @@ describe("Studio route security contract", () => {
         "actions/approve-render/route.ts",
         "actions/approve-script/route.ts",
         "actions/decide-render/route.ts",
+        "actions/session/route.ts",
       ].map((routePath) => path.join(appRoot, routePath)),
     );
     expect(routeSecurityFindings()).toEqual([]);
@@ -81,6 +83,15 @@ describe("Studio route security contract", () => {
       ]),
     );
     expect(enabledStudioActionRoutes.every((route) => route.enabled === true)).toBe(true);
+    expect(studioSessionRoutes).toEqual([
+      expect.objectContaining({
+        allowedMethods: ["GET"],
+        enabled: true,
+        path: "/actions/session",
+        requiredApproval: "none",
+        risk: "local-session",
+      }),
+    ]);
     expect(disabledStudioActionRoutes).toEqual(
       expect.arrayContaining([
         expect.objectContaining({

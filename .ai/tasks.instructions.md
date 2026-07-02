@@ -59,8 +59,8 @@
   safe action.
 - Keep Studio local approval/review mutations guarded: idea/script/cost/render approvals and
   `producer decide render` may be exposed only through same-origin JSON routes that call the
-  matching CLI/core contract, write durable local evidence, and never bypass approval/cost/evidence
-  gates.
+  matching CLI/core contract, require short-lived local session proof, write durable local evidence,
+  and never bypass approval/cost/evidence gates.
 - Keep all run-root filesystem access behind canonical bounded run-ID validation.
 - Keep run artifact reads, writes, and persisted lists behind canonical relative-path validation.
 - Keep state, ledger, cost, reservation, lock, and artifact access behind canonical

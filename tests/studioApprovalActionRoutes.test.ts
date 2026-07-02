@@ -4,13 +4,33 @@ import { POST as approveCost } from "../apps/studio/src/app/actions/approve-cost
 import { POST as approveIdea } from "../apps/studio/src/app/actions/approve-idea/route";
 import { POST as approveRender } from "../apps/studio/src/app/actions/approve-render/route";
 import { POST as approveScript } from "../apps/studio/src/app/actions/approve-script/route";
-import { studioActionHeaderName } from "../apps/studio/src/lib/studioMutationSecurity";
+import { GET as issueStudioSession } from "../apps/studio/src/app/actions/session/route";
+import {
+  studioActionHeaderName,
+  studioSessionCookieName,
+  studioSessionHeaderName,
+} from "../apps/studio/src/lib/studioMutationSecurity";
 import { artifactPath } from "../src/core/artifacts";
 import { createRun, loadRun, saveRun } from "../src/core/runStore";
 import { useTempProject } from "./helpers";
 
 describe("Studio approval action routes", () => {
   useTempProject();
+
+  it("issues a no-store local session for guarded Studio mutations", async () => {
+    const response = await issueStudioSession();
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(response.headers.get("set-cookie")).toContain(`${studioSessionCookieName}=`);
+    expect(response.headers.get("set-cookie")).toContain("HttpOnly");
+    expect(response.headers.get("set-cookie")).toContain("SameSite=Strict");
+    await expect(response.json()).resolves.toMatchObject({
+      expiresInSeconds: 900,
+      status: "ok",
+      token: expect.stringMatching(/^[A-Za-z0-9_-]{32,128}$/),
+    });
+  });
 
   it("records explicit idea approval through the guarded Studio route", async () => {
     const run = await createRun();
@@ -72,6 +92,8 @@ describe("Studio approval action routes", () => {
           body: "runId=run_escape",
           headers: {
             [studioActionHeaderName]: "idea.approve",
+            [studioSessionHeaderName]: testStudioSessionToken,
+            cookie: `${studioSessionCookieName}=${testStudioSessionToken}`,
             "content-type": "application/x-www-form-urlencoded",
             origin: "http://localhost:3000",
           },
@@ -88,6 +110,28 @@ describe("Studio approval action routes", () => {
         }),
       ),
       400,
+    );
+    await expectRouteError(
+      approveIdea(
+        studioJsonRequest(
+          "/actions/approve-idea",
+          "idea.approve",
+          { ideaId: "idea_001", runId: "run_missing_session" },
+          { sessionToken: null },
+        ),
+      ),
+      403,
+    );
+    await expectRouteError(
+      approveIdea(
+        studioJsonRequest(
+          "/actions/approve-idea",
+          "idea.approve",
+          { ideaId: "idea_001", runId: "run_bad_session" },
+          { cookieToken: "other_session_token_1234567890ABCDEFGH" },
+        ),
+      ),
+      403,
     );
     await expectRouteError(
       approveScript(
@@ -132,8 +176,12 @@ describe("Studio approval action routes", () => {
 });
 
 type StudioRequestOptions = Readonly<{
+  cookieToken?: string | null;
   origin?: string;
+  sessionToken?: string | null;
 }>;
+
+const testStudioSessionToken = "test_session_token_1234567890ABCDEFGH";
 
 /**
  * Builds a same-origin JSON request for a Studio approval route.
@@ -150,13 +198,23 @@ function studioJsonRequest(
   body: unknown,
   options: StudioRequestOptions = {},
 ): Request {
+  const sessionToken =
+    options.sessionToken === undefined ? testStudioSessionToken : options.sessionToken;
+  const cookieToken = options.cookieToken === undefined ? sessionToken : options.cookieToken;
+  const headers: Record<string, string> = {
+    [studioActionHeaderName]: actionHeader,
+    "content-type": "application/json",
+    origin: options.origin ?? "http://localhost:3000",
+  };
+  if (sessionToken) {
+    headers[studioSessionHeaderName] = sessionToken;
+  }
+  if (cookieToken) {
+    headers.cookie = `${studioSessionCookieName}=${cookieToken}`;
+  }
   return new Request(`http://localhost:3000${routePath}`, {
     body: JSON.stringify(body),
-    headers: {
-      [studioActionHeaderName]: actionHeader,
-      "content-type": "application/json",
-      origin: options.origin ?? "http://localhost:3000",
-    },
+    headers,
     method: "POST",
   });
 }

@@ -1,11 +1,9 @@
-import {
-  studioMutationActionIds,
-  type StudioMutationActionId,
-} from "../../../../src/studio/actionServiceMetadata";
+import type { StudioMutationActionId } from "../../../../src/studio/actionServiceMetadata";
+import { routeFindings } from "./routeSecurityFindings";
 
 export type StudioRouteMethod = "DELETE" | "GET" | "PATCH" | "POST" | "PUT";
 export type StudioRouteRisk =
-  "external-side-effect" | "local-mutation" | "publish-risk" | "read-only";
+  "external-side-effect" | "local-mutation" | "local-session" | "publish-risk" | "read-only";
 
 export type StudioRouteSecurityContract = {
   allowedMethods: readonly StudioRouteMethod[];
@@ -46,6 +44,10 @@ export const enabledStudioActionRoutes = [
   enabledAction("render.decide", "/actions/decide-render", "review", "local-mutation"),
 ] as const satisfies readonly StudioRouteSecurityContract[];
 
+export const studioSessionRoutes = [
+  sessionRoute("actions.session", "/actions/session"),
+] as const satisfies readonly StudioRouteSecurityContract[];
+
 export const studioActionRoutes = [
   ...disabledStudioActionRoutes,
   ...enabledStudioActionRoutes,
@@ -53,6 +55,7 @@ export const studioActionRoutes = [
 
 export const studioRouteSecurityContracts = [
   ...readOnlyStudioRoutes,
+  ...studioSessionRoutes,
   ...studioActionRoutes,
 ] as const satisfies readonly StudioRouteSecurityContract[];
 
@@ -87,6 +90,29 @@ function route(id: string, path: string): StudioRouteSecurityContract {
     requiresCsrfProtection: false,
     requiresEvidenceWrite: false,
     risk: "read-only",
+    serviceContractId: null,
+  };
+}
+
+/**
+ * Creates a same-origin local session route contract for guarded Studio mutations.
+ *
+ * @param id - The route identifier
+ * @param path - The route path
+ * @returns A contract configured for the token-issuing local session endpoint
+ */
+function sessionRoute(id: string, path: string): StudioRouteSecurityContract {
+  return {
+    allowedMethods: ["GET"],
+    disabledReason: null,
+    enabled: true,
+    id,
+    path,
+    requiredApproval: "none",
+    requiresCoreServiceContract: false,
+    requiresCsrfProtection: false,
+    requiresEvidenceWrite: false,
+    risk: "local-session",
     serviceContractId: null,
   };
 }
@@ -150,91 +176,4 @@ function enabledAction(
     risk,
     serviceContractId: id,
   };
-}
-
-/**
- * Collects route-security findings for a single contract.
- *
- * @param contract - The route contract to evaluate
- * @returns The findings generated for `contract`
- */
-function routeFindings(contract: StudioRouteSecurityContract): string[] {
-  const findings: string[] = [];
-  if (contract.enabled && contract.risk !== "read-only") {
-    findings.push(...enabledActionFindings(contract));
-  }
-  if (!contract.enabled && contract.risk !== "read-only") {
-    findings.push(...disabledActionFindings(contract));
-  }
-  return findings;
-}
-
-/**
- * Collects route-security findings for an enabled Studio mutation action.
- *
- * @param contract - The route security contract to evaluate
- * @returns A list of findings describing unsafe enabled mutation-route settings
- */
-function enabledActionFindings(contract: StudioRouteSecurityContract): string[] {
-  const findings: string[] = [];
-  if (contract.risk === "publish-risk" || contract.risk === "external-side-effect") {
-    findings.push(`${contract.id} exposes external or publish risk from Studio.`);
-  }
-  if (contract.allowedMethods.length !== 1 || contract.allowedMethods[0] !== "POST") {
-    findings.push(`${contract.id} must only expose POST.`);
-  }
-  if (!contract.requiresCoreServiceContract) {
-    findings.push(`${contract.id} needs a shared CLI/core service contract.`);
-  }
-  if (
-    !contract.serviceContractId ||
-    !studioMutationActionIds.includes(contract.serviceContractId)
-  ) {
-    findings.push(`${contract.id} needs a valid Studio mutation service contract.`);
-  }
-  if (!contract.requiresCsrfProtection) {
-    findings.push(`${contract.id} needs CSRF protection.`);
-  }
-  if (!contract.requiresEvidenceWrite) {
-    findings.push(`${contract.id} needs durable evidence writes.`);
-  }
-  if (contract.requiredApproval === "none") {
-    findings.push(`${contract.id} needs an explicit approval target.`);
-  }
-  if (contract.disabledReason) {
-    findings.push(`${contract.id} is enabled but still has a disabled reason.`);
-  }
-  return findings;
-}
-
-/**
- * Collects route-security findings for a disabled Studio mutation action.
- *
- * @param contract - The route security contract to evaluate
- * @returns A list of findings describing missing mutation-route requirements
- */
-function disabledActionFindings(contract: StudioRouteSecurityContract): string[] {
-  const findings: string[] = [];
-  if (!contract.requiresCoreServiceContract) {
-    findings.push(`${contract.id} needs a shared CLI/core service contract.`);
-  }
-  if (
-    !contract.serviceContractId ||
-    !studioMutationActionIds.includes(contract.serviceContractId)
-  ) {
-    findings.push(`${contract.id} needs a valid Studio mutation service contract.`);
-  }
-  if (!contract.requiresCsrfProtection) {
-    findings.push(`${contract.id} needs CSRF protection.`);
-  }
-  if (!contract.requiresEvidenceWrite) {
-    findings.push(`${contract.id} needs durable evidence writes.`);
-  }
-  if (contract.requiredApproval === "none") {
-    findings.push(`${contract.id} needs an explicit approval target.`);
-  }
-  if (!contract.disabledReason) {
-    findings.push(`${contract.id} needs a disabled reason.`);
-  }
-  return findings;
 }

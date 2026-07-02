@@ -326,13 +326,13 @@
 - Studio home and `/analytics` surface read-only manual analytics feedback from ignored local
   analytics artifacts. They show import/report status, data-quality guidance, and the next safe CLI
   command without calling YouTube APIs or mutating run state.
-- Studio has a typed route-security contract for current read-only pages, guarded local
-  idea/script/cost/render approval routes, the guarded local render-decision route, and disabled
-  upload/publish action routes. Tests assert that all current App Router pages are covered as
-  read-only, enabled local mutations require POST-only same-origin JSON service-contract handling,
-  disabled upload/publish actions require shared CLI/core service contracts, CSRF protection,
-  durable evidence writes, and explicit approval targets, and public/scheduled publish risk remains
-  disabled.
+- Studio has a typed route-security contract for current read-only pages, the local session route,
+  guarded local idea/script/cost/render approval routes, the guarded local render-decision route,
+  and disabled upload/publish action routes. Tests assert that current App Router pages are covered,
+  enabled local mutations require POST-only same-origin JSON, action headers, service-contract
+  handling, and local session proof, disabled upload/publish actions require shared CLI/core
+  contracts, CSRF protection, durable evidence writes, and explicit approval targets, and
+  public/scheduled publish risk remains disabled.
 - Shared Studio mutation service contract foundations exist for guarded idea/script/cost/render
   approval actions, the active local render-decision evidence write, and disabled upload/publish
   actions. Contracts validate request payloads, bind each action to the CLI/core module/export, and
@@ -442,9 +442,9 @@ Corepack/PATH before treating failures as product failures.
   credential, network integration, or CLI mutation exposes it.
 - Current Next.js Studio is still local-only and mostly read/review-oriented. Artifact previews now
   include grouped review metadata, and route-security requirements cover current read-only pages,
-  guarded local approval/review routes, and disabled upload/publish actions. Guarded local approval
-  routes are implemented through the CLI/core contracts; generation, render execution, upload, and
-  publish remain CLI-only or disabled.
+  guarded local approval/review routes with short-lived local session proof, and disabled
+  upload/publish actions. Guarded local approval routes use CLI/core contracts; generation, render
+  execution, upload, and publish remain CLI-only or disabled.
 - Local prompt overrides are implemented as explicit ignored `prompts/local/*.md` paths configured
   in `producer.config.json` and recorded in prompt provenance. Prompt editing UI and prompt revision
   history remain future work; tracked defaults stay read-only runtime inputs. Locale infrastructure

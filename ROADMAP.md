@@ -104,8 +104,9 @@ Next Real Production Loop slices:
 Status: run review, artifact preview, asset inventory, home-page latest-run readiness, home-page
 manual analytics feedback summary, home-page and `/doctor` producer doctor diagnostics, runtime
 prompt inventory, mutation-service status, manual analytics overview, route-security contract
-foundations, shared mutation service contract foundations, guarded local approval routes, and the
-guarded local render-decision route exist. Upload and publish route implementations remain deferred.
+foundations, shared mutation service contract foundations, guarded local approval routes, the local
+mutation session route, and the guarded local render-decision route exist. Upload and publish route
+implementations remain deferred.
 
 The Studio should be a local operator surface over CLI/core contracts.
 
@@ -129,10 +130,10 @@ Priority order:
 - maintain the read-only manual analytics overview and import data-quality summary backed by ignored
   local CLI analytics artifacts;
 - maintain shared service contracts for any Studio read/write operation;
-- maintain route security requirements and negative tests for current read-only routes, guarded
-  local approval/review routes, and disabled upload/publish action routes;
-- only after the contracts have concrete CSRF/session handling and negative route tests: additional
-  guarded mutations beyond local approvals/review evidence.
+- maintain route security requirements and negative tests for current read-only routes, the local
+  session route, guarded local approval/review routes, and disabled upload/publish action routes;
+- add additional guarded mutations beyond local approvals/review evidence only after they have
+  shared contracts, local-session checks, evidence writes, and negative route tests.
 
 Frontend constraints:
 

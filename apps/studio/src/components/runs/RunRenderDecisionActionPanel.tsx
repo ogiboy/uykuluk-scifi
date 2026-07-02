@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { studioMutationJsonHeaders } from "@/lib/studioMutationClient";
 import type { StudioRunDetail } from "@/lib/runSummaries";
-import { studioActionHeaderName } from "@/lib/studioMutationSecurity";
 
 type RunRenderDecisionActionPanelProps = Readonly<{
   commands: StudioRunDetail["renderDecisionCommands"];
@@ -42,12 +42,19 @@ export function RunRenderDecisionActionPanel({
   async function submitDecision(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
     setState({ kind: "submitting", message: "Recording local render decision..." });
+    let headers;
+    try {
+      headers = await studioMutationJsonHeaders("render.decide");
+    } catch (error) {
+      setState({
+        kind: "error",
+        message: error instanceof Error ? error.message : "Studio local session failed.",
+      });
+      return;
+    }
     const response = await fetch("/actions/decide-render", {
       body: JSON.stringify({ decision, notes, reviewedBy, runId }),
-      headers: {
-        "content-type": "application/json",
-        [studioActionHeaderName]: "render.decide",
-      },
+      headers,
       method: "POST",
     });
     const payload = (await response.json().catch(() => null)) as { message?: string } | null;
