@@ -21,6 +21,7 @@ future generated release notes can be inserted predictably.
   render-decision actions.
 - refresh Studio run detail automatically after guarded local approval or render-decision actions
   succeed.
+- add a shadcn-powered Studio run queue explorer with operator filters and run search.
 
 ### Fixes
 

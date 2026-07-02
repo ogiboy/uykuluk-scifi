@@ -1,4 +1,4 @@
-import { RunSummaryTable } from "@/components/runs/RunSummaryTable";
+import { RunQueueExplorer } from "@/components/runs/RunQueueExplorer";
 import { listStudioRuns } from "@/lib/runSummaries";
 import Link from "next/link";
 
@@ -16,7 +16,7 @@ export default async function RunsPage() {
           Studio home
         </Link>
       </header>
-      <RunSummaryTable runs={runs} />
+      <RunQueueExplorer runs={runs} />
     </main>
   );
 }

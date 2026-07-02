@@ -355,6 +355,31 @@ h3 {
   border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
 }
 
+.run-queue-explorer,
+.queue-toolbar {
+  display: grid;
+  gap: 12px;
+}
+
+.segmented-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.segmented-filter span {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.queue-search {
+  display: grid;
+  gap: 6px;
+  max-width: 560px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
 .run-table {
   display: grid;
   overflow-x: auto;
@@ -374,9 +399,15 @@ h3 {
   padding: 12px;
 }
 
+.run-row > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
 .run-cell-stack {
   display: grid;
   gap: 4px;
+  min-width: 0;
 }
 
 .run-cell-stack small {
