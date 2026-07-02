@@ -4,6 +4,14 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -30,6 +38,13 @@ type SubmitState =
 
 type RenderDecisionValue = StudioRunDetail["renderDecisionCommands"][number]["decision"];
 
+type PendingRenderDecisionPayload = Readonly<{
+  decision: RenderDecisionValue;
+  notes: string;
+  reviewedBy: string;
+  runId: string;
+}>;
+
 /**
  * Renders the guarded Studio form for recording one local render decision.
  *
@@ -44,6 +59,8 @@ export function RunRenderDecisionActionPanel({
   const [decision, setDecision] = useState(commands[0]?.decision ?? "accepted-for-local-review");
   const [notes, setNotes] = useState("");
   const [reviewedBy, setReviewedBy] = useState("operator");
+  const [confirmationOpen, setConfirmationOpen] = useState(false);
+  const [pendingPayload, setPendingPayload] = useState<PendingRenderDecisionPayload | null>(null);
   const [state, setState] = useState<SubmitState>({
     kind: "idle",
     message: "Records local evidence only. Upload and publish stay disabled.",
@@ -53,15 +70,23 @@ export function RunRenderDecisionActionPanel({
     return null;
   }
 
-  async function submitDecision(event: FormEvent<HTMLFormElement>): Promise<void> {
+  function requestDecisionConfirmation(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault();
+    setPendingPayload({ decision, notes, reviewedBy, runId });
+    setConfirmationOpen(true);
+  }
+
+  async function confirmDecision(): Promise<void> {
+    if (!pendingPayload) return;
+    setConfirmationOpen(false);
     setState({ kind: "submitting", message: "Recording local render decision..." });
     const result = await submitStudioJsonMutation({
       actionId: "render.decide",
-      body: { decision, notes, reviewedBy, runId },
+      body: pendingPayload,
       fallbackError: "Render decision could not be recorded.",
       routePath: "/actions/decide-render",
     });
+    setPendingPayload(null);
     if (result.kind === "error") {
       setState(result);
       toast.error("Render decision was not recorded", { description: result.message });
@@ -84,7 +109,7 @@ export function RunRenderDecisionActionPanel({
         This guarded Studio action writes the same local decision evidence as the CLI. It does not
         approve upload or publish.
       </p>
-      <form className='studio-form' onSubmit={submitDecision}>
+      <form className='studio-form' onSubmit={requestDecisionConfirmation}>
         <label>
           Decision
           <Select
@@ -131,6 +156,41 @@ export function RunRenderDecisionActionPanel({
           Record local decision
         </Button>
       </form>
+      <Dialog open={confirmationOpen} onOpenChange={setConfirmationOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm local render decision</DialogTitle>
+            <DialogDescription>
+              This writes local review evidence for {runId}. Upload and public publish stay
+              disabled.
+            </DialogDescription>
+          </DialogHeader>
+          <div className='confirmation-summary'>
+            <dl className='decision-list'>
+              <div>
+                <dt>Decision</dt>
+                <dd>{pendingPayload?.decision ?? decision}</dd>
+              </div>
+              <div>
+                <dt>Reviewed by</dt>
+                <dd>{pendingPayload?.reviewedBy ?? reviewedBy}</dd>
+              </div>
+              <div>
+                <dt>Run</dt>
+                <dd>{runId}</dd>
+              </div>
+            </dl>
+            <p className='artifact-action'>
+              Notes are required and will be persisted with the local decision evidence.
+            </p>
+          </div>
+          <DialogFooter showCloseButton>
+            <Button disabled={state.kind === "submitting"} type='button' onClick={confirmDecision}>
+              Confirm local decision
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <p className={state.kind === "error" ? "blocked" : undefined}>{state.message}</p>
     </section>
   );

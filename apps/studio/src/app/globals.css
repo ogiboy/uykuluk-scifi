@@ -11,6 +11,34 @@
   --accent: #3dd6c6;
   --accent-strong: #f7b955;
   --danger: #ff6b6b;
+  --radius: 0.625rem;
+}
+
+@theme inline {
+  --color-background: var(--bg);
+  --color-foreground: var(--text);
+  --color-card: var(--panel);
+  --color-card-foreground: var(--text);
+  --color-popover: #10161d;
+  --color-popover-foreground: var(--text);
+  --color-primary: var(--accent);
+  --color-primary-foreground: #071012;
+  --color-secondary: var(--panel);
+  --color-secondary-foreground: var(--text);
+  --color-muted: #0b0f14;
+  --color-muted-foreground: var(--muted);
+  --color-accent: var(--panel-strong);
+  --color-accent-foreground: var(--text);
+  --color-destructive: var(--danger);
+  --color-destructive-foreground: #071012;
+  --color-border: var(--line);
+  --color-input: var(--line);
+  --color-ring: var(--accent);
+  --radius-xs: calc(var(--radius) * 0.5);
+  --radius-sm: calc(var(--radius) * 0.75);
+  --radius-md: calc(var(--radius) * 0.875);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.5);
 }
 
 * {
@@ -294,6 +322,14 @@ h3 {
   justify-content: space-between;
 }
 
+.active-run-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
 .control-desk-primary,
 .active-run-card {
   border: 1px solid var(--line);
@@ -393,6 +429,11 @@ h3 {
   font-size: 13px;
   font-weight: 700;
   text-align: right;
+}
+
+.confirmation-summary {
+  display: grid;
+  gap: 12px;
 }
 
 .queue-list {
@@ -838,6 +879,13 @@ h3 {
   color: var(--muted);
   font-size: 13px;
   line-height: 1.5;
+}
+
+.studio-module-card-heading {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  justify-content: space-between;
 }
 
 @media (max-width: 900px) {

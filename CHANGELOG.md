@@ -26,6 +26,8 @@ future generated release notes can be inserted predictably.
   local operator toast feedback.
 - add a shadcn modal command palette for Studio navigation and safe CLI command copying.
 - add shadcn tooltip-backed copy buttons for Studio safe CLI command blocks.
+- add shadcn dropdown, popover, card, badge, and confirmation dialog surfaces for the Studio
+  operator cockpit and guarded local review actions.
 
 ### Fixes
 

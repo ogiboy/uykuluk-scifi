@@ -5,6 +5,14 @@ import { useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import { submitStudioJsonMutation } from "@/lib/studioMutationSubmit";
@@ -37,6 +45,10 @@ export function RunApprovalActionPanel({ run }: RunApprovalActionPanelProps) {
   const router = useRouter();
   const [ideaId, setIdeaId] = useState("");
   const [acknowledgeWarnings, setAcknowledgeWarnings] = useState(false);
+  const [confirmationOpen, setConfirmationOpen] = useState(false);
+  const [pendingPayload, setPendingPayload] = useState<Record<string, boolean | string> | null>(
+    null,
+  );
   const [state, setState] = useState<SubmitState>({
     kind: "idle",
     message: "Records explicit local approval evidence only. Upload and publish stay disabled.",
@@ -46,16 +58,24 @@ export function RunApprovalActionPanel({ run }: RunApprovalActionPanelProps) {
     return null;
   }
 
-  async function submitApproval(event: FormEvent<HTMLFormElement>): Promise<void> {
+  function requestApprovalConfirmation(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault();
     if (!config) return;
+    setPendingPayload(approvalPayload(config.actionId, run.runId, ideaId, acknowledgeWarnings));
+    setConfirmationOpen(true);
+  }
+
+  async function confirmApproval(): Promise<void> {
+    if (!config || !pendingPayload) return;
+    setConfirmationOpen(false);
     setState({ kind: "submitting", message: "Recording local approval..." });
     const result = await submitStudioJsonMutation({
       actionId: config.actionId,
-      body: approvalPayload(config.actionId, run.runId, ideaId, acknowledgeWarnings),
+      body: pendingPayload,
       fallbackError: "Approval could not be recorded.",
       routePath: config.routePath,
     });
+    setPendingPayload(null);
     if (result.kind === "error") {
       setState(result);
       toast.error("Approval was not recorded", { description: result.message });
@@ -78,7 +98,7 @@ export function RunApprovalActionPanel({ run }: RunApprovalActionPanelProps) {
       <p>
         This guarded Studio action uses the same CLI/core approval gate as the copy-paste command.
       </p>
-      <form className='studio-form' onSubmit={submitApproval}>
+      <form className='studio-form' onSubmit={requestApprovalConfirmation}>
         {config.actionId === "idea.approve" ? (
           <label>
             Idea ID
@@ -105,6 +125,41 @@ export function RunApprovalActionPanel({ run }: RunApprovalActionPanelProps) {
           {config.buttonLabel}
         </Button>
       </form>
+      <Dialog open={confirmationOpen} onOpenChange={setConfirmationOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm local approval evidence</DialogTitle>
+            <DialogDescription>
+              This records an explicit local approval for {run.runId}. It does not upload, publish,
+              or schedule content.
+            </DialogDescription>
+          </DialogHeader>
+          <div className='confirmation-summary'>
+            <dl className='decision-list'>
+              <div>
+                <dt>Action</dt>
+                <dd>{config.actionId}</dd>
+              </div>
+              <div>
+                <dt>Current state</dt>
+                <dd>{run.state}</dd>
+              </div>
+              <div>
+                <dt>Run</dt>
+                <dd>{run.runId}</dd>
+              </div>
+            </dl>
+            {run.nextRecommendedCommand ? (
+              <p className='artifact-action'>CLI equivalent: {run.nextRecommendedCommand}</p>
+            ) : null}
+          </div>
+          <DialogFooter showCloseButton>
+            <Button disabled={state.kind === "submitting"} type='button' onClick={confirmApproval}>
+              Confirm {config.buttonLabel.toLowerCase()}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <p className={state.kind === "error" ? "blocked" : undefined}>{state.message}</p>
       {run.nextRecommendedCommand ? (
         <p className='artifact-action'>CLI equivalent: {run.nextRecommendedCommand}</p>
