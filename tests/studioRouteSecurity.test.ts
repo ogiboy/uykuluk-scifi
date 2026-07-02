@@ -33,27 +33,66 @@ describe("Studio route security contract", () => {
     );
   });
 
-  it("exposes only the guarded local render-decision action route", async () => {
-    await expect(discoverRouteHandlers(appRoot)).resolves.toEqual([
-      path.join(appRoot, "actions/decide-render/route.ts"),
-    ]);
+  it("exposes only guarded local approval/review action routes", async () => {
+    await expect(discoverRouteHandlers(appRoot)).resolves.toEqual(
+      [
+        "actions/approve-cost/route.ts",
+        "actions/approve-idea/route.ts",
+        "actions/approve-render/route.ts",
+        "actions/approve-script/route.ts",
+        "actions/decide-render/route.ts",
+      ].map((routePath) => path.join(appRoot, routePath)),
+    );
     expect(routeSecurityFindings()).toEqual([]);
-    expect(enabledStudioActionRoutes).toEqual([
-      expect.objectContaining({
-        allowedMethods: ["POST"],
-        disabledReason: null,
-        enabled: true,
-        path: "/actions/decide-render",
-        requiredApproval: "review",
-        requiresCoreServiceContract: true,
-        requiresCsrfProtection: true,
-        requiresEvidenceWrite: true,
-        risk: "local-mutation",
-        serviceContractId: "render.decide",
-      }),
-    ]);
+    expect(enabledStudioActionRoutes).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          allowedMethods: ["POST"],
+          disabledReason: null,
+          enabled: true,
+          path: "/actions/approve-idea",
+          requiredApproval: "idea",
+          requiresCoreServiceContract: true,
+          requiresCsrfProtection: true,
+          requiresEvidenceWrite: true,
+          risk: "local-mutation",
+          serviceContractId: "idea.approve",
+        }),
+        expect.objectContaining({
+          path: "/actions/approve-script",
+          requiredApproval: "script",
+          serviceContractId: "script.approve",
+        }),
+        expect.objectContaining({
+          path: "/actions/approve-cost",
+          requiredApproval: "cost",
+          serviceContractId: "cost.approve",
+        }),
+        expect.objectContaining({
+          path: "/actions/approve-render",
+          requiredApproval: "render",
+          serviceContractId: "render.approve",
+        }),
+        expect.objectContaining({
+          path: "/actions/decide-render",
+          requiredApproval: "review",
+          serviceContractId: "render.decide",
+        }),
+      ]),
+    );
+    expect(enabledStudioActionRoutes.every((route) => route.enabled === true)).toBe(true);
     expect(disabledStudioActionRoutes).toEqual(
       expect.arrayContaining([
+        expect.objectContaining({
+          enabled: false,
+          path: "/actions/upload-private",
+          requiredApproval: "upload",
+          requiresCoreServiceContract: true,
+          requiresCsrfProtection: true,
+          requiresEvidenceWrite: true,
+          risk: "external-side-effect",
+          serviceContractId: "upload.private",
+        }),
         expect.objectContaining({
           enabled: false,
           path: "/actions/publish-schedule",

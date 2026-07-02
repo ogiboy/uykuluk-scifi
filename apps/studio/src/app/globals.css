@@ -452,6 +452,16 @@ h3 {
   font-size: 13px;
 }
 
+.studio-form .checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.studio-form .checkbox-label input {
+  width: auto;
+}
+
 .studio-form input,
 .studio-form select,
 .studio-form textarea {

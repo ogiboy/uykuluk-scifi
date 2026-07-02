@@ -34,15 +34,15 @@ export const readOnlyStudioRoutes = [
 ] as const satisfies readonly StudioRouteSecurityContract[];
 
 export const disabledStudioActionRoutes = [
-  action("idea.approve", "/actions/approve-idea", "idea", "local-mutation"),
-  action("script.approve", "/actions/approve-script", "script", "local-mutation"),
-  action("cost.approve", "/actions/approve-cost", "cost", "local-mutation"),
-  action("render.approve", "/actions/approve-render", "render", "local-mutation"),
   action("upload.private", "/actions/upload-private", "upload", "external-side-effect"),
   action("publish.schedule", "/actions/publish-schedule", "publish", "publish-risk"),
 ] as const satisfies readonly StudioRouteSecurityContract[];
 
 export const enabledStudioActionRoutes = [
+  enabledAction("idea.approve", "/actions/approve-idea", "idea", "local-mutation"),
+  enabledAction("script.approve", "/actions/approve-script", "script", "local-mutation"),
+  enabledAction("cost.approve", "/actions/approve-cost", "cost", "local-mutation"),
+  enabledAction("render.approve", "/actions/approve-render", "render", "local-mutation"),
   enabledAction("render.decide", "/actions/decide-render", "review", "local-mutation"),
 ] as const satisfies readonly StudioRouteSecurityContract[];
 

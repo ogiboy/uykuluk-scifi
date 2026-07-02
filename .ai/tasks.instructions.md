@@ -57,9 +57,10 @@
   rendered draft, persist reviewer/notes/decision evidence, and never imply upload or publish
   approval. Status, the operator desk, and product UAT should surface the recorded decision and next
   safe action.
-- Keep Studio render-decision visibility read-only: it may show copy-pasteable local
-  `producer decide render` command templates for rendered runs with current draft-render evidence,
-  but must not write the decision or bypass the CLI/core approval and evidence contracts.
+- Keep Studio local approval/review mutations guarded: idea/script/cost/render approvals and
+  `producer decide render` may be exposed only through same-origin JSON routes that call the
+  matching CLI/core contract, write durable local evidence, and never bypass approval/cost/evidence
+  gates.
 - Keep all run-root filesystem access behind canonical bounded run-ID validation.
 - Keep run artifact reads, writes, and persisted lists behind canonical relative-path validation.
 - Keep state, ledger, cost, reservation, lock, and artifact access behind canonical
@@ -154,8 +155,8 @@
   artifact records for visibility, but the text must say they are not current evidence proof and
   reuse the shared production-media review guidance.
 - Keep the Studio mutation-service status panel aligned with route-security and service contract
-  changes; it may show the guarded local render-decision route, but approval/upload/publish actions
-  must remain disabled or CLI-only.
+  changes; it may show guarded local approval/review routes, but upload/publish actions must remain
+  disabled.
 - Harden manual analytics feedback with import edge cases and richer comparisons while keeping data
   operator-provided and local-only. Run-linked summaries, unmapped-record visibility, non-causal
   repeat / avoid-without-revision / mixed-signal inspect / test-next prompts, simple
@@ -163,8 +164,8 @@
   the shared CLI/Studio import data-quality summary plus read-only Studio analytics overview with
   report freshness summaries are implemented.
 - Maintain typed Studio mutation service contracts that both CLI and web can use before adding
-  additional Studio mutations. Current contracts cover future idea/script/cost/render approvals, the
-  guarded local render-decision evidence write, plus disabled upload/publish actions.
+  additional Studio mutations. Current contracts cover guarded idea/script/cost/render approvals,
+  the guarded local render-decision evidence write, plus disabled upload/publish actions.
 - Keep local prompt overrides safe before adding a prompt editor. Tracked `prompts/defaults/`
   runtime defaults, typed keys, source paths, and prompt hashes are implemented; ignored
   `prompts/local/*.md` overrides are now explicit `producer.config.json` inputs and must remain
@@ -176,7 +177,7 @@
   records revision evidence. Future work can extend this to richer editor UX and per-field diffs
   without weakening the cost/render approval boundary.
 - Maintain route security requirements before any additional web action routes exist; current tests
-  cover read-only page routes, the guarded local render-decision route, disabled future action
+  cover read-only page routes, guarded local approval/review routes, disabled upload/publish action
   routes, and bind each action route to a shared service contract.
 - Keep the internal reserved-provider execution contract ready for a separately approved real
   adapter without adding paid SDKs, credentials, or operator execution commands.

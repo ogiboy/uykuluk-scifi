@@ -7,12 +7,19 @@ describe("Studio action service status", () => {
 
     expect(status).toMatchObject({
       actionCount: 7,
-      disabledRouteCount: 6,
+      disabledRouteCount: 2,
       findings: [],
       readyForCliCount: 5,
       riskyExternalCount: 2,
       webMutationsEnabled: true,
     });
+    expect(status.summaries).toContainEqual(
+      expect.objectContaining({
+        actionId: "idea.approve",
+        availability: "ready-for-cli",
+        routePath: "/actions/approve-idea",
+      }),
+    );
     expect(status.summaries).toContainEqual(
       expect.objectContaining({
         actionId: "render.decide",

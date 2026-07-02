@@ -236,9 +236,11 @@
   `production/thumbnail_candidates.*` with copy-ready, digest-bound manual prep fields.
 - `producer decide channel-handoff` writes durable `production/channel_handoff_decision.*` evidence
   for selected-thumbnail/manual prep surfaced without YouTube APIs or upload/publish approval.
-- Studio run detail shows local render-decision commands for rendered runs without a recorded
-  decision and exposes one guarded `render.decide` route matching CLI evidence writes. It does not
-  approve upload or publish.
+- Studio run detail shows guarded local approval forms for eligible idea/script/cost/render approval
+  states, local render-decision commands for rendered runs without a recorded decision, and guarded
+  `idea.approve`, `script.approve`, `cost.approve`, `render.approve`, and `render.decide` routes
+  matching CLI/core evidence writes. It does not generate artifacts, render media, upload, or
+  publish.
 - Readiness diagnostics that strictly parse and revalidate persisted cost quotes, live hard budgets,
   complete production-package integrity, and exact paid-generation cost approval when required.
 - Final readiness diagnostics agree with the post-transition run state.
@@ -319,19 +321,20 @@
 - Studio home and `/analytics` surface read-only manual analytics feedback from ignored local
   analytics artifacts. They show import/report status, data-quality guidance, and the next safe CLI
   command without calling YouTube APIs or mutating run state.
-- Studio has a typed route-security contract for current read-only pages, the guarded local
-  render-decision route, and disabled future action routes. Tests assert that all current App Router
-  pages are covered as read-only, the only current route handler is `/actions/decide-render`,
-  enabled local mutations require POST-only same-origin JSON service-contract handling, disabled
-  actions require shared CLI/core service contracts, CSRF protection, durable evidence writes, and
-  explicit approval targets, and public/scheduled publish risk remains disabled.
-- Shared Studio mutation service contract foundations exist for future idea/script/cost/render
+- Studio has a typed route-security contract for current read-only pages, guarded local
+  idea/script/cost/render approval routes, the guarded local render-decision route, and disabled
+  upload/publish action routes. Tests assert that all current App Router pages are covered as
+  read-only, enabled local mutations require POST-only same-origin JSON service-contract handling,
+  disabled upload/publish actions require shared CLI/core service contracts, CSRF protection,
+  durable evidence writes, and explicit approval targets, and public/scheduled publish risk remains
+  disabled.
+- Shared Studio mutation service contract foundations exist for guarded idea/script/cost/render
   approval actions, the active local render-decision evidence write, and disabled upload/publish
   actions. Contracts validate request payloads, bind each action to the CLI/core module/export, and
   require CSRF protection, durable evidence, and explicit approval.
-- Studio home renders a mutation-service status panel showing the guarded local render-decision
-  route, disabled future action routes, CLI-ready approval contracts, route-security findings, and
-  upload/publish risk boundaries without exposing approval/upload/publish web mutations.
+- Studio home renders a mutation-service status panel showing guarded local approval/review routes,
+  disabled upload/publish routes, CLI-ready action contracts, route-security findings, and
+  upload/publish risk boundaries without exposing upload/publish web mutations.
 - Manual analytics feedback foundation. `producer analytics import --file <path>` accepts
   operator-provided CSV/JSON performance exports and writes ignored local
   `analytics/performance.json`, `analytics/performance_report.md`, and a fillable
@@ -432,10 +435,11 @@ Corepack/PATH before treating failures as product failures.
 - No paid provider adapter is implemented. Exact cost quote approval remains separate from spend
   authorization. The internal execution boundary is ready for a future approved adapter, but no SDK,
   credential, network integration, or CLI mutation command exposes it.
-- Current Next.js Studio is still review-only. Artifact previews now include grouped review
-  metadata, and route-security requirements cover current read-only pages plus disabled future
-  actions. Shared mutation service contract foundations exist, but concrete Studio CSRF/session
-  handling and guarded mutation routes are not implemented yet.
+- Current Next.js Studio is still local-only and mostly read/review-oriented. Artifact previews now
+  include grouped review metadata, and route-security requirements cover current read-only pages,
+  guarded local approval/review routes, and disabled upload/publish actions. Guarded local approval
+  routes are implemented through the CLI/core contracts; generation, render execution, upload, and
+  publish remain CLI-only or disabled.
 - Locale infrastructure is ready, but full translation catalogs and a language selector are
   intentionally deferred.
 - Local prompt overrides are implemented as explicit ignored `prompts/local/*.md` paths configured
