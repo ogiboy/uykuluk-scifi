@@ -44,7 +44,7 @@ export function renderChannelHandoffMarkdown(handoff: ChannelHandoff): string {
     "",
     "Description:",
     "",
-    handoff.youtube.description,
+    codeBlock(handoff.youtube.description),
     "",
     "## Manual Upload Preparation",
     "",

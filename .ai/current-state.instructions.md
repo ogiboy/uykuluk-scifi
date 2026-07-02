@@ -433,19 +433,17 @@ Corepack/PATH before treating failures as product failures.
   approval, JSON, repetition, Turkish-label, word-floor, and operator-quality gates before any model
   becomes the recommended local default.
 - No paid provider adapter is implemented. Exact cost quote approval remains separate from spend
-  authorization. The internal execution boundary is ready for a future approved adapter, but no SDK,
-  credential, network integration, or CLI mutation command exposes it.
+  authorization. The execution boundary is ready for a future approved adapter, but no SDK,
+  credential, network integration, or CLI mutation exposes it.
 - Current Next.js Studio is still local-only and mostly read/review-oriented. Artifact previews now
   include grouped review metadata, and route-security requirements cover current read-only pages,
   guarded local approval/review routes, and disabled upload/publish actions. Guarded local approval
   routes are implemented through the CLI/core contracts; generation, render execution, upload, and
   publish remain CLI-only or disabled.
-- Locale infrastructure is ready, but full translation catalogs and a language selector are
-  intentionally deferred.
 - Local prompt overrides are implemented as explicit ignored `prompts/local/*.md` paths configured
   in `producer.config.json` and recorded in prompt provenance. Prompt editing UI and prompt revision
-  history remain future work; tracked defaults stay read-only runtime inputs, and Studio visibility
-  remains read-only.
+  history remain future work; tracked defaults stay read-only runtime inputs. Locale infrastructure
+  is ready, but full translation catalogs and a language selector are intentionally deferred.
 - Initial package artifact revision contracts are implemented for subtitles, scenes, popup-card
   package Markdown, and YouTube metadata. They are intentionally limited to
   `PRODUCTION_PACKAGE_GENERATED` before cost estimation or render work, refresh the
@@ -465,10 +463,10 @@ Corepack/PATH before treating failures as product failures.
   evidence/readiness summaries, a stable read-only FFmpeg review command in the manifest and
   draft-render evidence JSON, and an operator review checklist. Render-ready intro/outro MP4 clips
   for reuse outside the draft renderer and broader visual polish remain follow-up work.
-- Upload and publish are intentionally disabled scaffolds.
 - Manual analytics import/reporting and the basic read-only Studio analytics overview are local-only
   and operator-provided. Richer analytics comparisons, cohort-level confidence scoring, and YouTube
-  Analytics API integration are not implemented.
+  Analytics API integration are not implemented. Upload and publish are intentionally disabled
+  scaffolds.
 - Run-path containment blocks pre-existing symbolic links. Hostile concurrent path replacement
   remains a local TOCTOU limitation because portable Node APIs do not expose directory-handle
   `openat` semantics.
@@ -476,8 +474,6 @@ Corepack/PATH before treating failures as product failures.
   assets are present. The local draft renderer consumes intro/outro source frames when present.
   Editable source files, reusable rendered intro/outro clips, and font licensing notes remain useful
   additions.
-- Sonar scan upload requires a local or cloud token through `SONAR_TOKEN` or Keychain; tokens must
-  never be tracked.
+- Sonar scan upload requires a local/cloud token through `SONAR_TOKEN` or Keychain; never track it.
 - Stable git tags are present and release automation treats the latest reachable stable tag as the
-  release base. Release planning fails if `package.json` drifts from that latest stable tag and uses
-  exact-SHA legacy allowlist entries for the two historical non-conventional docstring commits.
+  release base. Release planning fails if `package.json` drifts from that latest stable tag.

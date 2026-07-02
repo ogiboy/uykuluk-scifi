@@ -15,6 +15,7 @@ import {
   thumbnailCandidatesJsonPath,
   thumbnailCandidatesMarkdownPath,
 } from "../../../../src/stages/thumbnailCandidateContracts";
+import { thumbnailAssetStaleReason } from "../../../../src/stages/thumbnailCandidateTrust";
 import { sha256 } from "../../../../src/utils/hash";
 import type { StudioFinalReviewBundleSummary } from "./finalReviewBundleSummaries";
 import { studioRunFilePath } from "./runFilePaths";
@@ -120,6 +121,9 @@ async function channelHandoffStaleReason(
     runId,
     currentFinalReviewDigest,
   );
+  if (thumbnailCandidates.kind === "stale") {
+    return thumbnailCandidates.message;
+  }
   const metadataFile = studioRunFilePath(root, runId, "production/youtube_metadata.json");
   if (!metadataFile) {
     return "Manual channel handoff metadata path is invalid.";
@@ -129,7 +133,7 @@ async function channelHandoffStaleReason(
     finalReviewBundle: finalReviewBundle.bundle,
     finalReviewBundleDigest: currentFinalReviewDigest,
     runId,
-    thumbnailCandidates,
+    thumbnailCandidates: thumbnailCandidates.binding,
     youtube,
   });
   return JSON.stringify(comparableChannelHandoffPayload(handoff)) === JSON.stringify(expected)
@@ -141,7 +145,10 @@ async function trustedThumbnailCandidateBinding(
   root: string,
   runId: string,
   finalReviewBundleDigest: string,
-): Promise<ChannelHandoff["thumbnailCandidates"]> {
+): Promise<
+  | { binding: ChannelHandoff["thumbnailCandidates"]; kind: "present" }
+  | { kind: "stale"; message: string }
+> {
   const jsonFile = studioRunFilePath(root, runId, thumbnailCandidatesJsonPath);
   const markdownFile = studioRunFilePath(root, runId, thumbnailCandidatesMarkdownPath);
   if (!jsonFile || !markdownFile) {
@@ -154,14 +161,24 @@ async function trustedThumbnailCandidateBinding(
     throw new Error("Thumbnail candidates belong to a different run.");
   }
   if (pack.source.finalReviewBundleDigest !== finalReviewBundleDigest) {
-    throw new Error("Thumbnail candidates were created for a different final review bundle.");
+    return {
+      kind: "stale",
+      message: "Thumbnail candidates were created for a different final review bundle.",
+    };
+  }
+  const assetStaleReason = await thumbnailAssetStaleReason(pack, root);
+  if (assetStaleReason) {
+    return { kind: "stale", message: assetStaleReason };
   }
   return {
-    jsonPath: thumbnailCandidatesJsonPath,
-    markdownPath: thumbnailCandidatesMarkdownPath,
-    jsonSha256: sha256(json),
-    markdownSha256: sha256(markdown),
-    recommendedCandidateId: pack.recommendedCandidateId,
+    binding: {
+      jsonPath: thumbnailCandidatesJsonPath,
+      markdownPath: thumbnailCandidatesMarkdownPath,
+      jsonSha256: sha256(json),
+      markdownSha256: sha256(markdown),
+      recommendedCandidateId: pack.recommendedCandidateId,
+    },
+    kind: "present",
   };
 }
 

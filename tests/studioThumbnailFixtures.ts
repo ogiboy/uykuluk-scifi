@@ -1,4 +1,6 @@
-import { writeFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import path from "node:path";
 import { artifactPath } from "../src/core/artifacts";
 import type { ChannelHandoff } from "../src/stages/channelHandoffContracts";
 import {
@@ -20,6 +22,10 @@ export async function writeStudioThumbnailCandidates(
   runId: string,
   finalReviewBundleDigest: string,
 ): Promise<ChannelHandoff["thumbnailCandidates"]> {
+  const templatePath = "assets/thumbnails/thumbnail_template_01_left_1280x720.jpg";
+  const overlayPath = "assets/thumbnails/thumbnail_text_safe_overlay_01_left_1280x720.png";
+  const templateDigest = await ensureAssetDigest(templatePath, "thumbnail template");
+  const overlayDigest = await ensureAssetDigest(overlayPath, "thumbnail overlay");
   const pack = thumbnailCandidatePackSchema.parse({
     blockedActions: [
       "Thumbnail candidates do not approve private upload.",
@@ -30,13 +36,13 @@ export async function writeStudioThumbnailCandidates(
         id: "thumbnail-01-left",
         reviewFocus: "Check title-safe area, contrast, and channel tone.",
         template: {
-          digest: "e".repeat(64),
-          path: "assets/thumbnails/thumbnail_template_01_left_1280x720.jpg",
+          digest: templateDigest,
+          path: templatePath,
           role: "thumbnail-template",
         },
         textSafeOverlay: {
-          digest: "f".repeat(64),
-          path: "assets/thumbnails/thumbnail_text_safe_overlay_01_left_1280x720.png",
+          digest: overlayDigest,
+          path: overlayPath,
           role: "thumbnail-overlay",
         },
       },
@@ -61,4 +67,11 @@ export async function writeStudioThumbnailCandidates(
     markdownSha256: sha256(markdown),
     recommendedCandidateId: pack.recommendedCandidateId,
   };
+}
+
+async function ensureAssetDigest(relativePath: string, content: string): Promise<string> {
+  await mkdir(path.dirname(relativePath), { recursive: true });
+  await writeFile(relativePath, content, "utf8");
+  const bytes = await readFile(relativePath);
+  return createHash("sha256").update(bytes).digest("hex");
 }

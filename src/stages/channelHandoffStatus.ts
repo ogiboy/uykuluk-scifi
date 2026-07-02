@@ -1,6 +1,4 @@
-import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
-import path from "node:path";
 import { artifactPath } from "../core/artifacts.js";
 import type { RunRecord } from "../core/state.js";
 import { sha256 } from "../utils/hash.js";
@@ -23,6 +21,7 @@ import {
   thumbnailCandidatesJsonPath,
   thumbnailCandidatesMarkdownPath,
 } from "./thumbnailCandidates.js";
+import { thumbnailAssetStaleReason } from "./thumbnailCandidateTrust.js";
 
 export type ChannelHandoffStatus =
   | { kind: "missing"; nextAction: string | null }
@@ -159,23 +158,9 @@ async function trustedThumbnailCandidateBinding(
       message: "Thumbnail candidates were created for a different final review bundle.",
     };
   }
-  for (const candidate of pack.candidates) {
-    const templateStale = await assetDigestMismatch(
-      candidate.template.path,
-      candidate.template.digest,
-    );
-    if (templateStale) {
-      return { kind: "stale", message: templateStale };
-    }
-    if (candidate.textSafeOverlay) {
-      const overlayStale = await assetDigestMismatch(
-        candidate.textSafeOverlay.path,
-        candidate.textSafeOverlay.digest,
-      );
-      if (overlayStale) {
-        return { kind: "stale", message: overlayStale };
-      }
-    }
+  const assetStaleReason = await thumbnailAssetStaleReason(pack);
+  if (assetStaleReason) {
+    return { kind: "stale", message: assetStaleReason };
   }
   return {
     binding: {
@@ -187,25 +172,6 @@ async function trustedThumbnailCandidateBinding(
     },
     kind: "present",
   };
-}
-
-async function assetDigestMismatch(
-  relativePath: string,
-  expectedDigest: string,
-): Promise<string | null> {
-  let bytes;
-  try {
-    bytes = await readFile(path.join(process.cwd(), relativePath));
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-      return `Thumbnail asset is missing: ${relativePath}`;
-    }
-    throw error;
-  }
-  const currentDigest = createHash("sha256").update(bytes).digest("hex");
-  return currentDigest === expectedDigest
-    ? null
-    : `Thumbnail asset changed since handoff candidate generation: ${relativePath}`;
 }
 
 function stale(message: string, runId: string, nextAction: string | null): ChannelHandoffStatus {
