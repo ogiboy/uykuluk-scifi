@@ -647,6 +647,50 @@ h3 {
   gap: 16px;
 }
 
+.run-review-cockpit {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.42fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.run-review-sticky-rail {
+  position: sticky;
+  top: 16px;
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+}
+
+.run-mobile-action-sheet {
+  display: none;
+}
+
+.run-action-sheet-content {
+  width: min(92vw, 440px);
+  overflow-y: auto;
+}
+
+.run-action-sheet-body,
+.run-action-sheet-badges,
+.run-action-sheet-blockers {
+  display: grid;
+  gap: 12px;
+  padding: 0 16px 16px;
+}
+
+.run-action-sheet-badges {
+  align-items: start;
+  justify-items: start;
+}
+
+.run-action-sheet-blockers ul {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 18px;
+  color: var(--muted);
+}
+
 .run-detail-hero {
   display: grid;
   grid-template-columns: minmax(220px, 0.5fr) minmax(0, 1fr) minmax(280px, 0.9fr);
@@ -679,6 +723,19 @@ h3 {
 
 .run-review-rail {
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+.run-review-sticky-rail .run-review-rail {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.run-blocker-accordion,
+.run-readiness-accordion {
+  margin-top: 12px;
+}
+
+.run-readiness-accordion [data-slot="accordion-trigger"] {
+  align-items: center;
 }
 
 .review-section {
@@ -1062,6 +1119,7 @@ h3 {
   .command-grid,
   .control-desk,
   .run-detail-hero,
+  .run-review-cockpit,
   .run-review-workspace,
   .run-detail-grid,
   .analytics-detail-grid,
@@ -1073,5 +1131,15 @@ h3 {
 
   .run-row {
     min-width: 1200px;
+  }
+
+  .run-review-sticky-rail {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .run-mobile-action-sheet {
+    display: block;
   }
 }
