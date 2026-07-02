@@ -28,6 +28,8 @@ future generated release notes can be inserted predictably.
   in a persistent review rail, with a mobile action-summary sheet and accordion diagnostics.
 - show generated idea choices as shadcn radio-card options before guarded Studio idea approval,
   while retaining the typed local approval route.
+- stream allowlisted local voiceover and draft-render artifacts into Studio media cards for
+  browser-based operator review without exposing arbitrary run files or approving upload/publish.
 - convert guarded Studio approval, render-decision, and session controls to shadcn primitives with
   local operator toast feedback.
 - introduce a shadcn modal command palette for Studio navigation and safe CLI command copying.

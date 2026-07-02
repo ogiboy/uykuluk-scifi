@@ -305,8 +305,9 @@
   Missing/stale readiness points to `producer readiness --run <run_id>`; malformed or stale evidence
   points to `producer evidence --run <run_id>` and is not proof for blockers, production-media
   readiness, or next actions. Studio labels media rows as persisted artifact-record fallback until
-  evidence is current, does not mutate run state or call providers, and reuses the CLI/core
-  next-action contract in early states.
+  evidence is current, streams only allowlisted local voiceover/draft-render artifacts for browser
+  playback, does not mutate run state or call providers, and reuses the CLI/core next-action
+  contract in early states.
 - Studio run detail includes read-only artifact preview excerpts for scripts, reviews, production
   packages, render plans, contact sheets, asset provenance, evidence, readiness, voiceover metadata,
   and render manifests. Previews are grouped by operator review phase with per-artifact review

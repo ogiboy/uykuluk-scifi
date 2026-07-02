@@ -900,6 +900,34 @@ h3 {
   margin: 12px 0;
 }
 
+.production-media-preview {
+  display: grid;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(61, 214, 198, 0.06);
+  margin: 12px 0;
+  padding: 10px;
+}
+
+.production-media-preview audio,
+.production-media-preview video {
+  width: 100%;
+}
+
+.production-media-preview video {
+  overflow: hidden;
+  border-radius: 8px;
+  background: #05080c;
+  aspect-ratio: 16 / 9;
+}
+
+.production-media-preview p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
 .artifact-preview-group,
 .artifact-preview-toggle {
   display: grid;

@@ -43,6 +43,7 @@ export function RunDetailView({ run }: Readonly<{ run: StudioRunDetail }>) {
                 evidenceNextAction={run.evidenceNextAction}
                 evidenceStatus={run.evidenceStatus}
                 productionMedia={run.productionMedia}
+                runId={run.runId}
               />
             </div>
           </TabsContent>
