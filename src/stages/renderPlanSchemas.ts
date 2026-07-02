@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { productionPackageManifestPath } from "./productionPackageIntegrity.js";
+
+const renderPlanProductionPackageManifestPath = "production/production_package.meta.json";
 
 export const renderPlanArtifactPaths = [
   "production/render_plan.json",
@@ -28,7 +29,7 @@ export const renderPlanSchema = z.strictObject({
   schemaVersion: z.literal(1),
   runId: z.string().min(1),
   createdAt: z.iso.datetime(),
-  productionPackageManifestPath: z.literal(productionPackageManifestPath),
+  productionPackageManifestPath: z.literal(renderPlanProductionPackageManifestPath),
   productionPackageManifestDigest: digestSchema,
   format: z.strictObject({
     resolution: z.literal("1920x1080"),

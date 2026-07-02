@@ -9,9 +9,16 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
+### Features
+
+- reshape the Studio home page into an operator control desk with active run, next safe action,
+  safety gates, and queue snapshot.
+
 ### Fixes
 
 - align script/planner prompts and script review floor with the v1 8-12 minute local draft target.
+- keep Studio Turbopack builds resolving shared source contracts without pulling the full CLI
+  integrity dependency chain into render-plan schemas.
 
 ## v0.63.0 (2026-07-02)
 

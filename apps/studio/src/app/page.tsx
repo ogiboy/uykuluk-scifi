@@ -6,8 +6,10 @@ import { AnalyticsStatusPanel } from "@/components/analytics/AnalyticsStatusPane
 import { DoctorStatusPanel } from "@/components/doctor/DoctorStatusPanel";
 import { ModelEvalStatusPanel } from "@/components/eval/ModelEvalStatusPanel";
 import { LatestRunReadinessPanel } from "@/components/runs/LatestRunReadinessPanel";
+import { StudioControlDesk } from "@/components/studio/StudioControlDesk";
 import { StudioTabs } from "@/components/studio/StudioTabs";
 import { getStudioAnalyticsOverview } from "@/lib/analyticsOverview";
+import { getStudioActionServiceStatus } from "@/lib/actionServiceStatus";
 import { getStudioAssetInventory } from "@/lib/assetInventory";
 import { getStudioDoctorOverview } from "@/lib/doctorOverview";
 import { getStudioModelEvalOverview } from "@/lib/modelEvalOverview";
@@ -24,6 +26,7 @@ export const dynamic = "force-dynamic";
  */
 export default async function StudioHomePage() {
   const [
+    actionStatus,
     analyticsOverview,
     assetInventory,
     doctorOverview,
@@ -31,6 +34,7 @@ export default async function StudioHomePage() {
     promptInventory,
     runs,
   ] = await Promise.all([
+    getStudioActionServiceStatus(),
     getStudioAnalyticsOverview(),
     getStudioAssetInventory(),
     getStudioDoctorOverview(),
@@ -68,11 +72,12 @@ export default async function StudioHomePage() {
         <header className='studio-header'>
           <div>
             <p className='eyebrow'>Local-first production desk</p>
-            <h1>Manual approval-gated sci-fi video production</h1>
+            <h1>Control UykulukSciFi production from the web surface</h1>
           </div>
           <span className='status-pill'>CLI source of truth</span>
         </header>
 
+        <StudioControlDesk actionStatus={actionStatus} runs={runs} />
         <StatusGrid />
         <DoctorStatusPanel overview={doctorOverview} />
         <ModelEvalStatusPanel overview={modelEvalOverview} />

@@ -212,9 +212,152 @@ h3 {
   font-size: 12px;
 }
 
+.control-desk {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(280px, 0.8fr);
+  gap: 16px;
+}
+
+.control-desk-primary,
+.active-run-card,
+.control-desk-rail {
+  display: grid;
+  gap: 14px;
+}
+
+.control-desk-heading,
+.active-run-header {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.control-desk-primary,
+.active-run-card {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--accent) 8%, transparent), transparent 42%),
+    var(--panel);
+  padding: 16px;
+}
+
+.active-run-card {
+  background:
+    radial-gradient(
+      circle at top right,
+      color-mix(in srgb, var(--accent-strong) 13%, transparent),
+      transparent 34%
+    ),
+    #10161d;
+}
+
+.active-run-card h3 {
+  margin-bottom: 0;
+  font-size: 20px;
+}
+
+.operator-command-block,
+.workflow-strip {
+  display: grid;
+  gap: 8px;
+}
+
+.operator-command-block strong,
+.workflow-chip strong {
+  font-size: 13px;
+}
+
+.workflow-strip {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.workflow-chip {
+  display: grid;
+  gap: 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #0b0f14;
+  padding: 10px;
+}
+
+.workflow-chip span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.workflow-chip-current {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+}
+
+.workflow-chip-blocked {
+  border-color: color-mix(in srgb, var(--danger) 70%, var(--line));
+}
+
+.compact-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.decision-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.decision-list div {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 8px;
+}
+
+.decision-list div:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.decision-list dt,
+.queue-list span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.decision-list dd {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: right;
+}
+
+.queue-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.queue-list a {
+  display: grid;
+  gap: 4px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #0b0f14;
+  padding: 10px;
+}
+
+.queue-list a:hover {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+}
+
 .run-table {
   display: grid;
-  overflow: hidden;
+  overflow-x: auto;
   border: 1px solid var(--line);
   border-radius: 8px;
 }
@@ -222,9 +365,10 @@ h3 {
 .run-row {
   display: grid;
   grid-template-columns:
-    minmax(180px, 1.1fr) minmax(150px, 0.9fr) minmax(110px, 0.6fr) minmax(180px, 1fr)
-    minmax(160px, 0.8fr) minmax(260px, 1.4fr);
+    minmax(180px, 1fr) minmax(150px, 0.9fr) minmax(130px, 0.7fr) minmax(180px, 0.9fr)
+    minmax(180px, 0.9fr) minmax(210px, 1fr) minmax(210px, 1fr) minmax(260px, 1.3fr);
   gap: 12px;
+  min-width: 1500px;
   border-top: 1px solid var(--line);
   color: var(--muted);
   padding: 12px;
@@ -565,10 +709,16 @@ h3 {
   .status-grid,
   .asset-grid,
   .command-grid,
+  .control-desk,
   .run-detail-grid,
   .analytics-detail-grid,
   .asset-categories,
-  .prompt-card-grid {
+  .prompt-card-grid,
+  .workflow-strip {
     grid-template-columns: 1fr;
+  }
+
+  .run-row {
+    min-width: 1200px;
   }
 }

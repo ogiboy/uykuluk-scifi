@@ -1,10 +1,10 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
-import { dirname, resolve } from "node:path";
+import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const workspaceRoot = dirname(fileURLToPath(import.meta.url));
-const repoRoot = resolve(workspaceRoot, "../..");
+const repoRoot = dirname(dirname(workspaceRoot));
 
 const nextConfig: NextConfig = {
   typedRoutes: true,
@@ -29,6 +29,10 @@ const nextConfig: NextConfig = {
         description: /whole project was traced unintentionally/,
       },
     ],
+    resolveAlias: {
+      "./finalReviewBundleContracts.js": "../../src/stages/finalReviewBundleContracts.ts",
+      "./renderPlanSchemas.js": "../../src/stages/renderPlanSchemas.ts",
+    },
     root: repoRoot,
   },
 };
