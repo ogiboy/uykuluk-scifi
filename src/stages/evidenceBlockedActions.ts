@@ -3,6 +3,9 @@ import type { DraftRenderEvidence } from "./renderEvidence.js";
 import type { RenderPlanEvidence } from "./renderPlan.js";
 import type { VoiceoverAudioEvidence } from "./voiceoverEvidence.js";
 
+export const privateUploadDisabledBlockedAction = "Private YouTube upload disabled by default.";
+export const publicPublishDisabledBlockedAction = "Public/scheduled publish disabled by default.";
+
 /**
  * Builds the list of blocked-action messages for producer evidence and capability settings.
  *
@@ -47,10 +50,10 @@ export function evidenceBlockedActions(
     blockedActions.push("Image/video generation disabled until configured and approved.");
   }
   if (privateUploadDisabled) {
-    blockedActions.push("Private YouTube upload disabled by default.");
+    blockedActions.push(privateUploadDisabledBlockedAction);
   }
   if (publicPublishDisabled) {
-    blockedActions.push("Public/scheduled publish disabled by default.");
+    blockedActions.push(publicPublishDisabledBlockedAction);
   }
   if (unresolvedCostReservationCount > 0) {
     blockedActions.push(
