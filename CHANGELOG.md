@@ -16,6 +16,8 @@ future generated release notes can be inserted predictably.
   decisions.
 - add a Studio artifact review handoff path so operators can see which local review documents are
   available before the final draft decision.
+- add Studio route-level loading skeletons so local run and artifact reads keep an operator layout
+  visible while data is pending.
 
 ### Fixes
 

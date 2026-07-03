@@ -45,6 +45,16 @@
   box-sizing: border-box;
 }
 
+@keyframes studio-shimmer {
+  0% {
+    background-position: 160% 0;
+  }
+
+  100% {
+    background-position: -160% 0;
+  }
+}
+
 html,
 body {
   margin: 0;
@@ -181,6 +191,98 @@ a {
   --normal-text: var(--text);
   --normal-border: var(--line);
   --border-radius: 8px;
+}
+
+.skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--panel-strong) 65%, transparent) 0%,
+    color-mix(in srgb, var(--accent) 18%, var(--panel-strong)) 42%,
+    color-mix(in srgb, var(--panel-strong) 65%, transparent) 82%
+  );
+  background-size: 240% 100%;
+  animation: studio-shimmer 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-shimmer {
+    animation: none;
+  }
+}
+
+.studio-loading-nav-item {
+  border-radius: 6px;
+  color: var(--muted);
+  padding: 10px 12px;
+}
+
+.studio-loading-panel {
+  align-content: start;
+}
+
+.studio-loading-line,
+.studio-loading-command,
+.studio-loading-pill {
+  min-width: 0;
+}
+
+.studio-loading-line {
+  height: 12px;
+  width: 100%;
+}
+
+.studio-loading-line.short {
+  width: 34%;
+}
+
+.studio-loading-line.heading {
+  height: 20px;
+  width: min(320px, 70%);
+}
+
+.studio-loading-line.label {
+  height: 10px;
+  width: 44%;
+}
+
+.studio-loading-line.title {
+  height: 24px;
+  width: min(420px, 82%);
+}
+
+.studio-loading-line.value {
+  height: 18px;
+  width: 58%;
+}
+
+.studio-loading-line.body {
+  height: 14px;
+}
+
+.studio-loading-line.body.narrow {
+  width: 72%;
+}
+
+.studio-loading-command {
+  height: 38px;
+  width: min(240px, 44vw);
+}
+
+.studio-loading-command.wide {
+  height: 72px;
+  width: min(640px, 100%);
+}
+
+.studio-loading-pill {
+  height: 38px;
+  width: 142px;
+  border-radius: 999px;
+}
+
+.studio-loading-pill.small {
+  width: 86px;
 }
 
 h1,

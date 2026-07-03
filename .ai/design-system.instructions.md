@@ -16,15 +16,21 @@ Use this before future Next.js Producer Studio work or visual asset generation.
 
 - Build the working surface first, not a landing page.
 - Prefer Next.js and React built-ins before adding UI infrastructure: server components for local
-  reads, leaf-level client components for interaction, `next/link`, `next/image`, route loading
-  boundaries, caching primitives, and current form-state APIs such as `useActionState` when they fit
-  guarded forms.
+  reads, leaf-level client components for interaction, `next/link` for navigation, `next/image` for
+  optimized visual assets, route loading boundaries, route metadata, caching primitives, and current
+  form-state APIs such as `useActionState` and `useFormStatus` when they fit guarded forms.
+- Treat caching as an explicit product choice. Cache stable design/navigation/config projections
+  when safe, keep local run/artifact/evidence reads fresh by default, and never let a cache hide
+  approval, readiness, cost, or publish-risk changes.
 - Use shadcn and Radix primitives for buttons, dialogs, popovers, dropdowns, tabs, toggles, sliders,
   radio groups, inputs, form feedback, and accessible overlays.
 - Keep markup semantic: tables for dense comparisons, lists for queues, forms for submissions,
   buttons for actions, links for navigation, and clear headings for operator regions.
 - Keep Studio functional while data is pending; prefer skeleton or shimmer placeholders for delayed
   local artifacts instead of blank panels.
+- Keep forms responsive and legible: validate invalid characters near the field, reflect pending and
+  failure states visually, and avoid whole-page blocking unless a guarded irreversible-equivalent
+  local action needs a modal/backdrop.
 - Provide theme controls as product work matures: dark/light, language, palette presets, and density
   or layout presets such as compact, standard, and wide.
 - Use tabs for run detail sections.

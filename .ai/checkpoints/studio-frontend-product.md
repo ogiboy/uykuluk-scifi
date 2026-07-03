@@ -24,8 +24,8 @@ upload/publish boundaries.
   `/Users/ogiboy/.codex/worktrees/894d/uykuluk-scifi`.
 - Merged PR: #121, `feat(studio): expand operator workbench controls`, merged into `main` as
   `97a6ebb6` on 2026-07-02.
-- Active local slice: Studio visual QA and responsive layout polish for the home, run index, and run
-  detail operator surfaces.
+- Active local slice: Studio route-level loading and skeleton states for home, run index, and run
+  detail local-data waits.
 - Last completed slice/commit before this checkpoint:
   `fix(studio): stabilize operator ui primitives`.
 - Completed current-branch frontend slices include:
@@ -45,6 +45,8 @@ upload/publish boundaries.
     long run ids, detail rail metadata, and narrow-screen metric grids.
   - run index table sizing that fits common desktop widths plus labeled mobile run cards for narrow
     screens.
+  - route-level loading skeletons and shimmer placeholders for Studio home, run index, and run
+    detail so local run/artifact waits keep the operator layout visible.
   - PR review fixes for approval confirmation payload visibility, ready-queue blocked-run exclusion,
     workflow overflow indicators, tooltip delay, full command-palette search, client-side palette
     navigation, fail-closed short-lived Studio sessions, and shared Studio next-command fallbacks.
@@ -56,6 +58,8 @@ upload/publish boundaries.
   - `pnpm --filter @uykulukscifi/studio lint`
   - `pnpm --filter @uykulukscifi/studio typecheck`
   - `pnpm --filter @uykulukscifi/studio build`
+  - `pnpm changelog:check`
+  - `pnpm format:check`
   - `node scripts/qa/modularity-gate.mjs --fail-on-findings`
   - `pnpm changelog:check`
   - `pnpm release:check`
@@ -71,8 +75,8 @@ upload/publish boundaries.
     copyable review/playback controls.
   - browser overflow audit on Studio home, `/runs`, and `/runs/run_20260702013835_ada7ab` at desktop
     and mobile widths; final mobile home/detail/runs body overflow was `0px` at 390px viewport.
-- Dirty or external changes to preserve: current local branch contains the uncommitted responsive UI
-  polish slice pending commit.
+- Dirty or external changes to preserve: current local branch contains the uncommitted route loading
+  skeleton slice pending commit.
 
 ## Decisions
 
@@ -86,12 +90,18 @@ upload/publish boundaries.
   equivalent form-state handling where they simplify validation, pending state, and fail-closed
   operator feedback.
 - Prefer built-in Next.js and React primitives before adding infrastructure: `next/link`,
-  `next/image`, server components, route loading boundaries, caching primitives, and current form
-  state APIs.
+  `next/image`, route metadata, server components, route loading boundaries, caching primitives, and
+  current form state APIs.
+- Use Next.js caching deliberately: stable shell/navigation/config projections may be cached when
+  safe, but local run status, evidence, approval, readiness, cost, upload, and publish-risk surfaces
+  must remain fresh enough to preserve fail-closed operator decisions.
 - Client components should stay as leaf-level as practical; server components should keep owning
   local artifact reads and typed projections.
 - Loading states should keep the surrounding Studio surface usable and use skeleton/shimmer states
   for delayed local data instead of blank panels.
+- Forms should be semantic, responsive, and stateful: local validation should show invalid input
+  near the field, pending states should not blank the page, and modal/backdrop blocking should be
+  reserved for guarded actions that must prevent competing interactions.
 - Theme work should cover dark/light, language, palette presets, and density/layout presets such as
   compact, standard, and wide without changing CLI/core workflow semantics.
 - GSAP or richer motion should be used only where it improves operator orientation or status change
