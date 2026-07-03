@@ -1,4 +1,5 @@
 import { studioMutationJsonHeaders } from "./studioMutationClient";
+import { clearCachedStudioMutationSession } from "./studioMutationClient";
 
 export type StudioMutationSubmitResult = Readonly<
   { kind: "error"; message: string } | { kind: "success" }
@@ -32,6 +33,9 @@ export async function submitStudioJsonMutation(input: {
   });
   const payload = (await response.json().catch(() => null)) as { message?: string } | null;
   if (!response.ok) {
+    if (response.status === 401) {
+      clearCachedStudioMutationSession();
+    }
     return {
       kind: "error",
       message: payload?.message ?? input.fallbackError,
