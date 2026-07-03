@@ -11,6 +11,25 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.67.0 (2026-07-03)
+
+### Fixes
+
+- keep mutation contracts build safe (6ab33f6)
+- resolve remaining sonar findings (6736a95)
+
+### Refactoring
+
+- reuse mutation request contracts (fbd22d9)
+
+### Tests
+
+- update action route contracts (7567fc2)
+
+### Features
+
+- record channel handoff decisions (32f2bde)
+
 ## v0.66.0 (2026-07-03)
 
 ### Features
