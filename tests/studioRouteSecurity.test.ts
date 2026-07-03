@@ -47,6 +47,7 @@ describe("Studio route security contract", () => {
         "actions/approve-idea/route.ts",
         "actions/approve-render/route.ts",
         "actions/approve-script/route.ts",
+        "actions/decide-channel-handoff/route.ts",
         "actions/decide-render/route.ts",
         "actions/session/route.ts",
         "runs/[runId]/media/[...artifactPath]/route.ts",
@@ -86,6 +87,11 @@ describe("Studio route security contract", () => {
           path: "/actions/decide-render",
           requiredApproval: "review",
           serviceContractId: "render.decide",
+        }),
+        expect.objectContaining({
+          path: "/actions/decide-channel-handoff",
+          requiredApproval: "review",
+          serviceContractId: "channel-handoff.decide",
         }),
       ]),
     );
