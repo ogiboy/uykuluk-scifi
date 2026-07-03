@@ -43,6 +43,8 @@ upload/publish boundaries.
     channel handoff.
   - visual overflow fixes for Studio shell/main containment, run table scrolling, mobile navigation,
     long run ids, detail rail metadata, and narrow-screen metric grids.
+  - run index table sizing that fits common desktop widths plus labeled mobile run cards for narrow
+    screens.
   - PR review fixes for approval confirmation payload visibility, ready-queue blocked-run exclusion,
     workflow overflow indicators, tooltip delay, full command-palette search, client-side palette
     navigation, fail-closed short-lived Studio sessions, and shared Studio next-command fallbacks.
@@ -80,12 +82,27 @@ upload/publish boundaries.
   patterns to the production desk.
 - Prefer browser smoke evidence over broad Playwright/UAT runs for small frontend slices; run
   heavier gates before merge-readiness.
+- Future guarded forms should prefer React/Next server-action patterns such as `useActionState` or
+  equivalent form-state handling where they simplify validation, pending state, and fail-closed
+  operator feedback.
+- Prefer built-in Next.js and React primitives before adding infrastructure: `next/link`,
+  `next/image`, server components, route loading boundaries, caching primitives, and current form
+  state APIs.
+- Client components should stay as leaf-level as practical; server components should keep owning
+  local artifact reads and typed projections.
+- Loading states should keep the surrounding Studio surface usable and use skeleton/shimmer states
+  for delayed local data instead of blank panels.
+- Theme work should cover dark/light, language, palette presets, and density/layout presets such as
+  compact, standard, and wide without changing CLI/core workflow semantics.
+- GSAP or richer motion should be used only where it improves operator orientation or status change
+  comprehension, with reduced-motion behavior preserved.
 
 ## Remaining Work
 
 1. Commit the responsive UI polish slice after focused validation.
 2. Continue the next frontend slice on the same broad branch if coherent: route-security session UX,
-   artifact preview ergonomics, or media playback/download handoff.
+   artifact preview ergonomics, skeleton/loading states, theme/density controls, or media
+   playback/download handoff.
 3. Open a PR only after related frontend/operator-action work is grouped and locally validated.
 
 ## Blockers And Risks

@@ -51,33 +51,35 @@ export function RunSummaryTable({ density = "comfortable", runs }: RunSummaryTab
         </div>
         {runs.map((run) => (
           <Link className='run-row' href={`/runs/${run.runId}`} key={run.runId} role='row'>
-            <span role='cell'>{run.runId}</span>
-            <span className='run-cell-stack' role='cell'>
+            <span data-label='Run' role='cell'>
+              {run.runId}
+            </span>
+            <span className='run-cell-stack' data-label='State' role='cell'>
               <strong>{run.state}</strong>
               <small>{formatRunReviewCounts(run)}</small>
             </span>
-            <span className='run-cell-stack' role='cell'>
+            <span className='run-cell-stack' data-label='Readiness' role='cell'>
               <strong>{run.readinessStatus}</strong>
               {run.readinessStatus === "passed" ? null : <small>{run.readinessMessage}</small>}
               {run.readinessNextAction ? <small>{run.readinessNextAction}</small> : null}
             </span>
-            <span className='run-cell-stack' role='cell'>
+            <span className='run-cell-stack' data-label='Evidence' role='cell'>
               <strong>{run.evidenceStatus}</strong>
               {run.evidenceStatus === "available" ? null : <small>{run.evidenceMessage}</small>}
             </span>
-            <span className='run-cell-stack' role='cell'>
+            <span className='run-cell-stack' data-label='Render decision' role='cell'>
               <strong>{formatRunRenderDecision(run)}</strong>
               {run.renderDecision.kind === "present" ? (
                 <small>{run.renderDecision.message}</small>
               ) : null}
             </span>
-            <span className='run-cell-stack' role='cell'>
+            <span className='run-cell-stack' data-label='Final bundle' role='cell'>
               <strong>{formatRunFinalReviewBundle(run)}</strong>
               {run.finalReviewBundle.kind === "present" ? (
                 <small>{run.finalReviewBundle.reviewPath}</small>
               ) : null}
             </span>
-            <span className='run-cell-stack' role='cell'>
+            <span className='run-cell-stack' data-label='Channel handoff' role='cell'>
               <strong>{formatRunChannelHandoff(run)}</strong>
               {run.channelHandoff.kind === "present" ? (
                 <small>{run.channelHandoff.reviewPath}</small>
@@ -86,7 +88,9 @@ export function RunSummaryTable({ density = "comfortable", runs }: RunSummaryTab
                 <small>{formatRunChannelHandoffDecision(run)}</small>
               ) : null}
             </span>
-            <span role='cell'>{run.nextRecommendedCommand ?? "Generate evidence from CLI"}</span>
+            <span data-label='Next action' role='cell'>
+              {run.nextRecommendedCommand ?? "Generate evidence from CLI"}
+            </span>
           </Link>
         ))}
       </div>
