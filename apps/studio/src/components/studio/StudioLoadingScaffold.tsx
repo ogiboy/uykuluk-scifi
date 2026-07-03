@@ -1,6 +1,8 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { studioSections } from "@/lib/studioData";
 
+import { StudioBrandLockup } from "./StudioBrandLockup";
+
 type StudioLoadingScaffoldProps = Readonly<{
   eyebrow: string;
   layout?: "full" | "shell";
@@ -43,13 +45,7 @@ export function StudioLoadingScaffold({
 function StudioLoadingRail() {
   return (
     <aside className='studio-rail' aria-label='Studio navigation loading state'>
-      <div className='brand-lockup'>
-        <span className='brand-mark'>USF</span>
-        <div>
-          <p>UykulukSciFi</p>
-          <strong>Producer Studio</strong>
-        </div>
-      </div>
+      <StudioBrandLockup />
       <nav aria-label='Loading Studio navigation'>
         {studioSections.map((section) => (
           <span className='studio-loading-nav-item' key={section.id}>
@@ -122,7 +118,7 @@ function StudioLoadingContent({
         </aside>
       </section>
 
-      <div className='status-grid' aria-label='Loading Studio status panels'>
+      <section className='status-grid' aria-label='Loading Studio status panels'>
         {panelSkeletons.map((panel) => (
           <article className='status-card' key={panel}>
             <Skeleton className='studio-loading-line label' />
@@ -130,7 +126,7 @@ function StudioLoadingContent({
             <Skeleton className='studio-loading-line body' />
           </article>
         ))}
-      </div>
+      </section>
     </>
   );
 }

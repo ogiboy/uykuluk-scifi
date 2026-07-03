@@ -85,27 +85,27 @@ function ActiveRunCard({ run }: Readonly<{ run: StudioRunSummary }>) {
         <CopyableCommand command={getNextSafeCommand(run)} label='Next safe action' />
       </div>
 
-      <div className='workflow-strip' aria-label='Current workflow attention'>
+      <ol className='workflow-strip' aria-label='Current workflow attention'>
         {visibleCurrentSteps.length > 0 ? (
           visibleCurrentSteps.map((step) => (
-            <div className={`workflow-chip workflow-chip-${step.status}`} key={step.label}>
+            <li className={`workflow-chip workflow-chip-${step.status}`} key={step.label}>
               <strong>{step.label}</strong>
               <span>{step.detail}</span>
-            </div>
+            </li>
           ))
         ) : (
-          <div className='workflow-chip workflow-chip-pending'>
+          <li className='workflow-chip workflow-chip-pending'>
             <strong>No active blocker</strong>
             <span>Review the run detail before the next irreversible action.</span>
-          </div>
+          </li>
         )}
         {hiddenCurrentStepCount > 0 ? (
-          <div className='workflow-chip workflow-chip-more'>
+          <li className='workflow-chip workflow-chip-more'>
             <strong>+{hiddenCurrentStepCount} more</strong>
             <span>Open the run detail for the full list.</span>
-          </div>
+          </li>
         ) : null}
-      </div>
+      </ol>
 
       <p className='artifact-description'>{formatRunReviewCounts(run)}</p>
     </article>

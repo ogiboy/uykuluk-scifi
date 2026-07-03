@@ -18,9 +18,14 @@ future generated release notes can be inserted predictably.
   available before the final draft decision.
 - add Studio route-level loading skeletons so local run and artifact reads keep an operator layout
   visible while data is pending.
+- add Studio appearance controls for local theme, palette, language, and density preferences, plus
+  Next Image-backed channel branding in the navigation rail.
 
 ### Fixes
 
+- tighten Studio component semantics by using native run-index tables, safer default button types,
+  hidden skeleton placeholders, route-aware Next links, and list/section markup for repeated
+  operator groups.
 - tighten Studio responsive layout containment so the home, run index, and run detail views avoid
   horizontal overflow on mobile while preserving scrollable wide run tables on desktop.
 - fit the run index table into common desktop widths and switch narrow mobile run rows to labeled

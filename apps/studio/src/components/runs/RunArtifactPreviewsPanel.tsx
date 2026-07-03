@@ -29,7 +29,7 @@ export function RunArtifactPreviewsPanel({
         state.
       </p>
       <p>{artifactPreviewsIntro(evidenceStatus)}</p>
-      <div className='artifact-review-handoff' aria-label='Artifact review handoff milestones'>
+      <section className='artifact-review-handoff' aria-label='Artifact review handoff milestones'>
         <div className='artifact-review-handoff-heading'>
           <div>
             <h3>Review handoff path</h3>
@@ -59,7 +59,7 @@ export function RunArtifactPreviewsPanel({
             </li>
           ))}
         </ol>
-      </div>
+      </section>
       <div className='artifact-preview-groups'>
         {artifactGroups.map((group, groupIndex) => (
           <details className='artifact-preview-group' key={group.label} open={groupIndex === 0}>

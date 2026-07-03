@@ -24,8 +24,7 @@ upload/publish boundaries.
   `/Users/ogiboy/.codex/worktrees/894d/uykuluk-scifi`.
 - Merged PR: #121, `feat(studio): expand operator workbench controls`, merged into `main` as
   `97a6ebb6` on 2026-07-02.
-- Active local slice: Studio route-level loading and skeleton states for home, run index, and run
-  detail local-data waits.
+- Active local slice: Studio shell, brand, and appearance controls for the operator home surface.
 - Last completed slice/commit before this checkpoint:
   `fix(studio): stabilize operator ui primitives`.
 - Completed current-branch frontend slices include:
@@ -47,6 +46,10 @@ upload/publish boundaries.
     screens.
   - route-level loading skeletons and shimmer placeholders for Studio home, run index, and run
     detail so local run/artifact waits keep the operator layout visible.
+  - Next Image-backed Studio brand lockup, shared home navigation rail, and local operator
+    appearance controls for theme, palette, language, and density preferences.
+  - semantic component pass for Studio route links, run-index table markup, default button types,
+    skeleton accessibility, workflow lists, and review rail landmarks.
   - PR review fixes for approval confirmation payload visibility, ready-queue blocked-run exclusion,
     workflow overflow indicators, tooltip delay, full command-palette search, client-side palette
     navigation, fail-closed short-lived Studio sessions, and shared Studio next-command fallbacks.
@@ -60,23 +63,16 @@ upload/publish boundaries.
   - `pnpm --filter @uykulukscifi/studio build`
   - `pnpm changelog:check`
   - `pnpm format:check`
-  - `node scripts/qa/modularity-gate.mjs --fail-on-findings`
-  - `pnpm changelog:check`
-  - `pnpm release:check`
-  - `pnpm format:check`
-  - `pnpm vitest run tests/studioRunQueueFilters.test.ts`
-  - `pnpm vitest run tests/studioMutationClient.test.ts`
-  - `pnpm typecheck`
-  - `pnpm vitest run tests/renderPlan.test.ts tests/renderPlanCli.test.ts tests/productionPackageIntegrity.test.ts`
-  - `pnpm qa:browser`
-  - browser smoke on `/runs/run_20260702013835_ada7ab` across Media, Artifacts, Readiness, and
-    Decisions tabs.
-  - browser smoke on `/runs/run_20260702013835_ada7ab` Media tab for rendered media cards and
-    copyable review/playback controls.
-  - browser overflow audit on Studio home, `/runs`, and `/runs/run_20260702013835_ada7ab` at desktop
-    and mobile widths; final mobile home/detail/runs body overflow was `0px` at 390px viewport.
-- Dirty or external changes to preserve: current local branch contains the uncommitted route loading
-  skeleton slice pending commit.
+  - semantic source audit for route anchors, fake table roles, button type defaults, and labelled
+    grouping landmarks under `apps/studio/src/components`.
+  - browser smoke on Studio home with system Chrome: logo rendered, appearance controls persisted
+    light/violet/compact preferences, and desktop/mobile body overflow stayed `0px`.
+  - browser smoke on `/runs`: native `table.run-table` exposed 8 column headers and row headers,
+    mobile card mode preserved `Run` labels, and no 4xx responses were observed.
+- Earlier branch checks also included modularity, release, targeted Vitest, and browser smoke across
+  run detail Media, Artifacts, Readiness, Decisions, and mobile overflow surfaces.
+- Dirty or external changes to preserve: current local branch contains the uncommitted Studio
+  appearance/shell slice pending commit.
 
 ## Decisions
 

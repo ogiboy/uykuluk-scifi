@@ -33,66 +33,80 @@ export function RunSummaryTable({ density = "comfortable", runs }: RunSummaryTab
   return (
     <section className='panel' aria-labelledby='runs-index-heading'>
       <h2 id='runs-index-heading'>Run Index</h2>
-      <div
-        className='run-table'
-        data-density={density}
-        role='table'
-        aria-label='Saved producer runs'
-      >
-        <div className='run-row run-row-head' role='row'>
-          <span role='columnheader'>Run</span>
-          <span role='columnheader'>State</span>
-          <span role='columnheader'>Readiness</span>
-          <span role='columnheader'>Evidence</span>
-          <span role='columnheader'>Render decision</span>
-          <span role='columnheader'>Final bundle</span>
-          <span role='columnheader'>Channel handoff</span>
-          <span role='columnheader'>Next action</span>
-        </div>
-        {runs.map((run) => (
-          <Link className='run-row' href={`/runs/${run.runId}`} key={run.runId} role='row'>
-            <span data-label='Run' role='cell'>
-              {run.runId}
-            </span>
-            <span className='run-cell-stack' data-label='State' role='cell'>
-              <strong>{run.state}</strong>
-              <small>{formatRunReviewCounts(run)}</small>
-            </span>
-            <span className='run-cell-stack' data-label='Readiness' role='cell'>
-              <strong>{run.readinessStatus}</strong>
-              {run.readinessStatus === "passed" ? null : <small>{run.readinessMessage}</small>}
-              {run.readinessNextAction ? <small>{run.readinessNextAction}</small> : null}
-            </span>
-            <span className='run-cell-stack' data-label='Evidence' role='cell'>
-              <strong>{run.evidenceStatus}</strong>
-              {run.evidenceStatus === "available" ? null : <small>{run.evidenceMessage}</small>}
-            </span>
-            <span className='run-cell-stack' data-label='Render decision' role='cell'>
-              <strong>{formatRunRenderDecision(run)}</strong>
-              {run.renderDecision.kind === "present" ? (
-                <small>{run.renderDecision.message}</small>
-              ) : null}
-            </span>
-            <span className='run-cell-stack' data-label='Final bundle' role='cell'>
-              <strong>{formatRunFinalReviewBundle(run)}</strong>
-              {run.finalReviewBundle.kind === "present" ? (
-                <small>{run.finalReviewBundle.reviewPath}</small>
-              ) : null}
-            </span>
-            <span className='run-cell-stack' data-label='Channel handoff' role='cell'>
-              <strong>{formatRunChannelHandoff(run)}</strong>
-              {run.channelHandoff.kind === "present" ? (
-                <small>{run.channelHandoff.reviewPath}</small>
-              ) : null}
-              {run.channelHandoffDecision.kind === "present" ? (
-                <small>{formatRunChannelHandoffDecision(run)}</small>
-              ) : null}
-            </span>
-            <span data-label='Next action' role='cell'>
-              {run.nextRecommendedCommand ?? "Generate evidence from CLI"}
-            </span>
-          </Link>
-        ))}
+      <div className='run-table-scroll'>
+        <table className='run-table' data-density={density}>
+          <caption className='sr-only'>Saved producer runs and their next safe actions</caption>
+          <colgroup>
+            <col className='run-col-id' />
+            <col className='run-col-state' />
+            <col className='run-col-status' />
+            <col className='run-col-status' />
+            <col className='run-col-review' />
+            <col className='run-col-review' />
+            <col className='run-col-review' />
+            <col className='run-col-action' />
+          </colgroup>
+          <thead>
+            <tr className='run-row run-row-head'>
+              <th scope='col'>Run</th>
+              <th scope='col'>State</th>
+              <th scope='col'>Readiness</th>
+              <th scope='col'>Evidence</th>
+              <th scope='col'>Render decision</th>
+              <th scope='col'>Final bundle</th>
+              <th scope='col'>Channel handoff</th>
+              <th scope='col'>Next action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {runs.map((run) => (
+              <tr className='run-row' key={run.runId}>
+                <th data-label='Run' scope='row'>
+                  <Link className='run-row-link' href={`/runs/${run.runId}`}>
+                    {run.runId}
+                  </Link>
+                </th>
+                <td className='run-cell-stack' data-label='State'>
+                  <strong>{run.state}</strong>
+                  <small>{formatRunReviewCounts(run)}</small>
+                </td>
+                <td className='run-cell-stack' data-label='Readiness'>
+                  <strong>{run.readinessStatus}</strong>
+                  {run.readinessStatus === "passed" ? null : <small>{run.readinessMessage}</small>}
+                  {run.readinessNextAction ? <small>{run.readinessNextAction}</small> : null}
+                </td>
+                <td className='run-cell-stack' data-label='Evidence'>
+                  <strong>{run.evidenceStatus}</strong>
+                  {run.evidenceStatus === "available" ? null : <small>{run.evidenceMessage}</small>}
+                </td>
+                <td className='run-cell-stack' data-label='Render decision'>
+                  <strong>{formatRunRenderDecision(run)}</strong>
+                  {run.renderDecision.kind === "present" ? (
+                    <small>{run.renderDecision.message}</small>
+                  ) : null}
+                </td>
+                <td className='run-cell-stack' data-label='Final bundle'>
+                  <strong>{formatRunFinalReviewBundle(run)}</strong>
+                  {run.finalReviewBundle.kind === "present" ? (
+                    <small>{run.finalReviewBundle.reviewPath}</small>
+                  ) : null}
+                </td>
+                <td className='run-cell-stack' data-label='Channel handoff'>
+                  <strong>{formatRunChannelHandoff(run)}</strong>
+                  {run.channelHandoff.kind === "present" ? (
+                    <small>{run.channelHandoff.reviewPath}</small>
+                  ) : null}
+                  {run.channelHandoffDecision.kind === "present" ? (
+                    <small>{formatRunChannelHandoffDecision(run)}</small>
+                  ) : null}
+                </td>
+                <td data-label='Next action'>
+                  {run.nextRecommendedCommand ?? "Generate evidence from CLI"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </section>
   );

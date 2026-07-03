@@ -87,12 +87,12 @@ export function RunQueueExplorer({ runs }: RunQueueExplorerProps) {
             <p className='eyebrow'>Operator queue</p>
             <h2 id='runs-queue-heading'>Find the next safe run action</h2>
           </div>
-          <div className='queue-result-badges' aria-label='Queue result summary'>
+          <output className='queue-result-badges' aria-label='Queue result summary'>
             <Badge variant='secondary'>{filteredRuns.length} shown</Badge>
             {hiddenByBlockerControl > 0 ? (
               <Badge variant='outline'>{hiddenByBlockerControl} hidden by blocker limit</Badge>
             ) : null}
-          </div>
+          </output>
         </div>
         <div className='queue-toolbar'>
           <ToggleGroup

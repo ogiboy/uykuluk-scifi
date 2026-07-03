@@ -8,7 +8,9 @@ import { ModelEvalStatusPanel } from "@/components/eval/ModelEvalStatusPanel";
 import { LatestRunReadinessPanel } from "@/components/runs/LatestRunReadinessPanel";
 import { StudioControlDesk } from "@/components/studio/StudioControlDesk";
 import { StudioCommandPalette } from "@/components/studio/StudioCommandPalette";
+import { StudioNavigationRail } from "@/components/studio/StudioNavigationRail";
 import { StudioTabs } from "@/components/studio/StudioTabs";
+import { normalizeStudioLocale } from "@/i18n/locales";
 import { getStudioAnalyticsOverview } from "@/lib/analyticsOverview";
 import { getStudioActionServiceStatus } from "@/lib/actionServiceStatus";
 import { getStudioAssetInventory } from "@/lib/assetInventory";
@@ -16,7 +18,7 @@ import { getStudioDoctorOverview } from "@/lib/doctorOverview";
 import { getStudioModelEvalOverview } from "@/lib/modelEvalOverview";
 import { getStudioPromptInventory } from "@/lib/promptInventory";
 import { listStudioRuns } from "@/lib/runSummaries";
-import { studioSections } from "@/lib/studioData";
+import { getLocale } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +33,7 @@ export default async function StudioHomePage() {
     analyticsOverview,
     assetInventory,
     doctorOverview,
+    locale,
     modelEvalOverview,
     promptInventory,
     runs,
@@ -38,6 +41,7 @@ export default async function StudioHomePage() {
     Promise.resolve(getStudioAnalyticsOverview()),
     Promise.resolve(getStudioAssetInventory()),
     Promise.resolve(getStudioDoctorOverview()),
+    getLocale(),
     Promise.resolve(getStudioModelEvalOverview()),
     Promise.resolve(getStudioPromptInventory()),
     Promise.resolve(listStudioRuns()),
@@ -45,28 +49,7 @@ export default async function StudioHomePage() {
 
   return (
     <main className='studio-shell'>
-      <aside className='studio-rail' aria-label='Studio navigation'>
-        <div className='brand-lockup'>
-          <span className='brand-mark'>USF</span>
-          <div>
-            <p>UykulukSciFi</p>
-            <strong>Producer Studio</strong>
-          </div>
-        </div>
-        <nav>
-          {studioSections.map((section) =>
-            "href" in section ? (
-              <a key={section.id} href={section.href}>
-                {section.label}
-              </a>
-            ) : (
-              <a key={section.id} href={`#${section.id}`}>
-                {section.label}
-              </a>
-            ),
-          )}
-        </nav>
-      </aside>
+      <StudioNavigationRail locale={normalizeStudioLocale(locale)} />
 
       <section className='studio-main'>
         <header className='studio-header'>

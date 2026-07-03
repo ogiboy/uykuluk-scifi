@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import type { StudioAssetInventory } from "@/lib/assetInventory";
 
 /**
@@ -11,7 +13,7 @@ export function AssetInventory({ inventory }: Readonly<{ inventory: StudioAssetI
       <h2 id='asset-heading'>Asset Inventory</h2>
       <p className='section-copy'>
         {inventory.totalFiles} committed file(s) across configured visual asset categories.{" "}
-        <a href='/assets'>Open detailed read-only inventory</a>.
+        <Link href='/assets'>Open detailed read-only inventory</Link>.
       </p>
       <div className='asset-grid'>
         {inventory.categories.slice(0, 6).map((category) => (
