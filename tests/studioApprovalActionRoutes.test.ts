@@ -125,7 +125,7 @@ describe("Studio approval action routes", () => {
           { sessionToken: null },
         ),
       ),
-      403,
+      401,
     );
     await expectRouteError(
       approveIdea(
@@ -136,7 +136,7 @@ describe("Studio approval action routes", () => {
           { cookieToken: "other_session_token_1234567890ABCDEFGH" },
         ),
       ),
-      403,
+      401,
     );
     await expectRouteError(
       approveScript(
@@ -201,6 +201,7 @@ function studioJsonRequest(
 async function expectRouteError(responsePromise: Promise<Response>, status: number): Promise<void> {
   const response = await responsePromise;
   expect(response.status).toBe(status);
+  expect(response.headers.get("cache-control")).toBe("no-store");
   await expect(response.json()).resolves.toMatchObject({ status: "error" });
 }
 

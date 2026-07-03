@@ -51,8 +51,8 @@ upload/publish boundaries.
     appearance controls for theme, palette, language, and density preferences.
   - shared Studio shell and loading skeletons across home, run queue, run detail, analytics, assets,
     doctor, model-eval, and prompt inventory pages.
-  - Studio `not-found` and `error` route boundaries that show safe recovery guidance without
-    mutating producer state or exposing local filesystem details.
+  - Studio `not-found`, `error`, `/unauthorized`, and `/forbidden` route boundaries that show safe
+    recovery guidance without mutating producer state or exposing local filesystem details.
   - semantic component pass for Studio route links, run-index table markup, default button types,
     skeleton accessibility, workflow lists, and review rail landmarks.
   - PR review fixes for approval confirmation payload visibility, ready-queue blocked-run exclusion,
@@ -114,13 +114,20 @@ upload/publish boundaries.
   surface needs explicit session and CSRF design, origin checks, unauthorized/forbidden route
   surfaces, short-lived operator proofs, negative tests, and preservation of the CLI/core approval
   ledger as the source of truth.
+- Next.js `unauthorized()` and `forbidden()` auth interrupts remain experimental in current docs, so
+  Studio should keep stable normal trust-boundary routes until adopting that API is an explicit
+  product decision.
+- The run queue still needs a real data-grid pass. Native table markup is semantically safer than
+  fake grids, but the current operator UX is not enough for dense filtering/sorting. Evaluate
+  TanStack Table plus shadcn Table and `@tanstack/react-virtual` before heavier grids such as AG
+  Grid.
 
 ## Remaining Work
 
 1. Commit the shared Studio shell and route-boundary slice after focused validation.
-2. Continue the next frontend slice on the same broad branch if coherent: route-security session UX,
-   unauthorized/forbidden boundaries, artifact preview ergonomics, theme/density controls, richer
-   form states, or media playback/download handoff.
+2. Continue the next frontend slice on the same broad branch if coherent: run-queue data grid,
+   route-security session UX, artifact preview ergonomics, theme/density controls, richer form
+   states, or media playback/download handoff.
 3. Open a PR only after related frontend/operator-action work is grouped and locally validated.
 
 ## Blockers And Risks

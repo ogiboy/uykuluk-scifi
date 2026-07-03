@@ -33,7 +33,9 @@ describe("Studio route security contract", () => {
         expect.objectContaining({ path: "/analytics" }),
         expect.objectContaining({ path: "/doctor" }),
         expect.objectContaining({ path: "/eval" }),
+        expect.objectContaining({ path: "/forbidden" }),
         expect.objectContaining({ path: "/prompts" }),
+        expect.objectContaining({ path: "/unauthorized" }),
       ]),
     );
   });

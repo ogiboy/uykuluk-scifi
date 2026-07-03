@@ -29,7 +29,9 @@ export const readOnlyStudioRoutes = [
   route("analytics.index", "/analytics"),
   route("doctor.index", "/doctor"),
   route("eval.index", "/eval"),
+  route("forbidden.boundary", "/forbidden"),
   route("prompts.index", "/prompts"),
+  route("unauthorized.boundary", "/unauthorized"),
 ] as const satisfies readonly StudioRouteSecurityContract[];
 
 export const disabledStudioActionRoutes = [

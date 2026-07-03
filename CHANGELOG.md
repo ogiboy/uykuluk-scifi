@@ -24,12 +24,16 @@ future generated release notes can be inserted predictably.
   asset, doctor, model-eval, and prompt review pages.
 - add Studio route boundary screens for missing routes and safe client-side route errors without
   mutating producer state.
+- add stable Studio `/unauthorized` and `/forbidden` trust-boundary routes for web-control recovery
+  without enabling experimental Next.js auth interrupts.
 
 ### Fixes
 
 - tighten Studio component semantics by using native run-index tables, safer default button types,
   hidden skeleton placeholders, route-aware Next links, and list/section markup for repeated
   operator groups.
+- return `401` for missing or mismatched Studio local session proof while keeping unsafe origins and
+  action-contract mismatches as forbidden requests.
 - tighten Studio responsive layout containment so the home, run index, and run detail views avoid
   horizontal overflow on mobile while preserving scrollable wide run tables on desktop.
 - fit the run index table into common desktop widths and switch narrow mobile run rows to labeled
