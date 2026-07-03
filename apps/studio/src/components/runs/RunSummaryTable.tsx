@@ -4,14 +4,21 @@ import type { RunQueueDensity } from "@/lib/runQueueWorkbench";
 import type { StudioRunSummary } from "@/lib/runSummaries";
 import {
   getCoreRowModel,
+  getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
+  type PaginationState,
   type SortingState,
   type VisibilityState,
 } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
 import { runColumnClassName, runSummaryColumns } from "./RunSummaryTableColumns";
-import { ColumnVisibilityMenu, RunSortableHeader, RunTableCell } from "./RunSummaryTableControls";
+import {
+  ColumnVisibilityMenu,
+  RunSortableHeader,
+  RunTableCell,
+  RunTablePagination,
+} from "./RunSummaryTableControls";
 
 type RunSummaryTableProps = Readonly<{
   density?: RunQueueDensity;
@@ -26,6 +33,11 @@ const initialColumnVisibility = {
   channelHandoff: false,
   finalBundle: false,
 } as const satisfies VisibilityState;
+
+const initialPagination = {
+  pageIndex: 0,
+  pageSize: 10,
+} as const satisfies PaginationState;
 
 /**
  * Displays a TanStack-powered summary grid of saved producer runs.
@@ -43,6 +55,7 @@ export function RunSummaryTable({
 }: RunSummaryTableProps) {
   const [columnVisibility, setColumnVisibility] =
     useState<VisibilityState>(initialColumnVisibility);
+  const [pagination, setPagination] = useState<PaginationState>(initialPagination);
   const [sorting, setSorting] = useState<SortingState>([]);
   const data = useMemo(() => [...runs], [runs]);
   const columns = useMemo(() => runSummaryColumns(), []);
@@ -51,15 +64,20 @@ export function RunSummaryTable({
     columns,
     data,
     getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
     getRowId: (run) => run.runId,
     getSortedRowModel: getSortedRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
+    onPaginationChange: setPagination,
     onSortingChange: setSorting,
     state: {
       columnVisibility,
+      pagination,
       sorting,
     },
   });
+  const totalRows = table.getPrePaginationRowModel().rows.length;
+  const visibleRows = table.getRowModel().rows;
 
   if (runs.length === 0) {
     return (
@@ -81,7 +99,9 @@ export function RunSummaryTable({
           </p>
         </div>
         <div className='run-table-toolbar'>
-          <span className='status-pill small'>{table.getRowModel().rows.length} rows</span>
+          <span className='status-pill small'>
+            {visibleRows.length} of {totalRows} rows
+          </span>
           <ColumnVisibilityMenu table={table} />
         </div>
       </div>
@@ -100,7 +120,7 @@ export function RunSummaryTable({
             ))}
           </thead>
           <tbody>
-            {table.getRowModel().rows.map((row) => (
+            {visibleRows.map((row) => (
               <tr className='run-row' key={row.id}>
                 {row.getVisibleCells().map((cell) => (
                   <RunTableCell key={cell.id} cell={cell} />
@@ -110,6 +130,7 @@ export function RunSummaryTable({
           </tbody>
         </table>
       </div>
+      <RunTablePagination table={table} />
     </section>
   );
 }

@@ -7,6 +7,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { StudioRunSummary } from "@/lib/runSummaries";
 import { flexRender, type Cell, type Header, type Table } from "@tanstack/react-table";
 import { runColumnClassName, runColumnLabel } from "./RunSummaryTableColumns";
@@ -25,6 +33,8 @@ type RunSortableHeaderProps = Readonly<{
 type RunTableCellProps = Readonly<{
   cell: RunTableCellModel;
 }>;
+
+const pageSizeOptions = [10, 25, 50] as const;
 
 export function ColumnVisibilityMenu({ table }: ColumnVisibilityMenuProps) {
   const hideableColumns = table.getAllLeafColumns().filter((column) => column.getCanHide());
@@ -49,6 +59,74 @@ export function ColumnVisibilityMenu({ table }: ColumnVisibilityMenuProps) {
         ))}
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+}
+
+export function RunTablePagination({ table }: ColumnVisibilityMenuProps) {
+  const pagination = table.getState().pagination;
+  const totalRows = table.getPrePaginationRowModel().rows.length;
+  const currentRows = table.getRowModel().rows.length;
+  const firstRow = totalRows === 0 ? 0 : pagination.pageIndex * pagination.pageSize + 1;
+  const lastRow = currentRows === 0 ? 0 : firstRow + currentRows - 1;
+  const pageCount = Math.max(1, table.getPageCount());
+
+  return (
+    <div className='run-table-pagination' aria-label='Run table pagination'>
+      <p aria-live='polite'>
+        Rows {firstRow}-{lastRow} of {totalRows}. Page {pagination.pageIndex + 1} of {pageCount}.
+      </p>
+      <div className='run-table-pagination-controls'>
+        <Button
+          disabled={!table.getCanPreviousPage()}
+          onClick={() => table.firstPage()}
+          type='button'
+          variant='secondary'
+        >
+          First
+        </Button>
+        <Button
+          disabled={!table.getCanPreviousPage()}
+          onClick={() => table.previousPage()}
+          type='button'
+          variant='secondary'
+        >
+          Previous
+        </Button>
+        <Button
+          disabled={!table.getCanNextPage()}
+          onClick={() => table.nextPage()}
+          type='button'
+          variant='secondary'
+        >
+          Next
+        </Button>
+        <Button
+          disabled={!table.getCanNextPage()}
+          onClick={() => table.lastPage()}
+          type='button'
+          variant='secondary'
+        >
+          Last
+        </Button>
+        <Select
+          value={String(pagination.pageSize)}
+          onValueChange={(value) => setPageSize(table, value)}
+        >
+          <SelectTrigger className='run-page-size-select' aria-label='Rows per page'>
+            <SelectValue placeholder='Rows per page' />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              {pageSizeOptions.map((pageSize) => (
+                <SelectItem key={pageSize} value={String(pageSize)}>
+                  {pageSize} rows
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
   );
 }
 
@@ -101,4 +179,11 @@ function sortIndicator(sorted: false | "asc" | "desc"): string {
     return "↓";
   }
   return "↕";
+}
+
+function setPageSize(table: Table<StudioRunSummary>, value: string): void {
+  const pageSize = Number(value);
+  if (pageSizeOptions.includes(pageSize as (typeof pageSizeOptions)[number])) {
+    table.setPageSize(pageSize);
+  }
 }

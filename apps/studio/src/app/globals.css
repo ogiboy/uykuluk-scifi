@@ -918,6 +918,33 @@ h3 {
   justify-content: flex-end;
 }
 
+.run-table-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.run-table-pagination p {
+  margin: 0;
+}
+
+.run-table-pagination-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.run-page-size-select {
+  width: 132px;
+}
+
 .run-column-menu {
   min-width: 220px;
 }
@@ -1916,6 +1943,20 @@ h3 {
 
   .run-table-toolbar {
     justify-content: flex-start;
+  }
+
+  .run-table-pagination {
+    align-items: stretch;
+  }
+
+  .run-table-pagination,
+  .run-table-pagination-controls {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .run-page-size-select {
+    width: 100%;
   }
 
   .run-table {
