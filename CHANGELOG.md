@@ -11,6 +11,12 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.65.1 (2026-07-03)
+
+### Build
+
+- bump the studio group across 1 directory with 5 updates (9cf4e45)
+
 ## v0.65.0 (2026-07-02)
 
 ### Fixes
