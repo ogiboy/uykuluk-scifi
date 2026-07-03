@@ -24,8 +24,7 @@ upload/publish boundaries.
   `/Users/ogiboy/.codex/worktrees/894d/uykuluk-scifi`.
 - Merged PR: #121, `feat(studio): expand operator workbench controls`, merged into `main` as
   `97a6ebb6` on 2026-07-02.
-- Active local slice: shared Studio shell, brand, appearance controls, semantic navigation, loading,
-  and route-boundary recovery across operator pages.
+- Active local slice: run queue data-grid ergonomics on the shared Studio operator branch.
 - Last completed slice/commit before this checkpoint:
   `fix(studio): stabilize operator ui primitives`.
 - Completed current-branch frontend slices include:
@@ -53,6 +52,9 @@ upload/publish boundaries.
     doctor, model-eval, and prompt inventory pages.
   - Studio `not-found`, `error`, `/unauthorized`, and `/forbidden` route boundaries that show safe
     recovery guidance without mutating producer state or exposing local filesystem details.
+  - TanStack Table-backed run queue with semantic native table markup, header sorting, column
+    visibility controls, a tighter default column set, sticky run identifiers on desktop, and mobile
+    card fallback.
   - semantic component pass for Studio route links, run-index table markup, default button types,
     skeleton accessibility, workflow lists, and review rail landmarks.
   - PR review fixes for approval confirmation payload visibility, ready-queue blocked-run exclusion,
@@ -117,15 +119,14 @@ upload/publish boundaries.
 - Next.js `unauthorized()` and `forbidden()` auth interrupts remain experimental in current docs, so
   Studio should keep stable normal trust-boundary routes until adopting that API is an explicit
   product decision.
-- The run queue still needs a real data-grid pass. Native table markup is semantically safer than
-  fake grids, but the current operator UX is not enough for dense filtering/sorting. Evaluate
-  TanStack Table plus shadcn Table and `@tanstack/react-virtual` before heavier grids such as AG
-  Grid.
+- The run queue now uses TanStack Table as a headless data-grid engine. Keep AG Grid Community as a
+  future option if Producer needs much heavier grid behavior such as large-data virtualization,
+  pinned/grouped columns, or spreadsheet-style interactions that exceed the current operator queue.
 
 ## Remaining Work
 
 1. Commit the shared Studio shell and route-boundary slice after focused validation.
-2. Continue the next frontend slice on the same broad branch if coherent: run-queue data grid,
+2. Continue the next frontend slice on the same broad branch if coherent: run-queue grid polish,
    route-security session UX, artifact preview ergonomics, theme/density controls, richer form
    states, or media playback/download handoff.
 3. Open a PR only after related frontend/operator-action work is grouped and locally validated.

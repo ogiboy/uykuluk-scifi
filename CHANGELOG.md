@@ -26,6 +26,8 @@ future generated release notes can be inserted predictably.
   mutating producer state.
 - add stable Studio `/unauthorized` and `/forbidden` trust-boundary routes for web-control recovery
   without enabling experimental Next.js auth interrupts.
+- upgrade the Studio run queue from a hand-rolled table to a TanStack Table-powered data grid with
+  header sorting, column visibility controls, and a tighter default column set.
 
 ### Fixes
 
@@ -34,6 +36,8 @@ future generated release notes can be inserted predictably.
   operator groups.
 - return `401` for missing or mismatched Studio local session proof while keeping unsafe origins and
   action-contract mismatches as forbidden requests.
+- reduce run queue table overflow by hiding lower-priority review columns by default while keeping
+  them available from the column menu.
 - tighten Studio responsive layout containment so the home, run index, and run detail views avoid
   horizontal overflow on mobile while preserving scrollable wide run tables on desktop.
 - fit the run index table into common desktop widths and switch narrow mobile run rows to labeled

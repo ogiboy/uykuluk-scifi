@@ -896,28 +896,37 @@ h3 {
   scrollbar-gutter: stable;
 }
 
+.run-table-heading {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.run-table-heading p {
+  margin: 4px 0 0;
+  color: var(--muted);
+}
+
+.run-table-toolbar {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.run-column-menu {
+  min-width: 220px;
+}
+
 .run-table {
   width: 100%;
-  min-width: 1240px;
+  min-width: 1080px;
   border-collapse: collapse;
-  table-layout: fixed;
-}
-
-.run-col-id {
-  width: 13%;
-}
-
-.run-col-state,
-.run-col-status {
-  width: 10%;
-}
-
-.run-col-review {
-  width: 14%;
-}
-
-.run-col-action {
-  width: 15%;
+  table-layout: auto;
 }
 
 .run-row {
@@ -934,6 +943,30 @@ h3 {
   padding: 12px;
   text-align: left;
   vertical-align: top;
+}
+
+.run-cell-runId {
+  width: 220px;
+  min-width: 220px;
+}
+
+.run-cell-state,
+.run-cell-readinessStatus,
+.run-cell-evidenceStatus,
+.run-cell-renderDecision,
+.run-cell-blockedActionCount,
+.run-cell-updatedAt {
+  width: 128px;
+}
+
+.run-cell-finalBundle,
+.run-cell-channelHandoff {
+  width: 180px;
+}
+
+.run-cell-nextAction {
+  width: 280px;
+  min-width: 260px;
 }
 
 .run-table[data-density="compact"] .run-row > th,
@@ -967,6 +1000,45 @@ h3 {
 
 .run-row-head > th {
   border-top: 0;
+}
+
+.run-row-head .run-cell-runId,
+.run-row > .run-cell-runId {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: color-mix(in srgb, var(--panel) 92%, var(--bg));
+}
+
+.run-row-head .run-cell-runId {
+  z-index: 2;
+}
+
+.run-sort-button {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  max-width: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  font: inherit;
+  font-weight: 800;
+  text-align: left;
+  cursor: pointer;
+}
+
+.run-sort-button:hover,
+.run-sort-button:focus-visible {
+  color: var(--accent);
+}
+
+.run-sort-indicator {
+  flex: 0 0 auto;
+  color: var(--accent);
+  font-family: var(--font-mono), SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
 }
 
 .run-row:hover > th,
@@ -1763,6 +1835,15 @@ h3 {
     border: 0;
   }
 
+  .run-table-heading {
+    display: grid;
+    gap: 12px;
+  }
+
+  .run-table-toolbar {
+    justify-content: flex-start;
+  }
+
   .run-table {
     display: block;
     min-width: 0;
@@ -1790,6 +1871,27 @@ h3 {
     display: grid;
     gap: 4px;
     border-top: 0;
+  }
+
+  .run-row-head .run-cell-runId,
+  .run-row > .run-cell-runId {
+    position: static;
+    z-index: auto;
+    background: transparent;
+  }
+
+  .run-cell-runId,
+  .run-cell-state,
+  .run-cell-readinessStatus,
+  .run-cell-evidenceStatus,
+  .run-cell-renderDecision,
+  .run-cell-blockedActionCount,
+  .run-cell-updatedAt,
+  .run-cell-finalBundle,
+  .run-cell-channelHandoff,
+  .run-cell-nextAction {
+    width: auto;
+    min-width: 0;
   }
 
   .run-row > th::before,
