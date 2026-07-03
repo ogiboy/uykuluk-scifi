@@ -1,5 +1,6 @@
 import {
   productionMediaIntro,
+  productionMediaReviewSummary,
   productionMediaReviewAction,
   shouldShowEvidenceRemediation,
 } from "@/lib/runEvidenceCopy";
@@ -36,10 +37,12 @@ export function RunProductionMediaPanel({
   productionMedia,
   runId,
 }: RunProductionMediaPanelProps) {
+  const summary = productionMediaReviewSummary(evidenceStatus, productionMedia);
   return (
     <section className='panel' aria-labelledby='production-media-heading'>
       <h2 id='production-media-heading'>Production Media Evidence</h2>
       <p>{productionMediaIntro(evidenceStatus)}</p>
+      <ProductionMediaSummary summary={summary} />
       {shouldShowEvidenceRemediation(evidenceStatus) ? (
         <EvidenceRemediation message={evidenceMessage} nextAction={evidenceNextAction} />
       ) : null}
@@ -54,6 +57,45 @@ export function RunProductionMediaPanel({
         ))}
       </div>
     </section>
+  );
+}
+
+function ProductionMediaSummary({
+  summary,
+}: Readonly<{ summary: ReturnType<typeof productionMediaReviewSummary> }>) {
+  return (
+    <div className={`production-media-summary ${summary.tone}`} aria-label='Media review summary'>
+      <div>
+        <strong>{summary.title}</strong>
+        {summary.focus ? (
+          <p>
+            Next focus: {summary.focus.label} ({summary.focus.status}) — {summary.focus.action}
+          </p>
+        ) : (
+          <p>No local media rows are available for this run yet.</p>
+        )}
+      </div>
+      <dl className='production-media-metrics'>
+        <div>
+          <dt>Verified</dt>
+          <dd>
+            {summary.verifiedCount}/{summary.totalCount}
+          </dd>
+        </div>
+        <div>
+          <dt>Missing</dt>
+          <dd>{summary.missingCount}</dd>
+        </div>
+        <div>
+          <dt>Blocked</dt>
+          <dd>{summary.blockedCount}</dd>
+        </div>
+        <div>
+          <dt>Record only</dt>
+          <dd>{summary.recordedOnlyCount}</dd>
+        </div>
+      </dl>
+    </div>
   );
 }
 
@@ -89,7 +131,7 @@ function ProductionMediaCard({
 }>) {
   const mediaUrl = mediaPreviewUrl(runId, artifact);
   return (
-    <Card className='production-media-card'>
+    <Card className={`production-media-card ${artifact.status}`}>
       <CardHeader>
         <CardDescription>{artifact.artifactPath}</CardDescription>
         <div className='production-media-card-title'>

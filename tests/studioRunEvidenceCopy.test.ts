@@ -5,8 +5,10 @@ import {
   blockedActionsIntro,
   productionMediaIntro,
   productionMediaReviewAction,
+  productionMediaReviewSummary,
   shouldShowEvidenceRemediation,
 } from "../apps/studio/src/lib/runEvidenceCopy";
+import type { ProductionMediaStatus } from "../src/stages/statusMediaSummary";
 
 describe("Studio run evidence copy", () => {
   it("allows no-blocker copy only when evidence is current", () => {
@@ -96,4 +98,78 @@ describe("Studio run evidence copy", () => {
     expect(artifactPreviewsIntro("invalid")).toContain("local artifact records only");
     expect(artifactPreviewsIntro("invalid")).toContain("Regenerate evidence");
   });
+
+  it("summarizes media review state without treating stale evidence as verified", () => {
+    const media: ProductionMediaStatus[] = [
+      mediaStatus("renderPlan", "Render plan", "production/render_plan.json", "pass"),
+      mediaStatus("voiceoverAudio", "Voiceover audio", "production/audio/voiceover.wav", "pass"),
+      mediaStatus("draftRender", "Draft render", "production/render/draft.mp4", "missing"),
+    ];
+
+    expect(productionMediaReviewSummary("available", media)).toMatchObject({
+      blockedCount: 0,
+      missingCount: 1,
+      recordedOnlyCount: 0,
+      title: "Media artifacts still pending",
+      tone: "pending",
+      totalCount: 3,
+      verifiedCount: 2,
+    });
+    expect(productionMediaReviewSummary("stale", media)).toMatchObject({
+      title: "Refresh evidence before trusting media",
+      tone: "attention",
+      verifiedCount: 0,
+    });
+  });
+
+  it("prioritizes blocked media before missing or reviewable rows", () => {
+    const summary = productionMediaReviewSummary("available", [
+      mediaStatus("renderPlan", "Render plan", "production/render_plan.json", "pass"),
+      mediaStatus("voiceoverAudio", "Voiceover audio", "production/audio/voiceover.wav", "missing"),
+      mediaStatus("draftRender", "Draft render", "production/render/draft.mp4", "block"),
+    ]);
+
+    expect(summary).toMatchObject({
+      blockedCount: 1,
+      focus: {
+        label: "Draft render",
+        status: "block",
+      },
+      title: "Media review blocked",
+      tone: "blocked",
+    });
+    expect(summary.focus?.action).toContain("Resolve the blocker");
+  });
+
+  it("focuses completed media review on the draft render", () => {
+    const summary = productionMediaReviewSummary("available", [
+      mediaStatus("renderPlan", "Render plan", "production/render_plan.json", "pass"),
+      mediaStatus("voiceoverAudio", "Voiceover audio", "production/audio/voiceover.wav", "pass"),
+      mediaStatus("draftRender", "Draft render", "production/render/draft.mp4", "pass"),
+    ]);
+
+    expect(summary).toMatchObject({
+      focus: {
+        label: "Draft render",
+        status: "pass",
+      },
+      title: "Local media ready for review",
+      tone: "ready",
+      verifiedCount: 3,
+    });
+  });
 });
+
+function mediaStatus(
+  evidenceKey: ProductionMediaStatus["evidenceKey"],
+  label: string,
+  artifactPath: string,
+  status: ProductionMediaStatus["status"],
+): ProductionMediaStatus {
+  return {
+    artifactPath,
+    evidenceKey,
+    label,
+    status,
+  };
+}
