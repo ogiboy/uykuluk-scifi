@@ -11,6 +11,12 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.65.3 (2026-07-03)
+
+### Build
+
+- bump postcss from 8.5.15 to 8.5.16 (f94fd17)
+
 ## v0.65.2 (2026-07-03)
 
 ### Build
