@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildStudioActionWorkbench,
+  countStudioActionWorkbench,
   type StudioActionWorkbenchRun,
 } from "../apps/studio/src/lib/studioActionWorkbench";
 
@@ -114,6 +115,35 @@ describe("Studio action workbench", () => {
         tone: "available",
       }),
     );
+  });
+
+  it("counts operator queue action categories", () => {
+    expect(
+      countStudioActionWorkbench([
+        actionRunFixture({ state: "READY_FOR_MANUAL_PRODUCTION" }),
+        actionRunFixture({
+          blockedActionCount: 2,
+          nextRecommendedCommand: "pnpm producer evidence --run run_workbench",
+          state: "FAILED",
+        }),
+        actionRunFixture({
+          nextRecommendedCommand: "pnpm producer review render --run run_workbench",
+          state: "RENDERED",
+        }),
+        actionRunFixture({
+          renderDecision: {
+            kind: "present",
+            nextAction: "Local final review handoff is ready.",
+          },
+          state: "RENDERED",
+        }),
+      ]),
+    ).toEqual({
+      blockedCli: 1,
+      cliOnly: 1,
+      complete: 1,
+      webAction: 1,
+    });
   });
 });
 
