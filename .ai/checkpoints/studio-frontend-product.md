@@ -24,8 +24,9 @@ upload/publish boundaries.
   `/Users/ogiboy/.codex/worktrees/894d/uykuluk-scifi`.
 - Merged PR: #121, `feat(studio): expand operator workbench controls`, merged into `main` as
   `97a6ebb6` on 2026-07-02.
-- Active local slice: production media review ergonomics on the shared Studio operator branch.
-- Last completed slice/commit before this checkpoint: `feat(studio): filter artifact previews`.
+- Active local slice: grouped PR readiness for the shared Studio operator branch.
+- Last completed slice/commit before this checkpoint:
+  `fix(studio): simplify run table control props`.
 - Completed current-branch frontend slices include:
   - shadcn route/action primitives for guarded local actions;
   - Studio home control desk, queue filters, command palette, copyable safe commands;
@@ -36,6 +37,8 @@ upload/publish boundaries.
     commands.
   - production-media local review actions that let operators open or download allowlisted voiceover
     and draft-render media from the Studio media route without broadening artifact access.
+  - SonarLint-friendly run-table control prop typing that keeps the TanStack grid controls readable
+    without changing behavior.
   - guarded-action preflight summaries for approval and render-decision panels, showing payload,
     evidence, readiness, blocked-action, and upload/publish boundaries before submission.
   - artifact review handoff path in the Artifacts tab, showing the review documents available for
@@ -70,6 +73,9 @@ upload/publish boundaries.
   - hosted browser-smoke fallout fix for the Studio home heading assertion after the operator
     control desk redesign.
 - Verified commands for the latest slice:
+  - `pnpm check`
+  - `pnpm qa:usage`
+  - `pnpm version:plan`
   - `pnpm --filter @uykulukscifi/studio lint`
   - `pnpm --filter @uykulukscifi/studio typecheck`
   - `pnpm --filter @uykulukscifi/studio build`
@@ -138,11 +144,11 @@ upload/publish boundaries.
 
 ## Remaining Work
 
-1. Commit the shared Studio shell and route-boundary slice after focused validation.
-2. Continue the next frontend slice on the same broad branch if coherent: run-queue grid polish,
-   route-security session UX, artifact preview ergonomics, theme/density controls, richer form
-   states, or media playback/download handoff.
-3. Open a PR only after related frontend/operator-action work is grouped and locally validated.
+1. Open the grouped Studio operator-actions PR from `feat/studio-operator-actions`.
+2. Inspect hosted CI, Sonar, and CodeRabbit comments after the PR is created; fix valid findings on
+   the same branch.
+3. Continue the next frontend slice after this grouped PR is either merged or review feedback is
+   resolved.
 
 ## Blockers And Risks
 
