@@ -1,8 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { StudioRunDetail } from "@/lib/runSummaries";
@@ -12,7 +10,7 @@ import {
   approvalPayload,
 } from "@/lib/studioApprovalAction";
 import { buildStudioActionPreflight } from "@/lib/studioActionPreflight";
-import { submitStudioJsonMutation } from "@/lib/studioMutationSubmit";
+import { useStudioGuardedActionSubmit } from "@/lib/useStudioGuardedActionSubmit";
 import { RunActionPreflightPanel } from "./RunActionPreflightPanel";
 import { RunApprovalConfirmationDialog } from "./RunApprovalConfirmationDialog";
 import { RunIdeaApprovalSelector } from "./RunIdeaApprovalSelector";
@@ -32,12 +30,6 @@ type RunApprovalActionPanelProps = Readonly<{
   >;
 }>;
 
-type SubmitState =
-  | { kind: "idle"; message: string }
-  | { kind: "submitting"; message: string }
-  | { kind: "success"; message: string }
-  | { kind: "error"; message: string };
-
 type FormSubmitEvent = Readonly<{
   preventDefault: () => void;
 }>;
@@ -49,17 +41,15 @@ type FormSubmitEvent = Readonly<{
  */
 export function RunApprovalActionPanel({ run }: RunApprovalActionPanelProps) {
   const config = approvalActionForRun(run);
-  const router = useRouter();
   const [ideaId, setIdeaId] = useState(run.generatedIdeas[0]?.id ?? "");
   const [acknowledgeWarnings, setAcknowledgeWarnings] = useState(false);
   const [confirmationOpen, setConfirmationOpen] = useState(false);
   const [pendingPayload, setPendingPayload] = useState<Record<string, boolean | string> | null>(
     null,
   );
-  const [state, setState] = useState<SubmitState>({
-    kind: "idle",
-    message: "Records explicit local approval evidence only. Upload and publish stay disabled.",
-  });
+  const { state, submit } = useStudioGuardedActionSubmit(
+    "Records explicit local approval evidence only. Upload and publish stay disabled.",
+  );
 
   if (!config) {
     return null;
@@ -82,27 +72,17 @@ export function RunApprovalActionPanel({ run }: RunApprovalActionPanelProps) {
   async function confirmApproval(): Promise<void> {
     if (!config || !pendingPayload) return;
     setConfirmationOpen(false);
-    setState({ kind: "submitting", message: "Recording local approval..." });
-    const result = await submitStudioJsonMutation({
+    await submit({
       actionId: config.actionId,
       body: pendingPayload,
+      errorToastTitle: "Approval was not recorded",
       fallbackError: "Approval could not be recorded.",
       routePath: config.routePath,
+      submittingMessage: "Recording local approval...",
+      successMessage: "Approval recorded. Updating the run detail from persisted local state.",
+      successToastTitle: "Approval recorded",
     });
     setPendingPayload(null);
-    if (result.kind === "error") {
-      setState(result);
-      toast.error("Approval was not recorded", { description: result.message });
-      return;
-    }
-    setState({
-      kind: "success",
-      message: "Approval recorded. Updating the run detail from persisted local state.",
-    });
-    toast.success("Approval recorded", {
-      description: "Studio is refreshing the persisted run detail.",
-    });
-    router.refresh();
   }
 
   return (

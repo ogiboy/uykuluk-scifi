@@ -1,8 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -16,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import { buildStudioActionPreflight } from "@/lib/studioActionPreflight";
-import { submitStudioJsonMutation } from "@/lib/studioMutationSubmit";
+import { useStudioGuardedActionSubmit } from "@/lib/useStudioGuardedActionSubmit";
 import { RunActionPreflightPanel } from "./RunActionPreflightPanel";
 import { RunRenderDecisionSelector } from "./RunRenderDecisionSelector";
 
@@ -35,12 +33,6 @@ type RunRenderDecisionActionPanelProps = Readonly<{
   >;
   runId: string;
 }>;
-
-type SubmitState =
-  | { kind: "idle"; message: string }
-  | { kind: "submitting"; message: string }
-  | { kind: "success"; message: string }
-  | { kind: "error"; message: string };
 
 type RenderDecisionValue = StudioRunDetail["renderDecisionCommands"][number]["decision"];
 
@@ -66,16 +58,14 @@ export function RunRenderDecisionActionPanel({
   run,
   runId,
 }: RunRenderDecisionActionPanelProps) {
-  const router = useRouter();
   const [decision, setDecision] = useState(commands[0]?.decision ?? "accepted-for-local-review");
   const [notes, setNotes] = useState("");
   const [reviewedBy, setReviewedBy] = useState("operator");
   const [confirmationOpen, setConfirmationOpen] = useState(false);
   const [pendingPayload, setPendingPayload] = useState<PendingRenderDecisionPayload | null>(null);
-  const [state, setState] = useState<SubmitState>({
-    kind: "idle",
-    message: "Records local evidence only. Upload and publish stay disabled.",
-  });
+  const { state, submit } = useStudioGuardedActionSubmit(
+    "Records local evidence only. Upload and publish stay disabled.",
+  );
 
   if (commands.length === 0) {
     return null;
@@ -95,27 +85,18 @@ export function RunRenderDecisionActionPanel({
   async function confirmDecision(): Promise<void> {
     if (!pendingPayload) return;
     setConfirmationOpen(false);
-    setState({ kind: "submitting", message: "Recording local render decision..." });
-    const result = await submitStudioJsonMutation({
+    await submit({
       actionId: "render.decide",
       body: pendingPayload,
+      errorToastTitle: "Render decision was not recorded",
       fallbackError: "Render decision could not be recorded.",
       routePath: "/actions/decide-render",
+      submittingMessage: "Recording local render decision...",
+      successMessage:
+        "Render decision recorded. Updating the run detail from persisted local evidence.",
+      successToastTitle: "Render decision recorded",
     });
     setPendingPayload(null);
-    if (result.kind === "error") {
-      setState(result);
-      toast.error("Render decision was not recorded", { description: result.message });
-      return;
-    }
-    setState({
-      kind: "success",
-      message: "Render decision recorded. Updating the run detail from persisted local evidence.",
-    });
-    toast.success("Render decision recorded", {
-      description: "Studio is refreshing the persisted run detail.",
-    });
-    router.refresh();
   }
 
   return (

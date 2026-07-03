@@ -18,10 +18,6 @@ export default function StudioNotFoundPage() {
       </header>
 
       <StudioRouteBoundaryCard
-        actions={[
-          { href: "/runs", label: "Open run queue" },
-          { href: "/", label: "Open Studio home" },
-        ]}
         description='Studio could not find this page or local run resource. Missing routes and missing files never imply approval, readiness, upload permission, or publish permission.'
         headingId='studio-not-found-recovery-heading'
         title='Safe next step'

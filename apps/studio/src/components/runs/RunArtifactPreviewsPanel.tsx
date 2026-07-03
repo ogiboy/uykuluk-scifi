@@ -11,6 +11,7 @@ import {
 import { buildArtifactReviewHandoff } from "@/lib/artifactReviewHandoff";
 import { artifactPreviewsIntro } from "@/lib/runEvidenceCopy";
 import type { StudioRunDetail } from "@/lib/runSummaries";
+import { applyEnumSelectValue } from "@/lib/utils";
 import { useMemo, useState } from "react";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
@@ -77,7 +78,12 @@ export function RunArtifactPreviewsPanel({
         </label>
         <div className='artifact-preview-select'>
           <Label htmlFor='artifact-status-filter'>Availability</Label>
-          <Select value={status} onValueChange={(value) => setSelectedStatus(value, setStatus)}>
+          <Select
+            value={status}
+            onValueChange={(value) =>
+              applyEnumSelectValue(value, artifactPreviewStatusFilters, setStatus)
+            }
+          >
             <SelectTrigger id='artifact-status-filter' aria-label='Filter artifacts by status'>
               <SelectValue placeholder='Availability' />
             </SelectTrigger>
@@ -169,21 +175,6 @@ function groupedArtifactPreviews(
     artifacts: groupedArtifacts,
     label,
   }));
-}
-
-/**
- * Applies a valid artifact availability filter selection.
- *
- * @param value - The selected filter value from the shadcn select control.
- * @param setStatus - Setter used to update the current artifact availability filter.
- */
-function setSelectedStatus(
-  value: string,
-  setStatus: (status: ArtifactPreviewStatusFilter) => void,
-): void {
-  if (artifactPreviewStatusFilters.includes(value as ArtifactPreviewStatusFilter)) {
-    setStatus(value as ArtifactPreviewStatusFilter);
-  }
 }
 
 function artifactStatusLabel(status: ArtifactPreviewStatusFilter): string {

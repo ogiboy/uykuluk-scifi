@@ -7,7 +7,7 @@ type StudioRouteBoundaryAction = Readonly<{
 }>;
 
 type StudioRouteBoundaryCardProps = Readonly<{
-  actions: readonly StudioRouteBoundaryAction[];
+  actions?: readonly StudioRouteBoundaryAction[];
   children?: ReactNode;
   description: string;
   headingId: string;
@@ -15,16 +15,25 @@ type StudioRouteBoundaryCardProps = Readonly<{
 }>;
 
 /**
+ * Default safe navigation options shown on Studio route boundaries.
+ */
+export const defaultStudioRouteBoundaryActions: readonly StudioRouteBoundaryAction[] = [
+  { href: "/runs", label: "Open run queue" },
+  { href: "/", label: "Open Studio home" },
+];
+
+/**
  * Renders safe route-boundary recovery guidance without exposing local filesystem details.
  *
- * @param actions - Safe navigation options that do not mutate producer state.
+ * @param actions - Safe navigation options that do not mutate producer state. Defaults to the
+ *   run queue and Studio home links.
  * @param children - Optional extra recovery controls, such as a local retry button.
  * @param description - Operator-facing explanation for the boundary state.
  * @param headingId - Stable heading id for the recovery section.
  * @param title - Recovery section heading.
  */
 export function StudioRouteBoundaryCard({
-  actions,
+  actions = defaultStudioRouteBoundaryActions,
   children,
   description,
   headingId,
