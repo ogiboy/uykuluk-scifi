@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 import channelLogo from "../../../../../assets/brand/uykulukscifi_channel_logo_square_1024.png";
 
@@ -7,7 +8,7 @@ import channelLogo from "../../../../../assets/brand/uykulukscifi_channel_logo_s
  */
 export function StudioBrandLockup() {
   return (
-    <div className='brand-lockup'>
+    <Link aria-label='Studio home' className='brand-lockup' href='/'>
       <span className='brand-mark' aria-hidden='true'>
         <Image
           alt=''
@@ -23,6 +24,6 @@ export function StudioBrandLockup() {
         <p>UykulukSciFi</p>
         <strong>Producer Studio</strong>
       </div>
-    </div>
+    </Link>
   );
 }
