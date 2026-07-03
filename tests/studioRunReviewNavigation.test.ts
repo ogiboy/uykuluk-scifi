@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { defaultRunReviewTab, runReviewTabFocus } from "../apps/studio/src/lib/runReviewNavigation";
+import {
+  defaultRunReviewTab,
+  defaultRunReviewTabFromSummary,
+  runReviewHref,
+  runReviewTabFocus,
+  runReviewTabFromSearchParams,
+} from "../apps/studio/src/lib/runReviewNavigation";
 import { acceptedRenderDecision, runBriefFixture } from "./studioRunReviewBriefFixtures";
 
 type NavigationFixture = Parameters<typeof defaultRunReviewTab>[0];
@@ -47,6 +53,31 @@ describe("Studio run review navigation", () => {
         }),
       ),
     ).toBe("handoff");
+  });
+
+  it("parses supported tab query params and rejects unsupported values", () => {
+    expect(runReviewTabFromSearchParams({ tab: "media" }, "progress")).toBe("media");
+    expect(runReviewTabFromSearchParams({ tab: ["handoff", "media"] }, "progress")).toBe("handoff");
+    expect(runReviewTabFromSearchParams({ tab: "publish" }, "progress")).toBe("progress");
+  });
+
+  it("builds safe run-review links for queue navigation", () => {
+    expect(runReviewHref("run_brief", "media")).toBe("/runs/run_brief?tab=media");
+    expect(runReviewHref("run brief", "handoff", "review-decision")).toBe(
+      "/runs/run%20brief?tab=handoff#review-decision",
+    );
+  });
+
+  it("selects a useful tab from compact run summary data", () => {
+    expect(
+      defaultRunReviewTabFromSummary(
+        navigationFixture({
+          artifactCount: 2,
+          productionMedia: [],
+          state: "SCRIPT_APPROVED",
+        }),
+      ),
+    ).toBe("artifacts");
   });
 
   it("falls back to artifacts before progress when only local artifacts exist", () => {

@@ -1,5 +1,5 @@
 import type { StudioRunDetail } from "@/lib/runSummaries";
-import { defaultRunReviewTab } from "@/lib/runReviewNavigation";
+import { defaultRunReviewTab, type RunReviewTab } from "@/lib/runReviewNavigation";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { RunArtifactPreviewsPanel } from "./RunArtifactPreviewsPanel";
 import { RunChannelHandoffPanel } from "./RunChannelHandoffPanel";
@@ -15,10 +15,14 @@ import { RunWorkflowProgressPanel } from "./RunWorkflowProgressPanel";
 /**
  * Renders a read-only detail view for a run.
  *
+ * @param initialTab - The run review tab selected from URL or run-state projection.
  * @param run - The run data to display.
  */
-export function RunDetailView({ run }: Readonly<{ run: StudioRunDetail }>) {
-  const defaultTab = defaultRunReviewTab(run);
+export function RunDetailView({
+  initialTab,
+  run,
+}: Readonly<{ initialTab?: RunReviewTab; run: StudioRunDetail }>) {
+  const defaultTab = initialTab ?? defaultRunReviewTab(run);
   return (
     <div className='run-review-page'>
       <RunReviewCockpitHeader run={run} />

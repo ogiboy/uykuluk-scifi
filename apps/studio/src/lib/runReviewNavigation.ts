@@ -17,6 +17,8 @@ export type RunReviewTabFocus = Readonly<{
   tab: RunReviewTab;
 }>;
 
+export type RunReviewSearchParams = Readonly<Record<string, string | string[] | undefined>>;
+
 type RunReviewNavigationInput = Pick<
   StudioRunDetail,
   | "artifactCount"
@@ -31,6 +33,18 @@ type RunReviewNavigationInput = Pick<
 > &
   Parameters<typeof buildStudioRunReviewBrief>[0];
 
+type RunReviewSummaryNavigationInput = Pick<
+  StudioRunDetail,
+  | "artifactCount"
+  | "blockedActionCount"
+  | "channelHandoff"
+  | "channelHandoffDecision"
+  | "finalReviewBundle"
+  | "readinessStatus"
+  | "renderDecision"
+  | "state"
+>;
+
 /**
  * Selects the most useful initial run-detail tab for the current operator task.
  *
@@ -39,6 +53,61 @@ type RunReviewNavigationInput = Pick<
  */
 export function defaultRunReviewTab(run: RunReviewNavigationInput): RunReviewTab {
   return runReviewTabFocus(run).tab;
+}
+
+/**
+ * Selects a run-detail tab from summary data used by queue links.
+ *
+ * @param run - The Studio run summary projection; this does not own workflow state.
+ * @returns The tab that should be opened first from list or queue navigation.
+ */
+export function defaultRunReviewTabFromSummary(run: RunReviewSummaryNavigationInput): RunReviewTab {
+  if (run.blockedActionCount > 0 || run.readinessStatus === "blocked") {
+    return "readiness";
+  }
+  if (run.state === "RENDERED" && run.renderDecision.kind !== "present") {
+    return "media";
+  }
+  if (
+    run.renderDecision.kind === "present" ||
+    run.finalReviewBundle.kind === "present" ||
+    run.channelHandoff.kind === "present" ||
+    run.channelHandoffDecision.kind === "present"
+  ) {
+    return "handoff";
+  }
+  if (run.artifactCount > 0) {
+    return "artifacts";
+  }
+  return "progress";
+}
+
+/**
+ * Parses a run-review tab query parameter while preserving a safe fallback.
+ *
+ * @param searchParams - Next.js route search parameters.
+ * @param fallback - Tab to use when the URL value is missing or unsupported.
+ * @returns A supported run-review tab value.
+ */
+export function runReviewTabFromSearchParams(
+  searchParams: RunReviewSearchParams | undefined,
+  fallback: RunReviewTab,
+): RunReviewTab {
+  const candidate = firstSearchParamValue(searchParams?.tab);
+  return isRunReviewTab(candidate) ? candidate : fallback;
+}
+
+/**
+ * Builds a run-review href that can deep-link into a specific operator tab.
+ *
+ * @param runId - The persisted run identifier.
+ * @param tab - The run-review tab to open.
+ * @param fragment - Optional page fragment.
+ * @returns A local Studio run-review href.
+ */
+export function runReviewHref(runId: string, tab: RunReviewTab, fragment?: string): string {
+  const suffix = fragment ? `#${fragment}` : "";
+  return `/runs/${encodeURIComponent(runId)}?tab=${tab}${suffix}`;
 }
 
 /**
@@ -94,4 +163,12 @@ export function runReviewTabFocus(run: RunReviewNavigationInput): RunReviewTabFo
     label: "Progress",
     tab: "progress",
   };
+}
+
+function firstSearchParamValue(value: string | string[] | undefined): string | undefined {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function isRunReviewTab(value: string | undefined): value is RunReviewTab {
+  return runReviewTabValues.includes(value as RunReviewTab);
 }

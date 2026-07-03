@@ -20,6 +20,7 @@ import {
   PopoverTitle,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { defaultRunReviewTabFromSummary } from "@/lib/runReviewNavigation";
 import { getNextSafeCommand } from "@/lib/runSummaryCopy";
 import type { StudioRunSummary } from "@/lib/runSummaries";
 
@@ -35,6 +36,9 @@ type RunSummaryRowActionsProps = Readonly<{
  */
 export function RunSummaryRowActions({ run }: RunSummaryRowActionsProps) {
   const command = getNextSafeCommand(run);
+  const reviewTab = defaultRunReviewTabFromSummary(run);
+  const reviewHref = `/runs/${run.runId}?tab=${reviewTab}` as const;
+  const decisionRailHref = `/runs/${run.runId}?tab=${reviewTab}#review-decision` as const;
   return (
     <div className='run-row-actions'>
       <DropdownMenu>
@@ -47,10 +51,10 @@ export function RunSummaryRowActions({ run }: RunSummaryRowActionsProps) {
           <DropdownMenuLabel>{run.runId}</DropdownMenuLabel>
           <DropdownMenuGroup>
             <DropdownMenuItem asChild>
-              <Link href={`/runs/${run.runId}`}>Open review workspace</Link>
+              <Link href={reviewHref}>Open review workspace</Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link href={`/runs/${run.runId}#review-decision`}>Open decision rail</Link>
+              <Link href={decisionRailHref}>Open decision rail</Link>
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
