@@ -71,10 +71,11 @@ agent-tracking state only; runtime code must not require it.
 
 - TypeScript CLI workflow under `src/`.
 - Basic Next.js App Router Studio under `apps/studio/` with run index/detail, guarded local
-  idea/script/cost/render approval actions, guarded render-decision evidence writes, visual asset
-  inventory, producer doctor diagnostics on the home page and `/doctor`, latest-run readiness
-  visibility, local model evaluation summaries, manual analytics feedback summary on the home page,
-  runtime prompt inventory, mutation-service status, and manual analytics feedback routes.
+  idea/script/cost/render approval actions, guarded render-decision and channel-handoff decision
+  evidence writes, visual asset inventory, producer doctor diagnostics on the home page and
+  `/doctor`, latest-run readiness visibility, local model evaluation summaries, manual analytics
+  feedback summary on the home page, runtime prompt inventory, mutation-service status, and manual
+  analytics feedback routes.
 - Studio foundation with Tailwind CSS v4, shadcn-style primitives, Radix UI, lucide icons, GSAP, and
   `next/font`.
 - Mock-first provider layer with Ollama and local `llama.cpp` adapters.
@@ -121,8 +122,8 @@ agent-tracking state only; runtime code must not require it.
   read-only Studio view over the ignored local analytics artifacts and import data-quality summary.
 - Typed Studio route-security contract covering read-only routes, guarded local approval/review
   action routes, and disabled upload/publish action routes.
-- Typed Studio mutation service contracts for guarded local approval/review actions and disabled
-  upload/publish actions.
+- Typed Studio mutation service contracts for guarded local approval/review decision actions and
+  disabled upload/publish actions.
 - Studio home visibility for guarded local actions, disabled upload/publish action routes,
   latest-run readiness, manual analytics feedback, CLI-ready action contracts, and upload/publish
   risk boundaries.
@@ -476,6 +477,10 @@ Current Studio scope:
 - guarded `POST /actions/decide-render` route that requires same-origin JSON, a Studio action
   header, a short-lived local session token/cookie pair, the typed `render.decide` service contract,
   current draft-render evidence, and writes only local render-decision JSON/Markdown evidence;
+- guarded `POST /actions/decide-channel-handoff` route that requires same-origin JSON, a Studio
+  action header, a short-lived local session token/cookie pair, the typed `channel-handoff.decide`
+  service contract, trusted manual channel-handoff evidence, and writes only local channel-handoff
+  decision JSON/Markdown evidence;
 - Radix module tabs for planned run, prompt, asset, and safety surfaces;
 - type-safe `next-intl` request/provider foundation for English and Turkish locales;
 - visible reminder that CLI/core remains the workflow source of truth.

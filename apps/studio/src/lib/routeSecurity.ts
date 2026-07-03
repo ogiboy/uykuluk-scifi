@@ -45,6 +45,13 @@ export const enabledStudioActionRoutes = [
   action("cost.approve", "/actions/approve-cost", "cost", "local-mutation", true),
   action("render.approve", "/actions/approve-render", "render", "local-mutation", true),
   action("render.decide", "/actions/decide-render", "review", "local-mutation", true),
+  action(
+    "channel-handoff.decide",
+    "/actions/decide-channel-handoff",
+    "review",
+    "local-mutation",
+    true,
+  ),
 ] as const satisfies readonly StudioRouteSecurityContract[];
 
 export const studioSessionRoutes = [

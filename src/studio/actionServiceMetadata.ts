@@ -4,6 +4,7 @@ export const studioMutationActionIds = [
   "cost.approve",
   "render.approve",
   "render.decide",
+  "channel-handoff.decide",
   "upload.private",
   "publish.schedule",
 ] as const;
@@ -63,6 +64,16 @@ export const studioMutationServiceMetadata = [
     coreModule: "src/stages/renderDecision.ts",
     description:
       "Record exactly one local draft-render review decision without approving upload or publish.",
+  },
+  {
+    actionId: "channel-handoff.decide",
+    availability: "ready-for-cli",
+    cliCommand:
+      "pnpm producer decide channel-handoff --run <run_id> --decision <decision> --thumbnail-candidate <candidate_id> --notes <notes> --reviewed-by <name>",
+    coreExport: "recordChannelHandoffDecision",
+    coreModule: "src/stages/channelHandoffDecision.ts",
+    description:
+      "Record exactly one manual channel-handoff decision without uploading or publishing.",
   },
   {
     actionId: "upload.private",

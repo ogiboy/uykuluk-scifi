@@ -1,6 +1,7 @@
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import { StudioMutationSessionPanel } from "../studio/StudioMutationSessionPanel";
 import { RunApprovalActionPanel } from "./RunApprovalActionPanel";
+import { RunChannelHandoffDecisionActionPanel } from "./RunChannelHandoffDecisionActionPanel";
 import { RunBlockedActionsPanel } from "./RunBlockedActionsPanel";
 import { RunChannelHandoffDecisionPanel } from "./RunChannelHandoffDecisionPanel";
 import { RunRenderDecisionActionPanel } from "./RunRenderDecisionActionPanel";
@@ -34,6 +35,7 @@ export function RunReviewDecisionRail({ run }: RunReviewDecisionRailProps) {
         runId={run.runId}
       />
       <RunRenderDecisionCommandsPanel commands={run.renderDecisionCommands} />
+      <RunChannelHandoffDecisionActionPanel run={run} />
       <RunChannelHandoffDecisionPanel channelHandoffDecision={run.channelHandoffDecision} />
     </section>
   );

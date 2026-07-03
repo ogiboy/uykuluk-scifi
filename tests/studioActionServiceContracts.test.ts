@@ -20,6 +20,12 @@ describe("Studio mutation service contracts", () => {
     expect(studioMutationServiceContracts).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
+          actionId: "channel-handoff.decide",
+          availability: "ready-for-cli",
+          coreExport: "recordChannelHandoffDecision",
+          coreModule: "src/stages/channelHandoffDecision.ts",
+        }),
+        expect.objectContaining({
           actionId: "idea.approve",
           availability: "ready-for-cli",
           coreExport: "approveIdea",
@@ -69,6 +75,43 @@ describe("Studio mutation service contracts", () => {
       }),
     ).toEqual({ acknowledgeWarnings: false, runId: "run_operator_review" });
     expect(
+      parseStudioMutationRequest("channel-handoff.decide", {
+        decision: "accepted-for-manual-channel-prep",
+        notes: "Manual channel handoff is ready for operator-managed upload prep.",
+        reviewedBy: "operator",
+        runId: "run_operator_review",
+        thumbnailCandidateId: "thumbnail-01-left",
+      }),
+    ).toEqual({
+      decision: "accepted-for-manual-channel-prep",
+      notes: "Manual channel handoff is ready for operator-managed upload prep.",
+      reviewedBy: "operator",
+      runId: "run_operator_review",
+      thumbnailCandidateId: "thumbnail-01-left",
+    });
+    expect(
+      parseStudioMutationRequest("channel-handoff.decide", {
+        decision: "needs-revision",
+        notes: "Revise thumbnail copy before upload prep.",
+        reviewedBy: "operator",
+        runId: "run_operator_review",
+      }),
+    ).toEqual({
+      decision: "needs-revision",
+      notes: "Revise thumbnail copy before upload prep.",
+      reviewedBy: "operator",
+      runId: "run_operator_review",
+    });
+    expect(() =>
+      parseStudioMutationRequest("channel-handoff.decide", {
+        decision: "accepted-for-manual-channel-prep",
+        notes: "Accepted decisions need a selected thumbnail.",
+        reviewedBy: "operator",
+        runId: "run_operator_review",
+      }),
+    ).toThrow(/thumbnail candidate/);
+
+    expect(
       parseStudioMutationRequest("render.decide", {
         decision: "needs-revision",
         notes: "Subtitle timing needs another pass.",
@@ -101,6 +144,14 @@ describe("Studio mutation service contracts", () => {
       `run_${"a".repeat(125)}`,
     ]) {
       expect(() => parseStudioMutationRequest("cost.approve", { runId })).toThrow(/Invalid run id/);
+      expect(() =>
+        parseStudioMutationRequest("channel-handoff.decide", {
+          decision: "needs-revision",
+          notes: "Malformed run id should fail.",
+          reviewedBy: "operator",
+          runId,
+        }),
+      ).toThrow(/Invalid run id/);
     }
     expect(() =>
       parseStudioMutationRequest("cost.approve", {

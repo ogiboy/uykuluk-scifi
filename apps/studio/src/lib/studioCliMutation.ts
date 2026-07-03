@@ -7,7 +7,12 @@ import { projectRoot } from "./projectRoot";
 import { validateStudioMutationRequest } from "./studioMutationSecurity";
 
 type StudioCliMutationActionId =
-  "cost.approve" | "idea.approve" | "render.approve" | "render.decide" | "script.approve";
+  | "channel-handoff.decide"
+  | "cost.approve"
+  | "idea.approve"
+  | "render.approve"
+  | "render.decide"
+  | "script.approve";
 
 type CliResult = Readonly<{
   stderr: string;
@@ -33,6 +38,22 @@ const renderDecisionPayloadSchema = z.strictObject({
   reviewedBy: z.string().trim().min(1).max(200),
   runId: runIdSchema,
 });
+const channelHandoffDecisionPayloadSchema = z
+  .strictObject({
+    decision: z.enum(["accepted-for-manual-channel-prep", "needs-revision", "rejected"]),
+    notes: z.string().trim().min(1).max(4_000),
+    reviewedBy: z.string().trim().min(1).max(200),
+    runId: runIdSchema,
+    thumbnailCandidateId: z.string().trim().min(1).max(120).optional(),
+  })
+  .refine(
+    (input) =>
+      input.decision !== "accepted-for-manual-channel-prep" || Boolean(input.thumbnailCandidateId),
+    {
+      message: "Accepted channel handoff decisions require a thumbnail candidate.",
+      path: ["thumbnailCandidateId"],
+    },
+  );
 
 /**
  * Runs a guarded Studio mutation through the canonical producer CLI.
@@ -119,14 +140,31 @@ function cliArgsForAction(actionId: StudioCliMutationActionId, payload: unknown)
     const input = runOnlyPayloadSchema.parse(payload);
     return ["approve", "render", "--run", input.runId, "--json"];
   }
-  const input = renderDecisionPayloadSchema.parse(payload);
+  if (actionId === "render.decide") {
+    const input = renderDecisionPayloadSchema.parse(payload);
+    return [
+      "decide",
+      "render",
+      "--run",
+      input.runId,
+      "--decision",
+      input.decision,
+      "--notes",
+      input.notes,
+      "--reviewed-by",
+      input.reviewedBy,
+      "--json",
+    ];
+  }
+  const input = channelHandoffDecisionPayloadSchema.parse(payload);
   return [
     "decide",
-    "render",
+    "channel-handoff",
     "--run",
     input.runId,
     "--decision",
     input.decision,
+    ...(input.thumbnailCandidateId ? ["--thumbnail-candidate", input.thumbnailCandidateId] : []),
     "--notes",
     input.notes,
     "--reviewed-by",
