@@ -11,10 +11,22 @@ import type { StudioRunSummary } from "@/lib/runSummaries";
 import { flexRender, type Cell, type Header, type Table } from "@tanstack/react-table";
 import { runColumnClassName, runColumnLabel } from "./RunSummaryTableColumns";
 
-type RunTableCell = Cell<StudioRunSummary, unknown>;
+type RunTableCellModel = Cell<StudioRunSummary, unknown>;
 type RunTableHeader = Header<StudioRunSummary, unknown>;
 
-export function ColumnVisibilityMenu({ table }: Readonly<{ table: Table<StudioRunSummary> }>) {
+type ColumnVisibilityMenuProps = Readonly<{
+  table: Table<StudioRunSummary>;
+}>;
+
+type RunSortableHeaderProps = Readonly<{
+  header: RunTableHeader;
+}>;
+
+type RunTableCellProps = Readonly<{
+  cell: RunTableCellModel;
+}>;
+
+export function ColumnVisibilityMenu({ table }: ColumnVisibilityMenuProps) {
   const hideableColumns = table.getAllLeafColumns().filter((column) => column.getCanHide());
   return (
     <DropdownMenu>
@@ -40,7 +52,7 @@ export function ColumnVisibilityMenu({ table }: Readonly<{ table: Table<StudioRu
   );
 }
 
-export function RunSortableHeader({ header }: Readonly<{ header: RunTableHeader }>) {
+export function RunSortableHeader({ header }: RunSortableHeaderProps) {
   if (header.isPlaceholder) {
     return null;
   }
@@ -64,7 +76,7 @@ export function RunSortableHeader({ header }: Readonly<{ header: RunTableHeader 
   );
 }
 
-export function RunTableCell({ cell }: Readonly<{ cell: RunTableCell }>) {
+export function RunTableCell({ cell }: RunTableCellProps) {
   const label = runColumnLabel(cell.column.columnDef.meta);
   const className = runColumnClassName(cell.column.id);
   if (cell.column.id === "runId") {
