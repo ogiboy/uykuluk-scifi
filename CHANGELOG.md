@@ -20,6 +20,10 @@ future generated release notes can be inserted predictably.
   visible while data is pending.
 - add Studio appearance controls for local theme, palette, language, and density preferences, plus
   Next Image-backed channel branding in the navigation rail.
+- extend the shared Studio shell, navigation rail, and loading skeletons across run, analytics,
+  asset, doctor, model-eval, and prompt review pages.
+- add Studio route boundary screens for missing routes and safe client-side route errors without
+  mutating producer state.
 
 ### Fixes
 

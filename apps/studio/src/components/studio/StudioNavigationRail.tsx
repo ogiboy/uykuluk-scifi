@@ -9,8 +9,8 @@ import { StudioBrandLockup } from "./StudioBrandLockup";
 /**
  * Renders the persistent Studio navigation rail.
  *
- * Route links use Next navigation. In-page anchors remain native anchors because they target
- * sections on the current Studio home surface.
+ * Route links use Next navigation. Home-only sections point back to the Studio home anchors so the
+ * rail remains valid from every operator page.
  */
 export function StudioNavigationRail({ locale }: Readonly<{ locale: StudioLocale }>) {
   return (
@@ -23,9 +23,9 @@ export function StudioNavigationRail({ locale }: Readonly<{ locale: StudioLocale
               {section.label}
             </Link>
           ) : (
-            <a key={section.id} href={`#${section.id}`}>
+            <Link key={section.id} href={`/#${section.id}`}>
               {section.label}
-            </a>
+            </Link>
           ),
         )}
       </nav>

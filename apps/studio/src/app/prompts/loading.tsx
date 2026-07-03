@@ -1,12 +1,12 @@
 import { StudioLoadingScaffold } from "@/components/studio/StudioLoadingScaffold";
 
-export default function RunsLoading() {
+export default function PromptsLoading() {
   return (
     <StudioLoadingScaffold
-      eyebrow='Read-only local run review'
+      eyebrow='Read-only prompt sources'
       layout='shell'
-      railPanels={1}
-      title='Producer runs'
+      railPanels={2}
+      title='Loading runtime prompt inventory'
     />
   );
 }

@@ -1,13 +1,13 @@
 import { RunQueueExplorer } from "@/components/runs/RunQueueExplorer";
 import { StudioCommandPalette } from "@/components/studio/StudioCommandPalette";
+import { StudioShell } from "@/components/studio/StudioShell";
 import { listStudioRuns } from "@/lib/runSummaries";
-import Link from "next/link";
 
 export default async function RunsPage() {
   const runs = await listStudioRuns();
 
   return (
-    <main className='studio-main page-shell'>
+    <StudioShell>
       <header className='studio-header'>
         <div>
           <p className='eyebrow'>Read-only local run review</p>
@@ -15,12 +15,10 @@ export default async function RunsPage() {
         </div>
         <div className='studio-header-actions'>
           <StudioCommandPalette runs={runs} />
-          <Link className='status-pill' href='/'>
-            Studio home
-          </Link>
+          <span className='status-pill'>CLI source of truth</span>
         </div>
       </header>
       <RunQueueExplorer runs={runs} />
-    </main>
+    </StudioShell>
   );
 }

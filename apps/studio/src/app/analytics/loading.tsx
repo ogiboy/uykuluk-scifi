@@ -1,12 +1,12 @@
 import { StudioLoadingScaffold } from "@/components/studio/StudioLoadingScaffold";
 
-export default function RunsLoading() {
+export default function AnalyticsLoading() {
   return (
     <StudioLoadingScaffold
-      eyebrow='Read-only local run review'
+      eyebrow='Read-only manual feedback loop'
       layout='shell'
-      railPanels={1}
-      title='Producer runs'
+      railPanels={2}
+      title='Loading analytics feedback'
     />
   );
 }

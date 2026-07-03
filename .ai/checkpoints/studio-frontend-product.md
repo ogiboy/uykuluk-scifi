@@ -24,7 +24,8 @@ upload/publish boundaries.
   `/Users/ogiboy/.codex/worktrees/894d/uykuluk-scifi`.
 - Merged PR: #121, `feat(studio): expand operator workbench controls`, merged into `main` as
   `97a6ebb6` on 2026-07-02.
-- Active local slice: Studio shell, brand, and appearance controls for the operator home surface.
+- Active local slice: shared Studio shell, brand, appearance controls, semantic navigation, loading,
+  and route-boundary recovery across operator pages.
 - Last completed slice/commit before this checkpoint:
   `fix(studio): stabilize operator ui primitives`.
 - Completed current-branch frontend slices include:
@@ -48,6 +49,10 @@ upload/publish boundaries.
     detail so local run/artifact waits keep the operator layout visible.
   - Next Image-backed Studio brand lockup, shared home navigation rail, and local operator
     appearance controls for theme, palette, language, and density preferences.
+  - shared Studio shell and loading skeletons across home, run queue, run detail, analytics, assets,
+    doctor, model-eval, and prompt inventory pages.
+  - Studio `not-found` and `error` route boundaries that show safe recovery guidance without
+    mutating producer state or exposing local filesystem details.
   - semantic component pass for Studio route links, run-index table markup, default button types,
     skeleton accessibility, workflow lists, and review rail landmarks.
   - PR review fixes for approval confirmation payload visibility, ready-queue blocked-run exclusion,
@@ -85,6 +90,9 @@ upload/publish boundaries.
 - Future guarded forms should prefer React/Next server-action patterns such as `useActionState` or
   equivalent form-state handling where they simplify validation, pending state, and fail-closed
   operator feedback.
+- Studio should become the primary human control surface for v1 operator work. CLI/core remains the
+  workflow source of truth and a power-user/AI automation surface; the TUI should stay usable but
+  should not block the web desk from becoming the main review and approval UI.
 - Prefer built-in Next.js and React primitives before adding infrastructure: `next/link`,
   `next/image`, route metadata, server components, route loading boundaries, caching primitives, and
   current form state APIs.
@@ -102,13 +110,17 @@ upload/publish boundaries.
   compact, standard, and wide without changing CLI/core workflow semantics.
 - GSAP or richer motion should be used only where it improves operator orientation or status change
   comprehension, with reduced-motion behavior preserved.
+- HTTP cookies alone are not enough authority for risky Studio mutations. Any broader web control
+  surface needs explicit session and CSRF design, origin checks, unauthorized/forbidden route
+  surfaces, short-lived operator proofs, negative tests, and preservation of the CLI/core approval
+  ledger as the source of truth.
 
 ## Remaining Work
 
-1. Commit the responsive UI polish slice after focused validation.
+1. Commit the shared Studio shell and route-boundary slice after focused validation.
 2. Continue the next frontend slice on the same broad branch if coherent: route-security session UX,
-   artifact preview ergonomics, skeleton/loading states, theme/density controls, or media
-   playback/download handoff.
+   unauthorized/forbidden boundaries, artifact preview ergonomics, theme/density controls, richer
+   form states, or media playback/download handoff.
 3. Open a PR only after related frontend/operator-action work is grouped and locally validated.
 
 ## Blockers And Risks

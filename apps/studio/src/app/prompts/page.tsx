@@ -1,6 +1,6 @@
 import { PromptInventoryView } from "@/components/prompts/PromptInventoryView";
+import { StudioShell } from "@/components/studio/StudioShell";
 import { getStudioPromptInventory } from "@/lib/promptInventory";
-import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -13,17 +13,15 @@ export default async function PromptsPage() {
   const inventory = await getStudioPromptInventory();
 
   return (
-    <main className='studio-main page-shell'>
+    <StudioShell>
       <header className='studio-header'>
         <div>
           <p className='eyebrow'>Read-only prompt sources</p>
           <h1>Runtime prompt inventory</h1>
         </div>
-        <Link className='status-pill' href='/'>
-          Studio home
-        </Link>
+        <span className='status-pill'>Read-only prompts</span>
       </header>
       <PromptInventoryView inventory={inventory} />
-    </main>
+    </StudioShell>
   );
 }

@@ -8,9 +8,8 @@ import { ModelEvalStatusPanel } from "@/components/eval/ModelEvalStatusPanel";
 import { LatestRunReadinessPanel } from "@/components/runs/LatestRunReadinessPanel";
 import { StudioControlDesk } from "@/components/studio/StudioControlDesk";
 import { StudioCommandPalette } from "@/components/studio/StudioCommandPalette";
-import { StudioNavigationRail } from "@/components/studio/StudioNavigationRail";
+import { StudioShell } from "@/components/studio/StudioShell";
 import { StudioTabs } from "@/components/studio/StudioTabs";
-import { normalizeStudioLocale } from "@/i18n/locales";
 import { getStudioAnalyticsOverview } from "@/lib/analyticsOverview";
 import { getStudioActionServiceStatus } from "@/lib/actionServiceStatus";
 import { getStudioAssetInventory } from "@/lib/assetInventory";
@@ -18,7 +17,6 @@ import { getStudioDoctorOverview } from "@/lib/doctorOverview";
 import { getStudioModelEvalOverview } from "@/lib/modelEvalOverview";
 import { getStudioPromptInventory } from "@/lib/promptInventory";
 import { listStudioRuns } from "@/lib/runSummaries";
-import { getLocale } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
 
@@ -33,7 +31,6 @@ export default async function StudioHomePage() {
     analyticsOverview,
     assetInventory,
     doctorOverview,
-    locale,
     modelEvalOverview,
     promptInventory,
     runs,
@@ -41,39 +38,34 @@ export default async function StudioHomePage() {
     Promise.resolve(getStudioAnalyticsOverview()),
     Promise.resolve(getStudioAssetInventory()),
     Promise.resolve(getStudioDoctorOverview()),
-    getLocale(),
     Promise.resolve(getStudioModelEvalOverview()),
     Promise.resolve(getStudioPromptInventory()),
     Promise.resolve(listStudioRuns()),
   ]);
 
   return (
-    <main className='studio-shell'>
-      <StudioNavigationRail locale={normalizeStudioLocale(locale)} />
+    <StudioShell>
+      <header className='studio-header'>
+        <div>
+          <p className='eyebrow'>Local-first production desk</p>
+          <h1>Control UykulukSciFi production from the web surface</h1>
+        </div>
+        <div className='studio-header-actions'>
+          <StudioCommandPalette runs={runs} />
+          <span className='status-pill'>CLI source of truth</span>
+        </div>
+      </header>
 
-      <section className='studio-main'>
-        <header className='studio-header'>
-          <div>
-            <p className='eyebrow'>Local-first production desk</p>
-            <h1>Control UykulukSciFi production from the web surface</h1>
-          </div>
-          <div className='studio-header-actions'>
-            <StudioCommandPalette runs={runs} />
-            <span className='status-pill'>CLI source of truth</span>
-          </div>
-        </header>
-
-        <StudioControlDesk actionStatus={actionStatus} runs={runs} />
-        <StatusGrid />
-        <DoctorStatusPanel overview={doctorOverview} />
-        <ModelEvalStatusPanel overview={modelEvalOverview} />
-        <LatestRunReadinessPanel latestRun={runs[0] ?? null} />
-        <AnalyticsStatusPanel overview={analyticsOverview} />
-        <CommandPanel />
-        <ServiceContractPanel />
-        <AssetInventory inventory={assetInventory} />
-        <StudioTabs promptInventory={promptInventory} />
-      </section>
-    </main>
+      <StudioControlDesk actionStatus={actionStatus} runs={runs} />
+      <StatusGrid />
+      <DoctorStatusPanel overview={doctorOverview} />
+      <ModelEvalStatusPanel overview={modelEvalOverview} />
+      <LatestRunReadinessPanel latestRun={runs[0] ?? null} />
+      <AnalyticsStatusPanel overview={analyticsOverview} />
+      <CommandPanel />
+      <ServiceContractPanel />
+      <AssetInventory inventory={assetInventory} />
+      <StudioTabs promptInventory={promptInventory} />
+    </StudioShell>
   );
 }
