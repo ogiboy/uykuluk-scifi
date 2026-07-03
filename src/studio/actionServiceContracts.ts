@@ -26,19 +26,21 @@ const runOnlyRequestSchema = z.strictObject({
   runId: runIdSchema,
 });
 
-const renderDecisionRequestSchema = z.strictObject({
-  decision: z.enum(renderDecisionValues),
+const localReviewRequestShape = {
   notes: z.string().trim().min(1).max(4_000),
   reviewedBy: z.string().trim().min(1).max(200),
   runId: runIdSchema,
+} as const;
+
+const renderDecisionRequestSchema = z.strictObject({
+  decision: z.enum(renderDecisionValues),
+  ...localReviewRequestShape,
 });
 
 const channelHandoffDecisionRequestSchema = z
   .strictObject({
     decision: z.enum(channelHandoffDecisionValues),
-    notes: z.string().trim().min(1).max(4_000),
-    reviewedBy: z.string().trim().min(1).max(200),
-    runId: runIdSchema,
+    ...localReviewRequestShape,
     thumbnailCandidateId: z.string().trim().min(1).max(120).optional(),
   })
   .refine(

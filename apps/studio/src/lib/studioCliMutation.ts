@@ -3,22 +3,23 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { ZodError } from "zod";
-import {
-  parseStudioMutationRequest,
-  type StudioMutationServiceContractId,
-} from "../../../../src/studio/actionServiceContracts";
 import { projectRoot } from "./projectRoot";
+import {
+  parseChannelHandoffDecisionPayload,
+  parseIdeaApprovalPayload,
+  parseRenderDecisionPayload,
+  parseRunOnlyPayload,
+  parseScriptApprovalPayload,
+} from "./studioMutationPayloadContracts";
 import { validateStudioMutationRequest } from "./studioMutationSecurity";
 
-type StudioCliMutationActionId = Extract<
-  StudioMutationServiceContractId,
+type StudioCliMutationActionId =
   | "channel-handoff.decide"
   | "cost.approve"
   | "idea.approve"
   | "render.approve"
   | "render.decide"
-  | "script.approve"
->;
+  | "script.approve";
 
 type CliResult = Readonly<{
   stderr: string;
@@ -89,11 +90,11 @@ function noStoreHeaders(): HeadersInit {
 
 function cliArgsForAction(actionId: StudioCliMutationActionId, payload: unknown): string[] {
   if (actionId === "idea.approve") {
-    const input = parseStudioMutationRequest("idea.approve", payload);
+    const input = parseIdeaApprovalPayload(payload);
     return ["approve", "idea", "--run", input.runId, "--idea", input.ideaId, "--json"];
   }
   if (actionId === "script.approve") {
-    const input = parseStudioMutationRequest("script.approve", payload);
+    const input = parseScriptApprovalPayload(payload);
     return [
       "approve",
       "script",
@@ -104,15 +105,15 @@ function cliArgsForAction(actionId: StudioCliMutationActionId, payload: unknown)
     ];
   }
   if (actionId === "cost.approve") {
-    const input = parseStudioMutationRequest("cost.approve", payload);
+    const input = parseRunOnlyPayload(payload);
     return ["approve", "cost", "--run", input.runId, "--json"];
   }
   if (actionId === "render.approve") {
-    const input = parseStudioMutationRequest("render.approve", payload);
+    const input = parseRunOnlyPayload(payload);
     return ["approve", "render", "--run", input.runId, "--json"];
   }
   if (actionId === "render.decide") {
-    const input = parseStudioMutationRequest("render.decide", payload);
+    const input = parseRenderDecisionPayload(payload);
     return [
       "decide",
       "render",
@@ -127,7 +128,7 @@ function cliArgsForAction(actionId: StudioCliMutationActionId, payload: unknown)
       "--json",
     ];
   }
-  const input = parseStudioMutationRequest("channel-handoff.decide", payload);
+  const input = parseChannelHandoffDecisionPayload(payload);
   return [
     "decide",
     "channel-handoff",
