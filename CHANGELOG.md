@@ -17,6 +17,11 @@ future generated release notes can be inserted predictably.
 - add a Studio artifact review handoff path so operators can see which local review documents are
   available before the final draft decision.
 
+### Fixes
+
+- tighten Studio responsive layout containment so the home, run index, and run detail views avoid
+  horizontal overflow on mobile while preserving scrollable wide run tables on desktop.
+
 ## v0.65.4 (2026-07-03)
 
 ### Build

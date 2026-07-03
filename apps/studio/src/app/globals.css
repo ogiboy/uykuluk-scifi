@@ -70,7 +70,9 @@ a {
 .studio-shell {
   display: grid;
   grid-template-columns: 260px minmax(0, 1fr);
+  max-width: 100%;
   min-height: 100vh;
+  min-width: 0;
 }
 
 .studio-rail {
@@ -131,7 +133,12 @@ a {
   display: grid;
   gap: 24px;
   align-content: start;
+  min-width: 0;
   padding: 28px;
+}
+
+.studio-main > * {
+  min-width: 0;
 }
 
 .page-shell {
@@ -145,6 +152,10 @@ a {
   justify-content: space-between;
   border-bottom: 1px solid var(--line);
   padding-bottom: 20px;
+}
+
+.studio-header > div {
+  min-width: 0;
 }
 
 .studio-header-actions {
@@ -184,6 +195,7 @@ h1 {
   margin-bottom: 0;
   font-size: 32px;
   line-height: 1.15;
+  overflow-wrap: anywhere;
 }
 
 h2 {
@@ -226,6 +238,8 @@ h3 {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--panel);
+  min-width: 0;
+  overflow-wrap: anywhere;
   padding: 16px;
 }
 
@@ -312,6 +326,7 @@ h3 {
   display: grid;
   grid-template-columns: minmax(0, 1.7fr) minmax(280px, 0.8fr);
   gap: 16px;
+  min-width: 0;
 }
 
 .control-desk-primary,
@@ -319,14 +334,21 @@ h3 {
 .control-desk-rail {
   display: grid;
   gap: 14px;
+  min-width: 0;
 }
 
 .control-desk-heading,
 .active-run-header {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
   align-items: flex-start;
   justify-content: space-between;
+}
+
+.control-desk-heading > div,
+.active-run-header > div {
+  min-width: 0;
 }
 
 .active-run-actions {
@@ -360,6 +382,7 @@ h3 {
 .active-run-card h3 {
   margin-bottom: 0;
   font-size: 20px;
+  overflow-wrap: anywhere;
 }
 
 .operator-command-block,
@@ -530,6 +553,7 @@ h3 {
 .queue-toolbar {
   display: grid;
   gap: 12px;
+  min-width: 0;
 }
 
 .queue-result-badges,
@@ -627,6 +651,9 @@ h3 {
 
 .run-table {
   display: grid;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   overflow-x: auto;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -694,11 +721,13 @@ h3 {
 .run-review-rail {
   display: grid;
   gap: 16px;
+  min-width: 0;
 }
 
 .run-review-tabs {
   display: grid;
   gap: 16px;
+  min-width: 0;
 }
 
 .run-review-cockpit {
@@ -706,11 +735,13 @@ h3 {
   grid-template-columns: minmax(0, 1fr) minmax(320px, 0.42fr);
   gap: 16px;
   align-items: start;
+  min-width: 0;
 }
 
 .run-review-sticky-rail {
   position: sticky;
   top: 16px;
+  min-width: 0;
   max-height: calc(100dvh - 32px);
   overflow: auto;
 }
@@ -755,6 +786,7 @@ h3 {
   background:
     linear-gradient(135deg, color-mix(in srgb, var(--accent) 7%, transparent), transparent 50%),
     var(--panel);
+  min-width: 0;
   padding: 16px;
 }
 
@@ -950,6 +982,11 @@ h3 {
 .run-metadata dd {
   margin: 4px 0 0;
   font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.run-metadata div {
+  min-width: 0;
 }
 
 .artifact-list {
@@ -1382,23 +1419,53 @@ h3 {
 @media (max-width: 900px) {
   .studio-shell {
     grid-template-columns: 1fr;
+    overflow-x: clip;
   }
 
   .studio-rail {
     border-right: 0;
     border-bottom: 1px solid var(--line);
+    padding: 18px 16px;
+  }
+
+  .brand-lockup,
+  .studio-rail nav,
+  .studio-header-actions {
+    min-width: 0;
   }
 
   .studio-rail nav {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .studio-rail a {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
   .studio-main {
-    padding: 20px;
+    padding: 20px 16px;
   }
 
   .studio-header {
     display: grid;
+  }
+
+  .studio-header > .status-pill {
+    justify-self: start;
+  }
+
+  h1 {
+    font-size: 28px;
+  }
+
+  .active-run-actions {
+    justify-content: flex-start;
+    width: 100%;
+  }
+
+  .run-metadata {
+    grid-template-columns: 1fr;
   }
 
   .status-grid,

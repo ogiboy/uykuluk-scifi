@@ -24,8 +24,8 @@ upload/publish boundaries.
   `/Users/ogiboy/.codex/worktrees/894d/uykuluk-scifi`.
 - Merged PR: #121, `feat(studio): expand operator workbench controls`, merged into `main` as
   `97a6ebb6` on 2026-07-02.
-- Active local slice: guarded-action preflight summaries plus artifact review handoff path for
-  Studio run detail.
+- Active local slice: Studio visual QA and responsive layout polish for the home, run index, and run
+  detail operator surfaces.
 - Last completed slice/commit before this checkpoint:
   `fix(studio): stabilize operator ui primitives`.
 - Completed current-branch frontend slices include:
@@ -41,6 +41,8 @@ upload/publish boundaries.
   - artifact review handoff path in the Artifacts tab, showing the review documents available for
     script, render-plan contact sheet, voiceover, draft render, final review bundle, and manual
     channel handoff.
+  - visual overflow fixes for Studio shell/main containment, run table scrolling, mobile navigation,
+    long run ids, detail rail metadata, and narrow-screen metric grids.
   - PR review fixes for approval confirmation payload visibility, ready-queue blocked-run exclusion,
     workflow overflow indicators, tooltip delay, full command-palette search, client-side palette
     navigation, fail-closed short-lived Studio sessions, and shared Studio next-command fallbacks.
@@ -65,8 +67,10 @@ upload/publish boundaries.
     Decisions tabs.
   - browser smoke on `/runs/run_20260702013835_ada7ab` Media tab for rendered media cards and
     copyable review/playback controls.
-- Dirty or external changes to preserve: current local branch contains the uncommitted artifact
-  review handoff slice pending commit.
+  - browser overflow audit on Studio home, `/runs`, and `/runs/run_20260702013835_ada7ab` at desktop
+    and mobile widths; final mobile home/detail/runs body overflow was `0px` at 390px viewport.
+- Dirty or external changes to preserve: current local branch contains the uncommitted responsive UI
+  polish slice pending commit.
 
 ## Decisions
 
@@ -79,9 +83,9 @@ upload/publish boundaries.
 
 ## Remaining Work
 
-1. Commit the artifact review handoff slice after focused validation.
-2. Continue the next frontend slice on the same broad branch if coherent: likely route-security
-   session UX, artifact preview ergonomics, or media playback/download handoff.
+1. Commit the responsive UI polish slice after focused validation.
+2. Continue the next frontend slice on the same broad branch if coherent: route-security session UX,
+   artifact preview ergonomics, or media playback/download handoff.
 3. Open a PR only after related frontend/operator-action work is grouped and locally validated.
 
 ## Blockers And Risks
