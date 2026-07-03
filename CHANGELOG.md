@@ -9,6 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
+_No unreleased changes yet._
+
+## v0.66.0 (2026-07-03)
+
 ### Features
 
 - add Studio guarded-action preflight summaries so operators can see current evidence, readiness,
