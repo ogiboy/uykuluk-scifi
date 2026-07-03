@@ -25,8 +25,7 @@ upload/publish boundaries.
 - Merged PR: #121, `feat(studio): expand operator workbench controls`, merged into `main` as
   `97a6ebb6` on 2026-07-02.
 - Active local slice: run queue data-grid ergonomics on the shared Studio operator branch.
-- Last completed slice/commit before this checkpoint:
-  `fix(studio): stabilize operator ui primitives`.
+- Last completed slice/commit before this checkpoint: `chore(deps): refresh workspace dependencies`.
 - Completed current-branch frontend slices include:
   - shadcn route/action primitives for guarded local actions;
   - Studio home control desk, queue filters, command palette, copyable safe commands;
@@ -55,6 +54,8 @@ upload/publish boundaries.
   - TanStack Table-backed run queue with semantic native table markup, header sorting, column
     visibility controls, a tighter default column set, sticky run identifiers on desktop, and mobile
     card fallback.
+  - run queue projection reset and filtered-empty states so the Studio tells operators when no runs
+    exist, when search/filter found no matches, or when the blocker-limit tuning hid matching runs.
   - semantic component pass for Studio route links, run-index table markup, default button types,
     skeleton accessibility, workflow lists, and review rail landmarks.
   - PR review fixes for approval confirmation payload visibility, ready-queue blocked-run exclusion,
@@ -76,10 +77,13 @@ upload/publish boundaries.
     light/violet/compact preferences, and desktop/mobile body overflow stayed `0px`.
   - browser smoke on `/runs`: native `table.run-table` exposed 8 column headers and row headers,
     mobile card mode preserved `Run` labels, and no 4xx responses were observed.
+  - browser smoke on `/runs`: TanStack grid exposed sortable headers, the Columns menu, and no body
+    overflow after the data-grid upgrade.
+  - browser smoke on `/runs`: impossible search text shows `No matching runs`, enables `Reset view`,
+    resets the query to an empty string, restores the table, and keeps body overflow at `0px`.
 - Earlier branch checks also included modularity, release, targeted Vitest, and browser smoke across
   run detail Media, Artifacts, Readiness, Decisions, and mobile overflow surfaces.
-- Dirty or external changes to preserve: current local branch contains the uncommitted Studio
-  appearance/shell slice pending commit.
+- Dirty or external changes to preserve: none known after the latest committed frontend slices.
 
 ## Decisions
 

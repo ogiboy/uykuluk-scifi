@@ -38,6 +38,8 @@ future generated release notes can be inserted predictably.
   action-contract mismatches as forbidden requests.
 - reduce run queue table overflow by hiding lower-priority review columns by default while keeping
   them available from the column menu.
+- distinguish an empty Studio run store from filtered-away run queue results and add a reset action
+  for returning to the default operator projection.
 - tighten Studio responsive layout containment so the home, run index, and run detail views avoid
   horizontal overflow on mobile while preserving scrollable wide run tables on desktop.
 - fit the run index table into common desktop widths and switch narrow mobile run rows to labeled

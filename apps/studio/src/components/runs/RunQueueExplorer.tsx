@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -21,6 +22,7 @@ import {
 } from "@/lib/runQueueFilters";
 import {
   applyRunQueueWorkbenchControls,
+  runQueueEmptyState,
   type RunQueueDensity,
   type RunQueueSort,
   runQueueSortValues,
@@ -48,6 +50,10 @@ const sortLabels = {
   "updated-desc": "Newest first",
 } as const satisfies Record<RunQueueSort, string>;
 
+const defaultRunQueueFilter = "all" satisfies RunQueueFilter;
+const defaultRunQueueDensity = "comfortable" satisfies RunQueueDensity;
+const defaultRunQueueSort = "updated-desc" satisfies RunQueueSort;
+
 /**
  * Renders a filterable operator queue for persisted Studio runs.
  *
@@ -59,11 +65,11 @@ export function RunQueueExplorer({ runs }: RunQueueExplorerProps) {
     0,
     ...runs.map((run) => Math.min(run.blockedActionCount, maxBlockedActionSliderValue)),
   );
-  const [filter, setFilter] = useState<RunQueueFilter>("all");
-  const [density, setDensity] = useState<RunQueueDensity>("comfortable");
+  const [filter, setFilter] = useState<RunQueueFilter>(defaultRunQueueFilter);
+  const [density, setDensity] = useState<RunQueueDensity>(defaultRunQueueDensity);
   const [maxBlockedActions, setMaxBlockedActions] = useState(maxBlockedActionSliderValue);
   const [query, setQuery] = useState("");
-  const [sort, setSort] = useState<RunQueueSort>("updated-desc");
+  const [sort, setSort] = useState<RunQueueSort>(defaultRunQueueSort);
   const counts = useMemo(() => countStudioRunQueueFilters(runs), [runs]);
   const matchingRuns = useMemo(
     () => filterStudioRunQueue(runs, { filter, query }),
@@ -78,6 +84,21 @@ export function RunQueueExplorer({ runs }: RunQueueExplorerProps) {
     [matchingRuns, maxBlockedActions, sort],
   );
   const hiddenByBlockerControl = matchingRuns.length - filteredRuns.length;
+  const queueViewIsCustomized =
+    density !== defaultRunQueueDensity ||
+    filter !== defaultRunQueueFilter ||
+    maxBlockedActions !== maxBlockedActionSliderValue ||
+    query.trim() !== "" ||
+    sort !== defaultRunQueueSort;
+  const emptyState = runQueueEmptyState(runs.length, matchingRuns.length, filteredRuns.length);
+
+  function resetQueueView() {
+    setDensity(defaultRunQueueDensity);
+    setFilter(defaultRunQueueFilter);
+    setMaxBlockedActions(maxBlockedActionSliderValue);
+    setQuery("");
+    setSort(defaultRunQueueSort);
+  }
 
   return (
     <section className='run-queue-explorer' aria-labelledby='runs-queue-heading'>
@@ -142,6 +163,14 @@ export function RunQueueExplorer({ runs }: RunQueueExplorerProps) {
               onDensityChange={setDensity}
               onMaxBlockedActionsChange={setMaxBlockedActions}
             />
+            <Button
+              disabled={!queueViewIsCustomized}
+              onClick={resetQueueView}
+              type='button'
+              variant='secondary'
+            >
+              Reset view
+            </Button>
           </div>
         </div>
         <p>
@@ -149,7 +178,7 @@ export function RunQueueExplorer({ runs }: RunQueueExplorerProps) {
           render decisions remain on each guarded run detail page.
         </p>
       </div>
-      <RunSummaryTable density={density} runs={filteredRuns} />
+      <RunSummaryTable density={density} emptyState={emptyState} runs={filteredRuns} />
     </section>
   );
 }

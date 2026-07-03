@@ -15,6 +15,10 @@ import { ColumnVisibilityMenu, RunSortableHeader, RunTableCell } from "./RunSumm
 
 type RunSummaryTableProps = Readonly<{
   density?: RunQueueDensity;
+  emptyState?: Readonly<{
+    heading: string;
+    message: string;
+  }>;
   runs: readonly StudioRunSummary[];
 }>;
 
@@ -29,7 +33,14 @@ const initialColumnVisibility = {
  * @param density - The operator-selected table density.
  * @param runs - The runs to display
  */
-export function RunSummaryTable({ density = "comfortable", runs }: RunSummaryTableProps) {
+export function RunSummaryTable({
+  density = "comfortable",
+  emptyState = {
+    heading: "No runs yet",
+    message: "Start with the CLI source of truth: pnpm producer ideas.",
+  },
+  runs,
+}: RunSummaryTableProps) {
   const [columnVisibility, setColumnVisibility] =
     useState<VisibilityState>(initialColumnVisibility);
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -53,8 +64,8 @@ export function RunSummaryTable({ density = "comfortable", runs }: RunSummaryTab
   if (runs.length === 0) {
     return (
       <section className='panel' aria-labelledby='runs-empty-heading'>
-        <h2 id='runs-empty-heading'>No runs yet</h2>
-        <p>Start with the CLI source of truth: pnpm producer ideas.</p>
+        <h2 id='runs-empty-heading'>{emptyState.heading}</h2>
+        <p>{emptyState.message}</p>
       </section>
     );
   }

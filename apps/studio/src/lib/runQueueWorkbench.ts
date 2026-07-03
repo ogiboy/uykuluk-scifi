@@ -18,6 +18,11 @@ export type RunQueueWorkbenchInput = Readonly<{
   sort: RunQueueSort;
 }>;
 
+export type RunQueueEmptyState = Readonly<{
+  heading: string;
+  message: string;
+}>;
+
 /**
  * Applies operator-facing queue controls after the primary run filter/search projection.
  *
@@ -32,6 +37,43 @@ export function applyRunQueueWorkbenchControls(
   return runs
     .filter((run) => run.blockedActionCount <= input.maxBlockedActions)
     .sort((left, right) => compareRuns(left, right, input.sort));
+}
+
+/**
+ * Builds the operator-facing empty state for the current run queue projection.
+ *
+ * @param totalRuns - Number of persisted runs before any queue projection.
+ * @param matchingRuns - Runs that match the selected category and search query.
+ * @param visibleRuns - Runs still visible after display tuning controls are applied.
+ * @returns Empty-state copy that distinguishes no data from filtered-away data.
+ */
+export function runQueueEmptyState(
+  totalRuns: number,
+  matchingRuns: number,
+  visibleRuns: number,
+): RunQueueEmptyState {
+  if (totalRuns === 0) {
+    return {
+      heading: "No runs yet",
+      message: "Start with the CLI source of truth: pnpm producer ideas.",
+    };
+  }
+  if (matchingRuns === 0) {
+    return {
+      heading: "No matching runs",
+      message: "Clear the search text or choose a broader run filter.",
+    };
+  }
+  if (visibleRuns === 0) {
+    return {
+      heading: "All matching runs are hidden",
+      message: "Raise the blocker limit or reset the queue view to show matching runs.",
+    };
+  }
+  return {
+    heading: "No runs shown",
+    message: "Reset the queue view to return to the default operator projection.",
+  };
 }
 
 function compareRuns(left: StudioRunSummary, right: StudioRunSummary, sort: RunQueueSort): number {
