@@ -1,5 +1,4 @@
 import type { StudioRunSummary } from "@/lib/runSummaries";
-import { buildStudioActionWorkbench } from "@/lib/studioActionWorkbench";
 import {
   formatRunChannelHandoff,
   formatRunChannelHandoffDecision,
@@ -9,15 +8,16 @@ import {
 } from "@/lib/runSummaryCopy";
 import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
+import {
+  operatorActionDetail,
+  operatorActionForRun,
+  operatorActionSearchText,
+} from "./runSummaryOperatorAction";
 import { RunSummaryRowActions } from "./RunSummaryRowActions";
 
 type RunTableColumnMeta = Readonly<{
   label: string;
 }>;
-
-type OperatorAction = ReturnType<typeof buildStudioActionWorkbench>["primary"];
-
-const operatorActionCache = new WeakMap<StudioRunSummary, OperatorAction>();
 
 export function runSummaryColumns(): ColumnDef<StudioRunSummary>[] {
   return [
@@ -197,28 +197,4 @@ function formatRunDate(value: string): string {
     minute: "2-digit",
     month: "2-digit",
   });
-}
-
-function operatorActionDetail(action: OperatorAction): string {
-  if (action.routePath) {
-    return "Guarded local web action";
-  }
-  if (action.command) {
-    return action.tone === "blocked" ? "Blocked CLI recovery" : "CLI-only next action";
-  }
-  return "No safe action";
-}
-
-function operatorActionForRun(run: StudioRunSummary): OperatorAction {
-  const cached = operatorActionCache.get(run);
-  if (cached) {
-    return cached;
-  }
-  const action = buildStudioActionWorkbench(run).primary;
-  operatorActionCache.set(run, action);
-  return action;
-}
-
-function operatorActionSearchText(action: OperatorAction): string {
-  return [action.label, action.tone, action.routePath ?? "", action.command ?? ""].join(" ");
 }
