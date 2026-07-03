@@ -9,6 +9,10 @@ import {
   NO_RUNS_NEXT_COMMAND,
 } from "@/lib/runSummaryCopy";
 import type { StudioActionServiceStatus } from "@/lib/actionServiceStatus";
+import {
+  buildStudioActionWorkbench,
+  type StudioActionWorkbenchTone,
+} from "@/lib/studioActionWorkbench";
 import { CopyableCommand } from "./CopyableCommand";
 import { StudioMutationSessionPanel } from "./StudioMutationSessionPanel";
 
@@ -52,6 +56,7 @@ export function StudioControlDesk({ actionStatus, runs }: StudioControlDeskProps
 }
 
 function ActiveRunCard({ run }: Readonly<{ run: StudioRunSummary }>) {
+  const actionWorkbench = buildStudioActionWorkbench(run);
   const currentSteps = run.workflowProgress.filter((step) =>
     ["blocked", "current"].includes(step.status),
   );
@@ -85,6 +90,17 @@ function ActiveRunCard({ run }: Readonly<{ run: StudioRunSummary }>) {
         <CopyableCommand command={getNextSafeCommand(run)} label='Next safe action' />
       </div>
 
+      <div className='active-run-action-summary'>
+        <div>
+          <strong>{actionWorkbench.primary.label}</strong>
+          <span>{formatWorkbenchTone(actionWorkbench.primary.tone)}</span>
+        </div>
+        <p>{actionWorkbench.primary.description}</p>
+        {actionWorkbench.primary.routePath ? (
+          <span className='artifact-action'>Web route: {actionWorkbench.primary.routePath}</span>
+        ) : null}
+      </div>
+
       <ol className='workflow-strip' aria-label='Current workflow attention'>
         {visibleCurrentSteps.length > 0 ? (
           visibleCurrentSteps.map((step) => (
@@ -110,6 +126,21 @@ function ActiveRunCard({ run }: Readonly<{ run: StudioRunSummary }>) {
       <p className='artifact-description'>{formatRunReviewCounts(run)}</p>
     </article>
   );
+}
+
+function formatWorkbenchTone(tone: StudioActionWorkbenchTone): string {
+  switch (tone) {
+    case "attention":
+      return "attention";
+    case "available":
+      return "web action";
+    case "blocked":
+      return "blocked";
+    case "cli-only":
+      return "CLI";
+    case "complete":
+      return "complete";
+  }
 }
 
 function EmptyRunCard() {

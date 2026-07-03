@@ -55,6 +55,26 @@ describe("Studio action workbench", () => {
     );
   });
 
+  it("uses persisted render-decision next action when compact summaries lack command templates", () => {
+    const nextAction =
+      "pnpm producer decide render --run run_workbench --decision accepted-for-local-review";
+    const workbench = buildStudioActionWorkbench(
+      actionRunFixture({
+        renderDecision: { kind: "missing", nextAction },
+        state: "RENDERED",
+      }),
+    );
+
+    expect(workbench.primary).toEqual(
+      expect.objectContaining({
+        command: nextAction,
+        label: "Record render decision",
+        routePath: "/actions/decide-render",
+        tone: "available",
+      }),
+    );
+  });
+
   it("keeps blocked CLI-only next actions visible when no web route applies", () => {
     const workbench = buildStudioActionWorkbench(
       actionRunFixture({
@@ -106,7 +126,7 @@ function actionRunFixture(
     channelHandoffDecision: { kind: "missing", nextAction: null },
     nextRecommendedCommand: null,
     readinessStatus: "passed",
-    renderDecision: { kind: "missing" },
+    renderDecision: { kind: "missing", nextAction: null },
     renderDecisionCommands: [],
     runId: "run_workbench",
     state: "NEW",

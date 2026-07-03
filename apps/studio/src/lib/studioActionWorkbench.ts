@@ -30,8 +30,8 @@ export type StudioActionWorkbenchRun = Pick<
   Readonly<{
     channelHandoff: Pick<StudioRunDetail["channelHandoff"], "kind">;
     channelHandoffDecision: Pick<StudioRunDetail["channelHandoffDecision"], "kind" | "nextAction">;
-    renderDecision: Pick<StudioRunDetail["renderDecision"], "kind">;
-    renderDecisionCommands: readonly Pick<
+    renderDecision: Pick<StudioRunDetail["renderDecision"], "kind" | "nextAction">;
+    renderDecisionCommands?: readonly Pick<
       StudioRunDetail["renderDecisionCommands"][number],
       "command"
     >[];
@@ -58,9 +58,10 @@ function primaryWorkbenchAction(run: StudioActionWorkbenchRun): StudioActionWork
   if (approvalAction) {
     return approvalWorkbenchAction(approvalAction, run);
   }
-  if (run.renderDecisionCommands.length > 0) {
+  const renderDecisionCommand = nextRenderDecisionCommand(run);
+  if (renderDecisionCommand) {
     return {
-      command: run.renderDecisionCommands[0]?.command ?? run.nextRecommendedCommand,
+      command: renderDecisionCommand,
       description:
         "A local draft render is ready for an explicit operator decision. The decision writes review evidence only.",
       label: "Record render decision",
@@ -115,6 +116,13 @@ function approvalWorkbenchAction(
 
 function channelHandoffDecisionAvailable(run: StudioActionWorkbenchRun): boolean {
   return run.channelHandoff.kind === "present" && run.channelHandoffDecision.kind === "missing";
+}
+
+function nextRenderDecisionCommand(run: StudioActionWorkbenchRun): string | null {
+  if (run.state !== "RENDERED" || run.renderDecision.kind === "present") {
+    return null;
+  }
+  return run.renderDecisionCommands?.[0]?.command ?? run.renderDecision.nextAction ?? null;
 }
 
 function actionWorkbenchBoundaries(runId: string): StudioActionWorkbenchBoundary[] {
