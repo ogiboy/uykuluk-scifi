@@ -1565,8 +1565,89 @@ h3 {
   margin-top: 14px;
 }
 
+.production-media-summary {
+  display: grid;
+  gap: 14px;
+  align-items: start;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--studio-surface-inset);
+  margin-top: 14px;
+  padding: 14px;
+}
+
+.production-media-summary.ready {
+  border-color: color-mix(in srgb, var(--accent) 52%, var(--line));
+  background: color-mix(in srgb, var(--accent) 10%, var(--studio-surface-inset));
+}
+
+.production-media-summary.pending,
+.production-media-summary.attention {
+  border-color: color-mix(in srgb, var(--warning) 52%, var(--line));
+  background: color-mix(in srgb, var(--warning) 10%, var(--studio-surface-inset));
+}
+
+.production-media-summary.blocked {
+  border-color: color-mix(in srgb, var(--danger) 58%, var(--line));
+  background: color-mix(in srgb, var(--danger) 10%, var(--studio-surface-inset));
+}
+
+.production-media-summary strong {
+  display: block;
+}
+
+.production-media-summary p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.production-media-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.production-media-metrics div {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel);
+  padding: 10px;
+}
+
+.production-media-metrics dt {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.production-media-metrics dd {
+  margin: 4px 0 0;
+  color: var(--text);
+  font-size: 18px;
+  font-weight: 800;
+}
+
 .production-media-card {
+  overflow: hidden;
   align-self: start;
+}
+
+.production-media-card.pass {
+  border-color: color-mix(in srgb, var(--accent) 36%, var(--line));
+}
+
+.production-media-card.block {
+  border-color: color-mix(in srgb, var(--danger) 52%, var(--line));
+}
+
+.production-media-card.missing,
+.production-media-card.recorded {
+  border-color: color-mix(in srgb, var(--warning) 42%, var(--line));
 }
 
 .production-media-card-title {
@@ -2069,6 +2150,10 @@ h3 {
 
   .run-page-size-select {
     width: 100%;
+  }
+
+  .production-media-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .run-table {

@@ -9,7 +9,9 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Features
+
+- add Studio production-media review summary metrics and next-focus guidance.
 
 ## v0.70.0 (2026-07-03)
 

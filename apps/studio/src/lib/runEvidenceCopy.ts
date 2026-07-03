@@ -6,6 +6,23 @@ import {
 
 type EvidenceStatus = StudioEvidenceSummary["status"];
 
+export type ProductionMediaReviewSummary = Readonly<{
+  blockedCount: number;
+  focus: ProductionMediaReviewFocus | null;
+  missingCount: number;
+  recordedOnlyCount: number;
+  title: string;
+  tone: "attention" | "blocked" | "pending" | "ready";
+  totalCount: number;
+  verifiedCount: number;
+}>;
+
+export type ProductionMediaReviewFocus = Readonly<{
+  action: string;
+  label: string;
+  status: ProductionMediaStatus["status"];
+}>;
+
 /**
  * Describes blocked-action evidence status in the Studio UI.
  *
@@ -60,6 +77,42 @@ export function productionMediaReviewAction(
 }
 
 /**
+ * Summarizes local production media status for the Studio review surface.
+ *
+ * @param evidenceStatus - Whether the evidence bundle is current.
+ * @param productionMedia - The media rows projected from evidence and run artifacts.
+ * @returns Count and next-focus copy for operator review.
+ */
+export function productionMediaReviewSummary(
+  evidenceStatus: EvidenceStatus,
+  productionMedia: readonly ProductionMediaStatus[],
+): ProductionMediaReviewSummary {
+  const blockedCount = countMediaByStatus(productionMedia, "block");
+  const missingCount = countMediaByStatus(productionMedia, "missing");
+  const recordedOnlyCount = countMediaByStatus(productionMedia, "recorded");
+  const verifiedCount =
+    evidenceStatus === "available" ? countMediaByStatus(productionMedia, "pass") : 0;
+  const tone = productionMediaReviewTone({
+    blockedCount,
+    evidenceStatus,
+    missingCount,
+    recordedOnlyCount,
+    totalCount: productionMedia.length,
+    verifiedCount,
+  });
+  return {
+    blockedCount,
+    focus: productionMediaReviewFocus(evidenceStatus, productionMedia),
+    missingCount,
+    recordedOnlyCount,
+    title: productionMediaReviewTitle(tone),
+    tone,
+    totalCount: productionMedia.length,
+    verifiedCount,
+  };
+}
+
+/**
  * Describes how artifact previews should be interpreted for the current evidence state.
  *
  * @param evidenceStatus - The current evidence bundle status.
@@ -80,4 +133,77 @@ export function artifactPreviewsIntro(evidenceStatus: EvidenceStatus): string {
  */
 export function shouldShowEvidenceRemediation(evidenceStatus: EvidenceStatus): boolean {
   return evidenceStatus !== "available";
+}
+
+function countMediaByStatus(
+  productionMedia: readonly ProductionMediaStatus[],
+  status: ProductionMediaStatus["status"],
+): number {
+  return productionMedia.filter((artifact) => artifact.status === status).length;
+}
+
+function productionMediaReviewTone(input: {
+  blockedCount: number;
+  evidenceStatus: EvidenceStatus;
+  missingCount: number;
+  recordedOnlyCount: number;
+  totalCount: number;
+  verifiedCount: number;
+}): ProductionMediaReviewSummary["tone"] {
+  if (input.blockedCount > 0) {
+    return "blocked";
+  }
+  if (input.evidenceStatus !== "available" || input.recordedOnlyCount > 0) {
+    return "attention";
+  }
+  if (input.totalCount > 0 && input.verifiedCount === input.totalCount) {
+    return "ready";
+  }
+  if (input.missingCount > 0) {
+    return "pending";
+  }
+  return "attention";
+}
+
+function productionMediaReviewTitle(tone: ProductionMediaReviewSummary["tone"]): string {
+  switch (tone) {
+    case "blocked":
+      return "Media review blocked";
+    case "attention":
+      return "Refresh evidence before trusting media";
+    case "ready":
+      return "Local media ready for review";
+    case "pending":
+      return "Media artifacts still pending";
+  }
+}
+
+function productionMediaReviewFocus(
+  evidenceStatus: EvidenceStatus,
+  productionMedia: readonly ProductionMediaStatus[],
+): ProductionMediaReviewFocus | null {
+  const artifact =
+    productionMedia.find((item) => item.status === "block") ??
+    productionMedia.find((item) => item.status === "recorded") ??
+    productionMedia.find((item) => item.status === "missing") ??
+    preferredReviewArtifact(productionMedia);
+  if (!artifact) {
+    return null;
+  }
+  return {
+    action: productionMediaReviewAction(evidenceStatus, artifact),
+    label: artifact.label,
+    status: artifact.status,
+  };
+}
+
+function preferredReviewArtifact(
+  productionMedia: readonly ProductionMediaStatus[],
+): ProductionMediaStatus | undefined {
+  return (
+    productionMedia.find((artifact) => artifact.evidenceKey === "draftRender") ??
+    productionMedia.find((artifact) => artifact.evidenceKey === "voiceoverAudio") ??
+    productionMedia.find((artifact) => artifact.evidenceKey === "renderPlan") ??
+    productionMedia[0]
+  );
 }
