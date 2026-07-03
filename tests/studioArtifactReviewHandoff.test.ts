@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { StudioArtifactPreview } from "../apps/studio/src/lib/artifactPreviews";
 import { buildArtifactReviewHandoff } from "../apps/studio/src/lib/artifactReviewHandoff";
+import { studioArtifactPreview } from "./studioArtifactPreviewFixtures";
 
 describe("Studio artifact review handoff", () => {
   it("orders local review milestones and reports the next missing focus", () => {
@@ -44,7 +45,7 @@ describe("Studio artifact review handoff", () => {
 });
 
 function artifactPreview(path: string, label: string, exists: boolean): StudioArtifactPreview {
-  return {
+  return studioArtifactPreview({
     description: `${label} description.`,
     exists,
     group: "Audio And Render",
@@ -55,5 +56,5 @@ function artifactPreview(path: string, label: string, exists: boolean): StudioAr
     preview: exists ? `${label} preview.` : null,
     previewTruncated: false,
     sizeBytes: exists ? 128 : null,
-  };
+  });
 }

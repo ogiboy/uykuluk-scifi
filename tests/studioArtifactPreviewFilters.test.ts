@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
-import type { StudioArtifactPreview } from "../apps/studio/src/lib/artifactPreviews";
 import {
   artifactPreviewEmptyState,
   countArtifactPreviewStatuses,
   filterArtifactPreviews,
 } from "../apps/studio/src/lib/artifactPreviewFilters";
+import { studioArtifactPreview } from "./studioArtifactPreviewFixtures";
 
 describe("Studio artifact preview filters", () => {
   const artifacts = [
-    artifactPreview({
+    studioArtifactPreview({
       description: "Operator contact sheet with visual rhythm.",
       exists: true,
       group: "Render Planning",
@@ -16,7 +16,7 @@ describe("Studio artifact preview filters", () => {
       label: "Storyboard contact sheet",
       path: "production/storyboard_contact_sheet.md",
     }),
-    artifactPreview({
+    studioArtifactPreview({
       description: "Local TTS WAV generated after readiness.",
       exists: false,
       group: "Audio And Render",
@@ -24,7 +24,7 @@ describe("Studio artifact preview filters", () => {
       label: "Voiceover audio",
       path: "production/audio/voiceover.wav",
     }),
-    artifactPreview({
+    studioArtifactPreview({
       description: "Current evidence, blocked actions, and next safe command.",
       exists: true,
       group: "Evidence And Readiness",
@@ -71,19 +71,3 @@ describe("Studio artifact preview filters", () => {
     });
   });
 });
-
-function artifactPreview(overrides: Partial<StudioArtifactPreview>): StudioArtifactPreview {
-  return {
-    description: "Artifact description.",
-    exists: true,
-    group: "Script Review",
-    kind: "markdown",
-    label: "Script review",
-    operatorAction: "Review locally.",
-    path: "reviews/script_review.md",
-    preview: "Preview.",
-    previewTruncated: false,
-    sizeBytes: 128,
-    ...overrides,
-  } as StudioArtifactPreview;
-}

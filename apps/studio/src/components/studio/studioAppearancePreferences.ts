@@ -79,7 +79,7 @@ export function readStoredPreference(
 }
 
 export function readStoredPreferenceText(): string | null {
-  if (typeof globalThis.window === "undefined") {
+  if (globalThis.window === undefined) {
     return null;
   }
   try {
