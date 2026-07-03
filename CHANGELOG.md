@@ -11,6 +11,22 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.70.0 (2026-07-03)
+
+### Tests
+
+- align run review brief fixtures (2e9b67c)
+
+### Features
+
+- improve workflow progress scanability (8307597)
+
+### Fixes
+
+- improve run detail review header (7124cf7)
+- keep local review actions visible (f8ba117)
+- clarify run review brief checkpoints (92d45f7)
+
 ## v0.69.0 (2026-07-03)
 
 ### Features
