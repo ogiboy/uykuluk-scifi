@@ -1,6 +1,6 @@
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import { defaultRunReviewTab, type RunReviewTab } from "@/lib/runReviewNavigation";
-import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { TabsContent } from "@/components/ui/tabs";
 import { RunArtifactPreviewsPanel } from "./RunArtifactPreviewsPanel";
 import { RunChannelHandoffPanel } from "./RunChannelHandoffPanel";
 import { RunFinalReviewBundlePanel } from "./RunFinalReviewBundlePanel";
@@ -10,6 +10,7 @@ import { RunReviewActionSummarySheet } from "./RunReviewActionSummarySheet";
 import { RunReviewCockpitHeader } from "./RunReviewCockpitHeader";
 import { RunReviewDecisionRail } from "./RunReviewDecisionRail";
 import { RunReviewSectionTabs } from "./RunReviewSectionTabs";
+import { RunReviewTabs } from "./RunReviewTabs";
 import { RunWorkflowProgressPanel } from "./RunWorkflowProgressPanel";
 
 /**
@@ -29,7 +30,7 @@ export function RunDetailView({
       <RunReviewActionSummarySheet run={run} />
 
       <div className='run-review-cockpit'>
-        <Tabs defaultValue={defaultTab} className='run-review-tabs'>
+        <RunReviewTabs initialTab={defaultTab}>
           <RunReviewSectionTabs run={run} />
 
           <TabsContent value='progress'>
@@ -67,7 +68,7 @@ export function RunDetailView({
               <RunReadinessDiagnosticsPanels run={run} />
             </div>
           </TabsContent>
-        </Tabs>
+        </RunReviewTabs>
 
         <aside className='run-review-sticky-rail' aria-label='Persistent run action rail'>
           <RunReviewDecisionRail run={run} />

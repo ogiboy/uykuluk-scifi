@@ -111,6 +111,30 @@ export function runReviewHref(runId: string, tab: RunReviewTab, fragment?: strin
 }
 
 /**
+ * Rebuilds the current run-review URL after an operator changes tabs.
+ *
+ * @param pathname - Current pathname from Next.js navigation.
+ * @param searchParams - Current query string or object with URLSearchParams-compatible serialization.
+ * @param tab - The selected run-review tab.
+ * @param fragment - Optional page fragment to retain.
+ * @returns A URL path with the selected tab query parameter.
+ */
+export function runReviewPathWithTab(
+  pathname: string,
+  searchParams: Pick<URLSearchParams, "toString"> | string,
+  tab: RunReviewTab,
+  fragment?: string,
+): string {
+  const params = new URLSearchParams(
+    typeof searchParams === "string" ? searchParams : searchParams.toString(),
+  );
+  params.set("tab", tab);
+  const query = params.toString();
+  const suffix = fragment ? `#${fragment}` : "";
+  return query ? `${pathname}?${query}${suffix}` : `${pathname}${suffix}`;
+}
+
+/**
  * Explains the initial run-detail tab selection for operator-facing copy.
  *
  * @param run - The Studio run detail projection; this does not own workflow state.

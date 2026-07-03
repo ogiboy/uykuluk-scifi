@@ -3,6 +3,7 @@ import {
   defaultRunReviewTab,
   defaultRunReviewTabFromSummary,
   runReviewHref,
+  runReviewPathWithTab,
   runReviewTabFocus,
   runReviewTabFromSearchParams,
 } from "../apps/studio/src/lib/runReviewNavigation";
@@ -66,6 +67,20 @@ describe("Studio run review navigation", () => {
     expect(runReviewHref("run brief", "handoff", "review-decision")).toBe(
       "/runs/run%20brief?tab=handoff#review-decision",
     );
+  });
+
+  it("updates the tab query while preserving unrelated query parameters", () => {
+    expect(runReviewPathWithTab("/runs/run_brief", "panel=wide&tab=progress", "media")).toBe(
+      "/runs/run_brief?panel=wide&tab=media",
+    );
+    expect(
+      runReviewPathWithTab(
+        "/runs/run_brief",
+        new URLSearchParams("tab=progress&theme=dark"),
+        "readiness",
+        "review-decision",
+      ),
+    ).toBe("/runs/run_brief?tab=readiness&theme=dark#review-decision");
   });
 
   it("selects a useful tab from compact run summary data", () => {
