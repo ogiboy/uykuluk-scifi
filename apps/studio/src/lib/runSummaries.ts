@@ -13,6 +13,7 @@ import type { StudioChannelHandoffSummary } from "./channelHandoffSummaries";
 import type { StudioEvidenceSummary } from "./evidenceSummaries";
 import type { StudioFinalReviewBundleSummary } from "./finalReviewBundleSummaries";
 import { projectRoot } from "./projectRoot";
+import { readStudioGeneratedIdeas, type StudioGeneratedIdea } from "./ideaSummaries";
 import {
   type ReadinessSnapshot,
   type StudioReadinessCheck,
@@ -58,6 +59,7 @@ export type StudioRunDetail = StudioRunSummary & {
   artifacts: StudioArtifactPreview[];
   diagnostics: RunDiagnosticSummary[];
   evidence: Record<string, unknown> | null;
+  generatedIdeas: StudioGeneratedIdea[];
   productionMedia: ProductionMediaStatus[];
   readiness: ReadinessSnapshot | null;
   readinessChecks: StudioReadinessCheck[];
@@ -115,6 +117,7 @@ export async function getStudioRunDetail(runId: string): Promise<StudioRunDetail
     artifacts: await readReviewArtifactPreviews(root, runId),
     diagnostics: await readStudioRunDiagnostics(root, runId, record.artifacts ?? []),
     evidence: inputs.evidence.snapshot,
+    generatedIdeas: await readStudioGeneratedIdeas(root, runId),
     productionMedia: productionMediaStatus(
       { artifacts: record.artifacts ?? [], runId: record.runId },
       inputs.evidence.snapshot,

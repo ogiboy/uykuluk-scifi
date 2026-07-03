@@ -31,7 +31,7 @@ function SelectTrigger({
       data-slot='select-trigger'
       data-size={size}
       className={cn(
-        "flex w-fit items-center justify-between gap-2 whitespace-nowrap rounded-md border border-(--line) bg-[#0b0f14] px-3 py-2 text-sm text-(--text) shadow-xs outline-none transition-[color,box-shadow] focus-visible:border-(--accent) focus-visible:ring-2 focus-visible:ring-(--accent) disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-(--danger) aria-invalid:ring-(--danger) data-placeholder:text-(--muted) data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='text-'])]:text-(--muted)",
+        "flex w-fit items-center justify-between gap-2 whitespace-nowrap rounded-md border border-(--line) bg-muted px-3 py-2 text-sm text-(--text) shadow-xs outline-none transition-[color,box-shadow] focus-visible:border-(--accent) focus-visible:ring-2 focus-visible:ring-(--accent) disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive data-placeholder:text-muted-foreground data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='text-'])]:text-muted-foreground",
         className,
       )}
       {...props}
@@ -85,7 +85,7 @@ function SelectLabel({ className, ...props }: React.ComponentProps<typeof Select
   return (
     <SelectPrimitive.Label
       data-slot='select-label'
-      className={cn("px-2 py-1.5 text-xs text-(--muted)", className)}
+      className={cn("px-2 py-1.5 text-xs text-muted-foreground", className)}
       {...props}
     />
   );
@@ -100,7 +100,7 @@ function SelectItem({
     <SelectPrimitive.Item
       data-slot='select-item'
       className={cn(
-        "relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none focus:bg-(--panel-strong) focus:text-(--text) data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='text-'])]:text-(--muted) *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
+        "relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none focus:bg-accent focus:text-(--text) data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='text-'])]:text-muted-foreground *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
         className,
       )}
       {...props}

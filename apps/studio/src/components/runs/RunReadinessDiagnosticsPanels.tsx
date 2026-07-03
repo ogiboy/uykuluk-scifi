@@ -1,4 +1,10 @@
 import type { StudioRunDetail } from "@/lib/runSummaries";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { RunLedgerPanel } from "./RunLedgerPanel";
 import { readinessStatusClassName } from "./readinessStatusClassName";
 
@@ -62,19 +68,22 @@ function ReadinessChecksPanel({ run }: Readonly<{ run: StudioRunDetail }>) {
           : "No readiness checks recorded."}
       </p>
       {run.readinessChecks.length > 0 ? (
-        <ul>
+        <Accordion className='run-readiness-accordion' type='multiple'>
           {run.readinessChecks.map((check, index) => (
-            <li key={`readiness-check-${index}-${check.name}`}>
-              <strong>{check.name}</strong>:{" "}
-              <span className={readinessStatusClassName(check.status)}>{check.status}</span>
-              <br />
-              <span>{check.message}</span>
-              {check.nextAction ? (
-                <p className='artifact-action'>Next action: {check.nextAction}</p>
-              ) : null}
-            </li>
+            <AccordionItem key={`readiness-check-${index}-${check.name}`} value={check.name}>
+              <AccordionTrigger>
+                <span>{check.name}</span>
+                <span className={readinessStatusClassName(check.status)}>{check.status}</span>
+              </AccordionTrigger>
+              <AccordionContent>
+                <p>{check.message}</p>
+                {check.nextAction ? (
+                  <p className='artifact-action'>Next action: {check.nextAction}</p>
+                ) : null}
+              </AccordionContent>
+            </AccordionItem>
           ))}
-        </ul>
+        </Accordion>
       ) : null}
     </section>
   );
