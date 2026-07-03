@@ -3,6 +3,7 @@ import {
   productionMediaReviewSummary,
   productionMediaReviewAction,
   shouldShowEvidenceRemediation,
+  type ProductionMediaStatus,
 } from "@/lib/runEvidenceCopy";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import { studioMediaArtifactUrl } from "@/lib/studioMediaArtifacts";
@@ -10,8 +11,9 @@ import { CopyableCommand } from "../studio/CopyableCommand";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { Badge } from "../ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
-import type { ProductionMediaStatus } from "../../../../../src/stages/statusMediaSummary";
+import { RunProductionMediaFacts } from "./RunProductionMediaFacts";
 import { RunProductionMediaPreview } from "./RunProductionMediaPreview";
+import { RunProductionMediaSummary } from "./RunProductionMediaSummary";
 
 type RunProductionMediaPanelProps = Readonly<{
   evidenceMessage: string;
@@ -42,7 +44,7 @@ export function RunProductionMediaPanel({
     <section className='panel' aria-labelledby='production-media-heading'>
       <h2 id='production-media-heading'>Production Media Evidence</h2>
       <p>{productionMediaIntro(evidenceStatus)}</p>
-      <ProductionMediaSummary summary={summary} />
+      <RunProductionMediaSummary summary={summary} />
       {shouldShowEvidenceRemediation(evidenceStatus) ? (
         <EvidenceRemediation message={evidenceMessage} nextAction={evidenceNextAction} />
       ) : null}
@@ -57,45 +59,6 @@ export function RunProductionMediaPanel({
         ))}
       </div>
     </section>
-  );
-}
-
-function ProductionMediaSummary({
-  summary,
-}: Readonly<{ summary: ReturnType<typeof productionMediaReviewSummary> }>) {
-  return (
-    <div className={`production-media-summary ${summary.tone}`} aria-label='Media review summary'>
-      <div>
-        <strong>{summary.title}</strong>
-        {summary.focus ? (
-          <p>
-            Next focus: {summary.focus.label} ({summary.focus.status}) — {summary.focus.action}
-          </p>
-        ) : (
-          <p>No local media rows are available for this run yet.</p>
-        )}
-      </div>
-      <dl className='production-media-metrics'>
-        <div>
-          <dt>Verified</dt>
-          <dd>
-            {summary.verifiedCount}/{summary.totalCount}
-          </dd>
-        </div>
-        <div>
-          <dt>Missing</dt>
-          <dd>{summary.missingCount}</dd>
-        </div>
-        <div>
-          <dt>Blocked</dt>
-          <dd>{summary.blockedCount}</dd>
-        </div>
-        <div>
-          <dt>Record only</dt>
-          <dd>{summary.recordedOnlyCount}</dd>
-        </div>
-      </dl>
-    </div>
   );
 }
 
@@ -142,7 +105,7 @@ function ProductionMediaCard({
         </div>
       </CardHeader>
       <CardContent>
-        {artifact.detail ? <p>{artifact.detail}</p> : null}
+        <RunProductionMediaFacts artifact={artifact} />
         {mediaUrl ? (
           <RunProductionMediaPreview artifact={artifact} mediaUrl={mediaUrl} runId={runId} />
         ) : null}
@@ -182,6 +145,9 @@ function MediaCommandList({ artifact }: Readonly<{ artifact: ProductionMediaStat
 function mediaCommands(artifact: ProductionMediaStatus): Array<{ label: string; value: string }> {
   return [
     artifact.reviewCommand ? { label: "Review command", value: artifact.reviewCommand } : null,
+    artifact.reviewArtifactPath
+      ? { label: "Review artifact path", value: artifact.reviewArtifactPath }
+      : null,
     artifact.localPlaybackPath
       ? { label: "Local playback path", value: artifact.localPlaybackPath }
       : null,

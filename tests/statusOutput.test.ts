@@ -39,8 +39,7 @@ describe("operator status output", () => {
       "utf8",
     );
 
-    const status = await readRunStatus(run.runId);
-    const output = formatRunStatus(status);
+    const output = formatRunStatus(await readRunStatus(run.runId));
 
     expect(output).toContain(`Run: ${run.runId}`);
     expect(output).toContain("State: READY_FOR_MANUAL_PRODUCTION");
@@ -101,7 +100,8 @@ describe("operator status output", () => {
       "utf8",
     );
 
-    const output = formatRunStatus(await readRunStatus(run.runId));
+    const status = await readRunStatus(run.runId);
+    const output = formatRunStatus(status);
 
     expect(output).toContain("Production media:");
     expect(output).toContain("- Render plan: pass");
@@ -133,7 +133,8 @@ describe("operator status output", () => {
       "utf8",
     );
 
-    const output = formatRunStatus(await readRunStatus(run.runId));
+    const status = await readRunStatus(run.runId);
+    const output = formatRunStatus(status);
 
     expect(output).toContain("- Render plan: pass (11 assets, 3 artifacts)");
     expect(output).toContain(
@@ -142,9 +143,16 @@ describe("operator status output", () => {
     expect(output).toContain(
       `  Review: Review with pnpm producer review voice --run ${run.runId}; listen to runs/${run.runId}/production/audio/voiceover.wav and verify pronunciation, pacing, and tone before render approval.`,
     );
+    expect(status.mediaArtifacts[1]?.reviewArtifactPath).toBe(
+      "production/audio/voiceover_review.md",
+    );
     expect(output).toContain(
       "- Draft render: pass (8s, intro -> scene -> outro, source frames intro:2/outro:2, frame cadence intro#1=1s assets/intro/frames/intro_frame_00.jpg; intro#2=1s assets/intro/frames/intro_frame_01.jpg; outro#1=1.5s assets/outro/frames/outro_frame_00.jpg; outro#2=1.5s assets/outro/frames/outro_frame_01.jpg, voiceover local-piper production candidate, approval approval_render_status, ffprobe 1280x720 audio)",
     );
+    expect(status.mediaArtifacts[2]?.localPlaybackPath).toBe(
+      `runs/${run.runId}/production/render/draft.mp4`,
+    );
+    expect(status.mediaArtifacts[2]?.reviewArtifactPath).toBe("production/render/draft_review.md");
     expect(output).toContain(
       `  Review: Review with pnpm producer review render --run ${run.runId}; upload and publish remain disabled.`,
     );
