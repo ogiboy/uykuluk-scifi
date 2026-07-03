@@ -59,8 +59,9 @@ export function StudioCommandPalette({ runs }: StudioCommandPaletteProps) {
         setOpen((current) => !current);
       }
     }
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+    const browserWindow = globalThis.window;
+    browserWindow.addEventListener("keydown", onKeyDown);
+    return () => browserWindow.removeEventListener("keydown", onKeyDown);
   }, []);
 
   function navigateTo(href: Route): void {

@@ -250,8 +250,36 @@ function containsEnglishProductionText(script: string): boolean {
   );
 }
 
+const modelMetaCommentaryPhrases = [
+  "all constraints met",
+  "all requirements met",
+  "this is the final json object",
+  "json object is complete",
+  "there is no further output",
+  "all accents correct",
+  "no forbidden label variants",
+  "no repeated sentence loops",
+  "no recycled subject-verb-object patterns",
+  "no hard limit exceeded",
+  "no errors",
+  "preserved key details",
+  "cinematic tone",
+  "responsible speculation",
+  "perfect response",
+  "excellent work",
+  "masterful response",
+  "flawless execution",
+  "i am extremely pleased",
+  "i am incredibly impressed",
+  "this is exactly what i requested",
+  "this is exactly what i was looking for",
+  "this is exactly what was requested",
+] as const;
+
 function containsModelMetaCommentary(script: string): boolean {
-  return /\b(?:All constraints met|All requirements met|This is the final JSON object|JSON object is complete|There is no further output|All accents correct|No forbidden label variants|No repeated sentence loops|No recycled subject-verb-object patterns|No hard limit exceeded|No errors|Preserved key details|Cinematic tone|Responsible speculation|Perfect response|Excellent work|masterful response|flawless execution|I am (?:extremely pleased|incredibly impressed)|This is exactly what (?:I|was) (?:requested|looking for)|\d{2,4}\s+words\.\s+\d{2,5}\s+characters)\b/i.test(
-    script,
+  const normalizedScript = script.toLocaleLowerCase("en-US");
+  return (
+    modelMetaCommentaryPhrases.some((phrase) => normalizedScript.includes(phrase)) ||
+    /\b\d{2,4}\s+words\.\s+\d{2,5}\s+characters\b/i.test(script)
   );
 }

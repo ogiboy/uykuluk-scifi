@@ -47,7 +47,13 @@ export async function reserveApprovedCost(input: {
       );
     }
     const all = await readAllCostReservationSummaries();
-    const sameOperation = all.find((item) => item.operationId === input.operationId);
+    let sameOperation: CostReservationSummary | null = null;
+    for (const item of all) {
+      if (item.operationId === input.operationId) {
+        sameOperation = item;
+        break;
+      }
+    }
     if (sameOperation) {
       if (
         sameOperation.runId === input.runId &&
