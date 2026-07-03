@@ -11,6 +11,12 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.65.2 (2026-07-03)
+
+### Build
+
+- bump next-intl from 4.13.0 to 4.13.1 (0286aec)
+
 ## v0.65.1 (2026-07-03)
 
 ### Build
