@@ -14,7 +14,7 @@ export async function readProductionPackagePopupCards(runId: string): Promise<st
 
 function extractMarkdownBullets(markdown: string, heading: string): string[] {
   const lines = markdown.split(/\r?\n/u);
-  const headingPattern = new RegExp(`^##\\s+${escapeRegExp(heading)}\\s*$`, "iu");
+  const headingPattern = new RegExp(String.raw`^##\s+${escapeRegExp(heading)}\s*$`, "iu");
   const bullets: string[] = [];
   let insideSection = false;
 
@@ -35,5 +35,5 @@ function extractMarkdownBullets(markdown: string, heading: string): string[] {
 }
 
 function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+  return value.replaceAll(/[.*+?^${}()|[\]\\]/gu, String.raw`\$&`);
 }

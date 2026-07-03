@@ -1,4 +1,5 @@
 import type { StudioRunSummary } from "./runSummaries";
+import { needsOperatorReviewDecision } from "./runQueueDecisions";
 
 export const runQueueFilterValues = ["all", "attention", "ready", "rendered", "decision"] as const;
 
@@ -52,7 +53,9 @@ function runMatchesFilter(run: StudioRunSummary, filter: RunQueueFilter): boolea
         run.readinessStatus !== "passed" ||
         run.evidenceStatus !== "available" ||
         run.renderDecision.kind === "invalid" ||
-        run.renderDecision.kind === "stale"
+        run.renderDecision.kind === "stale" ||
+        run.channelHandoffDecision.kind === "invalid" ||
+        run.channelHandoffDecision.kind === "stale"
       );
     case "ready":
       return (
@@ -63,7 +66,7 @@ function runMatchesFilter(run: StudioRunSummary, filter: RunQueueFilter): boolea
     case "rendered":
       return run.state === "RENDERED";
     case "decision":
-      return run.state === "RENDERED" && run.renderDecision.kind !== "present";
+      return needsOperatorReviewDecision(run);
   }
 }
 
@@ -76,6 +79,10 @@ function runMatchesQuery(run: StudioRunSummary, query: string): boolean {
     run.state,
     run.readinessStatus,
     run.evidenceStatus,
+    run.renderDecision.kind,
+    run.channelHandoff.kind,
+    run.channelHandoff.kind === "present" ? run.channelHandoff.handoff.status : "",
+    run.channelHandoffDecision.kind,
     run.nextRecommendedCommand ?? "",
   ].some((value) => value.toLowerCase().includes(query));
 }

@@ -11,7 +11,10 @@ import {
   productionPackageManifestPath,
 } from "./productionPackagePaths.js";
 
-export { productionPackageArtifactPaths, productionPackageManifestPath };
+export {
+  productionPackageArtifactPaths,
+  productionPackageManifestPath,
+} from "./productionPackagePaths.js";
 
 const digestSchema = z.string().regex(/^[a-f0-9]{64}$/);
 const promptProvenanceSchema = z.strictObject({
