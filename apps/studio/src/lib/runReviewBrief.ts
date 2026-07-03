@@ -109,12 +109,12 @@ function reviewBriefCheckpoints(run: BriefInput): StudioRunReviewBrief["checkpoi
     {
       detail: renderDecisionDetail(run),
       label: "Operator decision",
-      status: run.renderDecision.kind === "present" ? "done" : "pending",
+      status: renderDecisionCheckpointStatus(run),
     },
     {
       detail: finalHandoffDetail(run),
       label: "Final handoff",
-      status: run.channelHandoffDecision.kind === "present" ? "done" : "pending",
+      status: finalHandoffCheckpointStatus(run),
     },
   ];
 }
@@ -123,10 +123,43 @@ function mediaCheckpointStatus(
   passedMediaCount: number,
   totalMediaCount: number,
 ): StudioRunReviewBriefCheckpoint["status"] {
+  if (totalMediaCount === 0) {
+    return "pending";
+  }
   if (passedMediaCount === totalMediaCount) {
     return "done";
   }
   return passedMediaCount > 0 ? "ready" : "pending";
+}
+
+function renderDecisionCheckpointStatus(run: BriefInput): StudioRunReviewBriefCheckpoint["status"] {
+  if (run.renderDecision.kind === "present") {
+    return "done";
+  }
+  if (run.renderDecision.kind === "invalid" || run.renderDecision.kind === "stale") {
+    return "attention";
+  }
+  return "pending";
+}
+
+function finalHandoffCheckpointStatus(run: BriefInput): StudioRunReviewBriefCheckpoint["status"] {
+  if (run.channelHandoffDecision.kind === "present") {
+    return "done";
+  }
+  if (
+    run.channelHandoffDecision.kind === "invalid" ||
+    run.channelHandoffDecision.kind === "stale" ||
+    run.channelHandoff.kind === "invalid" ||
+    run.channelHandoff.kind === "stale" ||
+    run.finalReviewBundle.kind === "invalid" ||
+    run.finalReviewBundle.kind === "stale"
+  ) {
+    return "attention";
+  }
+  if (run.channelHandoff.kind === "present" || run.finalReviewBundle.kind === "present") {
+    return "ready";
+  }
+  return "pending";
 }
 
 function renderDecisionDetail(run: BriefInput): string {

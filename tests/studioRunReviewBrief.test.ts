@@ -2,6 +2,11 @@ import { describe, expect, it } from "vitest";
 import { buildStudioRunReviewBrief } from "../apps/studio/src/lib/runReviewBrief";
 import type { StudioRunDetail } from "../apps/studio/src/lib/runSummaries";
 
+type FinalReviewBundleFixture = Extract<
+  StudioRunDetail["finalReviewBundle"],
+  { kind: "present" }
+>["bundle"];
+
 describe("Studio run review brief", () => {
   it("prioritizes blocked actions before media or decision guidance", () => {
     const brief = buildStudioRunReviewBrief(
@@ -85,6 +90,98 @@ describe("Studio run review brief", () => {
           detail: "Render decision recorded: accepted-for-local-review.",
           label: "Operator decision",
           status: "done",
+        }),
+      ]),
+    );
+  });
+
+  it("does not mark missing media artifacts as complete", () => {
+    const brief = buildStudioRunReviewBrief(
+      runBriefFixture({
+        productionMedia: [],
+      }),
+    );
+
+    expect(brief.checkpoints).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          detail: "0/0 media artifacts are verified by current evidence.",
+          label: "Media",
+          status: "pending",
+        }),
+      ]),
+    );
+  });
+
+  it("surfaces stale render decisions as operator attention", () => {
+    const brief = buildStudioRunReviewBrief(
+      runBriefFixture({
+        renderDecision: {
+          kind: "stale",
+          message: "Render decision was recorded for an older draft render.",
+          nextAction:
+            "pnpm producer decide render --run run_brief --decision needs-revision --notes '<operator notes>' --reviewed-by operator",
+        },
+      }),
+    );
+
+    expect(brief.checkpoints).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          detail: "Render decision was recorded for an older draft render.",
+          label: "Operator decision",
+          status: "attention",
+        }),
+      ]),
+    );
+  });
+
+  it("marks final handoff as ready when the trusted final review bundle exists", () => {
+    const bundle: FinalReviewBundleFixture = {
+      acceptedFor: {
+        localReview: true,
+        privateUpload: false,
+        publicPublish: false,
+      },
+      channelPrep: {
+        chaptersReady: true,
+        metadataReady: true,
+        thumbnailCandidatesReady: true,
+      },
+      createdAt: "2026-07-03T21:00:00.000Z",
+      draftRender: {
+        digest: "a".repeat(64),
+        path: "production/render/draft.mp4",
+      },
+      operatorDecision: {
+        createdAt: "2026-07-03T20:00:00.000Z",
+        decision: "accepted-for-local-review",
+        digest: "b".repeat(64),
+        path: "production/review/render_decision.json",
+      },
+      reviewMarkdownPath: "production/review/final_review_bundle.md",
+      runId: "run_brief",
+      schemaVersion: 2,
+      status: "accepted-for-local-review",
+    };
+    const brief = buildStudioRunReviewBrief(
+      runBriefFixture({
+        finalReviewBundle: {
+          bundle,
+          kind: "present",
+          message: "Final review bundle ready: accepted-for-local-review.",
+          nextAction: "pnpm producer channel-handoff --run run_brief",
+          reviewPath: "production/review/final_review_bundle.md",
+        },
+      }),
+    );
+
+    expect(brief.checkpoints).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          detail: "Final review bundle is ready for manual channel handoff preparation.",
+          label: "Final handoff",
+          status: "ready",
         }),
       ]),
     );
