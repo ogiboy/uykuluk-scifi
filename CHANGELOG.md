@@ -11,6 +11,21 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.72.0 (2026-07-03)
+
+### Fixes
+
+- keep detailed media evidence visible (244e264)
+- re-export media review status types (9a834b5)
+
+### Tests
+
+- align media review assertions (fcb1027)
+
+### Features
+
+- show production media evidence facts (e0886c3)
+
 ## v0.71.0 (2026-07-03)
 
 ### Features
