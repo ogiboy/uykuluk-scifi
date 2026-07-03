@@ -15,6 +15,10 @@ type RunTableColumnMeta = Readonly<{
   label: string;
 }>;
 
+type OperatorAction = ReturnType<typeof buildStudioActionWorkbench>["primary"];
+
+const operatorActionCache = new WeakMap<StudioRunSummary, OperatorAction>();
+
 export function runSummaryColumns(): ColumnDef<StudioRunSummary>[] {
   return [
     {
@@ -69,12 +73,9 @@ export function runSummaryColumns(): ColumnDef<StudioRunSummary>[] {
       meta: { label: "Evidence" } satisfies RunTableColumnMeta,
     },
     {
-      accessorFn: (run) => {
-        const action = buildStudioActionWorkbench(run).primary;
-        return [action.label, action.tone, action.routePath ?? "", action.command ?? ""].join(" ");
-      },
+      accessorFn: (run) => operatorActionSearchText(operatorActionForRun(run)),
       cell: ({ row }) => {
-        const action = buildStudioActionWorkbench(row.original).primary;
+        const action = operatorActionForRun(row.original);
         return (
           <span className='run-cell-stack'>
             <strong>{action.label}</strong>
@@ -198,9 +199,7 @@ function formatRunDate(value: string): string {
   });
 }
 
-function operatorActionDetail(
-  action: ReturnType<typeof buildStudioActionWorkbench>["primary"],
-): string {
+function operatorActionDetail(action: OperatorAction): string {
   if (action.routePath) {
     return "Guarded local web action";
   }
@@ -208,4 +207,18 @@ function operatorActionDetail(
     return action.tone === "blocked" ? "Blocked CLI recovery" : "CLI-only next action";
   }
   return "No safe action";
+}
+
+function operatorActionForRun(run: StudioRunSummary): OperatorAction {
+  const cached = operatorActionCache.get(run);
+  if (cached) {
+    return cached;
+  }
+  const action = buildStudioActionWorkbench(run).primary;
+  operatorActionCache.set(run, action);
+  return action;
+}
+
+function operatorActionSearchText(action: OperatorAction): string {
+  return [action.label, action.tone, action.routePath ?? "", action.command ?? ""].join(" ");
 }
