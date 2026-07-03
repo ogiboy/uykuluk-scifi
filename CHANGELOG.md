@@ -28,6 +28,8 @@ future generated release notes can be inserted predictably.
   without enabling experimental Next.js auth interrupts.
 - upgrade the Studio run queue from a hand-rolled table to a TanStack Table-powered data grid with
   header sorting, column visibility controls, and a tighter default column set.
+- add Studio artifact-preview search, availability filtering, result counts, and reset controls for
+  faster local review handoff navigation.
 
 ### Fixes
 

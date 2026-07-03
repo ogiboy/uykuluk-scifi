@@ -24,8 +24,9 @@ upload/publish boundaries.
   `/Users/ogiboy/.codex/worktrees/894d/uykuluk-scifi`.
 - Merged PR: #121, `feat(studio): expand operator workbench controls`, merged into `main` as
   `97a6ebb6` on 2026-07-02.
-- Active local slice: run queue data-grid ergonomics on the shared Studio operator branch.
-- Last completed slice/commit before this checkpoint: `chore(deps): refresh workspace dependencies`.
+- Active local slice: artifact preview review ergonomics on the shared Studio operator branch.
+- Last completed slice/commit before this checkpoint:
+  `fix(studio): clarify filtered run queue state`.
 - Completed current-branch frontend slices include:
   - shadcn route/action primitives for guarded local actions;
   - Studio home control desk, queue filters, command palette, copyable safe commands;
@@ -56,6 +57,8 @@ upload/publish boundaries.
     card fallback.
   - run queue projection reset and filtered-empty states so the Studio tells operators when no runs
     exist, when search/filter found no matches, or when the blocker-limit tuning hid matching runs.
+  - artifact-preview search, availability filtering, result counts, reset controls, and
+    filtered-empty states for faster operator review handoff navigation.
   - semantic component pass for Studio route links, run-index table markup, default button types,
     skeleton accessibility, workflow lists, and review rail landmarks.
   - PR review fixes for approval confirmation payload visibility, ready-queue blocked-run exclusion,
@@ -81,6 +84,9 @@ upload/publish boundaries.
     overflow after the data-grid upgrade.
   - browser smoke on `/runs`: impossible search text shows `No matching runs`, enables `Reset view`,
     resets the query to an empty string, restores the table, and keeps body overflow at `0px`.
+  - browser smoke on a run detail Artifacts tab: impossible artifact search shows
+    `No matching artifacts`, enables `Reset artifacts`, resets the query to an empty string,
+    restores artifact cards, and keeps body overflow at `0px`.
 - Earlier branch checks also included modularity, release, targeted Vitest, and browser smoke across
   run detail Media, Artifacts, Readiness, Decisions, and mobile overflow surfaces.
 - Dirty or external changes to preserve: none known after the latest committed frontend slices.
