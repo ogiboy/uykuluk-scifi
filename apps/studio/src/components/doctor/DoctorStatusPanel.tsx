@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
 import { CopyableCommand } from "@/components/studio/CopyableCommand";
 import type { StudioDoctorOverview } from "@/lib/doctorOverview";
@@ -22,9 +24,9 @@ export function DoctorStatusPanel({ overview }: DoctorStatusPanelProps) {
             Read-only local health snapshot. Studio does not run doctor or mutate config.
           </p>
         </div>
-        <a className='status-pill small' href='/doctor'>
+        <Link className='status-pill small' href='/doctor'>
           Open doctor
-        </a>
+        </Link>
       </div>
       <MetricGrid
         metrics={[

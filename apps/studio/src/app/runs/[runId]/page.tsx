@@ -1,4 +1,5 @@
 import { RunDetailView } from "@/components/runs/RunDetailView";
+import { StudioShell } from "@/components/studio/StudioShell";
 import { getStudioRunDetail } from "@/lib/runSummaries";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -15,7 +16,7 @@ export default async function RunDetailPage({ params }: Readonly<RunDetailPagePr
   }
 
   return (
-    <main className='studio-main page-shell'>
+    <StudioShell>
       <header className='studio-header'>
         <div>
           <p className='eyebrow'>Read-only run detail</p>
@@ -26,6 +27,6 @@ export default async function RunDetailPage({ params }: Readonly<RunDetailPagePr
         </Link>
       </header>
       <RunDetailView run={run} />
-    </main>
+    </StudioShell>
   );
 }

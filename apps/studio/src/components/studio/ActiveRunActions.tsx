@@ -46,11 +46,20 @@ export function ActiveRunActions({ run }: Readonly<{ run: StudioRunSummary }>) {
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuLabel>Safety state</DropdownMenuLabel>
-          <div className='dropdown-status-list' aria-label='Current run safety state'>
-            <span>State: {run.state}</span>
-            <span>Readiness: {run.readinessStatus}</span>
-            <span>Evidence: {run.evidenceStatus}</span>
-          </div>
+          <dl className='dropdown-status-list' aria-label='Current run safety state'>
+            <div>
+              <dt>State</dt>
+              <dd>{run.state}</dd>
+            </div>
+            <div>
+              <dt>Readiness</dt>
+              <dd>{run.readinessStatus}</dd>
+            </div>
+            <div>
+              <dt>Evidence</dt>
+              <dd>{run.evidenceStatus}</dd>
+            </div>
+          </dl>
         </DropdownMenuContent>
       </DropdownMenu>
       <Popover>

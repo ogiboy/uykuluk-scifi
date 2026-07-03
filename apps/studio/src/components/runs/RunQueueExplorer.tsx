@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -21,11 +22,13 @@ import {
 } from "@/lib/runQueueFilters";
 import {
   applyRunQueueWorkbenchControls,
+  runQueueEmptyState,
   type RunQueueDensity,
   type RunQueueSort,
   runQueueSortValues,
 } from "@/lib/runQueueWorkbench";
 import type { StudioRunSummary } from "@/lib/runSummaries";
+import { applyEnumSelectValue } from "@/lib/utils";
 import { maxBlockedActionSliderValue, RunQueueTunePopover } from "./RunQueueTunePopover";
 import { RunSummaryTable } from "./RunSummaryTable";
 
@@ -48,6 +51,10 @@ const sortLabels = {
   "updated-desc": "Newest first",
 } as const satisfies Record<RunQueueSort, string>;
 
+const defaultRunQueueFilter = "all" satisfies RunQueueFilter;
+const defaultRunQueueDensity = "comfortable" satisfies RunQueueDensity;
+const defaultRunQueueSort = "updated-desc" satisfies RunQueueSort;
+
 /**
  * Renders a filterable operator queue for persisted Studio runs.
  *
@@ -59,11 +66,11 @@ export function RunQueueExplorer({ runs }: RunQueueExplorerProps) {
     0,
     ...runs.map((run) => Math.min(run.blockedActionCount, maxBlockedActionSliderValue)),
   );
-  const [filter, setFilter] = useState<RunQueueFilter>("all");
-  const [density, setDensity] = useState<RunQueueDensity>("comfortable");
+  const [filter, setFilter] = useState<RunQueueFilter>(defaultRunQueueFilter);
+  const [density, setDensity] = useState<RunQueueDensity>(defaultRunQueueDensity);
   const [maxBlockedActions, setMaxBlockedActions] = useState(maxBlockedActionSliderValue);
   const [query, setQuery] = useState("");
-  const [sort, setSort] = useState<RunQueueSort>("updated-desc");
+  const [sort, setSort] = useState<RunQueueSort>(defaultRunQueueSort);
   const counts = useMemo(() => countStudioRunQueueFilters(runs), [runs]);
   const matchingRuns = useMemo(
     () => filterStudioRunQueue(runs, { filter, query }),
@@ -78,6 +85,21 @@ export function RunQueueExplorer({ runs }: RunQueueExplorerProps) {
     [matchingRuns, maxBlockedActions, sort],
   );
   const hiddenByBlockerControl = matchingRuns.length - filteredRuns.length;
+  const queueViewIsCustomized =
+    density !== defaultRunQueueDensity ||
+    filter !== defaultRunQueueFilter ||
+    maxBlockedActions !== maxBlockedActionSliderValue ||
+    query.trim() !== "" ||
+    sort !== defaultRunQueueSort;
+  const emptyState = runQueueEmptyState(runs.length, matchingRuns.length, filteredRuns.length);
+
+  function resetQueueView() {
+    setDensity(defaultRunQueueDensity);
+    setFilter(defaultRunQueueFilter);
+    setMaxBlockedActions(maxBlockedActionSliderValue);
+    setQuery("");
+    setSort(defaultRunQueueSort);
+  }
 
   return (
     <section className='run-queue-explorer' aria-labelledby='runs-queue-heading'>
@@ -87,12 +109,12 @@ export function RunQueueExplorer({ runs }: RunQueueExplorerProps) {
             <p className='eyebrow'>Operator queue</p>
             <h2 id='runs-queue-heading'>Find the next safe run action</h2>
           </div>
-          <div className='queue-result-badges' aria-label='Queue result summary'>
+          <output className='queue-result-badges' aria-label='Queue result summary'>
             <Badge variant='secondary'>{filteredRuns.length} shown</Badge>
             {hiddenByBlockerControl > 0 ? (
               <Badge variant='outline'>{hiddenByBlockerControl} hidden by blocker limit</Badge>
             ) : null}
-          </div>
+          </output>
         </div>
         <div className='queue-toolbar'>
           <ToggleGroup
@@ -101,7 +123,7 @@ export function RunQueueExplorer({ runs }: RunQueueExplorerProps) {
             value={filter}
             variant='outline'
             aria-label='Run queue filter'
-            onValueChange={(value) => setSelectedFilter(value, setFilter)}
+            onValueChange={(value) => applyEnumSelectValue(value, runQueueFilterValues, setFilter)}
           >
             {runQueueFilterValues.map((value) => (
               <ToggleGroupItem key={value} value={value}>
@@ -120,7 +142,10 @@ export function RunQueueExplorer({ runs }: RunQueueExplorerProps) {
             </label>
             <div className='queue-select-control'>
               <Label htmlFor='queue-sort'>Sort queue</Label>
-              <Select value={sort} onValueChange={(value) => setSelectedSort(value, setSort)}>
+              <Select
+                value={sort}
+                onValueChange={(value) => applyEnumSelectValue(value, runQueueSortValues, setSort)}
+              >
                 <SelectTrigger id='queue-sort' aria-label='Sort run queue'>
                   <SelectValue placeholder='Sort queue' />
                 </SelectTrigger>
@@ -142,6 +167,14 @@ export function RunQueueExplorer({ runs }: RunQueueExplorerProps) {
               onDensityChange={setDensity}
               onMaxBlockedActionsChange={setMaxBlockedActions}
             />
+            <Button
+              disabled={!queueViewIsCustomized}
+              onClick={resetQueueView}
+              type='button'
+              variant='secondary'
+            >
+              Reset view
+            </Button>
           </div>
         </div>
         <p>
@@ -149,19 +182,7 @@ export function RunQueueExplorer({ runs }: RunQueueExplorerProps) {
           render decisions remain on each guarded run detail page.
         </p>
       </div>
-      <RunSummaryTable density={density} runs={filteredRuns} />
+      <RunSummaryTable density={density} emptyState={emptyState} runs={filteredRuns} />
     </section>
   );
-}
-
-function setSelectedFilter(value: string, setFilter: (filter: RunQueueFilter) => void): void {
-  if (runQueueFilterValues.includes(value as RunQueueFilter)) {
-    setFilter(value as RunQueueFilter);
-  }
-}
-
-function setSelectedSort(value: string, setSort: (sort: RunQueueSort) => void): void {
-  if (runQueueSortValues.includes(value as RunQueueSort)) {
-    setSort(value as RunQueueSort);
-  }
 }

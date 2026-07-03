@@ -18,7 +18,7 @@ type RunReviewDecisionRailProps = Readonly<{
  */
 export function RunReviewDecisionRail({ run }: RunReviewDecisionRailProps) {
   return (
-    <div className='run-review-rail' aria-label='Run decisions and blocked actions'>
+    <section className='run-review-rail' aria-label='Run decisions and blocked actions'>
       <StudioMutationSessionPanel />
       <RunBlockedActionsPanel
         blockedActions={run.blockedActions}
@@ -28,9 +28,13 @@ export function RunReviewDecisionRail({ run }: RunReviewDecisionRailProps) {
       />
       <RunApprovalActionPanel run={run} />
       <RunRenderDecisionStatusPanel renderDecision={run.renderDecision} />
-      <RunRenderDecisionActionPanel commands={run.renderDecisionCommands} runId={run.runId} />
+      <RunRenderDecisionActionPanel
+        commands={run.renderDecisionCommands}
+        run={run}
+        runId={run.runId}
+      />
       <RunRenderDecisionCommandsPanel commands={run.renderDecisionCommands} />
       <RunChannelHandoffDecisionPanel channelHandoffDecision={run.channelHandoffDecision} />
-    </div>
+    </section>
   );
 }

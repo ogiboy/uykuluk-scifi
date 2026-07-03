@@ -93,10 +93,10 @@ describe("Studio render decision action route", () => {
       }),
       400,
     );
-    await expectRouteError(studioJsonRequest({}, { sessionToken: null }), 403);
+    await expectRouteError(studioJsonRequest({}, { sessionToken: null }), 401);
     await expectRouteError(
       studioJsonRequest({}, { cookieToken: "other_session_token_1234567890ABCDEFGH" }),
-      403,
+      401,
     );
   });
 
@@ -138,5 +138,6 @@ function studioJsonRequest(body: unknown, options: StudioMutationRequestOptions 
 async function expectRouteError(request: Request, status: number): Promise<void> {
   const response = await POST(request);
   expect(response.status).toBe(status);
+  expect(response.headers.get("cache-control")).toBe("no-store");
   await expect(response.json()).resolves.toMatchObject({ status: "error" });
 }

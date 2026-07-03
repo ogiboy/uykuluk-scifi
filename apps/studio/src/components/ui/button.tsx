@@ -8,7 +8,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "border-[color:var(--accent)] bg-[color:var(--accent)] text-[#071012] hover:bg-[#63e1d4]",
+          "border-[color:var(--accent)] bg-[color:var(--accent)] text-[#071012] hover:bg-[color:color-mix(in_srgb,var(--accent)_78%,white)]",
         secondary:
           "border-[color:var(--line)] bg-[color:var(--panel)] text-[color:var(--text)] hover:bg-[color:var(--panel-strong)]",
         ghost:
@@ -24,6 +24,6 @@ const buttonVariants = cva(
 export interface ButtonProps
   extends ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {}
 
-export function Button({ className, variant, ...props }: Readonly<ButtonProps>) {
-  return <button className={cn(buttonVariants({ variant }), className)} {...props} />;
+export function Button({ className, type = "button", variant, ...props }: Readonly<ButtonProps>) {
+  return <button className={cn(buttonVariants({ variant }), className)} type={type} {...props} />;
 }

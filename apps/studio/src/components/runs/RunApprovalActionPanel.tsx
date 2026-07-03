@@ -1,31 +1,33 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { StudioRunDetail } from "@/lib/runSummaries";
-import { submitStudioJsonMutation } from "@/lib/studioMutationSubmit";
+import {
+  approvalActionForRun,
+  approvalFormReady,
+  approvalPayload,
+} from "@/lib/studioApprovalAction";
+import { buildStudioActionPreflight } from "@/lib/studioActionPreflight";
+import { useStudioGuardedActionSubmit } from "@/lib/useStudioGuardedActionSubmit";
+import { RunActionPreflightPanel } from "./RunActionPreflightPanel";
 import { RunApprovalConfirmationDialog } from "./RunApprovalConfirmationDialog";
 import { RunIdeaApprovalSelector } from "./RunIdeaApprovalSelector";
 
 type RunApprovalActionPanelProps = Readonly<{
-  run: Pick<StudioRunDetail, "generatedIdeas" | "nextRecommendedCommand" | "runId" | "state">;
-}>;
-
-type SubmitState =
-  | { kind: "idle"; message: string }
-  | { kind: "submitting"; message: string }
-  | { kind: "success"; message: string }
-  | { kind: "error"; message: string };
-
-type ApprovalActionConfig = Readonly<{
-  actionId: "cost.approve" | "idea.approve" | "render.approve" | "script.approve";
-  buttonLabel: string;
-  description: string;
-  heading: string;
-  routePath: string;
+  run: Pick<
+    StudioRunDetail,
+    | "blockedActionCount"
+    | "evidenceMessage"
+    | "evidenceStatus"
+    | "generatedIdeas"
+    | "nextRecommendedCommand"
+    | "readinessMessage"
+    | "readinessStatus"
+    | "runId"
+    | "state"
+  >;
 }>;
 
 type FormSubmitEvent = Readonly<{
@@ -39,21 +41,26 @@ type FormSubmitEvent = Readonly<{
  */
 export function RunApprovalActionPanel({ run }: RunApprovalActionPanelProps) {
   const config = approvalActionForRun(run);
-  const router = useRouter();
   const [ideaId, setIdeaId] = useState(run.generatedIdeas[0]?.id ?? "");
   const [acknowledgeWarnings, setAcknowledgeWarnings] = useState(false);
   const [confirmationOpen, setConfirmationOpen] = useState(false);
   const [pendingPayload, setPendingPayload] = useState<Record<string, boolean | string> | null>(
     null,
   );
-  const [state, setState] = useState<SubmitState>({
-    kind: "idle",
-    message: "Records explicit local approval evidence only. Upload and publish stay disabled.",
-  });
+  const { state, submit } = useStudioGuardedActionSubmit(
+    "Records explicit local approval evidence only. Upload and publish stay disabled.",
+  );
 
   if (!config) {
     return null;
   }
+
+  const preflight = buildStudioActionPreflight({
+    acknowledgeWarnings,
+    actionId: config.actionId,
+    run,
+    selectedIdeaId: ideaId,
+  });
 
   function requestApprovalConfirmation(event: FormSubmitEvent): void {
     event.preventDefault();
@@ -65,27 +72,17 @@ export function RunApprovalActionPanel({ run }: RunApprovalActionPanelProps) {
   async function confirmApproval(): Promise<void> {
     if (!config || !pendingPayload) return;
     setConfirmationOpen(false);
-    setState({ kind: "submitting", message: "Recording local approval..." });
-    const result = await submitStudioJsonMutation({
+    await submit({
       actionId: config.actionId,
       body: pendingPayload,
+      errorToastTitle: "Approval was not recorded",
       fallbackError: "Approval could not be recorded.",
       routePath: config.routePath,
+      submittingMessage: "Recording local approval...",
+      successMessage: "Approval recorded. Updating the run detail from persisted local state.",
+      successToastTitle: "Approval recorded",
     });
     setPendingPayload(null);
-    if (result.kind === "error") {
-      setState(result);
-      toast.error("Approval was not recorded", { description: result.message });
-      return;
-    }
-    setState({
-      kind: "success",
-      message: "Approval recorded. Updating the run detail from persisted local state.",
-    });
-    toast.success("Approval recorded", {
-      description: "Studio is refreshing the persisted run detail.",
-    });
-    router.refresh();
   }
 
   return (
@@ -95,6 +92,7 @@ export function RunApprovalActionPanel({ run }: RunApprovalActionPanelProps) {
       <p>
         This guarded Studio action uses the same CLI/core approval gate as the copy-paste command.
       </p>
+      <RunActionPreflightPanel preflight={preflight} />
       <form className='studio-form' onSubmit={requestApprovalConfirmation}>
         {config.actionId === "idea.approve" ? (
           <RunIdeaApprovalSelector
@@ -137,65 +135,4 @@ export function RunApprovalActionPanel({ run }: RunApprovalActionPanelProps) {
       ) : null}
     </section>
   );
-}
-
-function approvalActionForRun(
-  run: Pick<StudioRunDetail, "runId" | "state">,
-): ApprovalActionConfig | null {
-  if (run.state === "IDEAS_GENERATED") {
-    return {
-      actionId: "idea.approve",
-      buttonLabel: "Approve idea",
-      description: "Choose exactly one generated idea for this run.",
-      heading: "Approve Idea",
-      routePath: "/actions/approve-idea",
-    };
-  }
-  if (run.state === "SCRIPT_REVIEWED") {
-    return {
-      actionId: "script.approve",
-      buttonLabel: "Approve script",
-      description: "Approve the currently reviewed script digest.",
-      heading: "Approve Script",
-      routePath: "/actions/approve-script",
-    };
-  }
-  if (run.state === "COST_ESTIMATED") {
-    return {
-      actionId: "cost.approve",
-      buttonLabel: "Approve cost",
-      description: "Approve the exact current paid-generation cost quote digest.",
-      heading: "Approve Cost",
-      routePath: "/actions/approve-cost",
-    };
-  }
-  if (run.state === "READY_FOR_MANUAL_PRODUCTION") {
-    return {
-      actionId: "render.approve",
-      buttonLabel: "Approve render",
-      description: "Approve local draft render execution for the current render inputs.",
-      heading: "Approve Local Render",
-      routePath: "/actions/approve-render",
-    };
-  }
-  return null;
-}
-
-function approvalFormReady(config: ApprovalActionConfig, ideaId: string): boolean {
-  return config.actionId !== "idea.approve" || ideaId.trim().length > 0;
-}
-
-function approvalPayload(
-  actionId: ApprovalActionConfig["actionId"],
-  runId: string,
-  ideaId: string,
-  acknowledgeWarnings: boolean,
-): Record<string, boolean | string> {
-  if (actionId === "idea.approve") {
-    return { ideaId, runId };
-  }
-  if (actionId === "script.approve") {
-    return { acknowledgeWarnings, runId };
-  }
-  return { runId };
 }

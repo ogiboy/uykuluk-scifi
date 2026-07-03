@@ -20,10 +20,13 @@ upload/publish boundaries.
 
 ## Current State
 
-- Branch/worktree: `feat/local-production-proof` at
+- Branch/worktree: `feat/studio-operator-actions` at
   `/Users/ogiboy/.codex/worktrees/894d/uykuluk-scifi`.
-- Active PR: #120, `feat(studio): expand local production operator surface`, open against `main`.
-- Last completed slice/commit: latest pushed `fix(studio): tighten operator review actions`.
+- Merged PR: #121, `feat(studio): expand operator workbench controls`, merged into `main` as
+  `97a6ebb6` on 2026-07-02.
+- Active local slice: grouped PR readiness for the shared Studio operator branch.
+- Last completed slice/commit before this checkpoint:
+  `fix(studio): simplify run table control props`.
 - Completed current-branch frontend slices include:
   - shadcn route/action primitives for guarded local actions;
   - Studio home control desk, queue filters, command palette, copyable safe commands;
@@ -32,6 +35,36 @@ upload/publish boundaries.
     decisions.
   - production-media review cards with copyable review, local playback, and render-approval handoff
     commands.
+  - production-media local review actions that let operators open or download allowlisted voiceover
+    and draft-render media from the Studio media route without broadening artifact access.
+  - SonarLint-friendly run-table control prop typing that keeps the TanStack grid controls readable
+    without changing behavior.
+  - guarded-action preflight summaries for approval and render-decision panels, showing payload,
+    evidence, readiness, blocked-action, and upload/publish boundaries before submission.
+  - artifact review handoff path in the Artifacts tab, showing the review documents available for
+    script, render-plan contact sheet, voiceover, draft render, final review bundle, and manual
+    channel handoff.
+  - visual overflow fixes for Studio shell/main containment, run table scrolling, mobile navigation,
+    long run ids, detail rail metadata, and narrow-screen metric grids.
+  - run index table sizing that fits common desktop widths plus labeled mobile run cards for narrow
+    screens.
+  - route-level loading skeletons and shimmer placeholders for Studio home, run index, and run
+    detail so local run/artifact waits keep the operator layout visible.
+  - Next Image-backed Studio brand lockup, shared home navigation rail, and local operator
+    appearance controls for theme, palette, language, and density preferences.
+  - shared Studio shell and loading skeletons across home, run queue, run detail, analytics, assets,
+    doctor, model-eval, and prompt inventory pages.
+  - Studio `not-found`, `error`, `/unauthorized`, and `/forbidden` route boundaries that show safe
+    recovery guidance without mutating producer state or exposing local filesystem details.
+  - TanStack Table-backed run queue with semantic native table markup, header sorting, column
+    visibility controls, a tighter default column set, sticky run identifiers on desktop, and mobile
+    card fallback.
+  - run queue projection reset and filtered-empty states so the Studio tells operators when no runs
+    exist, when search/filter found no matches, or when the blocker-limit tuning hid matching runs.
+  - artifact-preview search, availability filtering, result counts, reset controls, and
+    filtered-empty states for faster operator review handoff navigation.
+  - semantic component pass for Studio route links, run-index table markup, default button types,
+    skeleton accessibility, workflow lists, and review rail landmarks.
   - PR review fixes for approval confirmation payload visibility, ready-queue blocked-run exclusion,
     workflow overflow indicators, tooltip delay, full command-palette search, client-side palette
     navigation, fail-closed short-lived Studio sessions, and shared Studio next-command fallbacks.
@@ -40,23 +73,32 @@ upload/publish boundaries.
   - hosted browser-smoke fallout fix for the Studio home heading assertion after the operator
     control desk redesign.
 - Verified commands for the latest slice:
+  - `pnpm check`
+  - `pnpm qa:usage`
+  - `pnpm version:plan`
   - `pnpm --filter @uykulukscifi/studio lint`
   - `pnpm --filter @uykulukscifi/studio typecheck`
   - `pnpm --filter @uykulukscifi/studio build`
-  - `node scripts/qa/modularity-gate.mjs --fail-on-findings`
   - `pnpm changelog:check`
-  - `pnpm release:check`
   - `pnpm format:check`
-  - `pnpm vitest run tests/studioRunQueueFilters.test.ts`
-  - `pnpm vitest run tests/studioMutationClient.test.ts`
-  - `pnpm typecheck`
-  - `pnpm vitest run tests/renderPlan.test.ts tests/renderPlanCli.test.ts tests/productionPackageIntegrity.test.ts`
-  - `pnpm qa:browser`
-  - browser smoke on `/runs/run_20260702013835_ada7ab` across Media, Artifacts, Readiness, and
-    Decisions tabs.
-  - browser smoke on `/runs/run_20260702013835_ada7ab` Media tab for rendered media cards and
-    copyable review/playback controls.
-- Dirty or external changes to preserve: none at the checkpoint update point.
+  - semantic source audit for route anchors, fake table roles, button type defaults, and labelled
+    grouping landmarks under `apps/studio/src/components`.
+  - browser smoke on Studio home with system Chrome: logo rendered, appearance controls persisted
+    light/violet/compact preferences, and desktop/mobile body overflow stayed `0px`.
+  - browser smoke on `/runs`: native `table.run-table` exposed 8 column headers and row headers,
+    mobile card mode preserved `Run` labels, and no 4xx responses were observed.
+  - browser smoke on `/runs`: TanStack grid exposed sortable headers, the Columns menu, and no body
+    overflow after the data-grid upgrade.
+  - browser smoke on `/runs`: impossible search text shows `No matching runs`, enables `Reset view`,
+    resets the query to an empty string, restores the table, and keeps body overflow at `0px`.
+  - browser smoke on a run detail Artifacts tab: impossible artifact search shows
+    `No matching artifacts`, enables `Reset artifacts`, resets the query to an empty string,
+    restores artifact cards, and keeps body overflow at `0px`.
+  - browser smoke on a run detail Media tab: local media action links render for allowlisted media
+    cards and keep body overflow at `0px`.
+- Earlier branch checks also included modularity, release, targeted Vitest, and browser smoke across
+  run detail Media, Artifacts, Readiness, Decisions, and mobile overflow surfaces.
+- Dirty or external changes to preserve: none known after the latest committed frontend slices.
 
 ## Decisions
 
@@ -66,14 +108,47 @@ upload/publish boundaries.
   patterns to the production desk.
 - Prefer browser smoke evidence over broad Playwright/UAT runs for small frontend slices; run
   heavier gates before merge-readiness.
+- Future guarded forms should prefer React/Next server-action patterns such as `useActionState` or
+  equivalent form-state handling where they simplify validation, pending state, and fail-closed
+  operator feedback.
+- Studio should become the primary human control surface for v1 operator work. CLI/core remains the
+  workflow source of truth and a power-user/AI automation surface; the TUI should stay usable but
+  should not block the web desk from becoming the main review and approval UI.
+- Prefer built-in Next.js and React primitives before adding infrastructure: `next/link`,
+  `next/image`, route metadata, server components, route loading boundaries, caching primitives, and
+  current form state APIs.
+- Use Next.js caching deliberately: stable shell/navigation/config projections may be cached when
+  safe, but local run status, evidence, approval, readiness, cost, upload, and publish-risk surfaces
+  must remain fresh enough to preserve fail-closed operator decisions.
+- Client components should stay as leaf-level as practical; server components should keep owning
+  local artifact reads and typed projections.
+- Loading states should keep the surrounding Studio surface usable and use skeleton/shimmer states
+  for delayed local data instead of blank panels.
+- Forms should be semantic, responsive, and stateful: local validation should show invalid input
+  near the field, pending states should not blank the page, and modal/backdrop blocking should be
+  reserved for guarded actions that must prevent competing interactions.
+- Theme work should cover dark/light, language, palette presets, and density/layout presets such as
+  compact, standard, and wide without changing CLI/core workflow semantics.
+- GSAP or richer motion should be used only where it improves operator orientation or status change
+  comprehension, with reduced-motion behavior preserved.
+- HTTP cookies alone are not enough authority for risky Studio mutations. Any broader web control
+  surface needs explicit session and CSRF design, origin checks, unauthorized/forbidden route
+  surfaces, short-lived operator proofs, negative tests, and preservation of the CLI/core approval
+  ledger as the source of truth.
+- Next.js `unauthorized()` and `forbidden()` auth interrupts remain experimental in current docs, so
+  Studio should keep stable normal trust-boundary routes until adopting that API is an explicit
+  product decision.
+- The run queue now uses TanStack Table as a headless data-grid engine. Keep AG Grid Community as a
+  future option if Producer needs much heavier grid behavior such as large-data virtualization,
+  pinned/grouped columns, or spreadsheet-style interactions that exceed the current operator queue.
 
 ## Remaining Work
 
-1. Inspect PR #120 hosted checks and CodeRabbit comments when they finish; fix only valid findings.
-2. Continue the next frontend slice inside the same broad PR if it is still coherent: likely run
-   artifact preview ergonomics, media playback/download handoff, or route-security/session UX.
-3. After the PR is stable, merge or hand off according to current branch rules, then start the next
-   broader product slice.
+1. Open the grouped Studio operator-actions PR from `feat/studio-operator-actions`.
+2. Inspect hosted CI, Sonar, and CodeRabbit comments after the PR is created; fix valid findings on
+   the same branch.
+3. Continue the next frontend slice after this grouped PR is either merged or review feedback is
+   resolved.
 
 ## Blockers And Risks
 

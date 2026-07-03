@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { ModelEvalOverviewView } from "@/components/eval/ModelEvalOverviewView";
+import { StudioShell } from "@/components/studio/StudioShell";
 import { getStudioModelEvalOverview } from "@/lib/modelEvalOverview";
 
 export const dynamic = "force-dynamic";
@@ -13,17 +13,15 @@ export default async function ModelEvalPage() {
   const overview = await getStudioModelEvalOverview();
 
   return (
-    <main className='studio-main page-shell'>
+    <StudioShell>
       <header className='studio-header'>
         <div>
           <p className='eyebrow'>Read-only local model evidence</p>
           <h1>Local model evaluation</h1>
         </div>
-        <Link className='status-pill' href='/'>
-          Studio home
-        </Link>
+        <span className='status-pill'>No provider calls</span>
       </header>
       <ModelEvalOverviewView overview={overview} />
-    </main>
+    </StudioShell>
   );
 }

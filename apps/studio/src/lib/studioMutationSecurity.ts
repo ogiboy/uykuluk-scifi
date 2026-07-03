@@ -9,7 +9,7 @@ export type StudioMutationSecurityResult =
   | {
       message: string;
       ok: false;
-      status: 400 | 403 | 415;
+      status: 400 | 401 | 403 | 415;
     };
 
 /**
@@ -47,9 +47,10 @@ export function validateStudioMutationRequest(
   }
   if (!hasValidStudioSession(request)) {
     return {
-      message: "Studio mutations require a valid local session token.",
+      message:
+        "Studio mutations require a valid local session token. Refresh the local web control session before retrying.",
       ok: false,
-      status: 403,
+      status: 401,
     };
   }
   return { ok: true };

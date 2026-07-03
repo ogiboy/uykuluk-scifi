@@ -3,7 +3,10 @@ import {
   countStudioRunQueueFilters,
   filterStudioRunQueue,
 } from "../apps/studio/src/lib/runQueueFilters";
-import { applyRunQueueWorkbenchControls } from "../apps/studio/src/lib/runQueueWorkbench";
+import {
+  applyRunQueueWorkbenchControls,
+  runQueueEmptyState,
+} from "../apps/studio/src/lib/runQueueWorkbench";
 import type { StudioRunSummary } from "../apps/studio/src/lib/runSummaries";
 
 describe("Studio run queue filters", () => {
@@ -90,6 +93,21 @@ describe("Studio run queue filters", () => {
       "run_needs_decision",
       "run_ready",
     ]);
+  });
+
+  it("distinguishes an empty run store from filtered-away queue views", () => {
+    expect(runQueueEmptyState(0, 0, 0)).toEqual({
+      heading: "No runs yet",
+      message: "Start with the CLI source of truth: pnpm producer ideas.",
+    });
+    expect(runQueueEmptyState(4, 0, 0)).toEqual({
+      heading: "No matching runs",
+      message: "Clear the search text or choose a broader run filter.",
+    });
+    expect(runQueueEmptyState(4, 2, 0)).toEqual({
+      heading: "All matching runs are hidden",
+      message: "Raise the blocker limit or reset the queue view to show matching runs.",
+    });
   });
 });
 

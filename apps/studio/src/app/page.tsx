@@ -8,6 +8,7 @@ import { ModelEvalStatusPanel } from "@/components/eval/ModelEvalStatusPanel";
 import { LatestRunReadinessPanel } from "@/components/runs/LatestRunReadinessPanel";
 import { StudioControlDesk } from "@/components/studio/StudioControlDesk";
 import { StudioCommandPalette } from "@/components/studio/StudioCommandPalette";
+import { StudioShell } from "@/components/studio/StudioShell";
 import { StudioTabs } from "@/components/studio/StudioTabs";
 import { getStudioAnalyticsOverview } from "@/lib/analyticsOverview";
 import { getStudioActionServiceStatus } from "@/lib/actionServiceStatus";
@@ -16,7 +17,6 @@ import { getStudioDoctorOverview } from "@/lib/doctorOverview";
 import { getStudioModelEvalOverview } from "@/lib/modelEvalOverview";
 import { getStudioPromptInventory } from "@/lib/promptInventory";
 import { listStudioRuns } from "@/lib/runSummaries";
-import { studioSections } from "@/lib/studioData";
 
 export const dynamic = "force-dynamic";
 
@@ -35,62 +35,37 @@ export default async function StudioHomePage() {
     promptInventory,
     runs,
   ] = await Promise.all([
-    getStudioAnalyticsOverview(),
-    getStudioAssetInventory(),
-    getStudioDoctorOverview(),
-    getStudioModelEvalOverview(),
-    getStudioPromptInventory(),
-    listStudioRuns(),
+    Promise.resolve(getStudioAnalyticsOverview()),
+    Promise.resolve(getStudioAssetInventory()),
+    Promise.resolve(getStudioDoctorOverview()),
+    Promise.resolve(getStudioModelEvalOverview()),
+    Promise.resolve(getStudioPromptInventory()),
+    Promise.resolve(listStudioRuns()),
   ]);
 
   return (
-    <main className='studio-shell'>
-      <aside className='studio-rail' aria-label='Studio navigation'>
-        <div className='brand-lockup'>
-          <span className='brand-mark'>USF</span>
-          <div>
-            <p>UykulukSciFi</p>
-            <strong>Producer Studio</strong>
-          </div>
+    <StudioShell>
+      <header className='studio-header'>
+        <div>
+          <p className='eyebrow'>Local-first production desk</p>
+          <h1>Control UykulukSciFi production from the web surface</h1>
         </div>
-        <nav>
-          {studioSections.map((section) =>
-            "href" in section ? (
-              <a key={section.id} href={section.href}>
-                {section.label}
-              </a>
-            ) : (
-              <a key={section.id} href={`#${section.id}`}>
-                {section.label}
-              </a>
-            ),
-          )}
-        </nav>
-      </aside>
+        <div className='studio-header-actions'>
+          <StudioCommandPalette runs={runs} />
+          <span className='status-pill'>CLI source of truth</span>
+        </div>
+      </header>
 
-      <section className='studio-main'>
-        <header className='studio-header'>
-          <div>
-            <p className='eyebrow'>Local-first production desk</p>
-            <h1>Control UykulukSciFi production from the web surface</h1>
-          </div>
-          <div className='studio-header-actions'>
-            <StudioCommandPalette runs={runs} />
-            <span className='status-pill'>CLI source of truth</span>
-          </div>
-        </header>
-
-        <StudioControlDesk actionStatus={actionStatus} runs={runs} />
-        <StatusGrid />
-        <DoctorStatusPanel overview={doctorOverview} />
-        <ModelEvalStatusPanel overview={modelEvalOverview} />
-        <LatestRunReadinessPanel latestRun={runs[0] ?? null} />
-        <AnalyticsStatusPanel overview={analyticsOverview} />
-        <CommandPanel />
-        <ServiceContractPanel />
-        <AssetInventory inventory={assetInventory} />
-        <StudioTabs promptInventory={promptInventory} />
-      </section>
-    </main>
+      <StudioControlDesk actionStatus={actionStatus} runs={runs} />
+      <StatusGrid />
+      <DoctorStatusPanel overview={doctorOverview} />
+      <ModelEvalStatusPanel overview={modelEvalOverview} />
+      <LatestRunReadinessPanel latestRun={runs[0] ?? null} />
+      <AnalyticsStatusPanel overview={analyticsOverview} />
+      <CommandPanel />
+      <ServiceContractPanel />
+      <AssetInventory inventory={assetInventory} />
+      <StudioTabs promptInventory={promptInventory} />
+    </StudioShell>
   );
 }

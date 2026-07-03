@@ -9,7 +9,49 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Features
+
+- add Studio guarded-action preflight summaries so operators can see current evidence, readiness,
+  blocked-action, payload, and upload/publish boundaries before local web approvals or render
+  decisions.
+- add a Studio artifact review handoff path so operators can see which local review documents are
+  available before the final draft decision.
+- add Studio route-level loading skeletons so local run and artifact reads keep an operator layout
+  visible while data is pending.
+- add Studio appearance controls for local theme, palette, language, and density preferences, plus
+  Next Image-backed channel branding in the navigation rail.
+- extend the shared Studio shell, navigation rail, and loading skeletons across run, analytics,
+  asset, doctor, model-eval, and prompt review pages.
+- add Studio route boundary screens for missing routes and safe client-side route errors without
+  mutating producer state.
+- add stable Studio `/unauthorized` and `/forbidden` trust-boundary routes for web-control recovery
+  without enabling experimental Next.js auth interrupts.
+- upgrade the Studio run queue from a hand-rolled table to a TanStack Table-powered data grid with
+  header sorting, column visibility controls, and a tighter default column set.
+- add Studio artifact-preview search, availability filtering, result counts, and reset controls for
+  faster local review handoff navigation.
+- add explicit Studio local media open/download actions for allowlisted voiceover and draft-render
+  review artifacts.
+
+### Fixes
+
+- tighten Studio component semantics by using native run-index tables, safer default button types,
+  hidden skeleton placeholders, route-aware Next links, and list/section markup for repeated
+  operator groups.
+- return `401` for missing or mismatched Studio local session proof while keeping unsafe origins and
+  action-contract mismatches as forbidden requests.
+- reduce run queue table overflow by hiding lower-priority review columns by default while keeping
+  them available from the column menu.
+- distinguish an empty Studio run store from filtered-away run queue results and add a reset action
+  for returning to the default operator projection.
+- tighten Studio responsive layout containment so the home, run index, and run detail views avoid
+  horizontal overflow on mobile while preserving scrollable wide run tables on desktop.
+- fit the run index table into common desktop widths and switch narrow mobile run rows to labeled
+  cards so next actions and status fields remain readable without horizontal page scrolling.
+- align the workspace PostCSS override with the refreshed Studio dependency specifier so frozen CI
+  installs use the committed lockfile.
+- add a tracked Studio static-image declaration so CI typecheck resolves the committed channel logo
+  without relying on ignored Next.js generated files.
 
 ## v0.65.4 (2026-07-03)
 

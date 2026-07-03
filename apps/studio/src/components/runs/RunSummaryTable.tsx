@@ -1,94 +1,114 @@
-import Link from "next/link";
+"use client";
+
+import type { RunQueueDensity } from "@/lib/runQueueWorkbench";
 import type { StudioRunSummary } from "@/lib/runSummaries";
 import {
-  formatRunChannelHandoff,
-  formatRunChannelHandoffDecision,
-  formatRunFinalReviewBundle,
-  formatRunRenderDecision,
-  formatRunReviewCounts,
-} from "@/lib/runSummaryCopy";
-import type { RunQueueDensity } from "@/lib/runQueueWorkbench";
+  getCoreRowModel,
+  getSortedRowModel,
+  useReactTable,
+  type SortingState,
+  type VisibilityState,
+} from "@tanstack/react-table";
+import { useMemo, useState } from "react";
+import { runColumnClassName, runSummaryColumns } from "./RunSummaryTableColumns";
+import { ColumnVisibilityMenu, RunSortableHeader, RunTableCell } from "./RunSummaryTableControls";
 
 type RunSummaryTableProps = Readonly<{
   density?: RunQueueDensity;
+  emptyState?: Readonly<{
+    heading: string;
+    message: string;
+  }>;
   runs: readonly StudioRunSummary[];
 }>;
 
+const initialColumnVisibility = {
+  channelHandoff: false,
+  finalBundle: false,
+} as const satisfies VisibilityState;
+
 /**
- * Displays a summary table of saved producer runs.
+ * Displays a TanStack-powered summary grid of saved producer runs.
  *
  * @param density - The operator-selected table density.
  * @param runs - The runs to display
  */
-export function RunSummaryTable({ density = "comfortable", runs }: RunSummaryTableProps) {
+export function RunSummaryTable({
+  density = "comfortable",
+  emptyState = {
+    heading: "No runs yet",
+    message: "Start with the CLI source of truth: pnpm producer ideas.",
+  },
+  runs,
+}: RunSummaryTableProps) {
+  const [columnVisibility, setColumnVisibility] =
+    useState<VisibilityState>(initialColumnVisibility);
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const data = useMemo(() => [...runs], [runs]);
+  const columns = useMemo(() => runSummaryColumns(), []);
+  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table is the selected headless grid engine; the table instance is kept local to this component.
+  const table = useReactTable({
+    columns,
+    data,
+    getCoreRowModel: getCoreRowModel(),
+    getRowId: (run) => run.runId,
+    getSortedRowModel: getSortedRowModel(),
+    onColumnVisibilityChange: setColumnVisibility,
+    onSortingChange: setSorting,
+    state: {
+      columnVisibility,
+      sorting,
+    },
+  });
+
   if (runs.length === 0) {
     return (
       <section className='panel' aria-labelledby='runs-empty-heading'>
-        <h2 id='runs-empty-heading'>No runs yet</h2>
-        <p>Start with the CLI source of truth: pnpm producer ideas.</p>
+        <h2 id='runs-empty-heading'>{emptyState.heading}</h2>
+        <p>{emptyState.message}</p>
       </section>
     );
   }
 
   return (
     <section className='panel' aria-labelledby='runs-index-heading'>
-      <h2 id='runs-index-heading'>Run Index</h2>
-      <div
-        className='run-table'
-        data-density={density}
-        role='table'
-        aria-label='Saved producer runs'
-      >
-        <div className='run-row run-row-head' role='row'>
-          <span role='columnheader'>Run</span>
-          <span role='columnheader'>State</span>
-          <span role='columnheader'>Readiness</span>
-          <span role='columnheader'>Evidence</span>
-          <span role='columnheader'>Render decision</span>
-          <span role='columnheader'>Final bundle</span>
-          <span role='columnheader'>Channel handoff</span>
-          <span role='columnheader'>Next action</span>
+      <div className='run-table-heading'>
+        <div>
+          <h2 id='runs-index-heading'>Run Index</h2>
+          <p>
+            Data-grid projection over local CLI/core run summaries. Header sorting and column
+            toggles are read-only.
+          </p>
         </div>
-        {runs.map((run) => (
-          <Link className='run-row' href={`/runs/${run.runId}`} key={run.runId} role='row'>
-            <span role='cell'>{run.runId}</span>
-            <span className='run-cell-stack' role='cell'>
-              <strong>{run.state}</strong>
-              <small>{formatRunReviewCounts(run)}</small>
-            </span>
-            <span className='run-cell-stack' role='cell'>
-              <strong>{run.readinessStatus}</strong>
-              {run.readinessStatus === "passed" ? null : <small>{run.readinessMessage}</small>}
-              {run.readinessNextAction ? <small>{run.readinessNextAction}</small> : null}
-            </span>
-            <span className='run-cell-stack' role='cell'>
-              <strong>{run.evidenceStatus}</strong>
-              {run.evidenceStatus === "available" ? null : <small>{run.evidenceMessage}</small>}
-            </span>
-            <span className='run-cell-stack' role='cell'>
-              <strong>{formatRunRenderDecision(run)}</strong>
-              {run.renderDecision.kind === "present" ? (
-                <small>{run.renderDecision.message}</small>
-              ) : null}
-            </span>
-            <span className='run-cell-stack' role='cell'>
-              <strong>{formatRunFinalReviewBundle(run)}</strong>
-              {run.finalReviewBundle.kind === "present" ? (
-                <small>{run.finalReviewBundle.reviewPath}</small>
-              ) : null}
-            </span>
-            <span className='run-cell-stack' role='cell'>
-              <strong>{formatRunChannelHandoff(run)}</strong>
-              {run.channelHandoff.kind === "present" ? (
-                <small>{run.channelHandoff.reviewPath}</small>
-              ) : null}
-              {run.channelHandoffDecision.kind === "present" ? (
-                <small>{formatRunChannelHandoffDecision(run)}</small>
-              ) : null}
-            </span>
-            <span role='cell'>{run.nextRecommendedCommand ?? "Generate evidence from CLI"}</span>
-          </Link>
-        ))}
+        <div className='run-table-toolbar'>
+          <span className='status-pill small'>{table.getRowModel().rows.length} rows</span>
+          <ColumnVisibilityMenu table={table} />
+        </div>
+      </div>
+      <div className='run-table-scroll'>
+        <table className='run-table' data-density={density}>
+          <caption className='sr-only'>Saved producer runs and their next safe actions</caption>
+          <thead>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <tr className='run-row run-row-head' key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <th className={runColumnClassName(header.column.id)} key={header.id} scope='col'>
+                    <RunSortableHeader header={header} />
+                  </th>
+                ))}
+              </tr>
+            ))}
+          </thead>
+          <tbody>
+            {table.getRowModel().rows.map((row) => (
+              <tr className='run-row' key={row.id}>
+                {row.getVisibleCells().map((cell) => (
+                  <RunTableCell key={cell.id} cell={cell} />
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </section>
   );

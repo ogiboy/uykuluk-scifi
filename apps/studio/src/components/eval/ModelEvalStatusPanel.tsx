@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
 import { CopyableCommand } from "@/components/studio/CopyableCommand";
 import type { StudioModelEvalOverview } from "@/lib/modelEvalOverview";
@@ -22,9 +24,9 @@ export function ModelEvalStatusPanel({ overview }: ModelEvalStatusPanelProps) {
             Read-only parser-contract evidence. Studio does not call local models or mutate config.
           </p>
         </div>
-        <a className='status-pill small' href='/eval'>
+        <Link className='status-pill small' href='/eval'>
           Open eval
-        </a>
+        </Link>
       </div>
       <MetricGrid
         metrics={[

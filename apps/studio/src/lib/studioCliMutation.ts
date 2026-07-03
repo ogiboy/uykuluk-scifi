@@ -65,11 +65,14 @@ export async function runStudioCliMutationRoute(
     if (result.status !== 0) {
       return jsonError(cliErrorMessage(result.stderr), 409);
     }
-    return Response.json({
-      actionId,
-      record: parseCliJson(result.stdout),
-      status: "ok",
-    });
+    return Response.json(
+      {
+        actionId,
+        record: parseCliJson(result.stdout),
+        status: "ok",
+      },
+      { headers: noStoreHeaders() },
+    );
   } catch (error) {
     if (error instanceof ZodError) {
       return jsonError(`Studio ${actionId} request is invalid.`, 400);
@@ -84,8 +87,12 @@ function jsonError(message: string, status: number): Response {
       message,
       status: "error",
     },
-    { status },
+    { headers: noStoreHeaders(), status },
   );
+}
+
+function noStoreHeaders(): HeadersInit {
+  return { "cache-control": "no-store" };
 }
 
 function cliArgsForAction(actionId: StudioCliMutationActionId, payload: unknown): string[] {

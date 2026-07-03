@@ -1,6 +1,31 @@
+"use client";
+
 import type { StudioArtifactPreview } from "@/lib/artifactPreviews";
+import {
+  artifactPreviewEmptyState,
+  artifactPreviewStatusFilters,
+  countArtifactPreviewStatuses,
+  filterArtifactPreviews,
+  type ArtifactPreviewStatusFilter,
+} from "@/lib/artifactPreviewFilters";
+import { buildArtifactReviewHandoff } from "@/lib/artifactReviewHandoff";
 import { artifactPreviewsIntro } from "@/lib/runEvidenceCopy";
 import type { StudioRunDetail } from "@/lib/runSummaries";
+import { applyEnumSelectValue } from "@/lib/utils";
+import { useMemo, useState } from "react";
+import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
+import { RunArtifactPreviewGroups } from "./RunArtifactPreviewGroups";
 
 type RunArtifactPreviewsPanelProps = Readonly<{
   artifacts: StudioRunDetail["artifacts"];
@@ -17,7 +42,22 @@ export function RunArtifactPreviewsPanel({
   artifacts,
   evidenceStatus,
 }: RunArtifactPreviewsPanelProps) {
-  const artifactGroups = groupedArtifactPreviews(artifacts);
+  const [query, setQuery] = useState("");
+  const [status, setStatus] = useState<ArtifactPreviewStatusFilter>("all");
+  const counts = useMemo(() => countArtifactPreviewStatuses(artifacts), [artifacts]);
+  const filteredArtifacts = useMemo(
+    () => filterArtifactPreviews(artifacts, { query, status }),
+    [artifacts, query, status],
+  );
+  const artifactGroups = groupedArtifactPreviews(filteredArtifacts);
+  const emptyState = artifactPreviewEmptyState(artifacts.length, filteredArtifacts.length);
+  const reviewHandoff = buildArtifactReviewHandoff(artifacts);
+  const filtersAreCustomized = query.trim() !== "" || status !== "all";
+
+  function resetPreviewFilters() {
+    setQuery("");
+    setStatus("all");
+  }
 
   return (
     <section className='panel' aria-labelledby='artifact-heading'>
@@ -27,50 +67,93 @@ export function RunArtifactPreviewsPanel({
         state.
       </p>
       <p>{artifactPreviewsIntro(evidenceStatus)}</p>
-      <div className='artifact-preview-groups'>
-        {artifactGroups.map((group, groupIndex) => (
-          <details className='artifact-preview-group' key={group.label} open={groupIndex === 0}>
-            <summary>
-              <span>{group.label}</span>
-              <small>{group.artifacts.length} artifact(s)</small>
-            </summary>
-            <ul className='artifact-preview-list'>
-              {group.artifacts.map((artifact) => (
-                <li className='artifact-preview-card' key={artifact.path}>
-                  <div className='artifact-preview-header'>
-                    <div>
-                      <strong>{artifact.label}</strong>
-                      <span>{artifact.path}</span>
-                    </div>
-                    <span
-                      className={
-                        artifact.exists ? "status-pill small" : "status-pill small blocked"
-                      }
-                    >
-                      {artifact.exists ? "available" : "missing"}
-                    </span>
-                  </div>
-                  <p className='artifact-description'>{artifact.description}</p>
-                  <p className='artifact-meta'>
-                    {artifact.kind}
-                    {typeof artifact.sizeBytes === "number" ? ` · ${artifact.sizeBytes} bytes` : ""}
-                    {artifact.previewTruncated ? " · preview truncated" : ""}
-                  </p>
-                  {artifact.preview ? (
-                    <details className='artifact-preview-toggle'>
-                      <summary>Preview excerpt</summary>
-                      <pre className='artifact-preview'>{artifact.preview}</pre>
-                    </details>
-                  ) : (
-                    <p>{artifactPreviewFallback(artifact)}</p>
-                  )}
-                  <p className='artifact-action'>{artifact.operatorAction}</p>
-                </li>
-              ))}
-            </ul>
-          </details>
-        ))}
+      <div className='artifact-preview-toolbar' aria-label='Artifact preview filters'>
+        <label className='artifact-preview-search'>
+          Search artifacts
+          <Input
+            placeholder='path, label, phase, review action'
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+          />
+        </label>
+        <div className='artifact-preview-select'>
+          <Label htmlFor='artifact-status-filter'>Availability</Label>
+          <Select
+            value={status}
+            onValueChange={(value) =>
+              applyEnumSelectValue(value, artifactPreviewStatusFilters, setStatus)
+            }
+          >
+            <SelectTrigger id='artifact-status-filter' aria-label='Filter artifacts by status'>
+              <SelectValue placeholder='Availability' />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                {artifactPreviewStatusFilters.map((value) => (
+                  <SelectItem key={value} value={value}>
+                    {artifactStatusLabel(value)} ({counts[value]})
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
+        <Button
+          disabled={!filtersAreCustomized}
+          onClick={resetPreviewFilters}
+          type='button'
+          variant='secondary'
+        >
+          Reset artifacts
+        </Button>
+        <output className='artifact-preview-counts' aria-label='Artifact preview result summary'>
+          <Badge variant='secondary'>{filteredArtifacts.length} shown</Badge>
+          <Badge variant='outline'>{counts.available} available</Badge>
+          {counts.missing > 0 ? <Badge variant='outline'>{counts.missing} missing</Badge> : null}
+        </output>
       </div>
+      <section className='artifact-review-handoff' aria-label='Artifact review handoff milestones'>
+        <div className='artifact-review-handoff-heading'>
+          <div>
+            <h3>Review handoff path</h3>
+            <p>
+              {reviewHandoff.availableCount}/{reviewHandoff.totalCount} review milestones are
+              available as local artifacts.
+            </p>
+          </div>
+          {reviewHandoff.nextFocus ? (
+            <span className='status-pill small pending'>next: {reviewHandoff.nextFocus.label}</span>
+          ) : (
+            <span className='status-pill small done'>all review docs available</span>
+          )}
+        </div>
+        <ol className='artifact-review-milestones'>
+          {reviewHandoff.milestones.map((milestone) => (
+            <li key={milestone.path}>
+              <span
+                className={
+                  milestone.available ? "status-pill small done" : "status-pill small pending"
+                }
+              >
+                {milestone.available ? "available" : "pending"}
+              </span>
+              <strong>{milestone.label}</strong>
+              <small>{milestone.path}</small>
+            </li>
+          ))}
+        </ol>
+      </section>
+      {filteredArtifacts.length === 0 ? (
+        <section
+          className='artifact-preview-empty'
+          aria-labelledby='artifact-preview-empty-heading'
+        >
+          <h3 id='artifact-preview-empty-heading'>{emptyState.heading}</h3>
+          <p>{emptyState.message}</p>
+        </section>
+      ) : (
+        <RunArtifactPreviewGroups artifactGroups={artifactGroups} />
+      )}
     </section>
   );
 }
@@ -94,18 +177,13 @@ function groupedArtifactPreviews(
   }));
 }
 
-/**
- * Provides a fallback message for an artifact preview.
- *
- * @param artifact - The artifact preview metadata
- * @returns A message explaining why the preview is unavailable
- */
-function artifactPreviewFallback(artifact: StudioArtifactPreview): string {
-  if (!artifact.exists) {
-    return "Artifact is not generated yet.";
+function artifactStatusLabel(status: ArtifactPreviewStatusFilter): string {
+  switch (status) {
+    case "all":
+      return "All";
+    case "available":
+      return "Available";
+    case "missing":
+      return "Missing";
   }
-  if (artifact.kind === "binary") {
-    return "Binary or media artifact. Preview is intentionally limited to metadata.";
-  }
-  return "Text preview is unavailable; inspect the artifact from the CLI.";
 }

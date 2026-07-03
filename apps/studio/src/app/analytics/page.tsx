@@ -1,6 +1,6 @@
 import { AnalyticsOverviewView } from "@/components/analytics/AnalyticsOverviewView";
+import { StudioShell } from "@/components/studio/StudioShell";
 import { getStudioAnalyticsOverview } from "@/lib/analyticsOverview";
-import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -13,17 +13,15 @@ export default async function AnalyticsPage() {
   const overview = await getStudioAnalyticsOverview();
 
   return (
-    <main className='studio-main page-shell'>
+    <StudioShell>
       <header className='studio-header'>
         <div>
           <p className='eyebrow'>Read-only manual feedback loop</p>
           <h1>Analytics feedback</h1>
         </div>
-        <Link className='status-pill' href='/'>
-          Studio home
-        </Link>
+        <span className='status-pill'>Manual import only</span>
       </header>
       <AnalyticsOverviewView overview={overview} />
-    </main>
+    </StudioShell>
   );
 }
