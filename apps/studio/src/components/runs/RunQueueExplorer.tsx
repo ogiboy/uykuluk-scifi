@@ -46,7 +46,7 @@ const filterLabels = {
 
 const sortLabels = {
   "blocked-first": "Blocked first",
-  "decision-first": "Render decision first",
+  "decision-first": "Review decision first",
   "oldest-first": "Oldest first",
   "updated-desc": "Newest first",
 } as const satisfies Record<RunQueueSort, string>;

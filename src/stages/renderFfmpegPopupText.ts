@@ -9,6 +9,7 @@ type PopupTextFilterInput = {
 };
 
 const ffmpegEscape = String.fromCodePoint(92);
+const ffmpegEscapedComma = String.raw`\,`;
 
 /**
  * Builds FFmpeg drawtext filters for scene-timed popup-card copy.
@@ -23,9 +24,9 @@ export function buildPopupTextFilters(input: PopupTextFilterInput): string[] {
     const outputLabel = index === specs.length - 1 ? input.outputLabel : `popupText${index}`;
     const filter = `[${currentLabel}]drawtext=text='${escapeDrawtextText(
       spec.text,
-    )}':fontcolor=white:fontsize=24:line_spacing=8:x=W-395:y=150:enable='between(t\\,${formatTime(
+    )}':fontcolor=white:fontsize=24:line_spacing=8:x=W-395:y=150:enable='between(t${ffmpegEscapedComma}${formatTime(
       spec.startSeconds,
-    )}\\,${formatTime(spec.endSeconds)})'[${outputLabel}]`;
+    )}${ffmpegEscapedComma}${formatTime(spec.endSeconds)})'[${outputLabel}]`;
     currentLabel = outputLabel;
     return filter;
   });

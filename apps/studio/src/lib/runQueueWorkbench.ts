@@ -1,4 +1,5 @@
 import type { StudioRunSummary } from "./runSummaries";
+import { operatorDecisionPriority } from "./runQueueDecisions";
 
 export const runQueueSortValues = [
   "updated-desc",
@@ -90,9 +91,5 @@ function compareRuns(left: StudioRunSummary, right: StudioRunSummary, sort: RunQ
 }
 
 function compareDecisionNeed(left: StudioRunSummary, right: StudioRunSummary): number {
-  return Number(needsRenderDecision(right)) - Number(needsRenderDecision(left));
-}
-
-function needsRenderDecision(run: StudioRunSummary): boolean {
-  return run.state === "RENDERED" && run.renderDecision.kind !== "present";
+  return operatorDecisionPriority(right) - operatorDecisionPriority(left);
 }

@@ -67,12 +67,16 @@ export function runSummaryColumns(): ColumnDef<StudioRunSummary>[] {
       meta: { label: "Evidence" } satisfies RunTableColumnMeta,
     },
     {
-      accessorFn: (run) => formatRunRenderDecision(run),
+      accessorFn: (run) =>
+        `${formatRunRenderDecision(run)} ${formatRunChannelHandoffDecision(run)}`,
       cell: ({ row }) => (
         <span className='run-cell-stack'>
-          <strong>{formatRunRenderDecision(row.original)}</strong>
+          <strong>Render: {formatRunRenderDecision(row.original)}</strong>
           {row.original.renderDecision.kind === "present" ? (
             <small>{row.original.renderDecision.message}</small>
+          ) : null}
+          {row.original.channelHandoff.kind === "present" ? (
+            <small>Channel: {formatRunChannelHandoffDecision(row.original)}</small>
           ) : null}
         </span>
       ),
