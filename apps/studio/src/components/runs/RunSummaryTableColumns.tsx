@@ -1,4 +1,5 @@
 import type { StudioRunSummary } from "@/lib/runSummaries";
+import { buildStudioActionWorkbench } from "@/lib/studioActionWorkbench";
 import {
   formatRunChannelHandoff,
   formatRunChannelHandoffDecision,
@@ -66,6 +67,25 @@ export function runSummaryColumns(): ColumnDef<StudioRunSummary>[] {
       ),
       header: "Evidence",
       meta: { label: "Evidence" } satisfies RunTableColumnMeta,
+    },
+    {
+      accessorFn: (run) => {
+        const action = buildStudioActionWorkbench(run).primary;
+        return [action.label, action.tone, action.routePath ?? "", action.command ?? ""].join(" ");
+      },
+      cell: ({ row }) => {
+        const action = buildStudioActionWorkbench(row.original).primary;
+        return (
+          <span className='run-cell-stack'>
+            <strong>{action.label}</strong>
+            <small>{operatorActionDetail(action)}</small>
+            {action.routePath ? <small>{action.routePath}</small> : null}
+          </span>
+        );
+      },
+      header: "Operator action",
+      id: "operatorAction",
+      meta: { label: "Operator action" } satisfies RunTableColumnMeta,
     },
     {
       accessorFn: (run) =>
@@ -176,4 +196,16 @@ function formatRunDate(value: string): string {
     minute: "2-digit",
     month: "2-digit",
   });
+}
+
+function operatorActionDetail(
+  action: ReturnType<typeof buildStudioActionWorkbench>["primary"],
+): string {
+  if (action.routePath) {
+    return "Guarded local web action";
+  }
+  if (action.command) {
+    return action.tone === "blocked" ? "Blocked CLI recovery" : "CLI-only next action";
+  }
+  return "No safe action";
 }
