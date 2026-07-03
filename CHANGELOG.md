@@ -11,6 +11,13 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.69.0 (2026-07-03)
+
+### Features
+
+- add run table row actions (26c7667)
+- paginate run summary table (82da934)
+
 ## v0.68.0 (2026-07-03)
 
 ### Features
