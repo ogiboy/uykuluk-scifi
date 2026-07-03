@@ -49,8 +49,8 @@ export function applyAppearancePreference(preference: StudioAppearancePreference
 
 export function persistAppearancePreference(preference: StudioAppearancePreference) {
   try {
-    window.localStorage.setItem(appearanceStorageKey, JSON.stringify(preference));
-    window.dispatchEvent(new Event(appearanceStorageEvent));
+    globalThis.localStorage.setItem(appearanceStorageKey, JSON.stringify(preference));
+    globalThis.dispatchEvent(new Event(appearanceStorageEvent));
   } catch (error) {
     console.warn("Studio appearance preferences could not be saved.", error);
   }
@@ -79,11 +79,11 @@ export function readStoredPreference(
 }
 
 export function readStoredPreferenceText(): string | null {
-  if (typeof window === "undefined") {
+  if (typeof globalThis.window === "undefined") {
     return null;
   }
   try {
-    return window.localStorage.getItem(appearanceStorageKey);
+    return globalThis.localStorage.getItem(appearanceStorageKey);
   } catch (error) {
     console.warn("Studio appearance preferences could not be loaded.", error);
     return null;
@@ -91,11 +91,11 @@ export function readStoredPreferenceText(): string | null {
 }
 
 export function subscribeAppearancePreference(onStoreChange: () => void): () => void {
-  window.addEventListener("storage", onStoreChange);
-  window.addEventListener(appearanceStorageEvent, onStoreChange);
+  globalThis.addEventListener("storage", onStoreChange);
+  globalThis.addEventListener(appearanceStorageEvent, onStoreChange);
   return () => {
-    window.removeEventListener("storage", onStoreChange);
-    window.removeEventListener(appearanceStorageEvent, onStoreChange);
+    globalThis.removeEventListener("storage", onStoreChange);
+    globalThis.removeEventListener(appearanceStorageEvent, onStoreChange);
   };
 }
 
