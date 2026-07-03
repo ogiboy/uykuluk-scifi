@@ -19,7 +19,11 @@ type RunReviewDecisionRailProps = Readonly<{
  */
 export function RunReviewDecisionRail({ run }: RunReviewDecisionRailProps) {
   return (
-    <section className='run-review-rail' aria-label='Run decisions and blocked actions'>
+    <section
+      className='run-review-rail'
+      id='review-decision'
+      aria-label='Run decisions and blocked actions'
+    >
       <StudioMutationSessionPanel />
       <RunBlockedActionsPanel
         blockedActions={run.blockedActions}

@@ -32,6 +32,7 @@ type RunSummaryTableProps = Readonly<{
 const initialColumnVisibility = {
   channelHandoff: false,
   finalBundle: false,
+  nextAction: false,
 } as const satisfies VisibilityState;
 
 const initialPagination = {

@@ -8,6 +8,7 @@ import {
 } from "@/lib/runSummaryCopy";
 import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
+import { RunSummaryRowActions } from "./RunSummaryRowActions";
 
 type RunTableColumnMeta = Readonly<{
   label: string;
@@ -135,10 +136,17 @@ export function runSummaryColumns(): ColumnDef<StudioRunSummary>[] {
     {
       accessorFn: (run) => run.nextRecommendedCommand ?? "Generate evidence from CLI",
       cell: ({ row }) => row.original.nextRecommendedCommand ?? "Generate evidence from CLI",
-      enableHiding: false,
       header: "Next action",
       id: "nextAction",
       meta: { label: "Next action" } satisfies RunTableColumnMeta,
+    },
+    {
+      cell: ({ row }) => <RunSummaryRowActions run={row.original} />,
+      enableHiding: false,
+      enableSorting: false,
+      header: "Actions",
+      id: "actions",
+      meta: { label: "Actions" } satisfies RunTableColumnMeta,
     },
   ];
 }
