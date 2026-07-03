@@ -28,6 +28,7 @@ import {
   runQueueSortValues,
 } from "@/lib/runQueueWorkbench";
 import type { StudioRunSummary } from "@/lib/runSummaries";
+import { countStudioActionWorkbench } from "@/lib/studioActionWorkbench";
 import { applyEnumSelectValue } from "@/lib/utils";
 import { maxBlockedActionSliderValue, RunQueueTunePopover } from "./RunQueueTunePopover";
 import { RunSummaryTable } from "./RunSummaryTable";
@@ -84,6 +85,7 @@ export function RunQueueExplorer({ runs }: RunQueueExplorerProps) {
       }),
     [matchingRuns, maxBlockedActions, sort],
   );
+  const actionCounts = useMemo(() => countStudioActionWorkbench(filteredRuns), [filteredRuns]);
   const hiddenByBlockerControl = matchingRuns.length - filteredRuns.length;
   const queueViewIsCustomized =
     density !== defaultRunQueueDensity ||
@@ -113,6 +115,15 @@ export function RunQueueExplorer({ runs }: RunQueueExplorerProps) {
             <Badge variant='secondary'>{filteredRuns.length} shown</Badge>
             {hiddenByBlockerControl > 0 ? (
               <Badge variant='outline'>{hiddenByBlockerControl} hidden by blocker limit</Badge>
+            ) : null}
+            {actionCounts.webAction > 0 ? (
+              <Badge variant='secondary'>{actionCounts.webAction} web action</Badge>
+            ) : null}
+            {actionCounts.blockedCli > 0 ? (
+              <Badge variant='destructive'>{actionCounts.blockedCli} blocked CLI</Badge>
+            ) : null}
+            {actionCounts.cliOnly > 0 ? (
+              <Badge variant='outline'>{actionCounts.cliOnly} CLI-only</Badge>
             ) : null}
           </output>
         </div>

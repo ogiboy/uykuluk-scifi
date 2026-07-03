@@ -580,6 +580,35 @@ h3 {
   justify-content: flex-end;
 }
 
+.active-run-action-summary {
+  display: grid;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--studio-surface-inset);
+  padding: 12px;
+}
+
+.active-run-action-summary div {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.active-run-action-summary span {
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.active-run-action-summary p {
+  margin: 0;
+  color: var(--muted);
+}
+
 .control-desk-primary,
 .active-run-card {
   border: 1px solid var(--line);
@@ -992,6 +1021,12 @@ h3 {
   vertical-align: top;
 }
 
+.run-table-empty-cell {
+  color: var(--muted);
+  font-size: 13px;
+  text-align: center;
+}
+
 .run-cell-runId {
   width: 220px;
   min-width: 220px;
@@ -1156,6 +1191,44 @@ h3 {
   min-width: 0;
   max-height: calc(100dvh - 32px);
   overflow: auto;
+}
+
+.action-workbench,
+.action-workbench-boundaries {
+  display: grid;
+  gap: 12px;
+}
+
+.action-workbench-heading {
+  display: flex;
+  gap: 12px;
+  align-items: start;
+  justify-content: space-between;
+}
+
+.action-workbench-heading h2 {
+  margin: 0;
+}
+
+.action-workbench-boundaries {
+  margin: 0;
+}
+
+.action-workbench-boundaries div {
+  display: grid;
+  gap: 4px;
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+}
+
+.action-workbench-boundaries dt {
+  color: var(--text);
+  font-weight: 800;
+}
+
+.action-workbench-boundaries dd {
+  margin: 0;
+  color: var(--muted);
 }
 
 .run-mobile-action-sheet {

@@ -1,5 +1,6 @@
 import type { StudioRunSummary } from "./runSummaries";
 import { needsOperatorReviewDecision } from "./runQueueDecisions";
+import { buildStudioActionWorkbench } from "./studioActionWorkbench";
 
 export const runQueueFilterValues = ["all", "attention", "ready", "rendered", "decision"] as const;
 
@@ -74,6 +75,7 @@ function runMatchesQuery(run: StudioRunSummary, query: string): boolean {
   if (!query) {
     return true;
   }
+  const action = buildStudioActionWorkbench(run).primary;
   return [
     run.runId,
     run.state,
@@ -83,6 +85,9 @@ function runMatchesQuery(run: StudioRunSummary, query: string): boolean {
     run.channelHandoff.kind,
     run.channelHandoff.kind === "present" ? run.channelHandoff.handoff.status : "",
     run.channelHandoffDecision.kind,
+    action.label,
+    action.routePath ?? "",
+    action.command ?? "",
     run.nextRecommendedCommand ?? "",
   ].some((value) => value.toLowerCase().includes(query));
 }

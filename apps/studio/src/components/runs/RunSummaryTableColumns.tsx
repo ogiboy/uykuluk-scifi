@@ -8,6 +8,11 @@ import {
 } from "@/lib/runSummaryCopy";
 import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
+import {
+  operatorActionDetail,
+  operatorActionForRun,
+  operatorActionSearchText,
+} from "./runSummaryOperatorAction";
 import { RunSummaryRowActions } from "./RunSummaryRowActions";
 
 type RunTableColumnMeta = Readonly<{
@@ -66,6 +71,22 @@ export function runSummaryColumns(): ColumnDef<StudioRunSummary>[] {
       ),
       header: "Evidence",
       meta: { label: "Evidence" } satisfies RunTableColumnMeta,
+    },
+    {
+      accessorFn: (run) => operatorActionSearchText(operatorActionForRun(run)),
+      cell: ({ row }) => {
+        const action = operatorActionForRun(row.original);
+        return (
+          <span className='run-cell-stack'>
+            <strong>{action.label}</strong>
+            <small>{operatorActionDetail(action)}</small>
+            {action.routePath ? <small>{action.routePath}</small> : null}
+          </span>
+        );
+      },
+      header: "Operator action",
+      id: "operatorAction",
+      meta: { label: "Operator action" } satisfies RunTableColumnMeta,
     },
     {
       accessorFn: (run) =>

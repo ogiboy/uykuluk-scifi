@@ -11,7 +11,7 @@ import {
   type SortingState,
   type VisibilityState,
 } from "@tanstack/react-table";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { runColumnClassName, runSummaryColumns } from "./RunSummaryTableColumns";
 import {
   ColumnVisibilityMenu,
@@ -79,6 +79,16 @@ export function RunSummaryTable({
   });
   const totalRows = table.getPrePaginationRowModel().rows.length;
   const visibleRows = table.getRowModel().rows;
+  const visibleColumnCount = table.getVisibleLeafColumns().length;
+
+  useEffect(() => {
+    setPagination((current) => {
+      if (current.pageIndex === 0) {
+        return current;
+      }
+      return { ...current, pageIndex: 0 };
+    });
+  }, [runs]);
 
   if (runs.length === 0) {
     return (
@@ -121,6 +131,13 @@ export function RunSummaryTable({
             ))}
           </thead>
           <tbody>
+            {visibleRows.length === 0 ? (
+              <tr className='run-row'>
+                <td className='run-table-empty-cell' colSpan={visibleColumnCount}>
+                  The current queue view changed. Resetting to the first page.
+                </td>
+              </tr>
+            ) : null}
             {visibleRows.map((row) => (
               <tr className='run-row' key={row.id}>
                 {row.getVisibleCells().map((cell) => (

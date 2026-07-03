@@ -128,6 +128,11 @@ describe("Studio run queue filters", () => {
     expect(
       filterStudioRunQueue(runs, { filter: "ready", query: "manual" }).map((run) => run.runId),
     ).toEqual(["run_channel_decision", "run_ready"]);
+    expect(
+      filterStudioRunQueue(runs, { filter: "ready", query: "actions/approve-render" }).map(
+        (run) => run.runId,
+      ),
+    ).toEqual(["run_ready"]);
   });
 
   it("applies operator workbench controls without mutating persisted run order", () => {
