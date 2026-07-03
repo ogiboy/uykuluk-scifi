@@ -245,7 +245,10 @@
   states, local render-decision commands for rendered runs without a recorded decision, and guarded
   `idea.approve`, `script.approve`, `cost.approve`, `render.approve`, `render.decide`, and
   `channel-handoff.decide` routes matching CLI/core evidence writes. It does not generate artifacts,
-  render media, upload, or publish.
+  render media, upload, or publish. The run detail rail and Studio home now include an
+  operator-facing action workbench that summarizes the current guarded web action or CLI-only next
+  action, the route path when a local web action exists, and the permanent source-of-truth,
+  local-session, upload/publish, and paid-provider boundaries.
 - Readiness diagnostics that strictly parse and revalidate persisted cost quotes, live hard budgets,
   complete production-package integrity, and exact paid-generation cost approval when required.
 - Final readiness diagnostics agree with the post-transition run state.
@@ -333,9 +336,10 @@
   guarded local idea/script/cost/render approval routes, the guarded local render-decision route,
   and disabled upload/publish action routes. Tests assert that current App Router pages are covered,
   enabled local mutations require POST-only same-origin JSON, action headers, service-contract
-  handling, and local session proof, disabled upload/publish actions require shared CLI/core
-  contracts, CSRF protection, durable evidence writes, and explicit approval targets, and
-  public/scheduled publish risk remains disabled.
+  handling, and local session proof, 401 mutation rejections clear the cached local session before
+  retry, disabled upload/publish actions require shared CLI/core contracts, CSRF protection, durable
+  evidence writes, and explicit approval targets, and public/scheduled publish risk remains
+  disabled.
 - Shared Studio mutation service contract foundations exist for guarded idea/script/cost/render
   approval actions, the active local render-decision and channel-handoff decision evidence writes,
   and disabled upload/publish actions. Contracts validate request payloads, bind each action to the

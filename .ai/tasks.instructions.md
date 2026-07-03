@@ -159,7 +159,9 @@
   reuse the shared production-media review guidance.
 - Keep the Studio mutation-service status panel aligned with route-security and service contract
   changes; it may show guarded local approval/review routes, but upload/publish actions must remain
-  disabled.
+  disabled. Keep the Studio action workbench aligned with the same contracts so operators can see
+  whether the current run has a guarded web action, a CLI-only next action, or no safe action
+  without implying upload, publish, paid-provider execution, or frontend-owned workflow state.
 - Harden manual analytics feedback with import edge cases and richer comparisons while keeping data
   operator-provided and local-only. Run-linked summaries, unmapped-record visibility, non-causal
   repeat / avoid-without-revision / mixed-signal inspect / test-next prompts, simple
