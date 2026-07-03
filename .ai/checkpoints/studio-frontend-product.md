@@ -24,9 +24,8 @@ upload/publish boundaries.
   `/Users/ogiboy/.codex/worktrees/894d/uykuluk-scifi`.
 - Merged PR: #121, `feat(studio): expand operator workbench controls`, merged into `main` as
   `97a6ebb6` on 2026-07-02.
-- Active local slice: artifact preview review ergonomics on the shared Studio operator branch.
-- Last completed slice/commit before this checkpoint:
-  `fix(studio): clarify filtered run queue state`.
+- Active local slice: production media review ergonomics on the shared Studio operator branch.
+- Last completed slice/commit before this checkpoint: `feat(studio): filter artifact previews`.
 - Completed current-branch frontend slices include:
   - shadcn route/action primitives for guarded local actions;
   - Studio home control desk, queue filters, command palette, copyable safe commands;
@@ -35,6 +34,8 @@ upload/publish boundaries.
     decisions.
   - production-media review cards with copyable review, local playback, and render-approval handoff
     commands.
+  - production-media local review actions that let operators open or download allowlisted voiceover
+    and draft-render media from the Studio media route without broadening artifact access.
   - guarded-action preflight summaries for approval and render-decision panels, showing payload,
     evidence, readiness, blocked-action, and upload/publish boundaries before submission.
   - artifact review handoff path in the Artifacts tab, showing the review documents available for
@@ -87,6 +88,8 @@ upload/publish boundaries.
   - browser smoke on a run detail Artifacts tab: impossible artifact search shows
     `No matching artifacts`, enables `Reset artifacts`, resets the query to an empty string,
     restores artifact cards, and keeps body overflow at `0px`.
+  - browser smoke on a run detail Media tab: local media action links render for allowlisted media
+    cards and keep body overflow at `0px`.
 - Earlier branch checks also included modularity, release, targeted Vitest, and browser smoke across
   run detail Media, Artifacts, Readiness, Decisions, and mobile overflow surfaces.
 - Dirty or external changes to preserve: none known after the latest committed frontend slices.

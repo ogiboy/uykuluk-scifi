@@ -1470,6 +1470,33 @@ h3 {
   font-size: 12px;
 }
 
+.production-media-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.production-media-actions a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--text);
+  padding: 6px 10px;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.production-media-actions a:hover,
+.production-media-actions a:focus-visible {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 .artifact-preview-group,
 .artifact-preview-toggle {
   display: grid;

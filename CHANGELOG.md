@@ -30,6 +30,8 @@ future generated release notes can be inserted predictably.
   header sorting, column visibility controls, and a tighter default column set.
 - add Studio artifact-preview search, availability filtering, result counts, and reset controls for
   faster local review handoff navigation.
+- add explicit Studio local media open/download actions for allowlisted voiceover and draft-render
+  review artifacts.
 
 ### Fixes
 
