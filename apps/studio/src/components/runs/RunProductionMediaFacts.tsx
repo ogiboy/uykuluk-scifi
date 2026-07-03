@@ -13,6 +13,7 @@ export function RunProductionMediaFacts({ artifact }: RunProductionMediaFactsPro
   if (artifact.facts && artifact.facts.length > 0) {
     const compactFacts = artifact.facts.filter(isCompactFact);
     const detailedFacts = artifact.facts.filter((fact) => !isCompactFact(fact));
+    const detailedFactCount = detailedFacts.length;
     return (
       <>
         {compactFacts.length > 0 ? (
@@ -22,7 +23,13 @@ export function RunProductionMediaFacts({ artifact }: RunProductionMediaFactsPro
             ))}
           </ul>
         ) : null}
-        {detailedFacts.length > 0 ? (
+        {detailedFactCount > 0 ? (
+          <p className='production-media-detail-note'>
+            {detailedFactCount} detailed evidence item{detailedFactCount === 1 ? "" : "s"} available
+            below.
+          </p>
+        ) : null}
+        {detailedFactCount > 0 ? (
           <details className='production-media-fact-details'>
             <summary>Detailed media evidence</summary>
             <ul>

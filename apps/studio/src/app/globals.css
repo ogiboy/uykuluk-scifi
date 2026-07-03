@@ -1677,6 +1677,13 @@ h3 {
   line-height: 1.2;
 }
 
+.production-media-detail-note {
+  margin: -2px 0 8px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .production-media-fact-details {
   border: 1px solid var(--line);
   border-radius: 10px;
