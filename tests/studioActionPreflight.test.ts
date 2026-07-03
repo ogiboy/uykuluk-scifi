@@ -86,6 +86,24 @@ describe("Studio action preflight", () => {
       ]),
     );
   });
+
+  it("shows channel handoff decisions as local evidence only", () => {
+    const preflight = buildStudioActionPreflight({
+      actionId: "channel-handoff.decide",
+      run: actionRunFixture({ state: "RENDERED" }),
+    });
+
+    expect(preflight.copy).toContain("manual channel-handoff decision");
+    expect(preflight.items).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          detail: expect.stringContaining("Upload and publish remain disabled"),
+          label: "Payload",
+          status: "done",
+        }),
+      ]),
+    );
+  });
 });
 
 function actionRunFixture(

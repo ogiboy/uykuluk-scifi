@@ -6,10 +6,10 @@ describe("Studio action service status", () => {
     const status = getStudioActionServiceStatus();
 
     expect(status).toMatchObject({
-      actionCount: 7,
+      actionCount: 8,
       disabledRouteCount: 2,
       findings: [],
-      readyForCliCount: 5,
+      readyForCliCount: 6,
       riskyExternalCount: 2,
       webMutationsEnabled: true,
     });
@@ -25,6 +25,13 @@ describe("Studio action service status", () => {
         actionId: "render.decide",
         availability: "ready-for-cli",
         routePath: "/actions/decide-render",
+      }),
+    );
+    expect(status.summaries).toContainEqual(
+      expect.objectContaining({
+        actionId: "channel-handoff.decide",
+        availability: "ready-for-cli",
+        routePath: "/actions/decide-channel-handoff",
       }),
     );
     expect(status.summaries).toContainEqual(

@@ -168,7 +168,8 @@
   report freshness summaries are implemented.
 - Maintain typed Studio mutation service contracts that both CLI and web can use before adding
   additional Studio mutations. Current contracts cover guarded idea/script/cost/render approvals,
-  the guarded local render-decision evidence write, plus disabled upload/publish actions.
+  the guarded local render-decision and channel-handoff decision evidence writes, plus disabled
+  upload/publish actions.
 - Keep local prompt overrides safe before adding a prompt editor. Tracked `prompts/defaults/`
   runtime defaults, typed keys, source paths, and prompt hashes are implemented; ignored
   `prompts/local/*.md` overrides are now explicit `producer.config.json` inputs and must remain
@@ -180,8 +181,8 @@
   records revision evidence. Future work can extend this to richer editor UX and per-field diffs
   without weakening the cost/render approval boundary.
 - Maintain route security requirements before any additional web action routes exist; current tests
-  cover read-only page routes, guarded local approval/review routes, disabled upload/publish action
-  routes, and bind each action route to a shared service contract.
+  cover read-only page routes, guarded local approval/review decision routes, disabled
+  upload/publish action routes, and bind each action route to a shared service contract.
 - Keep the internal reserved-provider execution contract ready for a separately approved real
   adapter without adding paid SDKs, credentials, or operator execution commands.
 

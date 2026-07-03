@@ -105,8 +105,8 @@ Status: run review, artifact preview, asset inventory, home-page latest-run read
 manual analytics feedback summary, home-page and `/doctor` producer doctor diagnostics, runtime
 prompt inventory, mutation-service status, manual analytics overview, route-security contract
 foundations, shared mutation service contract foundations, guarded local approval routes, the local
-mutation session route, and the guarded local render-decision route exist. Upload and publish route
-implementations remain deferred.
+mutation session route, and the guarded local render-decision and channel-handoff decision routes
+exist. Upload and publish route implementations remain deferred.
 
 The Studio should be a local operator surface over CLI/core contracts.
 

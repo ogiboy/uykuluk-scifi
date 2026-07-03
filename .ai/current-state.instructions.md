@@ -243,9 +243,9 @@
   for selected-thumbnail/manual prep surfaced without YouTube APIs or upload/publish approval.
 - Studio run detail shows guarded local approval forms for eligible idea/script/cost/render approval
   states, local render-decision commands for rendered runs without a recorded decision, and guarded
-  `idea.approve`, `script.approve`, `cost.approve`, `render.approve`, and `render.decide` routes
-  matching CLI/core evidence writes. It does not generate artifacts, render media, upload, or
-  publish.
+  `idea.approve`, `script.approve`, `cost.approve`, `render.approve`, `render.decide`, and
+  `channel-handoff.decide` routes matching CLI/core evidence writes. It does not generate artifacts,
+  render media, upload, or publish.
 - Readiness diagnostics that strictly parse and revalidate persisted cost quotes, live hard budgets,
   complete production-package integrity, and exact paid-generation cost approval when required.
 - Final readiness diagnostics agree with the post-transition run state.
@@ -337,9 +337,9 @@
   contracts, CSRF protection, durable evidence writes, and explicit approval targets, and
   public/scheduled publish risk remains disabled.
 - Shared Studio mutation service contract foundations exist for guarded idea/script/cost/render
-  approval actions, the active local render-decision evidence write, and disabled upload/publish
-  actions. Contracts validate request payloads, bind each action to the CLI/core module/export, and
-  require CSRF protection, durable evidence, and explicit approval.
+  approval actions, the active local render-decision and channel-handoff decision evidence writes,
+  and disabled upload/publish actions. Contracts validate request payloads, bind each action to the
+  CLI/core module/export, and require CSRF protection, durable evidence, and explicit approval.
 - Studio home renders a mutation-service status panel showing guarded local approval/review routes,
   disabled upload/publish routes, CLI-ready action contracts, route-security findings, and
   upload/publish risk boundaries without exposing upload/publish web mutations.

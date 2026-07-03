@@ -1,7 +1,12 @@
 import type { StudioRunDetail } from "./runSummaries";
 
 export type StudioActionPreflightAction =
-  "cost.approve" | "idea.approve" | "render.approve" | "render.decide" | "script.approve";
+  | "channel-handoff.decide"
+  | "cost.approve"
+  | "idea.approve"
+  | "render.approve"
+  | "render.decide"
+  | "script.approve";
 
 export type StudioActionPreflightItem = Readonly<{
   detail: string;
@@ -89,9 +94,10 @@ function payloadItem(input: StudioActionPreflightInput): StudioActionPreflightIt
       status: input.acknowledgeWarnings ? "done" : "ready",
     };
   }
-  if (input.actionId === "render.decide") {
+  if (input.actionId === "render.decide" || input.actionId === "channel-handoff.decide") {
     return {
-      detail: "Decision, reviewer, and notes will be persisted as local review evidence only.",
+      detail:
+        "Decision, reviewer, and notes will be persisted as local review evidence only. Upload and publish remain disabled.",
       label: "Payload",
       status: "done",
     };
@@ -162,6 +168,9 @@ function uploadPublishBoundaryItem(): StudioActionPreflightItem {
 function preflightCopy(actionId: StudioActionPreflightAction): string {
   if (actionId === "render.decide") {
     return "Confirm the local render-review decision before Studio writes durable decision evidence.";
+  }
+  if (actionId === "channel-handoff.decide") {
+    return "Confirm the manual channel-handoff decision before Studio writes durable local evidence.";
   }
   if (actionId === "render.approve") {
     return "Confirm current local media inputs before allowing the CLI/core render approval contract to run.";

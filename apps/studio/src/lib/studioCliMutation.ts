@@ -2,37 +2,30 @@ import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { z, ZodError } from "zod";
+import { ZodError } from "zod";
 import { projectRoot } from "./projectRoot";
+import {
+  parseChannelHandoffDecisionPayload,
+  parseIdeaApprovalPayload,
+  parseRenderDecisionPayload,
+  parseRunOnlyPayload,
+  parseScriptApprovalPayload,
+} from "./studioMutationPayloadContracts";
 import { validateStudioMutationRequest } from "./studioMutationSecurity";
 
 type StudioCliMutationActionId =
-  "cost.approve" | "idea.approve" | "render.approve" | "render.decide" | "script.approve";
+  | "channel-handoff.decide"
+  | "cost.approve"
+  | "idea.approve"
+  | "render.approve"
+  | "render.decide"
+  | "script.approve";
 
 type CliResult = Readonly<{
   stderr: string;
   stdout: string;
   status: number;
 }>;
-
-const runIdSchema = z.string().regex(/^run_[A-Za-z0-9][A-Za-z0-9_-]{0,123}$/, "Invalid run id.");
-const ideaApprovalPayloadSchema = z.strictObject({
-  ideaId: z.string().min(1),
-  runId: runIdSchema,
-});
-const scriptApprovalPayloadSchema = z.strictObject({
-  acknowledgeWarnings: z.boolean().default(false),
-  runId: runIdSchema,
-});
-const runOnlyPayloadSchema = z.strictObject({
-  runId: runIdSchema,
-});
-const renderDecisionPayloadSchema = z.strictObject({
-  decision: z.enum(["accepted-for-local-review", "needs-revision", "rejected"]),
-  notes: z.string().trim().min(1).max(4_000),
-  reviewedBy: z.string().trim().min(1).max(200),
-  runId: runIdSchema,
-});
 
 /**
  * Runs a guarded Studio mutation through the canonical producer CLI.
@@ -97,11 +90,11 @@ function noStoreHeaders(): HeadersInit {
 
 function cliArgsForAction(actionId: StudioCliMutationActionId, payload: unknown): string[] {
   if (actionId === "idea.approve") {
-    const input = ideaApprovalPayloadSchema.parse(payload);
+    const input = parseIdeaApprovalPayload(payload);
     return ["approve", "idea", "--run", input.runId, "--idea", input.ideaId, "--json"];
   }
   if (actionId === "script.approve") {
-    const input = scriptApprovalPayloadSchema.parse(payload);
+    const input = parseScriptApprovalPayload(payload);
     return [
       "approve",
       "script",
@@ -112,21 +105,38 @@ function cliArgsForAction(actionId: StudioCliMutationActionId, payload: unknown)
     ];
   }
   if (actionId === "cost.approve") {
-    const input = runOnlyPayloadSchema.parse(payload);
+    const input = parseRunOnlyPayload(payload);
     return ["approve", "cost", "--run", input.runId, "--json"];
   }
   if (actionId === "render.approve") {
-    const input = runOnlyPayloadSchema.parse(payload);
+    const input = parseRunOnlyPayload(payload);
     return ["approve", "render", "--run", input.runId, "--json"];
   }
-  const input = renderDecisionPayloadSchema.parse(payload);
+  if (actionId === "render.decide") {
+    const input = parseRenderDecisionPayload(payload);
+    return [
+      "decide",
+      "render",
+      "--run",
+      input.runId,
+      "--decision",
+      input.decision,
+      "--notes",
+      input.notes,
+      "--reviewed-by",
+      input.reviewedBy,
+      "--json",
+    ];
+  }
+  const input = parseChannelHandoffDecisionPayload(payload);
   return [
     "decide",
-    "render",
+    "channel-handoff",
     "--run",
     input.runId,
     "--decision",
     input.decision,
+    ...(input.thumbnailCandidateId ? ["--thumbnail-candidate", input.thumbnailCandidateId] : []),
     "--notes",
     input.notes,
     "--reviewed-by",

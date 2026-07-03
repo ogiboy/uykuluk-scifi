@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { isValidRunId } from "../core/runId.js";
+import { channelHandoffDecisionValues } from "../stages/channelHandoffDecisionContracts.js";
 import { renderDecisionValues } from "../stages/renderDecisionCommands.js";
 import {
   studioMutationServiceMetadata,
@@ -25,14 +26,34 @@ const runOnlyRequestSchema = z.strictObject({
   runId: runIdSchema,
 });
 
-const renderDecisionRequestSchema = z.strictObject({
-  decision: z.enum(renderDecisionValues),
+const localReviewRequestShape = {
   notes: z.string().trim().min(1).max(4_000),
   reviewedBy: z.string().trim().min(1).max(200),
   runId: runIdSchema,
+} as const;
+
+const renderDecisionRequestSchema = z.strictObject({
+  decision: z.enum(renderDecisionValues),
+  ...localReviewRequestShape,
 });
 
+const channelHandoffDecisionRequestSchema = z
+  .strictObject({
+    decision: z.enum(channelHandoffDecisionValues),
+    ...localReviewRequestShape,
+    thumbnailCandidateId: z.string().trim().min(1).max(120).optional(),
+  })
+  .refine(
+    (input) =>
+      input.decision !== "accepted-for-manual-channel-prep" || Boolean(input.thumbnailCandidateId),
+    {
+      message: "Accepted channel handoff decisions require a thumbnail candidate.",
+      path: ["thumbnailCandidateId"],
+    },
+  );
+
 type StudioActionRequestById = {
+  "channel-handoff.decide": z.infer<typeof channelHandoffDecisionRequestSchema>;
   "cost.approve": z.infer<typeof runOnlyRequestSchema>;
   "idea.approve": z.infer<typeof ideaApprovalRequestSchema>;
   "publish.schedule": z.infer<typeof runOnlyRequestSchema>;
@@ -122,6 +143,9 @@ function requestSchemaForAction(actionId: StudioMutationActionId): z.ZodType {
   }
   if (actionId === "render.decide") {
     return renderDecisionRequestSchema;
+  }
+  if (actionId === "channel-handoff.decide") {
+    return channelHandoffDecisionRequestSchema;
   }
   return runOnlyRequestSchema;
 }
