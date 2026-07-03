@@ -6,6 +6,6 @@ allowBuilds:
   unrs-resolver: true
 overrides:
   axios: ^1.16.0
-  postcss: ^8.5.15
+  postcss: ^8.5.16
 packages:
   - apps/*

@@ -48,6 +48,8 @@ future generated release notes can be inserted predictably.
   horizontal overflow on mobile while preserving scrollable wide run tables on desktop.
 - fit the run index table into common desktop widths and switch narrow mobile run rows to labeled
   cards so next actions and status fields remain readable without horizontal page scrolling.
+- align the workspace PostCSS override with the refreshed Studio dependency specifier so frozen CI
+  installs use the committed lockfile.
 
 ## v0.65.4 (2026-07-03)
 
