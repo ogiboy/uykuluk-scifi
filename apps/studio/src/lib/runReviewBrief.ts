@@ -1,3 +1,7 @@
+import {
+  privateUploadDisabledBlockedAction,
+  publicPublishDisabledBlockedAction,
+} from "../../../../src/stages/evidenceBlockedActions";
 import type { StudioRunDetail } from "./runSummaries";
 
 export type StudioRunReviewBrief = Readonly<{
@@ -17,6 +21,7 @@ export type StudioRunReviewBriefCheckpoint = Readonly<{
 type BriefInput = Pick<
   StudioRunDetail,
   | "blockedActionCount"
+  | "blockedActions"
   | "channelHandoff"
   | "channelHandoffDecision"
   | "evidenceStatus"
@@ -36,14 +41,15 @@ type BriefInput = Pick<
  */
 export function buildStudioRunReviewBrief(run: BriefInput): StudioRunReviewBrief {
   const checkpoints = reviewBriefCheckpoints(run);
-  if (run.blockedActionCount > 0) {
+  const localBlockedActionCount = productionBlockingActionCount(run);
+  if (localBlockedActionCount > 0) {
     return {
       checkpoints,
       primaryAction: nextAction(run),
       severity: "blocked",
       summary:
-        "Resolve the projected blocked actions before trusting media, final review, upload prep, or any later handoff.",
-      title: `${run.blockedActionCount} blocked action${run.blockedActionCount === 1 ? "" : "s"}`,
+        "Resolve the projected local production blockers before trusting media, final review, or any later handoff. Upload and publish guards remain visible separately.",
+      title: `${localBlockedActionCount} blocked action${localBlockedActionCount === 1 ? "" : "s"}`,
     };
   }
   if (run.state === "RENDERED" && run.renderDecision.kind !== "present") {
@@ -76,6 +82,16 @@ export function buildStudioRunReviewBrief(run: BriefInput): StudioRunReviewBrief
       title: "Manual channel handoff next",
     };
   }
+  if (run.channelHandoffDecision.kind === "present") {
+    return {
+      checkpoints,
+      primaryAction: nextAction(run),
+      severity: "review",
+      summary:
+        "The local manual channel package has a durable operator decision. Keep the selected media and metadata together for manual review; upload and publish remain guarded.",
+      title: "Manual channel package ready",
+    };
+  }
   return {
     checkpoints,
     primaryAction: nextAction(run),
@@ -84,6 +100,19 @@ export function buildStudioRunReviewBrief(run: BriefInput): StudioRunReviewBrief
       "Continue through the next safe CLI/core action. Studio summarizes local state but does not infer approval from files.",
     title: "Follow the next safe action",
   };
+}
+
+function productionBlockingActionCount(run: BriefInput): number {
+  if (run.blockedActions.length === 0) {
+    return run.blockedActionCount;
+  }
+  return run.blockedActions.filter((action) => !isExternalPublishingGuard(action)).length;
+}
+
+function isExternalPublishingGuard(action: string): boolean {
+  return (
+    action === privateUploadDisabledBlockedAction || action === publicPublishDisabledBlockedAction
+  );
 }
 
 function reviewBriefCheckpoints(run: BriefInput): StudioRunReviewBrief["checkpoints"] {
@@ -109,12 +138,12 @@ function reviewBriefCheckpoints(run: BriefInput): StudioRunReviewBrief["checkpoi
     {
       detail: renderDecisionDetail(run),
       label: "Operator decision",
-      status: run.renderDecision.kind === "present" ? "done" : "pending",
+      status: renderDecisionCheckpointStatus(run),
     },
     {
       detail: finalHandoffDetail(run),
       label: "Final handoff",
-      status: run.channelHandoffDecision.kind === "present" ? "done" : "pending",
+      status: finalHandoffCheckpointStatus(run),
     },
   ];
 }
@@ -123,10 +152,43 @@ function mediaCheckpointStatus(
   passedMediaCount: number,
   totalMediaCount: number,
 ): StudioRunReviewBriefCheckpoint["status"] {
+  if (totalMediaCount === 0) {
+    return "pending";
+  }
   if (passedMediaCount === totalMediaCount) {
     return "done";
   }
   return passedMediaCount > 0 ? "ready" : "pending";
+}
+
+function renderDecisionCheckpointStatus(run: BriefInput): StudioRunReviewBriefCheckpoint["status"] {
+  if (run.renderDecision.kind === "present") {
+    return "done";
+  }
+  if (run.renderDecision.kind === "invalid" || run.renderDecision.kind === "stale") {
+    return "attention";
+  }
+  return "pending";
+}
+
+function finalHandoffCheckpointStatus(run: BriefInput): StudioRunReviewBriefCheckpoint["status"] {
+  if (run.channelHandoffDecision.kind === "present") {
+    return "done";
+  }
+  if (
+    run.channelHandoffDecision.kind === "invalid" ||
+    run.channelHandoffDecision.kind === "stale" ||
+    run.channelHandoff.kind === "invalid" ||
+    run.channelHandoff.kind === "stale" ||
+    run.finalReviewBundle.kind === "invalid" ||
+    run.finalReviewBundle.kind === "stale"
+  ) {
+    return "attention";
+  }
+  if (run.channelHandoff.kind === "present" || run.finalReviewBundle.kind === "present") {
+    return "ready";
+  }
+  return "pending";
 }
 
 function renderDecisionDetail(run: BriefInput): string {

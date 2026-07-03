@@ -1190,7 +1190,7 @@ h3 {
 
 .run-detail-hero {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: minmax(220px, 0.8fr) minmax(180px, 0.7fr) minmax(360px, 1.5fr);
   gap: 16px;
   align-items: start;
   border: 1px solid var(--line);
@@ -1200,6 +1200,18 @@ h3 {
     var(--panel);
   min-width: 0;
   padding: 16px;
+}
+
+.run-hero-overview,
+.run-hero-metadata,
+.run-hero-brief,
+.run-hero-command {
+  min-width: 0;
+  padding: 0;
+}
+
+.run-hero-command {
+  grid-column: 1 / -1;
 }
 
 .run-cockpit-badges {
@@ -1246,6 +1258,68 @@ h3 {
 }
 
 .review-brief-checkpoints p {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.workflow-progress-header {
+  display: flex;
+  gap: 16px;
+  align-items: start;
+  justify-content: space-between;
+}
+
+.workflow-progress-header h2,
+.workflow-progress-header p {
+  margin-bottom: 0;
+}
+
+.workflow-progress-summary {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.workflow-progress-summary span {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  padding: 5px 8px;
+  font-size: 11px;
+}
+
+.workflow-progress-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 10px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.workflow-progress-item {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--studio-surface-inset);
+  padding: 10px;
+}
+
+.workflow-progress-item.blocked {
+  border-color: color-mix(in srgb, var(--danger) 55%, var(--line));
+}
+
+.workflow-progress-item.current {
+  border-color: color-mix(in srgb, #f5c542 55%, var(--line));
+}
+
+.workflow-progress-item p {
   margin: 2px 0 0;
   color: var(--muted);
   font-size: 12px;

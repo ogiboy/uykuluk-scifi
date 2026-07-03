@@ -21,21 +21,21 @@ export function RunReviewCockpitHeader({ run }: RunReviewCockpitHeaderProps) {
   const brief = buildStudioRunReviewBrief(run);
   return (
     <Card className='run-detail-hero' aria-labelledby='run-overview-heading'>
-      <CardHeader>
+      <CardHeader className='run-hero-overview'>
         <CardDescription>Run review workspace</CardDescription>
         <CardTitle>
           <h2 id='run-overview-heading'>Run Overview</h2>
         </CardTitle>
         <div className='run-cockpit-badges'>
-          <Badge variant={run.blockedActionCount > 0 ? "destructive" : "secondary"}>
-            {run.blockedActionCount > 0 ? "Blocked action" : "Reviewable"}
+          <Badge variant={brief.severity === "blocked" ? "destructive" : "secondary"}>
+            {reviewBadgeLabel(brief.severity)}
           </Badge>
           <Badge variant={run.renderDecision.kind === "present" ? "secondary" : "outline"}>
             Render decision: {run.renderDecision.kind}
           </Badge>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className='run-hero-metadata'>
         <dl className='run-metadata'>
           <RunMetric label='State' value={run.state} />
           <RunMetric label='Approvals' value={run.approvalCount} />
@@ -44,7 +44,7 @@ export function RunReviewCockpitHeader({ run }: RunReviewCockpitHeaderProps) {
           <RunMetric label='Evidence' value={run.evidenceStatus} />
         </dl>
       </CardContent>
-      <CardContent>
+      <CardContent className='run-hero-brief'>
         <section className='run-review-brief' aria-labelledby='run-review-brief-heading'>
           <div>
             <p className={`review-brief-severity ${brief.severity}`}>{brief.severity}</p>
@@ -58,7 +58,7 @@ export function RunReviewCockpitHeader({ run }: RunReviewCockpitHeaderProps) {
           </ul>
         </section>
       </CardContent>
-      <CardContent>
+      <CardContent className='run-hero-command'>
         <div className='operator-command-block'>
           <strong>Next safe action</strong>
           <CopyableCommand command={getNextSafeCommand(run)} label='Next safe action' />
@@ -70,6 +70,16 @@ export function RunReviewCockpitHeader({ run }: RunReviewCockpitHeaderProps) {
       </CardContent>
     </Card>
   );
+}
+
+function reviewBadgeLabel(severity: ReturnType<typeof buildStudioRunReviewBrief>["severity"]) {
+  if (severity === "blocked") {
+    return "Blocked action";
+  }
+  if (severity === "ready") {
+    return "Next action ready";
+  }
+  return "Reviewable";
 }
 
 function ReviewBriefCheckpoint({
