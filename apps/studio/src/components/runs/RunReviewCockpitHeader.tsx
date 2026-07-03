@@ -6,6 +6,7 @@ import {
   buildStudioRunReviewBrief,
   type StudioRunReviewBriefCheckpoint,
 } from "@/lib/runReviewBrief";
+import { runReviewTabFocus } from "@/lib/runReviewNavigation";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 
 type RunReviewCockpitHeaderProps = Readonly<{
@@ -19,6 +20,7 @@ type RunReviewCockpitHeaderProps = Readonly<{
  */
 export function RunReviewCockpitHeader({ run }: RunReviewCockpitHeaderProps) {
   const brief = buildStudioRunReviewBrief(run);
+  const tabFocus = runReviewTabFocus(run);
   return (
     <Card className='run-detail-hero' aria-labelledby='run-overview-heading'>
       <CardHeader className='run-hero-overview'>
@@ -33,6 +35,7 @@ export function RunReviewCockpitHeader({ run }: RunReviewCockpitHeaderProps) {
           <Badge variant={run.renderDecision.kind === "present" ? "secondary" : "outline"}>
             Render decision: {run.renderDecision.kind}
           </Badge>
+          <Badge variant='outline'>Focus: {tabFocus.label}</Badge>
         </div>
       </CardHeader>
       <CardContent className='run-hero-metadata'>
@@ -50,6 +53,7 @@ export function RunReviewCockpitHeader({ run }: RunReviewCockpitHeaderProps) {
             <p className={`review-brief-severity ${brief.severity}`}>{brief.severity}</p>
             <h3 id='run-review-brief-heading'>{brief.title}</h3>
             <p>{brief.summary}</p>
+            <p className='artifact-description'>{tabFocus.detail}</p>
           </div>
           <ul className='review-brief-checkpoints'>
             {brief.checkpoints.map((checkpoint) => (

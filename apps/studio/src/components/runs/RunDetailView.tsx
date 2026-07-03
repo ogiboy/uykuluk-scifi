@@ -1,4 +1,5 @@
 import type { StudioRunDetail } from "@/lib/runSummaries";
+import { defaultRunReviewTab } from "@/lib/runReviewNavigation";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { RunArtifactPreviewsPanel } from "./RunArtifactPreviewsPanel";
 import { RunChannelHandoffPanel } from "./RunChannelHandoffPanel";
@@ -17,13 +18,14 @@ import { RunWorkflowProgressPanel } from "./RunWorkflowProgressPanel";
  * @param run - The run data to display.
  */
 export function RunDetailView({ run }: Readonly<{ run: StudioRunDetail }>) {
+  const defaultTab = defaultRunReviewTab(run);
   return (
     <div className='run-review-page'>
       <RunReviewCockpitHeader run={run} />
       <RunReviewActionSummarySheet run={run} />
 
       <div className='run-review-cockpit'>
-        <Tabs defaultValue='progress' className='run-review-tabs'>
+        <Tabs defaultValue={defaultTab} className='run-review-tabs'>
           <RunReviewSectionTabs run={run} />
 
           <TabsContent value='progress'>
