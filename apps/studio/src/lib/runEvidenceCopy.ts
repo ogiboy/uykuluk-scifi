@@ -4,6 +4,8 @@ import {
   type ProductionMediaStatus,
 } from "../../../../src/stages/statusMediaReview";
 
+export type { ProductionMediaStatus } from "../../../../src/stages/statusMediaReview";
+
 type EvidenceStatus = StudioEvidenceSummary["status"];
 
 export type ProductionMediaReviewSummary = Readonly<{

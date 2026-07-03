@@ -3,6 +3,7 @@ import {
   productionMediaReviewSummary,
   productionMediaReviewAction,
   shouldShowEvidenceRemediation,
+  type ProductionMediaStatus,
 } from "@/lib/runEvidenceCopy";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import { studioMediaArtifactUrl } from "@/lib/studioMediaArtifacts";
@@ -10,7 +11,6 @@ import { CopyableCommand } from "../studio/CopyableCommand";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { Badge } from "../ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
-import type { ProductionMediaStatus } from "../../../../../src/stages/statusMediaSummary";
 import { RunProductionMediaFacts } from "./RunProductionMediaFacts";
 import { RunProductionMediaPreview } from "./RunProductionMediaPreview";
 import { RunProductionMediaSummary } from "./RunProductionMediaSummary";

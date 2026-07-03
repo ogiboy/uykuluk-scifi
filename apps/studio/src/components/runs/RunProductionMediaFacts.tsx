@@ -1,4 +1,4 @@
-import type { ProductionMediaStatus } from "../../../../../src/stages/statusMediaSummary";
+import type { ProductionMediaStatus } from "@/lib/runEvidenceCopy";
 
 type RunProductionMediaFactsProps = Readonly<{
   artifact: ProductionMediaStatus;
