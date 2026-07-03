@@ -11,6 +11,12 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.65.4 (2026-07-03)
+
+### Build
+
+- bump autoprefixer from 10.5.0 to 10.5.2 (64d6993)
+
 ## v0.65.3 (2026-07-03)
 
 ### Build
