@@ -1190,7 +1190,7 @@ h3 {
 
 .run-detail-hero {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: minmax(220px, 0.8fr) minmax(180px, 0.7fr) minmax(360px, 1.5fr);
   gap: 16px;
   align-items: start;
   border: 1px solid var(--line);
@@ -1200,6 +1200,18 @@ h3 {
     var(--panel);
   min-width: 0;
   padding: 16px;
+}
+
+.run-hero-overview,
+.run-hero-metadata,
+.run-hero-brief,
+.run-hero-command {
+  min-width: 0;
+  padding: 0;
+}
+
+.run-hero-command {
+  grid-column: 1 / -1;
 }
 
 .run-cockpit-badges {
