@@ -12,6 +12,7 @@ future generated release notes can be inserted predictably.
 ### Features
 
 - add Studio production-media review summary metrics and next-focus guidance.
+- show structured production-media evidence facts in the Studio media review cards.
 
 ## v0.70.0 (2026-07-03)
 

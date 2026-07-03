@@ -62,12 +62,17 @@ describe("status evidence validity", () => {
       "utf8",
     );
 
-    const output = formatRunStatus(await readRunStatus(run.runId));
+    const status = await readRunStatus(run.runId);
+    const output = formatRunStatus(status);
 
     expect(output).toContain("Evidence: available");
     expect(output).toContain("Production media evidence: current evidence bundle.");
     expect(output).not.toContain("artifact-record fallback");
     expect(output).toContain("- Render plan: pass (11 assets, 3 artifacts)");
+    expect(status.mediaArtifacts[0]?.facts).toEqual(["11 assets", "3 artifacts"]);
+    expect(status.mediaArtifacts[0]?.reviewArtifactPath).toBe(
+      "production/storyboard_contact_sheet.md",
+    );
     expect(output).toContain(
       `  Review: Review with pnpm producer review render-plan --run ${run.runId}; confirm scene-to-asset mapping, bookend/source-frame paths, and the contact sheet before voiceover or render approval.`,
     );

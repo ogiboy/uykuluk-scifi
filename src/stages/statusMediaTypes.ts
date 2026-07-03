@@ -21,6 +21,7 @@ export type EvidenceMediaStatus = {
   mode?: unknown;
   productionVoiceCandidate?: unknown;
   renderApproval?: unknown;
+  reviewPath?: unknown;
   sourceFrameCadence?: unknown;
   sourceFrameCount?: unknown;
   sourceFrameSegments?: unknown;
@@ -41,8 +42,10 @@ export type ProductionMediaStatus = {
   artifactPath: string;
   detail?: string;
   evidenceKey: "draftRender" | "renderPlan" | "voiceoverAudio";
+  facts?: string[];
   label: string;
   localPlaybackPath?: string;
+  reviewArtifactPath?: string;
   reviewCommand?: string;
   renderApprovalCommand?: string;
   renderApprovalScope?: VoiceoverRenderApprovalScope;

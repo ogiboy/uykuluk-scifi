@@ -10,6 +10,7 @@ const stageSourceAliases = [
   "finalReviewBundleContracts",
   "productionPackagePaths",
   "renderPlanSchemas",
+  "statusMediaFacts",
 ] as const;
 
 const nextConfig: NextConfig = {
