@@ -50,6 +50,8 @@ future generated release notes can be inserted predictably.
   cards so next actions and status fields remain readable without horizontal page scrolling.
 - align the workspace PostCSS override with the refreshed Studio dependency specifier so frozen CI
   installs use the committed lockfile.
+- add a tracked Studio static-image declaration so CI typecheck resolves the committed channel logo
+  without relying on ignored Next.js generated files.
 
 ## v0.65.4 (2026-07-03)
 
