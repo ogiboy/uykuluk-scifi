@@ -918,13 +918,60 @@ h3 {
   justify-content: flex-end;
 }
 
+.run-table-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.run-table-pagination p {
+  margin: 0;
+}
+
+.run-table-pagination-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.run-page-size-select {
+  width: 132px;
+}
+
+.run-row-actions {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.run-row-actions button {
+  white-space: nowrap;
+}
+
+.run-row-actions-menu {
+  width: 280px;
+}
+
+.run-row-command-popover {
+  width: min(420px, calc(100vw - 32px));
+}
+
 .run-column-menu {
   min-width: 220px;
 }
 
 .run-table {
   width: 100%;
-  min-width: 1080px;
+  min-width: 1320px;
   border-collapse: collapse;
   table-layout: auto;
 }
@@ -969,6 +1016,11 @@ h3 {
   min-width: 260px;
 }
 
+.run-cell-actions {
+  width: 220px;
+  min-width: 220px;
+}
+
 .run-table[data-density="compact"] .run-row > th,
 .run-table[data-density="compact"] .run-row > td {
   padding: 8px 10px;
@@ -1008,6 +1060,19 @@ h3 {
   left: 0;
   z-index: 1;
   background: color-mix(in srgb, var(--panel) 92%, var(--bg));
+}
+
+.run-row-head .run-cell-actions,
+.run-row > .run-cell-actions {
+  position: sticky;
+  right: 0;
+  z-index: 1;
+  background: color-mix(in srgb, var(--panel) 92%, var(--bg));
+}
+
+.run-row-head .run-cell-runId,
+.run-row-head .run-cell-actions {
+  z-index: 2;
 }
 
 .run-row-head .run-cell-runId {
@@ -1918,6 +1983,20 @@ h3 {
     justify-content: flex-start;
   }
 
+  .run-table-pagination {
+    align-items: stretch;
+  }
+
+  .run-table-pagination,
+  .run-table-pagination-controls {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .run-page-size-select {
+    width: 100%;
+  }
+
   .run-table {
     display: block;
     min-width: 0;
@@ -1948,7 +2027,9 @@ h3 {
   }
 
   .run-row-head .run-cell-runId,
-  .run-row > .run-cell-runId {
+  .run-row > .run-cell-runId,
+  .run-row-head .run-cell-actions,
+  .run-row > .run-cell-actions {
     position: static;
     z-index: auto;
     background: transparent;
@@ -1963,9 +2044,14 @@ h3 {
   .run-cell-updatedAt,
   .run-cell-finalBundle,
   .run-cell-channelHandoff,
-  .run-cell-nextAction {
+  .run-cell-nextAction,
+  .run-cell-actions {
     width: auto;
     min-width: 0;
+  }
+
+  .run-row-actions {
+    justify-content: flex-start;
   }
 
   .run-row > th::before,
