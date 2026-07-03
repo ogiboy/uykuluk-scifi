@@ -11,6 +11,12 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.68.0 (2026-07-03)
+
+### Features
+
+- prioritize production review decisions (d70421a)
+
 ## v0.67.0 (2026-07-03)
 
 ### Fixes
