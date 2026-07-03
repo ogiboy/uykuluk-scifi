@@ -32,10 +32,6 @@ export default function StudioRouteErrorPage({ error, reset }: StudioRouteErrorP
       </header>
 
       <StudioRouteBoundaryCard
-        actions={[
-          { href: "/runs", label: "Open run queue" },
-          { href: "/", label: "Open Studio home" },
-        ]}
         description='The web surface stopped at this route boundary. It did not retry approvals, change run state, upload media, publish content, or infer readiness from local files.'
         headingId='studio-error-recovery-heading'
         title='Safe recovery'

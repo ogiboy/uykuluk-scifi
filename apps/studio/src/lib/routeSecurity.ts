@@ -35,16 +35,16 @@ export const readOnlyStudioRoutes = [
 ] as const satisfies readonly StudioRouteSecurityContract[];
 
 export const disabledStudioActionRoutes = [
-  action("upload.private", "/actions/upload-private", "upload", "external-side-effect"),
-  action("publish.schedule", "/actions/publish-schedule", "publish", "publish-risk"),
+  action("upload.private", "/actions/upload-private", "upload", "external-side-effect", false),
+  action("publish.schedule", "/actions/publish-schedule", "publish", "publish-risk", false),
 ] as const satisfies readonly StudioRouteSecurityContract[];
 
 export const enabledStudioActionRoutes = [
-  enabledAction("idea.approve", "/actions/approve-idea", "idea", "local-mutation"),
-  enabledAction("script.approve", "/actions/approve-script", "script", "local-mutation"),
-  enabledAction("cost.approve", "/actions/approve-cost", "cost", "local-mutation"),
-  enabledAction("render.approve", "/actions/approve-render", "render", "local-mutation"),
-  enabledAction("render.decide", "/actions/decide-render", "review", "local-mutation"),
+  action("idea.approve", "/actions/approve-idea", "idea", "local-mutation", true),
+  action("script.approve", "/actions/approve-script", "script", "local-mutation", true),
+  action("cost.approve", "/actions/approve-cost", "cost", "local-mutation", true),
+  action("render.approve", "/actions/approve-render", "render", "local-mutation", true),
+  action("render.decide", "/actions/decide-render", "review", "local-mutation", true),
 ] as const satisfies readonly StudioRouteSecurityContract[];
 
 export const studioSessionRoutes = [
@@ -121,12 +121,13 @@ function sessionRoute(id: string, path: string): StudioRouteSecurityContract {
 }
 
 /**
- * Creates a disabled Studio mutation route contract.
+ * Creates a Studio mutation route contract.
  *
  * @param id - The mutation service contract identifier
  * @param path - The route path
  * @param requiredApproval - The approval level required for the route
  * @param risk - The route risk classification
+ * @param enabled - Whether route security has been implemented for this mutation
  * @returns The configured Studio route security contract
  */
 function action(
@@ -134,42 +135,14 @@ function action(
   path: string,
   requiredApproval: StudioRouteSecurityContract["requiredApproval"],
   risk: Exclude<StudioRouteRisk, "read-only">,
+  enabled: boolean,
 ): StudioRouteSecurityContract {
   return {
     allowedMethods: ["POST"],
-    disabledReason:
-      "Studio mutations require shared CLI/core service contracts, route security, evidence writes, and negative tests before implementation.",
-    enabled: false,
-    id,
-    path,
-    requiredApproval,
-    requiresCoreServiceContract: true,
-    requiresCsrfProtection: true,
-    requiresEvidenceWrite: true,
-    risk,
-    serviceContractId: id,
-  };
-}
-
-/**
- * Creates an enabled Studio mutation route contract after route security is implemented.
- *
- * @param id - The mutation service contract identifier
- * @param path - The route path
- * @param requiredApproval - The approval level required for the route
- * @param risk - The route risk classification
- * @returns The configured Studio route security contract
- */
-function enabledAction(
-  id: StudioMutationActionId,
-  path: string,
-  requiredApproval: StudioRouteSecurityContract["requiredApproval"],
-  risk: Exclude<StudioRouteRisk, "read-only">,
-): StudioRouteSecurityContract {
-  return {
-    allowedMethods: ["POST"],
-    disabledReason: null,
-    enabled: true,
+    disabledReason: enabled
+      ? null
+      : "Studio mutations require shared CLI/core service contracts, route security, evidence writes, and negative tests before implementation.",
+    enabled,
     id,
     path,
     requiredApproval,

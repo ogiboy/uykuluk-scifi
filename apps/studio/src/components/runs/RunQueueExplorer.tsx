@@ -28,6 +28,7 @@ import {
   runQueueSortValues,
 } from "@/lib/runQueueWorkbench";
 import type { StudioRunSummary } from "@/lib/runSummaries";
+import { applyEnumSelectValue } from "@/lib/utils";
 import { maxBlockedActionSliderValue, RunQueueTunePopover } from "./RunQueueTunePopover";
 import { RunSummaryTable } from "./RunSummaryTable";
 
@@ -122,7 +123,7 @@ export function RunQueueExplorer({ runs }: RunQueueExplorerProps) {
             value={filter}
             variant='outline'
             aria-label='Run queue filter'
-            onValueChange={(value) => setSelectedFilter(value, setFilter)}
+            onValueChange={(value) => applyEnumSelectValue(value, runQueueFilterValues, setFilter)}
           >
             {runQueueFilterValues.map((value) => (
               <ToggleGroupItem key={value} value={value}>
@@ -141,7 +142,10 @@ export function RunQueueExplorer({ runs }: RunQueueExplorerProps) {
             </label>
             <div className='queue-select-control'>
               <Label htmlFor='queue-sort'>Sort queue</Label>
-              <Select value={sort} onValueChange={(value) => setSelectedSort(value, setSort)}>
+              <Select
+                value={sort}
+                onValueChange={(value) => applyEnumSelectValue(value, runQueueSortValues, setSort)}
+              >
                 <SelectTrigger id='queue-sort' aria-label='Sort run queue'>
                   <SelectValue placeholder='Sort queue' />
                 </SelectTrigger>
@@ -181,16 +185,4 @@ export function RunQueueExplorer({ runs }: RunQueueExplorerProps) {
       <RunSummaryTable density={density} emptyState={emptyState} runs={filteredRuns} />
     </section>
   );
-}
-
-function setSelectedFilter(value: string, setFilter: (filter: RunQueueFilter) => void): void {
-  if (runQueueFilterValues.includes(value as RunQueueFilter)) {
-    setFilter(value as RunQueueFilter);
-  }
-}
-
-function setSelectedSort(value: string, setSort: (sort: RunQueueSort) => void): void {
-  if (runQueueSortValues.includes(value as RunQueueSort)) {
-    setSort(value as RunQueueSort);
-  }
 }

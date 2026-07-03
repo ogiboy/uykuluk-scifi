@@ -36,10 +36,6 @@ export function StudioTrustBoundaryPage({
       </header>
 
       <StudioRouteBoundaryCard
-        actions={[
-          { href: "/runs", label: "Open run queue" },
-          { href: "/", label: "Open Studio home" },
-        ]}
         description={description}
         headingId={headingId}
         title='Safe recovery'
