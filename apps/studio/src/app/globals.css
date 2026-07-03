@@ -1021,6 +1021,12 @@ h3 {
   vertical-align: top;
 }
 
+.run-table-empty-cell {
+  color: var(--muted);
+  font-size: 13px;
+  text-align: center;
+}
+
 .run-cell-runId {
   width: 220px;
   min-width: 220px;
