@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import { useStudioGuardedActionSubmit } from "@/lib/useStudioGuardedActionSubmit";
+import { StudioMutationResultPanel } from "../studio/StudioMutationResultPanel";
 import { RunRevisionConfirmationDialog } from "./RunRevisionConfirmationDialog";
 
 type RunScriptRevisionActionPanelProps = Readonly<{
@@ -85,9 +86,7 @@ export function RunScriptRevisionActionPanel({ run }: RunScriptRevisionActionPan
           {state.kind === "submitting" ? "Recording..." : "Record script revision"}
         </Button>
       </form>
-      <p className={state.kind === "error" || state.kind === "blocked" ? "blocked" : undefined}>
-        {state.message}
-      </p>
+      <StudioMutationResultPanel state={state} />
       <RunRevisionConfirmationDialog
         actionLabel='script.revise'
         currentState={run.state}

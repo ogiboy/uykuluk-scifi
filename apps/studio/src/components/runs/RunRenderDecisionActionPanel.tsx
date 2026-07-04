@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import { buildStudioActionPreflight } from "@/lib/studioActionPreflight";
 import { useStudioGuardedActionSubmit } from "@/lib/useStudioGuardedActionSubmit";
+import { StudioMutationResultPanel } from "../studio/StudioMutationResultPanel";
 import { RunActionPreflightPanel } from "./RunActionPreflightPanel";
 import { RunRenderDecisionSelector } from "./RunRenderDecisionSelector";
 
@@ -174,9 +175,7 @@ export function RunRenderDecisionActionPanel({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      <p className={state.kind === "error" || state.kind === "blocked" ? "blocked" : undefined}>
-        {state.message}
-      </p>
+      <StudioMutationResultPanel state={state} />
     </section>
   );
 }

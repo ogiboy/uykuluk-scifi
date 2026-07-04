@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import type { StudioPackageRevisionSource } from "@/lib/revisionSources";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import { useStudioGuardedActionSubmit } from "@/lib/useStudioGuardedActionSubmit";
+import { StudioMutationResultPanel } from "../studio/StudioMutationResultPanel";
 import { RunRevisionConfirmationDialog } from "./RunRevisionConfirmationDialog";
 
 type RunPackageArtifactRevisionActionPanelProps = Readonly<{
@@ -132,9 +133,7 @@ export function RunPackageArtifactRevisionActionPanel({
           {state.kind === "submitting" ? "Recording..." : "Record package revision"}
         </Button>
       </form>
-      <p className={state.kind === "error" || state.kind === "blocked" ? "blocked" : undefined}>
-        {state.message}
-      </p>
+      <StudioMutationResultPanel state={state} />
       <RunRevisionConfirmationDialog
         actionLabel='package-artifact.revise'
         currentState={run.state}

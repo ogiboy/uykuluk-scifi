@@ -70,4 +70,49 @@ describe("Studio mutation submit", () => {
     expect(result).toEqual({ kind: "error", message: "Run not found." });
     expect(readStudioMutationSessionSnapshot()).toMatchObject({ status: "ready" });
   });
+
+  it("returns a compact producer record summary after successful mutations", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        Response.json({
+          expiresInSeconds: 900,
+          status: "ok",
+          token: "session_token_submit_1234567890",
+        }),
+      )
+      .mockResolvedValueOnce(
+        Response.json({
+          actionId: "script.revise",
+          record: {
+            artifact: "script.md",
+            nextState: "SCRIPT_GENERATED",
+            previousState: "SCRIPT_REVIEWED",
+            revisionId: "revision_123",
+            runId: "run_submit",
+          },
+          status: "ok",
+        }),
+      );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await submitStudioJsonMutation({
+      actionId: "script.revise",
+      body: { runId: "run_submit" },
+      fallbackError: "Script revision could not be recorded.",
+      routePath: "/actions/revise-script",
+    });
+
+    expect(result).toEqual({
+      kind: "success",
+      recordSummary: {
+        facts: [
+          "State: SCRIPT_REVIEWED → SCRIPT_GENERATED",
+          "Run: run_submit",
+          "Artifact: script.md",
+          "Revision: revision_123",
+        ],
+      },
+    });
+  });
 });

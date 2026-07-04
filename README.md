@@ -480,6 +480,9 @@ Current Studio scope:
   generation, estimate, evidence, readiness, voiceover generation, local draft render, final review
   bundle, and manual channel handoff. These routes call the canonical producer CLI and do not own
   workflow state;
+- guarded action panels show the latest local producer record summary after completion, including
+  state transition, run, artifact, decision, approval, revision, and next-action facts when the CLI
+  JSON record provides them;
 - guarded revision routes for `script.revise` and `package-artifact.revise` that require same-origin
   JSON, a Studio action header, a short-lived local session token/cookie pair, typed bounded
   payloads, and the same CLI/core revision contracts as `producer revise ...`;

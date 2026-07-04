@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import { stageActionForRun } from "@/lib/studioStageAction";
 import { useStudioGuardedActionSubmit } from "@/lib/useStudioGuardedActionSubmit";
+import { StudioMutationResultPanel } from "../studio/StudioMutationResultPanel";
 import { RunStageActionConfirmationDialog } from "./RunStageActionConfirmationDialog";
 
 type RunStageActionPanelProps = Readonly<{
@@ -61,9 +62,7 @@ export function RunStageActionPanel({ run }: RunStageActionPanelProps) {
       >
         {state.kind === "submitting" ? "Running..." : config.buttonLabel}
       </Button>
-      <p className={state.kind === "error" || state.kind === "blocked" ? "blocked" : undefined}>
-        {state.message}
-      </p>
+      <StudioMutationResultPanel state={state} />
       {run.nextRecommendedCommand ? (
         <p className='artifact-action'>CLI equivalent: {run.nextRecommendedCommand}</p>
       ) : null}

@@ -3,13 +3,14 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import type { StudioMutationRecordSummary } from "./studioMutationResultSummary";
 import { submitStudioJsonMutation } from "./studioMutationSubmit";
 
 export type StudioGuardedActionSubmitState =
   | { kind: "idle"; message: string }
   | { kind: "submitting"; message: string }
-  | { kind: "success"; message: string }
-  | { kind: "blocked"; message: string }
+  | { kind: "success"; message: string; recordSummary: StudioMutationRecordSummary | null }
+  | { kind: "blocked"; message: string; recordSummary: StudioMutationRecordSummary | null }
   | { kind: "error"; message: string };
 
 export type StudioGuardedActionSubmitInput = Readonly<{
@@ -46,7 +47,11 @@ export function useStudioGuardedActionSubmit(idleMessage: string) {
       routePath: input.routePath,
     });
     if (result.kind === "blocked") {
-      setState(result);
+      setState({
+        kind: "blocked",
+        message: result.message,
+        recordSummary: result.recordSummary,
+      });
       toast.warning(input.errorToastTitle, {
         description: `${result.message} Studio is refreshing persisted local state.`,
       });
@@ -58,7 +63,11 @@ export function useStudioGuardedActionSubmit(idleMessage: string) {
       toast.error(input.errorToastTitle, { description: result.message });
       return;
     }
-    setState({ kind: "success", message: input.successMessage });
+    setState({
+      kind: "success",
+      message: input.successMessage,
+      recordSummary: result.recordSummary,
+    });
     toast.success(input.successToastTitle, {
       description: "Studio is refreshing the persisted run detail.",
     });

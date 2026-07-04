@@ -11,6 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useStudioGuardedActionSubmit } from "@/lib/useStudioGuardedActionSubmit";
+import { StudioMutationResultPanel } from "./StudioMutationResultPanel";
 
 type StartIdeasActionPanelProps = Readonly<{
   buttonLabel?: string;
@@ -56,9 +57,7 @@ export function StartIdeasActionPanel({
       >
         {state.kind === "submitting" ? "Starting..." : buttonLabel}
       </Button>
-      <p className={state.kind === "error" || state.kind === "blocked" ? "blocked" : undefined}>
-        {state.message}
-      </p>
+      <StudioMutationResultPanel state={state} />
       <Dialog open={confirmationOpen} onOpenChange={setConfirmationOpen}>
         <DialogContent>
           <DialogHeader>

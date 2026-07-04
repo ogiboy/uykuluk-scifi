@@ -244,7 +244,8 @@
 - Studio run detail shows guarded approval, workflow-stage/review/revision, render-decision, and
   channel-handoff decision routes over CLI/core evidence contracts. Home can start ideas, and
   home/queue can run no-extra-input workflow-stage actions only when CLI/core recommends them.
-  Upload/publish stay disabled.
+  Guarded action panels show compact producer record summaries after completion. Upload/publish stay
+  disabled.
 - Readiness diagnostics that strictly parse and revalidate persisted cost quotes, live hard budgets,
   complete production-package integrity, and exact paid-generation cost approval when required.
 - Blocked and warning `producer readiness` checks print and persist next-action guidance for common

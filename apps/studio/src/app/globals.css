@@ -1289,6 +1289,33 @@ h3 {
   padding-top: 12px;
 }
 
+.mutation-result {
+  display: grid;
+  gap: 8px;
+}
+
+.mutation-result dl {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+}
+
+.mutation-result dl div {
+  border-left: 2px solid var(--accent);
+  padding-left: 10px;
+}
+
+.mutation-result dt {
+  color: var(--muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.mutation-result dd {
+  margin: 0;
+}
+
 .start-ideas-action {
   display: grid;
   gap: 10px;
