@@ -5,6 +5,7 @@ export const studioMutationActionIds = [
   "render.approve",
   "render.decide",
   "channel-handoff.decide",
+  "ideas.run",
   "script.run",
   "script.review",
   "package.run",
@@ -88,6 +89,14 @@ export const studioMutationServiceMetadata = [
     coreModule: "src/stages/channelHandoffDecision.ts",
     description:
       "Record exactly one manual channel-handoff decision without uploading or publishing.",
+  },
+  {
+    actionId: "ideas.run",
+    availability: "ready-for-cli",
+    cliCommand: "pnpm producer ideas",
+    coreExport: "runIdeas",
+    coreModule: "src/stages/ideas.ts",
+    description: "Start a new local idea-generation run through the canonical workflow.",
   },
   {
     actionId: "script.run",

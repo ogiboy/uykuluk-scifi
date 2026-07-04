@@ -26,6 +26,8 @@ const runOnlyRequestSchema = z.strictObject({
   runId: runIdSchema,
 });
 
+const emptyRequestSchema = z.strictObject({});
+
 const localReviewRequestShape = {
   notes: z.string().trim().min(1).max(4_000),
   reviewedBy: z.string().trim().min(1).max(200),
@@ -59,6 +61,7 @@ type StudioActionRequestById = {
   "estimate.run": z.infer<typeof runOnlyRequestSchema>;
   "evidence.run": z.infer<typeof runOnlyRequestSchema>;
   "idea.approve": z.infer<typeof ideaApprovalRequestSchema>;
+  "ideas.run": z.infer<typeof emptyRequestSchema>;
   "package.run": z.infer<typeof runOnlyRequestSchema>;
   "publish.schedule": z.infer<typeof runOnlyRequestSchema>;
   "readiness.run": z.infer<typeof runOnlyRequestSchema>;
@@ -160,6 +163,9 @@ function requestSchemaForAction(actionId: StudioMutationActionId): z.ZodType {
   }
   if (actionId === "channel-handoff.decide") {
     return channelHandoffDecisionRequestSchema;
+  }
+  if (actionId === "ideas.run") {
+    return emptyRequestSchema;
   }
   return runOnlyRequestSchema;
 }

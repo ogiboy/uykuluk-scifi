@@ -16,6 +16,7 @@ import {
   type StudioActionWorkbenchTone,
 } from "@/lib/studioActionWorkbench";
 import { CopyableCommand } from "./CopyableCommand";
+import { StartIdeasActionPanel } from "./StartIdeasActionPanel";
 import { StudioMutationSessionPanel } from "./StudioMutationSessionPanel";
 
 type StudioControlDeskProps = Readonly<{
@@ -157,6 +158,7 @@ function EmptyRunCard() {
         <strong>Next safe action</strong>
         <CopyableCommand command={NO_RUNS_NEXT_COMMAND} label='Next safe action' />
       </div>
+      <StartIdeasActionPanel />
     </article>
   );
 }

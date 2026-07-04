@@ -50,6 +50,12 @@ describe("Studio mutation service contracts", () => {
           coreModule: "src/stages/renderPlan.ts",
         }),
         expect.objectContaining({
+          actionId: "ideas.run",
+          availability: "ready-for-cli",
+          coreExport: "runIdeas",
+          coreModule: "src/stages/ideas.ts",
+        }),
+        expect.objectContaining({
           actionId: "voice.run",
           availability: "ready-for-cli",
           coreExport: "generateVoiceoverAudio",
@@ -173,6 +179,10 @@ describe("Studio mutation service contracts", () => {
     ).toThrow(/Unrecognized key/);
     expect(parseStudioMutationRequest("render-plan.run", { runId: "run_operator_review" })).toEqual(
       { runId: "run_operator_review" },
+    );
+    expect(parseStudioMutationRequest("ideas.run", {})).toEqual({});
+    expect(() => parseStudioMutationRequest("ideas.run", { runId: "run_operator_review" })).toThrow(
+      /Unrecognized key/,
     );
     expect(() =>
       parseStudioMutationRequest("voice.run", {

@@ -52,6 +52,7 @@ export const enabledStudioActionRoutes = [
     "local-mutation",
     true,
   ),
+  action("ideas.run", "/actions/run-ideas", "workflow", "local-mutation", true),
   action("script.run", "/actions/run-script", "workflow", "local-mutation", true),
   action("script.review", "/actions/review-script", "workflow", "local-mutation", true),
   action("package.run", "/actions/run-package", "workflow", "local-mutation", true),

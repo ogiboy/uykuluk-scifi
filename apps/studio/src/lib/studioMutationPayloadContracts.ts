@@ -24,6 +24,8 @@ const runOnlyPayloadSchema = z.strictObject({
   runId: runIdSchema,
 });
 
+const emptyPayloadSchema = z.strictObject({});
+
 const renderDecisionPayloadSchema = z.strictObject({
   decision: z.enum(renderDecisionValues),
   ...localReviewPayloadShape,
@@ -58,6 +60,10 @@ export function parseScriptApprovalPayload(
 
 export function parseRunOnlyPayload(payload: unknown): z.infer<typeof runOnlyPayloadSchema> {
   return runOnlyPayloadSchema.parse(payload);
+}
+
+export function parseEmptyPayload(payload: unknown): z.infer<typeof emptyPayloadSchema> {
+  return emptyPayloadSchema.parse(payload);
 }
 
 export function parseRenderDecisionPayload(

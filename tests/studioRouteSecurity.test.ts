@@ -56,6 +56,7 @@ describe("Studio route security contract", () => {
         "actions/run-channel-handoff/route.ts",
         "actions/run-estimate/route.ts",
         "actions/run-evidence/route.ts",
+        "actions/run-ideas/route.ts",
         "actions/run-package/route.ts",
         "actions/run-readiness/route.ts",
         "actions/run-render-plan/route.ts",
@@ -111,6 +112,11 @@ describe("Studio route security contract", () => {
           path: "/actions/run-render-plan",
           requiredApproval: "workflow",
           serviceContractId: "render-plan.run",
+        }),
+        expect.objectContaining({
+          path: "/actions/run-ideas",
+          requiredApproval: "workflow",
+          serviceContractId: "ideas.run",
         }),
         expect.objectContaining({
           path: "/actions/review-render",

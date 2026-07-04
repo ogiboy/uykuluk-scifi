@@ -1,6 +1,7 @@
 import { mkdir } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { POST as runEvidence } from "../apps/studio/src/app/actions/run-evidence/route";
+import { POST as runIdeas } from "../apps/studio/src/app/actions/run-ideas/route";
 import { POST as runReadiness } from "../apps/studio/src/app/actions/run-readiness/route";
 import { POST as runRenderPlan } from "../apps/studio/src/app/actions/run-render-plan/route";
 import { createRun } from "../src/core/runStore";
@@ -27,6 +28,14 @@ describe("Studio workflow stage action routes", () => {
       403,
     );
     await expectRouteError(
+      runIdeas(
+        studioJsonRequest("/actions/run-ideas", "ideas.run", {
+          runId: "run_unexpected",
+        }),
+      ),
+      400,
+    );
+    await expectRouteError(
       runEvidence(
         studioJsonRequest("/actions/run-evidence", "evidence.run", {
           runId: "../escape",
@@ -48,6 +57,15 @@ describe("Studio workflow stage action routes", () => {
   it("maps core workflow blockers to conflict responses without route-side bypasses", async () => {
     await mkdir("runs", { recursive: true });
 
+    const ideasResponse = await runIdeas(studioJsonRequest("/actions/run-ideas", "ideas.run", {}));
+    expect(ideasResponse.status).toBe(200);
+    await expect(ideasResponse.json()).resolves.toMatchObject({
+      actionId: "ideas.run",
+      record: {
+        runId: expect.stringMatching(/^run_/),
+      },
+      status: "ok",
+    });
     const response = await runEvidence(
       studioJsonRequest("/actions/run-evidence", "evidence.run", {
         runId: "run_missing_stage",

@@ -1,6 +1,7 @@
 import type { StudioMutationActionId } from "../../../../src/studio/actionServiceMetadata";
 import {
   parseChannelHandoffDecisionPayload,
+  parseEmptyPayload,
   parseIdeaApprovalPayload,
   parseRenderDecisionPayload,
   parseRunOnlyPayload,
@@ -14,7 +15,7 @@ export type StudioCliMutationActionId = Exclude<
 
 type RunOnlyCliActionId = Exclude<
   StudioCliMutationActionId,
-  "channel-handoff.decide" | "idea.approve" | "render.decide" | "script.approve"
+  "channel-handoff.decide" | "idea.approve" | "ideas.run" | "render.decide" | "script.approve"
 >;
 
 /**
@@ -28,6 +29,10 @@ export function cliArgsForAction(actionId: StudioCliMutationActionId, payload: u
   if (actionId === "idea.approve") {
     const input = parseIdeaApprovalPayload(payload);
     return ["approve", "idea", "--run", input.runId, "--idea", input.ideaId, "--json"];
+  }
+  if (actionId === "ideas.run") {
+    parseEmptyPayload(payload);
+    return ["ideas", "--json"];
   }
   if (actionId === "script.approve") {
     const input = parseScriptApprovalPayload(payload);

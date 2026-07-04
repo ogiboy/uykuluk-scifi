@@ -104,8 +104,8 @@ Next Real Production Loop slices:
 Status: run review, artifact preview, asset inventory, home-page latest-run readiness, home-page
 manual analytics feedback summary, home-page and `/doctor` producer doctor diagnostics, runtime
 prompt inventory, mutation-service status, manual analytics overview, route-security contract
-foundations, shared mutation service contract foundations, guarded local approval routes, run-scoped
-guarded workflow-stage/review routes, the local mutation session route, and the guarded local
+foundations, shared mutation service contract foundations, guarded local approval routes, guarded
+idea-run and workflow-stage/review routes, the local mutation session route, and the guarded local
 render-decision and channel-handoff decision routes exist. Upload and publish route implementations
 remain deferred.
 

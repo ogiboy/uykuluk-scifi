@@ -72,10 +72,10 @@ upload/publish boundaries.
     builds, plus the missing Skeleton React type import.
   - hosted browser-smoke fallout fix for the Studio home heading assertion after the operator
     control desk redesign.
-  - guarded run-scoped Studio workflow-stage routes for script/package/render-plan/estimate/
+  - guarded Studio idea-run and workflow-stage routes for ideas/script/package/render-plan/estimate/
     evidence/readiness/voice/render/review-bundle/channel-handoff commands, wired through the
-    canonical producer CLI and surfaced from the run detail action rail when core recommends the
-    matching next action.
+    canonical producer CLI and surfaced from the home empty state or run detail action rail when
+    core recommends the matching next action.
 - Verified commands for the latest slice:
   - `pnpm check`
   - `pnpm qa:usage`
