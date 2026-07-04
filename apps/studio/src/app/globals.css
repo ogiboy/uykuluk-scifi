@@ -1316,6 +1316,16 @@ h3 {
   margin: 0;
 }
 
+.analytics-action-panel {
+  grid-column: 1 / -1;
+}
+
+.analytics-action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
 .start-ideas-action {
   display: grid;
   gap: 10px;

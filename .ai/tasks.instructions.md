@@ -164,16 +164,17 @@
   safe action without implying upload, publish, paid-provider execution, or frontend-owned workflow
   state.
 - Harden manual analytics feedback with import edge cases and richer comparisons while keeping data
-  operator-provided and local-only. Run-linked summaries, unmapped-record visibility, non-causal
-  repeat / avoid-without-revision / mixed-signal inspect / test-next prompts, simple
-  confidence/missingness framing, a fillable run-link CSV template for missing `run_id` values, and
-  the shared CLI/Studio import data-quality summary plus read-only Studio analytics overview with
-  report freshness summaries are implemented.
+  operator-provided and local-only. Guarded Studio import/report routes now call the local CLI
+  without YouTube APIs, upload, publish, or run workflow mutation. Run-linked summaries,
+  unmapped-record visibility, non-causal repeat / avoid-without-revision / mixed-signal inspect /
+  test-next prompts, simple confidence/missingness framing, a fillable run-link CSV template for
+  missing `run_id` values, and the shared CLI/Studio import data-quality summary plus read-only
+  Studio analytics overview with report freshness summaries are implemented.
 - Maintain typed Studio mutation service contracts that both CLI and web can use before adding
   additional Studio mutations. Current contracts cover guarded idea/script/cost/render approvals,
   guarded idea-run and workflow-stage/review actions, bounded script/package-artifact revision
-  actions, the guarded local render-decision and channel-handoff decision evidence writes, plus
-  disabled upload/publish actions.
+  actions, guarded manual analytics actions, the guarded local render-decision and channel-handoff
+  decision evidence writes, plus disabled upload/publish actions.
 - Keep local prompt overrides safe before adding a prompt editor. Tracked `prompts/defaults/`
   runtime defaults, typed keys, source paths, and prompt hashes are implemented; ignored
   `prompts/local/*.md` overrides are now explicit `producer.config.json` inputs and must remain

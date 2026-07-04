@@ -10,7 +10,13 @@ const stringFields = [
   ["Decision", "decision"],
   ["Reviewed by", "reviewedBy"],
   ["Target", "target"],
+  ["Format", "format"],
+  ["Dataset", "outputPath"],
+  ["Report", "reportPath"],
+  ["Run link template", "runLinkTemplatePath"],
 ] as const;
+
+const numberFields = [["Records", "recordCount"]] as const;
 
 /**
  * Builds a compact operator-facing summary from a producer CLI JSON record.
@@ -25,6 +31,7 @@ export function summarizeStudioMutationRecord(record: unknown): StudioMutationRe
   const facts = [
     stateTransitionFact(record),
     ...stringFields.map(([label, field]) => stringFact(label, record[field])),
+    ...numberFields.map(([label, field]) => numberFact(label, record[field])),
     countFact("Artifacts", record.artifacts),
     countFact("Invalidated", record.invalidatedArtifacts),
     actionFact(record),
@@ -59,6 +66,10 @@ function countFact(label: string, value: unknown): string | null {
     return null;
   }
   return `${label}: ${value.length}`;
+}
+
+function numberFact(label: string, value: unknown): string | null {
+  return typeof value === "number" && Number.isFinite(value) ? `${label}: ${value}` : null;
 }
 
 function stringValue(value: unknown): string | null {

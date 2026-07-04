@@ -147,8 +147,8 @@ Frontend constraints:
 
 ## Phase D - Monetization Feedback Loop
 
-Status: initial local CLI import/report foundation and read-only Studio overview implemented; API
-integrations remain deferred.
+Status: local CLI import/report foundation, guarded Studio import/report actions, and Studio
+overview implemented; API integrations remain deferred.
 
 The product should eventually learn from channel performance, but manual import comes before API
 integrations.
@@ -161,8 +161,8 @@ Minimum loop:
   visibility plus a fillable run-link CSV template;
 - summarize CTR, views, average view duration, retention notes, subscriber deltas, and qualitative
   comments where provided - implemented in `analytics/performance_report.md`;
-- review the imported local dataset and report preview in Studio without YouTube API calls, workflow
-  mutation, upload, publish, or causal claims, including stale/missing report visibility;
+- import and review the local dataset/report preview in Studio without YouTube API calls, run
+  workflow mutation, upload, publish, or causal claims, including stale/missing report visibility;
 - produce “repeat / avoid / mixed-signal inspect / test next” recommendations for future ideas,
   titles, formats, and thumbnail directions - implemented as non-causal operator planning prompts
   with confidence/missingness framing in `analytics/performance_report.md`.

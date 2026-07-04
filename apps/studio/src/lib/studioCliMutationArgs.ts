@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import type { StudioMutationActionId } from "../../../../src/studio/actionServiceMetadata";
 import {
+  parseAnalyticsImportPayload,
   parseChannelHandoffDecisionPayload,
   parseEmptyPayload,
   parseIdeaApprovalPayload,
@@ -21,6 +22,8 @@ export type StudioCliMutationActionId = Exclude<
 type RunOnlyCliActionId = Exclude<
   StudioCliMutationActionId,
   | "channel-handoff.decide"
+  | "analytics.import"
+  | "analytics.report"
   | "idea.approve"
   | "ideas.run"
   | "package-artifact.revise"
@@ -45,6 +48,19 @@ export async function cliArgsForAction(
   actionId: StudioCliMutationActionId,
   payload: unknown,
 ): Promise<StudioPreparedCliArgs> {
+  if (actionId === "analytics.import") {
+    const input = parseAnalyticsImportPayload(payload);
+    const temp = await writeTemporaryInputFile(
+      input.content,
+      "uykuluk-studio-analytics-",
+      analyticsImportTempFileName(input.sourceFileName, input.format),
+    );
+    return prepared(["analytics", "import", "--file", temp.filePath, "--json"], temp.cleanup);
+  }
+  if (actionId === "analytics.report") {
+    parseEmptyPayload(payload);
+    return prepared(["analytics", "report", "--json"]);
+  }
   if (actionId === "idea.approve") {
     const input = parseIdeaApprovalPayload(payload);
     return prepared(["approve", "idea", "--run", input.runId, "--idea", input.ideaId, "--json"]);
@@ -66,7 +82,11 @@ export async function cliArgsForAction(
   }
   if (actionId === "script.revise") {
     const input = parseScriptRevisionPayload(payload);
-    const temp = await writeRevisionTempFile(input.content);
+    const temp = await writeTemporaryInputFile(
+      input.content,
+      "uykuluk-studio-revision-",
+      "revision-content.txt",
+    );
     return prepared(
       [
         "revise",
@@ -86,7 +106,11 @@ export async function cliArgsForAction(
   }
   if (actionId === "package-artifact.revise") {
     const input = parsePackageArtifactRevisionPayload(payload);
-    const temp = await writeRevisionTempFile(input.content);
+    const temp = await writeTemporaryInputFile(
+      input.content,
+      "uykuluk-studio-revision-",
+      "revision-content.txt",
+    );
     return prepared(
       [
         "revise",
@@ -173,12 +197,23 @@ function prepared(
   return { args, cleanup };
 }
 
-async function writeRevisionTempFile(content: string): Promise<{
+function analyticsImportTempFileName(sourceFileName: string, format: "csv" | "json"): string {
+  const extension = `.${format}`;
+  return sourceFileName.toLowerCase().endsWith(extension)
+    ? sourceFileName
+    : `${sourceFileName}${extension}`;
+}
+
+async function writeTemporaryInputFile(
+  content: string,
+  directoryPrefix: string,
+  fileName: string,
+): Promise<{
   cleanup: () => Promise<void>;
   filePath: string;
 }> {
-  const directory = await mkdtemp(path.join(tmpdir(), "uykuluk-studio-revision-"));
-  const filePath = path.join(directory, "revision-content.txt");
+  const directory = await mkdtemp(path.join(tmpdir(), directoryPrefix));
+  const filePath = path.join(directory, fileName);
   await writeFile(filePath, content, { encoding: "utf8", mode: 0o600 });
   return {
     cleanup: () => rm(directory, { force: true, recursive: true }),

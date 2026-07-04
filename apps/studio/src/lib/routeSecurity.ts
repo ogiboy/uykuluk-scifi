@@ -12,7 +12,16 @@ export type StudioRouteSecurityContract = {
   id: string;
   path: string;
   requiredApproval:
-    "cost" | "idea" | "none" | "publish" | "render" | "review" | "script" | "upload" | "workflow";
+    | "analytics"
+    | "cost"
+    | "idea"
+    | "none"
+    | "publish"
+    | "render"
+    | "review"
+    | "script"
+    | "upload"
+    | "workflow";
   requiresCoreServiceContract: boolean;
   requiresCsrfProtection: boolean;
   requiresEvidenceWrite: boolean;
@@ -52,6 +61,8 @@ export const enabledStudioActionRoutes = [
     "local-mutation",
     true,
   ),
+  action("analytics.import", "/actions/analytics-import", "analytics", "local-mutation", true),
+  action("analytics.report", "/actions/analytics-report", "analytics", "local-mutation", true),
   action("ideas.run", "/actions/run-ideas", "workflow", "local-mutation", true),
   action("script.run", "/actions/run-script", "workflow", "local-mutation", true),
   action("script.review", "/actions/review-script", "workflow", "local-mutation", true),

@@ -325,21 +325,21 @@
   `prompts/defaults/` sources and configured ignored `prompts/local/*.md` overrides, including
   source paths, hashes, warnings, and doctor remediation. They do not edit prompts, call providers,
   approve prompt changes, or read `.ai/` as runtime state.
-- Studio home and `/analytics` surface read-only manual analytics feedback from ignored local
-  analytics artifacts. They show import/report status, data-quality guidance, and the next safe CLI
-  command without calling YouTube APIs or mutating run state.
+- Studio home and `/analytics` surface ignored local analytics artifacts. `/analytics` can import
+  operator-provided CSV/JSON text and refresh the local report through guarded CLI-backed routes
+  without YouTube APIs, upload, publish, or run workflow mutation.
 - Studio has a typed route-security contract for current read-only pages, the local session route,
   guarded local idea/script/cost/render approval routes, guarded idea-run and workflow-stage/review/
-  revision routes, the guarded local render-decision route, and disabled upload/publish action
-  routes. Tests assert that current App Router pages are covered, enabled local mutations require
-  POST-only same-origin JSON, action headers, service-contract handling, local session proof, and
-  cached-session cleanup after 401; disabled upload/publish actions require CLI/core contracts,
-  durable evidence, explicit approvals, and disabled publish risk.
-- Shared Studio mutation service contract foundations exist for guarded idea/script/cost/render
-  approval actions, guarded idea-run and workflow-stage/review/revision actions, the active local
-  render-decision and channel-handoff decision evidence writes, and disabled upload/publish actions.
-  Contracts validate request payloads, bind each action to the CLI/core module/export, and require
-  CSRF protection, durable evidence, and explicit approval.
+  revision routes, guarded manual analytics import/report routes, the guarded local render-decision
+  route, and disabled upload/publish action routes. Tests assert that current App Router pages are
+  covered, enabled local mutations require POST-only same-origin JSON, action headers,
+  service-contract handling, local session proof, and cached-session cleanup after 401; disabled
+  upload/publish actions require CLI/core contracts, durable evidence, explicit approvals, and
+  disabled publish risk.
+- Shared Studio mutation service contracts exist for guarded idea/script/cost/render approvals,
+  idea-run and workflow-stage/review/revision actions, local render/channel-handoff decisions,
+  manual analytics actions, and disabled upload/publish actions. Contracts validate payloads, bind
+  actions to CLI/core modules/exports, and require CSRF, durable evidence, and explicit approval.
 - Studio home renders a mutation-service status panel showing guarded local approval/review routes,
   disabled upload/publish routes, CLI-ready action contracts, route-security findings, and
   upload/publish risk boundaries without exposing upload/publish web mutations.

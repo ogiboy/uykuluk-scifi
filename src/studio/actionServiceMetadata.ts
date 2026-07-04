@@ -1,29 +1,11 @@
+// prettier-ignore
 export const studioMutationActionIds = [
-  "idea.approve",
-  "script.approve",
-  "cost.approve",
-  "render.approve",
-  "render.decide",
-  "channel-handoff.decide",
-  "ideas.run",
-  "script.run",
-  "script.review",
-  "script.revise",
-  "package.run",
-  "package-artifact.revise",
-  "render-plan.run",
-  "render-plan.review",
-  "estimate.run",
-  "evidence.run",
-  "readiness.run",
-  "voice.run",
-  "voice.review",
-  "render.run",
-  "render.review",
-  "review-bundle.run",
-  "channel-handoff.run",
-  "upload.private",
-  "publish.schedule",
+  "idea.approve", "script.approve", "cost.approve", "render.approve", "render.decide",
+  "channel-handoff.decide", "analytics.import", "analytics.report", "ideas.run", "script.run",
+  "script.review", "script.revise", "package.run", "package-artifact.revise", "render-plan.run",
+  "render-plan.review", "estimate.run", "evidence.run", "readiness.run", "voice.run",
+  "voice.review", "render.run", "render.review", "review-bundle.run", "channel-handoff.run",
+  "upload.private", "publish.schedule",
 ] as const;
 
 export type StudioMutationActionId = (typeof studioMutationActionIds)[number];
@@ -75,22 +57,34 @@ export const studioMutationServiceMetadata = [
   {
     actionId: "render.decide",
     availability: "ready-for-cli",
-    cliCommand:
-      "pnpm producer decide render --run <run_id> --decision <decision> --notes <notes> --reviewed-by <name>",
+    cliCommand: "pnpm producer decide render --run <run_id> --decision <decision> --json",
     coreExport: "recordRenderDecision",
     coreModule: "src/stages/renderDecision.ts",
-    description:
-      "Record exactly one local draft-render review decision without approving upload or publish.",
+    description: "Record one local draft-render review decision.",
   },
   {
     actionId: "channel-handoff.decide",
     availability: "ready-for-cli",
-    cliCommand:
-      "pnpm producer decide channel-handoff --run <run_id> --decision <decision> --thumbnail-candidate <candidate_id> --notes <notes> --reviewed-by <name>",
+    cliCommand: "pnpm producer decide channel-handoff --run <run_id> --decision <decision> --json",
     coreExport: "recordChannelHandoffDecision",
     coreModule: "src/stages/channelHandoffDecision.ts",
-    description:
-      "Record exactly one manual channel-handoff decision without uploading or publishing.",
+    description: "Record one manual channel-handoff decision.",
+  },
+  {
+    actionId: "analytics.import",
+    availability: "ready-for-cli",
+    cliCommand: "pnpm producer analytics import --file <temp_file>",
+    coreExport: "importAnalyticsFile",
+    coreModule: "src/analytics/import.ts",
+    description: "Import operator-provided CSV/JSON analytics into ignored local artifacts.",
+  },
+  {
+    actionId: "analytics.report",
+    availability: "ready-for-cli",
+    cliCommand: "pnpm producer analytics report",
+    coreExport: "refreshSavedAnalyticsReport",
+    coreModule: "src/analytics/import.ts",
+    description: "Refresh the local manual analytics report from the saved dataset.",
   },
   {
     actionId: "ideas.run",
@@ -119,12 +113,10 @@ export const studioMutationServiceMetadata = [
   {
     actionId: "script.revise",
     availability: "ready-for-cli",
-    cliCommand:
-      "pnpm producer revise script --run <run_id> --file <temp_file> --reason <reason> --editor <name>",
+    cliCommand: "pnpm producer revise script --run <run_id> --file <temp_file> --json",
     coreExport: "reviseScript",
     coreModule: "src/revisions/scriptRevision.ts",
-    description:
-      "Record an attributable script revision, invalidate stale review/approval evidence, and return to script review.",
+    description: "Record a script revision and invalidate stale review evidence.",
   },
   {
     actionId: "package.run",
@@ -137,12 +129,10 @@ export const studioMutationServiceMetadata = [
   {
     actionId: "package-artifact.revise",
     availability: "ready-for-cli",
-    cliCommand:
-      "pnpm producer revise package-artifact --run <run_id> --artifact <target> --file <temp_file> --reason <reason> --editor <name>",
+    cliCommand: "pnpm producer revise package-artifact --run <run_id> --file <temp_file> --json",
     coreExport: "revisePackageArtifact",
     coreModule: "src/revisions/packageArtifactRevision.ts",
-    description:
-      "Record a bounded production-package artifact revision and refresh manifest evidence before downstream work.",
+    description: "Record a bounded production-package artifact revision.",
   },
   {
     actionId: "render-plan.run",
@@ -230,8 +220,7 @@ export const studioMutationServiceMetadata = [
     cliCommand: "pnpm producer channel-handoff --run <run_id>",
     coreExport: "createChannelHandoff",
     coreModule: "src/stages/channelHandoff.ts",
-    description:
-      "Create the manual channel handoff package while upload and publish remain disabled.",
+    description: "Create the manual channel handoff package while upload remains disabled.",
   },
   {
     actionId: "upload.private",
@@ -239,8 +228,7 @@ export const studioMutationServiceMetadata = [
     cliCommand: "pnpm producer upload private --run <run_id>",
     coreExport: "runPrivateUploadPlaceholder",
     coreModule: "src/youtube/uploadDisabled.ts",
-    description:
-      "Future private-upload action; currently disabled until upload approval/config exist.",
+    description: "Future private-upload action; disabled until upload approval/config exist.",
   },
   {
     actionId: "publish.schedule",

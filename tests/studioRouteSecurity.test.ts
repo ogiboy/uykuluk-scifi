@@ -43,6 +43,8 @@ describe("Studio route security contract", () => {
   it("exposes only guarded local approval/review action routes", async () => {
     await expect(discoverRouteHandlers(appRoot)).resolves.toEqual(
       [
+        "actions/analytics-import/route.ts",
+        "actions/analytics-report/route.ts",
         "actions/approve-cost/route.ts",
         "actions/approve-idea/route.ts",
         "actions/approve-render/route.ts",
@@ -119,6 +121,16 @@ describe("Studio route security contract", () => {
           path: "/actions/decide-channel-handoff",
           requiredApproval: "review",
           serviceContractId: "channel-handoff.decide",
+        }),
+        expect.objectContaining({
+          path: "/actions/analytics-import",
+          requiredApproval: "analytics",
+          serviceContractId: "analytics.import",
+        }),
+        expect.objectContaining({
+          path: "/actions/analytics-report",
+          requiredApproval: "analytics",
+          serviceContractId: "analytics.report",
         }),
         expect.objectContaining({
           path: "/actions/run-render-plan",

@@ -29,6 +29,22 @@ const runOnlyRequestSchema = z.strictObject({
 const emptyRequestSchema = z.strictObject({});
 
 const revisionContentSchema = z.string().min(1).max(200_000);
+const analyticsImportContentSchema = z.string().min(1).max(1_000_000);
+const analyticsSourceFileNameSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(120)
+  .refine(
+    (value) => !value.includes("/") && !value.includes("\\") && value !== "." && value !== "..",
+    { message: "Analytics source file name must not contain path separators." },
+  );
+
+const analyticsImportRequestSchema = z.strictObject({
+  content: analyticsImportContentSchema,
+  format: z.enum(["csv", "json"]),
+  sourceFileName: analyticsSourceFileNameSchema,
+});
 
 const scriptRevisionRequestSchema = z.strictObject({
   content: revisionContentSchema,
@@ -72,6 +88,8 @@ const channelHandoffDecisionRequestSchema = z
   );
 
 type StudioActionRequestById = {
+  "analytics.import": z.infer<typeof analyticsImportRequestSchema>;
+  "analytics.report": z.infer<typeof emptyRequestSchema>;
   "channel-handoff.decide": z.infer<typeof channelHandoffDecisionRequestSchema>;
   "channel-handoff.run": z.infer<typeof runOnlyRequestSchema>;
   "cost.approve": z.infer<typeof runOnlyRequestSchema>;
@@ -182,6 +200,12 @@ function requestSchemaForAction(actionId: StudioMutationActionId): z.ZodType {
   }
   if (actionId === "package-artifact.revise") {
     return packageArtifactRevisionRequestSchema;
+  }
+  if (actionId === "analytics.import") {
+    return analyticsImportRequestSchema;
+  }
+  if (actionId === "analytics.report") {
+    return emptyRequestSchema;
   }
   if (actionId === "render.decide") {
     return renderDecisionRequestSchema;

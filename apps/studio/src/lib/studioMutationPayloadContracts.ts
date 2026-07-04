@@ -27,6 +27,22 @@ const runOnlyPayloadSchema = z.strictObject({
 const emptyPayloadSchema = z.strictObject({});
 
 const revisionContentSchema = z.string().min(1).max(200_000);
+const analyticsImportContentSchema = z.string().min(1).max(1_000_000);
+const analyticsSourceFileNameSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(120)
+  .refine(
+    (value) => !value.includes("/") && !value.includes("\\") && value !== "." && value !== "..",
+    { message: "Analytics source file name must not contain path separators." },
+  );
+
+const analyticsImportPayloadSchema = z.strictObject({
+  content: analyticsImportContentSchema,
+  format: z.enum(["csv", "json"]),
+  sourceFileName: analyticsSourceFileNameSchema,
+});
 
 const scriptRevisionPayloadSchema = z.strictObject({
   content: revisionContentSchema,
@@ -85,6 +101,12 @@ export function parsePackageArtifactRevisionPayload(
   payload: unknown,
 ): z.infer<typeof packageArtifactRevisionPayloadSchema> {
   return packageArtifactRevisionPayloadSchema.parse(payload);
+}
+
+export function parseAnalyticsImportPayload(
+  payload: unknown,
+): z.infer<typeof analyticsImportPayloadSchema> {
+  return analyticsImportPayloadSchema.parse(payload);
 }
 
 export function parseRunOnlyPayload(payload: unknown): z.infer<typeof runOnlyPayloadSchema> {

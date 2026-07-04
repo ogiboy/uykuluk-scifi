@@ -119,7 +119,8 @@ agent-tracking state only; runtime code must not require it.
   final-review digest binding. It does not call YouTube APIs, upload, schedule, publish, or grant
   upload/publish approval.
 - Manual analytics import/report commands for operator-provided CSV/JSON performance exports, plus a
-  read-only Studio view over the ignored local analytics artifacts and import data-quality summary.
+  Studio view over ignored local analytics artifacts, import data-quality summary, and guarded local
+  import/report-refresh actions.
 - Typed Studio route-security contract covering read-only routes, guarded local approval/review/
   workflow-stage/revision action routes, and disabled upload/publish action routes.
 - Typed Studio mutation service contracts for guarded local approval/review/workflow-stage/revision
@@ -483,6 +484,9 @@ Current Studio scope:
 - guarded action panels show the latest local producer record summary after completion, including
   state transition, run, artifact, decision, approval, revision, and next-action facts when the CLI
   JSON record provides them;
+- guarded manual analytics routes for importing operator-provided CSV/JSON text and refreshing the
+  report through the producer CLI. They write only ignored local analytics artifacts and do not call
+  YouTube APIs, upload media, or mutate run workflow state;
 - guarded revision routes for `script.revise` and `package-artifact.revise` that require same-origin
   JSON, a Studio action header, a short-lived local session token/cookie pair, typed bounded
   payloads, and the same CLI/core revision contracts as `producer revise ...`;
