@@ -24,6 +24,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { runReviewHrefFromSummary } from "@/lib/runReviewNavigation";
 import { getNextSafeCommand } from "@/lib/runSummaryCopy";
 import type { StudioRunSummary } from "@/lib/runSummaries";
 
@@ -121,7 +122,7 @@ export function StudioCommandPalette({ runs }: StudioCommandPaletteProps) {
                 <CommandItem
                   key={`open-${run.runId}`}
                   value={`${run.runId} ${run.state} ${run.readinessStatus} ${run.evidenceStatus}`}
-                  onSelect={() => navigateTo(`/runs/${run.runId}` as Route)}
+                  onSelect={() => navigateTo(runReviewHrefFromSummary(run) as Route)}
                 >
                   <TerminalIcon />
                   <span className='command-item-body'>

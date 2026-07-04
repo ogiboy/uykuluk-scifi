@@ -3,6 +3,7 @@ import {
   defaultRunReviewTab,
   defaultRunReviewTabFromSummary,
   runReviewHref,
+  runReviewHrefFromSummary,
   runReviewPathWithTab,
   runReviewTabFocus,
   runReviewTabFromSearchParams,
@@ -67,6 +68,17 @@ describe("Studio run review navigation", () => {
     expect(runReviewHref("run brief", "handoff", "review-decision")).toBe(
       "/runs/run%20brief?tab=handoff#review-decision",
     );
+    expect(
+      runReviewHrefFromSummary(
+        navigationFixture({
+          blockedActionCount: 1,
+          runId: "run needs attention",
+        }),
+      ),
+    ).toBe("/runs/run%20needs%20attention?tab=readiness");
+    expect(
+      runReviewHrefFromSummary(navigationFixture({ runId: "run_final" }), "review-decision"),
+    ).toBe("/runs/run_final?tab=media#review-decision");
   });
 
   it("updates the tab query while preserving unrelated query parameters", () => {

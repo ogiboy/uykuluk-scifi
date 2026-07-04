@@ -1,4 +1,5 @@
 import type { StudioRunSummary } from "@/lib/runSummaries";
+import { runReviewHrefFromSummary } from "@/lib/runReviewNavigation";
 import {
   formatRunChannelHandoff,
   formatRunChannelHandoffDecision,
@@ -8,6 +9,7 @@ import {
 } from "@/lib/runSummaryCopy";
 import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
+import type { Route } from "next";
 import {
   operatorActionDetail,
   operatorActionForRun,
@@ -24,7 +26,7 @@ export function runSummaryColumns(): ColumnDef<StudioRunSummary>[] {
     {
       accessorKey: "runId",
       cell: ({ row }) => (
-        <Link className='run-row-link' href={`/runs/${row.original.runId}`}>
+        <Link className='run-row-link' href={runReviewHrefFromSummary(row.original) as Route}>
           {row.original.runId}
         </Link>
       ),

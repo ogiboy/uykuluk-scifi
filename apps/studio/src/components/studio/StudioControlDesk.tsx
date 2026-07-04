@@ -1,6 +1,8 @@
 import Link from "next/link";
+import type { Route } from "next";
 import { ActiveRunActions } from "@/components/studio/ActiveRunActions";
 import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
+import { runReviewHrefFromSummary } from "@/lib/runReviewNavigation";
 import type { StudioRunSummary } from "@/lib/runSummaries";
 import {
   formatRunRenderDecision,
@@ -197,7 +199,7 @@ function QueueSnapshot({ runs }: Readonly<{ runs: readonly StudioRunSummary[] }>
         <ol className='queue-list'>
           {runs.slice(0, 5).map((run) => (
             <li key={run.runId}>
-              <Link href={`/runs/${run.runId}`}>
+              <Link href={runReviewHrefFromSummary(run) as Route}>
                 <strong>{run.runId}</strong>
                 <span>
                   {run.state} · {run.readinessStatus}

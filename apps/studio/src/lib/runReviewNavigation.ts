@@ -42,6 +42,7 @@ type RunReviewSummaryNavigationInput = Pick<
   | "finalReviewBundle"
   | "readinessStatus"
   | "renderDecision"
+  | "runId"
   | "state"
 >;
 
@@ -108,6 +109,20 @@ export function runReviewTabFromSearchParams(
 export function runReviewHref(runId: string, tab: RunReviewTab, fragment?: string): string {
   const suffix = fragment ? `#${fragment}` : "";
   return `/runs/${encodeURIComponent(runId)}?tab=${tab}${suffix}`;
+}
+
+/**
+ * Builds a run-review href from queue summary data.
+ *
+ * @param run - The Studio run summary projection.
+ * @param fragment - Optional page fragment.
+ * @returns A local Studio run-review href focused on the next useful tab.
+ */
+export function runReviewHrefFromSummary(
+  run: RunReviewSummaryNavigationInput,
+  fragment?: string,
+): string {
+  return runReviewHref(run.runId, defaultRunReviewTabFromSummary(run), fragment);
 }
 
 /**

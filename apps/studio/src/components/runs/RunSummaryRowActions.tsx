@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { Route } from "next";
 import { CopyableCommand } from "@/components/studio/CopyableCommand";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,7 +21,7 @@ import {
   PopoverTitle,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { defaultRunReviewTabFromSummary } from "@/lib/runReviewNavigation";
+import { runReviewHrefFromSummary } from "@/lib/runReviewNavigation";
 import { getNextSafeCommand } from "@/lib/runSummaryCopy";
 import type { StudioRunSummary } from "@/lib/runSummaries";
 
@@ -36,9 +37,8 @@ type RunSummaryRowActionsProps = Readonly<{
  */
 export function RunSummaryRowActions({ run }: RunSummaryRowActionsProps) {
   const command = getNextSafeCommand(run);
-  const reviewTab = defaultRunReviewTabFromSummary(run);
-  const reviewHref = `/runs/${run.runId}?tab=${reviewTab}` as const;
-  const decisionRailHref = `/runs/${run.runId}?tab=${reviewTab}#review-decision` as const;
+  const reviewHref = runReviewHrefFromSummary(run) as Route;
+  const decisionRailHref = runReviewHrefFromSummary(run, "review-decision") as Route;
   return (
     <div className='run-row-actions'>
       <DropdownMenu>
