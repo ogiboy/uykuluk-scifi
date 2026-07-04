@@ -38,14 +38,15 @@ export function validateStudioMutationRequest(
       status: 403,
     };
   }
+  const hasValidSession = hasValidStudioSession(request);
   if (!isSameOriginMutation(request)) {
     return {
-      message: "Studio mutations require a same-origin request.",
+      message: "Studio mutations require a trusted same-origin or local Studio request.",
       ok: false,
       status: 403,
     };
   }
-  if (!hasValidStudioSession(request)) {
+  if (!hasValidSession) {
     return {
       message:
         "Studio mutations require a valid local session token. Refresh the local web control session before retrying.",
@@ -133,7 +134,6 @@ function originsMatch(left: URL, right: URL): boolean {
   }
   return (
     left.protocol === right.protocol &&
-    normalizedPort(left) === normalizedPort(right) &&
     isLoopbackLikeHost(left.hostname) &&
     isLoopbackLikeHost(right.hostname)
   );
@@ -152,13 +152,6 @@ function isLocalHttpOrigin(origin: URL): boolean {
     (origin.protocol === "http:" || origin.protocol === "https:") &&
     isLoopbackLikeHost(origin.hostname)
   );
-}
-
-function normalizedPort(url: URL): string {
-  if (url.port) {
-    return url.port;
-  }
-  return url.protocol === "https:" ? "443" : "80";
 }
 
 function isLoopbackLikeHost(hostname: string): boolean {

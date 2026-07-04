@@ -30,6 +30,15 @@ describe("Studio mutation security", () => {
     ).toEqual({ ok: true });
   });
 
+  it("accepts local loopback dev-port aliases with the session proof", () => {
+    expect(
+      validateStudioMutationRequest(
+        studioRequest("http://127.0.0.1:3210", { origin: "http://localhost:3000" }),
+        "ideas.run",
+      ),
+    ).toEqual({ ok: true });
+  });
+
   it("accepts forwarded host and protocol when the app server request URL is internal", () => {
     expect(
       validateStudioMutationRequest(
@@ -55,7 +64,7 @@ describe("Studio mutation security", () => {
     ).toEqual({ ok: true });
   });
 
-  it("rejects external, missing, or port-mismatched origins", () => {
+  it("rejects external, missing, or protocol-mismatched origins", () => {
     expect(
       validateStudioMutationRequest(
         studioRequest("http://localhost:3000", { origin: "https://attacker.example" }),
@@ -64,7 +73,7 @@ describe("Studio mutation security", () => {
     ).toMatchObject({ ok: false, status: 403 });
     expect(
       validateStudioMutationRequest(
-        studioRequest("http://localhost:3000", { origin: "http://localhost:4000" }),
+        studioRequest("http://localhost:3000", { origin: "https://localhost:3000" }),
         "ideas.run",
       ),
     ).toMatchObject({ ok: false, status: 403 });
