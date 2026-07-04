@@ -14,10 +14,38 @@ import {
   parseScriptRevisionPayload,
 } from "./studioMutationPayloadContracts";
 
-export type StudioCliMutationActionId = Exclude<
+export const studioCliMutationActionIds = [
+  "analytics.import",
+  "analytics.report",
+  "channel-handoff.decide",
+  "channel-handoff.run",
+  "cost.approve",
+  "estimate.run",
+  "evidence.run",
+  "idea.approve",
+  "ideas.run",
+  "package.run",
+  "package-artifact.revise",
+  "readiness.run",
+  "render.approve",
+  "render.decide",
+  "render.review",
+  "render.run",
+  "render-plan.review",
+  "render-plan.run",
+  "review-bundle.run",
+  "script.approve",
+  "script.review",
+  "script.revise",
+  "script.run",
+  "voice.review",
+  "voice.run",
+] as const satisfies readonly Exclude<
   StudioMutationActionId,
   "publish.schedule" | "upload.private"
->;
+>[];
+
+export type StudioCliMutationActionId = (typeof studioCliMutationActionIds)[number];
 
 type RunOnlyCliActionId = Exclude<
   StudioCliMutationActionId,
