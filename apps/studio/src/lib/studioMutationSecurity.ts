@@ -57,17 +57,11 @@ export function validateStudioMutationRequest(
 }
 
 function isSameOriginMutation(request: Request): boolean {
-  const origin = request.headers.get("origin");
+  const origin = parseOrigin(request.headers.get("origin"));
   if (!origin) {
     return false;
   }
-  let requestOrigin: string;
-  try {
-    requestOrigin = new URL(request.url).origin;
-  } catch {
-    return false;
-  }
-  return origin === requestOrigin;
+  return requestOriginCandidates(request).some((candidate) => originsMatch(origin, candidate));
 }
 
 function hasValidStudioSession(request: Request): boolean {
@@ -90,4 +84,83 @@ function cookieValue(cookieHeader: string, name: string): string | null {
 
 function isStudioSessionToken(value: string): boolean {
   return /^[A-Za-z0-9_-]{32,128}$/.test(value);
+}
+
+function requestOriginCandidates(request: Request): URL[] {
+  return uniqueOrigins([
+    parseOrigin(request.url),
+    hostHeaderOrigin(request),
+    forwardedHeaderOrigin(request),
+  ]);
+}
+
+function forwardedHeaderOrigin(request: Request): URL | null {
+  const host = firstHeaderValue(request.headers.get("x-forwarded-host"));
+  const protocol = forwardedProtocol(request);
+  return host && protocol ? parseOrigin(`${protocol}://${host}`) : null;
+}
+
+function hostHeaderOrigin(request: Request): URL | null {
+  const host = request.headers.get("host");
+  const protocol = forwardedProtocol(request) ?? parseOrigin(request.url)?.protocol.slice(0, -1);
+  return host && protocol ? parseOrigin(`${protocol}://${host}`) : null;
+}
+
+function forwardedProtocol(request: Request): "http" | "https" | null {
+  const value = firstHeaderValue(request.headers.get("x-forwarded-proto"));
+  return value === "http" || value === "https" ? value : null;
+}
+
+function firstHeaderValue(value: string | null): string | null {
+  return value?.split(",").at(0)?.trim() || null;
+}
+
+function parseOrigin(value: string | null | undefined): URL | null {
+  if (!value) {
+    return null;
+  }
+  try {
+    return new URL(new URL(value).origin);
+  } catch {
+    return null;
+  }
+}
+
+function originsMatch(left: URL, right: URL): boolean {
+  if (left.origin === right.origin) {
+    return true;
+  }
+  return (
+    left.protocol === right.protocol &&
+    normalizedPort(left) === normalizedPort(right) &&
+    isLoopbackLikeHost(left.hostname) &&
+    isLoopbackLikeHost(right.hostname)
+  );
+}
+
+function normalizedPort(url: URL): string {
+  if (url.port) {
+    return url.port;
+  }
+  return url.protocol === "https:" ? "443" : "80";
+}
+
+function isLoopbackLikeHost(hostname: string): boolean {
+  return (
+    hostname === "localhost" ||
+    hostname === "127.0.0.1" ||
+    hostname === "0.0.0.0" ||
+    hostname === "[::1]"
+  );
+}
+
+function uniqueOrigins(origins: Array<URL | null>): URL[] {
+  const seen = new Set<string>();
+  return origins.filter((origin): origin is URL => {
+    if (!origin || seen.has(origin.origin)) {
+      return false;
+    }
+    seen.add(origin.origin);
+    return true;
+  });
 }

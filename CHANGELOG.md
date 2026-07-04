@@ -26,6 +26,8 @@ future generated release notes can be inserted predictably.
 ### Fixes
 
 - keep Studio mutation result and route-security action types stable for IDE diagnostics.
+- accept local loopback origin aliases for guarded Studio actions without weakening external-origin
+  rejection.
 
 ### Tests
 
