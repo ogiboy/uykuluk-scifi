@@ -8,10 +8,26 @@ import { submitStudioJsonMutation } from "./studioMutationSubmit";
 
 export type StudioGuardedActionSubmitState =
   | { kind: "idle"; message: string }
-  | { kind: "submitting"; message: string }
-  | { kind: "success"; message: string; recordSummary: StudioMutationRecordSummary | null }
-  | { kind: "blocked"; message: string; recordSummary: StudioMutationRecordSummary | null }
-  | { kind: "error"; message: string };
+  | { action: StudioGuardedActionMetadata; kind: "submitting"; message: string }
+  | {
+      action: StudioGuardedActionMetadata;
+      kind: "success";
+      message: string;
+      recordSummary: StudioMutationRecordSummary | null;
+    }
+  | {
+      action: StudioGuardedActionMetadata;
+      kind: "blocked";
+      message: string;
+      recordSummary: StudioMutationRecordSummary | null;
+    }
+  | { action: StudioGuardedActionMetadata; kind: "error"; message: string };
+
+export type StudioGuardedActionMetadata = Readonly<{
+  actionId: string;
+  refreshedPersistedState: boolean;
+  routePath: string;
+}>;
 
 export type StudioGuardedActionSubmitInput = Readonly<{
   actionId: string;
@@ -39,7 +55,8 @@ export function useStudioGuardedActionSubmit(idleMessage: string) {
   });
 
   async function submit(input: StudioGuardedActionSubmitInput): Promise<void> {
-    setState({ kind: "submitting", message: input.submittingMessage });
+    const startedAction = actionMetadata(input, false);
+    setState({ action: startedAction, kind: "submitting", message: input.submittingMessage });
     const result = await submitStudioJsonMutation({
       actionId: input.actionId,
       body: input.body,
@@ -48,6 +65,7 @@ export function useStudioGuardedActionSubmit(idleMessage: string) {
     });
     if (result.kind === "blocked") {
       setState({
+        action: actionMetadata(input, true),
         kind: "blocked",
         message: result.message,
         recordSummary: result.recordSummary,
@@ -59,11 +77,12 @@ export function useStudioGuardedActionSubmit(idleMessage: string) {
       return;
     }
     if (result.kind === "error") {
-      setState(result);
+      setState({ action: startedAction, kind: "error", message: result.message });
       toast.error(input.errorToastTitle, { description: result.message });
       return;
     }
     setState({
+      action: actionMetadata(input, true),
       kind: "success",
       message: input.successMessage,
       recordSummary: result.recordSummary,
@@ -75,4 +94,15 @@ export function useStudioGuardedActionSubmit(idleMessage: string) {
   }
 
   return { state, submit };
+}
+
+function actionMetadata(
+  input: StudioGuardedActionSubmitInput,
+  refreshedPersistedState: boolean,
+): StudioGuardedActionMetadata {
+  return {
+    actionId: input.actionId,
+    refreshedPersistedState,
+    routePath: input.routePath,
+  };
 }
