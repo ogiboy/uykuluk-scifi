@@ -1,6 +1,6 @@
 "use client";
 
-import type { ChangeEvent, FormEvent } from "react";
+import type { ChangeEvent } from "react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,7 +42,7 @@ export function AnalyticsActionPanel() {
     setContent(await file.text());
   }
 
-  async function submitImport(event: FormEvent<HTMLFormElement>): Promise<void> {
+  async function submitImport(event: { preventDefault(): void }): Promise<void> {
     event.preventDefault();
     await submit({
       actionId: "analytics.import",

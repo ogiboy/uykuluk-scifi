@@ -1,25 +1,20 @@
 import "./product-uat-studio-readonly";
 import { POST as importAnalytics } from "../../apps/studio/src/app/actions/analytics-import/route";
 import { POST as refreshAnalyticsReport } from "../../apps/studio/src/app/actions/analytics-report/route";
-import { GET as issueStudioSession } from "../../apps/studio/src/app/actions/session/route";
 import { getStudioAnalyticsOverview } from "../../apps/studio/src/lib/analyticsOverview";
-import {
-  studioActionHeaderName,
-  studioSessionHeaderName,
-} from "../../apps/studio/src/lib/studioMutationSecurity";
+import { studioJsonRequest, studioSessionCookie } from "./product-uat-studio-http";
 
 const runId = process.argv[2];
-const baseUrl = "http://localhost:3000";
 
 if (!runId) {
   fail("Missing run id.");
 }
 
-const session = await studioSessionCookie();
+const session = await studioSessionCookie(assert);
 
 await expectRouteError(
   importAnalytics(
-    studioJsonRequest("/actions/analytics-import", "analytics.import", {
+    studioJsonRequest(session, "/actions/analytics-import", "analytics.import", {
       content: "video_id,title,views\nyt_bad,Bad,1\n",
       format: "csv",
       sourceFileName: "../bad.csv",
@@ -29,7 +24,7 @@ await expectRouteError(
 );
 await expectRouteError(
   refreshAnalyticsReport(
-    studioJsonRequest("/actions/analytics-report", "analytics.report", {
+    studioJsonRequest(session, "/actions/analytics-report", "analytics.report", {
       runId,
     }),
   ),
@@ -37,7 +32,7 @@ await expectRouteError(
 );
 
 const importResponse = await importAnalytics(
-  studioJsonRequest("/actions/analytics-import", "analytics.import", {
+  studioJsonRequest(session, "/actions/analytics-import", "analytics.import", {
     content: [
       "run_id,video_id,title,published_at,impressions,views,ctr,avg_view_duration_seconds,avg_percentage_viewed,subscribers_gained,likes,comments,notes",
       `${runId},yt_studio_rendered,"Studio Rendered Draft Review",2026-06-29T12:00:00.000Z,10000,1250,7.4%,181,42%,12,90,8,"Imported through Studio action"`,
@@ -71,7 +66,7 @@ assert(
 );
 
 const reportResponse = await refreshAnalyticsReport(
-  studioJsonRequest("/actions/analytics-report", "analytics.report", {}),
+  studioJsonRequest(session, "/actions/analytics-report", "analytics.report", {}),
 );
 const reportPayload = (await reportResponse.json().catch(() => null)) as {
   actionId?: string;
@@ -104,30 +99,6 @@ assert(
 );
 
 console.log("Studio services UAT passed.");
-
-function studioJsonRequest(routePath: string, actionHeader: string, body: unknown): Request {
-  return new Request(`${baseUrl}${routePath}`, {
-    body: JSON.stringify(body),
-    headers: {
-      [studioActionHeaderName]: actionHeader,
-      [studioSessionHeaderName]: session.token,
-      "content-type": "application/json",
-      cookie: session.cookie,
-      origin: baseUrl,
-    },
-    method: "POST",
-  });
-}
-
-async function studioSessionCookie(): Promise<{ cookie: string; token: string }> {
-  const response = await issueStudioSession();
-  const payload = (await response.json().catch(() => null)) as { token?: unknown } | null;
-  const setCookie = response.headers.get("set-cookie");
-  assert(response.status === 200, `Studio session returned HTTP ${response.status}.`);
-  assert(typeof payload?.token === "string", "Studio session did not return a token.");
-  assert(typeof setCookie === "string", "Studio session did not return a cookie.");
-  return { cookie: setCookie.split(";")[0] ?? "", token: payload.token };
-}
 
 async function expectRouteError(responsePromise: Promise<Response>, status: number): Promise<void> {
   const response = await responsePromise;

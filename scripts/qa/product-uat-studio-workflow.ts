@@ -18,12 +18,8 @@ import { POST as reviewRender } from "../../apps/studio/src/app/actions/review-r
 import { POST as reviewRenderPlan } from "../../apps/studio/src/app/actions/review-render-plan/route";
 import { POST as reviewScript } from "../../apps/studio/src/app/actions/review-script/route";
 import { POST as reviewVoice } from "../../apps/studio/src/app/actions/review-voice/route";
-import { GET as issueStudioSession } from "../../apps/studio/src/app/actions/session/route";
 import { getStudioRunDetail } from "../../apps/studio/src/lib/runSummaries";
-import {
-  studioActionHeaderName,
-  studioSessionHeaderName,
-} from "../../apps/studio/src/lib/studioMutationSecurity";
+import { studioJsonRequest, studioSessionCookie } from "./product-uat-studio-http";
 
 type StudioRouteHandler = (request: Request) => Promise<Response>;
 type StudioActionPayload = {
@@ -33,8 +29,7 @@ type StudioActionPayload = {
   status?: string;
 };
 
-const baseUrl = "http://localhost:3000";
-const session = await studioSessionCookie();
+const session = await studioSessionCookie(assert);
 
 const ideas = await post(runIdeas, "/actions/run-ideas", "ideas.run", {});
 const ideasRecord = recordObject(ideas);
@@ -130,36 +125,12 @@ async function post(
   actionId: string,
   body: unknown,
 ): Promise<StudioActionPayload> {
-  const response = await handler(studioJsonRequest(routePath, actionId, body));
+  const response = await handler(studioJsonRequest(session, routePath, actionId, body));
   const payload = (await response.json().catch(() => null)) as StudioActionPayload | null;
   assert(response.status === 200, `${actionId} returned HTTP ${response.status}.`);
   assert(payload?.status === "ok", payload?.message ?? `${actionId} did not return ok.`);
   assert(payload.actionId === actionId, `${actionId} response action id matches.`);
   return payload;
-}
-
-function studioJsonRequest(routePath: string, actionHeader: string, body: unknown): Request {
-  return new Request(`${baseUrl}${routePath}`, {
-    body: JSON.stringify(body),
-    headers: {
-      [studioActionHeaderName]: actionHeader,
-      [studioSessionHeaderName]: session.token,
-      "content-type": "application/json",
-      cookie: session.cookie,
-      origin: baseUrl,
-    },
-    method: "POST",
-  });
-}
-
-async function studioSessionCookie(): Promise<{ cookie: string; token: string }> {
-  const response = await issueStudioSession();
-  const payload = (await response.json().catch(() => null)) as { token?: unknown } | null;
-  const setCookie = response.headers.get("set-cookie");
-  assert(response.status === 200, `Studio session returned HTTP ${response.status}.`);
-  assert(typeof payload?.token === "string", "Studio session did not return a token.");
-  assert(typeof setCookie === "string", "Studio session did not return a cookie.");
-  return { cookie: setCookie.split(";")[0] ?? "", token: payload.token };
 }
 
 function recordObject(payload: StudioActionPayload): Record<string, unknown> {

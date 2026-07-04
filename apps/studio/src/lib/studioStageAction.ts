@@ -33,106 +33,113 @@ export type StudioStageActionRun = Pick<
   "nextRecommendedCommand" | "runId" | "state"
 >;
 
-export const studioStageActionConfigs = [
-  stageAction(
+type StudioStageActionRow = readonly [StudioStageActionId, string, string, string, string];
+
+const studioStageActionRows = [
+  [
     "script.run",
     "/actions/run-script",
     "script",
     "Generate Script",
     "Generate the next script draft for the approved idea.",
-  ),
-  stageAction(
+  ],
+  [
     "script.review",
     "/actions/review-script",
     "review script",
     "Review Script",
     "Run the local script review and persist warnings/blockers for approval.",
-  ),
-  stageAction(
+  ],
+  [
     "package.run",
     "/actions/run-package",
     "package",
     "Generate Package",
     "Generate production package artifacts from the approved script.",
-  ),
-  stageAction(
+  ],
+  [
     "render-plan.run",
     "/actions/run-render-plan",
     "render-plan",
     "Generate Render Plan",
     "Generate the deterministic render plan, contact sheet, and asset provenance.",
-  ),
-  stageAction(
+  ],
+  [
     "render-plan.review",
     "/actions/review-render-plan",
     "review render-plan",
     "Review Render Plan",
     "Open the render-plan handoff through the canonical local review command.",
-  ),
-  stageAction(
+  ],
+  [
     "estimate.run",
     "/actions/run-estimate",
     "estimate",
     "Regenerate Estimate",
     "Regenerate the current cost estimate before approval or readiness work.",
-  ),
-  stageAction(
+  ],
+  [
     "evidence.run",
     "/actions/run-evidence",
     "evidence",
     "Regenerate Evidence",
     "Regenerate evidence from persisted artifacts so Studio status can trust it.",
-  ),
-  stageAction(
+  ],
+  [
     "readiness.run",
     "/actions/run-readiness",
     "readiness",
     "Run Readiness",
     "Run readiness diagnostics through the canonical local workflow.",
-  ),
-  stageAction(
+  ],
+  [
     "voice.run",
     "/actions/run-voice",
     "voice",
     "Generate Voiceover",
     "Generate local voiceover only when TTS config and workflow guards allow it.",
-  ),
-  stageAction(
+  ],
+  [
     "voice.review",
     "/actions/review-voice",
     "review voice",
     "Review Voiceover",
     "Open the local voiceover review handoff before render approval.",
-  ),
-  stageAction(
+  ],
+  [
     "render.run",
     "/actions/run-render",
     "render",
     "Render Draft",
     "Generate the local FFmpeg draft after exact render approval.",
-  ),
-  stageAction(
+  ],
+  [
     "render.review",
     "/actions/review-render",
     "review render",
     "Review Draft Render",
     "Open the local draft-render review handoff without upload or publish.",
-  ),
-  stageAction(
+  ],
+  [
     "review-bundle.run",
     "/actions/run-review-bundle",
     "review-bundle",
     "Create Final Review Bundle",
     "Create the final local review bundle after the render decision.",
-  ),
-  stageAction(
+  ],
+  [
     "channel-handoff.run",
     "/actions/run-channel-handoff",
     "channel-handoff",
     "Create Channel Handoff",
     "Create the manual channel handoff package while upload and publish remain disabled.",
-  ),
-] as const satisfies readonly StudioStageActionConfig[];
+  ],
+] as const satisfies readonly StudioStageActionRow[];
+
+export const studioStageActionConfigs = studioStageActionRows.map(
+  ([actionId, routePath, producerCommand, heading, description]) =>
+    stageAction(actionId, routePath, producerCommand, heading, description),
+) satisfies readonly StudioStageActionConfig[];
 
 /**
  * Finds the guarded Studio workflow action matching the current next recommended command.
