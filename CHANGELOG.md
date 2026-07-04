@@ -16,6 +16,7 @@ future generated release notes can be inserted predictably.
 - add guarded Studio manual analytics import and report refresh actions.
 - show compact producer record summaries after guarded Studio actions complete.
 - show guarded Studio action route and refresh status in mutation result panels.
+- clarify guarded Studio session behavior and quick-action live status.
 - surface guarded no-input workflow-stage actions from the Studio home and run queue.
 - replace the Studio home queue snapshot with an action-prioritized queue.
 - keep guarded idea-run creation available from Studio home when the queue already has runs.

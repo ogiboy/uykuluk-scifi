@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { Button } from "@/components/ui/button";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import { stageActionForRun } from "@/lib/studioStageAction";
@@ -29,6 +29,7 @@ export function RunQuickStageActionButton({
   variant = "default",
 }: RunQuickStageActionButtonProps) {
   const action = stageActionForRun(run);
+  const statusId = useId();
   const [confirmationOpen, setConfirmationOpen] = useState(false);
   const { state, submit } = useStudioGuardedActionSubmit(
     "Queue actions use guarded local routes and CLI/core remains authoritative.",
@@ -60,6 +61,7 @@ export function RunQuickStageActionButton({
     <>
       <Button
         aria-label={`${action.heading} for ${run.runId}`}
+        aria-describedby={statusId}
         disabled={isSubmitting}
         title={action.description}
         type='button'
@@ -68,6 +70,9 @@ export function RunQuickStageActionButton({
       >
         {buttonLabel}
       </Button>
+      <span className='sr-only' id={statusId} role='status' aria-live='polite'>
+        {state.message}
+      </span>
       <RunStageActionConfirmationDialog
         action={action}
         currentState={run.state}
