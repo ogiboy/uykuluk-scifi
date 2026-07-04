@@ -1,5 +1,6 @@
 import type { StudioMutationActionId } from "../../../../src/studio/actionServiceMetadata";
 import { routeFindings } from "./routeSecurityFindings";
+import type { StudioCliMutationActionId } from "./studioCliMutationArgs";
 
 export type StudioRouteMethod = "DELETE" | "GET" | "PATCH" | "POST" | "PUT";
 export type StudioRouteRisk =
@@ -28,6 +29,12 @@ export type StudioRouteSecurityContract = {
   risk: StudioRouteRisk;
   serviceContractId: StudioMutationActionId | null;
 };
+
+type DisabledStudioActionId = Extract<
+  StudioMutationActionId,
+  "publish.schedule" | "upload.private"
+>;
+type StudioRouteActionId = DisabledStudioActionId | StudioCliMutationActionId;
 
 export const readOnlyStudioRoutes = [
   route("home", "/"),
@@ -172,7 +179,7 @@ function sessionRoute(id: string, path: string): StudioRouteSecurityContract {
  * @returns The configured Studio route security contract
  */
 function action(
-  id: StudioMutationActionId,
+  id: StudioRouteActionId,
   path: string,
   requiredApproval: StudioRouteSecurityContract["requiredApproval"],
   risk: Exclude<StudioRouteRisk, "read-only">,

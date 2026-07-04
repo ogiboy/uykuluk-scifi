@@ -9,6 +9,7 @@ import {
   operatorActionForRun,
   type OperatorAction,
 } from "@/components/runs/runSummaryOperatorAction";
+import { homeActionQueueSummaryItems } from "@/lib/homeActionQueueSummary";
 import { runReviewHrefFromSummary } from "@/lib/runReviewNavigation";
 import type { StudioRunSummary } from "@/lib/runSummaries";
 
@@ -34,8 +35,29 @@ export function HomeActionQueuePanel({ runs }: HomeActionQueuePanelProps) {
           All runs
         </Link>
       </div>
-      {runs.length > 0 ? <HomeActionQueueList runs={runs} /> : <p>No persisted runs found.</p>}
+      {runs.length > 0 ? (
+        <>
+          <HomeActionQueueSummary runs={runs} />
+          <HomeActionQueueList runs={runs} />
+        </>
+      ) : (
+        <p>No persisted runs found.</p>
+      )}
     </section>
+  );
+}
+
+function HomeActionQueueSummary({ runs }: HomeActionQueuePanelProps) {
+  return (
+    <dl className='home-action-queue-summary' aria-label='Home action queue summary'>
+      {homeActionQueueSummaryItems(runs).map((item) => (
+        <div key={item.key} data-tone={item.tone}>
+          <dt>{item.label}</dt>
+          <dd>{item.value}</dd>
+          <small>{item.detail}</small>
+        </div>
+      ))}
+    </dl>
   );
 }
 

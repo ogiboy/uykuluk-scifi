@@ -1,5 +1,4 @@
-import { runStudioCliMutationRoute } from "./studioCliMutation";
-import type { StudioCliMutationActionId } from "./studioCliMutationArgs";
+import { runStudioCliMutationRoute, type StudioCliMutationActionId } from "./studioCliMutation";
 
 /**
  * Creates a Next.js route handler for one guarded Studio CLI mutation.
