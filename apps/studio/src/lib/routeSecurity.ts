@@ -12,7 +12,7 @@ export type StudioRouteSecurityContract = {
   id: string;
   path: string;
   requiredApproval:
-    "cost" | "idea" | "none" | "publish" | "render" | "review" | "script" | "upload";
+    "cost" | "idea" | "none" | "publish" | "render" | "review" | "script" | "upload" | "workflow";
   requiresCoreServiceContract: boolean;
   requiresCsrfProtection: boolean;
   requiresEvidenceWrite: boolean;
@@ -52,6 +52,20 @@ export const enabledStudioActionRoutes = [
     "local-mutation",
     true,
   ),
+  action("script.run", "/actions/run-script", "workflow", "local-mutation", true),
+  action("script.review", "/actions/review-script", "workflow", "local-mutation", true),
+  action("package.run", "/actions/run-package", "workflow", "local-mutation", true),
+  action("render-plan.run", "/actions/run-render-plan", "workflow", "local-mutation", true),
+  action("render-plan.review", "/actions/review-render-plan", "workflow", "local-mutation", true),
+  action("estimate.run", "/actions/run-estimate", "workflow", "local-mutation", true),
+  action("evidence.run", "/actions/run-evidence", "workflow", "local-mutation", true),
+  action("readiness.run", "/actions/run-readiness", "workflow", "local-mutation", true),
+  action("voice.run", "/actions/run-voice", "workflow", "local-mutation", true),
+  action("voice.review", "/actions/review-voice", "workflow", "local-mutation", true),
+  action("render.run", "/actions/run-render", "workflow", "local-mutation", true),
+  action("render.review", "/actions/review-render", "workflow", "local-mutation", true),
+  action("review-bundle.run", "/actions/run-review-bundle", "workflow", "local-mutation", true),
+  action("channel-handoff.run", "/actions/run-channel-handoff", "workflow", "local-mutation", true),
 ] as const satisfies readonly StudioRouteSecurityContract[];
 
 export const studioSessionRoutes = [

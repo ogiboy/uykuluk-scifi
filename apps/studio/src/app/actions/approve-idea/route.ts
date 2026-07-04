@@ -1,14 +1,9 @@
-import { runStudioCliMutationRoute } from "../../../lib/studioCliMutation";
+import { createStudioCliMutationPost } from "../../../lib/studioCliMutationRoute";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 /**
- * Records explicit idea approval through the shared guarded Studio mutation path.
- *
- * @param request - The Studio JSON mutation request.
- * @returns A JSON response with the persisted approval, or a safe error message.
+ * Records explicit local idea approval through the shared guarded Studio mutation path.
  */
-export async function POST(request: Request): Promise<Response> {
-  return runStudioCliMutationRoute(request, "idea.approve");
-}
+export const POST = createStudioCliMutationPost("idea.approve");

@@ -4,22 +4,10 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { ZodError } from "zod";
 import { projectRoot } from "./projectRoot";
-import {
-  parseChannelHandoffDecisionPayload,
-  parseIdeaApprovalPayload,
-  parseRenderDecisionPayload,
-  parseRunOnlyPayload,
-  parseScriptApprovalPayload,
-} from "./studioMutationPayloadContracts";
+import { cliArgsForAction, type StudioCliMutationActionId } from "./studioCliMutationArgs";
 import { validateStudioMutationRequest } from "./studioMutationSecurity";
 
-type StudioCliMutationActionId =
-  | "channel-handoff.decide"
-  | "cost.approve"
-  | "idea.approve"
-  | "render.approve"
-  | "render.decide"
-  | "script.approve";
+export type { StudioCliMutationActionId } from "./studioCliMutationArgs";
 
 type CliResult = Readonly<{
   stderr: string;
@@ -86,63 +74,6 @@ function jsonError(message: string, status: number): Response {
 
 function noStoreHeaders(): HeadersInit {
   return { "cache-control": "no-store" };
-}
-
-function cliArgsForAction(actionId: StudioCliMutationActionId, payload: unknown): string[] {
-  if (actionId === "idea.approve") {
-    const input = parseIdeaApprovalPayload(payload);
-    return ["approve", "idea", "--run", input.runId, "--idea", input.ideaId, "--json"];
-  }
-  if (actionId === "script.approve") {
-    const input = parseScriptApprovalPayload(payload);
-    return [
-      "approve",
-      "script",
-      "--run",
-      input.runId,
-      ...(input.acknowledgeWarnings ? ["--acknowledge-warnings"] : []),
-      "--json",
-    ];
-  }
-  if (actionId === "cost.approve") {
-    const input = parseRunOnlyPayload(payload);
-    return ["approve", "cost", "--run", input.runId, "--json"];
-  }
-  if (actionId === "render.approve") {
-    const input = parseRunOnlyPayload(payload);
-    return ["approve", "render", "--run", input.runId, "--json"];
-  }
-  if (actionId === "render.decide") {
-    const input = parseRenderDecisionPayload(payload);
-    return [
-      "decide",
-      "render",
-      "--run",
-      input.runId,
-      "--decision",
-      input.decision,
-      "--notes",
-      input.notes,
-      "--reviewed-by",
-      input.reviewedBy,
-      "--json",
-    ];
-  }
-  const input = parseChannelHandoffDecisionPayload(payload);
-  return [
-    "decide",
-    "channel-handoff",
-    "--run",
-    input.runId,
-    "--decision",
-    input.decision,
-    ...(input.thumbnailCandidateId ? ["--thumbnail-candidate", input.thumbnailCandidateId] : []),
-    "--notes",
-    input.notes,
-    "--reviewed-by",
-    input.reviewedBy,
-    "--json",
-  ];
 }
 
 function runProducerCli(args: readonly string[]): Promise<CliResult> {

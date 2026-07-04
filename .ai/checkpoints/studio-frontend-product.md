@@ -20,11 +20,11 @@ upload/publish boundaries.
 
 ## Current State
 
-- Branch/worktree: `feat/studio-operator-actions` at
+- Branch/worktree: `feat/studio-review-control-surface` at
   `/Users/ogiboy/.codex/worktrees/894d/uykuluk-scifi`.
 - Merged PR: #121, `feat(studio): expand operator workbench controls`, merged into `main` as
   `97a6ebb6` on 2026-07-02.
-- Active local slice: grouped PR readiness for the shared Studio operator branch.
+- Active local slice: broad Studio web control-surface work.
 - Last completed slice/commit before this checkpoint:
   `fix(studio): simplify run table control props`.
 - Completed current-branch frontend slices include:
@@ -72,6 +72,10 @@ upload/publish boundaries.
     builds, plus the missing Skeleton React type import.
   - hosted browser-smoke fallout fix for the Studio home heading assertion after the operator
     control desk redesign.
+  - guarded run-scoped Studio workflow-stage routes for script/package/render-plan/estimate/
+    evidence/readiness/voice/render/review-bundle/channel-handoff commands, wired through the
+    canonical producer CLI and surfaced from the run detail action rail when core recommends the
+    matching next action.
 - Verified commands for the latest slice:
   - `pnpm check`
   - `pnpm qa:usage`

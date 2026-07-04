@@ -104,9 +104,10 @@ Next Real Production Loop slices:
 Status: run review, artifact preview, asset inventory, home-page latest-run readiness, home-page
 manual analytics feedback summary, home-page and `/doctor` producer doctor diagnostics, runtime
 prompt inventory, mutation-service status, manual analytics overview, route-security contract
-foundations, shared mutation service contract foundations, guarded local approval routes, the local
-mutation session route, and the guarded local render-decision and channel-handoff decision routes
-exist. Upload and publish route implementations remain deferred.
+foundations, shared mutation service contract foundations, guarded local approval routes, run-scoped
+guarded workflow-stage/review routes, the local mutation session route, and the guarded local
+render-decision and channel-handoff decision routes exist. Upload and publish route implementations
+remain deferred.
 
 The Studio should be a local operator surface over CLI/core contracts.
 
@@ -114,7 +115,8 @@ Priority order:
 
 - maintain the read-only run index with state, warnings, approvals, readiness, and next action;
 - maintain the run detail with evidence, readiness, warning counts, approvals, review artifact
-  availability, and guarded local approval forms only where CLI/core contracts are enabled;
+  availability, guarded local approval forms, and guarded workflow-stage actions only where CLI/core
+  contracts are enabled;
 - maintain the read-only home latest-run readiness panel over existing run summaries without
   triggering CLI work;
 - maintain the read-only home manual analytics summary over existing local analytics artifacts

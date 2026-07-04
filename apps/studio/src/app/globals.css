@@ -1231,6 +1231,11 @@ h3 {
   color: var(--muted);
 }
 
+.stage-action-panel {
+  display: grid;
+  gap: 12px;
+}
+
 .run-mobile-action-sheet {
   display: none;
 }

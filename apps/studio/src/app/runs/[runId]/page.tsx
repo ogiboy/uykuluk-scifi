@@ -29,7 +29,7 @@ export default async function RunDetailPage({
     <StudioShell>
       <header className='studio-header'>
         <div>
-          <p className='eyebrow'>Read-only run detail</p>
+          <p className='eyebrow'>Run review workspace</p>
           <h1>{run.runId}</h1>
         </div>
         <Link className='status-pill' href='/runs'>

@@ -71,11 +71,11 @@ agent-tracking state only; runtime code must not require it.
 
 - TypeScript CLI workflow under `src/`.
 - Basic Next.js App Router Studio under `apps/studio/` with run index/detail, guarded local
-  idea/script/cost/render approval actions, guarded render-decision and channel-handoff decision
-  evidence writes, visual asset inventory, producer doctor diagnostics on the home page and
-  `/doctor`, latest-run readiness visibility, local model evaluation summaries, manual analytics
-  feedback summary on the home page, runtime prompt inventory, mutation-service status, and manual
-  analytics feedback routes.
+  idea/script/cost/render approval actions, guarded run-scoped workflow-stage/review actions,
+  guarded render-decision and channel-handoff decision evidence writes, visual asset inventory,
+  producer doctor diagnostics on the home page and `/doctor`, latest-run readiness visibility, local
+  model evaluation summaries, manual analytics feedback summary on the home page, runtime prompt
+  inventory, mutation-service status, and manual analytics feedback routes.
 - Studio foundation with Tailwind CSS v4, shadcn-style primitives, Radix UI, lucide icons, GSAP, and
   `next/font`.
 - Mock-first provider layer with Ollama and local `llama.cpp` adapters.
@@ -120,10 +120,10 @@ agent-tracking state only; runtime code must not require it.
   upload/publish approval.
 - Manual analytics import/report commands for operator-provided CSV/JSON performance exports, plus a
   read-only Studio view over the ignored local analytics artifacts and import data-quality summary.
-- Typed Studio route-security contract covering read-only routes, guarded local approval/review
-  action routes, and disabled upload/publish action routes.
-- Typed Studio mutation service contracts for guarded local approval/review decision actions and
-  disabled upload/publish actions.
+- Typed Studio route-security contract covering read-only routes, guarded local approval/review/
+  workflow-stage action routes, and disabled upload/publish action routes.
+- Typed Studio mutation service contracts for guarded local approval/review/workflow-stage actions
+  and disabled upload/publish actions.
 - Studio home visibility for guarded local actions, disabled upload/publish action routes,
   latest-run readiness, manual analytics feedback, CLI-ready action contracts, and upload/publish
   risk boundaries.
@@ -433,9 +433,9 @@ pnpm producer publish schedule --run <run_id>
 
 ## Producer Studio
 
-The Studio is intentionally local-only. Most surfaces are read-only; guarded web mutations exist
-only for explicit local approvals and local review evidence that already have shared CLI/core
-contracts. They do not run generation, render media, upload, or publish.
+The Studio is intentionally local-only. Many surfaces are read-only; guarded web mutations exist
+only for explicit local approvals, run-scoped workflow-stage/review actions, and local review
+evidence that already have shared CLI/core contracts. They do not upload or publish.
 
 ```bash
 pnpm studio
@@ -474,6 +474,10 @@ Current Studio scope:
   `/actions/approve-render` routes that require same-origin JSON, a Studio action header, a
   short-lived local session token/cookie pair, typed service-contract payloads, and the same
   CLI/core approval gates as `producer approve ...`;
+- guarded run-scoped workflow routes for current safe next actions such as script generation,
+  script/render-plan/voice/render review, package generation, render-plan generation, estimate,
+  evidence, readiness, voiceover generation, local draft render, final review bundle, and manual
+  channel handoff. These routes call the canonical producer CLI and do not own workflow state;
 - guarded `POST /actions/decide-render` route that requires same-origin JSON, a Studio action
   header, a short-lived local session token/cookie pair, the typed `render.decide` service contract,
   current draft-render evidence, and writes only local render-decision JSON/Markdown evidence;

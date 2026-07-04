@@ -4,6 +4,6 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 /**
- * Records explicit local cost approval through the shared guarded Studio mutation path.
+ * Runs render-plan review through the shared guarded Studio mutation path.
  */
-export const POST = createStudioCliMutationPost("cost.approve");
+export const POST = createStudioCliMutationPost("render-plan.review");

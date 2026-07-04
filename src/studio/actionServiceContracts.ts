@@ -54,13 +54,27 @@ const channelHandoffDecisionRequestSchema = z
 
 type StudioActionRequestById = {
   "channel-handoff.decide": z.infer<typeof channelHandoffDecisionRequestSchema>;
+  "channel-handoff.run": z.infer<typeof runOnlyRequestSchema>;
   "cost.approve": z.infer<typeof runOnlyRequestSchema>;
+  "estimate.run": z.infer<typeof runOnlyRequestSchema>;
+  "evidence.run": z.infer<typeof runOnlyRequestSchema>;
   "idea.approve": z.infer<typeof ideaApprovalRequestSchema>;
+  "package.run": z.infer<typeof runOnlyRequestSchema>;
   "publish.schedule": z.infer<typeof runOnlyRequestSchema>;
+  "readiness.run": z.infer<typeof runOnlyRequestSchema>;
   "render.approve": z.infer<typeof runOnlyRequestSchema>;
   "render.decide": z.infer<typeof renderDecisionRequestSchema>;
+  "render.review": z.infer<typeof runOnlyRequestSchema>;
+  "render.run": z.infer<typeof runOnlyRequestSchema>;
+  "render-plan.review": z.infer<typeof runOnlyRequestSchema>;
+  "render-plan.run": z.infer<typeof runOnlyRequestSchema>;
+  "review-bundle.run": z.infer<typeof runOnlyRequestSchema>;
   "script.approve": z.infer<typeof scriptApprovalRequestSchema>;
+  "script.review": z.infer<typeof runOnlyRequestSchema>;
+  "script.run": z.infer<typeof runOnlyRequestSchema>;
   "upload.private": z.infer<typeof runOnlyRequestSchema>;
+  "voice.review": z.infer<typeof runOnlyRequestSchema>;
+  "voice.run": z.infer<typeof runOnlyRequestSchema>;
 };
 
 export type StudioMutationServiceContract = {

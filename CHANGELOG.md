@@ -9,7 +9,9 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Features
+
+- add guarded Studio workflow-stage actions for run-scoped CLI/core commands.
 
 ## v0.72.0 (2026-07-03)
 

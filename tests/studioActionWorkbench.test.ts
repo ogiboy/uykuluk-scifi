@@ -80,17 +80,36 @@ describe("Studio action workbench", () => {
     const workbench = buildStudioActionWorkbench(
       actionRunFixture({
         blockedActionCount: 2,
-        nextRecommendedCommand: "pnpm producer evidence --run run_workbench",
+        nextRecommendedCommand:
+          "Regenerate evidence after manual recovery outside Studio for run_workbench",
         state: "FAILED",
       }),
     );
 
     expect(workbench.primary).toEqual(
       expect.objectContaining({
-        command: "pnpm producer evidence --run run_workbench",
+        command: "Regenerate evidence after manual recovery outside Studio for run_workbench",
         label: "CLI next action",
         routePath: null,
         tone: "blocked",
+      }),
+    );
+  });
+
+  it("promotes safe workflow commands to guarded Studio routes", () => {
+    const workbench = buildStudioActionWorkbench(
+      actionRunFixture({
+        nextRecommendedCommand: "pnpm producer render-plan --run run_workbench",
+        state: "PRODUCTION_PACKAGE_GENERATED",
+      }),
+    );
+
+    expect(workbench.primary).toEqual(
+      expect.objectContaining({
+        command: "pnpm producer render-plan --run run_workbench",
+        label: "Generate Render Plan",
+        routePath: "/actions/run-render-plan",
+        tone: "available",
       }),
     );
   });
@@ -123,11 +142,12 @@ describe("Studio action workbench", () => {
         actionRunFixture({ state: "READY_FOR_MANUAL_PRODUCTION" }),
         actionRunFixture({
           blockedActionCount: 2,
-          nextRecommendedCommand: "pnpm producer evidence --run run_workbench",
+          nextRecommendedCommand:
+            "Resolve evidence manually; pnpm producer evidence --run run_workbench",
           state: "FAILED",
         }),
         actionRunFixture({
-          nextRecommendedCommand: "pnpm producer review render --run run_workbench",
+          nextRecommendedCommand: "Review state and ledger before continuing.",
           state: "RENDERED",
         }),
         actionRunFixture({

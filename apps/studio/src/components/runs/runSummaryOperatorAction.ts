@@ -10,7 +10,7 @@ export function operatorActionDetail(action: OperatorAction): string {
     return "Guarded local web action";
   }
   if (action.command) {
-    return action.tone === "blocked" ? "Blocked CLI recovery" : "CLI-only next action";
+    return action.tone === "blocked" ? "Blocked manual recovery" : "CLI-only next action";
   }
   return "No safe action";
 }

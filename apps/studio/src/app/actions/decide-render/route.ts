@@ -1,14 +1,9 @@
-import { runStudioCliMutationRoute } from "../../../lib/studioCliMutation";
+import { createStudioCliMutationPost } from "../../../lib/studioCliMutationRoute";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 /**
- * Records the local draft-render decision through the shared guarded Studio mutation path.
- *
- * @param request - The Studio JSON mutation request.
- * @returns A JSON response with the persisted render decision, or a safe error message.
+ * Records a local draft-render decision through the shared guarded Studio mutation path.
  */
-export async function POST(request: Request): Promise<Response> {
-  return runStudioCliMutationRoute(request, "render.decide");
-}
+export const POST = createStudioCliMutationPost("render.decide");

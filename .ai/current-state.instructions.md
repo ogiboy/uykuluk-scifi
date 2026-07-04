@@ -242,9 +242,9 @@
 - `producer decide channel-handoff` writes durable `production/channel_handoff_decision.*` evidence
   for selected-thumbnail/manual prep surfaced without YouTube APIs or upload/publish approval.
 - Studio run detail shows guarded local approval forms for eligible idea/script/cost/render states,
-  render-decision and channel-handoff decision routes matching CLI/core evidence writes, and action
-  surfaces for guarded web actions, CLI-only next actions, and safety boundaries. It does not
-  generate artifacts, render media, upload, or publish.
+  run-scoped guarded workflow-stage/review routes for CLI/core-backed next actions, render-decision
+  and channel-handoff decision routes matching CLI/core evidence writes, and action surfaces for
+  guarded web actions, CLI-only next actions, and safety boundaries. It does not upload or publish.
 - Readiness diagnostics that strictly parse and revalidate persisted cost quotes, live hard budgets,
   complete production-package integrity, and exact paid-generation cost approval when required.
 - Final readiness diagnostics agree with the post-transition run state.
@@ -329,16 +329,17 @@
   analytics artifacts. They show import/report status, data-quality guidance, and the next safe CLI
   command without calling YouTube APIs or mutating run state.
 - Studio has a typed route-security contract for current read-only pages, the local session route,
-  guarded local idea/script/cost/render approval routes, the guarded local render-decision route,
-  and disabled upload/publish action routes. Tests assert that current App Router pages are covered,
-  enabled local mutations require POST-only same-origin JSON, action headers, service-contract
-  handling, local session proof, and cached-session cleanup after 401; disabled upload/publish
-  actions require CLI/core contracts, durable evidence, explicit approvals, and disabled publish
-  risk.
+  guarded local idea/script/cost/render approval routes, run-scoped guarded workflow-stage/review
+  routes, the guarded local render-decision route, and disabled upload/publish action routes. Tests
+  assert that current App Router pages are covered, enabled local mutations require POST-only
+  same-origin JSON, action headers, service-contract handling, local session proof, and
+  cached-session cleanup after 401; disabled upload/publish actions require CLI/core contracts,
+  durable evidence, explicit approvals, and disabled publish risk.
 - Shared Studio mutation service contract foundations exist for guarded idea/script/cost/render
-  approval actions, the active local render-decision and channel-handoff decision evidence writes,
-  and disabled upload/publish actions. Contracts validate request payloads, bind each action to the
-  CLI/core module/export, and require CSRF protection, durable evidence, and explicit approval.
+  approval actions, run-scoped workflow-stage/review actions, the active local render-decision and
+  channel-handoff decision evidence writes, and disabled upload/publish actions. Contracts validate
+  request payloads, bind each action to the CLI/core module/export, and require CSRF protection,
+  durable evidence, and explicit approval.
 - Studio home renders a mutation-service status panel showing guarded local approval/review routes,
   disabled upload/publish routes, CLI-ready action contracts, route-security findings, and
   upload/publish risk boundaries without exposing upload/publish web mutations.

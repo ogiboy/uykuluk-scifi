@@ -1,6 +1,7 @@
 import type { StudioApprovalActionConfig } from "./studioApprovalAction";
 import { approvalActionForRun } from "./studioApprovalAction";
 import type { StudioRunDetail } from "./runSummaries";
+import { stageActionForRun } from "./studioStageAction";
 
 export type StudioActionWorkbenchTone =
   "attention" | "available" | "blocked" | "cli-only" | "complete";
@@ -115,6 +116,16 @@ function primaryWorkbenchAction(run: StudioActionWorkbenchRun): StudioActionWork
         "Manual channel-prep evidence is ready for a local handoff decision. This still does not upload media.",
       label: "Record channel handoff decision",
       routePath: "/actions/decide-channel-handoff",
+      tone: "available",
+    };
+  }
+  const stageAction = stageActionForRun(run);
+  if (stageAction) {
+    return {
+      command: run.nextRecommendedCommand,
+      description: `${stageAction.description} Studio will call the guarded local route and the producer CLI will re-check all workflow gates.`,
+      label: stageAction.heading,
+      routePath: stageAction.routePath,
       tone: "available",
     };
   }
