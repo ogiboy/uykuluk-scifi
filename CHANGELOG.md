@@ -22,6 +22,7 @@ future generated release notes can be inserted predictably.
 
 ### Tests
 
+- cover the guarded Studio workflow route path in product UAT.
 - cover guarded Studio analytics import/report actions in product UAT.
 
 ## v0.72.0 (2026-07-03)

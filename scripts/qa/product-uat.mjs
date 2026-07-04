@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rm } from "node:fs/promises";
 import path from "node:path";
 import {
   assertProductCondition,
@@ -7,6 +7,7 @@ import {
   enableDeterministicTts,
   prepareWorkspace,
   runProductCommand,
+  writeRunDiagnosticFixture,
   writeProductUatReports,
 } from "./product-uat-helpers.mjs";
 import {
@@ -36,6 +37,7 @@ try {
   run([pnpm, "producer", "init"], { label: "init creates config", scenario: "setup" });
   await enableDeterministicTts({ workdir });
   await assertFile("producer.config.json", "setup config exists");
+  const mediaTools = await createFakeMediaTools({ workdir });
 
   run([pnpm, "producer", "status", "--run", "../evil"], {
     expectFailure: true,
@@ -82,6 +84,16 @@ try {
     "operator desk",
   );
 
+  run([pnpm, "exec", "tsx", "scripts/qa/product-uat-studio-workflow.ts"], {
+    env: {
+      PATH: `${mediaTools.binDir}${path.delimiter}${process.env.PATH ?? ""}`,
+      UYKULUK_SCIFI_ROOT: workdir,
+    },
+    expectOutput: "Studio workflow action UAT passed.",
+    label: "drive local production loop through Studio actions",
+    scenario: "studio workflow",
+  });
+
   const renderedRunId = await createVoiceReadyRun({
     assertCondition,
     pnpm,
@@ -94,7 +106,6 @@ try {
     label: "render approval binds current media inputs",
     scenario: "happy path",
   });
-  const mediaTools = await createFakeMediaTools({ workdir });
   run([pnpm, "producer", "render", "--run", renderedRunId], {
     env: { PATH: `${mediaTools.binDir}${path.delimiter}${process.env.PATH ?? ""}` },
     expectOutput: "Draft render available",
@@ -320,31 +331,7 @@ async function appendToProductFile({ content, relativePath }) {
  * @param {string} input.stage - Diagnostic stage label.
  */
 async function writeRunDiagnostic({ message, relativePath, runId, stage }) {
-  const target = path.join(workdir, "runs", runId, relativePath);
-  await mkdir(path.dirname(target), { recursive: true });
-  await writeFile(
-    target,
-    `${JSON.stringify(
-      {
-        createdAt: new Date().toISOString(),
-        message,
-        model: "mock",
-        providerMode: "mock",
-        runId,
-        stage,
-        state: "NEW",
-        thinkingMode: "default",
-      },
-      null,
-      2,
-    )}\n`,
-    "utf8",
-  );
-
-  const statePath = path.join(workdir, "runs", runId, "state.json");
-  const state = JSON.parse(await readFile(statePath, "utf8"));
-  state.artifacts = Array.from(new Set([...(state.artifacts ?? []), relativePath]));
-  await writeFile(statePath, `${JSON.stringify(state, null, 2)}\n`, "utf8");
+  await writeRunDiagnosticFixture({ message, relativePath, runId, stage, workdir });
 }
 
 /**
