@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ActiveRunActions } from "@/components/studio/ActiveRunActions";
 import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
 import type { StudioRunSummary } from "@/lib/runSummaries";
+import type { StudioDoctorOverview } from "@/lib/doctorOverview";
 import {
   formatRunRenderDecision,
   formatRunReviewCounts,
@@ -12,6 +13,7 @@ import {
   buildStudioActionWorkbench,
   type StudioActionWorkbenchTone,
 } from "@/lib/studioActionWorkbench";
+import { startIdeasReadinessFromDoctor } from "@/lib/startIdeasReadiness";
 import { CopyableCommand } from "./CopyableCommand";
 import { EmptyRunCard } from "./EmptyRunCard";
 import { HomeActionQueuePanel } from "./HomeActionQueuePanel";
@@ -20,6 +22,7 @@ import { StudioMutationSessionPanel } from "./StudioMutationSessionPanel";
 
 type StudioControlDeskProps = Readonly<{
   actionStatus: StudioActionServiceStatus;
+  doctorOverview: StudioDoctorOverview;
   runs: readonly StudioRunSummary[];
 }>;
 
@@ -27,11 +30,13 @@ type StudioControlDeskProps = Readonly<{
  * Renders the Studio home control surface for the current local production queue.
  *
  * @param actionStatus - Current guarded Studio action contract status.
+ * @param doctorOverview - Latest persisted producer doctor overview.
  * @param runs - Persisted producer run summaries, newest first.
  * @returns The first-screen operator control desk.
  */
-export function StudioControlDesk({ actionStatus, runs }: StudioControlDeskProps) {
+export function StudioControlDesk({ actionStatus, doctorOverview, runs }: StudioControlDeskProps) {
   const latestRun = runs[0] ?? null;
+  const startIdeasReadiness = startIdeasReadinessFromDoctor(doctorOverview);
   return (
     <section className='control-desk' aria-labelledby='control-desk-heading'>
       <div className='control-desk-primary'>
@@ -45,12 +50,16 @@ export function StudioControlDesk({ actionStatus, runs }: StudioControlDeskProps
           </Link>
         </div>
 
-        {latestRun ? <ActiveRunCard run={latestRun} /> : <EmptyRunCard />}
+        {latestRun ? (
+          <ActiveRunCard run={latestRun} />
+        ) : (
+          <EmptyRunCard readiness={startIdeasReadiness} />
+        )}
       </div>
 
       <aside className='control-desk-rail' aria-label='Studio safety and queue summary'>
         <StudioMutationSessionPanel />
-        {latestRun ? <StartNewRunPanel /> : null}
+        {latestRun ? <StartNewRunPanel readiness={startIdeasReadiness} /> : null}
         <SafetyGateSummary actionStatus={actionStatus} />
         <HomeActionQueuePanel runs={runs} />
       </aside>

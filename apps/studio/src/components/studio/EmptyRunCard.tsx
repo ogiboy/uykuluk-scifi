@@ -1,13 +1,19 @@
 import { CopyableCommand } from "./CopyableCommand";
 import { StartIdeasActionPanel } from "./StartIdeasActionPanel";
 import { NO_RUNS_NEXT_COMMAND } from "@/lib/runSummaryCopy";
+import type { StartIdeasReadinessSummary } from "@/lib/startIdeasReadiness";
+
+type EmptyRunCardProps = Readonly<{
+  readiness: StartIdeasReadinessSummary;
+}>;
 
 /**
  * Renders the first-run empty state with guarded local idea generation.
  *
+ * @param readiness - Read-only doctor-derived provider readiness guidance.
  * @returns The empty queue card for Studio home.
  */
-export function EmptyRunCard() {
+export function EmptyRunCard({ readiness }: EmptyRunCardProps) {
   return (
     <article className='active-run-card'>
       <h3>No local runs yet</h3>
@@ -19,7 +25,7 @@ export function EmptyRunCard() {
         <strong>Next safe action</strong>
         <CopyableCommand command={NO_RUNS_NEXT_COMMAND} label='Next safe action' />
       </div>
-      <StartIdeasActionPanel />
+      <StartIdeasActionPanel readiness={readiness} />
     </article>
   );
 }

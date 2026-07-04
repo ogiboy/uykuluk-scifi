@@ -17,6 +17,7 @@ future generated release notes can be inserted predictably.
 - show compact producer record summaries after guarded Studio actions complete.
 - show guarded Studio action route and refresh status in mutation result panels.
 - summarize Studio home action queue categories for web, blocked CLI, CLI-only, and complete runs.
+- show doctor-derived provider readiness guidance before guarded Studio idea runs.
 - clarify guarded Studio session behavior and quick-action live status.
 - surface guarded no-input workflow-stage actions from the Studio home and run queue.
 - replace the Studio home queue snapshot with an action-prioritized queue.

@@ -10,12 +10,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import type { StartIdeasReadinessSummary } from "@/lib/startIdeasReadiness";
 import { useStudioGuardedActionSubmit } from "@/lib/useStudioGuardedActionSubmit";
 import { StudioMutationResultPanel } from "./StudioMutationResultPanel";
 
 type StartIdeasActionPanelProps = Readonly<{
   buttonLabel?: string;
   description?: string;
+  readiness?: StartIdeasReadinessSummary;
 }>;
 
 /**
@@ -23,10 +25,12 @@ type StartIdeasActionPanelProps = Readonly<{
  *
  * @param buttonLabel - The visible button label for the current surface.
  * @param description - Optional operator-facing copy shown above the action button.
+ * @param readiness - Read-only doctor-derived provider readiness guidance.
  */
 export function StartIdeasActionPanel({
   buttonLabel = "Start ideas run",
   description,
+  readiness,
 }: StartIdeasActionPanelProps) {
   const [confirmationOpen, setConfirmationOpen] = useState(false);
   const { state, submit } = useStudioGuardedActionSubmit(
@@ -50,6 +54,7 @@ export function StartIdeasActionPanel({
   return (
     <div className='start-ideas-action'>
       {description ? <p>{description}</p> : null}
+      {readiness ? <StartIdeasReadinessNotice readiness={readiness} /> : null}
       <Button
         disabled={state.kind === "submitting"}
         type='button'
@@ -82,6 +87,12 @@ export function StartIdeasActionPanel({
                 <dt>CLI equivalent</dt>
                 <dd>pnpm producer ideas</dd>
               </div>
+              {readiness ? (
+                <div>
+                  <dt>Doctor context</dt>
+                  <dd>{readiness.label}</dd>
+                </div>
+              ) : null}
             </dl>
           </div>
           <DialogFooter showCloseButton>
@@ -95,6 +106,18 @@ export function StartIdeasActionPanel({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
+
+function StartIdeasReadinessNotice({
+  readiness,
+}: Readonly<{ readiness: StartIdeasReadinessSummary }>) {
+  return (
+    <div className='start-ideas-readiness' data-tone={readiness.tone}>
+      <strong>{readiness.label}</strong>
+      <span>{readiness.detail}</span>
+      {readiness.nextAction ? <code>{readiness.nextAction}</code> : null}
     </div>
   );
 }
