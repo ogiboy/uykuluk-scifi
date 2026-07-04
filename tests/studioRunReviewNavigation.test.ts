@@ -11,13 +11,17 @@ import {
 import { acceptedRenderDecision, runBriefFixture } from "./studioRunReviewBriefFixtures";
 
 type NavigationFixture = Parameters<typeof defaultRunReviewTab>[0];
+type SummaryNavigationFixture = Parameters<typeof defaultRunReviewTabFromSummary>[0];
 
-function navigationFixture(overrides: Partial<NavigationFixture> = {}): NavigationFixture {
+function navigationFixture(
+  overrides: Partial<NavigationFixture & Pick<SummaryNavigationFixture, "runId">> = {},
+): NavigationFixture & Pick<SummaryNavigationFixture, "runId"> {
   return {
     artifactCount: 3,
+    runId: "run_brief",
     ...runBriefFixture(),
     ...overrides,
-  } as NavigationFixture;
+  } as NavigationFixture & Pick<SummaryNavigationFixture, "runId">;
 }
 
 describe("Studio run review navigation", () => {
