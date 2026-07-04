@@ -12,6 +12,7 @@ future generated release notes can be inserted predictably.
 ### Features
 
 - add guarded Studio workflow-stage actions for run-scoped CLI/core commands.
+- add guarded Studio script and package-artifact revision actions.
 - surface guarded no-input workflow-stage actions from the Studio home and run queue.
 - replace the Studio home queue snapshot with an action-prioritized queue.
 - keep guarded idea-run creation available from Studio home when the queue already has runs.

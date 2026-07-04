@@ -26,6 +26,23 @@ const runOnlyPayloadSchema = z.strictObject({
 
 const emptyPayloadSchema = z.strictObject({});
 
+const revisionContentSchema = z.string().min(1).max(200_000);
+
+const scriptRevisionPayloadSchema = z.strictObject({
+  content: revisionContentSchema,
+  editor: z.string().trim().min(1).max(200),
+  reason: z.string().trim().min(1).max(4_000),
+  runId: runIdSchema,
+});
+
+const packageArtifactRevisionPayloadSchema = z.strictObject({
+  artifactKey: z.enum(["subtitles", "scenes", "popup-cards", "youtube-metadata"]),
+  content: revisionContentSchema,
+  editor: z.string().trim().min(1).max(200),
+  reason: z.string().trim().min(1).max(4_000),
+  runId: runIdSchema,
+});
+
 const renderDecisionPayloadSchema = z.strictObject({
   decision: z.enum(renderDecisionValues),
   ...localReviewPayloadShape,
@@ -56,6 +73,18 @@ export function parseScriptApprovalPayload(
   payload: unknown,
 ): z.infer<typeof scriptApprovalPayloadSchema> {
   return scriptApprovalPayloadSchema.parse(payload);
+}
+
+export function parseScriptRevisionPayload(
+  payload: unknown,
+): z.infer<typeof scriptRevisionPayloadSchema> {
+  return scriptRevisionPayloadSchema.parse(payload);
+}
+
+export function parsePackageArtifactRevisionPayload(
+  payload: unknown,
+): z.infer<typeof packageArtifactRevisionPayloadSchema> {
+  return packageArtifactRevisionPayloadSchema.parse(payload);
 }
 
 export function parseRunOnlyPayload(payload: unknown): z.infer<typeof runOnlyPayloadSchema> {

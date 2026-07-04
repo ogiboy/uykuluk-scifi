@@ -241,7 +241,7 @@
   `production/thumbnail_candidates.*` with copy-ready, digest-bound manual prep fields.
 - `producer decide channel-handoff` writes durable `production/channel_handoff_decision.*` evidence
   for selected-thumbnail/manual prep surfaced without YouTube APIs or upload/publish approval.
-- Studio run detail shows guarded approval, workflow-stage/review, render-decision, and
+- Studio run detail shows guarded approval, workflow-stage/review/revision, render-decision, and
   channel-handoff decision routes over CLI/core evidence contracts. Home can start ideas, and
   home/queue can run no-extra-input workflow-stage actions only when CLI/core recommends them.
   Upload/publish stay disabled.
@@ -328,14 +328,14 @@
   analytics artifacts. They show import/report status, data-quality guidance, and the next safe CLI
   command without calling YouTube APIs or mutating run state.
 - Studio has a typed route-security contract for current read-only pages, the local session route,
-  guarded local idea/script/cost/render approval routes, guarded idea-run and workflow-stage/review
-  routes, the guarded local render-decision route, and disabled upload/publish action routes. Tests
-  assert that current App Router pages are covered, enabled local mutations require POST-only
-  same-origin JSON, action headers, service-contract handling, local session proof, and
+  guarded local idea/script/cost/render approval routes, guarded idea-run and workflow-stage/review/
+  revision routes, the guarded local render-decision route, and disabled upload/publish action
+  routes. Tests assert that current App Router pages are covered, enabled local mutations require
+  POST-only same-origin JSON, action headers, service-contract handling, local session proof, and
   cached-session cleanup after 401; disabled upload/publish actions require CLI/core contracts,
   durable evidence, explicit approvals, and disabled publish risk.
 - Shared Studio mutation service contract foundations exist for guarded idea/script/cost/render
-  approval actions, guarded idea-run and workflow-stage/review actions, the active local
+  approval actions, guarded idea-run and workflow-stage/review/revision actions, the active local
   render-decision and channel-handoff decision evidence writes, and disabled upload/publish actions.
   Contracts validate request payloads, bind each action to the CLI/core module/export, and require
   CSRF protection, durable evidence, and explicit approval.

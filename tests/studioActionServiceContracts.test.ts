@@ -56,6 +56,18 @@ describe("Studio mutation service contracts", () => {
           coreModule: "src/stages/ideas.ts",
         }),
         expect.objectContaining({
+          actionId: "script.revise",
+          availability: "ready-for-cli",
+          coreExport: "reviseScript",
+          coreModule: "src/revisions/scriptRevision.ts",
+        }),
+        expect.objectContaining({
+          actionId: "package-artifact.revise",
+          availability: "ready-for-cli",
+          coreExport: "revisePackageArtifact",
+          coreModule: "src/revisions/packageArtifactRevision.ts",
+        }),
+        expect.objectContaining({
           actionId: "voice.run",
           availability: "ready-for-cli",
           coreExport: "generateVoiceoverAudio",

@@ -171,8 +171,9 @@
   report freshness summaries are implemented.
 - Maintain typed Studio mutation service contracts that both CLI and web can use before adding
   additional Studio mutations. Current contracts cover guarded idea/script/cost/render approvals,
-  guarded idea-run and workflow-stage/review actions, the guarded local render-decision and
-  channel-handoff decision evidence writes, plus disabled upload/publish actions.
+  guarded idea-run and workflow-stage/review actions, bounded script/package-artifact revision
+  actions, the guarded local render-decision and channel-handoff decision evidence writes, plus
+  disabled upload/publish actions.
 - Keep local prompt overrides safe before adding a prompt editor. Tracked `prompts/defaults/`
   runtime defaults, typed keys, source paths, and prompt hashes are implemented; ignored
   `prompts/local/*.md` overrides are now explicit `producer.config.json` inputs and must remain

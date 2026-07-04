@@ -28,6 +28,23 @@ const runOnlyRequestSchema = z.strictObject({
 
 const emptyRequestSchema = z.strictObject({});
 
+const revisionContentSchema = z.string().min(1).max(200_000);
+
+const scriptRevisionRequestSchema = z.strictObject({
+  content: revisionContentSchema,
+  editor: z.string().trim().min(1).max(200),
+  reason: z.string().trim().min(1).max(4_000),
+  runId: runIdSchema,
+});
+
+const packageArtifactRevisionRequestSchema = z.strictObject({
+  artifactKey: z.enum(["subtitles", "scenes", "popup-cards", "youtube-metadata"]),
+  content: revisionContentSchema,
+  editor: z.string().trim().min(1).max(200),
+  reason: z.string().trim().min(1).max(4_000),
+  runId: runIdSchema,
+});
+
 const localReviewRequestShape = {
   notes: z.string().trim().min(1).max(4_000),
   reviewedBy: z.string().trim().min(1).max(200),
@@ -74,7 +91,9 @@ type StudioActionRequestById = {
   "review-bundle.run": z.infer<typeof runOnlyRequestSchema>;
   "script.approve": z.infer<typeof scriptApprovalRequestSchema>;
   "script.review": z.infer<typeof runOnlyRequestSchema>;
+  "script.revise": z.infer<typeof scriptRevisionRequestSchema>;
   "script.run": z.infer<typeof runOnlyRequestSchema>;
+  "package-artifact.revise": z.infer<typeof packageArtifactRevisionRequestSchema>;
   "upload.private": z.infer<typeof runOnlyRequestSchema>;
   "voice.review": z.infer<typeof runOnlyRequestSchema>;
   "voice.run": z.infer<typeof runOnlyRequestSchema>;
@@ -157,6 +176,12 @@ function requestSchemaForAction(actionId: StudioMutationActionId): z.ZodType {
   }
   if (actionId === "script.approve") {
     return scriptApprovalRequestSchema;
+  }
+  if (actionId === "script.revise") {
+    return scriptRevisionRequestSchema;
+  }
+  if (actionId === "package-artifact.revise") {
+    return packageArtifactRevisionRequestSchema;
   }
   if (actionId === "render.decide") {
     return renderDecisionRequestSchema;

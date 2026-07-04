@@ -53,6 +53,8 @@ describe("Studio route security contract", () => {
         "actions/review-render/route.ts",
         "actions/review-script/route.ts",
         "actions/review-voice/route.ts",
+        "actions/revise-package-artifact/route.ts",
+        "actions/revise-script/route.ts",
         "actions/run-channel-handoff/route.ts",
         "actions/run-estimate/route.ts",
         "actions/run-evidence/route.ts",
@@ -87,6 +89,16 @@ describe("Studio route security contract", () => {
           path: "/actions/approve-script",
           requiredApproval: "script",
           serviceContractId: "script.approve",
+        }),
+        expect.objectContaining({
+          path: "/actions/revise-script",
+          requiredApproval: "script",
+          serviceContractId: "script.revise",
+        }),
+        expect.objectContaining({
+          path: "/actions/revise-package-artifact",
+          requiredApproval: "script",
+          serviceContractId: "package-artifact.revise",
         }),
         expect.objectContaining({
           path: "/actions/approve-cost",

@@ -25,6 +25,7 @@ import {
   studioRenderDecisionCommands,
   studioWorkflowProgress,
 } from "./runDecisionProjection";
+import { readStudioRevisionSources, type StudioRevisionSources } from "./revisionSources";
 import { loadRunSummaryInputs } from "./runSummaryInputs";
 import type { RunRecord, StudioRunState } from "./runRecordTypes";
 import { isRunId, readRunRecord, readStudioRunDiagnostics, safeReaddir } from "./runSummaryFiles";
@@ -64,6 +65,7 @@ export type StudioRunDetail = StudioRunSummary & {
   readiness: ReadinessSnapshot | null;
   readinessChecks: StudioReadinessCheck[];
   renderDecisionCommands: RenderDecisionCommandTemplate[];
+  revisionSources: StudioRevisionSources;
   warnings: string[];
 };
 
@@ -129,6 +131,7 @@ export async function getStudioRunDetail(runId: string): Promise<StudioRunDetail
       inputs.evidence,
       inputs.renderDecision,
     ),
+    revisionSources: await readStudioRevisionSources(root, runId),
     warnings: record.warnings ?? [],
   };
 }

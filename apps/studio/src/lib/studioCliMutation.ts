@@ -42,7 +42,8 @@ export async function runStudioCliMutationRoute(
   }
 
   try {
-    const result = await runProducerCli(cliArgsForAction(actionId, payload));
+    const cli = await cliArgsForAction(actionId, payload);
+    const result = await runProducerCliWithCleanup(cli.args, cli.cleanup);
     if (result.status !== 0) {
       return jsonError(cliErrorMessage(result.stderr), 409, parseCliJsonOrNull(result.stdout));
     }
@@ -59,6 +60,17 @@ export async function runStudioCliMutationRoute(
       return jsonError(`Studio ${actionId} request is invalid.`, 400);
     }
     return jsonError(error instanceof Error ? error.message : `Studio ${actionId} failed.`, 500);
+  }
+}
+
+async function runProducerCliWithCleanup(
+  args: readonly string[],
+  cleanup: () => Promise<void>,
+): Promise<CliResult> {
+  try {
+    return await runProducerCli(args);
+  } finally {
+    await cleanup();
   }
 }
 

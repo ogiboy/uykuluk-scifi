@@ -1278,6 +1278,17 @@ h3 {
   gap: 12px;
 }
 
+.revision-action-group,
+.revision-action-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.revision-action-panel {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+
 .start-ideas-action {
   display: grid;
   gap: 10px;

@@ -8,7 +8,9 @@ export const studioMutationActionIds = [
   "ideas.run",
   "script.run",
   "script.review",
+  "script.revise",
   "package.run",
+  "package-artifact.revise",
   "render-plan.run",
   "render-plan.review",
   "estimate.run",
@@ -115,12 +117,32 @@ export const studioMutationServiceMetadata = [
     description: "Run the local script review and persist review evidence for operator approval.",
   },
   {
+    actionId: "script.revise",
+    availability: "ready-for-cli",
+    cliCommand:
+      "pnpm producer revise script --run <run_id> --file <temp_file> --reason <reason> --editor <name>",
+    coreExport: "reviseScript",
+    coreModule: "src/revisions/scriptRevision.ts",
+    description:
+      "Record an attributable script revision, invalidate stale review/approval evidence, and return to script review.",
+  },
+  {
     actionId: "package.run",
     availability: "ready-for-cli",
     cliCommand: "pnpm producer package --run <run_id>",
     coreExport: "generateProductionPackage",
     coreModule: "src/stages/productionPackage.ts",
     description: "Generate the approved-script production package artifacts.",
+  },
+  {
+    actionId: "package-artifact.revise",
+    availability: "ready-for-cli",
+    cliCommand:
+      "pnpm producer revise package-artifact --run <run_id> --artifact <target> --file <temp_file> --reason <reason> --editor <name>",
+    coreExport: "revisePackageArtifact",
+    coreModule: "src/revisions/packageArtifactRevision.ts",
+    description:
+      "Record a bounded production-package artifact revision and refresh manifest evidence before downstream work.",
   },
   {
     actionId: "render-plan.run",

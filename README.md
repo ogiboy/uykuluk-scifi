@@ -121,9 +121,9 @@ agent-tracking state only; runtime code must not require it.
 - Manual analytics import/report commands for operator-provided CSV/JSON performance exports, plus a
   read-only Studio view over the ignored local analytics artifacts and import data-quality summary.
 - Typed Studio route-security contract covering read-only routes, guarded local approval/review/
-  workflow-stage action routes, and disabled upload/publish action routes.
-- Typed Studio mutation service contracts for guarded local approval/review/workflow-stage actions
-  and disabled upload/publish actions.
+  workflow-stage/revision action routes, and disabled upload/publish action routes.
+- Typed Studio mutation service contracts for guarded local approval/review/workflow-stage/revision
+  actions and disabled upload/publish actions.
 - Studio home visibility for guarded local actions, disabled upload/publish action routes,
   latest-run readiness, manual analytics feedback, CLI-ready action contracts, and upload/publish
   risk boundaries.
@@ -434,8 +434,9 @@ pnpm producer publish schedule --run <run_id>
 ## Producer Studio
 
 The Studio is intentionally local-only. Many surfaces are read-only; guarded web mutations exist
-only for explicit local approvals, guarded idea-run/workflow-stage/review actions, and local review
-evidence that already have shared CLI/core contracts. They do not upload or publish.
+only for explicit local approvals, guarded idea-run/workflow-stage/review actions, bounded local
+revisions, and local review evidence that already have shared CLI/core contracts. They do not upload
+or publish.
 
 ```bash
 pnpm studio
@@ -450,13 +451,13 @@ Current Studio scope:
 - `/runs/<run_id>` detail view with next action, readiness status, and review artifact availability
   plus approval ledger entries, warning lists, production media evidence details, shared v1 workflow
   progress, per-row review guidance, guarded idea/script/cost/render approval forms for eligible
-  states, local render-decision command templates for rendered runs that have current draft-render
-  evidence and no recorded decision, readiness check messages, and readiness next-action commands
-  from CLI/core artifacts. Malformed or stale evidence artifacts stay read-only, are not used as
-  proof for blocked actions, media readiness, or next-action guidance, and point back to the CLI
-  evidence command; media rows fall back to persisted artifact-record visibility until evidence is
-  current. Missing, malformed, or stale readiness artifacts stay read-only and point back to the CLI
-  readiness command;
+  states, bounded script and production-package artifact revision forms, local render-decision
+  command templates for rendered runs that have current draft-render evidence and no recorded
+  decision, readiness check messages, and readiness next-action commands from CLI/core artifacts.
+  Malformed or stale evidence artifacts stay read-only, are not used as proof for blocked actions,
+  media readiness, or next-action guidance, and point back to the CLI evidence command; media rows
+  fall back to persisted artifact-record visibility until evidence is current. Missing, malformed,
+  or stale readiness artifacts stay read-only and point back to the CLI readiness command;
 - read-only artifact preview excerpts for scripts, reviews, production packages, render plans,
   contact sheets, asset provenance, evidence, readiness, voiceover metadata, and render manifests,
   grouped by operator review phase, with binary media limited to metadata;
@@ -479,6 +480,9 @@ Current Studio scope:
   generation, estimate, evidence, readiness, voiceover generation, local draft render, final review
   bundle, and manual channel handoff. These routes call the canonical producer CLI and do not own
   workflow state;
+- guarded revision routes for `script.revise` and `package-artifact.revise` that require same-origin
+  JSON, a Studio action header, a short-lived local session token/cookie pair, typed bounded
+  payloads, and the same CLI/core revision contracts as `producer revise ...`;
 - guarded `POST /actions/decide-render` route that requires same-origin JSON, a Studio action
   header, a short-lived local session token/cookie pair, the typed `render.decide` service contract,
   current draft-render evidence, and writes only local render-decision JSON/Markdown evidence;

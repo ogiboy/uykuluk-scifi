@@ -1,11 +1,16 @@
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import type { StudioMutationActionId } from "../../../../src/studio/actionServiceMetadata";
 import {
   parseChannelHandoffDecisionPayload,
   parseEmptyPayload,
   parseIdeaApprovalPayload,
+  parsePackageArtifactRevisionPayload,
   parseRenderDecisionPayload,
   parseRunOnlyPayload,
   parseScriptApprovalPayload,
+  parseScriptRevisionPayload,
 } from "./studioMutationPayloadContracts";
 
 export type StudioCliMutationActionId = Exclude<
@@ -15,8 +20,19 @@ export type StudioCliMutationActionId = Exclude<
 
 type RunOnlyCliActionId = Exclude<
   StudioCliMutationActionId,
-  "channel-handoff.decide" | "idea.approve" | "ideas.run" | "render.decide" | "script.approve"
+  | "channel-handoff.decide"
+  | "idea.approve"
+  | "ideas.run"
+  | "package-artifact.revise"
+  | "render.decide"
+  | "script.approve"
+  | "script.revise"
 >;
+
+export type StudioPreparedCliArgs = Readonly<{
+  args: readonly string[];
+  cleanup: () => Promise<void>;
+}>;
 
 /**
  * Builds whitelisted producer CLI arguments for one guarded Studio mutation.
@@ -25,29 +41,74 @@ type RunOnlyCliActionId = Exclude<
  * @param payload - The JSON request payload to parse for the action.
  * @returns Safe producer CLI args.
  */
-export function cliArgsForAction(actionId: StudioCliMutationActionId, payload: unknown): string[] {
+export async function cliArgsForAction(
+  actionId: StudioCliMutationActionId,
+  payload: unknown,
+): Promise<StudioPreparedCliArgs> {
   if (actionId === "idea.approve") {
     const input = parseIdeaApprovalPayload(payload);
-    return ["approve", "idea", "--run", input.runId, "--idea", input.ideaId, "--json"];
+    return prepared(["approve", "idea", "--run", input.runId, "--idea", input.ideaId, "--json"]);
   }
   if (actionId === "ideas.run") {
     parseEmptyPayload(payload);
-    return ["ideas", "--json"];
+    return prepared(["ideas", "--json"]);
   }
   if (actionId === "script.approve") {
     const input = parseScriptApprovalPayload(payload);
-    return [
+    return prepared([
       "approve",
       "script",
       "--run",
       input.runId,
       ...(input.acknowledgeWarnings ? ["--acknowledge-warnings"] : []),
       "--json",
-    ];
+    ]);
+  }
+  if (actionId === "script.revise") {
+    const input = parseScriptRevisionPayload(payload);
+    const temp = await writeRevisionTempFile(input.content);
+    return prepared(
+      [
+        "revise",
+        "script",
+        "--run",
+        input.runId,
+        "--file",
+        temp.filePath,
+        "--reason",
+        input.reason,
+        "--editor",
+        input.editor,
+        "--json",
+      ],
+      temp.cleanup,
+    );
+  }
+  if (actionId === "package-artifact.revise") {
+    const input = parsePackageArtifactRevisionPayload(payload);
+    const temp = await writeRevisionTempFile(input.content);
+    return prepared(
+      [
+        "revise",
+        "package-artifact",
+        "--run",
+        input.runId,
+        "--artifact",
+        input.artifactKey,
+        "--file",
+        temp.filePath,
+        "--reason",
+        input.reason,
+        "--editor",
+        input.editor,
+        "--json",
+      ],
+      temp.cleanup,
+    );
   }
   if (actionId === "render.decide") {
     const input = parseRenderDecisionPayload(payload);
-    return [
+    return prepared([
       "decide",
       "render",
       "--run",
@@ -59,11 +120,11 @@ export function cliArgsForAction(actionId: StudioCliMutationActionId, payload: u
       "--reviewed-by",
       input.reviewedBy,
       "--json",
-    ];
+    ]);
   }
   if (actionId === "channel-handoff.decide") {
     const input = parseChannelHandoffDecisionPayload(payload);
-    return [
+    return prepared([
       "decide",
       "channel-handoff",
       "--run",
@@ -76,14 +137,14 @@ export function cliArgsForAction(actionId: StudioCliMutationActionId, payload: u
       "--reviewed-by",
       input.reviewedBy,
       "--json",
-    ];
+    ]);
   }
   return runOnlyCliArgs(actionId, payload);
 }
 
-function runOnlyCliArgs(actionId: RunOnlyCliActionId, payload: unknown): string[] {
+function runOnlyCliArgs(actionId: RunOnlyCliActionId, payload: unknown): StudioPreparedCliArgs {
   const input = parseRunOnlyPayload(payload);
-  return [...runOnlyCliCommand[actionId], "--run", input.runId, "--json"];
+  return prepared([...runOnlyCliCommand[actionId], "--run", input.runId, "--json"]);
 }
 
 const runOnlyCliCommand: Record<RunOnlyCliActionId, readonly string[]> = {
@@ -104,3 +165,23 @@ const runOnlyCliCommand: Record<RunOnlyCliActionId, readonly string[]> = {
   "voice.review": ["review", "voice"],
   "voice.run": ["voice"],
 };
+
+function prepared(
+  args: readonly string[],
+  cleanup: () => Promise<void> = async () => {},
+): StudioPreparedCliArgs {
+  return { args, cleanup };
+}
+
+async function writeRevisionTempFile(content: string): Promise<{
+  cleanup: () => Promise<void>;
+  filePath: string;
+}> {
+  const directory = await mkdtemp(path.join(tmpdir(), "uykuluk-studio-revision-"));
+  const filePath = path.join(directory, "revision-content.txt");
+  await writeFile(filePath, content, { encoding: "utf8", mode: 0o600 });
+  return {
+    cleanup: () => rm(directory, { force: true, recursive: true }),
+    filePath,
+  };
+}
