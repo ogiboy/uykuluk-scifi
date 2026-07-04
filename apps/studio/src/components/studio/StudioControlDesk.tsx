@@ -1,8 +1,6 @@
 import Link from "next/link";
-import type { Route } from "next";
 import { ActiveRunActions } from "@/components/studio/ActiveRunActions";
 import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
-import { runReviewHrefFromSummary } from "@/lib/runReviewNavigation";
 import type { StudioRunSummary } from "@/lib/runSummaries";
 import {
   formatRunRenderDecision,
@@ -16,6 +14,7 @@ import {
 } from "@/lib/studioActionWorkbench";
 import { CopyableCommand } from "./CopyableCommand";
 import { EmptyRunCard } from "./EmptyRunCard";
+import { HomeActionQueuePanel } from "./HomeActionQueuePanel";
 import { StartNewRunPanel } from "./StartNewRunPanel";
 import { StudioMutationSessionPanel } from "./StudioMutationSessionPanel";
 
@@ -53,7 +52,7 @@ export function StudioControlDesk({ actionStatus, runs }: StudioControlDeskProps
         <StudioMutationSessionPanel />
         {latestRun ? <StartNewRunPanel /> : null}
         <SafetyGateSummary actionStatus={actionStatus} />
-        <QueueSnapshot runs={runs} />
+        <HomeActionQueuePanel runs={runs} />
       </aside>
     </section>
   );
@@ -173,30 +172,6 @@ function SafetyGateSummary({
           <dd>{actionStatus.readyForCliCount}</dd>
         </div>
       </dl>
-    </section>
-  );
-}
-
-function QueueSnapshot({ runs }: Readonly<{ runs: readonly StudioRunSummary[] }>) {
-  return (
-    <section className='panel compact-panel' aria-labelledby='queue-snapshot-heading'>
-      <h3 id='queue-snapshot-heading'>Queue snapshot</h3>
-      {runs.length > 0 ? (
-        <ol className='queue-list'>
-          {runs.slice(0, 5).map((run) => (
-            <li key={run.runId}>
-              <Link href={runReviewHrefFromSummary(run) as Route}>
-                <strong>{run.runId}</strong>
-                <span>
-                  {run.state} · {run.readinessStatus}
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ol>
-      ) : (
-        <p>No persisted runs found.</p>
-      )}
     </section>
   );
 }

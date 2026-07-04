@@ -818,6 +818,48 @@ h3 {
   border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
 }
 
+.home-action-queue-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.home-action-queue-item {
+  display: grid;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--studio-surface-inset);
+  padding: 10px;
+}
+
+.home-action-queue-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.home-action-queue-copy {
+  display: grid;
+  gap: 4px;
+}
+
+.home-action-queue-copy span,
+.home-action-queue-copy small {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.home-action-queue-open {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
 .run-queue-explorer,
 .queue-toolbar {
   display: grid;
