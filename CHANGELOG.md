@@ -12,6 +12,7 @@ future generated release notes can be inserted predictably.
 ### Features
 
 - add guarded Studio workflow-stage actions for run-scoped CLI/core commands.
+- surface guarded no-input workflow-stage actions from the Studio home and run queue.
 - add guarded Studio startup action for local idea generation.
 
 ## v0.72.0 (2026-07-03)

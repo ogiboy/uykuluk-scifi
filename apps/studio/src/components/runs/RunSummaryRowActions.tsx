@@ -24,6 +24,7 @@ import {
 import { runReviewHrefFromSummary } from "@/lib/runReviewNavigation";
 import { getNextSafeCommand } from "@/lib/runSummaryCopy";
 import type { StudioRunSummary } from "@/lib/runSummaries";
+import { RunQuickStageActionButton } from "./RunQuickStageActionButton";
 
 type RunSummaryRowActionsProps = Readonly<{
   run: StudioRunSummary;
@@ -41,6 +42,7 @@ export function RunSummaryRowActions({ run }: RunSummaryRowActionsProps) {
   const decisionRailHref = runReviewHrefFromSummary(run, "review-decision") as Route;
   return (
     <div className='run-row-actions'>
+      <RunQuickStageActionButton label='Run' run={run} variant='secondary' />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button type='button' variant='secondary'>

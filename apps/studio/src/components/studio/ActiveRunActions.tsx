@@ -3,6 +3,7 @@ import type { Route } from "next";
 import { CopyableCommand } from "@/components/studio/CopyableCommand";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { RunQuickStageActionButton } from "@/components/runs/RunQuickStageActionButton";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,6 +33,7 @@ export function ActiveRunActions({ run }: Readonly<{ run: StudioRunSummary }>) {
       <Badge variant={run.blockedActionCount > 0 ? "destructive" : "secondary"}>
         {run.blockedActionCount > 0 ? "Needs attention" : "Reviewable"}
       </Badge>
+      <RunQuickStageActionButton label='Run next step' run={run} />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button type='button' variant='secondary'>

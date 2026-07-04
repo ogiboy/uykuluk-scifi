@@ -241,11 +241,10 @@
   `production/thumbnail_candidates.*` with copy-ready, digest-bound manual prep fields.
 - `producer decide channel-handoff` writes durable `production/channel_handoff_decision.*` evidence
   for selected-thumbnail/manual prep surfaced without YouTube APIs or upload/publish approval.
-- Studio run detail shows guarded local approval forms for eligible idea/script/cost/render states,
-  guarded workflow-stage/review routes for CLI/core-backed next actions, render-decision and
-  channel-handoff decision routes matching CLI/core evidence writes, and action surfaces for guarded
-  web actions, CLI-only next actions, and safety boundaries. Studio home can also start a guarded
-  local idea run through CLI/core. It does not upload or publish.
+- Studio run detail shows guarded approval, workflow-stage/review, render-decision, and
+  channel-handoff decision routes over CLI/core evidence contracts. Home can start ideas, and
+  home/queue can run no-extra-input workflow-stage actions only when CLI/core recommends them.
+  Upload/publish stay disabled.
 - Readiness diagnostics that strictly parse and revalidate persisted cost quotes, live hard budgets,
   complete production-package integrity, and exact paid-generation cost approval when required.
 - Blocked and warning `producer readiness` checks print and persist next-action guidance for common
