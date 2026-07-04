@@ -1,7 +1,9 @@
 import { POST as approveIdea } from "../../apps/studio/src/app/actions/approve-idea/route";
 import { POST as approveRender } from "../../apps/studio/src/app/actions/approve-render/route";
 import { POST as approveScript } from "../../apps/studio/src/app/actions/approve-script/route";
+import { POST as decideChannelHandoff } from "../../apps/studio/src/app/actions/decide-channel-handoff/route";
 import { POST as decideRender } from "../../apps/studio/src/app/actions/decide-render/route";
+import { POST as runChannelHandoff } from "../../apps/studio/src/app/actions/run-channel-handoff/route";
 import { POST as runEstimate } from "../../apps/studio/src/app/actions/run-estimate/route";
 import { POST as runEvidence } from "../../apps/studio/src/app/actions/run-evidence/route";
 import { POST as runIdeas } from "../../apps/studio/src/app/actions/run-ideas/route";
@@ -9,6 +11,7 @@ import { POST as runPackage } from "../../apps/studio/src/app/actions/run-packag
 import { POST as runReadiness } from "../../apps/studio/src/app/actions/run-readiness/route";
 import { POST as runRender } from "../../apps/studio/src/app/actions/run-render/route";
 import { POST as runRenderPlan } from "../../apps/studio/src/app/actions/run-render-plan/route";
+import { POST as runReviewBundle } from "../../apps/studio/src/app/actions/run-review-bundle/route";
 import { POST as runScript } from "../../apps/studio/src/app/actions/run-script/route";
 import { POST as runVoice } from "../../apps/studio/src/app/actions/run-voice/route";
 import { POST as reviewRender } from "../../apps/studio/src/app/actions/review-render/route";
@@ -65,6 +68,25 @@ await post(decideRender, "/actions/decide-render", "render.decide", {
   reviewedBy: "studio-workflow-uat",
   runId,
 });
+await post(runReviewBundle, "/actions/run-review-bundle", "review-bundle.run", { runId });
+const handoff = await post(
+  runChannelHandoff,
+  "/actions/run-channel-handoff",
+  "channel-handoff.run",
+  {
+    runId,
+  },
+);
+const handoffRecord = recordObject(handoff);
+const thumbnailCandidates = objectField(handoffRecord, "thumbnailCandidates");
+const thumbnailCandidateId = stringField(thumbnailCandidates, "recommendedCandidateId");
+await post(decideChannelHandoff, "/actions/decide-channel-handoff", "channel-handoff.decide", {
+  decision: "accepted-for-manual-channel-prep",
+  notes: "Product UAT accepted the manual channel handoff package for operator prep.",
+  reviewedBy: "studio-workflow-uat",
+  runId,
+  thumbnailCandidateId,
+});
 await post(runEvidence, "/actions/run-evidence", "evidence.run", { runId });
 await post(runReadiness, "/actions/run-readiness", "readiness.run", { runId });
 
@@ -76,6 +98,24 @@ assert(detail.readinessStatus === "passed", "Studio route-driven run keeps passi
 assert(
   detail.renderDecision.kind === "present",
   "Studio route-driven run records a render decision.",
+);
+assert(
+  detail.finalReviewBundle.kind === "present",
+  "Studio route-driven run exposes a trusted final review bundle.",
+);
+assert(
+  detail.channelHandoff.kind === "present",
+  "Studio route-driven run exposes a trusted channel handoff.",
+);
+assert(
+  detail.channelHandoffDecision.kind === "present",
+  "Studio route-driven run records a channel handoff decision.",
+);
+assert(
+  detail.channelHandoffDecision.kind === "present" &&
+    detail.channelHandoffDecision.decision.selectedThumbnailCandidate?.candidateId ===
+      thumbnailCandidateId,
+  "Studio route-driven run keeps the selected thumbnail candidate.",
 );
 assert(
   detail.productionMedia.some((item) => item.label === "Draft render" && item.status === "pass"),
@@ -125,6 +165,12 @@ async function studioSessionCookie(): Promise<{ cookie: string; token: string }>
 function recordObject(payload: StudioActionPayload): Record<string, unknown> {
   assert(isObject(payload.record), "Studio action returned an object record.");
   return payload.record;
+}
+
+function objectField(record: Record<string, unknown>, key: string): Record<string, unknown> {
+  const value = record[key];
+  assert(isObject(value), `Record field ${key} is an object.`);
+  return value;
 }
 
 function stringField(record: Record<string, unknown>, key: string): string {
