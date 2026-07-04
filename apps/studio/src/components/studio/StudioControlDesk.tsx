@@ -8,7 +8,6 @@ import {
   formatRunRenderDecision,
   formatRunReviewCounts,
   getNextSafeCommand,
-  NO_RUNS_NEXT_COMMAND,
 } from "@/lib/runSummaryCopy";
 import type { StudioActionServiceStatus } from "@/lib/actionServiceStatus";
 import {
@@ -16,7 +15,8 @@ import {
   type StudioActionWorkbenchTone,
 } from "@/lib/studioActionWorkbench";
 import { CopyableCommand } from "./CopyableCommand";
-import { StartIdeasActionPanel } from "./StartIdeasActionPanel";
+import { EmptyRunCard } from "./EmptyRunCard";
+import { StartNewRunPanel } from "./StartNewRunPanel";
 import { StudioMutationSessionPanel } from "./StudioMutationSessionPanel";
 
 type StudioControlDeskProps = Readonly<{
@@ -51,6 +51,7 @@ export function StudioControlDesk({ actionStatus, runs }: StudioControlDeskProps
 
       <aside className='control-desk-rail' aria-label='Studio safety and queue summary'>
         <StudioMutationSessionPanel />
+        {latestRun ? <StartNewRunPanel /> : null}
         <SafetyGateSummary actionStatus={actionStatus} />
         <QueueSnapshot runs={runs} />
       </aside>
@@ -144,23 +145,6 @@ function formatWorkbenchTone(tone: StudioActionWorkbenchTone): string {
     case "complete":
       return "complete";
   }
-}
-
-function EmptyRunCard() {
-  return (
-    <article className='active-run-card'>
-      <h3>No local runs yet</h3>
-      <p>
-        Start with a safe local idea run. Studio will show the persisted run queue, evidence,
-        readiness, and guarded approval actions once CLI/core creates the run.
-      </p>
-      <div className='operator-command-block'>
-        <strong>Next safe action</strong>
-        <CopyableCommand command={NO_RUNS_NEXT_COMMAND} label='Next safe action' />
-      </div>
-      <StartIdeasActionPanel />
-    </article>
-  );
 }
 
 function SafetyGateSummary({

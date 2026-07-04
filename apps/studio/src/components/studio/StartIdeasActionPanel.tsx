@@ -12,10 +12,21 @@ import {
 } from "@/components/ui/dialog";
 import { useStudioGuardedActionSubmit } from "@/lib/useStudioGuardedActionSubmit";
 
+type StartIdeasActionPanelProps = Readonly<{
+  buttonLabel?: string;
+  description?: string;
+}>;
+
 /**
- * Renders the guarded Studio action that starts the first local idea-generation run.
+ * Renders the guarded Studio action that starts a local idea-generation run.
+ *
+ * @param buttonLabel - The visible button label for the current surface.
+ * @param description - Optional operator-facing copy shown above the action button.
  */
-export function StartIdeasActionPanel() {
+export function StartIdeasActionPanel({
+  buttonLabel = "Start ideas run",
+  description,
+}: StartIdeasActionPanelProps) {
   const [confirmationOpen, setConfirmationOpen] = useState(false);
   const { state, submit } = useStudioGuardedActionSubmit(
     "Idea generation starts a new local run through the canonical producer CLI.",
@@ -37,12 +48,13 @@ export function StartIdeasActionPanel() {
 
   return (
     <div className='start-ideas-action'>
+      {description ? <p>{description}</p> : null}
       <Button
         disabled={state.kind === "submitting"}
         type='button'
         onClick={() => setConfirmationOpen(true)}
       >
-        {state.kind === "submitting" ? "Starting..." : "Start ideas run"}
+        {state.kind === "submitting" ? "Starting..." : buttonLabel}
       </Button>
       <p className={state.kind === "error" || state.kind === "blocked" ? "blocked" : undefined}>
         {state.message}
@@ -79,7 +91,7 @@ export function StartIdeasActionPanel() {
               type='button'
               onClick={() => void submitIdeasRun()}
             >
-              Start ideas run
+              {buttonLabel}
             </Button>
           </DialogFooter>
         </DialogContent>
