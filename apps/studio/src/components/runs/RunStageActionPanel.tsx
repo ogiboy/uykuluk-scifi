@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import { stageActionForRun } from "@/lib/studioStageAction";
 import { useStudioGuardedActionSubmit } from "@/lib/useStudioGuardedActionSubmit";
+import { RunStageActionConfirmationDialog } from "./RunStageActionConfirmationDialog";
 
 type RunStageActionPanelProps = Readonly<{
   run: Pick<StudioRunDetail, "nextRecommendedCommand" | "runId" | "state">;
@@ -16,6 +18,7 @@ type RunStageActionPanelProps = Readonly<{
  */
 export function RunStageActionPanel({ run }: RunStageActionPanelProps) {
   const config = stageActionForRun(run);
+  const [confirmationOpen, setConfirmationOpen] = useState(false);
   const { state, submit } = useStudioGuardedActionSubmit(
     "Run-scoped workflow actions use the same CLI/core command that Studio recommends.",
   );
@@ -26,6 +29,7 @@ export function RunStageActionPanel({ run }: RunStageActionPanelProps) {
 
   async function submitStageAction(): Promise<void> {
     if (!config) return;
+    setConfirmationOpen(false);
     await submit({
       actionId: config.actionId,
       body: { runId: run.runId },
@@ -53,14 +57,26 @@ export function RunStageActionPanel({ run }: RunStageActionPanelProps) {
       <Button
         disabled={state.kind === "submitting"}
         type='button'
-        onClick={() => void submitStageAction()}
+        onClick={() => setConfirmationOpen(true)}
       >
         {state.kind === "submitting" ? "Running..." : config.buttonLabel}
       </Button>
-      <p className={state.kind === "error" ? "blocked" : undefined}>{state.message}</p>
+      <p className={state.kind === "error" || state.kind === "blocked" ? "blocked" : undefined}>
+        {state.message}
+      </p>
       {run.nextRecommendedCommand ? (
         <p className='artifact-action'>CLI equivalent: {run.nextRecommendedCommand}</p>
       ) : null}
+      <RunStageActionConfirmationDialog
+        action={config}
+        currentState={run.state}
+        isSubmitting={state.kind === "submitting"}
+        nextRecommendedCommand={run.nextRecommendedCommand}
+        open={confirmationOpen}
+        runId={run.runId}
+        onConfirm={() => void submitStageAction()}
+        onOpenChange={setConfirmationOpen}
+      />
     </section>
   );
 }

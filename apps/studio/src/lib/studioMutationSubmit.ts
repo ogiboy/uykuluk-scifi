@@ -4,7 +4,7 @@ import {
 } from "./studioMutationClient";
 
 export type StudioMutationSubmitResult = Readonly<
-  { kind: "error"; message: string } | { kind: "success" }
+  { kind: "blocked"; message: string } | { kind: "error"; message: string } | { kind: "success" }
 >;
 
 /**
@@ -33,10 +33,21 @@ export async function submitStudioJsonMutation(input: {
     headers,
     method: "POST",
   });
-  const payload = (await response.json().catch(() => null)) as { message?: string } | null;
+  const payload = (await response.json().catch(() => null)) as {
+    message?: string;
+    record?: unknown;
+  } | null;
   if (!response.ok) {
     if (response.status === 401) {
       clearCachedStudioMutationSession();
+    }
+    if (payload?.record) {
+      return {
+        kind: "blocked",
+        message:
+          payload.message ??
+          "Studio action wrote local output but the producer CLI reported a blocked state.",
+      };
     }
     return {
       kind: "error",

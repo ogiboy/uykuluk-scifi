@@ -1,7 +1,9 @@
 import { mkdir } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { POST as runEvidence } from "../apps/studio/src/app/actions/run-evidence/route";
+import { POST as runReadiness } from "../apps/studio/src/app/actions/run-readiness/route";
 import { POST as runRenderPlan } from "../apps/studio/src/app/actions/run-render-plan/route";
+import { createRun } from "../src/core/runStore";
 import { useTempProject } from "./helpers";
 import {
   studioJsonMutationRequest,
@@ -55,6 +57,25 @@ describe("Studio workflow stage action routes", () => {
     expect(response.status).toBe(409);
     await expect(response.json()).resolves.toMatchObject({
       message: expect.stringContaining("Run not found"),
+      status: "error",
+    });
+  });
+
+  it("preserves JSON diagnostic output when the producer CLI writes evidence then exits blocked", async () => {
+    const run = await createRun();
+
+    const response = await runReadiness(
+      studioJsonRequest("/actions/run-readiness", "readiness.run", {
+        runId: run.runId,
+      }),
+    );
+
+    expect(response.status).toBe(409);
+    await expect(response.json()).resolves.toMatchObject({
+      record: {
+        checks: expect.any(Array),
+        passed: false,
+      },
       status: "error",
     });
   });

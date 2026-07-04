@@ -44,7 +44,7 @@ export async function runStudioCliMutationRoute(
   try {
     const result = await runProducerCli(cliArgsForAction(actionId, payload));
     if (result.status !== 0) {
-      return jsonError(cliErrorMessage(result.stderr), 409);
+      return jsonError(cliErrorMessage(result.stderr), 409, parseCliJsonOrNull(result.stdout));
     }
     return Response.json(
       {
@@ -62,10 +62,11 @@ export async function runStudioCliMutationRoute(
   }
 }
 
-function jsonError(message: string, status: number): Response {
+function jsonError(message: string, status: number, record: unknown = null): Response {
   return Response.json(
     {
       message,
+      ...(record ? { record } : {}),
       status: "error",
     },
     { headers: noStoreHeaders(), status },
@@ -111,6 +112,18 @@ function parseCliJson(stdout: string): unknown {
     return JSON.parse(stdout.trim());
   } catch {
     throw new Error("Studio mutation CLI returned invalid JSON.");
+  }
+}
+
+function parseCliJsonOrNull(stdout: string): unknown {
+  const trimmed = stdout.trim();
+  if (!trimmed) {
+    return null;
+  }
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    return null;
   }
 }
 

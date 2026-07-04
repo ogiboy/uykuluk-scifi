@@ -9,6 +9,7 @@ export type StudioGuardedActionSubmitState =
   | { kind: "idle"; message: string }
   | { kind: "submitting"; message: string }
   | { kind: "success"; message: string }
+  | { kind: "blocked"; message: string }
   | { kind: "error"; message: string };
 
 export type StudioGuardedActionSubmitInput = Readonly<{
@@ -44,6 +45,14 @@ export function useStudioGuardedActionSubmit(idleMessage: string) {
       fallbackError: input.fallbackError,
       routePath: input.routePath,
     });
+    if (result.kind === "blocked") {
+      setState(result);
+      toast.warning(input.errorToastTitle, {
+        description: `${result.message} Studio is refreshing persisted local state.`,
+      });
+      router.refresh();
+      return;
+    }
     if (result.kind === "error") {
       setState(result);
       toast.error(input.errorToastTitle, { description: result.message });

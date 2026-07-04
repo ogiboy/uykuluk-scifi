@@ -129,7 +129,9 @@ export function RunApprovalActionPanel({ run }: RunApprovalActionPanelProps) {
         onConfirm={confirmApproval}
         onOpenChange={setConfirmationOpen}
       />
-      <p className={state.kind === "error" ? "blocked" : undefined}>{state.message}</p>
+      <p className={state.kind === "error" || state.kind === "blocked" ? "blocked" : undefined}>
+        {state.message}
+      </p>
       {run.nextRecommendedCommand ? (
         <p className='artifact-action'>CLI equivalent: {run.nextRecommendedCommand}</p>
       ) : null}
