@@ -1,10 +1,9 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useId } from "react";
 import { Button } from "@/components/ui/button";
 import type { StudioRunDetail } from "@/lib/runSummaries";
-import { stageActionForRun } from "@/lib/studioStageAction";
-import { useStudioGuardedActionSubmit } from "@/lib/useStudioGuardedActionSubmit";
+import { useStudioStageActionSubmit } from "@/lib/useStudioStageActionSubmit";
 import { RunStageActionConfirmationDialog } from "./RunStageActionConfirmationDialog";
 
 type RunQuickStageActionButtonProps = Readonly<{
@@ -28,30 +27,19 @@ export function RunQuickStageActionButton({
   run,
   variant = "default",
 }: RunQuickStageActionButtonProps) {
-  const action = stageActionForRun(run);
   const statusId = useId();
-  const [confirmationOpen, setConfirmationOpen] = useState(false);
-  const { state, submit } = useStudioGuardedActionSubmit(
-    "Queue actions use guarded local routes and CLI/core remains authoritative.",
-  );
-
-  if (!action) {
-    return null;
-  }
-
-  async function submitStageAction(): Promise<void> {
-    if (!action) return;
-    setConfirmationOpen(false);
-    await submit({
-      actionId: action.actionId,
-      body: { runId: run.runId },
+  const { action, confirmationOpen, setConfirmationOpen, state, submitStageAction } =
+    useStudioStageActionSubmit(run, {
       errorToastTitle: "Workflow action was blocked",
       fallbackError: "Workflow action could not complete.",
-      routePath: action.routePath,
+      idleMessage: "Queue actions use guarded local routes and CLI/core remains authoritative.",
       submittingMessage: "Running guarded local workflow action...",
       successMessage: "Workflow action completed. Updating persisted local state.",
       successToastTitle: "Workflow action completed",
     });
+
+  if (!action) {
+    return null;
   }
 
   const isSubmitting = state.kind === "submitting";

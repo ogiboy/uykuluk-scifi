@@ -4,6 +4,7 @@ import { useEffect } from "react";
 
 import { StudioRouteBoundaryCard } from "@/components/studio/StudioRouteBoundaryCard";
 import { Button } from "@/components/ui/button";
+import { runDetailErrorCopy } from "@/lib/runRouteBoundaryCopy";
 
 type RunDetailErrorPageProps = Readonly<{
   error: Error & { digest?: string };
@@ -26,15 +27,15 @@ export default function RunDetailErrorPage({ error, reset }: RunDetailErrorPageP
       <header className='studio-header'>
         <div>
           <p className='eyebrow'>Run review boundary</p>
-          <h1 id='run-detail-error-heading'>Run review failed safely</h1>
+          <h1 id='run-detail-error-heading'>{runDetailErrorCopy.heading}</h1>
         </div>
-        <span className='status-pill blocked'>No action taken</span>
+        <span className='status-pill blocked'>{runDetailErrorCopy.status}</span>
       </header>
 
       <StudioRouteBoundaryCard
-        description='The web surface stopped while reading this run. It did not retry approvals, change run state, trust artifacts without evidence, upload media, or publish content.'
-        headingId='run-detail-error-recovery-heading'
-        title='Safe recovery'
+        description={runDetailErrorCopy.description}
+        headingId={runDetailErrorCopy.recoveryHeadingId}
+        title={runDetailErrorCopy.recoveryTitle}
       >
         <Button onClick={reset} variant='secondary'>
           Retry local run read

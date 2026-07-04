@@ -15,6 +15,9 @@ type CliResult = Readonly<{
   status: number;
 }>;
 
+const studioCliTimeoutMs = 20 * 60 * 1000;
+const studioCliKillGraceMs = 5_000;
+
 /**
  * Runs a guarded Studio mutation through the canonical producer CLI.
  *
@@ -102,8 +105,23 @@ function runProducerCli(args: readonly string[]): Promise<CliResult> {
         windowsHide: true,
       },
     );
+    let settled = false;
+    let timedOut = false;
     let stdout = "";
     let stderr = "";
+    let forceKillTimer: ReturnType<typeof setTimeout> | null = null;
+    const timeout = setTimeout(() => {
+      timedOut = true;
+      stderr = appendStderr(
+        stderr,
+        `Studio mutation CLI exceeded ${studioCliTimeoutMs}ms and was terminated.`,
+      );
+      child.kill("SIGTERM");
+      forceKillTimer = setTimeout(() => {
+        child.kill("SIGKILL");
+      }, studioCliKillGraceMs);
+    }, studioCliTimeoutMs);
+    child.stdin?.end();
     child.stdout.setEncoding("utf8");
     child.stderr.setEncoding("utf8");
     child.stdout.on("data", (chunk: string) => {
@@ -112,11 +130,33 @@ function runProducerCli(args: readonly string[]): Promise<CliResult> {
     child.stderr.on("data", (chunk: string) => {
       stderr += chunk;
     });
-    child.on("error", reject);
+    child.on("error", (error) => {
+      if (settled) return;
+      settled = true;
+      clearStudioCliTimers(timeout, forceKillTimer);
+      reject(error);
+    });
     child.on("close", (code) => {
-      resolve({ stderr, stdout, status: code ?? 1 });
+      if (settled) return;
+      settled = true;
+      clearStudioCliTimers(timeout, forceKillTimer);
+      resolve({ stderr, stdout, status: timedOut ? 124 : (code ?? 1) });
     });
   });
+}
+
+function clearStudioCliTimers(
+  timeout: ReturnType<typeof setTimeout>,
+  forceKillTimer: ReturnType<typeof setTimeout> | null,
+): void {
+  clearTimeout(timeout);
+  if (forceKillTimer) {
+    clearTimeout(forceKillTimer);
+  }
+}
+
+function appendStderr(current: string, message: string): string {
+  return current.trim() ? `${current.trimEnd()}\n${message}` : message;
 }
 
 function parseCliJson(stdout: string): unknown {

@@ -26,7 +26,7 @@ export function StudioMutationResultPanel({ state }: StudioMutationResultPanelPr
     <section
       className={isProblem ? "mutation-result blocked" : "mutation-result"}
       aria-label='Latest local action result'
-      aria-live='polite'
+      aria-live={isProblem ? "assertive" : "polite"}
     >
       <p>{state.message}</p>
       {actionFacts.length > 0 ? (

@@ -29,7 +29,7 @@ type StudioActionPayload = {
   status?: string;
 };
 
-const session = await studioSessionCookie(assert);
+let session = await studioSessionCookie(assert);
 
 const ideas = await post(runIdeas, "/actions/run-ideas", "ideas.run", {});
 const ideasRecord = recordObject(ideas);
@@ -51,6 +51,8 @@ await post(runEvidence, "/actions/run-evidence", "evidence.run", { runId });
 
 const readiness = await post(runReadiness, "/actions/run-readiness", "readiness.run", { runId });
 assert(recordObject(readiness).passed === true, "Studio readiness route returns a passing record.");
+
+session = await studioSessionCookie(assert);
 
 await post(runVoice, "/actions/run-voice", "voice.run", { runId });
 await post(reviewVoice, "/actions/review-voice", "voice.review", { runId });

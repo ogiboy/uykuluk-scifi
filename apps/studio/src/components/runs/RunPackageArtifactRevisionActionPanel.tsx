@@ -12,7 +12,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import type { StudioPackageRevisionSource } from "@/lib/revisionSources";
+import {
+  isStudioPackageArtifactRevisionState,
+  type StudioPackageRevisionSource,
+} from "@/lib/revisionSources";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import { useStudioGuardedActionSubmit } from "@/lib/useStudioGuardedActionSubmit";
 import { StudioMutationResultPanel } from "../studio/StudioMutationResultPanel";
@@ -26,6 +29,8 @@ type FormSubmitEvent = Readonly<{
   preventDefault: () => void;
 }>;
 
+type PackageArtifactDrafts = Record<string, string>;
+
 /**
  * Renders bounded production-package artifact revision controls for Studio.
  *
@@ -34,38 +39,50 @@ type FormSubmitEvent = Readonly<{
 export function RunPackageArtifactRevisionActionPanel({
   run,
 }: RunPackageArtifactRevisionActionPanelProps) {
-  const availableSources = run.revisionSources.packageArtifacts.filter(
-    (source) => source.available,
-  );
+  if (!isStudioPackageArtifactRevisionState(run.state)) {
+    return null;
+  }
+  return <RunPackageArtifactRevisionForm key={packageSourcesKey(run)} run={run} />;
+}
+
+function RunPackageArtifactRevisionForm({ run }: RunPackageArtifactRevisionActionPanelProps) {
+  const packageArtifacts = run.revisionSources.packageArtifacts;
+  const availableSources = packageArtifacts.filter((source) => source.available);
   const [artifactKey, setArtifactKey] = useState(availableSources[0]?.artifactKey ?? "subtitles");
   const selectedSource =
     availableSources.find((source) => source.artifactKey === artifactKey) ?? availableSources[0];
-  const [content, setContent] = useState(selectedSource?.content ?? "");
+  const [draftsByArtifactKey, setDraftsByArtifactKey] = useState<PackageArtifactDrafts>(() =>
+    draftsFromSources(availableSources),
+  );
   const [editor, setEditor] = useState("operator");
   const [reason, setReason] = useState("");
   const [confirmationOpen, setConfirmationOpen] = useState(false);
   const { state, submit } = useStudioGuardedActionSubmit(
     "Package artifact revisions refresh manifest evidence and invalidate downstream artifacts.",
   );
-
-  if (run.state !== "PRODUCTION_PACKAGE_GENERATED") {
-    return null;
-  }
+  const content = selectedSource
+    ? (draftsByArtifactKey[selectedSource.artifactKey] ?? selectedSource.content)
+    : "";
+  const ready =
+    Boolean(selectedSource) &&
+    content.trim() !== "" &&
+    editor.trim() !== "" &&
+    reason.trim() !== "";
 
   function selectArtifact(nextArtifactKey: string): void {
     const nextSource = availableSources.find((source) => source.artifactKey === nextArtifactKey);
     if (!nextSource) return;
     setArtifactKey(nextSource.artifactKey);
-    setContent(nextSource.content);
   }
 
   function requestConfirmation(event: FormSubmitEvent): void {
     event.preventDefault();
+    if (!ready) return;
     setConfirmationOpen(true);
   }
 
   async function confirmRevision(): Promise<void> {
-    if (!selectedSource) return;
+    if (!selectedSource || !ready) return;
     setConfirmationOpen(false);
     await submit({
       actionId: "package-artifact.revise",
@@ -78,12 +95,6 @@ export function RunPackageArtifactRevisionActionPanel({
       successToastTitle: "Package artifact revision recorded",
     });
   }
-
-  const ready =
-    Boolean(selectedSource) &&
-    content.trim() !== "" &&
-    editor.trim() !== "" &&
-    reason.trim() !== "";
 
   return (
     <section className='revision-action-panel' aria-labelledby='package-revision-heading'>
@@ -126,7 +137,7 @@ export function RunPackageArtifactRevisionActionPanel({
             disabled={!selectedSource}
             rows={10}
             value={content}
-            onChange={(event) => setContent(event.target.value)}
+            onChange={(event) => setArtifactDraft(selectedSource, event.target.value)}
           />
         </label>
         <Button disabled={state.kind === "submitting" || !ready} type='submit'>
@@ -146,6 +157,32 @@ export function RunPackageArtifactRevisionActionPanel({
       />
     </section>
   );
+
+  function setArtifactDraft(
+    source: StudioPackageRevisionSource | undefined,
+    nextContent: string,
+  ): void {
+    if (!source) return;
+    setDraftsByArtifactKey((current) => ({
+      ...current,
+      [source.artifactKey]: nextContent,
+    }));
+  }
+}
+
+function packageSourcesKey(run: RunPackageArtifactRevisionActionPanelProps["run"]): string {
+  const sourceKey = run.revisionSources.packageArtifacts
+    .map((source) => `${source.artifactKey}:${source.available}:${source.path}:${source.content}`)
+    .join("\u0000");
+  return `${run.runId}:${sourceKey}`;
+}
+
+function draftsFromSources(sources: readonly StudioPackageRevisionSource[]): PackageArtifactDrafts {
+  const drafts: PackageArtifactDrafts = {};
+  for (const source of sources) {
+    drafts[source.artifactKey] = source.content;
+  }
+  return drafts;
 }
 
 function UnavailablePackageSources({

@@ -1,4 +1,5 @@
 import type { StudioRunDetail } from "@/lib/runSummaries";
+import { isStudioRevisionState } from "@/lib/revisionSources";
 import { RunPackageArtifactRevisionActionPanel } from "./RunPackageArtifactRevisionActionPanel";
 import { RunScriptRevisionActionPanel } from "./RunScriptRevisionActionPanel";
 
@@ -12,7 +13,7 @@ type RunRevisionActionPanelProps = Readonly<{
  * @param run - The current run detail projection.
  */
 export function RunRevisionActionPanel({ run }: RunRevisionActionPanelProps) {
-  if (!revisionAvailableForState(run.state)) {
+  if (!isStudioRevisionState(run.state)) {
     return null;
   }
   return (
@@ -28,14 +29,5 @@ export function RunRevisionActionPanel({ run }: RunRevisionActionPanelProps) {
       <RunScriptRevisionActionPanel run={run} />
       <RunPackageArtifactRevisionActionPanel run={run} />
     </section>
-  );
-}
-
-function revisionAvailableForState(state: string): boolean {
-  return (
-    state === "SCRIPT_GENERATED" ||
-    state === "SCRIPT_REVIEWED" ||
-    state === "SCRIPT_APPROVED" ||
-    state === "PRODUCTION_PACKAGE_GENERATED"
   );
 }

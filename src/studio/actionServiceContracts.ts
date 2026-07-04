@@ -10,27 +10,27 @@ import {
 
 export { studioMutationActionIds } from "./actionServiceMetadata.js";
 
-const runIdSchema = z.string().refine(isValidRunId, { message: "Invalid run id." });
+export const runIdSchema = z.string().refine(isValidRunId, { message: "Invalid run id." });
 
-const ideaApprovalRequestSchema = z.strictObject({
+export const ideaApprovalRequestSchema = z.strictObject({
   ideaId: z.string().min(1),
   runId: runIdSchema,
 });
 
-const scriptApprovalRequestSchema = z.strictObject({
+export const scriptApprovalRequestSchema = z.strictObject({
   acknowledgeWarnings: z.boolean().default(false),
   runId: runIdSchema,
 });
 
-const runOnlyRequestSchema = z.strictObject({
+export const runOnlyRequestSchema = z.strictObject({
   runId: runIdSchema,
 });
 
-const emptyRequestSchema = z.strictObject({});
+export const emptyRequestSchema = z.strictObject({});
 
-const revisionContentSchema = z.string().min(1).max(200_000);
-const analyticsImportContentSchema = z.string().min(1).max(1_000_000);
-const analyticsSourceFileNameSchema = z
+export const revisionContentSchema = z.string().min(1).max(200_000);
+export const analyticsImportContentSchema = z.string().min(1).max(1_000_000);
+export const analyticsSourceFileNameSchema = z
   .string()
   .trim()
   .min(1)
@@ -40,20 +40,20 @@ const analyticsSourceFileNameSchema = z
     { message: "Analytics source file name must not contain path separators." },
   );
 
-const analyticsImportRequestSchema = z.strictObject({
+export const analyticsImportRequestSchema = z.strictObject({
   content: analyticsImportContentSchema,
   format: z.enum(["csv", "json"]),
   sourceFileName: analyticsSourceFileNameSchema,
 });
 
-const scriptRevisionRequestSchema = z.strictObject({
+export const scriptRevisionRequestSchema = z.strictObject({
   content: revisionContentSchema,
   editor: z.string().trim().min(1).max(200),
   reason: z.string().trim().min(1).max(4_000),
   runId: runIdSchema,
 });
 
-const packageArtifactRevisionRequestSchema = z.strictObject({
+export const packageArtifactRevisionRequestSchema = z.strictObject({
   artifactKey: z.enum(["subtitles", "scenes", "popup-cards", "youtube-metadata"]),
   content: revisionContentSchema,
   editor: z.string().trim().min(1).max(200),
@@ -61,18 +61,18 @@ const packageArtifactRevisionRequestSchema = z.strictObject({
   runId: runIdSchema,
 });
 
-const localReviewRequestShape = {
+export const localReviewRequestShape = {
   notes: z.string().trim().min(1).max(4_000),
   reviewedBy: z.string().trim().min(1).max(200),
   runId: runIdSchema,
 } as const;
 
-const renderDecisionRequestSchema = z.strictObject({
+export const renderDecisionRequestSchema = z.strictObject({
   decision: z.enum(renderDecisionValues),
   ...localReviewRequestShape,
 });
 
-const channelHandoffDecisionRequestSchema = z
+export const channelHandoffDecisionRequestSchema = z
   .strictObject({
     decision: z.enum(channelHandoffDecisionValues),
     ...localReviewRequestShape,
@@ -116,6 +116,36 @@ type StudioActionRequestById = {
   "voice.review": z.infer<typeof runOnlyRequestSchema>;
   "voice.run": z.infer<typeof runOnlyRequestSchema>;
 };
+
+export const studioMutationRequestSchemaByAction = {
+  "analytics.import": analyticsImportRequestSchema,
+  "analytics.report": emptyRequestSchema,
+  "channel-handoff.decide": channelHandoffDecisionRequestSchema,
+  "channel-handoff.run": runOnlyRequestSchema,
+  "cost.approve": runOnlyRequestSchema,
+  "estimate.run": runOnlyRequestSchema,
+  "evidence.run": runOnlyRequestSchema,
+  "idea.approve": ideaApprovalRequestSchema,
+  "ideas.run": emptyRequestSchema,
+  "package.run": runOnlyRequestSchema,
+  "publish.schedule": runOnlyRequestSchema,
+  "readiness.run": runOnlyRequestSchema,
+  "render.approve": runOnlyRequestSchema,
+  "render.decide": renderDecisionRequestSchema,
+  "render.review": runOnlyRequestSchema,
+  "render.run": runOnlyRequestSchema,
+  "render-plan.review": runOnlyRequestSchema,
+  "render-plan.run": runOnlyRequestSchema,
+  "review-bundle.run": runOnlyRequestSchema,
+  "script.approve": scriptApprovalRequestSchema,
+  "script.review": runOnlyRequestSchema,
+  "script.revise": scriptRevisionRequestSchema,
+  "script.run": runOnlyRequestSchema,
+  "package-artifact.revise": packageArtifactRevisionRequestSchema,
+  "upload.private": runOnlyRequestSchema,
+  "voice.review": runOnlyRequestSchema,
+  "voice.run": runOnlyRequestSchema,
+} as const satisfies Record<StudioMutationActionId, z.ZodType>;
 
 export type StudioMutationServiceContract = {
   actionId: StudioMutationActionId;
@@ -189,32 +219,5 @@ export function hasStudioMutationServiceContract(actionId: string): boolean {
  * @returns The schema that validates the action payload.
  */
 function requestSchemaForAction(actionId: StudioMutationActionId): z.ZodType {
-  if (actionId === "idea.approve") {
-    return ideaApprovalRequestSchema;
-  }
-  if (actionId === "script.approve") {
-    return scriptApprovalRequestSchema;
-  }
-  if (actionId === "script.revise") {
-    return scriptRevisionRequestSchema;
-  }
-  if (actionId === "package-artifact.revise") {
-    return packageArtifactRevisionRequestSchema;
-  }
-  if (actionId === "analytics.import") {
-    return analyticsImportRequestSchema;
-  }
-  if (actionId === "analytics.report") {
-    return emptyRequestSchema;
-  }
-  if (actionId === "render.decide") {
-    return renderDecisionRequestSchema;
-  }
-  if (actionId === "channel-handoff.decide") {
-    return channelHandoffDecisionRequestSchema;
-  }
-  if (actionId === "ideas.run") {
-    return emptyRequestSchema;
-  }
-  return runOnlyRequestSchema;
+  return studioMutationRequestSchemaByAction[actionId];
 }

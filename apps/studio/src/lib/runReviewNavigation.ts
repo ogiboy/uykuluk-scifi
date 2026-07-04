@@ -69,12 +69,7 @@ export function defaultRunReviewTabFromSummary(run: RunReviewSummaryNavigationIn
   if (run.state === "RENDERED" && run.renderDecision.kind !== "present") {
     return "media";
   }
-  if (
-    run.renderDecision.kind === "present" ||
-    run.finalReviewBundle.kind === "present" ||
-    run.channelHandoff.kind === "present" ||
-    run.channelHandoffDecision.kind === "present"
-  ) {
+  if (hasHandoffEvidence(run)) {
     return "handoff";
   }
   if (run.artifactCount > 0) {
@@ -171,12 +166,7 @@ export function runReviewTabFocus(run: RunReviewNavigationInput): RunReviewTabFo
       tab: "media",
     };
   }
-  if (
-    run.renderDecision.kind === "present" ||
-    run.finalReviewBundle.kind === "present" ||
-    run.channelHandoff.kind === "present" ||
-    run.channelHandoffDecision.kind === "present"
-  ) {
+  if (hasHandoffEvidence(run)) {
     return {
       detail: "Local review or manual channel handoff evidence is ready to inspect.",
       label: "Handoff",
@@ -210,4 +200,18 @@ function firstSearchParamValue(value: string | string[] | undefined): string | u
 
 function isRunReviewTab(value: string | undefined): value is RunReviewTab {
   return runReviewTabValues.includes(value as RunReviewTab);
+}
+
+function hasHandoffEvidence(
+  run: Pick<
+    StudioRunDetail,
+    "channelHandoff" | "channelHandoffDecision" | "finalReviewBundle" | "renderDecision"
+  >,
+): boolean {
+  return (
+    run.renderDecision.kind === "present" ||
+    run.finalReviewBundle.kind === "present" ||
+    run.channelHandoff.kind === "present" ||
+    run.channelHandoffDecision.kind === "present"
+  );
 }

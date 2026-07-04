@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { isStudioScriptRevisionState } from "@/lib/revisionSources";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import { useStudioGuardedActionSubmit } from "@/lib/useStudioGuardedActionSubmit";
 import { StudioMutationResultPanel } from "../studio/StudioMutationResultPanel";
@@ -17,14 +18,21 @@ type FormSubmitEvent = Readonly<{
   preventDefault: () => void;
 }>;
 
-const scriptRevisionStates = new Set(["SCRIPT_GENERATED", "SCRIPT_REVIEWED", "SCRIPT_APPROVED"]);
-
 /**
  * Renders a guarded script revision form for states where CLI/core allows script edits.
  *
  * @param run - The run detail projection containing revision source content.
  */
 export function RunScriptRevisionActionPanel({ run }: RunScriptRevisionActionPanelProps) {
+  if (!isStudioScriptRevisionState(run.state)) {
+    return null;
+  }
+  return (
+    <RunScriptRevisionForm key={`${run.runId}:${run.revisionSources.script.content}`} run={run} />
+  );
+}
+
+function RunScriptRevisionForm({ run }: RunScriptRevisionActionPanelProps) {
   const source = run.revisionSources.script;
   const [content, setContent] = useState(source.content);
   const [editor, setEditor] = useState("operator");
@@ -33,17 +41,17 @@ export function RunScriptRevisionActionPanel({ run }: RunScriptRevisionActionPan
   const { state, submit } = useStudioGuardedActionSubmit(
     "Script revisions write durable before/after evidence and require review again.",
   );
-
-  if (!scriptRevisionStates.has(run.state)) {
-    return null;
-  }
+  const ready =
+    source.available && content.trim() !== "" && editor.trim() !== "" && reason.trim() !== "";
 
   function requestConfirmation(event: FormSubmitEvent): void {
     event.preventDefault();
+    if (!ready) return;
     setConfirmationOpen(true);
   }
 
   async function confirmRevision(): Promise<void> {
+    if (!ready) return;
     setConfirmationOpen(false);
     await submit({
       actionId: "script.revise",
@@ -56,9 +64,6 @@ export function RunScriptRevisionActionPanel({ run }: RunScriptRevisionActionPan
       successToastTitle: "Script revision recorded",
     });
   }
-
-  const ready =
-    source.available && content.trim() !== "" && editor.trim() !== "" && reason.trim() !== "";
 
   return (
     <section className='revision-action-panel' aria-labelledby='script-revision-heading'>
