@@ -330,12 +330,12 @@
   without YouTube APIs, upload, publish, or run workflow mutation.
 - Studio has a typed route-security contract for current read-only pages, the local session route,
   guarded local idea/script/cost/render approval routes, guarded idea-run and workflow-stage/review/
-  revision routes, guarded manual analytics import/report routes, the guarded local render-decision
-  route, and disabled upload/publish action routes. Tests assert that current App Router pages are
-  covered, enabled local mutations require POST-only same-origin JSON, action headers,
-  service-contract handling, local session proof, and cached-session cleanup after 401; disabled
-  upload/publish actions require CLI/core contracts, durable evidence, explicit approvals, and
-  disabled publish risk.
+  revision routes, guarded manual analytics import/report routes, guarded local render-decision and
+  channel-handoff-decision routes, and disabled upload/publish action routes. Tests assert that
+  current App Router pages are covered, enabled local mutations require POST-only same-origin JSON,
+  action headers, service-contract handling, local session proof, and cached-session cleanup after
+  401; disabled upload/publish actions require CLI/core contracts, durable evidence, explicit
+  approvals, and disabled publish risk.
 - Shared Studio mutation service contracts exist for guarded idea/script/cost/render approvals,
   idea-run and workflow-stage/review/revision actions, local render/channel-handoff decisions,
   manual analytics actions, and disabled upload/publish actions. Contracts validate payloads, bind

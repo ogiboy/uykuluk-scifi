@@ -58,10 +58,11 @@ export function validateStudioMutationRequest(
 
 function isSameOriginMutation(request: Request): boolean {
   const origin = parseOrigin(request.headers.get("origin"));
+  const candidates = requestOriginCandidates(request);
   if (!origin) {
-    return false;
+    return isTrustedOriginlessLocalMutation(request, candidates);
   }
-  return requestOriginCandidates(request).some((candidate) => originsMatch(origin, candidate));
+  return candidates.some((candidate) => originsMatch(origin, candidate));
 }
 
 function hasValidStudioSession(request: Request): boolean {
@@ -135,6 +136,21 @@ function originsMatch(left: URL, right: URL): boolean {
     normalizedPort(left) === normalizedPort(right) &&
     isLoopbackLikeHost(left.hostname) &&
     isLoopbackLikeHost(right.hostname)
+  );
+}
+
+function isTrustedOriginlessLocalMutation(request: Request, candidates: readonly URL[]): boolean {
+  const fetchSite = request.headers.get("sec-fetch-site");
+  if (fetchSite && !["none", "same-origin", "same-site"].includes(fetchSite)) {
+    return false;
+  }
+  return candidates.some(isLocalHttpOrigin);
+}
+
+function isLocalHttpOrigin(origin: URL): boolean {
+  return (
+    (origin.protocol === "http:" || origin.protocol === "https:") &&
+    isLoopbackLikeHost(origin.hostname)
   );
 }
 

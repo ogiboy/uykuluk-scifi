@@ -43,6 +43,18 @@ describe("Studio mutation security", () => {
     ).toEqual({ ok: true });
   });
 
+  it("accepts originless local browser mutations when fetch metadata is same-origin", () => {
+    expect(
+      validateStudioMutationRequest(
+        studioRequest("http://127.0.0.1:3000", {
+          fetchSite: "same-origin",
+          origin: null,
+        }),
+        "ideas.run",
+      ),
+    ).toEqual({ ok: true });
+  });
+
   it("rejects external, missing, or port-mismatched origins", () => {
     expect(
       validateStudioMutationRequest(
@@ -58,7 +70,13 @@ describe("Studio mutation security", () => {
     ).toMatchObject({ ok: false, status: 403 });
     expect(
       validateStudioMutationRequest(
-        studioRequest("http://localhost:3000", { origin: null }),
+        studioRequest("http://example.test:3000", { fetchSite: "same-origin", origin: null }),
+        "ideas.run",
+      ),
+    ).toMatchObject({ ok: false, status: 403 });
+    expect(
+      validateStudioMutationRequest(
+        studioRequest("http://localhost:3000", { fetchSite: "cross-site", origin: null }),
         "ideas.run",
       ),
     ).toMatchObject({ ok: false, status: 403 });
@@ -68,6 +86,7 @@ describe("Studio mutation security", () => {
 function studioRequest(
   requestOrigin: string,
   options: Readonly<{
+    fetchSite?: "cross-site" | "none" | "same-origin" | "same-site";
     forwardedHost?: string;
     forwardedProto?: "http" | "https";
     origin?: string | null;
@@ -88,6 +107,9 @@ function studioRequest(
   }
   if (options.forwardedProto) {
     headers["x-forwarded-proto"] = options.forwardedProto;
+  }
+  if (options.fetchSite) {
+    headers["sec-fetch-site"] = options.fetchSite;
   }
   return new Request(`${requestOrigin}/actions/run-ideas`, {
     body: "{}",

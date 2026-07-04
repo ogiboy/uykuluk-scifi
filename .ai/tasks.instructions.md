@@ -187,8 +187,9 @@
   records revision evidence. Future work can extend this to richer editor UX and per-field diffs
   without weakening the cost/render approval boundary.
 - Maintain route security requirements before any additional web action routes exist; current tests
-  cover read-only page routes, guarded local approval/review/workflow-stage routes, disabled
-  upload/publish action routes, and bind each action route to a shared service contract.
+  cover read-only page routes, guarded local approval/review/workflow-stage routes, bounded revision
+  routes, manual analytics routes, disabled upload/publish action routes, and bind each action route
+  to a shared service contract.
 - Keep the internal reserved-provider execution contract ready for a separately approved real
   adapter without adding paid SDKs, credentials, or operator execution commands.
 
