@@ -534,9 +534,9 @@ pnpm version:plan
 
 `pnpm qa:product` is the broader optional product UAT gate for PR-ready production-loop work. It
 exercises local draft-render review, malicious/incorrect order attempts, stale/tampered evidence,
-disabled upload/publish, manual analytics import/report feedback, operator desk command/diagnostic
-visibility, and Studio read-only service visibility, including durable local render decisions, in an
-isolated clean copy.
+disabled upload/publish, manual analytics import/report feedback, guarded Studio analytics actions,
+operator desk command/diagnostic visibility, and Studio read-only service visibility, including
+durable local render decisions, in an isolated clean copy.
 
 Focused gates:
 

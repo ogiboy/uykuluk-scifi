@@ -213,10 +213,10 @@ try {
     runId: renderedRunId,
     workdir,
   });
-  run([pnpm, "exec", "tsx", "scripts/qa/product-uat-studio-readonly.ts", renderedRunId], {
+  run([pnpm, "exec", "tsx", "scripts/qa/product-uat-studio-services.ts", renderedRunId], {
     env: { UYKULUK_SCIFI_ROOT: workdir },
-    expectOutput: "Studio read-only UAT passed.",
-    label: "studio read-only services expose reviewable run",
+    expectOutput: "Studio services UAT passed.",
+    label: "studio services expose reviewable run and guarded analytics actions",
     scenario: "studio read-only",
   });
   await assertStaleEvidenceRecovery({ pnpm, run, runId: renderedRunId, workdir });

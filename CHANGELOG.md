@@ -20,6 +20,10 @@ future generated release notes can be inserted predictably.
 - keep guarded idea-run creation available from Studio home when the queue already has runs.
 - add guarded Studio startup action for local idea generation.
 
+### Tests
+
+- cover guarded Studio analytics import/report actions in product UAT.
+
 ## v0.72.0 (2026-07-03)
 
 ### Fixes
