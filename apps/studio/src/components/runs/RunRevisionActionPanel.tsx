@@ -1,5 +1,5 @@
 import type { StudioRunDetail } from "@/lib/runSummaries";
-import { isStudioRevisionState } from "@/lib/revisionSources";
+import { isStudioRevisionState } from "@/lib/studioRevisionEligibility";
 import { RunPackageArtifactRevisionActionPanel } from "./RunPackageArtifactRevisionActionPanel";
 import { RunScriptRevisionActionPanel } from "./RunScriptRevisionActionPanel";
 

@@ -12,11 +12,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  isStudioPackageArtifactRevisionState,
-  type StudioPackageRevisionSource,
-} from "@/lib/revisionSources";
+import type { StudioPackageRevisionSource } from "@/lib/revisionSources";
 import type { StudioRunDetail } from "@/lib/runSummaries";
+import { isStudioPackageArtifactRevisionState } from "@/lib/studioRevisionEligibility";
 import { useStudioGuardedActionSubmit } from "@/lib/useStudioGuardedActionSubmit";
 import { StudioMutationResultPanel } from "../studio/StudioMutationResultPanel";
 import { RunRevisionConfirmationDialog } from "./RunRevisionConfirmationDialog";
