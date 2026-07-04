@@ -34,6 +34,28 @@ future generated release notes can be inserted predictably.
 - cover the guarded Studio workflow route path in product UAT.
 - cover guarded Studio analytics import/report actions in product UAT.
 
+## v0.73.0 (2026-07-03)
+
+### Fixes
+
+- keep run table columns modular (e81f9e5)
+- reuse operator action projection (44a9f86)
+- reset run table pagination (4319ad8)
+- deduplicate mutation client import (8a6d2ab)
+- refresh session after auth rejection (9576da8)
+
+### Documentation
+
+- keep current state concise (8e757ca)
+- document action workbench boundaries (a96447c)
+
+### Features
+
+- summarize queue action modes (ae1d78e)
+- show queue action status (3f5bb40)
+- surface action workbench on home (a023432)
+- add run action workbench (8731906)
+
 ## v0.72.0 (2026-07-03)
 
 ### Fixes
