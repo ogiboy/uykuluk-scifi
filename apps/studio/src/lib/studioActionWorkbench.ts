@@ -1,5 +1,7 @@
 import type { StudioApprovalActionConfig } from "./studioApprovalAction";
 import { approvalActionForRun, approvalCommandForRun } from "./studioApprovalAction";
+import type { StudioArtifactPreview } from "./artifactPreviews";
+import { artifactReviewActionsForRun } from "./renderPlanReviewAction";
 import type { StudioRunDetail } from "./runSummaries";
 import { stageActionForRun } from "./studioStageAction";
 
@@ -36,6 +38,7 @@ export type StudioActionWorkbenchRun = Pick<
   "blockedActionCount" | "nextRecommendedCommand" | "readinessStatus" | "runId" | "state"
 > &
   Readonly<{
+    artifacts?: readonly Pick<StudioArtifactPreview, "exists" | "path">[];
     channelHandoff: Pick<StudioRunDetail["channelHandoff"], "kind">;
     channelHandoffDecision: Pick<StudioRunDetail["channelHandoffDecision"], "kind" | "nextAction">;
     renderDecision: Pick<StudioRunDetail["renderDecision"], "kind" | "nextAction">;
@@ -94,6 +97,10 @@ export function countStudioActionWorkbench(
 }
 
 function primaryWorkbenchAction(run: StudioActionWorkbenchRun): StudioActionWorkbenchPrimary {
+  const artifactReviewAction = primaryArtifactReviewAction(run);
+  if (artifactReviewAction) {
+    return artifactReviewAction;
+  }
   const approvalAction = approvalActionForRun(run);
   if (approvalAction) {
     return approvalWorkbenchAction(approvalAction, run);
@@ -149,6 +156,44 @@ function primaryWorkbenchAction(run: StudioActionWorkbenchRun): StudioActionWork
     routePath: null,
     tone: run.readinessStatus === "blocked" ? "blocked" : "complete",
   };
+}
+
+function primaryArtifactReviewAction(
+  run: StudioActionWorkbenchRun,
+): StudioActionWorkbenchPrimary | null {
+  if (!run.artifacts) {
+    return null;
+  }
+  const action = artifactReviewActionsForRun({
+    artifacts: run.artifacts,
+    nextRecommendedCommand: run.nextRecommendedCommand,
+    runId: run.runId,
+    state: run.state,
+  }).find((candidate) => candidate.actionId === primaryArtifactReviewActionId(run));
+  return action
+    ? {
+        command: action.command,
+        description: `${action.details} This review does not advance workflow state, but it should happen before the next state-changing production step.`,
+        label: action.heading,
+        routePath: action.routePath,
+        tone: "available",
+      }
+    : null;
+}
+
+function primaryArtifactReviewActionId(
+  run: StudioActionWorkbenchRun,
+): "render.review" | "render-plan.review" | "voice.review" | null {
+  if (run.state === "PRODUCTION_PACKAGE_GENERATED" || run.state === "COST_ESTIMATED") {
+    return "render-plan.review";
+  }
+  if (run.state === "READY_FOR_MANUAL_PRODUCTION") {
+    return "voice.review";
+  }
+  if (run.state === "RENDERED" && run.renderDecision.kind !== "present") {
+    return "render.review";
+  }
+  return null;
 }
 
 function approvalWorkbenchAction(

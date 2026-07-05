@@ -10,8 +10,11 @@ import {
 
 export type StudioRenderPlanReviewActionRun = Pick<
   StudioRunDetail,
-  "artifacts" | "nextRecommendedCommand" | "runId" | "state"
->;
+  "nextRecommendedCommand" | "runId" | "state"
+> &
+  Readonly<{
+    artifacts: readonly Pick<StudioArtifactPreview, "exists" | "path">[];
+  }>;
 
 export type StudioArtifactReviewAction = StudioStageActionConfig &
   Readonly<{
