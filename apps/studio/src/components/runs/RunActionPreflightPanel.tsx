@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import type { StudioActionPreflight } from "@/lib/studioActionPreflight";
+import type { StudioActionPreflight, StudioActionPreflightItem } from "@/lib/studioActionPreflight";
 
 type RunActionPreflightPanelProps = Readonly<{
   preflight: StudioActionPreflight;
@@ -12,25 +12,37 @@ type RunActionPreflightPanelProps = Readonly<{
  */
 export function RunActionPreflightPanel({ preflight }: RunActionPreflightPanelProps) {
   return (
-    <section className='action-preflight' aria-label={preflight.title}>
-      <div className='action-preflight-heading'>
+    <section className='space-y-4 rounded-lg border bg-muted/30 p-4' aria-label={preflight.title}>
+      <div className='grid grid-cols-[1fr_auto] items-start gap-4'>
         <div>
-          <h3>{preflight.title}</h3>
-          <p>{preflight.copy}</p>
+          <h3 className='font-semibold'>{preflight.title}</h3>
+          <p className='mt-1 text-sm text-muted-foreground'>{preflight.copy}</p>
         </div>
         <Badge variant='outline'>local only</Badge>
       </div>
-      <dl className='action-preflight-list'>
+      <dl className='grid gap-3'>
         {preflight.items.map((item) => (
-          <div key={item.label}>
-            <dt>
-              <span className={`status-pill small ${item.status}`}>{item.status}</span>
-              {item.label}
+          <div className='rounded-md border bg-background p-3' key={item.label}>
+            <dt className='flex flex-wrap items-center gap-2 text-sm font-medium'>
+              <Badge variant={preflightBadgeVariant(item.status)}>{item.status}</Badge>
+              <span>{item.label}</span>
             </dt>
-            <dd>{item.detail}</dd>
+            <dd className='mt-2 text-sm text-muted-foreground'>{item.detail}</dd>
           </div>
         ))}
       </dl>
     </section>
   );
+}
+
+function preflightBadgeVariant(
+  status: StudioActionPreflightItem["status"],
+): "destructive" | "outline" | "secondary" {
+  if (status === "attention") {
+    return "destructive";
+  }
+  if (status === "pending") {
+    return "outline";
+  }
+  return "secondary";
 }
