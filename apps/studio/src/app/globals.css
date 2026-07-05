@@ -1482,6 +1482,24 @@ h3 {
   text-underline-offset: 3px;
 }
 
+.last-mutation-notice {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+}
+
+.last-mutation-notice time {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+}
+
+.last-mutation-facts {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 18px;
+  color: var(--muted);
+}
+
 .analytics-action-panel {
   grid-column: 1 / -1;
 }

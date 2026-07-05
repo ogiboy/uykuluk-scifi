@@ -9,6 +9,7 @@ import type { StudioActionServiceStatus } from "@/lib/actionServiceStatus";
 import { startIdeasReadinessFromDoctor } from "@/lib/startIdeasReadiness";
 import { EmptyRunCard } from "./EmptyRunCard";
 import { HomeActionQueuePanel } from "./HomeActionQueuePanel";
+import { StudioLastMutationNotice } from "./StudioLastMutationNotice";
 import { StartNewRunPanel } from "./StartNewRunPanel";
 import { StudioMutationSessionPanel } from "./StudioMutationSessionPanel";
 
@@ -51,6 +52,7 @@ export function StudioControlDesk({ actionStatus, doctorOverview, runs }: Studio
 
       <aside className='control-desk-rail' aria-label='Studio safety and queue summary'>
         <StudioMutationSessionPanel />
+        <StudioLastMutationNotice />
         {latestRun ? <StartNewRunPanel readiness={startIdeasReadiness} /> : null}
         <SafetyGateSummary actionStatus={actionStatus} />
         <HomeActionQueuePanel runs={runs} />
