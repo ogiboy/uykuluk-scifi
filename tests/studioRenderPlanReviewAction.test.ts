@@ -125,15 +125,7 @@ function renderPlanReviewRunFixture(
 
 function artifactPreview(path: string): StudioRenderPlanReviewActionRun["artifacts"][number] {
   return {
-    description: "test",
     exists: true,
-    group: "Render Planning",
-    kind: "json",
-    label: "test",
-    operatorAction: "test",
     path,
-    preview: null,
-    previewTruncated: false,
-    sizeBytes: 1,
   };
 }
