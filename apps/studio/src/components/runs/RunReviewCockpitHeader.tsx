@@ -23,13 +23,18 @@ export function RunReviewCockpitHeader({ run }: RunReviewCockpitHeaderProps) {
   const brief = buildStudioRunReviewBrief(run);
   const tabFocus = runReviewTabFocus(run);
   return (
-    <Card className='run-detail-hero' aria-labelledby='run-overview-heading'>
-      <CardHeader className='run-hero-overview'>
+    <Card
+      className='grid min-w-0 items-start gap-4 rounded-lg bg-[linear-gradient(135deg,color-mix(in_srgb,var(--accent)_7%,transparent),transparent_50%),var(--panel)] p-4 py-4 min-[1181px]:grid-cols-[minmax(220px,0.8fr)_minmax(180px,0.7fr)_minmax(360px,1.5fr)]'
+      aria-labelledby='run-overview-heading'
+    >
+      <CardHeader className='min-w-0 p-0'>
         <CardDescription>Run review workspace</CardDescription>
         <CardTitle>
-          <h2 id='run-overview-heading'>Run Overview</h2>
+          <h2 className='mb-0' id='run-overview-heading'>
+            Run Overview
+          </h2>
         </CardTitle>
-        <div className='run-cockpit-badges'>
+        <div className='flex flex-wrap gap-2'>
           <Badge variant={brief.severity === "blocked" ? "destructive" : "secondary"}>
             {reviewBadgeLabel(brief.severity)}
           </Badge>
@@ -39,8 +44,8 @@ export function RunReviewCockpitHeader({ run }: RunReviewCockpitHeaderProps) {
           <Badge variant='outline'>Focus: {tabFocus.label}</Badge>
         </div>
       </CardHeader>
-      <CardContent className='run-hero-metadata'>
-        <dl className='run-metadata'>
+      <CardContent className='min-w-0 p-0'>
+        <dl className='grid gap-3 sm:grid-cols-2'>
           <RunMetric label='State' value={run.state} />
           <RunMetric label='Approvals' value={run.approvalCount} />
           <RunMetric label='Warnings' value={run.warningCount} />
@@ -48,22 +53,32 @@ export function RunReviewCockpitHeader({ run }: RunReviewCockpitHeaderProps) {
           <RunMetric label='Evidence' value={run.evidenceStatus} />
         </dl>
       </CardContent>
-      <CardContent className='run-hero-brief'>
-        <section className='run-review-brief' aria-labelledby='run-review-brief-heading'>
+      <CardContent className='min-w-0 p-0'>
+        <section className='grid gap-3' aria-labelledby='run-review-brief-heading'>
           <div>
-            <p className={`review-brief-severity ${brief.severity}`}>{brief.severity}</p>
-            <h3 id='run-review-brief-heading'>{brief.title}</h3>
+            <p
+              className={
+                brief.severity === "blocked"
+                  ? "mb-1.5 text-[11px] font-extrabold uppercase tracking-[0.14em] text-destructive"
+                  : "mb-1.5 text-[11px] font-extrabold uppercase tracking-[0.14em] text-primary"
+              }
+            >
+              {brief.severity}
+            </p>
+            <h3 className='font-semibold' id='run-review-brief-heading'>
+              {brief.title}
+            </h3>
             <p>{brief.summary}</p>
             <p className='text-sm text-muted-foreground'>{tabFocus.detail}</p>
           </div>
-          <ul className='review-brief-checkpoints'>
+          <ul className='grid list-none gap-2 p-0'>
             {brief.checkpoints.map((checkpoint) => (
               <ReviewBriefCheckpoint checkpoint={checkpoint} key={checkpoint.label} />
             ))}
           </ul>
         </section>
       </CardContent>
-      <CardContent className='run-hero-command'>
+      <CardContent className='col-span-full grid min-w-0 gap-3 p-0'>
         <RunPrimaryActionPanel run={run} />
         <div className='grid gap-2 rounded-lg border bg-muted/20 p-4'>
           <strong className='text-sm'>CLI/core source command</strong>
@@ -88,13 +103,13 @@ function ReviewBriefCheckpoint({
   checkpoint,
 }: Readonly<{ checkpoint: StudioRunReviewBriefCheckpoint }>) {
   return (
-    <li>
+    <li className='grid grid-cols-[auto_minmax(0,1fr)] items-start gap-2'>
       <Badge className='capitalize' variant={checkpointBadgeVariant(checkpoint.status)}>
         {checkpoint.status}
       </Badge>
       <div>
         <strong>{checkpoint.label}</strong>
-        <p>{checkpoint.detail}</p>
+        <p className='mt-0.5 text-xs text-muted-foreground'>{checkpoint.detail}</p>
       </div>
     </li>
   );
@@ -111,9 +126,9 @@ function checkpointBadgeVariant(
 
 function RunMetric({ label, value }: Readonly<{ label: string; value: number | string }>) {
   return (
-    <div>
-      <dt>{label}</dt>
-      <dd>{value}</dd>
+    <div className='min-w-0'>
+      <dt className='text-xs text-muted-foreground'>{label}</dt>
+      <dd className='mt-1 break-words font-semibold'>{value}</dd>
     </div>
   );
 }
