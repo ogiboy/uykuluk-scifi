@@ -4,11 +4,13 @@ import { useId } from "react";
 import { Button } from "@/components/ui/button";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import { useStudioStageActionSubmit } from "@/lib/useStudioStageActionSubmit";
+import { StudioMutationResultPanel } from "../studio/StudioMutationResultPanel";
 import { RunStageActionConfirmationDialog } from "./RunStageActionConfirmationDialog";
 
 type RunQuickStageActionButtonProps = Readonly<{
   label?: string;
   run: Pick<StudioRunDetail, "nextRecommendedCommand" | "runId" | "state">;
+  showResult?: boolean;
   variant?: "default" | "secondary";
 }>;
 
@@ -20,11 +22,13 @@ type RunQuickStageActionButtonProps = Readonly<{
  *
  * @param label - Optional compact label for dense surfaces.
  * @param run - The run projection used to select and submit the stage action.
+ * @param showResult - Whether to show the mutation lifecycle result inline.
  * @param variant - The shadcn button variant to use.
  */
 export function RunQuickStageActionButton({
   label = "Run web action",
   run,
+  showResult = false,
   variant = "default",
 }: RunQuickStageActionButtonProps) {
   const statusId = useId();
@@ -46,7 +50,7 @@ export function RunQuickStageActionButton({
   const buttonLabel = isSubmitting ? "Running..." : label;
 
   return (
-    <>
+    <div className={showResult ? "quick-stage-action-control with-result" : undefined}>
       <Button
         aria-label={`${action.heading} for ${run.runId}`}
         aria-describedby={statusId}
@@ -61,6 +65,7 @@ export function RunQuickStageActionButton({
       <span className='sr-only' id={statusId} role='status' aria-live='polite'>
         {state.message}
       </span>
+      {showResult ? <StudioMutationResultPanel state={state} /> : null}
       <RunStageActionConfirmationDialog
         action={action}
         currentState={run.state}
@@ -71,6 +76,6 @@ export function RunQuickStageActionButton({
         onConfirm={() => void submitStageAction()}
         onOpenChange={setConfirmationOpen}
       />
-    </>
+    </div>
   );
 }

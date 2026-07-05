@@ -11,6 +11,7 @@ import { RunQuickStageActionButton } from "./RunQuickStageActionButton";
 
 type RunPrimaryActionPanelProps = Readonly<{
   compact?: boolean;
+  railHref?: string;
   run: StudioRunPrimaryActionRun;
 }>;
 
@@ -18,9 +19,14 @@ type RunPrimaryActionPanelProps = Readonly<{
  * Renders the primary web-first operator action for run detail and mobile review surfaces.
  *
  * @param compact - Whether the panel is rendered inside the mobile action sheet.
+ * @param railHref - Optional route to the full approval or decision rail.
  * @param run - The run projection used to choose the current action affordance.
  */
-export function RunPrimaryActionPanel({ compact = false, run }: RunPrimaryActionPanelProps) {
+export function RunPrimaryActionPanel({
+  compact = false,
+  railHref = "#review-decision",
+  run,
+}: RunPrimaryActionPanelProps) {
   const action = buildStudioRunPrimaryAction(run);
 
   return (
@@ -40,10 +46,10 @@ export function RunPrimaryActionPanel({ compact = false, run }: RunPrimaryAction
       <p>{action.description}</p>
       <div className='run-primary-action-controls'>
         {action.mode === "stage" ? (
-          <RunQuickStageActionButton label={action.label} run={run} />
+          <RunQuickStageActionButton label={action.label} run={run} showResult />
         ) : null}
         {action.mode === "rail" ? (
-          <a className='run-primary-action-link' href='#review-decision'>
+          <a className='run-primary-action-link' href={railHref}>
             Open action rail
           </a>
         ) : null}

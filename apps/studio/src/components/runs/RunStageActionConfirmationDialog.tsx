@@ -70,7 +70,7 @@ export function RunStageActionConfirmationDialog({
         </div>
         <DialogFooter showCloseButton>
           <Button disabled={isSubmitting} type='button' onClick={onConfirm}>
-            Run {action.buttonLabel.toLowerCase()}
+            {isSubmitting ? "Running..." : action.buttonLabel}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { RunPrimaryActionPanel } from "@/components/runs/RunPrimaryActionPanel";
 import { RunGuidedControlLoopPanel } from "@/components/runs/RunGuidedControlLoopPanel";
 import { ActiveRunActions } from "@/components/studio/ActiveRunActions";
 import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
@@ -7,6 +8,7 @@ import type { StudioDoctorOverview } from "@/lib/doctorOverview";
 import { formatRunRenderDecision, formatRunReviewCounts } from "@/lib/runSummaryCopy";
 import type { StudioActionServiceStatus } from "@/lib/actionServiceStatus";
 import { startIdeasReadinessFromDoctor } from "@/lib/startIdeasReadiness";
+import { runReviewHrefFromSummary } from "@/lib/runReviewNavigation";
 import { EmptyRunCard } from "./EmptyRunCard";
 import { HomeActionQueuePanel } from "./HomeActionQueuePanel";
 import { StudioLastMutationNotice } from "./StudioLastMutationNotice";
@@ -62,6 +64,7 @@ export function StudioControlDesk({ actionStatus, doctorOverview, runs }: Studio
 }
 
 function ActiveRunCard({ run }: Readonly<{ run: StudioRunSummary }>) {
+  const decisionRailHref = runReviewHrefFromSummary(run, "review-decision");
   const currentSteps = run.workflowProgress.filter((step) =>
     ["blocked", "current"].includes(step.status),
   );
@@ -89,6 +92,8 @@ function ActiveRunCard({ run }: Readonly<{ run: StudioRunSummary }>) {
           { label: "Progress", value: `${completedSteps}/${run.workflowProgress.length}` },
         ]}
       />
+
+      <RunPrimaryActionPanel compact railHref={decisionRailHref} run={run} />
 
       <RunGuidedControlLoopPanel compact run={run} />
 

@@ -1645,6 +1645,16 @@ h3 {
   align-items: center;
 }
 
+.quick-stage-action-control {
+  display: contents;
+}
+
+.quick-stage-action-control.with-result {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
 .run-primary-action-link {
   display: inline-flex;
   min-height: 36px;
