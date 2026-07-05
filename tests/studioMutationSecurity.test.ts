@@ -30,13 +30,13 @@ describe("Studio mutation security", () => {
     ).toEqual({ ok: true });
   });
 
-  it("accepts local loopback dev-port aliases with the session proof", () => {
+  it("rejects local loopback aliases when the port differs", () => {
     expect(
       validateStudioMutationRequest(
         studioRequest("http://127.0.0.1:3210", { origin: "http://localhost:3000" }),
         "ideas.run",
       ),
-    ).toEqual({ ok: true });
+    ).toMatchObject({ ok: false, status: 403 });
   });
 
   it("accepts forwarded host and protocol when the app server request URL is internal", () => {
@@ -90,6 +90,17 @@ describe("Studio mutation security", () => {
       ),
     ).toMatchObject({ ok: false, status: 403 });
   });
+
+  it("rejects malformed session cookies as unauthorized without throwing", () => {
+    expect(
+      validateStudioMutationRequest(
+        studioRequest("http://localhost:3000", {
+          cookie: `${studioSessionCookieName}=%E0%A4%A`,
+        }),
+        "ideas.run",
+      ),
+    ).toMatchObject({ ok: false, status: 401 });
+  });
 });
 
 function studioRequest(
@@ -99,6 +110,7 @@ function studioRequest(
     forwardedHost?: string;
     forwardedProto?: "http" | "https";
     origin?: string | null;
+    cookie?: string;
   }> = {},
 ): Request {
   const origin = options.origin === undefined ? requestOrigin : options.origin;
@@ -106,7 +118,7 @@ function studioRequest(
     [studioActionHeaderName]: "ideas.run",
     [studioSessionHeaderName]: token,
     "content-type": "application/json",
-    cookie: `${studioSessionCookieName}=${token}`,
+    cookie: options.cookie ?? `${studioSessionCookieName}=${token}`,
   };
   if (origin) {
     headers.origin = origin;

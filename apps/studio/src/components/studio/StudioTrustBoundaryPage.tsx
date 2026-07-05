@@ -1,4 +1,8 @@
-import { StudioRouteBoundaryCard } from "./StudioRouteBoundaryCard";
+import {
+  defaultStudioRouteBoundaryActions,
+  StudioRouteBoundaryCard,
+  type StudioRouteBoundaryAction,
+} from "./StudioRouteBoundaryCard";
 import { StudioShell } from "./StudioShell";
 import type { StudioRouteBoundaryCopy } from "@/lib/studioRouteBoundaryCopy";
 
@@ -23,10 +27,26 @@ export function StudioTrustBoundaryPage({ copy }: StudioTrustBoundaryPageProps) 
       </header>
 
       <StudioRouteBoundaryCard
+        actions={studioTrustBoundaryActions(copy)}
         description={copy.description}
         headingId={copy.recoveryHeadingId}
         title={copy.recoveryTitle}
       />
     </StudioShell>
   );
+}
+
+function studioTrustBoundaryActions(
+  copy: StudioRouteBoundaryCopy,
+): readonly StudioRouteBoundaryAction[] {
+  if (!copy.primaryActionHref || !copy.primaryActionLabel) {
+    return defaultStudioRouteBoundaryActions;
+  }
+  return [
+    {
+      href: copy.primaryActionHref,
+      label: copy.primaryActionLabel,
+    },
+    ...defaultStudioRouteBoundaryActions.filter((action) => action.href !== copy.primaryActionHref),
+  ];
 }

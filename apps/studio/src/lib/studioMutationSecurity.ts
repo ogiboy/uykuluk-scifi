@@ -78,7 +78,11 @@ function cookieValue(cookieHeader: string, name: string): string | null {
   for (const part of cookieHeader.split(";")) {
     const [rawKey, ...rawValue] = part.trim().split("=");
     if (rawKey === name) {
-      return decodeURIComponent(rawValue.join("="));
+      try {
+        return decodeURIComponent(rawValue.join("="));
+      } catch {
+        return null;
+      }
     }
   }
   return null;
@@ -134,6 +138,7 @@ function originsMatch(left: URL, right: URL): boolean {
   }
   return (
     left.protocol === right.protocol &&
+    left.port === right.port &&
     isLoopbackLikeHost(left.hostname) &&
     isLoopbackLikeHost(right.hostname)
   );

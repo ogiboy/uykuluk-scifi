@@ -2,6 +2,8 @@ export type StudioRouteBoundaryCopy = Readonly<{
   description: string;
   eyebrow: string;
   heading: string;
+  primaryActionHref?: "/" | "/runs";
+  primaryActionLabel?: string;
   recoveryHeadingId: string;
   recoveryTitle: string;
   status: string;
@@ -54,6 +56,8 @@ export const studioUnauthorizedCopy = {
     "Studio could not verify a valid local web-control session. Refresh the local session from the operator desk before retrying any approval or review action. No producer state was changed.",
   eyebrow: "401 trust boundary",
   heading: "Local web session required",
+  primaryActionHref: "/",
+  primaryActionLabel: "Open operator desk session controls",
   recoveryHeadingId: "studio-unauthorized-recovery-heading",
   recoveryTitle: "Safe recovery",
   status: "Session required",

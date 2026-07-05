@@ -37,6 +37,8 @@ describe("Studio run route boundaries", () => {
 
     expect(studioUnauthorizedCopy).toMatchObject({
       heading: "Local web session required",
+      primaryActionHref: "/",
+      primaryActionLabel: "Open operator desk session controls",
       status: "Session required",
     });
     expect(studioUnauthorizedCopy.description).toContain("valid local web-control session");

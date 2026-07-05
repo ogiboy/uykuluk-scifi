@@ -20,8 +20,9 @@ export type StudioGuardedActionSubmitState =
       kind: "blocked";
       message: string;
       recordSummary: StudioMutationRecordSummary | null;
+      status: number;
     }
-  | { action: StudioGuardedActionMetadata; kind: "error"; message: string };
+  | { action: StudioGuardedActionMetadata; kind: "error"; message: string; status?: number };
 
 export type StudioGuardedActionMetadata = Readonly<{
   actionId: string;
@@ -69,6 +70,7 @@ export function useStudioGuardedActionSubmit(idleMessage: string) {
         kind: "blocked",
         message: result.message,
         recordSummary: result.recordSummary,
+        status: result.status,
       });
       toast.warning(input.errorToastTitle, {
         description: `${result.message} Studio is refreshing persisted local state.`,
@@ -77,7 +79,12 @@ export function useStudioGuardedActionSubmit(idleMessage: string) {
       return;
     }
     if (result.kind === "error") {
-      setState({ action: startedAction, kind: "error", message: result.message });
+      setState({
+        action: startedAction,
+        kind: "error",
+        message: result.message,
+        status: result.status,
+      });
       toast.error(input.errorToastTitle, { description: result.message });
       return;
     }
