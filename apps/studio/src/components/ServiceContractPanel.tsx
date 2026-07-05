@@ -1,5 +1,8 @@
+import Link from "next/link";
+import type { Route } from "next";
 import { CopyableCommand } from "@/components/studio/CopyableCommand";
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   getStudioActionServiceStatus,
@@ -122,6 +125,7 @@ function ServiceContractCard({ summary }: Readonly<{ summary: StudioActionServic
         </div>
       </CardHeader>
       <CardContent className='space-y-3'>
+        <ActionRouteControl summary={summary} />
         <CopyableCommand command={summary.cliCommand} label={`${summary.actionId} command`} />
         <dl className='grid gap-2 text-sm text-muted-foreground sm:grid-cols-2'>
           <div className='space-y-1 rounded-md border bg-muted/20 p-3'>
@@ -137,6 +141,24 @@ function ServiceContractCard({ summary }: Readonly<{ summary: StudioActionServic
         </dl>
       </CardContent>
     </Card>
+  );
+}
+
+function ActionRouteControl({ summary }: Readonly<{ summary: StudioActionServiceSummary }>) {
+  if (summary.availability === "ready-for-cli" && summary.routePath !== "unrouted") {
+    return (
+      <Link
+        className={buttonVariants({ className: "w-full sm:w-fit", variant: "default" })}
+        href={summary.routePath as Route}
+      >
+        Open web action
+      </Link>
+    );
+  }
+  return (
+    <p className='rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive'>
+      Web execution is disabled for this action.
+    </p>
   );
 }
 
