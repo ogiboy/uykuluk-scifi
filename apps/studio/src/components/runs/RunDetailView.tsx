@@ -13,6 +13,9 @@ import { RunReviewSectionTabs } from "./RunReviewSectionTabs";
 import { RunReviewTabs } from "./RunReviewTabs";
 import { RunWorkflowProgressPanel } from "./RunWorkflowProgressPanel";
 
+const reviewWorkspaceClass =
+  "grid min-w-0 items-start gap-4 min-[720px]:grid-cols-[repeat(auto-fit,minmax(320px,1fr))]";
+
 /**
  * Renders a read-only detail view for a run.
  *
@@ -25,21 +28,21 @@ export function RunDetailView({
 }: Readonly<{ initialTab?: RunReviewTab; run: StudioRunDetail }>) {
   const defaultTab = initialTab ?? defaultRunReviewTab(run);
   return (
-    <div className='run-review-page'>
+    <div className='grid min-w-0 gap-4'>
       <RunReviewCockpitHeader run={run} />
       <RunReviewActionSummarySheet run={run} />
 
-      <div className='run-review-cockpit'>
+      <div className='grid min-w-0 items-start gap-4 min-[1181px]:grid-cols-[minmax(0,1fr)_minmax(320px,0.42fr)]'>
         <RunReviewTabs initialTab={defaultTab}>
           <RunReviewSectionTabs run={run} />
 
           <TabsContent value='progress'>
-            <div className='run-review-workspace'>
+            <div className={reviewWorkspaceClass}>
               <RunWorkflowProgressPanel workflowProgress={run.workflowProgress} />
             </div>
           </TabsContent>
           <TabsContent value='media'>
-            <div className='run-review-workspace'>
+            <div className={reviewWorkspaceClass}>
               <RunProductionMediaPanel
                 evidenceMessage={run.evidenceMessage}
                 evidenceNextAction={run.evidenceNextAction}
@@ -50,7 +53,7 @@ export function RunDetailView({
             </div>
           </TabsContent>
           <TabsContent value='artifacts'>
-            <div className='run-review-workspace'>
+            <div className={reviewWorkspaceClass}>
               <RunArtifactPreviewsPanel
                 artifacts={run.artifacts}
                 evidenceStatus={run.evidenceStatus}
@@ -58,19 +61,22 @@ export function RunDetailView({
             </div>
           </TabsContent>
           <TabsContent value='handoff'>
-            <div className='run-review-workspace'>
+            <div className={reviewWorkspaceClass}>
               <RunFinalReviewBundlePanel finalReviewBundle={run.finalReviewBundle} />
               <RunChannelHandoffPanel channelHandoff={run.channelHandoff} />
             </div>
           </TabsContent>
           <TabsContent value='readiness'>
-            <div className='run-review-workspace'>
+            <div className={reviewWorkspaceClass}>
               <RunReadinessDiagnosticsPanels run={run} />
             </div>
           </TabsContent>
         </RunReviewTabs>
 
-        <aside className='run-review-sticky-rail' aria-label='Persistent run action rail'>
+        <aside
+          className='min-w-0 min-[1181px]:sticky min-[1181px]:top-4 min-[1181px]:max-h-[calc(100dvh-2rem)] min-[1181px]:overflow-auto'
+          aria-label='Persistent run action rail'
+        >
           <RunReviewDecisionRail run={run} />
         </aside>
       </div>

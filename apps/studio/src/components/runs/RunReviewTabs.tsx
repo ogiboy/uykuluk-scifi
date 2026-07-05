@@ -41,7 +41,7 @@ export function RunReviewTabs({ children, initialTab }: RunReviewTabsProps) {
   }
 
   return (
-    <Tabs value={tab} onValueChange={selectTab} className='run-review-tabs'>
+    <Tabs value={tab} onValueChange={selectTab} className='grid min-w-0 gap-4'>
       {children}
     </Tabs>
   );

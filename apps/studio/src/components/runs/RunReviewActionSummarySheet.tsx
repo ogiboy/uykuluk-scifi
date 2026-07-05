@@ -43,12 +43,12 @@ type RunReviewActionSummarySheetProps = Readonly<{
  */
 export function RunReviewActionSummarySheet({ run }: RunReviewActionSummarySheetProps) {
   return (
-    <div className='run-mobile-action-sheet'>
+    <div className='block min-[901px]:hidden'>
       <Sheet>
         <SheetTrigger asChild>
           <Button type='button'>Open action summary</Button>
         </SheetTrigger>
-        <SheetContent className='run-action-sheet-content'>
+        <SheetContent className='w-[min(92vw,440px)] overflow-y-auto'>
           <SheetHeader>
             <SheetTitle>Run action summary</SheetTitle>
             <SheetDescription>
@@ -57,7 +57,7 @@ export function RunReviewActionSummarySheet({ run }: RunReviewActionSummarySheet
             </SheetDescription>
           </SheetHeader>
 
-          <div className='run-action-sheet-body'>
+          <div className='grid gap-3 px-4 pb-4'>
             <Alert variant={run.blockedActionCount > 0 ? "destructive" : "default"}>
               <ShieldCheckIcon />
               <AlertTitle>
@@ -70,7 +70,7 @@ export function RunReviewActionSummarySheet({ run }: RunReviewActionSummarySheet
               </AlertDescription>
             </Alert>
 
-            <div className='run-action-sheet-badges'>
+            <div className='grid justify-items-start gap-3'>
               <Badge variant='secondary'>State: {run.state}</Badge>
               <Badge variant='outline'>Readiness: {run.readinessStatus}</Badge>
               <Badge variant='outline'>Evidence: {run.evidenceStatus}</Badge>
@@ -87,9 +87,9 @@ export function RunReviewActionSummarySheet({ run }: RunReviewActionSummarySheet
             <RunPrimaryActionPanel compact run={run} />
 
             {run.blockedActions.length > 0 ? (
-              <div className='run-action-sheet-blockers'>
+              <div className='grid gap-3'>
                 <strong>Blocking evidence</strong>
-                <ul>
+                <ul className='grid gap-2 pl-5 text-muted-foreground'>
                   {run.blockedActions.slice(0, 4).map((action, index) => (
                     <li key={`mobile-blocker-${index}-${action}`}>{action}</li>
                   ))}

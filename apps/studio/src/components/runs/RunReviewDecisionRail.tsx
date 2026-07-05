@@ -24,7 +24,7 @@ type RunReviewDecisionRailProps = Readonly<{
 export function RunReviewDecisionRail({ run }: RunReviewDecisionRailProps) {
   return (
     <section
-      className='run-review-rail'
+      className='grid min-w-0 gap-4'
       id='review-decision'
       aria-label='Run decisions and blocked actions'
     >
