@@ -122,12 +122,7 @@ function controlLoopItems(run: StudioControlLoopRun): StudioControlLoopItem[] {
       tone: run.evidenceStatus === "available" ? "done" : "attention",
     },
     {
-      detail:
-        run.blockedActionCount === 0
-          ? "No blocked actions are projected by current evidence."
-          : `${run.blockedActionCount} blocked action${
-              run.blockedActionCount === 1 ? "" : "s"
-            } remain visible.`,
+      detail: blockedActionsDetail(run.blockedActionCount),
       label: "Blocked actions",
       tone: run.blockedActionCount === 0 ? "done" : "blocked",
     },
@@ -138,4 +133,12 @@ function controlLoopItems(run: StudioControlLoopRun): StudioControlLoopItem[] {
       tone: "done",
     },
   ];
+}
+
+function blockedActionsDetail(blockedActionCount: number): string {
+  if (blockedActionCount === 0) {
+    return "No blocked actions are projected by current evidence.";
+  }
+  const noun = blockedActionCount === 1 ? "action" : "actions";
+  return `${blockedActionCount} blocked ${noun} remain visible.`;
 }
