@@ -2,7 +2,9 @@
 
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   readStudioMutationSessionSnapshot,
   refreshStudioMutationSession,
@@ -61,43 +63,45 @@ export function StudioMutationSessionPanel() {
   }
 
   return (
-    <section className='panel compact-panel' aria-labelledby='studio-session-heading'>
-      <div className='artifact-preview-header'>
-        <div>
-          <h3 id='studio-session-heading'>Local web control session</h3>
-          <p className='artifact-description'>
-            Used automatically for same-origin approval and review actions in Studio.
-          </p>
-        </div>
-        <span className={sessionPillClassName(state)}>
-          {state.snapshot.status === "ready" ? "ready" : "not ready"}
-        </span>
-      </div>
-      <p>{state.message}</p>
-      {state.snapshot.status === "ready" ? (
-        <p className='artifact-action'>
-          Expires in about {state.snapshot.expiresInSeconds} seconds.
-        </p>
-      ) : (
-        <p className='artifact-action'>
-          Studio will request a matching HttpOnly cookie and session header before a mutation.
-        </p>
-      )}
-      <Button
-        disabled={state.tone === "refreshing"}
-        type='button'
-        variant='secondary'
-        onClick={refreshSession}
-      >
-        {state.tone === "refreshing" ? "Refreshing..." : "Refresh local session"}
-      </Button>
+    <section aria-labelledby='studio-session-heading'>
+      <Card>
+        <CardHeader className='gap-4 sm:grid-cols-[1fr_auto]'>
+          <div className='space-y-2'>
+            <CardTitle id='studio-session-heading'>Local web control session</CardTitle>
+            <p className='text-sm text-muted-foreground'>
+              Used automatically for same-origin approval and review actions in Studio.
+            </p>
+          </div>
+          <Badge
+            className='justify-self-start sm:justify-self-end'
+            variant={state.tone === "error" ? "destructive" : "secondary"}
+          >
+            {state.snapshot.status === "ready" ? "ready" : "not ready"}
+          </Badge>
+        </CardHeader>
+        <CardContent className='space-y-3'>
+          <p className='text-sm'>{state.message}</p>
+          {state.snapshot.status === "ready" ? (
+            <code className='block max-w-full break-all rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground'>
+              Expires in about {state.snapshot.expiresInSeconds} seconds.
+            </code>
+          ) : (
+            <p className='text-sm text-muted-foreground'>
+              Studio will request a matching HttpOnly cookie and session header before a mutation.
+            </p>
+          )}
+        </CardContent>
+        <CardFooter>
+          <Button
+            disabled={state.tone === "refreshing"}
+            type='button'
+            variant='secondary'
+            onClick={refreshSession}
+          >
+            {state.tone === "refreshing" ? "Refreshing..." : "Refresh local session"}
+          </Button>
+        </CardFooter>
+      </Card>
     </section>
   );
-}
-
-function sessionPillClassName(state: SessionPanelState): string {
-  if (state.tone === "error") {
-    return "status-pill small blocked";
-  }
-  return "status-pill small";
 }

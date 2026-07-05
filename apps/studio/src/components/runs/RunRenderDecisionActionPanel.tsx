@@ -162,22 +162,22 @@ export function RunRenderDecisionActionPanel({
               disabled.
             </DialogDescription>
           </DialogHeader>
-          <div className='confirmation-summary'>
-            <dl className='decision-list'>
-              <div>
-                <dt>Decision</dt>
-                <dd>{pendingPayload?.decision ?? decision}</dd>
+          <div className='space-y-4 rounded-lg border bg-muted/30 p-4'>
+            <dl className='grid gap-3 text-sm sm:grid-cols-2'>
+              <div className='space-y-1'>
+                <dt className='font-medium text-muted-foreground'>Decision</dt>
+                <dd className='break-all'>{pendingPayload?.decision ?? decision}</dd>
               </div>
-              <div>
-                <dt>Reviewed by</dt>
-                <dd>{pendingPayload?.reviewedBy ?? reviewedBy}</dd>
+              <div className='space-y-1'>
+                <dt className='font-medium text-muted-foreground'>Reviewed by</dt>
+                <dd className='break-all'>{pendingPayload?.reviewedBy ?? reviewedBy}</dd>
               </div>
-              <div>
-                <dt>Run</dt>
-                <dd>{runId}</dd>
+              <div className='space-y-1'>
+                <dt className='font-medium text-muted-foreground'>Run</dt>
+                <dd className='break-all'>{runId}</dd>
               </div>
             </dl>
-            <p className='artifact-action'>
+            <p className='text-sm text-muted-foreground'>
               Notes are required and will be persisted with the local decision evidence.
             </p>
           </div>

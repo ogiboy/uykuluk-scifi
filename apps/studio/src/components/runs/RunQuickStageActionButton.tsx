@@ -3,7 +3,6 @@
 import { useId } from "react";
 import { Button } from "@/components/ui/button";
 import type { StudioRunDetail } from "@/lib/runSummaries";
-import { cn } from "@/lib/utils";
 import { useStudioStageActionSubmit } from "@/lib/useStudioStageActionSubmit";
 import { StudioMutationResultPanel } from "../studio/StudioMutationResultPanel";
 import { RunStageActionConfirmationDialog } from "./RunStageActionConfirmationDialog";
@@ -51,7 +50,7 @@ export function RunQuickStageActionButton({
   const buttonLabel = isSubmitting ? "Running..." : label;
 
   return (
-    <div className={cn("quick-stage-action-control", showResult && "with-result")}>
+    <div className={showResult ? "grid gap-2" : "contents"}>
       <Button
         aria-label={`${action.heading} for ${run.runId}`}
         aria-describedby={statusId}
