@@ -79,8 +79,8 @@ export function RunReviewActionSummarySheet({ run }: RunReviewActionSummarySheet
               </Badge>
             </div>
 
-            <div className='operator-command-block'>
-              <strong>Next safe action</strong>
+            <div className='grid gap-2 rounded-lg border bg-muted/20 p-4'>
+              <strong className='text-sm'>Next safe action</strong>
               <CopyableCommand command={getNextSafeCommand(run)} label='Next safe action' />
             </div>
 
@@ -96,15 +96,17 @@ export function RunReviewActionSummarySheet({ run }: RunReviewActionSummarySheet
                 </ul>
               </div>
             ) : (
-              <p className='artifact-description'>
+              <p className='text-sm text-muted-foreground'>
                 No blocked actions are projected from the current evidence bundle.
               </p>
             )}
 
             {run.evidenceNextAction ? (
-              <p className='artifact-action'>Evidence action: {run.evidenceNextAction}</p>
+              <p className='rounded-lg border bg-muted/20 p-3 text-sm text-muted-foreground'>
+                Evidence action: <code className='text-foreground'>{run.evidenceNextAction}</code>
+              </p>
             ) : (
-              <p className='artifact-description'>{run.evidenceMessage}</p>
+              <p className='text-sm text-muted-foreground'>{run.evidenceMessage}</p>
             )}
           </div>
         </SheetContent>

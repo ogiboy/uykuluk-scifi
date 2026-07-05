@@ -89,17 +89,19 @@ export function StudioCommandPalette({ runs }: StudioCommandPaletteProps) {
         <Button type='button' variant='secondary'>
           <SearchIcon data-icon='inline-start' />
           Command palette
-          <kbd className='keyboard-shortcut'>⌘K</kbd>
+          <kbd className='rounded border bg-background px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground'>
+            ⌘K
+          </kbd>
         </Button>
       </DialogTrigger>
-      <DialogContent className='command-palette-dialog' showCloseButton={false}>
-        <DialogHeader>
+      <DialogContent className='overflow-hidden p-0 sm:max-w-2xl' showCloseButton={false}>
+        <DialogHeader className='px-6 pt-6'>
           <DialogTitle>Operator command palette</DialogTitle>
           <DialogDescription>
             Navigate Studio surfaces or copy safe CLI commands. This palette never mutates a run.
           </DialogDescription>
         </DialogHeader>
-        <Command>
+        <Command className='rounded-none'>
           <CommandInput placeholder='Search pages, runs, states, or safe commands...' />
           <CommandList>
             <CommandEmpty>No matching local Studio action.</CommandEmpty>
@@ -125,9 +127,9 @@ export function StudioCommandPalette({ runs }: StudioCommandPaletteProps) {
                   onSelect={() => navigateTo(runReviewHrefFromSummary(run) as Route)}
                 >
                   <TerminalIcon />
-                  <span className='command-item-body'>
-                    <strong>{run.runId}</strong>
-                    <span>
+                  <span className='grid min-w-0 flex-1 gap-1'>
+                    <strong className='truncate'>{run.runId}</strong>
+                    <span className='truncate text-xs text-muted-foreground'>
                       {run.state} · readiness {run.readinessStatus} · evidence {run.evidenceStatus}
                     </span>
                   </span>
@@ -144,9 +146,11 @@ export function StudioCommandPalette({ runs }: StudioCommandPaletteProps) {
                   onSelect={() => void copyCommand(run)}
                 >
                   <CopyIcon />
-                  <span className='command-item-body'>
-                    <strong>{run.runId}</strong>
-                    <code>{getNextSafeCommand(run)}</code>
+                  <span className='grid min-w-0 flex-1 gap-1'>
+                    <strong className='truncate'>{run.runId}</strong>
+                    <code className='truncate font-mono text-xs text-muted-foreground'>
+                      {getNextSafeCommand(run)}
+                    </code>
                   </span>
                   <CommandShortcut>copy</CommandShortcut>
                 </CommandItem>

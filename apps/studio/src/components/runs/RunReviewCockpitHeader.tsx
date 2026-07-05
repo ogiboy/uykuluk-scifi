@@ -54,7 +54,7 @@ export function RunReviewCockpitHeader({ run }: RunReviewCockpitHeaderProps) {
             <p className={`review-brief-severity ${brief.severity}`}>{brief.severity}</p>
             <h3 id='run-review-brief-heading'>{brief.title}</h3>
             <p>{brief.summary}</p>
-            <p className='artifact-description'>{tabFocus.detail}</p>
+            <p className='text-sm text-muted-foreground'>{tabFocus.detail}</p>
           </div>
           <ul className='review-brief-checkpoints'>
             {brief.checkpoints.map((checkpoint) => (
@@ -65,8 +65,8 @@ export function RunReviewCockpitHeader({ run }: RunReviewCockpitHeaderProps) {
       </CardContent>
       <CardContent className='run-hero-command'>
         <RunPrimaryActionPanel run={run} />
-        <div className='operator-command-block secondary-command'>
-          <strong>CLI/core source command</strong>
+        <div className='grid gap-2 rounded-lg border bg-muted/20 p-4'>
+          <strong className='text-sm'>CLI/core source command</strong>
           <CopyableCommand command={getNextSafeCommand(run)} label='Next safe action' />
         </div>
       </CardContent>
@@ -89,13 +89,24 @@ function ReviewBriefCheckpoint({
 }: Readonly<{ checkpoint: StudioRunReviewBriefCheckpoint }>) {
   return (
     <li>
-      <span className={`status-pill small ${checkpoint.status}`}>{checkpoint.status}</span>
+      <Badge className='capitalize' variant={checkpointBadgeVariant(checkpoint.status)}>
+        {checkpoint.status}
+      </Badge>
       <div>
         <strong>{checkpoint.label}</strong>
         <p>{checkpoint.detail}</p>
       </div>
     </li>
   );
+}
+
+function checkpointBadgeVariant(
+  status: StudioRunReviewBriefCheckpoint["status"],
+): "outline" | "secondary" {
+  if (status === "done" || status === "ready") {
+    return "secondary";
+  }
+  return "outline";
 }
 
 function RunMetric({ label, value }: Readonly<{ label: string; value: number | string }>) {
