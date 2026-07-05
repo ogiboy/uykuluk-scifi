@@ -128,6 +128,7 @@ function writeLastMutationResult(
     recordedAtIso: new Date().toISOString(),
     refreshedPersistedState: action.refreshedPersistedState,
     routePath: action.routePath,
+    runId: recordSummary?.runId ?? null,
     status: options.status,
   });
 }

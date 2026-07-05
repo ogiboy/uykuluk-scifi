@@ -1,16 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import { buildStudioActionPreflight } from "@/lib/studioActionPreflight";
@@ -18,17 +12,13 @@ import { useStudioGuardedActionSubmit } from "@/lib/useStudioGuardedActionSubmit
 import { StudioMutationResultPanel } from "../studio/StudioMutationResultPanel";
 import { RunActionPreflightPanel } from "./RunActionPreflightPanel";
 import {
+  RunChannelHandoffDecisionConfirmationDialog,
+  type PendingChannelHandoffDecisionPayload,
+} from "./RunChannelHandoffDecisionConfirmationDialog";
+import {
   RunChannelHandoffDecisionSelector,
   type ChannelHandoffDecisionValue,
 } from "./RunChannelHandoffDecisionSelector";
-
-type PendingChannelHandoffDecisionPayload = Readonly<{
-  decision: ChannelHandoffDecisionValue;
-  notes: string;
-  reviewedBy: string;
-  runId: string;
-  thumbnailCandidateId?: string;
-}>;
 
 type RunChannelHandoffDecisionActionPanelProps = Readonly<{
   run: StudioRunDetail;
@@ -58,6 +48,9 @@ export function RunChannelHandoffDecisionActionPanel({
   const [pendingPayload, setPendingPayload] = useState<PendingChannelHandoffDecisionPayload | null>(
     null,
   );
+  const thumbnailCandidateIdInputId = useId();
+  const reviewedByInputId = useId();
+  const notesInputId = useId();
   const { state, submit } = useStudioGuardedActionSubmit(
     "Records local channel-prep evidence only. Upload and publish stay disabled.",
   );
@@ -108,98 +101,83 @@ export function RunChannelHandoffDecisionActionPanel({
   }
 
   return (
-    <section className='panel' aria-labelledby='channel-handoff-decision-action-heading'>
-      <h2 id='channel-handoff-decision-action-heading'>Record Channel Handoff Decision</h2>
-      <p>
-        This guarded Studio action writes the same local decision evidence as the CLI. It does not
-        upload media, schedule a video, or approve public publish.
-      </p>
-      <RunActionPreflightPanel preflight={preflight} />
-      <form className='studio-form' onSubmit={requestDecisionConfirmation}>
-        <RunChannelHandoffDecisionSelector decision={decision} onDecisionChange={setDecision} />
-        <label>
-          Thumbnail candidate
-          <Input
-            disabled={!candidateRequired}
-            maxLength={120}
-            required={candidateRequired}
-            value={thumbnailCandidateId}
-            onChange={(event) => setThumbnailCandidateId(event.target.value)}
-          />
-          <span className='field-help'>
-            Recommended candidate: {recommendedCandidateId}. Required only for accepted channel
-            prep.
-          </span>
-        </label>
-        <label>
-          Reviewed by
-          <Input
-            maxLength={200}
-            minLength={1}
-            required
-            value={reviewedBy}
-            onChange={(event) => setReviewedBy(event.target.value)}
-          />
-        </label>
-        <label>
-          Notes
-          <Textarea
-            className='resize-y'
-            maxLength={4000}
-            minLength={1}
-            required
-            rows={4}
-            value={notes}
-            onChange={(event) => setNotes(event.target.value)}
-          />
-        </label>
-        <Button disabled={state.kind === "submitting" || !formReady} type='submit'>
-          Record local channel decision
-        </Button>
-      </form>
-      <Dialog open={confirmationOpen} onOpenChange={setConfirmationOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirm local channel handoff decision</DialogTitle>
-            <DialogDescription>
-              This writes local review evidence for {run.runId}. Upload and public publish stay
-              disabled.
-            </DialogDescription>
-          </DialogHeader>
-          <div className='confirmation-summary'>
-            <dl className='decision-list'>
-              <div>
-                <dt>Decision</dt>
-                <dd>{pendingPayload?.decision ?? decision}</dd>
-              </div>
-              <div>
-                <dt>Thumbnail</dt>
-                <dd>{pendingPayload?.thumbnailCandidateId ?? "not selected for this decision"}</dd>
-              </div>
-              <div>
-                <dt>Reviewed by</dt>
-                <dd>{pendingPayload?.reviewedBy ?? reviewedBy}</dd>
-              </div>
-              <div>
-                <dt>Run</dt>
-                <dd>{run.runId}</dd>
-              </div>
-            </dl>
-            <p className='artifact-action'>
-              Notes are required and will be persisted with the local channel handoff decision.
+    <Card aria-labelledby='channel-handoff-decision-action-heading'>
+      <CardHeader>
+        <CardDescription>Manual channel-prep decision</CardDescription>
+        <CardTitle>
+          <h2 id='channel-handoff-decision-action-heading'>Record Channel Handoff Decision</h2>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className='space-y-6'>
+        <p className='text-sm text-muted-foreground'>
+          This guarded Studio action writes the same local decision evidence as the CLI. It does not
+          upload media, schedule a video, or approve public publish.
+        </p>
+        <RunActionPreflightPanel preflight={preflight} />
+        <form className='space-y-5' onSubmit={requestDecisionConfirmation}>
+          <RunChannelHandoffDecisionSelector decision={decision} onDecisionChange={setDecision} />
+          <div className='space-y-2'>
+            <Label htmlFor={thumbnailCandidateIdInputId}>Thumbnail candidate</Label>
+            <Input
+              id={thumbnailCandidateIdInputId}
+              disabled={!candidateRequired}
+              maxLength={120}
+              required={candidateRequired}
+              value={thumbnailCandidateId}
+              onChange={(event) => setThumbnailCandidateId(event.target.value)}
+            />
+            <p className='text-xs text-muted-foreground'>
+              Recommended candidate: {recommendedCandidateId}. Required only for accepted channel
+              prep.
             </p>
           </div>
-          <DialogFooter showCloseButton>
-            <Button disabled={state.kind === "submitting"} type='button' onClick={confirmDecision}>
-              Confirm local decision
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      <StudioMutationResultPanel state={state} />
-      {run.channelHandoffDecision.nextAction ? (
-        <p className='artifact-action'>CLI equivalent: {run.channelHandoffDecision.nextAction}</p>
-      ) : null}
-    </section>
+          <div className='space-y-2'>
+            <Label htmlFor={reviewedByInputId}>Reviewed by</Label>
+            <Input
+              id={reviewedByInputId}
+              maxLength={200}
+              minLength={1}
+              required
+              value={reviewedBy}
+              onChange={(event) => setReviewedBy(event.target.value)}
+            />
+          </div>
+          <div className='space-y-2'>
+            <Label htmlFor={notesInputId}>Notes</Label>
+            <Textarea
+              id={notesInputId}
+              className='min-h-28 resize-y'
+              maxLength={4000}
+              minLength={1}
+              required
+              rows={4}
+              value={notes}
+              onChange={(event) => setNotes(event.target.value)}
+            />
+          </div>
+          <Button disabled={state.kind === "submitting" || !formReady} type='submit'>
+            Record local channel decision
+          </Button>
+        </form>
+      </CardContent>
+      <RunChannelHandoffDecisionConfirmationDialog
+        decision={decision}
+        isSubmitting={state.kind === "submitting"}
+        open={confirmationOpen}
+        pendingPayload={pendingPayload}
+        reviewedBy={reviewedBy}
+        runId={run.runId}
+        onConfirm={confirmDecision}
+        onOpenChange={setConfirmationOpen}
+      />
+      <CardContent className='space-y-3'>
+        <StudioMutationResultPanel state={state} />
+        {run.channelHandoffDecision.nextAction ? (
+          <p className='rounded-md border bg-background px-3 py-2 font-mono text-xs'>
+            CLI equivalent: {run.channelHandoffDecision.nextAction}
+          </p>
+        ) : null}
+      </CardContent>
+    </Card>
   );
 }

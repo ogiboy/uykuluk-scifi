@@ -1,4 +1,5 @@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 
 type RenderDecisionValue = StudioRunDetail["renderDecisionCommands"][number]["decision"];
@@ -22,21 +23,27 @@ export function RunRenderDecisionSelector({
   onDecisionChange,
 }: RunRenderDecisionSelectorProps) {
   return (
-    <fieldset className='render-decision-selector'>
-      <legend>Decision</legend>
+    <fieldset className='space-y-3'>
+      <legend className='text-sm font-medium'>Decision</legend>
       <RadioGroup
+        className='grid gap-3'
         value={decision}
         onValueChange={(value) => setDecisionFromRadioValue(value, commands, onDecisionChange)}
       >
         {commands.map((item) => (
-          <label className='render-decision-option' key={item.decision}>
-            <RadioGroupItem value={item.decision} />
-            <span>
-              <strong>{formatRenderDecisionLabel(item.decision)}</strong>
-              <span>{item.guidance}</span>
-              <code>{item.command}</code>
+          <Label
+            className='grid cursor-pointer grid-cols-[auto_1fr] items-start gap-3 rounded-lg border bg-card p-3 text-sm transition-colors hover:bg-accent/10'
+            key={item.decision}
+          >
+            <RadioGroupItem className='mt-1' value={item.decision} />
+            <span className='space-y-2'>
+              <strong className='block'>{formatRenderDecisionLabel(item.decision)}</strong>
+              <span className='block text-muted-foreground'>{item.guidance}</span>
+              <code className='block break-all rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground'>
+                {item.command}
+              </code>
             </span>
-          </label>
+          </Label>
         ))}
       </RadioGroup>
     </fieldset>

@@ -2,7 +2,16 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -95,54 +104,66 @@ function RunPackageArtifactRevisionForm({ run }: RunPackageArtifactRevisionActio
   }
 
   return (
-    <section className='revision-action-panel' aria-labelledby='package-revision-heading'>
-      <h3 id='package-revision-heading'>Revise package artifact</h3>
-      <p>
-        Revisions are limited to immediate post-package state. Downstream render-plan, evidence, and
-        readiness artifacts are invalidated by CLI/core.
-      </p>
-      <form className='studio-form' onSubmit={requestConfirmation}>
-        <label>
-          Artifact
-          <Select value={selectedSource?.artifactKey ?? ""} onValueChange={selectArtifact}>
-            <SelectTrigger aria-label='Package artifact revision target'>
-              <SelectValue placeholder='Choose artifact' />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                {availableSources.map((source) => (
-                  <SelectItem key={source.artifactKey} value={source.artifactKey}>
-                    {source.label}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </label>
-        {selectedSource ? <p className='artifact-action'>{selectedSource.path}</p> : null}
-        <UnavailablePackageSources sources={run.revisionSources.packageArtifacts} />
-        <label>
-          Editor
-          <Input value={editor} onChange={(event) => setEditor(event.target.value)} />
-        </label>
-        <label>
-          Reason
-          <Input value={reason} onChange={(event) => setReason(event.target.value)} />
-        </label>
-        <label>
-          Revised content
-          <Textarea
-            disabled={!selectedSource}
-            rows={10}
-            value={content}
-            onChange={(event) => setArtifactDraft(selectedSource, event.target.value)}
-          />
-        </label>
-        <Button disabled={state.kind === "submitting" || !ready} type='submit'>
-          {state.kind === "submitting" ? "Recording..." : "Record package revision"}
-        </Button>
-      </form>
-      <StudioMutationResultPanel state={state} />
+    <section aria-labelledby='package-revision-heading'>
+      <Card className='border-dashed bg-card/70 shadow-none'>
+        <CardHeader>
+          <CardTitle id='package-revision-heading'>Revise package artifact</CardTitle>
+          <CardDescription>
+            Revisions are limited to immediate post-package state. Downstream render-plan, evidence,
+            and readiness artifacts are invalidated by CLI/core.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form className='grid gap-4' onSubmit={requestConfirmation}>
+            <Label className='grid gap-2'>
+              <span>Artifact</span>
+              <Select value={selectedSource?.artifactKey ?? ""} onValueChange={selectArtifact}>
+                <SelectTrigger aria-label='Package artifact revision target'>
+                  <SelectValue placeholder='Choose artifact' />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {availableSources.map((source) => (
+                      <SelectItem key={source.artifactKey} value={source.artifactKey}>
+                        {source.label}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </Label>
+            {selectedSource ? (
+              <code className='max-w-full break-all rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground'>
+                {selectedSource.path}
+              </code>
+            ) : null}
+            <UnavailablePackageSources sources={run.revisionSources.packageArtifacts} />
+            <Label className='grid gap-2'>
+              <span>Editor</span>
+              <Input value={editor} onChange={(event) => setEditor(event.target.value)} />
+            </Label>
+            <Label className='grid gap-2'>
+              <span>Reason</span>
+              <Input value={reason} onChange={(event) => setReason(event.target.value)} />
+            </Label>
+            <Label className='grid gap-2'>
+              <span>Revised content</span>
+              <Textarea
+                disabled={!selectedSource}
+                rows={10}
+                value={content}
+                onChange={(event) => setArtifactDraft(selectedSource, event.target.value)}
+              />
+            </Label>
+            <Button disabled={state.kind === "submitting" || !ready} type='submit'>
+              {state.kind === "submitting" ? "Recording..." : "Record package revision"}
+            </Button>
+          </form>
+        </CardContent>
+        <CardFooter className='block'>
+          <StudioMutationResultPanel state={state} />
+        </CardFooter>
+      </Card>
       <RunRevisionConfirmationDialog
         actionLabel='package-artifact.revise'
         currentState={run.state}
@@ -191,7 +212,7 @@ function UnavailablePackageSources({
     return null;
   }
   return (
-    <p className='artifact-description'>
+    <p className='text-sm text-muted-foreground'>
       Unavailable: {unavailable.map((source) => `${source.label} (${source.message})`).join("; ")}
     </p>
   );

@@ -2,11 +2,14 @@
 
 import { useId } from "react";
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   buildStudioRunPrimaryAction,
   type StudioRunPrimaryAction,
   type StudioRunPrimaryActionRun,
 } from "@/lib/runPrimaryAction";
+import { cn } from "@/lib/utils";
 import { CopyableCommand } from "../studio/CopyableCommand";
 import { RunQuickStageActionButton } from "./RunQuickStageActionButton";
 
@@ -32,39 +35,45 @@ export function RunPrimaryActionPanel({
   const headingId = useId();
 
   return (
-    <section
-      className={compact ? "run-primary-action compact" : "run-primary-action"}
+    <Card
+      className={cn("border-accent/30 bg-card/95", compact ? "gap-4 py-4" : "gap-5")}
       aria-labelledby={headingId}
     >
-      <div className='run-primary-action-heading'>
-        <div>
-          <p className='eyebrow'>Primary web action</p>
-          <h3 id={headingId}>{action.label}</h3>
+      <CardHeader className='grid grid-cols-[1fr_auto] items-start gap-4'>
+        <div className='space-y-1'>
+          <p className='text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground'>
+            Primary web action
+          </p>
+          <CardTitle>
+            <h3 id={headingId}>{action.label}</h3>
+          </CardTitle>
         </div>
         <Badge variant={badgeVariant(action.tone)}>{formatTone(action.tone)}</Badge>
-      </div>
-      <p>{action.description}</p>
-      <div className='run-primary-action-controls'>
+      </CardHeader>
+      <CardContent className='space-y-4'>
+        <p className='text-sm text-muted-foreground'>{action.description}</p>
         {action.mode === "stage" ? (
           <RunQuickStageActionButton label={action.label} run={run} showResult />
         ) : null}
         {action.mode === "rail" ? (
-          <a className='run-primary-action-link' href={railHref}>
+          <a className={buttonVariants({ variant: "default" })} href={railHref}>
             Open action rail
           </a>
         ) : null}
-      </div>
-      {action.mode === "command" && action.command ? (
-        <div className='operator-command-block secondary-command'>
-          <strong>Manual or CLI action</strong>
-          <CopyableCommand command={action.command} label='Primary action command' />
-        </div>
-      ) : null}
-      <p className='artifact-description'>
-        Upload, scheduling, public publish, and paid-provider execution stay unavailable from this
-        surface.
-      </p>
-    </section>
+        {action.mode === "command" && action.command ? (
+          <div className='space-y-2 rounded-md border bg-background p-3'>
+            <strong className='text-sm'>Manual or CLI action</strong>
+            <CopyableCommand command={action.command} label='Primary action command' />
+          </div>
+        ) : null}
+      </CardContent>
+      <CardFooter>
+        <p className='text-xs text-muted-foreground'>
+          Upload, scheduling, public publish, and paid-provider execution stay unavailable from this
+          surface.
+        </p>
+      </CardFooter>
+    </Card>
   );
 }
 

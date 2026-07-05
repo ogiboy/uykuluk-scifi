@@ -1,5 +1,10 @@
 import Link from "next/link";
+import type { Route } from "next";
 import { studioMutationRecoveryCopy } from "@/lib/studioMutationRecoveryCopy";
+import {
+  studioMutationResultHref,
+  studioMutationResultLinkLabel,
+} from "@/lib/studioMutationResultNavigation";
 import type { StudioGuardedActionSubmitState } from "@/lib/useStudioGuardedActionSubmit";
 
 type StudioMutationResultPanelProps = Readonly<{
@@ -49,14 +54,26 @@ export function StudioMutationResultPanel({ state }: StudioMutationResultPanelPr
         </div>
       ) : null}
       {hasStudioMutationRecordSummary(state) ? (
-        <dl aria-label='Producer record summary'>
-          {state.recordSummary.facts.map((fact, index) => (
-            <div key={`${fact}-${index}`}>
-              <dt>Result</dt>
-              <dd>{fact}</dd>
-            </div>
-          ))}
-        </dl>
+        <>
+          {state.recordSummary.runId ? (
+            <Link
+              className='mutation-result-link'
+              href={
+                studioMutationResultHref(state.recordSummary.runId, state.action.actionId) as Route
+              }
+            >
+              {studioMutationResultLinkLabel(state.action.actionId)}
+            </Link>
+          ) : null}
+          <dl aria-label='Producer record summary'>
+            {state.recordSummary.facts.map((fact, index) => (
+              <div key={`${fact}-${index}`}>
+                <dt>Result</dt>
+                <dd>{fact}</dd>
+              </div>
+            ))}
+          </dl>
+        </>
       ) : null}
     </section>
   );

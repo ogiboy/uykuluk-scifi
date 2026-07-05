@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -52,8 +53,8 @@ export function StartIdeasActionPanel({
   }
 
   return (
-    <div className='start-ideas-action'>
-      {description ? <p>{description}</p> : null}
+    <div className='grid gap-4'>
+      {description ? <p className='text-sm text-muted-foreground'>{description}</p> : null}
       {readiness ? <StartIdeasReadinessNotice readiness={readiness} /> : null}
       <Button
         disabled={state.kind === "submitting"}
@@ -73,23 +74,23 @@ export function StartIdeasActionPanel({
               publish are not available here.
             </DialogDescription>
           </DialogHeader>
-          <div className='confirmation-summary'>
-            <dl className='decision-list'>
-              <div>
-                <dt>Action</dt>
+          <div className='rounded-lg border bg-muted/30 p-4'>
+            <dl className='grid gap-3 text-sm sm:grid-cols-2'>
+              <div className='space-y-1'>
+                <dt className='font-medium text-muted-foreground'>Action</dt>
                 <dd>ideas.run</dd>
               </div>
-              <div>
-                <dt>Route</dt>
-                <dd>/actions/run-ideas</dd>
+              <div className='space-y-1'>
+                <dt className='font-medium text-muted-foreground'>Route</dt>
+                <dd className='break-all'>/actions/run-ideas</dd>
               </div>
-              <div>
-                <dt>CLI equivalent</dt>
-                <dd>pnpm producer ideas</dd>
+              <div className='space-y-1'>
+                <dt className='font-medium text-muted-foreground'>CLI equivalent</dt>
+                <dd className='break-all'>pnpm producer ideas</dd>
               </div>
               {readiness ? (
-                <div>
-                  <dt>Doctor context</dt>
+                <div className='space-y-1'>
+                  <dt className='font-medium text-muted-foreground'>Doctor context</dt>
                   <dd>{readiness.label}</dd>
                 </div>
               ) : null}
@@ -114,10 +115,22 @@ function StartIdeasReadinessNotice({
   readiness,
 }: Readonly<{ readiness: StartIdeasReadinessSummary }>) {
   return (
-    <div className='start-ideas-readiness' data-tone={readiness.tone}>
-      <strong>{readiness.label}</strong>
-      <span>{readiness.detail}</span>
-      {readiness.nextAction ? <code>{readiness.nextAction}</code> : null}
+    <div
+      className='grid gap-2 rounded-lg border bg-muted/20 p-3 text-sm'
+      data-tone={readiness.tone}
+    >
+      <div className='flex flex-wrap items-center gap-2'>
+        <strong>{readiness.label}</strong>
+        <Badge variant={readiness.tone === "blocked" ? "destructive" : "secondary"}>
+          {readiness.tone}
+        </Badge>
+      </div>
+      <span className='text-muted-foreground'>{readiness.detail}</span>
+      {readiness.nextAction ? (
+        <code className='max-w-full break-all rounded-md bg-background px-2 py-1 text-xs text-muted-foreground'>
+          {readiness.nextAction}
+        </code>
+      ) : null}
     </div>
   );
 }

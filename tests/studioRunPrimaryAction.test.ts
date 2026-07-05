@@ -37,6 +37,45 @@ describe("Studio run primary action", () => {
     });
   });
 
+  it("does not confuse approval forms with unrelated stage remediation commands", () => {
+    const action = buildStudioRunPrimaryAction(
+      runPrimaryActionFixture({
+        nextRecommendedCommand: "pnpm producer evidence --run run_primary_action",
+        state: "SCRIPT_REVIEWED",
+      }),
+    );
+
+    expect(action).toMatchObject({
+      command: null,
+      label: "Approve Script",
+      mode: "rail",
+      routePath: "/actions/approve-script",
+      tone: "available",
+    });
+  });
+
+  it("routes artifact review handoffs to the action rail before state-changing follow-ups", () => {
+    const action = buildStudioRunPrimaryAction(
+      runPrimaryActionFixture({
+        artifacts: [
+          artifactPreview("production/render_plan.json"),
+          artifactPreview("production/storyboard_contact_sheet.md"),
+          artifactPreview("production/asset_provenance.json"),
+        ],
+        nextRecommendedCommand: "pnpm producer estimate --run run_primary_action",
+        state: "PRODUCTION_PACKAGE_GENERATED",
+      }),
+    );
+
+    expect(action).toMatchObject({
+      command: "pnpm producer review render-plan --run run_primary_action",
+      label: "Review Render Plan",
+      mode: "rail",
+      routePath: "/actions/review-render-plan",
+      tone: "available",
+    });
+  });
+
   it("keeps unknown safe commands copyable instead of inventing a web route", () => {
     const action = buildStudioRunPrimaryAction(
       runPrimaryActionFixture({
@@ -91,4 +130,10 @@ function runPrimaryActionFixture(
     state: "NEW",
     ...overrides,
   };
+}
+
+function artifactPreview(
+  path: string,
+): NonNullable<StudioRunPrimaryActionRun["artifacts"]>[number] {
+  return { exists: true, path };
 }

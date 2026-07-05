@@ -2,10 +2,20 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import {
   approvalActionForRun,
+  approvalCommandForRun,
   approvalFormReady,
   approvalPayload,
 } from "@/lib/studioApprovalAction";
@@ -56,6 +66,7 @@ export function RunApprovalActionPanel({ run }: RunApprovalActionPanelProps) {
     return null;
   }
 
+  const cliEquivalent = approvalCommandForRun(config, run.runId, run.nextRecommendedCommand);
   const preflight = buildStudioActionPreflight({
     acknowledgeWarnings,
     actionId: config.actionId,
@@ -87,53 +98,65 @@ export function RunApprovalActionPanel({ run }: RunApprovalActionPanelProps) {
   }
 
   return (
-    <section className='panel' aria-labelledby='approval-action-heading'>
-      <h2 id='approval-action-heading'>{config.heading}</h2>
-      <p>{config.description}</p>
-      <p>
-        This guarded Studio action uses the same CLI/core approval gate as the copy-paste command.
-      </p>
-      <RunActionPreflightPanel preflight={preflight} />
-      <form className='studio-form' onSubmit={requestApprovalConfirmation}>
-        {config.actionId === "idea.approve" ? (
-          <RunIdeaApprovalSelector
-            ideas={run.generatedIdeas}
-            ideaId={ideaId}
-            onIdeaIdChange={setIdeaId}
-          />
+    <section aria-labelledby='approval-action-heading'>
+      <Card>
+        <CardHeader>
+          <CardTitle id='approval-action-heading'>{config.heading}</CardTitle>
+          <CardDescription>{config.description}</CardDescription>
+        </CardHeader>
+        <CardContent className='space-y-5'>
+          <p className='text-sm text-muted-foreground'>
+            This guarded Studio action uses the same CLI/core approval gate as the copy-paste
+            command.
+          </p>
+          <RunActionPreflightPanel preflight={preflight} />
+          <form className='space-y-4' onSubmit={requestApprovalConfirmation}>
+            {config.actionId === "idea.approve" ? (
+              <RunIdeaApprovalSelector
+                ideas={run.generatedIdeas}
+                ideaId={ideaId}
+                onIdeaIdChange={setIdeaId}
+              />
+            ) : null}
+            {config.actionId === "script.approve" ? (
+              <Label className='items-start gap-3 rounded-lg border bg-card p-3 text-sm leading-6'>
+                <Checkbox
+                  aria-label='Acknowledge non-blocking script review warnings'
+                  checked={acknowledgeWarnings}
+                  onCheckedChange={(checked) => setAcknowledgeWarnings(checked === true)}
+                />
+                <span>Acknowledge non-blocking script review warnings if present</span>
+              </Label>
+            ) : null}
+            <Button
+              disabled={state.kind === "submitting" || !approvalFormReady(config, ideaId)}
+              type='submit'
+            >
+              {config.buttonLabel}
+            </Button>
+          </form>
+          <StudioMutationResultPanel state={state} />
+        </CardContent>
+        {cliEquivalent ? (
+          <CardFooter>
+            <code className='max-w-full break-all rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground'>
+              CLI equivalent: {cliEquivalent}
+            </code>
+          </CardFooter>
         ) : null}
-        {config.actionId === "script.approve" ? (
-          <label className='checkbox-label'>
-            <Checkbox
-              checked={acknowledgeWarnings}
-              onCheckedChange={(checked) => setAcknowledgeWarnings(checked === true)}
-            />
-            Acknowledge non-blocking script review warnings if present
-          </label>
-        ) : null}
-        <Button
-          disabled={state.kind === "submitting" || !approvalFormReady(config, ideaId)}
-          type='submit'
-        >
-          {config.buttonLabel}
-        </Button>
-      </form>
+      </Card>
       <RunApprovalConfirmationDialog
         actionId={config.actionId}
         buttonLabel={config.buttonLabel}
         currentState={run.state}
         isSubmitting={state.kind === "submitting"}
-        nextRecommendedCommand={run.nextRecommendedCommand}
+        nextRecommendedCommand={cliEquivalent}
         open={confirmationOpen}
         pendingPayload={pendingPayload}
         runId={run.runId}
         onConfirm={confirmApproval}
         onOpenChange={setConfirmationOpen}
       />
-      <StudioMutationResultPanel state={state} />
-      {run.nextRecommendedCommand ? (
-        <p className='artifact-action'>CLI equivalent: {run.nextRecommendedCommand}</p>
-      ) : null}
     </section>
   );
 }

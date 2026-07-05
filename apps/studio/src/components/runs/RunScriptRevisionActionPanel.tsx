@@ -2,7 +2,16 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import { isStudioScriptRevisionState } from "@/lib/studioRevisionEligibility";
@@ -66,32 +75,40 @@ function RunScriptRevisionForm({ run }: RunScriptRevisionActionPanelProps) {
   }
 
   return (
-    <section className='revision-action-panel' aria-labelledby='script-revision-heading'>
-      <h3 id='script-revision-heading'>Revise script</h3>
-      <p>{source.message}</p>
-      <form className='studio-form' onSubmit={requestConfirmation}>
-        <label>
-          Editor
-          <Input value={editor} onChange={(event) => setEditor(event.target.value)} />
-        </label>
-        <label>
-          Reason
-          <Input value={reason} onChange={(event) => setReason(event.target.value)} />
-        </label>
-        <label>
-          Script content
-          <Textarea
-            disabled={!source.available}
-            rows={12}
-            value={content}
-            onChange={(event) => setContent(event.target.value)}
-          />
-        </label>
-        <Button disabled={state.kind === "submitting" || !ready} type='submit'>
-          {state.kind === "submitting" ? "Recording..." : "Record script revision"}
-        </Button>
-      </form>
-      <StudioMutationResultPanel state={state} />
+    <section aria-labelledby='script-revision-heading'>
+      <Card className='border-dashed bg-card/70 shadow-none'>
+        <CardHeader>
+          <CardTitle id='script-revision-heading'>Revise script</CardTitle>
+          <CardDescription>{source.message}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form className='grid gap-4' onSubmit={requestConfirmation}>
+            <Label className='grid gap-2'>
+              <span>Editor</span>
+              <Input value={editor} onChange={(event) => setEditor(event.target.value)} />
+            </Label>
+            <Label className='grid gap-2'>
+              <span>Reason</span>
+              <Input value={reason} onChange={(event) => setReason(event.target.value)} />
+            </Label>
+            <Label className='grid gap-2'>
+              <span>Script content</span>
+              <Textarea
+                disabled={!source.available}
+                rows={12}
+                value={content}
+                onChange={(event) => setContent(event.target.value)}
+              />
+            </Label>
+            <Button disabled={state.kind === "submitting" || !ready} type='submit'>
+              {state.kind === "submitting" ? "Recording..." : "Record script revision"}
+            </Button>
+          </form>
+        </CardContent>
+        <CardFooter className='block'>
+          <StudioMutationResultPanel state={state} />
+        </CardFooter>
+      </Card>
       <RunRevisionConfirmationDialog
         actionLabel='script.revise'
         currentState={run.state}

@@ -22,6 +22,7 @@ describe("Studio mutation result summaries", () => {
         "Invalidated: 1",
         "Next action: pnpm producer evidence --run run_summary",
       ],
+      runId: "run_summary",
     });
   });
 
@@ -31,7 +32,7 @@ describe("Studio mutation result summaries", () => {
         nested: { unsafe: true },
         runId: "run_summary",
       }),
-    ).toEqual({ facts: ["Run: run_summary"] });
+    ).toEqual({ facts: ["Run: run_summary"], runId: "run_summary" });
     expect(summarizeStudioMutationRecord({ nested: { unsafe: true } })).toBeNull();
   });
 });

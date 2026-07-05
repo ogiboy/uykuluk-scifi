@@ -93,3 +93,61 @@ export function approvalPayload(
   }
   return { runId };
 }
+
+/**
+ * Returns the current CLI equivalent only when it actually matches the active approval action.
+ *
+ * Evidence/readiness remediation commands can be recommended while an approval form is still
+ * available from the persisted state. Studio must not show those remediation commands as the CLI
+ * equivalent for an approval button.
+ *
+ * @param config - The active approval action.
+ * @param runId - The current run id.
+ * @param nextRecommendedCommand - The command projected by CLI/core status.
+ * @returns The matching approval command, or `null` when the next command is for another action.
+ */
+export function approvalCommandForRun(
+  config: StudioApprovalActionConfig,
+  runId: string,
+  nextRecommendedCommand: string | null,
+): string | null {
+  if (!nextRecommendedCommand) {
+    return null;
+  }
+  return commandMatchesApproval(config, runId, nextRecommendedCommand)
+    ? nextRecommendedCommand
+    : null;
+}
+
+function commandMatchesApproval(
+  config: StudioApprovalActionConfig,
+  runId: string,
+  command: string,
+): boolean {
+  const tokens = commandTokens(command);
+  const prefixTokens = commandTokens(approvalCommandPrefix(config.actionId));
+  if (!prefixTokens.every((token, index) => tokens[index] === token)) {
+    return false;
+  }
+  const runFlagIndex = tokens.findIndex(
+    (token, index) => index >= prefixTokens.length && token === "--run",
+  );
+  return runFlagIndex >= 0 && tokens[runFlagIndex + 1] === runId;
+}
+
+function approvalCommandPrefix(actionId: StudioApprovalActionId): string {
+  switch (actionId) {
+    case "cost.approve":
+      return "pnpm producer approve cost";
+    case "idea.approve":
+      return "pnpm producer approve idea";
+    case "render.approve":
+      return "pnpm producer approve render";
+    case "script.approve":
+      return "pnpm producer approve script";
+  }
+}
+
+function commandTokens(command: string): string[] {
+  return command.trim().split(/\s+/).filter(Boolean);
+}

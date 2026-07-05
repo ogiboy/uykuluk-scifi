@@ -1488,6 +1488,16 @@ h3 {
   margin: 0;
 }
 
+.mutation-result-link {
+  justify-self: start;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  text-underline-offset: 3px;
+}
+
 .mutation-recovery-actions {
   display: grid;
   gap: 8px;

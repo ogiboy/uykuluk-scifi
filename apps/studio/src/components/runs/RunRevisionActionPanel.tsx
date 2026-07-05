@@ -1,3 +1,4 @@
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import { isStudioRevisionState } from "@/lib/studioRevisionEligibility";
 import { RunPackageArtifactRevisionActionPanel } from "./RunPackageArtifactRevisionActionPanel";
@@ -17,17 +18,23 @@ export function RunRevisionActionPanel({ run }: RunRevisionActionPanelProps) {
     return null;
   }
   return (
-    <section className='panel revision-action-group' aria-labelledby='revision-action-heading'>
-      <div>
-        <p className='eyebrow'>Revision control</p>
-        <h2 id='revision-action-heading'>Revise local artifacts</h2>
-      </div>
-      <p>
-        Studio submits revision text to guarded local routes only. CLI/core records before/after
-        evidence and invalidates stale approvals, reviews, or downstream artifacts.
-      </p>
-      <RunScriptRevisionActionPanel run={run} />
-      <RunPackageArtifactRevisionActionPanel run={run} />
+    <section aria-labelledby='revision-action-heading'>
+      <Card>
+        <CardHeader>
+          <p className='text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground'>
+            Revision control
+          </p>
+          <CardTitle id='revision-action-heading'>Revise local artifacts</CardTitle>
+          <CardDescription>
+            Studio submits revision text to guarded local routes only. CLI/core records before/after
+            evidence and invalidates stale approvals, reviews, or downstream artifacts.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className='grid gap-4'>
+          <RunScriptRevisionActionPanel run={run} />
+          <RunPackageArtifactRevisionActionPanel run={run} />
+        </CardContent>
+      </Card>
     </section>
   );
 }

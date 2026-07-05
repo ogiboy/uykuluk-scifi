@@ -27,3 +27,5 @@ export interface ButtonProps
 export function Button({ className, type = "button", variant, ...props }: Readonly<ButtonProps>) {
   return <button className={cn(buttonVariants({ variant }), className)} type={type} {...props} />;
 }
+
+export { buttonVariants };

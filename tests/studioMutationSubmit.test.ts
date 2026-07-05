@@ -110,6 +110,7 @@ describe("Studio mutation submit", () => {
       message: "Readiness is blocked.",
       recordSummary: {
         facts: ["Run: run_blocked_submit"],
+        runId: "run_blocked_submit",
       },
       status: 409,
     });
@@ -157,6 +158,7 @@ describe("Studio mutation submit", () => {
           "Artifact: script.md",
           "Revision: revision_123",
         ],
+        runId: "run_submit",
       },
     });
   });

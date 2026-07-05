@@ -1,3 +1,4 @@
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { StartIdeasReadinessSummary } from "@/lib/startIdeasReadiness";
 import { StartIdeasActionPanel } from "./StartIdeasActionPanel";
 
@@ -13,13 +14,19 @@ type StartNewRunPanelProps = Readonly<{
  */
 export function StartNewRunPanel({ readiness }: StartNewRunPanelProps) {
   return (
-    <section className='panel compact-panel' aria-labelledby='start-new-run-heading'>
-      <h3 id='start-new-run-heading'>Start another production run</h3>
-      <StartIdeasActionPanel
-        buttonLabel='Start new idea run'
-        description='Create a separate local idea run while existing runs stay reviewable in the queue.'
-        readiness={readiness}
-      />
+    <section aria-labelledby='start-new-run-heading'>
+      <Card>
+        <CardHeader>
+          <CardTitle id='start-new-run-heading'>Start another production run</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <StartIdeasActionPanel
+            buttonLabel='Start new idea run'
+            description='Create a separate local idea run while existing runs stay reviewable in the queue.'
+            readiness={readiness}
+          />
+        </CardContent>
+      </Card>
     </section>
   );
 }
