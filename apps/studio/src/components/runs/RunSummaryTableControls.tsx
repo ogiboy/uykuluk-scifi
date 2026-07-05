@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { TableCell } from "@/components/ui/table";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -45,7 +46,7 @@ export function ColumnVisibilityMenu({ table }: ColumnVisibilityMenuProps) {
           Columns
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align='end' className='run-column-menu'>
+      <DropdownMenuContent align='end'>
         <DropdownMenuLabel>Visible columns</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {hideableColumns.map((column) => (
@@ -71,11 +72,14 @@ export function RunTablePagination({ table }: ColumnVisibilityMenuProps) {
   const pageCount = Math.max(1, table.getPageCount());
 
   return (
-    <div className='run-table-pagination' aria-label='Run table pagination'>
+    <div
+      className='flex flex-col gap-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between'
+      aria-label='Run table pagination'
+    >
       <p aria-live='polite'>
         Rows {firstRow}-{lastRow} of {totalRows}. Page {pagination.pageIndex + 1} of {pageCount}.
       </p>
-      <div className='run-table-pagination-controls'>
+      <div className='flex flex-wrap items-center gap-2'>
         <Button
           disabled={!table.getCanPreviousPage()}
           onClick={() => table.firstPage()}
@@ -112,7 +116,7 @@ export function RunTablePagination({ table }: ColumnVisibilityMenuProps) {
           value={String(pagination.pageSize)}
           onValueChange={(value) => setPageSize(table, value)}
         >
-          <SelectTrigger className='run-page-size-select' aria-label='Rows per page'>
+          <SelectTrigger className='w-32' aria-label='Rows per page'>
             <SelectValue placeholder='Rows per page' />
           </SelectTrigger>
           <SelectContent>
@@ -141,13 +145,13 @@ export function RunSortableHeader({ header }: RunSortableHeaderProps) {
   }
   return (
     <button
-      className='run-sort-button'
+      className='inline-flex w-full items-center justify-between gap-2 rounded-md px-2 py-1 text-left transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
       type='button'
       aria-label={`Sort by ${label}`}
       onClick={header.column.getToggleSortingHandler()}
     >
       <span>{flexRender(header.column.columnDef.header, header.getContext())}</span>
-      <span className='run-sort-indicator' aria-hidden='true'>
+      <span className='text-muted-foreground' aria-hidden='true'>
         {sortIndicator(sorted)}
       </span>
     </button>
@@ -165,9 +169,9 @@ export function RunTableCell({ cell }: RunTableCellProps) {
     );
   }
   return (
-    <td className={className} data-label={label}>
+    <TableCell className={className} data-label={label}>
       {flexRender(cell.column.columnDef.cell, cell.getContext())}
-    </td>
+    </TableCell>
   );
 }
 

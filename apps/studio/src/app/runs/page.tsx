@@ -1,3 +1,4 @@
+import { Badge } from "@/components/ui/badge";
 import { RunQueueExplorer } from "@/components/runs/RunQueueExplorer";
 import { StudioCommandPalette } from "@/components/studio/StudioCommandPalette";
 import { StudioShell } from "@/components/studio/StudioShell";
@@ -15,7 +16,7 @@ export default async function RunsPage() {
         </div>
         <div className='studio-header-actions'>
           <StudioCommandPalette runs={runs} />
-          <span className='status-pill'>CLI source of truth</span>
+          <Badge variant='secondary'>CLI source of truth</Badge>
         </div>
       </header>
       <RunQueueExplorer runs={runs} />

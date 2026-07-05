@@ -1,23 +1,26 @@
 import type { StudioRunSummary } from "@/lib/runSummaries";
-import { Badge } from "@/components/ui/badge";
-import { runReviewHrefFromSummary } from "@/lib/runReviewNavigation";
 import {
   formatRunChannelHandoff,
   formatRunChannelHandoffDecision,
   formatRunFinalReviewBundle,
   formatRunRenderDecision,
-  formatRunReviewCounts,
 } from "@/lib/runSummaryCopy";
 import type { ColumnDef } from "@tanstack/react-table";
-import Link from "next/link";
-import type { Route } from "next";
-import {
-  operatorActionDetail,
-  operatorActionForRun,
-  operatorActionSearchText,
-  operatorActionToneLabel,
-} from "./runSummaryOperatorAction";
+import { operatorActionForRun, operatorActionSearchText } from "./runSummaryOperatorAction";
 import { RunSummaryRowActions } from "./RunSummaryRowActions";
+import {
+  RunBlockedActionCell,
+  RunChannelHandoffCell,
+  RunDecisionCell,
+  RunEvidenceCell,
+  RunFinalBundleCell,
+  RunIdCell,
+  RunNextActionCell,
+  RunOperatorActionCell,
+  RunReadinessCell,
+  RunStateCell,
+  RunUpdatedCell,
+} from "./RunSummaryTableCells";
 
 type RunTableColumnMeta = Readonly<{
   label: string;
@@ -25,74 +28,15 @@ type RunTableColumnMeta = Readonly<{
 
 export function runSummaryColumns(): ColumnDef<StudioRunSummary>[] {
   return [
-    {
-      accessorKey: "runId",
-      cell: ({ row }) => (
-        <Link className='run-row-link' href={runReviewHrefFromSummary(row.original) as Route}>
-          {row.original.runId}
-        </Link>
-      ),
-      enableHiding: false,
-      header: "Run",
-      meta: { label: "Run" } satisfies RunTableColumnMeta,
-    },
-    {
-      accessorKey: "state",
-      cell: ({ row }) => (
-        <span className='run-cell-stack'>
-          <strong>{row.original.state}</strong>
-          <small>{formatRunReviewCounts(row.original)}</small>
-        </span>
-      ),
-      header: "State",
-      meta: { label: "State" } satisfies RunTableColumnMeta,
-    },
-    {
-      accessorKey: "readinessStatus",
-      cell: ({ row }) => (
-        <span className='run-cell-stack'>
-          <strong>{row.original.readinessStatus}</strong>
-          {row.original.readinessStatus === "passed" ? null : (
-            <small>{row.original.readinessMessage}</small>
-          )}
-          {row.original.readinessNextAction ? (
-            <small>{row.original.readinessNextAction}</small>
-          ) : null}
-        </span>
-      ),
-      header: "Readiness",
-      meta: { label: "Readiness" } satisfies RunTableColumnMeta,
-    },
-    {
-      accessorKey: "evidenceStatus",
-      cell: ({ row }) => (
-        <span className='run-cell-stack'>
-          <strong>{row.original.evidenceStatus}</strong>
-          {row.original.evidenceStatus === "available" ? null : (
-            <small>{row.original.evidenceMessage}</small>
-          )}
-        </span>
-      ),
-      header: "Evidence",
-      meta: { label: "Evidence" } satisfies RunTableColumnMeta,
-    },
+    textColumn("runId", "Run", ({ row }) => <RunIdCell run={row.original} />, false),
+    textColumn("state", "State", ({ row }) => <RunStateCell run={row.original} />),
+    textColumn("readinessStatus", "Readiness", ({ row }) => (
+      <RunReadinessCell run={row.original} />
+    )),
+    textColumn("evidenceStatus", "Evidence", ({ row }) => <RunEvidenceCell run={row.original} />),
     {
       accessorFn: (run) => operatorActionSearchText(operatorActionForRun(run)),
-      cell: ({ row }) => {
-        const action = operatorActionForRun(row.original);
-        return (
-          <span className='run-cell-stack'>
-            <span className='run-operator-action-heading'>
-              <strong>{action.label}</strong>
-              <Badge variant={action.tone === "blocked" ? "destructive" : "secondary"}>
-                {operatorActionToneLabel(action)}
-              </Badge>
-            </span>
-            <small>{operatorActionDetail(action)}</small>
-            {action.routePath ? <small>{action.routePath}</small> : null}
-          </span>
-        );
-      },
+      cell: ({ row }) => <RunOperatorActionCell run={row.original} />,
       header: "Operator action",
       id: "operatorAction",
       meta: { label: "Operator action" } satisfies RunTableColumnMeta,
@@ -100,72 +44,32 @@ export function runSummaryColumns(): ColumnDef<StudioRunSummary>[] {
     {
       accessorFn: (run) =>
         `${formatRunRenderDecision(run)} ${formatRunChannelHandoffDecision(run)}`,
-      cell: ({ row }) => (
-        <span className='run-cell-stack'>
-          <strong>Render: {formatRunRenderDecision(row.original)}</strong>
-          {row.original.renderDecision.kind === "present" ? (
-            <small>{row.original.renderDecision.message}</small>
-          ) : null}
-          {row.original.channelHandoff.kind === "present" ? (
-            <small>Channel: {formatRunChannelHandoffDecision(row.original)}</small>
-          ) : null}
-        </span>
-      ),
+      cell: ({ row }) => <RunDecisionCell run={row.original} />,
       header: "Decision",
       id: "renderDecision",
       meta: { label: "Render decision" } satisfies RunTableColumnMeta,
     },
-    {
-      accessorKey: "blockedActionCount",
-      cell: ({ row }) => (
-        <span className={row.original.blockedActionCount > 0 ? "blocked" : undefined}>
-          {row.original.blockedActionCount}
-        </span>
-      ),
-      header: "Blocks",
-      id: "blockedActionCount",
-      meta: { label: "Blocks" } satisfies RunTableColumnMeta,
-    },
-    {
-      accessorKey: "updatedAt",
-      cell: ({ row }) => formatRunDate(row.original.updatedAt),
-      header: "Updated",
-      meta: { label: "Updated" } satisfies RunTableColumnMeta,
-    },
+    textColumn("blockedActionCount", "Blocks", ({ row }) => (
+      <RunBlockedActionCell run={row.original} />
+    )),
+    textColumn("updatedAt", "Updated", ({ row }) => <RunUpdatedCell run={row.original} />),
     {
       accessorFn: (run) => formatRunFinalReviewBundle(run),
-      cell: ({ row }) => (
-        <span className='run-cell-stack'>
-          <strong>{formatRunFinalReviewBundle(row.original)}</strong>
-          {row.original.finalReviewBundle.kind === "present" ? (
-            <small>{row.original.finalReviewBundle.reviewPath}</small>
-          ) : null}
-        </span>
-      ),
+      cell: ({ row }) => <RunFinalBundleCell run={row.original} />,
       header: "Final bundle",
       id: "finalBundle",
       meta: { label: "Final bundle" } satisfies RunTableColumnMeta,
     },
     {
       accessorFn: (run) => formatRunChannelHandoff(run),
-      cell: ({ row }) => (
-        <span className='run-cell-stack'>
-          <strong>{formatRunChannelHandoff(row.original)}</strong>
-          {row.original.channelHandoff.kind === "present" ? (
-            <small>{row.original.channelHandoff.reviewPath}</small>
-          ) : null}
-          {row.original.channelHandoffDecision.kind === "present" ? (
-            <small>{formatRunChannelHandoffDecision(row.original)}</small>
-          ) : null}
-        </span>
-      ),
+      cell: ({ row }) => <RunChannelHandoffCell run={row.original} />,
       header: "Channel handoff",
       id: "channelHandoff",
       meta: { label: "Channel handoff" } satisfies RunTableColumnMeta,
     },
     {
       accessorFn: (run) => run.nextRecommendedCommand ?? "Generate evidence from CLI",
-      cell: ({ row }) => row.original.nextRecommendedCommand ?? "Generate evidence from CLI",
+      cell: ({ row }) => <RunNextActionCell run={row.original} />,
       header: "Next action",
       id: "nextAction",
       meta: { label: "Next action" } satisfies RunTableColumnMeta,
@@ -182,7 +86,31 @@ export function runSummaryColumns(): ColumnDef<StudioRunSummary>[] {
 }
 
 export function runColumnClassName(columnId: string): string {
-  return `run-cell-${columnId}`;
+  switch (columnId) {
+    case "actions":
+      return "sticky right-0 z-20 w-56 bg-card shadow-[-16px_0_24px_-24px_hsl(var(--foreground))]";
+    case "blockedActionCount":
+      return "w-20 text-center max-[1400px]:hidden";
+    case "channelHandoff":
+    case "finalBundle":
+    case "nextAction":
+      return "min-w-64 max-[1400px]:hidden";
+    case "operatorAction":
+    case "renderDecision":
+      return "min-w-56 max-[1400px]:hidden";
+    case "readinessStatus":
+      return "min-w-56 max-[1100px]:hidden";
+    case "runId":
+      return "sticky left-0 z-10 min-w-44 border-b bg-card px-3 py-3 text-left align-top text-sm";
+    case "state":
+      return "min-w-44";
+    case "evidenceStatus":
+      return "min-w-44 max-[1400px]:hidden";
+    case "updatedAt":
+      return "w-28 whitespace-nowrap max-[1400px]:hidden";
+    default:
+      return "";
+  }
 }
 
 export function runColumnLabel(meta: unknown): string {
@@ -192,18 +120,17 @@ export function runColumnLabel(meta: unknown): string {
   return "Column";
 }
 
-function formatRunDate(value: string): string {
-  if (!value) {
-    return "unknown";
-  }
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-  return date.toLocaleString("tr-TR", {
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    month: "2-digit",
-  });
+function textColumn(
+  accessorKey: keyof StudioRunSummary,
+  label: string,
+  cell: ColumnDef<StudioRunSummary>["cell"],
+  enableHiding = true,
+): ColumnDef<StudioRunSummary> {
+  return {
+    accessorKey,
+    cell,
+    enableHiding,
+    header: label,
+    meta: { label } satisfies RunTableColumnMeta,
+  };
 }

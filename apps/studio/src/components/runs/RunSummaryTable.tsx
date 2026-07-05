@@ -1,5 +1,15 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import type { RunQueueDensity } from "@/lib/runQueueWorkbench";
 import type { StudioRunSummary } from "@/lib/runSummaries";
 import {
@@ -92,63 +102,81 @@ export function RunSummaryTable({
 
   if (runs.length === 0) {
     return (
-      <section className='panel' aria-labelledby='runs-empty-heading'>
-        <h2 id='runs-empty-heading'>{emptyState.heading}</h2>
-        <p>{emptyState.message}</p>
+      <section aria-labelledby='runs-empty-heading'>
+        <Card>
+          <CardHeader>
+            <CardTitle id='runs-empty-heading'>{emptyState.heading}</CardTitle>
+            <CardDescription>{emptyState.message}</CardDescription>
+          </CardHeader>
+        </Card>
       </section>
     );
   }
 
   return (
-    <section className='panel' aria-labelledby='runs-index-heading'>
-      <div className='run-table-heading'>
-        <div>
-          <h2 id='runs-index-heading'>Run Index</h2>
-          <p>
-            Data-grid projection over local CLI/core run summaries. Header sorting and column
-            toggles are read-only.
-          </p>
-        </div>
-        <div className='run-table-toolbar'>
-          <span className='status-pill small'>
-            {visibleRows.length} of {totalRows} rows
-          </span>
-          <ColumnVisibilityMenu table={table} />
-        </div>
-      </div>
-      <div className='run-table-scroll'>
-        <table className='run-table' data-density={density}>
-          <caption className='sr-only'>Saved producer runs and their next safe actions</caption>
-          <thead>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <tr className='run-row run-row-head' key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <th className={runColumnClassName(header.column.id)} key={header.id} scope='col'>
-                    <RunSortableHeader header={header} />
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody>
-            {visibleRows.length === 0 ? (
-              <tr className='run-row'>
-                <td className='run-table-empty-cell' colSpan={visibleColumnCount}>
-                  The current queue view changed. Resetting to the first page.
-                </td>
-              </tr>
-            ) : null}
-            {visibleRows.map((row) => (
-              <tr className='run-row' key={row.id}>
-                {row.getVisibleCells().map((cell) => (
-                  <RunTableCell key={cell.id} cell={cell} />
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <RunTablePagination table={table} />
+    <section aria-labelledby='runs-index-heading'>
+      <Card>
+        <CardHeader className='gap-4 sm:grid-cols-[1fr_auto]'>
+          <div className='space-y-2'>
+            <CardTitle id='runs-index-heading'>Run Index</CardTitle>
+            <CardDescription>
+              Data-grid projection over local CLI/core run summaries. Header sorting and column
+              toggles are read-only.
+            </CardDescription>
+          </div>
+          <div className='flex flex-wrap items-center gap-2 sm:justify-end'>
+            <Badge variant='secondary'>
+              {visibleRows.length} of {totalRows} rows
+            </Badge>
+            <ColumnVisibilityMenu table={table} />
+          </div>
+        </CardHeader>
+        <CardContent className='space-y-4'>
+          <Table
+            className={`min-w-[1120px] max-[1100px]:min-w-[640px] ${density === "compact" ? "text-xs" : ""}`}
+            data-density={density}
+          >
+            <TableCaption className='sr-only'>
+              Saved producer runs and their next safe actions
+            </TableCaption>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow className='hover:bg-transparent' key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <TableHead
+                      className={runColumnClassName(header.column.id)}
+                      key={header.id}
+                      scope='col'
+                    >
+                      <RunSortableHeader header={header} />
+                    </TableHead>
+                  ))}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {visibleRows.length === 0 ? (
+                <TableRow>
+                  <td
+                    className='px-3 py-6 text-center text-sm text-muted-foreground'
+                    colSpan={visibleColumnCount}
+                  >
+                    The current queue view changed. Resetting to the first page.
+                  </td>
+                </TableRow>
+              ) : null}
+              {visibleRows.map((row) => (
+                <TableRow key={row.id}>
+                  {row.getVisibleCells().map((cell) => (
+                    <RunTableCell key={cell.id} cell={cell} />
+                  ))}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          <RunTablePagination table={table} />
+        </CardContent>
+      </Card>
     </section>
   );
 }

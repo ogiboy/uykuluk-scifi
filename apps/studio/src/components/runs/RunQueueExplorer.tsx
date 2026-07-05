@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -104,14 +105,19 @@ export function RunQueueExplorer({ runs }: RunQueueExplorerProps) {
   }
 
   return (
-    <section className='run-queue-explorer' aria-labelledby='runs-queue-heading'>
-      <div className='panel compact-panel'>
-        <div className='artifact-preview-header'>
-          <div>
-            <p className='eyebrow'>Operator queue</p>
-            <h2 id='runs-queue-heading'>Find the next safe run action</h2>
+    <section className='space-y-6' aria-labelledby='runs-queue-heading'>
+      <Card>
+        <CardHeader className='gap-4 sm:grid-cols-[1fr_auto]'>
+          <div className='space-y-2'>
+            <p className='text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground'>
+              Operator queue
+            </p>
+            <CardTitle id='runs-queue-heading'>Find the next safe run action</CardTitle>
           </div>
-          <output className='queue-result-badges' aria-label='Queue result summary'>
+          <output
+            className='flex flex-wrap items-center gap-2 sm:justify-end'
+            aria-label='Queue result summary'
+          >
             <Badge variant='secondary'>{filteredRuns.length} shown</Badge>
             {hiddenByBlockerControl > 0 ? (
               <Badge variant='outline'>{hiddenByBlockerControl} hidden by blocker limit</Badge>
@@ -126,10 +132,10 @@ export function RunQueueExplorer({ runs }: RunQueueExplorerProps) {
               <Badge variant='outline'>{actionCounts.cliOnly} CLI-only</Badge>
             ) : null}
           </output>
-        </div>
-        <div className='queue-toolbar'>
+        </CardHeader>
+        <CardContent className='space-y-5'>
           <ToggleGroup
-            className='segmented-filter'
+            className='flex flex-wrap justify-start'
             type='single'
             value={filter}
             variant='outline'
@@ -142,16 +148,16 @@ export function RunQueueExplorer({ runs }: RunQueueExplorerProps) {
               </ToggleGroupItem>
             ))}
           </ToggleGroup>
-          <div className='queue-controls-grid'>
-            <label className='queue-search'>
-              Search runs
+          <div className='grid gap-3 md:grid-cols-[minmax(0,1fr)_180px_auto_auto] md:items-end'>
+            <Label className='grid gap-2'>
+              <span>Search runs</span>
               <Input
                 placeholder='run id, state, readiness, next command'
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
               />
-            </label>
-            <div className='queue-select-control'>
+            </Label>
+            <div className='grid gap-2'>
               <Label htmlFor='queue-sort'>Sort queue</Label>
               <Select
                 value={sort}
@@ -187,12 +193,12 @@ export function RunQueueExplorer({ runs }: RunQueueExplorerProps) {
               Reset view
             </Button>
           </div>
-        </div>
-        <p>
-          Filters are read-only projections over persisted CLI/core run summaries. Approvals and
-          render decisions remain on each guarded run detail page.
-        </p>
-      </div>
+          <p className='text-sm text-muted-foreground'>
+            Filters are read-only projections over persisted CLI/core run summaries. Approvals and
+            render decisions remain on each guarded run detail page.
+          </p>
+        </CardContent>
+      </Card>
       <RunSummaryTable density={density} emptyState={emptyState} runs={filteredRuns} />
     </section>
   );
