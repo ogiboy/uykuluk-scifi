@@ -6,6 +6,7 @@ import { studioSections } from "@/lib/studioData";
 
 import { StudioAppearanceControls } from "./StudioAppearanceControls";
 import { StudioBrandLockup } from "./StudioBrandLockup";
+import { studioRailClassName } from "./studioShellClasses";
 
 /**
  * Renders the persistent Studio navigation rail.
@@ -15,16 +16,24 @@ import { StudioBrandLockup } from "./StudioBrandLockup";
  */
 export function StudioNavigationRail({ locale }: Readonly<{ locale: StudioLocale }>) {
   return (
-    <aside className='studio-rail' aria-label='Studio navigation'>
+    <aside className={studioRailClassName} aria-label='Studio navigation'>
       <StudioBrandLockup />
-      <nav>
+      <nav className='grid gap-1 max-[900px]:grid-cols-2'>
         {studioSections.map((section) =>
           "href" in section ? (
-            <Link key={section.id} href={section.href as Route}>
+            <Link
+              className='rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-card hover:text-foreground max-[900px]:min-w-0 max-[900px]:break-words'
+              key={section.id}
+              href={section.href as Route}
+            >
               {section.label}
             </Link>
           ) : (
-            <Link key={section.id} href={`/#${section.id}`}>
+            <Link
+              className='rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-card hover:text-foreground max-[900px]:min-w-0 max-[900px]:break-words'
+              key={section.id}
+              href={`/#${section.id}`}
+            >
               {section.label}
             </Link>
           ),

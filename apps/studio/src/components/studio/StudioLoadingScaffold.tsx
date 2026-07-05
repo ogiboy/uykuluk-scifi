@@ -3,6 +3,11 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { studioSections } from "@/lib/studioData";
 
 import { StudioBrandLockup } from "./StudioBrandLockup";
+import {
+  studioMainClassName,
+  studioRailClassName,
+  studioShellClassName,
+} from "./studioShellClasses";
 
 type StudioLoadingScaffoldProps = Readonly<{
   eyebrow: string;
@@ -30,14 +35,14 @@ export function StudioLoadingScaffold({
 }: StudioLoadingScaffoldProps) {
   if (layout === "shell") {
     return (
-      <main className='studio-shell' aria-busy='true' aria-live='polite'>
+      <main className={studioShellClassName} aria-busy='true' aria-live='polite'>
         <StudioLoadingRail />
         <StudioLoadingMain eyebrow={eyebrow} railPanels={railPanels} title={title} />
       </main>
     );
   }
   return (
-    <main className='studio-main page-shell' aria-busy='true' aria-live='polite'>
+    <main className={`${studioMainClassName} min-h-screen`} aria-busy='true' aria-live='polite'>
       <StudioLoadingContent eyebrow={eyebrow} railPanels={railPanels} title={title} />
     </main>
   );
@@ -45,7 +50,7 @@ export function StudioLoadingScaffold({
 
 function StudioLoadingRail() {
   return (
-    <aside className='studio-rail' aria-label='Studio navigation loading state'>
+    <aside className={studioRailClassName} aria-label='Studio navigation loading state'>
       <StudioBrandLockup />
       <nav className='grid gap-2' aria-label='Loading Studio navigation'>
         {studioSections.map((section) => (
@@ -67,7 +72,7 @@ function StudioLoadingMain({
   title,
 }: Readonly<{ eyebrow: string; railPanels: number; title: string }>) {
   return (
-    <section className='studio-main'>
+    <section className={studioMainClassName}>
       <StudioLoadingContent eyebrow={eyebrow} railPanels={railPanels} title={title} />
     </section>
   );
