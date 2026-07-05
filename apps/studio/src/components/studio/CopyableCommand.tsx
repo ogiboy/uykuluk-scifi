@@ -30,18 +30,17 @@ export function CopyableCommand({ command, label = "Command" }: CopyableCommandP
   }
 
   return (
-    <div className='copyable-command'>
-      <code className='command'>{command}</code>
+    <div className='grid gap-2 rounded-lg border bg-background p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center'>
+      <code className='min-w-0 break-all font-mono text-xs text-foreground'>{command}</code>
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
             aria-label={`Copy ${label.toLowerCase()}`}
-            className='copy-command-button'
             type='button'
             variant='ghost'
             onClick={() => void copyCommand()}
           >
-            <CopyIcon data-icon='inline-start' />
+            <CopyIcon className='size-4' aria-hidden='true' />
             Copy
           </Button>
         </TooltipTrigger>

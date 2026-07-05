@@ -10,6 +10,7 @@ import { StudioControlDesk } from "@/components/studio/StudioControlDesk";
 import { StudioCommandPalette } from "@/components/studio/StudioCommandPalette";
 import { StudioShell } from "@/components/studio/StudioShell";
 import { StudioTabs } from "@/components/studio/StudioTabs";
+import { Badge } from "@/components/ui/badge";
 import { getStudioAnalyticsOverview } from "@/lib/analyticsOverview";
 import { getStudioActionServiceStatus } from "@/lib/actionServiceStatus";
 import { getStudioAssetInventory } from "@/lib/assetInventory";
@@ -45,14 +46,18 @@ export default async function StudioHomePage() {
 
   return (
     <StudioShell>
-      <header className='studio-header'>
-        <div>
-          <p className='eyebrow'>Local-first production desk</p>
-          <h1>Control UykulukSciFi production from the web surface</h1>
+      <header className='grid gap-4 border-b pb-6 sm:grid-cols-[1fr_auto] sm:items-start'>
+        <div className='space-y-2'>
+          <p className='text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground'>
+            Local-first production desk
+          </p>
+          <h1 className='max-w-4xl text-3xl font-semibold tracking-tight sm:text-4xl'>
+            Control UykulukSciFi production from the web surface
+          </h1>
         </div>
-        <div className='studio-header-actions'>
+        <div className='flex flex-wrap items-center gap-2 sm:justify-end'>
           <StudioCommandPalette runs={runs} />
-          <span className='status-pill'>CLI source of truth</span>
+          <Badge variant='secondary'>CLI source of truth</Badge>
         </div>
       </header>
 

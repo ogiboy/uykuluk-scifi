@@ -15,11 +15,15 @@ type MetricGridProps = Readonly<{
  */
 export function MetricGrid({ metrics }: MetricGridProps) {
   return (
-    <dl className='run-metadata'>
+    <dl className='grid gap-3 sm:grid-cols-2 lg:grid-cols-4'>
       {metrics.map((metric) => (
-        <div key={metric.label}>
-          <dt>{metric.label}</dt>
-          <dd>{metric.value}</dd>
+        <div className='min-w-0 rounded-lg border bg-muted/20 p-3' key={metric.label}>
+          <dt className='text-xs font-medium uppercase tracking-wide text-muted-foreground'>
+            {metric.label}
+          </dt>
+          <dd className='mt-1 truncate text-sm font-semibold' title={metric.value}>
+            {metric.value}
+          </dd>
         </div>
       ))}
     </dl>
