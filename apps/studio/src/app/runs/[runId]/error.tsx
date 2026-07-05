@@ -2,7 +2,10 @@
 
 import { useEffect } from "react";
 
-import { StudioRouteBoundaryCard } from "@/components/studio/StudioRouteBoundaryCard";
+import {
+  StudioRouteBoundaryCard,
+  StudioRouteBoundaryHeader,
+} from "@/components/studio/StudioRouteBoundaryCard";
 import { Button } from "@/components/ui/button";
 import { runDetailErrorCopy } from "@/lib/studioRouteBoundaryCopy";
 
@@ -23,26 +26,25 @@ export default function RunDetailErrorPage({ error, reset }: RunDetailErrorPageP
   }, [error.digest]);
 
   return (
-    <main className='studio-main page-shell' aria-labelledby='run-detail-error-heading'>
-      <header className='studio-header'>
-        <div>
-          <p className='eyebrow'>{runDetailErrorCopy.eyebrow}</p>
-          <h1 id='run-detail-error-heading'>{runDetailErrorCopy.heading}</h1>
-        </div>
-        <span className='status-pill blocked'>{runDetailErrorCopy.status}</span>
-      </header>
+    <main
+      className='mx-auto grid min-h-screen max-w-5xl content-start gap-6 px-6 py-8 text-foreground md:px-10'
+      aria-labelledby='run-detail-error-heading'
+    >
+      <StudioRouteBoundaryHeader copy={runDetailErrorCopy} headingId='run-detail-error-heading' />
 
       <StudioRouteBoundaryCard
         description={runDetailErrorCopy.description}
         headingId={runDetailErrorCopy.recoveryHeadingId}
         title={runDetailErrorCopy.recoveryTitle}
       >
-        <Button onClick={reset} variant='secondary'>
+        <Button onClick={reset} type='button' variant='secondary'>
           Retry local run read
         </Button>
       </StudioRouteBoundaryCard>
 
-      {error.digest ? <p className='artifact-meta'>Boundary digest: {error.digest}</p> : null}
+      {error.digest ? (
+        <p className='text-sm text-muted-foreground'>Boundary digest: {error.digest}</p>
+      ) : null}
     </main>
   );
 }

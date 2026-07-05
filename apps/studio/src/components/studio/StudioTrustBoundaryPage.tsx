@@ -1,6 +1,7 @@
 import {
   defaultStudioRouteBoundaryActions,
   StudioRouteBoundaryCard,
+  StudioRouteBoundaryHeader,
   type StudioRouteBoundaryAction,
 } from "./StudioRouteBoundaryCard";
 import { StudioShell } from "./StudioShell";
@@ -18,13 +19,7 @@ type StudioTrustBoundaryPageProps = Readonly<{
 export function StudioTrustBoundaryPage({ copy }: StudioTrustBoundaryPageProps) {
   return (
     <StudioShell>
-      <header className='studio-header'>
-        <div>
-          <p className='eyebrow'>{copy.eyebrow}</p>
-          <h1>{copy.heading}</h1>
-        </div>
-        <span className='status-pill blocked'>{copy.status}</span>
-      </header>
+      <StudioRouteBoundaryHeader copy={copy} />
 
       <StudioRouteBoundaryCard
         actions={studioTrustBoundaryActions(copy)}
