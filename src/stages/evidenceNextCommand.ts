@@ -39,6 +39,7 @@ const STATIC_NEXT_COMMANDS: Record<string, string> = {
   IDEAS_GENERATED: "pnpm producer approve idea --run <run_id> --idea <idea_id>",
   NEW: "pnpm producer ideas",
   PAID_GENERATION_COST_APPROVED: "pnpm producer readiness --run <run_id>",
+  PRODUCTION_PACKAGE_GENERATED: "pnpm producer render-plan --run <run_id>",
   SCRIPT_APPROVED: "pnpm producer package --run <run_id>",
   SCRIPT_GENERATED: "pnpm producer review script --run <run_id>",
 };

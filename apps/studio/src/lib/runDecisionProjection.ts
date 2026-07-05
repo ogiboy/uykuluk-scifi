@@ -3,6 +3,7 @@ import {
   renderDecisionJsonPath,
   type RenderDecisionCommandTemplate,
 } from "../../../../src/stages/renderDecisionCommands";
+import { renderPlanArtifactPaths } from "../../../../src/stages/renderPlanSchemas";
 import type { StatusWorkflowStep } from "../../../../src/stages/statusWorkflow";
 import { buildStatusWorkflowProgress } from "../../../../src/stages/statusWorkflow";
 import { evidenceNextRecommendedCommand, type StudioEvidenceSummary } from "./evidenceSummaries";
@@ -42,6 +43,7 @@ export function studioWorkflowProgress(input: {
  * @param evidence - The current evidence summary.
  * @param state - The run state.
  * @param runId - The run identifier.
+ * @param artifacts - The artifacts already registered on the run record.
  * @param renderDecision - The local render decision summary.
  * @param finalReviewBundle - The local final review bundle summary.
  * @param channelHandoff - The manual channel handoff summary.
@@ -52,6 +54,7 @@ export function studioNextRecommendedCommand(
   evidence: StudioEvidenceSummary,
   state: string,
   runId: string,
+  artifacts: readonly string[],
   renderDecision: StudioRenderDecisionSummary,
   finalReviewBundle: StudioFinalReviewBundleSummary,
   channelHandoff: StudioChannelHandoffSummary,
@@ -77,6 +80,15 @@ export function studioNextRecommendedCommand(
   }
   if (renderDecision.kind === "invalid" || renderDecision.kind === "stale") {
     return renderDecision.nextAction;
+  }
+  const packageAction = productionPackageActionWhenEvidenceCannotLead(
+    evidence,
+    state,
+    runId,
+    artifacts,
+  );
+  if (packageAction) {
+    return packageAction;
   }
   return evidenceNextRecommendedCommand(evidence, state, runId);
 }
@@ -146,4 +158,23 @@ function studioWorkflowArtifactStatus(
     };
   }
   return { kind: "missing" };
+}
+
+function productionPackageActionWhenEvidenceCannotLead(
+  evidence: StudioEvidenceSummary,
+  state: string,
+  runId: string,
+  artifacts: readonly string[],
+): string | null {
+  if (state !== "PRODUCTION_PACKAGE_GENERATED" || evidence.status === "available") {
+    return null;
+  }
+  const nextCommand = hasCompleteRenderPlanArtifacts(artifacts)
+    ? "pnpm producer estimate --run <run_id>"
+    : "pnpm producer render-plan --run <run_id>";
+  return nextCommand.replaceAll("<run_id>", runId);
+}
+
+function hasCompleteRenderPlanArtifacts(artifacts: readonly string[]): boolean {
+  return renderPlanArtifactPaths.every((artifactPath) => artifacts.includes(artifactPath));
 }

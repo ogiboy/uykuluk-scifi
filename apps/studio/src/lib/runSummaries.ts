@@ -203,6 +203,7 @@ function summarizeRun(
       evidence,
       record.state ?? "FAILED",
       runId,
+      record.artifacts ?? [],
       renderDecision,
       finalReviewBundle,
       channelHandoff,
