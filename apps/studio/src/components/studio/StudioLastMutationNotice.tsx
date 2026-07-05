@@ -73,11 +73,11 @@ export function StudioLastMutationNotice() {
 }
 
 function subscribeStudioLastMutationResult(onStoreChange: () => void): () => void {
-  window.addEventListener(studioLastMutationResultEventName, onStoreChange);
-  window.addEventListener("storage", onStoreChange);
+  globalThis.addEventListener(studioLastMutationResultEventName, onStoreChange);
+  globalThis.addEventListener("storage", onStoreChange);
   return () => {
-    window.removeEventListener(studioLastMutationResultEventName, onStoreChange);
-    window.removeEventListener("storage", onStoreChange);
+    globalThis.removeEventListener(studioLastMutationResultEventName, onStoreChange);
+    globalThis.removeEventListener("storage", onStoreChange);
   };
 }
 
