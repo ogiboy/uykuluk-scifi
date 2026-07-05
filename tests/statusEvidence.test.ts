@@ -30,6 +30,7 @@ describe("status evidence validity", () => {
     expect(output).toContain(
       `Production media evidence action: pnpm producer evidence --run ${run.runId}`,
     );
+    expect(output).toContain(`Next safe action: pnpm producer render-plan --run ${run.runId}`);
     expect(output).toContain(
       "- Render plan: recorded (artifact record only; regenerate evidence to verify current media)",
     );

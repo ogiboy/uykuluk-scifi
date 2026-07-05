@@ -8,8 +8,13 @@ import {
 } from "./studioMutationResultSummary";
 
 export type StudioMutationSubmitResult = Readonly<
-  | { kind: "blocked"; message: string; recordSummary: StudioMutationRecordSummary | null }
-  | { kind: "error"; message: string }
+  | {
+      kind: "blocked";
+      message: string;
+      recordSummary: StudioMutationRecordSummary | null;
+      status: number;
+    }
+  | { kind: "error"; message: string; status?: number }
   | { kind: "success"; recordSummary: StudioMutationRecordSummary | null }
 >;
 
@@ -54,11 +59,13 @@ export async function submitStudioJsonMutation(input: {
           payload.message ??
           "Studio action wrote local output but the producer CLI reported a blocked state.",
         recordSummary: summarizeStudioMutationRecord(payload.record),
+        status: response.status,
       };
     }
     return {
       kind: "error",
       message: payload?.message ?? input.fallbackError,
+      status: response.status,
     };
   }
   return { kind: "success", recordSummary: summarizeStudioMutationRecord(payload?.record) };

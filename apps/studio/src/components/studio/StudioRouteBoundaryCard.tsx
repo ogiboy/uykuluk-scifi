@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
-type StudioRouteBoundaryAction = Readonly<{
+export type StudioRouteBoundaryAction = Readonly<{
   href: "/" | "/runs";
   label: string;
 }>;

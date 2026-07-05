@@ -1,45 +1,52 @@
-import { StudioRouteBoundaryCard } from "./StudioRouteBoundaryCard";
+import {
+  defaultStudioRouteBoundaryActions,
+  StudioRouteBoundaryCard,
+  type StudioRouteBoundaryAction,
+} from "./StudioRouteBoundaryCard";
 import { StudioShell } from "./StudioShell";
+import type { StudioRouteBoundaryCopy } from "@/lib/studioRouteBoundaryCopy";
 
 type StudioTrustBoundaryPageProps = Readonly<{
-  description: string;
-  eyebrow: string;
-  headingId: string;
-  statusLabel: string;
-  title: string;
+  copy: StudioRouteBoundaryCopy;
 }>;
 
 /**
  * Renders stable Studio trust-boundary pages without enabling experimental Next auth interrupts.
  *
- * @param description - Operator-facing recovery guidance for the boundary.
- * @param eyebrow - Compact route context shown above the heading.
- * @param headingId - Stable heading id for the recovery card.
- * @param statusLabel - Non-mutating status text shown in the route header.
- * @param title - Boundary page title.
+ * @param copy - Operator-facing boundary copy shared with route tests.
  */
-export function StudioTrustBoundaryPage({
-  description,
-  eyebrow,
-  headingId,
-  statusLabel,
-  title,
-}: StudioTrustBoundaryPageProps) {
+export function StudioTrustBoundaryPage({ copy }: StudioTrustBoundaryPageProps) {
   return (
     <StudioShell>
       <header className='studio-header'>
         <div>
-          <p className='eyebrow'>{eyebrow}</p>
-          <h1>{title}</h1>
+          <p className='eyebrow'>{copy.eyebrow}</p>
+          <h1>{copy.heading}</h1>
         </div>
-        <span className='status-pill blocked'>{statusLabel}</span>
+        <span className='status-pill blocked'>{copy.status}</span>
       </header>
 
       <StudioRouteBoundaryCard
-        description={description}
-        headingId={headingId}
-        title='Safe recovery'
+        actions={studioTrustBoundaryActions(copy)}
+        description={copy.description}
+        headingId={copy.recoveryHeadingId}
+        title={copy.recoveryTitle}
       />
     </StudioShell>
   );
+}
+
+function studioTrustBoundaryActions(
+  copy: StudioRouteBoundaryCopy,
+): readonly StudioRouteBoundaryAction[] {
+  if (!copy.primaryActionHref || !copy.primaryActionLabel) {
+    return defaultStudioRouteBoundaryActions;
+  }
+  return [
+    {
+      href: copy.primaryActionHref,
+      label: copy.primaryActionLabel,
+    },
+    ...defaultStudioRouteBoundaryActions.filter((action) => action.href !== copy.primaryActionHref),
+  ];
 }

@@ -123,6 +123,28 @@ describe("Studio read-only run summaries", () => {
     ]);
   });
 
+  it("keeps render planning as the primary action when evidence trails package generation", async () => {
+    const run = await createRun();
+    await saveRun({ ...run, state: "SCRIPT_APPROVED" });
+    await writeEvidence(run.runId, {
+      nextRecommendedCommand: "pnpm producer package --run <run_id>",
+    });
+    await saveRun({
+      ...(await loadRun(run.runId)),
+      artifacts: ["evidence_bundle.json"],
+      state: "PRODUCTION_PACKAGE_GENERATED",
+    });
+
+    const detail = await getStudioRunDetail(run.runId);
+
+    expect(detail).toMatchObject({
+      evidenceNextAction: `pnpm producer evidence --run ${run.runId}`,
+      evidenceStatus: "stale",
+      nextRecommendedCommand: `pnpm producer render-plan --run ${run.runId}`,
+      state: "PRODUCTION_PACKAGE_GENERATED",
+    });
+  });
+
   it("projects generated ideas for guarded Studio idea approval", async () => {
     const run = await createRun();
     await saveRun({ ...run, artifacts: ["ideas.json"], state: "IDEAS_GENERATED" });
@@ -141,6 +163,11 @@ describe("Studio read-only run summaries", () => {
             title: "Rüya Sinyali",
           },
         ],
+        prompt: {
+          key: "ideas",
+          source: "default",
+          targetArtifact: "ideas.json",
+        },
       }),
       "utf8",
     );

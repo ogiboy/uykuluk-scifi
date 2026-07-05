@@ -4,6 +4,7 @@ import { useEffect } from "react";
 
 import { StudioRouteBoundaryCard } from "@/components/studio/StudioRouteBoundaryCard";
 import { Button } from "@/components/ui/button";
+import { studioErrorCopy } from "@/lib/studioRouteBoundaryCopy";
 
 type StudioRouteErrorPageProps = Readonly<{
   error: Error & { digest?: string };
@@ -25,16 +26,16 @@ export default function StudioRouteErrorPage({ error, reset }: StudioRouteErrorP
     <main className='studio-main page-shell' aria-labelledby='studio-error-heading'>
       <header className='studio-header'>
         <div>
-          <p className='eyebrow'>Route boundary</p>
-          <h1 id='studio-error-heading'>Studio page failed safely</h1>
+          <p className='eyebrow'>{studioErrorCopy.eyebrow}</p>
+          <h1 id='studio-error-heading'>{studioErrorCopy.heading}</h1>
         </div>
-        <span className='status-pill blocked'>No action taken</span>
+        <span className='status-pill blocked'>{studioErrorCopy.status}</span>
       </header>
 
       <StudioRouteBoundaryCard
-        description='The web surface stopped at this route boundary. It did not retry approvals, change run state, upload media, publish content, or infer readiness from local files.'
-        headingId='studio-error-recovery-heading'
-        title='Safe recovery'
+        description={studioErrorCopy.description}
+        headingId={studioErrorCopy.recoveryHeadingId}
+        title={studioErrorCopy.recoveryTitle}
       >
         <Button onClick={reset} variant='secondary'>
           Retry local read

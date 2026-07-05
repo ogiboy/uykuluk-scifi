@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { writeStudioLastMutationResult } from "./studioLastMutationResult";
 import type { StudioMutationRecordSummary } from "./studioMutationResultSummary";
 import { submitStudioJsonMutation } from "./studioMutationSubmit";
 
@@ -20,8 +21,9 @@ export type StudioGuardedActionSubmitState =
       kind: "blocked";
       message: string;
       recordSummary: StudioMutationRecordSummary | null;
+      status: number;
     }
-  | { action: StudioGuardedActionMetadata; kind: "error"; message: string };
+  | { action: StudioGuardedActionMetadata; kind: "error"; message: string; status?: number };
 
 export type StudioGuardedActionMetadata = Readonly<{
   actionId: string;
@@ -64,11 +66,16 @@ export function useStudioGuardedActionSubmit(idleMessage: string) {
       routePath: input.routePath,
     });
     if (result.kind === "blocked") {
+      const blockedAction = actionMetadata(input, true);
       setState({
-        action: actionMetadata(input, true),
+        action: blockedAction,
         kind: "blocked",
         message: result.message,
         recordSummary: result.recordSummary,
+        status: result.status,
+      });
+      writeLastMutationResult("blocked", blockedAction, result.message, result.recordSummary, {
+        status: result.status,
       });
       toast.warning(input.errorToastTitle, {
         description: `${result.message} Studio is refreshing persisted local state.`,
@@ -77,16 +84,26 @@ export function useStudioGuardedActionSubmit(idleMessage: string) {
       return;
     }
     if (result.kind === "error") {
-      setState({ action: startedAction, kind: "error", message: result.message });
+      setState({
+        action: startedAction,
+        kind: "error",
+        message: result.message,
+        status: result.status,
+      });
+      writeLastMutationResult("error", startedAction, result.message, null, {
+        status: result.status,
+      });
       toast.error(input.errorToastTitle, { description: result.message });
       return;
     }
+    const completedAction = actionMetadata(input, true);
     setState({
-      action: actionMetadata(input, true),
+      action: completedAction,
       kind: "success",
       message: input.successMessage,
       recordSummary: result.recordSummary,
     });
+    writeLastMutationResult("success", completedAction, input.successMessage, result.recordSummary);
     toast.success(input.successToastTitle, {
       description: "Studio is refreshing the persisted run detail.",
     });
@@ -94,6 +111,25 @@ export function useStudioGuardedActionSubmit(idleMessage: string) {
   }
 
   return { state, submit };
+}
+
+function writeLastMutationResult(
+  kind: "blocked" | "error" | "success",
+  action: StudioGuardedActionMetadata,
+  message: string,
+  recordSummary: StudioMutationRecordSummary | null,
+  options: Readonly<{ status?: number }> = {},
+): void {
+  writeStudioLastMutationResult({
+    actionId: action.actionId,
+    facts: recordSummary?.facts ?? [],
+    kind,
+    message,
+    recordedAtIso: new Date().toISOString(),
+    refreshedPersistedState: action.refreshedPersistedState,
+    routePath: action.routePath,
+    status: options.status,
+  });
 }
 
 function actionMetadata(

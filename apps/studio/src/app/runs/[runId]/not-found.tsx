@@ -1,6 +1,6 @@
 import { StudioRouteBoundaryCard } from "@/components/studio/StudioRouteBoundaryCard";
 import { StudioShell } from "@/components/studio/StudioShell";
-import { runDetailNotFoundCopy } from "@/lib/runRouteBoundaryCopy";
+import { runDetailNotFoundCopy } from "@/lib/studioRouteBoundaryCopy";
 
 /**
  * Renders the run-detail not-found boundary.
@@ -12,7 +12,7 @@ export default function RunDetailNotFoundPage() {
     <StudioShell>
       <header className='studio-header'>
         <div>
-          <p className='eyebrow'>Run review boundary</p>
+          <p className='eyebrow'>{runDetailNotFoundCopy.eyebrow}</p>
           <h1>{runDetailNotFoundCopy.heading}</h1>
         </div>
         <span className='status-pill blocked'>{runDetailNotFoundCopy.status}</span>

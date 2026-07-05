@@ -1459,6 +1459,47 @@ h3 {
   margin: 0;
 }
 
+.mutation-recovery-actions {
+  display: grid;
+  gap: 8px;
+  border: 1px solid color-mix(in srgb, var(--danger) 38%, var(--line));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--danger) 6%, var(--studio-surface-inset));
+  padding: 10px;
+}
+
+.mutation-recovery-actions p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.mutation-recovery-actions a {
+  justify-self: start;
+  color: var(--text);
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--danger) 55%, transparent);
+  text-underline-offset: 3px;
+}
+
+.last-mutation-notice {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+}
+
+.last-mutation-notice time {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+}
+
+.last-mutation-facts {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 18px;
+  color: var(--muted);
+}
+
 .analytics-action-panel {
   grid-column: 1 / -1;
 }

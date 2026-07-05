@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { studioMutationRecoveryCopy } from "@/lib/studioMutationRecoveryCopy";
 import type { StudioGuardedActionSubmitState } from "@/lib/useStudioGuardedActionSubmit";
 
 type StudioMutationResultPanelProps = Readonly<{
@@ -21,7 +23,8 @@ type StudioMutationStateWithRecordSummary = StudioMutationStateWithOptionalRecor
  */
 export function StudioMutationResultPanel({ state }: StudioMutationResultPanelProps) {
   const isProblem = mutationResultIsProblem(state);
-  const actionFacts = hasStudioMutationAction(state) ? studioActionFacts(state.action) : [];
+  const actionFacts = mutationBoundaryFacts(state);
+  const recovery = studioMutationRecoveryCopy(state);
   return (
     <section
       className={isProblem ? "mutation-result blocked" : "mutation-result"}
@@ -39,6 +42,12 @@ export function StudioMutationResultPanel({ state }: StudioMutationResultPanelPr
           ))}
         </dl>
       ) : null}
+      {recovery ? (
+        <div className='mutation-recovery-actions'>
+          <p>{recovery.detail}</p>
+          <Link href={recovery.href}>{recovery.label}</Link>
+        </div>
+      ) : null}
       {hasStudioMutationRecordSummary(state) ? (
         <dl aria-label='Producer record summary'>
           {state.recordSummary.facts.map((fact, index) => (
@@ -51,6 +60,16 @@ export function StudioMutationResultPanel({ state }: StudioMutationResultPanelPr
       ) : null}
     </section>
   );
+}
+
+function mutationBoundaryFacts(
+  state: StudioGuardedActionSubmitState,
+): { label: string; value: string }[] {
+  const facts = hasStudioMutationAction(state) ? studioActionFacts(state.action) : [];
+  if (!hasHttpStatus(state)) {
+    return facts;
+  }
+  return [...facts, { label: "HTTP status", value: String(state.status) }];
 }
 
 function studioActionFacts(
@@ -82,4 +101,11 @@ function hasStudioMutationRecordSummary(
   state: StudioGuardedActionSubmitState,
 ): state is StudioMutationStateWithRecordSummary {
   return "recordSummary" in state && state.recordSummary !== null;
+}
+
+function hasHttpStatus(
+  state: StudioGuardedActionSubmitState,
+): state is Extract<StudioGuardedActionSubmitState, { status?: number }> &
+  Readonly<{ status: number }> {
+  return "status" in state && typeof state.status === "number";
 }

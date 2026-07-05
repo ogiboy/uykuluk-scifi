@@ -43,6 +43,7 @@ describe("Studio mutation submit", () => {
       kind: "error",
       message:
         "Studio mutations require a valid local session token. Refresh the local web control session before retrying.",
+      status: 401,
     });
     expect(readStudioMutationSessionSnapshot()).toEqual({ status: "missing" });
   });
@@ -67,7 +68,51 @@ describe("Studio mutation submit", () => {
       routePath: "/actions/approve-script",
     });
 
-    expect(result).toEqual({ kind: "error", message: "Run not found." });
+    expect(result).toEqual({ kind: "error", message: "Run not found.", status: 409 });
+    expect(readStudioMutationSessionSnapshot()).toMatchObject({ status: "ready" });
+  });
+
+  it("keeps the HTTP status when a producer record is returned from a blocked mutation", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        Response.json({
+          expiresInSeconds: 900,
+          status: "ok",
+          token: "session_token_submit_1234567890",
+        }),
+      )
+      .mockResolvedValueOnce(
+        Response.json(
+          {
+            message: "Readiness is blocked.",
+            record: {
+              checks: [{ status: "block" }],
+              passed: false,
+              runId: "run_blocked_submit",
+            },
+            status: "error",
+          },
+          { status: 409 },
+        ),
+      );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await submitStudioJsonMutation({
+      actionId: "readiness.run",
+      body: { runId: "run_blocked_submit" },
+      fallbackError: "Readiness diagnostics could not run.",
+      routePath: "/actions/run-readiness",
+    });
+
+    expect(result).toEqual({
+      kind: "blocked",
+      message: "Readiness is blocked.",
+      recordSummary: {
+        facts: ["Run: run_blocked_submit"],
+      },
+      status: 409,
+    });
     expect(readStudioMutationSessionSnapshot()).toMatchObject({ status: "ready" });
   });
 

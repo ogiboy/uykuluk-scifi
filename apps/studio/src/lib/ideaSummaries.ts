@@ -13,7 +13,7 @@ const studioGeneratedIdeaSchema = z.strictObject({
   title: z.string().min(1),
 });
 
-const ideasArtifactSchema = z.strictObject({
+const ideasArtifactSchema = z.object({
   ideas: z.array(studioGeneratedIdeaSchema),
 });
 

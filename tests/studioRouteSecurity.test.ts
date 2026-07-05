@@ -12,6 +12,14 @@ import {
 const appRoot = path.join(process.cwd(), "apps/studio/src/app");
 
 describe("Studio route security contract", () => {
+  it("keeps App Router route boundary files explicit and covered", async () => {
+    await expect(discoverBoundaryFiles(appRoot)).resolves.toEqual(
+      ["error.tsx", "not-found.tsx", "runs/[runId]/error.tsx", "runs/[runId]/not-found.tsx"].map(
+        (routePath) => path.join(appRoot, routePath),
+      ),
+    );
+  });
+
   it("keeps every current Studio page route read-only and covered by the contract", async () => {
     const pageRoutes = await discoverPageRoutes(appRoot);
     const contractedRoutes = readOnlyStudioRoutes
@@ -197,6 +205,11 @@ describe("Studio route security contract", () => {
     expect(disabledStudioActionRoutes.every((route) => route.enabled === false)).toBe(true);
   });
 });
+
+async function discoverBoundaryFiles(root: string): Promise<string[]> {
+  const files = await listFiles(root);
+  return files.filter((file) => /\/(?:error|not-found)\.tsx$/.test(file)).sort(routeSort);
+}
 
 async function discoverPageRoutes(root: string): Promise<string[]> {
   const files = await listFiles(root);

@@ -1,5 +1,6 @@
 import { StudioRouteBoundaryCard } from "@/components/studio/StudioRouteBoundaryCard";
 import { StudioShell } from "@/components/studio/StudioShell";
+import { studioNotFoundCopy } from "@/lib/studioRouteBoundaryCopy";
 
 /**
  * Renders the Studio route-level not-found boundary.
@@ -11,16 +12,16 @@ export default function StudioNotFoundPage() {
     <StudioShell>
       <header className='studio-header'>
         <div>
-          <p className='eyebrow'>Route boundary</p>
-          <h1>Studio route not found</h1>
+          <p className='eyebrow'>{studioNotFoundCopy.eyebrow}</p>
+          <h1>{studioNotFoundCopy.heading}</h1>
         </div>
-        <span className='status-pill blocked'>No action taken</span>
+        <span className='status-pill blocked'>{studioNotFoundCopy.status}</span>
       </header>
 
       <StudioRouteBoundaryCard
-        description='Studio could not find this page or local run resource. Missing routes and missing files never imply approval, readiness, upload permission, or publish permission.'
-        headingId='studio-not-found-recovery-heading'
-        title='Safe next step'
+        description={studioNotFoundCopy.description}
+        headingId={studioNotFoundCopy.recoveryHeadingId}
+        title={studioNotFoundCopy.recoveryTitle}
       />
     </StudioShell>
   );
