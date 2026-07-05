@@ -45,27 +45,29 @@ export function RunStageActionConfirmationDialog({
             publish, and paid-provider execution remain unavailable from this action.
           </DialogDescription>
         </DialogHeader>
-        <div className='confirmation-summary'>
-          <dl className='decision-list'>
-            <div>
-              <dt>Action</dt>
-              <dd>{action.actionId}</dd>
+        <div className='space-y-4 rounded-lg border bg-muted/30 p-4'>
+          <dl className='grid gap-3 text-sm sm:grid-cols-2'>
+            <div className='space-y-1'>
+              <dt className='font-medium text-muted-foreground'>Action</dt>
+              <dd className='break-all'>{action.actionId}</dd>
             </div>
-            <div>
-              <dt>Current state</dt>
-              <dd>{currentState}</dd>
+            <div className='space-y-1'>
+              <dt className='font-medium text-muted-foreground'>Current state</dt>
+              <dd className='break-all'>{currentState}</dd>
             </div>
-            <div>
-              <dt>Run</dt>
-              <dd>{runId}</dd>
+            <div className='space-y-1'>
+              <dt className='font-medium text-muted-foreground'>Run</dt>
+              <dd className='break-all'>{runId}</dd>
             </div>
-            <div>
-              <dt>Route</dt>
-              <dd>{action.routePath}</dd>
+            <div className='space-y-1'>
+              <dt className='font-medium text-muted-foreground'>Route</dt>
+              <dd className='break-all'>{action.routePath}</dd>
             </div>
           </dl>
           {nextRecommendedCommand ? (
-            <p className='artifact-action'>CLI equivalent: {nextRecommendedCommand}</p>
+            <code className='block max-w-full break-all rounded-md bg-background px-2 py-1 text-xs text-muted-foreground'>
+              CLI equivalent: {nextRecommendedCommand}
+            </code>
           ) : null}
         </div>
         <DialogFooter showCloseButton>

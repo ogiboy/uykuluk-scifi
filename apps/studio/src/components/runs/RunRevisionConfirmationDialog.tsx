@@ -44,19 +44,19 @@ export function RunRevisionConfirmationDialog({
             re-check state, artifact, and evidence invalidation rules.
           </DialogDescription>
         </DialogHeader>
-        <div className='confirmation-summary'>
-          <dl className='decision-list'>
-            <div>
-              <dt>Action</dt>
-              <dd>{actionLabel}</dd>
+        <div className='rounded-lg border bg-muted/30 p-4'>
+          <dl className='grid gap-3 text-sm sm:grid-cols-2'>
+            <div className='space-y-1'>
+              <dt className='font-medium text-muted-foreground'>Action</dt>
+              <dd className='break-all'>{actionLabel}</dd>
             </div>
-            <div>
-              <dt>Current state</dt>
-              <dd>{currentState}</dd>
+            <div className='space-y-1'>
+              <dt className='font-medium text-muted-foreground'>Current state</dt>
+              <dd className='break-all'>{currentState}</dd>
             </div>
-            <div>
-              <dt>Reason</dt>
-              <dd>{reason}</dd>
+            <div className='space-y-1 sm:col-span-2'>
+              <dt className='font-medium text-muted-foreground'>Reason</dt>
+              <dd className='break-words'>{reason}</dd>
             </div>
           </dl>
         </div>

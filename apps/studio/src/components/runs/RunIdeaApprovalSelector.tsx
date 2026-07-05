@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 
@@ -23,8 +24,8 @@ export function RunIdeaApprovalSelector({
 }: RunIdeaApprovalSelectorProps) {
   if (ideas.length === 0) {
     return (
-      <label>
-        Idea ID
+      <Label className='grid gap-2'>
+        <span>Idea ID</span>
         <Input
           maxLength={200}
           minLength={1}
@@ -33,23 +34,28 @@ export function RunIdeaApprovalSelector({
           value={ideaId}
           onChange={(event) => onIdeaIdChange(event.target.value)}
         />
-      </label>
+      </Label>
     );
   }
 
   return (
-    <fieldset className='idea-approval-selector'>
-      <legend>Generated idea</legend>
-      <RadioGroup value={ideaId} onValueChange={onIdeaIdChange}>
+    <fieldset className='space-y-3'>
+      <legend className='text-sm font-medium'>Generated idea</legend>
+      <RadioGroup className='grid gap-3' value={ideaId} onValueChange={onIdeaIdChange}>
         {ideas.map((idea) => (
-          <label className='idea-approval-option' key={idea.id}>
-            <RadioGroupItem value={idea.id} />
-            <span>
-              <strong>
+          <Label
+            className='grid cursor-pointer grid-cols-[auto_1fr] items-start gap-3 rounded-lg border bg-card p-3 text-sm transition-colors hover:bg-accent/10'
+            key={idea.id}
+          >
+            <RadioGroupItem className='mt-1' value={idea.id} />
+            <span className='space-y-2'>
+              <strong className='block'>
                 {idea.id}: {idea.title}
               </strong>
-              {idea.premise ? <span>{idea.premise}</span> : null}
-              <span className='idea-approval-meta'>
+              {idea.premise ? (
+                <span className='block text-muted-foreground'>{idea.premise}</span>
+              ) : null}
+              <span className='flex flex-wrap gap-2'>
                 {idea.targetDuration ? (
                   <Badge variant='outline'>{idea.targetDuration}</Badge>
                 ) : null}
@@ -59,7 +65,7 @@ export function RunIdeaApprovalSelector({
                 {idea.riskLevel ? <Badge variant='outline'>risk {idea.riskLevel}</Badge> : null}
               </span>
             </span>
-          </label>
+          </Label>
         ))}
       </RadioGroup>
     </fieldset>

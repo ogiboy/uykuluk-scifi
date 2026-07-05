@@ -1,6 +1,14 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import { useStudioStageActionSubmit } from "@/lib/useStudioStageActionSubmit";
 import { StudioMutationResultPanel } from "../studio/StudioMutationResultPanel";
@@ -32,28 +40,38 @@ export function RunStageActionPanel({ run }: RunStageActionPanelProps) {
   }
 
   return (
-    <section className='panel stage-action-panel' aria-labelledby='stage-action-heading'>
-      <div>
-        <p className='eyebrow'>Workflow control</p>
-        <h2 id='stage-action-heading'>{action.heading}</h2>
-      </div>
-      <p>{action.description}</p>
-      <p>
-        Studio will call a guarded local route, which then runs the canonical producer CLI. Core
-        state, approvals, cost checks, provider config, readiness, and evidence remain
-        authoritative.
-      </p>
-      <Button
-        disabled={state.kind === "submitting"}
-        type='button'
-        onClick={() => setConfirmationOpen(true)}
-      >
-        {state.kind === "submitting" ? "Running..." : action.buttonLabel}
-      </Button>
-      <StudioMutationResultPanel state={state} />
-      {run.nextRecommendedCommand ? (
-        <p className='artifact-action'>CLI equivalent: {run.nextRecommendedCommand}</p>
-      ) : null}
+    <section aria-labelledby='stage-action-heading'>
+      <Card>
+        <CardHeader>
+          <p className='text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground'>
+            Workflow control
+          </p>
+          <CardTitle id='stage-action-heading'>{action.heading}</CardTitle>
+          <CardDescription>{action.description}</CardDescription>
+        </CardHeader>
+        <CardContent className='space-y-4'>
+          <p className='text-sm text-muted-foreground'>
+            Studio will call a guarded local route, which then runs the canonical producer CLI. Core
+            state, approvals, cost checks, provider config, readiness, and evidence remain
+            authoritative.
+          </p>
+          <StudioMutationResultPanel state={state} />
+        </CardContent>
+        <CardFooter className='flex-col items-start gap-3 sm:flex-row sm:items-center'>
+          <Button
+            disabled={state.kind === "submitting"}
+            type='button'
+            onClick={() => setConfirmationOpen(true)}
+          >
+            {state.kind === "submitting" ? "Running..." : action.buttonLabel}
+          </Button>
+          {run.nextRecommendedCommand ? (
+            <code className='max-w-full break-all rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground'>
+              CLI equivalent: {run.nextRecommendedCommand}
+            </code>
+          ) : null}
+        </CardFooter>
+      </Card>
       <RunStageActionConfirmationDialog
         action={action}
         currentState={run.state}
