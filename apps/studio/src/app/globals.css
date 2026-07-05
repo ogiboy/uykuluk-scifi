@@ -291,59 +291,6 @@ h3 {
   align-items: center;
 }
 
-.review-section {
-  scroll-margin-top: 16px;
-}
-
-.review-section-tabs {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  flex-wrap: wrap;
-  gap: 8px;
-  height: auto;
-  min-height: 52px;
-  width: 100%;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--bg) 92%, transparent);
-  padding: 10px;
-  backdrop-filter: blur(10px);
-}
-
-.review-section-tabs a,
-.review-section-tabs button {
-  display: inline-flex;
-  gap: 8px;
-  align-items: center;
-  justify-content: center;
-  min-height: 32px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  color: var(--muted);
-  flex: 1 1 140px;
-  padding: 7px 10px;
-  font-size: 12px;
-}
-
-.review-section-tabs a:hover,
-.review-section-tabs button:hover,
-.review-section-tabs button[data-state="active"] {
-  border-color: color-mix(in srgb, var(--accent) 50%, var(--line));
-  color: var(--text);
-}
-
-.review-section-tab-label {
-  min-width: 0;
-}
-
-.review-section-tab-status {
-  max-width: 120px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .blocked {
   color: var(--danger);
 }
