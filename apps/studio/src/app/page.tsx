@@ -68,7 +68,7 @@ export default async function StudioHomePage() {
       <LatestRunReadinessPanel latestRun={runs[0] ?? null} />
       <AnalyticsStatusPanel overview={analyticsOverview} />
       <CommandPanel />
-      <ServiceContractPanel />
+      <ServiceContractPanel status={actionStatus} />
       <AssetInventory inventory={assetInventory} />
       <StudioTabs promptInventory={promptInventory} />
     </StudioShell>

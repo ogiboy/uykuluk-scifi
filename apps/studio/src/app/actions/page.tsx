@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { ServiceContractPanel } from "@/components/ServiceContractPanel";
 import { StudioCommandPalette } from "@/components/studio/StudioCommandPalette";
 import { StudioControlDesk } from "@/components/studio/StudioControlDesk";
 import { StudioPageHeader } from "@/components/studio/StudioPageHeader";
@@ -31,6 +32,7 @@ export default async function ActionsPage() {
         title='Actions'
       />
       <StudioControlDesk actionStatus={actionStatus} doctorOverview={doctorOverview} runs={runs} />
+      <ServiceContractPanel status={actionStatus} />
     </StudioShell>
   );
 }
