@@ -3,14 +3,6 @@
 import { useId, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,17 +12,13 @@ import { useStudioGuardedActionSubmit } from "@/lib/useStudioGuardedActionSubmit
 import { StudioMutationResultPanel } from "../studio/StudioMutationResultPanel";
 import { RunActionPreflightPanel } from "./RunActionPreflightPanel";
 import {
+  RunChannelHandoffDecisionConfirmationDialog,
+  type PendingChannelHandoffDecisionPayload,
+} from "./RunChannelHandoffDecisionConfirmationDialog";
+import {
   RunChannelHandoffDecisionSelector,
   type ChannelHandoffDecisionValue,
 } from "./RunChannelHandoffDecisionSelector";
-
-type PendingChannelHandoffDecisionPayload = Readonly<{
-  decision: ChannelHandoffDecisionValue;
-  notes: string;
-  reviewedBy: string;
-  runId: string;
-  thumbnailCandidateId?: string;
-}>;
 
 type RunChannelHandoffDecisionActionPanelProps = Readonly<{
   run: StudioRunDetail;
@@ -172,47 +160,16 @@ export function RunChannelHandoffDecisionActionPanel({
           </Button>
         </form>
       </CardContent>
-      <Dialog open={confirmationOpen} onOpenChange={setConfirmationOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirm local channel handoff decision</DialogTitle>
-            <DialogDescription>
-              This writes local review evidence for {run.runId}. Upload and public publish stay
-              disabled.
-            </DialogDescription>
-          </DialogHeader>
-          <div className='space-y-4 rounded-lg border bg-muted/30 p-4'>
-            <dl className='grid gap-3 text-sm sm:grid-cols-2'>
-              <div className='space-y-1'>
-                <dt className='font-medium text-muted-foreground'>Decision</dt>
-                <dd className='break-all'>{pendingPayload?.decision ?? decision}</dd>
-              </div>
-              <div className='space-y-1'>
-                <dt className='font-medium text-muted-foreground'>Thumbnail</dt>
-                <dd className='break-all'>
-                  {pendingPayload?.thumbnailCandidateId ?? "not selected for this decision"}
-                </dd>
-              </div>
-              <div className='space-y-1'>
-                <dt className='font-medium text-muted-foreground'>Reviewed by</dt>
-                <dd className='break-all'>{pendingPayload?.reviewedBy ?? reviewedBy}</dd>
-              </div>
-              <div className='space-y-1'>
-                <dt className='font-medium text-muted-foreground'>Run</dt>
-                <dd className='break-all'>{run.runId}</dd>
-              </div>
-            </dl>
-            <p className='text-sm text-muted-foreground'>
-              Notes are required and will be persisted with the local channel handoff decision.
-            </p>
-          </div>
-          <DialogFooter showCloseButton>
-            <Button disabled={state.kind === "submitting"} type='button' onClick={confirmDecision}>
-              Confirm local decision
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <RunChannelHandoffDecisionConfirmationDialog
+        decision={decision}
+        isSubmitting={state.kind === "submitting"}
+        open={confirmationOpen}
+        pendingPayload={pendingPayload}
+        reviewedBy={reviewedBy}
+        runId={run.runId}
+        onConfirm={confirmDecision}
+        onOpenChange={setConfirmationOpen}
+      />
       <CardContent className='space-y-3'>
         <StudioMutationResultPanel state={state} />
         {run.channelHandoffDecision.nextAction ? (
