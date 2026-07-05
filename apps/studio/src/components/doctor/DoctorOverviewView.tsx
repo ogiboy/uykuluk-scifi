@@ -5,6 +5,7 @@ import type {
 } from "@/lib/doctorOverview";
 import { CopyableCommand } from "@/components/studio/CopyableCommand";
 import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
+import { DoctorRunActionPanel } from "./DoctorRunActionPanel";
 
 type DoctorOverviewViewProps = Readonly<{
   overview: StudioDoctorOverview;
@@ -40,11 +41,12 @@ export function DoctorOverviewView({ overview }: DoctorOverviewViewProps) {
 
       <section className='panel' aria-labelledby='doctor-action-heading'>
         <h2 id='doctor-action-heading'>Next Safe Action</h2>
+        <DoctorRunActionPanel />
         <CopyableCommand command={overview.nextAction} label='Doctor command' />
         <p>
-          Read-only display from local diagnostics artifacts. Studio does not run doctor, edit
-          config, start providers, download models, upload media, publish content, or mutate
-          workflow state.
+          Studio can refresh local doctor artifacts through the guarded CLI route. It does not edit
+          config, start providers, download models, upload media, publish content, or mutate run
+          workflow state outside the canonical doctor command.
         </p>
         {overview.error ? <p className='blocked'>{overview.error}</p> : null}
       </section>
@@ -58,7 +60,7 @@ export function DoctorOverviewView({ overview }: DoctorOverviewViewProps) {
             ))}
           </ul>
         ) : (
-          <p>Run the CLI doctor command to generate local diagnostics.</p>
+          <p>Run doctor from Studio or CLI to generate local diagnostics.</p>
         )}
       </section>
 
@@ -71,7 +73,7 @@ export function DoctorOverviewView({ overview }: DoctorOverviewViewProps) {
         {overview.reportPreview ? (
           <pre className='artifact-preview'>{overview.reportPreview}</pre>
         ) : (
-          <p>Run the CLI doctor command to refresh the local Markdown report artifact.</p>
+          <p>Run doctor from Studio or CLI to refresh the local Markdown report artifact.</p>
         )}
       </section>
     </div>

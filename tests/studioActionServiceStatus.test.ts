@@ -6,10 +6,10 @@ describe("Studio action service status", () => {
     const status = getStudioActionServiceStatus();
 
     expect(status).toMatchObject({
-      actionCount: 27,
+      actionCount: 28,
       disabledRouteCount: 2,
       findings: [],
-      readyForCliCount: 25,
+      readyForCliCount: 26,
       riskyExternalCount: 2,
       webMutationsEnabled: true,
     });
@@ -39,6 +39,13 @@ describe("Studio action service status", () => {
         actionId: "render-plan.run",
         availability: "ready-for-cli",
         routePath: "/actions/run-render-plan",
+      }),
+    );
+    expect(status.summaries).toContainEqual(
+      expect.objectContaining({
+        actionId: "doctor.run",
+        availability: "ready-for-cli",
+        routePath: "/actions/run-doctor",
       }),
     );
     expect(status.summaries).toContainEqual(

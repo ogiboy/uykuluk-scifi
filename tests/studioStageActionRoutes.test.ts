@@ -1,9 +1,11 @@
-import { mkdir } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
+import { POST as runDoctor } from "../apps/studio/src/app/actions/run-doctor/route";
 import { POST as runEvidence } from "../apps/studio/src/app/actions/run-evidence/route";
 import { POST as runIdeas } from "../apps/studio/src/app/actions/run-ideas/route";
 import { POST as runReadiness } from "../apps/studio/src/app/actions/run-readiness/route";
 import { POST as runRenderPlan } from "../apps/studio/src/app/actions/run-render-plan/route";
+import { defaultConfig } from "../src/config/config";
 import { createRun } from "../src/core/runStore";
 import { useTempProject } from "./helpers";
 import {
@@ -30,6 +32,14 @@ describe("Studio workflow stage action routes", () => {
     await expectRouteError(
       runIdeas(
         studioJsonRequest("/actions/run-ideas", "ideas.run", {
+          runId: "run_unexpected",
+        }),
+      ),
+      400,
+    );
+    await expectRouteError(
+      runDoctor(
+        studioJsonRequest("/actions/run-doctor", "doctor.run", {
           runId: "run_unexpected",
         }),
       ),
@@ -87,6 +97,43 @@ describe("Studio workflow stage action routes", () => {
         runId: run.runId,
       }),
     );
+
+    expect(response.status).toBe(409);
+    await expect(response.json()).resolves.toMatchObject({
+      record: {
+        checks: expect.any(Array),
+        passed: false,
+      },
+      status: "error",
+    });
+  });
+
+  it("preserves doctor diagnostics when local health checks block", async () => {
+    await writeFile(
+      "producer.config.json",
+      `${JSON.stringify(
+        {
+          ...defaultConfig,
+          providers: {
+            ...defaultConfig.providers,
+            youtube: {
+              enabled: true,
+              allowPrivateUpload: true,
+              allowPublicPublish: true,
+            },
+          },
+          safeguards: {
+            ...defaultConfig.safeguards,
+            neverPublicPublishWithoutExplicitApproval: false,
+          },
+        },
+        null,
+        2,
+      )}\n`,
+      "utf8",
+    );
+
+    const response = await runDoctor(studioJsonRequest("/actions/run-doctor", "doctor.run", {}));
 
     expect(response.status).toBe(409);
     await expect(response.json()).resolves.toMatchObject({
