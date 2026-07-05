@@ -154,10 +154,6 @@ a {
   text-decoration: none;
 }
 
-.page-shell {
-  min-height: 100vh;
-}
-
 .toaster {
   --normal-bg: var(--panel);
   --normal-text: var(--text);
@@ -184,79 +180,6 @@ a {
   }
 }
 
-.studio-loading-nav-item {
-  border-radius: 6px;
-  color: var(--muted);
-  padding: 10px 12px;
-}
-
-.studio-loading-panel {
-  align-content: start;
-}
-
-.studio-loading-line,
-.studio-loading-command,
-.studio-loading-pill {
-  min-width: 0;
-}
-
-.studio-loading-line {
-  height: 12px;
-  width: 100%;
-}
-
-.studio-loading-line.short {
-  width: 34%;
-}
-
-.studio-loading-line.heading {
-  height: 20px;
-  width: min(320px, 70%);
-}
-
-.studio-loading-line.label {
-  height: 10px;
-  width: 44%;
-}
-
-.studio-loading-line.title {
-  height: 24px;
-  width: min(420px, 82%);
-}
-
-.studio-loading-line.value {
-  height: 18px;
-  width: 58%;
-}
-
-.studio-loading-line.body {
-  height: 14px;
-}
-
-.studio-loading-line.body.narrow {
-  width: 72%;
-}
-
-.studio-loading-command {
-  height: 38px;
-  width: min(240px, 44vw);
-}
-
-.studio-loading-command.wide {
-  height: 72px;
-  width: min(640px, 100%);
-}
-
-.studio-loading-pill {
-  height: 38px;
-  width: 142px;
-  border-radius: 999px;
-}
-
-.studio-loading-pill.small {
-  width: 86px;
-}
-
 h1,
 h2,
 h3,
@@ -280,19 +203,6 @@ h2 {
 h3 {
   margin-bottom: 8px;
   font-size: 15px;
-}
-
-.run-blocker-accordion,
-.run-readiness-accordion {
-  margin-top: 12px;
-}
-
-.run-readiness-accordion [data-slot="accordion-trigger"] {
-  align-items: center;
-}
-
-.blocked {
-  color: var(--danger);
 }
 
 @media (max-width: 900px) {
