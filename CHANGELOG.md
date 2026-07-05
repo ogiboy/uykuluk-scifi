@@ -11,6 +11,20 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.76.0 (2026-07-05)
+
+### Fixes
+
+- keep render planning primary (49b9743)
+- use global event target (0da34d5)
+- load persisted idea choices (4d531e6)
+- harden mutation recovery boundary (412f135)
+
+### Features
+
+- retain latest web action result (eed438d)
+- strengthen route boundaries (d5fbd4b)
+
 ## v0.75.0 (2026-07-05)
 
 ### Fixes
