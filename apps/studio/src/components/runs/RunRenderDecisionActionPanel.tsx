@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -11,6 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import { buildStudioActionPreflight } from "@/lib/studioActionPreflight";
@@ -64,6 +66,8 @@ export function RunRenderDecisionActionPanel({
   const [reviewedBy, setReviewedBy] = useState("operator");
   const [confirmationOpen, setConfirmationOpen] = useState(false);
   const [pendingPayload, setPendingPayload] = useState<PendingRenderDecisionPayload | null>(null);
+  const reviewedById = useId();
+  const notesId = useId();
   const { state, submit } = useStudioGuardedActionSubmit(
     "Records local evidence only. Upload and publish stay disabled.",
   );
@@ -101,45 +105,54 @@ export function RunRenderDecisionActionPanel({
   }
 
   return (
-    <section className='panel' aria-labelledby='render-decision-action-heading'>
-      <h2 id='render-decision-action-heading'>Record Render Decision</h2>
-      <p>
-        This guarded Studio action writes the same local decision evidence as the CLI. It does not
-        approve upload or publish.
-      </p>
-      <RunActionPreflightPanel preflight={preflight} />
-      <form className='studio-form' onSubmit={requestDecisionConfirmation}>
-        <RunRenderDecisionSelector
-          commands={commands}
-          decision={decision}
-          onDecisionChange={setDecision}
-        />
-        <label>
-          Reviewed by
-          <Input
-            maxLength={200}
-            minLength={1}
-            required
-            value={reviewedBy}
-            onChange={(event) => setReviewedBy(event.target.value)}
+    <Card aria-labelledby='render-decision-action-heading'>
+      <CardHeader>
+        <CardDescription>Local operator decision</CardDescription>
+        <CardTitle>
+          <h2 id='render-decision-action-heading'>Record Render Decision</h2>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className='space-y-6'>
+        <p className='text-sm text-muted-foreground'>
+          This guarded Studio action writes the same local decision evidence as the CLI. It does not
+          approve upload or publish.
+        </p>
+        <RunActionPreflightPanel preflight={preflight} />
+        <form className='space-y-5' onSubmit={requestDecisionConfirmation}>
+          <RunRenderDecisionSelector
+            commands={commands}
+            decision={decision}
+            onDecisionChange={setDecision}
           />
-        </label>
-        <label>
-          Notes
-          <Textarea
-            className='resize-y'
-            maxLength={4000}
-            minLength={1}
-            required
-            rows={4}
-            value={notes}
-            onChange={(event) => setNotes(event.target.value)}
-          />
-        </label>
-        <Button disabled={state.kind === "submitting"} type='submit'>
-          Record local decision
-        </Button>
-      </form>
+          <div className='space-y-2'>
+            <Label htmlFor={reviewedById}>Reviewed by</Label>
+            <Input
+              id={reviewedById}
+              maxLength={200}
+              minLength={1}
+              required
+              value={reviewedBy}
+              onChange={(event) => setReviewedBy(event.target.value)}
+            />
+          </div>
+          <div className='space-y-2'>
+            <Label htmlFor={notesId}>Notes</Label>
+            <Textarea
+              id={notesId}
+              className='min-h-28 resize-y'
+              maxLength={4000}
+              minLength={1}
+              required
+              rows={4}
+              value={notes}
+              onChange={(event) => setNotes(event.target.value)}
+            />
+          </div>
+          <Button disabled={state.kind === "submitting"} type='submit'>
+            Record local decision
+          </Button>
+        </form>
+      </CardContent>
       <Dialog open={confirmationOpen} onOpenChange={setConfirmationOpen}>
         <DialogContent>
           <DialogHeader>
@@ -175,7 +188,9 @@ export function RunRenderDecisionActionPanel({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      <StudioMutationResultPanel state={state} />
-    </section>
+      <CardContent>
+        <StudioMutationResultPanel state={state} />
+      </CardContent>
+    </Card>
   );
 }
