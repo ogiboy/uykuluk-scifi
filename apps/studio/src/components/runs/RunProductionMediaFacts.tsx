@@ -17,24 +17,36 @@ export function RunProductionMediaFacts({ artifact }: RunProductionMediaFactsPro
     return (
       <>
         {compactFacts.length > 0 ? (
-          <ul className='production-media-facts' aria-label={`${artifact.label} evidence facts`}>
+          <ul className='flex flex-wrap gap-2' aria-label={`${artifact.label} evidence facts`}>
             {compactFacts.map((fact, index) => (
-              <li key={`${fact}-${index}`}>{fact}</li>
+              <li
+                className='rounded-full border bg-muted/30 px-2.5 py-1 text-xs text-muted-foreground'
+                key={`${fact}-${index}`}
+              >
+                {fact}
+              </li>
             ))}
           </ul>
         ) : null}
         {detailedFactCount > 0 ? (
-          <p className='production-media-detail-note'>
+          <p className='text-sm text-muted-foreground'>
             {detailedFactCount} detailed evidence item{detailedFactCount === 1 ? "" : "s"} available
             below.
           </p>
         ) : null}
         {detailedFactCount > 0 ? (
-          <details className='production-media-fact-details'>
-            <summary>Detailed media evidence</summary>
-            <ul>
+          <details className='rounded-lg border bg-muted/20 p-3'>
+            <summary className='cursor-pointer text-sm font-medium'>
+              Detailed media evidence
+            </summary>
+            <ul className='mt-3 grid gap-2 text-sm text-muted-foreground'>
               {detailedFacts.map((fact, index) => (
-                <li key={`${fact}-${index}`}>{fact}</li>
+                <li
+                  className='break-words rounded-md border bg-background p-2'
+                  key={`${fact}-${index}`}
+                >
+                  {fact}
+                </li>
               ))}
             </ul>
           </details>
@@ -42,7 +54,9 @@ export function RunProductionMediaFacts({ artifact }: RunProductionMediaFactsPro
       </>
     );
   }
-  return artifact.detail ? <p>{artifact.detail}</p> : null;
+  return artifact.detail ? (
+    <p className='text-sm text-muted-foreground'>{artifact.detail}</p>
+  ) : null;
 }
 
 function isCompactFact(fact: string): boolean {

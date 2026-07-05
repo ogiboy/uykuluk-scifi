@@ -1,3 +1,6 @@
+import { RunDetailCard } from "@/components/runs/RunDetailCard";
+import { CopyableCommand } from "@/components/studio/CopyableCommand";
+import { Badge } from "@/components/ui/badge";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import {
   Accordion,
@@ -6,7 +9,6 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { RunLedgerPanel } from "./RunLedgerPanel";
-import { readinessStatusClassName } from "./readinessStatusClassName";
 
 type RunReadinessDiagnosticsPanelsProps = Readonly<{
   run: StudioRunDetail;
@@ -29,62 +31,80 @@ export function RunReadinessDiagnosticsPanels({ run }: RunReadinessDiagnosticsPa
 
 function DiagnosticsPanel({ run }: Readonly<{ run: StudioRunDetail }>) {
   return (
-    <section className='panel' aria-labelledby='diagnostics-heading'>
-      <h2 id='diagnostics-heading'>Diagnostics</h2>
+    <RunDetailCard headingId='diagnostics-heading' title='Diagnostics'>
       {run.diagnostics.length > 0 ? (
-        <ul>
+        <ul className='grid gap-2'>
           {run.diagnostics.map((diagnostic, index) => (
-            <li key={`diagnostic-${index}-${diagnostic.path}`}>
-              <strong>{diagnostic.stage}</strong>: {diagnostic.message}
-              <br />
-              <span>{diagnostic.path}</span>
+            <li
+              className='grid gap-2 rounded-lg border bg-muted/20 p-3 text-sm'
+              key={`diagnostic-${index}-${diagnostic.path}`}
+            >
+              <strong>{diagnostic.stage}</strong>
+              <span className='text-muted-foreground'>{diagnostic.message}</span>
+              <span className='break-all font-mono text-xs text-muted-foreground'>
+                {diagnostic.path}
+              </span>
               {diagnostic.nextAction ? (
-                <>
-                  <br />
-                  <span>Next action: {diagnostic.nextAction}</span>
-                </>
+                <CopyableCommand command={diagnostic.nextAction} label='Diagnostic next action' />
               ) : null}
             </li>
           ))}
         </ul>
       ) : (
-        <p>No run diagnostics recorded.</p>
+        <p className='rounded-lg border bg-muted/20 p-3 text-sm text-muted-foreground'>
+          No run diagnostics recorded.
+        </p>
       )}
-    </section>
+    </RunDetailCard>
   );
 }
 
 function ReadinessChecksPanel({ run }: Readonly<{ run: StudioRunDetail }>) {
   return (
-    <section className='panel' aria-labelledby='readiness-heading'>
-      <h2 id='readiness-heading'>Readiness Checks</h2>
-      <p>{run.readinessMessage}</p>
+    <RunDetailCard
+      headingId='readiness-heading'
+      title='Readiness Checks'
+      description={run.readinessMessage}
+    >
       {run.readinessNextAction ? (
-        <p className='artifact-action'>Next action: {run.readinessNextAction}</p>
+        <CopyableCommand command={run.readinessNextAction} label='Readiness next action' />
       ) : null}
-      <p>
+      <p className='text-sm text-muted-foreground'>
         {run.readinessChecks.length > 0
           ? `${run.readinessChecks.length} check(s) recorded.`
           : "No readiness checks recorded."}
       </p>
       {run.readinessChecks.length > 0 ? (
-        <Accordion className='run-readiness-accordion' type='multiple'>
+        <Accordion className='grid gap-2' type='multiple'>
           {run.readinessChecks.map((check, index) => (
-            <AccordionItem key={`readiness-check-${index}-${check.name}`} value={check.name}>
+            <AccordionItem
+              className='rounded-lg border bg-muted/20 px-3'
+              key={`readiness-check-${index}-${check.name}`}
+              value={check.name}
+            >
               <AccordionTrigger>
                 <span>{check.name}</span>
-                <span className={readinessStatusClassName(check.status)}>{check.status}</span>
+                <Badge className='capitalize' variant={readinessStatusBadgeVariant(check.status)}>
+                  {check.status}
+                </Badge>
               </AccordionTrigger>
               <AccordionContent>
-                <p>{check.message}</p>
+                <p className='pb-3 text-sm text-muted-foreground'>{check.message}</p>
                 {check.nextAction ? (
-                  <p className='artifact-action'>Next action: {check.nextAction}</p>
+                  <CopyableCommand command={check.nextAction} label='Readiness check next action' />
                 ) : null}
               </AccordionContent>
             </AccordionItem>
           ))}
         </Accordion>
       ) : null}
-    </section>
+    </RunDetailCard>
   );
+}
+
+function readinessStatusBadgeVariant(status: string) {
+  if (status === "block") {
+    return "destructive";
+  }
+  return "secondary";
 }

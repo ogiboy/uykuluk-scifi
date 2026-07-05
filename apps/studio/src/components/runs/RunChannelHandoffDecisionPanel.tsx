@@ -1,3 +1,9 @@
+import {
+  RunDetailCard,
+  RunDetailStatusBadge,
+  RunMetadataList,
+  type RunMetadataItem,
+} from "@/components/runs/RunDetailCard";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 
 type RunChannelHandoffDecisionPanelProps = Readonly<{
@@ -12,57 +18,56 @@ type RunChannelHandoffDecisionPanelProps = Readonly<{
 export function RunChannelHandoffDecisionPanel({
   channelHandoffDecision,
 }: RunChannelHandoffDecisionPanelProps) {
+  const metadataItems =
+    channelHandoffDecision.kind === "present"
+      ? channelHandoffDecisionMetadataItems(channelHandoffDecision)
+      : [];
+
   return (
-    <section className='panel' aria-labelledby='channel-handoff-decision-heading'>
-      <h2 id='channel-handoff-decision-heading'>Manual Channel Handoff Decision</h2>
-      <p>
-        <span className={channelHandoffDecisionStatusClassName(channelHandoffDecision.kind)}>
+    <RunDetailCard
+      headingId='channel-handoff-decision-heading'
+      title='Manual Channel Handoff Decision'
+      description='Read-only display. This decision does not upload, schedule, publish, or approve upload.'
+    >
+      <p className='flex flex-wrap items-center gap-2'>
+        <RunDetailStatusBadge tone={channelHandoffDecisionStatusTone(channelHandoffDecision.kind)}>
           {channelHandoffDecision.kind}
-        </span>{" "}
-        {channelHandoffDecision.message}
+        </RunDetailStatusBadge>
+        <span>{channelHandoffDecision.message}</span>
       </p>
-      {channelHandoffDecision.kind === "present" ? (
-        <dl className='run-metadata'>
-          <div>
-            <dt>Decision</dt>
-            <dd>{channelHandoffDecision.decision.decision}</dd>
-          </div>
-          <div>
-            <dt>Reviewed by</dt>
-            <dd>{channelHandoffDecision.decision.reviewedBy}</dd>
-          </div>
-          <div>
-            <dt>Selected thumbnail</dt>
-            <dd>
-              {channelHandoffDecision.decision.selectedThumbnailCandidate?.candidateId ?? "-"}
-            </dd>
-          </div>
-          <div>
-            <dt>Decision artifact</dt>
-            <dd>{channelHandoffDecision.reviewPath}</dd>
-          </div>
-          <div>
-            <dt>Created</dt>
-            <dd>{channelHandoffDecision.decision.createdAt}</dd>
-          </div>
-        </dl>
-      ) : null}
+      {metadataItems.length > 0 ? <RunMetadataList items={metadataItems} /> : null}
       {channelHandoffDecision.nextAction ? (
-        <p className='artifact-action'>Next action: {channelHandoffDecision.nextAction}</p>
+        <p className='rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-900 dark:text-amber-100'>
+          Next action: {channelHandoffDecision.nextAction}
+        </p>
       ) : null}
-      <p>Read-only display. This decision does not upload, schedule, publish, or approve upload.</p>
-    </section>
+    </RunDetailCard>
   );
 }
 
-function channelHandoffDecisionStatusClassName(
+function channelHandoffDecisionStatusTone(
   status: StudioRunDetail["channelHandoffDecision"]["kind"],
-): string {
+): "blocked" | "success" | "warning" {
   if (status === "present") {
-    return "status-pill small";
+    return "success";
   }
   if (status === "missing") {
-    return "status-pill small warning";
+    return "warning";
   }
-  return "status-pill small blocked";
+  return "blocked";
+}
+
+function channelHandoffDecisionMetadataItems(
+  channelHandoffDecision: Extract<StudioRunDetail["channelHandoffDecision"], { kind: "present" }>,
+): RunMetadataItem[] {
+  return [
+    { label: "Decision", value: channelHandoffDecision.decision.decision },
+    { label: "Reviewed by", value: channelHandoffDecision.decision.reviewedBy },
+    {
+      label: "Selected thumbnail",
+      value: channelHandoffDecision.decision.selectedThumbnailCandidate?.candidateId ?? "-",
+    },
+    { label: "Decision artifact", value: channelHandoffDecision.reviewPath },
+    { label: "Created", value: channelHandoffDecision.decision.createdAt },
+  ];
 }

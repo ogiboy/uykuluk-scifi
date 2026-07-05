@@ -1,4 +1,6 @@
+import { RunDetailCard } from "@/components/runs/RunDetailCard";
 import { CopyableCommand } from "@/components/studio/CopyableCommand";
+import { Badge } from "@/components/ui/badge";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 
 type RunRenderDecisionCommandsPanelProps = Readonly<{
@@ -16,21 +18,22 @@ export function RunRenderDecisionCommandsPanel({ commands }: RunRenderDecisionCo
   }
 
   return (
-    <section className='panel' aria-labelledby='render-decision-commands-heading'>
-      <h2 id='render-decision-commands-heading'>Local Render Decision</h2>
-      <p>
-        After watching the local draft MP4, record exactly one durable CLI decision. These commands
-        do not approve upload or publish.
-      </p>
-      <ul>
+    <RunDetailCard
+      headingId='render-decision-commands-heading'
+      title='Local Render Decision'
+      description='After watching the local draft MP4, record exactly one durable CLI decision. These commands do not approve upload or publish.'
+    >
+      <ul className='grid gap-3'>
         {commands.map((item) => (
-          <li key={item.decision}>
-            <strong>{item.decision}</strong>
-            <p>{item.guidance}</p>
+          <li className='grid gap-3 rounded-lg border bg-muted/20 p-3' key={item.decision}>
+            <Badge className='capitalize' variant='outline'>
+              {item.decision}
+            </Badge>
+            <p className='text-sm text-muted-foreground'>{item.guidance}</p>
             <CopyableCommand command={item.command} label={`${item.decision} decision command`} />
           </li>
         ))}
       </ul>
-    </section>
+    </RunDetailCard>
   );
 }
