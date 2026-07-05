@@ -37,6 +37,23 @@ describe("Studio run primary action", () => {
     });
   });
 
+  it("does not confuse approval forms with unrelated stage remediation commands", () => {
+    const action = buildStudioRunPrimaryAction(
+      runPrimaryActionFixture({
+        nextRecommendedCommand: "pnpm producer evidence --run run_primary_action",
+        state: "SCRIPT_REVIEWED",
+      }),
+    );
+
+    expect(action).toMatchObject({
+      command: null,
+      label: "Approve Script",
+      mode: "rail",
+      routePath: "/actions/approve-script",
+      tone: "available",
+    });
+  });
+
   it("keeps unknown safe commands copyable instead of inventing a web route", () => {
     const action = buildStudioRunPrimaryAction(
       runPrimaryActionFixture({

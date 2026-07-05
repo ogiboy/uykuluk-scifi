@@ -61,6 +61,18 @@ export const studioStageActionConfigs = studioStageActionIds.map((actionId) => {
 }) satisfies readonly StudioStageActionConfig[];
 
 /**
+ * Looks up a guarded Studio stage-action config by id.
+ *
+ * @param actionId - The route-backed action identifier to resolve.
+ * @returns The matching action config, or `null` if the id is not stage-owned.
+ */
+export function studioStageActionConfig(
+  actionId: StudioStageActionId,
+): StudioStageActionConfig | null {
+  return studioStageActionConfigs.find((config) => config.actionId === actionId) ?? null;
+}
+
+/**
  * Finds the guarded Studio workflow action matching the current next recommended command.
  *
  * @param run - The run projection containing the materialized next command.

@@ -32,6 +32,24 @@ describe("Studio action workbench", () => {
     );
   });
 
+  it("does not label unrelated remediation commands as approval CLI equivalents", () => {
+    const workbench = buildStudioActionWorkbench(
+      actionRunFixture({
+        nextRecommendedCommand: "pnpm producer evidence --run run_workbench",
+        state: "SCRIPT_REVIEWED",
+      }),
+    );
+
+    expect(workbench.primary).toEqual(
+      expect.objectContaining({
+        command: null,
+        label: "Approve Script",
+        routePath: "/actions/approve-script",
+        tone: "available",
+      }),
+    );
+  });
+
   it("selects the render decision route when local draft decision commands exist", () => {
     const workbench = buildStudioActionWorkbench(
       actionRunFixture({

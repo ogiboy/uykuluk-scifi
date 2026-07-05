@@ -32,7 +32,11 @@ export function buildStudioRunPrimaryAction(
 ): StudioRunPrimaryAction {
   const workbench = buildStudioActionWorkbench(run);
   const stageAction = stageActionForRun(run);
-  if (stageAction && workbench.primary.tone === "available") {
+  if (
+    stageAction &&
+    workbench.primary.tone === "available" &&
+    workbench.primary.routePath === stageAction.routePath
+  ) {
     return {
       ...workbench.primary,
       description: `${workbench.primary.description} You can run this step directly here or inspect the full action rail first.`,

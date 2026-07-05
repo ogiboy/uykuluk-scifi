@@ -6,6 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import {
   approvalActionForRun,
+  approvalCommandForRun,
   approvalFormReady,
   approvalPayload,
 } from "@/lib/studioApprovalAction";
@@ -56,6 +57,7 @@ export function RunApprovalActionPanel({ run }: RunApprovalActionPanelProps) {
     return null;
   }
 
+  const cliEquivalent = approvalCommandForRun(config, run.runId, run.nextRecommendedCommand);
   const preflight = buildStudioActionPreflight({
     acknowledgeWarnings,
     actionId: config.actionId,
@@ -105,6 +107,7 @@ export function RunApprovalActionPanel({ run }: RunApprovalActionPanelProps) {
         {config.actionId === "script.approve" ? (
           <label className='checkbox-label'>
             <Checkbox
+              aria-label='Acknowledge non-blocking script review warnings'
               checked={acknowledgeWarnings}
               onCheckedChange={(checked) => setAcknowledgeWarnings(checked === true)}
             />
@@ -123,7 +126,7 @@ export function RunApprovalActionPanel({ run }: RunApprovalActionPanelProps) {
         buttonLabel={config.buttonLabel}
         currentState={run.state}
         isSubmitting={state.kind === "submitting"}
-        nextRecommendedCommand={run.nextRecommendedCommand}
+        nextRecommendedCommand={cliEquivalent}
         open={confirmationOpen}
         pendingPayload={pendingPayload}
         runId={run.runId}
@@ -131,9 +134,7 @@ export function RunApprovalActionPanel({ run }: RunApprovalActionPanelProps) {
         onOpenChange={setConfirmationOpen}
       />
       <StudioMutationResultPanel state={state} />
-      {run.nextRecommendedCommand ? (
-        <p className='artifact-action'>CLI equivalent: {run.nextRecommendedCommand}</p>
-      ) : null}
+      {cliEquivalent ? <p className='artifact-action'>CLI equivalent: {cliEquivalent}</p> : null}
     </section>
   );
 }

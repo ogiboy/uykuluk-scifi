@@ -1,5 +1,5 @@
 import type { StudioApprovalActionConfig } from "./studioApprovalAction";
-import { approvalActionForRun } from "./studioApprovalAction";
+import { approvalActionForRun, approvalCommandForRun } from "./studioApprovalAction";
 import type { StudioRunDetail } from "./runSummaries";
 import { stageActionForRun } from "./studioStageAction";
 
@@ -156,7 +156,7 @@ function approvalWorkbenchAction(
   run: StudioActionWorkbenchRun,
 ): StudioActionWorkbenchPrimary {
   return {
-    command: run.nextRecommendedCommand,
+    command: approvalCommandForRun(action, run.runId, run.nextRecommendedCommand),
     description: `${action.description} Studio will call the matching guarded local route and the server will re-check the current run state.`,
     label: action.heading,
     routePath: action.routePath,
