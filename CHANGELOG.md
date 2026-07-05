@@ -11,6 +11,32 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.78.0 (2026-07-05)
+
+### Refactoring
+
+- split channel decision review pieces (10ea516)
+- modernize action queue surfaces (c0b8e33)
+- modernize guarded action forms (4f48cee)
+- modernize channel decision form (40ccf20)
+- modernize action preflight (0daca51)
+- modernize render decision form (8971e9c)
+- use shadcn primary action card (773bf98)
+
+### Tests
+
+- align render review fixture type (948aff1)
+
+### Fixes
+
+- prioritize review handoffs (4ef62ee)
+
+### Features
+
+- expose artifact review handoffs (80374e5)
+- route mutation results to review tabs (2bbfbd7)
+- link mutation results to runs (2db1268)
+
 ## v0.77.0 (2026-07-05)
 
 ### Features
