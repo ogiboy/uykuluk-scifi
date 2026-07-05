@@ -72,11 +72,10 @@ export function evidenceNextRecommendedCommand(
   state: string,
   runId: string,
 ): string | null {
-  if (
-    evidence.status === "missing" ||
-    evidence.status === "invalid" ||
-    evidence.status === "stale"
-  ) {
+  if (evidence.status === "missing") {
+    return materializeStaticNextCommand(state, runId) ?? evidence.nextAction ?? null;
+  }
+  if (evidence.status === "invalid" || evidence.status === "stale") {
     return evidence.nextAction ?? null;
   }
   return typeof evidence.snapshot?.nextRecommendedCommand === "string"

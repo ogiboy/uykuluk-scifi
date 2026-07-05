@@ -8,6 +8,7 @@ import {
 } from "@/lib/runReviewBrief";
 import { runReviewTabFocus } from "@/lib/runReviewNavigation";
 import type { StudioRunDetail } from "@/lib/runSummaries";
+import { RunPrimaryActionPanel } from "./RunPrimaryActionPanel";
 
 type RunReviewCockpitHeaderProps = Readonly<{
   run: StudioRunDetail;
@@ -63,13 +64,10 @@ export function RunReviewCockpitHeader({ run }: RunReviewCockpitHeaderProps) {
         </section>
       </CardContent>
       <CardContent className='run-hero-command'>
-        <div className='operator-command-block'>
-          <strong>Next safe action</strong>
+        <RunPrimaryActionPanel run={run} />
+        <div className='operator-command-block secondary-command'>
+          <strong>CLI/core source command</strong>
           <CopyableCommand command={getNextSafeCommand(run)} label='Next safe action' />
-          <p>
-            Studio can record guarded local approvals where route security is enabled. Generation,
-            artifact creation, upload, and publish stay with CLI/core gates.
-          </p>
         </div>
       </CardContent>
     </Card>

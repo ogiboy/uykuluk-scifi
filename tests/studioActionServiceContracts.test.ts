@@ -26,6 +26,12 @@ describe("Studio mutation service contracts", () => {
           coreModule: "src/stages/channelHandoffDecision.ts",
         }),
         expect.objectContaining({
+          actionId: "doctor.run",
+          availability: "ready-for-cli",
+          coreExport: "runDoctor",
+          coreModule: "src/diagnostics/doctor.ts",
+        }),
+        expect.objectContaining({
           actionId: "idea.approve",
           availability: "ready-for-cli",
           coreExport: "approveIdea",
@@ -196,6 +202,10 @@ describe("Studio mutation service contracts", () => {
     expect(() => parseStudioMutationRequest("ideas.run", { runId: "run_operator_review" })).toThrow(
       /Unrecognized key/,
     );
+    expect(parseStudioMutationRequest("doctor.run", {})).toEqual({});
+    expect(() =>
+      parseStudioMutationRequest("doctor.run", { runId: "run_operator_review" }),
+    ).toThrow(/Unrecognized key/);
     expect(() =>
       parseStudioMutationRequest("voice.run", {
         extra: true,

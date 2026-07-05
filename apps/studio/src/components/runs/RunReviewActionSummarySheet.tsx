@@ -15,18 +15,22 @@ import {
 } from "@/components/ui/sheet";
 import { getNextSafeCommand } from "@/lib/runSummaryCopy";
 import type { StudioRunDetail } from "@/lib/runSummaries";
+import { RunPrimaryActionPanel } from "./RunPrimaryActionPanel";
 
 type RunReviewActionSummarySheetProps = Readonly<{
   run: Pick<
     StudioRunDetail,
     | "blockedActionCount"
     | "blockedActions"
+    | "channelHandoff"
+    | "channelHandoffDecision"
     | "evidenceMessage"
     | "evidenceNextAction"
     | "evidenceStatus"
     | "nextRecommendedCommand"
     | "readinessStatus"
     | "renderDecision"
+    | "renderDecisionCommands"
     | "runId"
     | "state"
   >;
@@ -79,6 +83,8 @@ export function RunReviewActionSummarySheet({ run }: RunReviewActionSummarySheet
               <strong>Next safe action</strong>
               <CopyableCommand command={getNextSafeCommand(run)} label='Next safe action' />
             </div>
+
+            <RunPrimaryActionPanel compact run={run} />
 
             {run.blockedActions.length > 0 ? (
               <div className='run-action-sheet-blockers'>

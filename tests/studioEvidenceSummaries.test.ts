@@ -78,7 +78,7 @@ describe("Studio evidence summary validity", () => {
       evidenceMessage: "Evidence bundle has not been generated.",
       evidenceNextAction: `pnpm producer evidence --run ${run.runId}`,
       evidenceStatus: "missing",
-      nextRecommendedCommand: `pnpm producer evidence --run ${run.runId}`,
+      nextRecommendedCommand: "pnpm producer ideas",
     });
   });
 

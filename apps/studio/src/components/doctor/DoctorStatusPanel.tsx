@@ -3,6 +3,7 @@ import Link from "next/link";
 import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
 import { CopyableCommand } from "@/components/studio/CopyableCommand";
 import type { StudioDoctorOverview } from "@/lib/doctorOverview";
+import { DoctorRunActionPanel } from "./DoctorRunActionPanel";
 
 type DoctorStatusPanelProps = Readonly<{
   overview: StudioDoctorOverview;
@@ -21,7 +22,7 @@ export function DoctorStatusPanel({ overview }: DoctorStatusPanelProps) {
         <div>
           <h2 id='doctor-status-heading'>Doctor Diagnostics</h2>
           <p className='artifact-description'>
-            Read-only local health snapshot. Studio does not run doctor or mutate config.
+            Local health snapshot with guarded refresh. Studio does not mutate config.
           </p>
         </div>
         <Link className='status-pill small' href='/doctor'>
@@ -38,6 +39,7 @@ export function DoctorStatusPanel({ overview }: DoctorStatusPanelProps) {
       />
       <div className='artifact-action'>
         <strong>Next safe action</strong>
+        <DoctorRunActionPanel compact />
         <CopyableCommand command={overview.nextAction} label='Doctor command' />
       </div>
       {overview.error ? <p className='blocked'>{overview.error}</p> : null}

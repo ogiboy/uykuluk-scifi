@@ -93,6 +93,7 @@ type StudioActionRequestById = {
   "channel-handoff.decide": z.infer<typeof channelHandoffDecisionRequestSchema>;
   "channel-handoff.run": z.infer<typeof runOnlyRequestSchema>;
   "cost.approve": z.infer<typeof runOnlyRequestSchema>;
+  "doctor.run": z.infer<typeof emptyRequestSchema>;
   "estimate.run": z.infer<typeof runOnlyRequestSchema>;
   "evidence.run": z.infer<typeof runOnlyRequestSchema>;
   "idea.approve": z.infer<typeof ideaApprovalRequestSchema>;
@@ -123,6 +124,7 @@ export const studioMutationRequestSchemaByAction = {
   "channel-handoff.decide": channelHandoffDecisionRequestSchema,
   "channel-handoff.run": runOnlyRequestSchema,
   "cost.approve": runOnlyRequestSchema,
+  "doctor.run": emptyRequestSchema,
   "estimate.run": runOnlyRequestSchema,
   "evidence.run": runOnlyRequestSchema,
   "idea.approve": ideaApprovalRequestSchema,

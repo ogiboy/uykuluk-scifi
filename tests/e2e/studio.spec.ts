@@ -96,6 +96,7 @@ test("studio exposes the read-only producer doctor diagnostics route", async ({ 
   await expect(page.getByRole("heading", { name: /producer doctor diagnostics/i })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Doctor Overview" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Next Safe Action" })).toBeVisible();
-  await expect(page.getByText("Studio does not run doctor")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Run doctor" })).toBeVisible();
+  await expect(page.getByText("Studio can refresh local doctor artifacts")).toBeVisible();
   await expect(page.getByRole("link", { name: "Studio home" })).toBeVisible();
 });

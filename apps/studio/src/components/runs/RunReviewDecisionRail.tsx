@@ -1,10 +1,10 @@
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import { StudioMutationSessionPanel } from "../studio/StudioMutationSessionPanel";
-import { RunActionWorkbenchPanel } from "./RunActionWorkbenchPanel";
 import { RunApprovalActionPanel } from "./RunApprovalActionPanel";
 import { RunChannelHandoffDecisionActionPanel } from "./RunChannelHandoffDecisionActionPanel";
 import { RunBlockedActionsPanel } from "./RunBlockedActionsPanel";
 import { RunChannelHandoffDecisionPanel } from "./RunChannelHandoffDecisionPanel";
+import { RunGuidedControlLoopPanel } from "./RunGuidedControlLoopPanel";
 import { RunRenderDecisionActionPanel } from "./RunRenderDecisionActionPanel";
 import { RunRenderDecisionCommandsPanel } from "./RunRenderDecisionCommandsPanel";
 import { RunRenderDecisionStatusPanel } from "./RunRenderDecisionStatusPanel";
@@ -28,7 +28,7 @@ export function RunReviewDecisionRail({ run }: RunReviewDecisionRailProps) {
       aria-label='Run decisions and blocked actions'
     >
       <StudioMutationSessionPanel />
-      <RunActionWorkbenchPanel run={run} />
+      <RunGuidedControlLoopPanel run={run} />
       <RunBlockedActionsPanel
         blockedActions={run.blockedActions}
         evidenceMessage={run.evidenceMessage}

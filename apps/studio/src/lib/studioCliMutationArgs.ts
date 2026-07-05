@@ -20,6 +20,7 @@ export const studioCliMutationActionIds = [
   "channel-handoff.decide",
   "channel-handoff.run",
   "cost.approve",
+  "doctor.run",
   "estimate.run",
   "evidence.run",
   "idea.approve",
@@ -52,6 +53,7 @@ type RunOnlyCliActionId = Exclude<
   | "channel-handoff.decide"
   | "analytics.import"
   | "analytics.report"
+  | "doctor.run"
   | "idea.approve"
   | "ideas.run"
   | "package-artifact.revise"
@@ -88,6 +90,10 @@ export async function cliArgsForAction(
   if (actionId === "analytics.report") {
     parseEmptyPayload(payload);
     return prepared(["analytics", "report", "--json"]);
+  }
+  if (actionId === "doctor.run") {
+    parseEmptyPayload(payload);
+    return prepared(["doctor", "--json"]);
   }
   if (actionId === "idea.approve") {
     const input = parseIdeaApprovalPayload(payload);
