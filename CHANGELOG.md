@@ -11,6 +11,22 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.75.0 (2026-07-05)
+
+### Fixes
+
+- simplify control loop summary (ab8f5fd)
+- align missing evidence next action (0916ebd)
+
+### Tests
+
+- align missing evidence next actions (471ac5e)
+
+### Features
+
+- surface primary run actions (e77de6f)
+- guide local control loop (c51292a)
+
 ## v0.74.0 (2026-07-05)
 
 ### Features
