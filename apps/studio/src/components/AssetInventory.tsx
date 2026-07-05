@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { StudioAssetInventory } from "@/lib/assetInventory";
 
 /**
@@ -15,15 +16,21 @@ export function AssetInventory({ inventory }: Readonly<{ inventory: StudioAssetI
         {inventory.totalFiles} committed file(s) across configured visual asset categories.{" "}
         <Link href='/assets'>Open detailed read-only inventory</Link>.
       </p>
-      <div className='asset-grid'>
+      <div className='grid gap-3 md:grid-cols-2 xl:grid-cols-3'>
         {inventory.categories.slice(0, 6).map((category) => (
-          <article className='panel' key={category.id}>
-            <h3>{category.label}</h3>
-            <p>
-              {category.files.length} file(s) · {category.status}
-            </p>
-            <p>{category.description}</p>
-          </article>
+          <Card key={category.id}>
+            <CardHeader>
+              <CardTitle>
+                <h3 className='text-base'>{category.label}</h3>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className='grid gap-2 text-sm text-muted-foreground'>
+              <p>
+                {category.files.length} file(s) · {category.status}
+              </p>
+              <p>{category.description}</p>
+            </CardContent>
+          </Card>
         ))}
       </div>
     </section>

@@ -3,6 +3,7 @@ import type {
   StudioPromptInventory,
   StudioPromptStatus,
 } from "@/lib/promptInventoryTypes";
+import { Badge } from "../ui/badge";
 
 export function PromptInventoryView({ inventory }: Readonly<{ inventory: StudioPromptInventory }>) {
   return (
@@ -50,7 +51,7 @@ function PromptInventoryCard({ prompt }: Readonly<{ prompt: StudioPromptEntry }>
           <strong>{prompt.label}</strong>
           <span>{prompt.contractMarker}</span>
         </div>
-        <span className={promptStatusClassName(prompt.status)}>{promptStatusLabel(prompt)}</span>
+        <Badge variant={promptStatusBadgeVariant(prompt.status)}>{promptStatusLabel(prompt)}</Badge>
       </header>
       <dl className='run-metadata'>
         <div>
@@ -71,16 +72,18 @@ function PromptInventoryCard({ prompt }: Readonly<{ prompt: StudioPromptEntry }>
         </div>
       </dl>
       <p>{prompt.message}</p>
-      <p className='artifact-action'>{prompt.nextAction}</p>
+      <p className='rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-900 dark:text-amber-100'>
+        {prompt.nextAction}
+      </p>
     </article>
   );
 }
 
-function promptStatusClassName(status: StudioPromptStatus): string {
+function promptStatusBadgeVariant(status: StudioPromptStatus): "destructive" | "secondary" {
   if (status === "default-ready" || status === "override-ready") {
-    return "status-pill small";
+    return "secondary";
   }
-  return "status-pill small blocked";
+  return "destructive";
 }
 
 function promptStatusLabel(prompt: StudioPromptEntry): string {
