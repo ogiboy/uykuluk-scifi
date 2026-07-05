@@ -1,10 +1,13 @@
 import Link from "next/link";
 import type { Route } from "next";
+import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
 import { studioMutationRecoveryCopy } from "@/lib/studioMutationRecoveryCopy";
 import {
   studioMutationResultHref,
   studioMutationResultLinkLabel,
 } from "@/lib/studioMutationResultNavigation";
+import { cn } from "@/lib/utils";
 import type { StudioGuardedActionSubmitState } from "@/lib/useStudioGuardedActionSubmit";
 
 type StudioMutationResultPanelProps = Readonly<{
@@ -32,32 +35,42 @@ export function StudioMutationResultPanel({ state }: StudioMutationResultPanelPr
   const recovery = studioMutationRecoveryCopy(state);
   return (
     <section
-      className={isProblem ? "mutation-result blocked" : "mutation-result"}
+      className={cn(
+        "grid gap-3 rounded-lg border bg-muted/20 p-3 text-sm",
+        isProblem && "border-destructive/40 bg-destructive/10",
+      )}
       aria-label='Latest local action result'
       aria-live={isProblem ? "assertive" : "polite"}
     >
-      <p>{state.message}</p>
+      <div className='flex flex-wrap items-center justify-between gap-2'>
+        <p className='text-muted-foreground'>{state.message}</p>
+        <Badge variant={isProblem ? "destructive" : "secondary"}>{state.kind}</Badge>
+      </div>
       {actionFacts.length > 0 ? (
-        <dl aria-label='Local Studio action boundary'>
+        <dl className='grid gap-2 sm:grid-cols-2' aria-label='Local Studio action boundary'>
           {actionFacts.map((fact, index) => (
-            <div key={`${fact.label}-${index}`}>
-              <dt>{fact.label}</dt>
-              <dd>{fact.value}</dd>
+            <div className='rounded-md border bg-background p-2' key={`${fact.label}-${index}`}>
+              <dt className='text-xs font-medium uppercase tracking-wide text-muted-foreground'>
+                {fact.label}
+              </dt>
+              <dd className='mt-1 break-all'>{fact.value}</dd>
             </div>
           ))}
         </dl>
       ) : null}
       {recovery ? (
-        <div className='mutation-recovery-actions'>
-          <p>{recovery.detail}</p>
-          <Link href={recovery.href}>{recovery.label}</Link>
+        <div className='grid gap-2 rounded-lg border border-destructive/40 bg-destructive/10 p-3'>
+          <p className='text-destructive'>{recovery.detail}</p>
+          <Link className={buttonVariants({ variant: "secondary" })} href={recovery.href}>
+            {recovery.label}
+          </Link>
         </div>
       ) : null}
       {hasStudioMutationRecordSummary(state) ? (
         <>
           {state.recordSummary.runId ? (
             <Link
-              className='mutation-result-link'
+              className={buttonVariants({ variant: "secondary" })}
               href={
                 studioMutationResultHref(state.recordSummary.runId, state.action.actionId) as Route
               }
@@ -65,11 +78,13 @@ export function StudioMutationResultPanel({ state }: StudioMutationResultPanelPr
               {studioMutationResultLinkLabel(state.action.actionId)}
             </Link>
           ) : null}
-          <dl aria-label='Producer record summary'>
+          <dl className='grid gap-2' aria-label='Producer record summary'>
             {state.recordSummary.facts.map((fact, index) => (
-              <div key={`${fact}-${index}`}>
-                <dt>Result</dt>
-                <dd>{fact}</dd>
+              <div className='rounded-md border bg-background p-2' key={`${fact}-${index}`}>
+                <dt className='text-xs font-medium uppercase tracking-wide text-muted-foreground'>
+                  Result
+                </dt>
+                <dd className='mt-1 break-words'>{fact}</dd>
               </div>
             ))}
           </dl>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Route } from "next";
 
 import type { StudioLocale } from "@/i18n/locales";
 import { studioSections } from "@/lib/studioData";
@@ -19,7 +20,7 @@ export function StudioNavigationRail({ locale }: Readonly<{ locale: StudioLocale
       <nav>
         {studioSections.map((section) =>
           "href" in section ? (
-            <Link key={section.id} href={section.href}>
+            <Link key={section.id} href={section.href as Route}>
               {section.label}
             </Link>
           ) : (

@@ -439,42 +439,9 @@ h3 {
   gap: 12px;
 }
 
-.decision-list {
-  display: grid;
-  gap: 8px;
-  margin: 0;
-}
-
-.decision-list div {
-  display: flex;
-  gap: 10px;
-  align-items: baseline;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--line);
-  padding-bottom: 8px;
-}
-
-.decision-list div:last-child {
-  border-bottom: 0;
-  padding-bottom: 0;
-}
-
-.decision-list dt,
 .queue-list span {
   color: var(--muted);
   font-size: 12px;
-}
-
-.decision-list dd {
-  margin: 0;
-  font-size: 13px;
-  font-weight: 700;
-  text-align: right;
-}
-
-.confirmation-summary {
-  display: grid;
-  gap: 12px;
 }
 
 .action-preflight {
@@ -1070,86 +1037,6 @@ h3 {
   color: var(--muted);
 }
 
-.stage-action-panel {
-  display: grid;
-  gap: 12px;
-}
-
-.revision-action-group,
-.revision-action-panel {
-  display: grid;
-  gap: 12px;
-}
-
-.revision-action-panel {
-  border-top: 1px solid var(--line);
-  padding-top: 12px;
-}
-
-.mutation-result {
-  display: grid;
-  gap: 8px;
-}
-
-.mutation-result dl {
-  display: grid;
-  gap: 6px;
-  margin: 0;
-}
-
-.mutation-result dl div {
-  border-left: 2px solid var(--accent);
-  padding-left: 10px;
-}
-
-.mutation-result.blocked dl div {
-  border-left-color: var(--danger);
-}
-
-.mutation-result dt {
-  color: var(--muted);
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.mutation-result dd {
-  margin: 0;
-}
-
-.mutation-result-link {
-  justify-self: start;
-  color: var(--accent);
-  font-size: 13px;
-  font-weight: 800;
-  text-decoration: underline;
-  text-decoration-color: color-mix(in srgb, var(--accent) 55%, transparent);
-  text-underline-offset: 3px;
-}
-
-.mutation-recovery-actions {
-  display: grid;
-  gap: 8px;
-  border: 1px solid color-mix(in srgb, var(--danger) 38%, var(--line));
-  border-radius: 12px;
-  background: color-mix(in srgb, var(--danger) 6%, var(--studio-surface-inset));
-  padding: 10px;
-}
-
-.mutation-recovery-actions p {
-  margin: 0;
-  color: var(--muted);
-}
-
-.mutation-recovery-actions a {
-  justify-self: start;
-  color: var(--text);
-  font-weight: 800;
-  text-decoration: underline;
-  text-decoration-color: color-mix(in srgb, var(--danger) 55%, transparent);
-  text-underline-offset: 3px;
-}
-
 .last-mutation-notice {
   border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
 }
@@ -1646,49 +1533,6 @@ h3 {
   display: flex !important;
   flex-wrap: wrap;
   gap: 6px !important;
-}
-
-.render-decision-selector {
-  display: grid;
-  gap: 10px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  margin: 0;
-  padding: 12px;
-}
-
-.render-decision-selector legend {
-  padding: 0 6px;
-  color: var(--muted);
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-}
-
-.render-decision-option {
-  display: grid !important;
-  grid-template-columns: auto 1fr;
-  gap: 10px !important;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.02);
-  padding: 10px;
-  color: var(--text) !important;
-}
-
-.render-decision-option > span {
-  display: grid;
-  gap: 6px;
-}
-
-.render-decision-option strong {
-  color: var(--text);
-}
-
-.render-decision-option code {
-  overflow-wrap: anywhere;
-  color: var(--muted);
-  font-size: 11px;
 }
 
 .tabs-root {

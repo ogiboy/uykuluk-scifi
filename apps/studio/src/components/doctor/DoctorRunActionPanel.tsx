@@ -63,21 +63,21 @@ export function DoctorRunActionPanel({ compact = false }: DoctorRunActionPanelPr
               provider downtime, missing tools, or unsafe publish defaults.
             </DialogDescription>
           </DialogHeader>
-          <dl className='decision-list'>
+          <dl className='grid gap-3 text-sm sm:grid-cols-2'>
             <div>
-              <dt>Action</dt>
-              <dd>doctor.run</dd>
+              <dt className='font-medium text-muted-foreground'>Action</dt>
+              <dd className='break-all'>doctor.run</dd>
             </div>
             <div>
-              <dt>Route</dt>
-              <dd>/actions/run-doctor</dd>
+              <dt className='font-medium text-muted-foreground'>Route</dt>
+              <dd className='break-all'>/actions/run-doctor</dd>
             </div>
             <div>
-              <dt>CLI equivalent</dt>
-              <dd>pnpm producer doctor</dd>
+              <dt className='font-medium text-muted-foreground'>CLI equivalent</dt>
+              <dd className='break-all'>pnpm producer doctor</dd>
             </div>
             <div>
-              <dt>Boundary</dt>
+              <dt className='font-medium text-muted-foreground'>Boundary</dt>
               <dd>No config edits, provider startup, model download, upload, or publish action.</dd>
             </div>
           </dl>
