@@ -484,21 +484,6 @@ h3 {
   font-weight: 700;
 }
 
-.run-queue-explorer,
-.queue-toolbar {
-  display: grid;
-  gap: 12px;
-  min-width: 0;
-}
-
-.queue-result-badges,
-.queue-controls-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: end;
-}
-
 .segmented-filter {
   display: flex;
   flex-wrap: wrap;
@@ -508,80 +493,6 @@ h3 {
 .segmented-filter span {
   color: var(--accent);
   font-weight: 700;
-}
-
-.queue-search {
-  display: grid;
-  flex: 1 1 360px;
-  gap: 6px;
-  max-width: 560px;
-  color: var(--muted);
-  font-size: 13px;
-}
-
-.queue-controls-grid {
-  align-items: end;
-}
-
-.queue-select-control {
-  display: grid;
-  flex: 0 1 220px;
-  gap: 6px;
-  color: var(--muted);
-  font-size: 13px;
-}
-
-.queue-tune-button {
-  min-height: 40px;
-}
-
-.queue-tune-popover {
-  width: min(360px, calc(100vw - 2rem));
-}
-
-.queue-tune-stack,
-.queue-slider-control,
-.queue-density-control {
-  display: grid;
-  gap: 12px;
-}
-
-.queue-tune-stack h3,
-.queue-tune-stack p {
-  margin-bottom: 0;
-}
-
-.queue-tune-stack p,
-.queue-tune-stack small {
-  color: var(--muted);
-  line-height: 1.45;
-}
-
-.queue-slider-header,
-.queue-density-option {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.queue-slider-header strong {
-  color: var(--accent);
-  font-family: var(--font-mono), SFMono-Regular, Consolas, "Liberation Mono", monospace;
-}
-
-.queue-density-options {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.queue-density-option {
-  justify-content: flex-start;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--studio-surface-inset);
-  padding: 10px;
-  color: var(--text);
-  font-size: 13px;
 }
 
 .run-table-scroll {
