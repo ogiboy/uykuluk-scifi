@@ -2,9 +2,15 @@ import {
   clearCachedStudioMutationSession,
   studioMutationJsonHeaders,
 } from "./studioMutationClient";
+import {
+  summarizeStudioMutationRecord,
+  type StudioMutationRecordSummary,
+} from "./studioMutationResultSummary";
 
 export type StudioMutationSubmitResult = Readonly<
-  { kind: "error"; message: string } | { kind: "success" }
+  | { kind: "blocked"; message: string; recordSummary: StudioMutationRecordSummary | null }
+  | { kind: "error"; message: string }
+  | { kind: "success"; recordSummary: StudioMutationRecordSummary | null }
 >;
 
 /**
@@ -33,15 +39,27 @@ export async function submitStudioJsonMutation(input: {
     headers,
     method: "POST",
   });
-  const payload = (await response.json().catch(() => null)) as { message?: string } | null;
+  const payload = (await response.json().catch(() => null)) as {
+    message?: string;
+    record?: unknown;
+  } | null;
   if (!response.ok) {
     if (response.status === 401) {
       clearCachedStudioMutationSession();
+    }
+    if (payload?.record) {
+      return {
+        kind: "blocked",
+        message:
+          payload.message ??
+          "Studio action wrote local output but the producer CLI reported a blocked state.",
+        recordSummary: summarizeStudioMutationRecord(payload.record),
+      };
     }
     return {
       kind: "error",
       message: payload?.message ?? input.fallbackError,
     };
   }
-  return { kind: "success" };
+  return { kind: "success", recordSummary: summarizeStudioMutationRecord(payload?.record) };
 }

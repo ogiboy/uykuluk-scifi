@@ -1,7 +1,9 @@
 import Link from "next/link";
+import type { Route } from "next";
 import { CopyableCommand } from "@/components/studio/CopyableCommand";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { RunQuickStageActionButton } from "@/components/runs/RunQuickStageActionButton";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,15 +21,19 @@ import {
   PopoverTitle,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { runReviewHrefFromSummary } from "@/lib/runReviewNavigation";
 import { getNextSafeCommand } from "@/lib/runSummaryCopy";
 import type { StudioRunSummary } from "@/lib/runSummaries";
 
 export function ActiveRunActions({ run }: Readonly<{ run: StudioRunSummary }>) {
+  const reviewHref = runReviewHrefFromSummary(run) as Route;
+
   return (
     <div className='active-run-actions'>
       <Badge variant={run.blockedActionCount > 0 ? "destructive" : "secondary"}>
         {run.blockedActionCount > 0 ? "Needs attention" : "Reviewable"}
       </Badge>
+      <RunQuickStageActionButton label='Run next step' run={run} />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button type='button' variant='secondary'>
@@ -38,7 +44,7 @@ export function ActiveRunActions({ run }: Readonly<{ run: StudioRunSummary }>) {
           <DropdownMenuLabel>{run.runId}</DropdownMenuLabel>
           <DropdownMenuGroup>
             <DropdownMenuItem asChild>
-              <Link href={`/runs/${run.runId}`}>Open review workspace</Link>
+              <Link href={reviewHref}>Open review workspace</Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link href='/runs'>Open queue</Link>

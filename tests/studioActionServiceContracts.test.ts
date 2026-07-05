@@ -43,6 +43,36 @@ describe("Studio mutation service contracts", () => {
           coreExport: "recordRenderDecision",
           coreModule: "src/stages/renderDecision.ts",
         }),
+        expect.objectContaining({
+          actionId: "render-plan.run",
+          availability: "ready-for-cli",
+          coreExport: "generateRenderPlan",
+          coreModule: "src/stages/renderPlan.ts",
+        }),
+        expect.objectContaining({
+          actionId: "ideas.run",
+          availability: "ready-for-cli",
+          coreExport: "runIdeas",
+          coreModule: "src/stages/ideas.ts",
+        }),
+        expect.objectContaining({
+          actionId: "script.revise",
+          availability: "ready-for-cli",
+          coreExport: "reviseScript",
+          coreModule: "src/revisions/scriptRevision.ts",
+        }),
+        expect.objectContaining({
+          actionId: "package-artifact.revise",
+          availability: "ready-for-cli",
+          coreExport: "revisePackageArtifact",
+          coreModule: "src/revisions/packageArtifactRevision.ts",
+        }),
+        expect.objectContaining({
+          actionId: "voice.run",
+          availability: "ready-for-cli",
+          coreExport: "generateVoiceoverAudio",
+          coreModule: "src/stages/voice.ts",
+        }),
       ]),
     );
   });
@@ -155,6 +185,19 @@ describe("Studio mutation service contracts", () => {
     }
     expect(() =>
       parseStudioMutationRequest("cost.approve", {
+        extra: true,
+        runId: "run_operator_review",
+      }),
+    ).toThrow(/Unrecognized key/);
+    expect(parseStudioMutationRequest("render-plan.run", { runId: "run_operator_review" })).toEqual(
+      { runId: "run_operator_review" },
+    );
+    expect(parseStudioMutationRequest("ideas.run", {})).toEqual({});
+    expect(() => parseStudioMutationRequest("ideas.run", { runId: "run_operator_review" })).toThrow(
+      /Unrecognized key/,
+    );
+    expect(() =>
+      parseStudioMutationRequest("voice.run", {
         extra: true,
         runId: "run_operator_review",
       }),

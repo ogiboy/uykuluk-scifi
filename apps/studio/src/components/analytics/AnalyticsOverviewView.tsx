@@ -1,6 +1,7 @@
 import type { StudioAnalyticsOverview } from "@/lib/analyticsOverview";
 import { CopyableCommand } from "@/components/studio/CopyableCommand";
 import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
+import { AnalyticsActionPanel } from "./AnalyticsActionPanel";
 
 type AnalyticsOverviewViewProps = Readonly<{
   overview: StudioAnalyticsOverview;
@@ -43,6 +44,8 @@ export function AnalyticsOverviewView({ overview }: AnalyticsOverviewViewProps) 
         </p>
         {overview.error ? <p className='blocked'>{overview.error}</p> : null}
       </section>
+
+      <AnalyticsActionPanel />
 
       <section className='panel' aria-labelledby='analytics-quality-heading'>
         <h2 id='analytics-quality-heading'>Import Data Quality</h2>

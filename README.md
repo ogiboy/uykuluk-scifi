@@ -71,11 +71,11 @@ agent-tracking state only; runtime code must not require it.
 
 - TypeScript CLI workflow under `src/`.
 - Basic Next.js App Router Studio under `apps/studio/` with run index/detail, guarded local
-  idea/script/cost/render approval actions, guarded render-decision and channel-handoff decision
-  evidence writes, visual asset inventory, producer doctor diagnostics on the home page and
-  `/doctor`, latest-run readiness visibility, local model evaluation summaries, manual analytics
-  feedback summary on the home page, runtime prompt inventory, mutation-service status, and manual
-  analytics feedback routes.
+  idea/script/cost/render approval actions, guarded idea-run plus workflow-stage/review actions,
+  guarded render-decision and channel-handoff decision evidence writes, visual asset inventory,
+  producer doctor diagnostics on the home page and `/doctor`, latest-run readiness visibility, local
+  model evaluation summaries, manual analytics feedback summary on the home page, runtime prompt
+  inventory, mutation-service status, and manual analytics feedback routes.
 - Studio foundation with Tailwind CSS v4, shadcn-style primitives, Radix UI, lucide icons, GSAP, and
   `next/font`.
 - Mock-first provider layer with Ollama and local `llama.cpp` adapters.
@@ -119,11 +119,12 @@ agent-tracking state only; runtime code must not require it.
   final-review digest binding. It does not call YouTube APIs, upload, schedule, publish, or grant
   upload/publish approval.
 - Manual analytics import/report commands for operator-provided CSV/JSON performance exports, plus a
-  read-only Studio view over the ignored local analytics artifacts and import data-quality summary.
-- Typed Studio route-security contract covering read-only routes, guarded local approval/review
-  action routes, and disabled upload/publish action routes.
-- Typed Studio mutation service contracts for guarded local approval/review decision actions and
-  disabled upload/publish actions.
+  Studio view over ignored local analytics artifacts, import data-quality summary, and guarded local
+  import/report-refresh actions.
+- Typed Studio route-security contract covering read-only routes, guarded local approval/review/
+  workflow-stage/revision action routes, and disabled upload/publish action routes.
+- Typed Studio mutation service contracts for guarded local approval/review/workflow-stage/revision
+  actions and disabled upload/publish actions.
 - Studio home visibility for guarded local actions, disabled upload/publish action routes,
   latest-run readiness, manual analytics feedback, CLI-ready action contracts, and upload/publish
   risk boundaries.
@@ -433,9 +434,10 @@ pnpm producer publish schedule --run <run_id>
 
 ## Producer Studio
 
-The Studio is intentionally local-only. Most surfaces are read-only; guarded web mutations exist
-only for explicit local approvals and local review evidence that already have shared CLI/core
-contracts. They do not run generation, render media, upload, or publish.
+The Studio is intentionally local-only. Many surfaces are read-only; guarded web mutations exist
+only for explicit local approvals, guarded idea-run/workflow-stage/review actions, bounded local
+revisions, and local review evidence that already have shared CLI/core contracts. They do not upload
+or publish.
 
 ```bash
 pnpm studio
@@ -450,13 +452,13 @@ Current Studio scope:
 - `/runs/<run_id>` detail view with next action, readiness status, and review artifact availability
   plus approval ledger entries, warning lists, production media evidence details, shared v1 workflow
   progress, per-row review guidance, guarded idea/script/cost/render approval forms for eligible
-  states, local render-decision command templates for rendered runs that have current draft-render
-  evidence and no recorded decision, readiness check messages, and readiness next-action commands
-  from CLI/core artifacts. Malformed or stale evidence artifacts stay read-only, are not used as
-  proof for blocked actions, media readiness, or next-action guidance, and point back to the CLI
-  evidence command; media rows fall back to persisted artifact-record visibility until evidence is
-  current. Missing, malformed, or stale readiness artifacts stay read-only and point back to the CLI
-  readiness command;
+  states, bounded script and production-package artifact revision forms, local render-decision
+  command templates for rendered runs that have current draft-render evidence and no recorded
+  decision, readiness check messages, and readiness next-action commands from CLI/core artifacts.
+  Malformed or stale evidence artifacts stay read-only, are not used as proof for blocked actions,
+  media readiness, or next-action guidance, and point back to the CLI evidence command; media rows
+  fall back to persisted artifact-record visibility until evidence is current. Missing, malformed,
+  or stale readiness artifacts stay read-only and point back to the CLI readiness command;
 - read-only artifact preview excerpts for scripts, reviews, production packages, render plans,
   contact sheets, asset provenance, evidence, readiness, voiceover metadata, and render manifests,
   grouped by operator review phase, with binary media limited to metadata;
@@ -474,6 +476,20 @@ Current Studio scope:
   `/actions/approve-render` routes that require same-origin JSON, a Studio action header, a
   short-lived local session token/cookie pair, typed service-contract payloads, and the same
   CLI/core approval gates as `producer approve ...`;
+- guarded workflow routes for starting a new idea run and for current safe next actions such as
+  script generation, script/render-plan/voice/render review, package generation, render-plan
+  generation, estimate, evidence, readiness, voiceover generation, local draft render, final review
+  bundle, and manual channel handoff. These routes call the canonical producer CLI and do not own
+  workflow state;
+- guarded action panels show the latest local producer record summary after completion, including
+  state transition, run, artifact, decision, approval, revision, and next-action facts when the CLI
+  JSON record provides them;
+- guarded manual analytics routes for importing operator-provided CSV/JSON text and refreshing the
+  report through the producer CLI. They write only ignored local analytics artifacts and do not call
+  YouTube APIs, upload media, or mutate run workflow state;
+- guarded revision routes for `script.revise` and `package-artifact.revise` that require same-origin
+  JSON, a Studio action header, a short-lived local session token/cookie pair, typed bounded
+  payloads, and the same CLI/core revision contracts as `producer revise ...`;
 - guarded `POST /actions/decide-render` route that requires same-origin JSON, a Studio action
   header, a short-lived local session token/cookie pair, the typed `render.decide` service contract,
   current draft-render evidence, and writes only local render-decision JSON/Markdown evidence;
@@ -518,9 +534,9 @@ pnpm version:plan
 
 `pnpm qa:product` is the broader optional product UAT gate for PR-ready production-loop work. It
 exercises local draft-render review, malicious/incorrect order attempts, stale/tampered evidence,
-disabled upload/publish, manual analytics import/report feedback, operator desk command/diagnostic
-visibility, and Studio read-only service visibility, including durable local render decisions, in an
-isolated clean copy.
+disabled upload/publish, manual analytics import/report feedback, guarded Studio workflow and
+analytics actions, operator desk command/diagnostic visibility, and Studio read-only service
+visibility, including durable local render decisions, in an isolated clean copy.
 
 Focused gates:
 

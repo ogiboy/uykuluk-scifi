@@ -1,6 +1,8 @@
 import Link from "next/link";
+import type { Route } from "next";
 import { CopyableCommand } from "@/components/studio/CopyableCommand";
 import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
+import { runReviewHrefFromSummary } from "@/lib/runReviewNavigation";
 import type { StudioRunSummary } from "@/lib/runSummaries";
 import {
   formatRunRenderDecision,
@@ -40,6 +42,8 @@ export function LatestRunReadinessPanel({ latestRun }: LatestRunReadinessPanelPr
 }
 
 function LatestRunSummary({ latestRun }: Readonly<{ latestRun: StudioRunSummary }>) {
+  const reviewHref = runReviewHrefFromSummary(latestRun) as Route;
+
   return (
     <>
       <MetricGrid
@@ -62,7 +66,7 @@ function LatestRunSummary({ latestRun }: Readonly<{ latestRun: StudioRunSummary 
         <strong>Next safe action</strong>
         <CopyableCommand command={getNextSafeCommand(latestRun)} label='Next safe action' />
       </div>
-      <Link className='status-pill small' href={`/runs/${latestRun.runId}`}>
+      <Link className='status-pill small' href={reviewHref}>
         Review latest run
       </Link>
     </>

@@ -229,6 +229,44 @@ export function productFileExists({ relativePath, workdir }) {
 }
 
 /**
+ * Writes a safe run diagnostic fixture and records it in the persisted run artifacts list.
+ *
+ * @param {Object} input - Diagnostic fixture input.
+ * @param {string} input.message - Safe diagnostic message.
+ * @param {string} input.relativePath - Diagnostic artifact path relative to the run directory.
+ * @param {string} input.runId - Run id that owns the diagnostic.
+ * @param {string} input.stage - Diagnostic stage label.
+ * @param {string} input.workdir - Isolated workdir containing the run.
+ */
+export async function writeRunDiagnosticFixture({ message, relativePath, runId, stage, workdir }) {
+  const target = path.join(workdir, "runs", runId, relativePath);
+  await mkdir(path.dirname(target), { recursive: true });
+  await writeFile(
+    target,
+    `${JSON.stringify(
+      {
+        createdAt: new Date().toISOString(),
+        message,
+        model: "mock",
+        providerMode: "mock",
+        runId,
+        stage,
+        state: "NEW",
+        thinkingMode: "default",
+      },
+      null,
+      2,
+    )}\n`,
+    "utf8",
+  );
+
+  const statePath = path.join(workdir, "runs", runId, "state.json");
+  const state = JSON.parse(await readFile(statePath, "utf8"));
+  state.artifacts = Array.from(new Set([...(state.artifacts ?? []), relativePath]));
+  await writeFile(statePath, `${JSON.stringify(state, null, 2)}\n`, "utf8");
+}
+
+/**
  * Writes JSON and Markdown UAT reports.
  *
  * @param {Object} input - Report input.

@@ -100,6 +100,7 @@ export function isMergeCommit(commit: GitCommit): boolean {
     commit.parents.length > 1 ||
     /^Merge pull request #\d+ from .+$/.test(subject) ||
     /^Merge branch .+$/.test(subject) ||
+    /^Merge remote-tracking branch .+$/.test(subject) ||
     /^Merge [0-9a-f]{40} into [0-9a-f]{40}$/.test(subject)
   );
 }

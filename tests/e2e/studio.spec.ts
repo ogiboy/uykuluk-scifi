@@ -21,7 +21,7 @@ test("studio shell renders operator surfaces", async ({ page }) => {
   await expect(analyticsRegion.getByText("Next safe action")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Mutation Service Contracts" })).toBeVisible();
   await expect(page.getByText("Review required")).toBeVisible();
-  await expect(page.getByText("guarded local render-decision route")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "render.decide" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Asset Inventory" })).toBeVisible();
 });
 
@@ -72,7 +72,9 @@ test("studio exposes the read-only manual analytics feedback route", async ({ pa
   await expect(page.getByRole("heading", { name: "Import Data Quality" })).toBeVisible();
   await expect(page.getByText("High confidence")).toBeVisible();
   await expect(page.getByText("Missing run links")).toBeVisible();
-  await expect(page.getByText("does not call YouTube APIs")).toBeVisible();
+  await expect(
+    page.getByText("Read-only display from local operator-provided analytics artifacts."),
+  ).toBeVisible();
   await expect(page.getByRole("link", { name: "Studio home" })).toBeVisible();
 });
 

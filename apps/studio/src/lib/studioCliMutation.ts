@@ -4,28 +4,19 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { ZodError } from "zod";
 import { projectRoot } from "./projectRoot";
-import {
-  parseChannelHandoffDecisionPayload,
-  parseIdeaApprovalPayload,
-  parseRenderDecisionPayload,
-  parseRunOnlyPayload,
-  parseScriptApprovalPayload,
-} from "./studioMutationPayloadContracts";
+import { cliArgsForAction, type StudioCliMutationActionId } from "./studioCliMutationArgs";
 import { validateStudioMutationRequest } from "./studioMutationSecurity";
 
-type StudioCliMutationActionId =
-  | "channel-handoff.decide"
-  | "cost.approve"
-  | "idea.approve"
-  | "render.approve"
-  | "render.decide"
-  | "script.approve";
+export type { StudioCliMutationActionId } from "./studioCliMutationArgs";
 
 type CliResult = Readonly<{
   stderr: string;
   stdout: string;
   status: number;
 }>;
+
+const studioCliTimeoutMs = 20 * 60 * 1000;
+const studioCliKillGraceMs = 5_000;
 
 /**
  * Runs a guarded Studio mutation through the canonical producer CLI.
@@ -54,9 +45,10 @@ export async function runStudioCliMutationRoute(
   }
 
   try {
-    const result = await runProducerCli(cliArgsForAction(actionId, payload));
+    const cli = await cliArgsForAction(actionId, payload);
+    const result = await runProducerCliWithCleanup(cli.args, cli.cleanup);
     if (result.status !== 0) {
-      return jsonError(cliErrorMessage(result.stderr), 409);
+      return jsonError(cliErrorMessage(result.stderr), 409, parseCliJsonOrNull(result.stdout));
     }
     return Response.json(
       {
@@ -74,10 +66,22 @@ export async function runStudioCliMutationRoute(
   }
 }
 
-function jsonError(message: string, status: number): Response {
+async function runProducerCliWithCleanup(
+  args: readonly string[],
+  cleanup: () => Promise<void>,
+): Promise<CliResult> {
+  try {
+    return await runProducerCli(args);
+  } finally {
+    await cleanup();
+  }
+}
+
+function jsonError(message: string, status: number, record: unknown = null): Response {
   return Response.json(
     {
       message,
+      ...(record ? { record } : {}),
       status: "error",
     },
     { headers: noStoreHeaders(), status },
@@ -86,63 +90,6 @@ function jsonError(message: string, status: number): Response {
 
 function noStoreHeaders(): HeadersInit {
   return { "cache-control": "no-store" };
-}
-
-function cliArgsForAction(actionId: StudioCliMutationActionId, payload: unknown): string[] {
-  if (actionId === "idea.approve") {
-    const input = parseIdeaApprovalPayload(payload);
-    return ["approve", "idea", "--run", input.runId, "--idea", input.ideaId, "--json"];
-  }
-  if (actionId === "script.approve") {
-    const input = parseScriptApprovalPayload(payload);
-    return [
-      "approve",
-      "script",
-      "--run",
-      input.runId,
-      ...(input.acknowledgeWarnings ? ["--acknowledge-warnings"] : []),
-      "--json",
-    ];
-  }
-  if (actionId === "cost.approve") {
-    const input = parseRunOnlyPayload(payload);
-    return ["approve", "cost", "--run", input.runId, "--json"];
-  }
-  if (actionId === "render.approve") {
-    const input = parseRunOnlyPayload(payload);
-    return ["approve", "render", "--run", input.runId, "--json"];
-  }
-  if (actionId === "render.decide") {
-    const input = parseRenderDecisionPayload(payload);
-    return [
-      "decide",
-      "render",
-      "--run",
-      input.runId,
-      "--decision",
-      input.decision,
-      "--notes",
-      input.notes,
-      "--reviewed-by",
-      input.reviewedBy,
-      "--json",
-    ];
-  }
-  const input = parseChannelHandoffDecisionPayload(payload);
-  return [
-    "decide",
-    "channel-handoff",
-    "--run",
-    input.runId,
-    "--decision",
-    input.decision,
-    ...(input.thumbnailCandidateId ? ["--thumbnail-candidate", input.thumbnailCandidateId] : []),
-    "--notes",
-    input.notes,
-    "--reviewed-by",
-    input.reviewedBy,
-    "--json",
-  ];
 }
 
 function runProducerCli(args: readonly string[]): Promise<CliResult> {
@@ -158,8 +105,23 @@ function runProducerCli(args: readonly string[]): Promise<CliResult> {
         windowsHide: true,
       },
     );
+    let settled = false;
+    let timedOut = false;
     let stdout = "";
     let stderr = "";
+    let forceKillTimer: ReturnType<typeof setTimeout> | null = null;
+    const timeout = setTimeout(() => {
+      timedOut = true;
+      stderr = appendStderr(
+        stderr,
+        `Studio mutation CLI exceeded ${studioCliTimeoutMs}ms and was terminated.`,
+      );
+      child.kill("SIGTERM");
+      forceKillTimer = setTimeout(() => {
+        child.kill("SIGKILL");
+      }, studioCliKillGraceMs);
+    }, studioCliTimeoutMs);
+    child.stdin?.end();
     child.stdout.setEncoding("utf8");
     child.stderr.setEncoding("utf8");
     child.stdout.on("data", (chunk: string) => {
@@ -168,11 +130,33 @@ function runProducerCli(args: readonly string[]): Promise<CliResult> {
     child.stderr.on("data", (chunk: string) => {
       stderr += chunk;
     });
-    child.on("error", reject);
+    child.on("error", (error) => {
+      if (settled) return;
+      settled = true;
+      clearStudioCliTimers(timeout, forceKillTimer);
+      reject(error);
+    });
     child.on("close", (code) => {
-      resolve({ stderr, stdout, status: code ?? 1 });
+      if (settled) return;
+      settled = true;
+      clearStudioCliTimers(timeout, forceKillTimer);
+      resolve({ stderr, stdout, status: timedOut ? 124 : (code ?? 1) });
     });
   });
+}
+
+function clearStudioCliTimers(
+  timeout: ReturnType<typeof setTimeout>,
+  forceKillTimer: ReturnType<typeof setTimeout> | null,
+): void {
+  clearTimeout(timeout);
+  if (forceKillTimer) {
+    clearTimeout(forceKillTimer);
+  }
+}
+
+function appendStderr(current: string, message: string): string {
+  return current.trim() ? `${current.trimEnd()}\n${message}` : message;
 }
 
 function parseCliJson(stdout: string): unknown {
@@ -180,6 +164,18 @@ function parseCliJson(stdout: string): unknown {
     return JSON.parse(stdout.trim());
   } catch {
     throw new Error("Studio mutation CLI returned invalid JSON.");
+  }
+}
+
+function parseCliJsonOrNull(stdout: string): unknown {
+  const trimmed = stdout.trim();
+  if (!trimmed) {
+    return null;
+  }
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    return null;
   }
 }
 

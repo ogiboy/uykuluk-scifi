@@ -24,7 +24,7 @@ export function StudioMutationSessionPanel() {
   const initialState = useMemo<SessionPanelState>(
     () => ({
       message:
-        "Guarded web actions use a short-lived same-origin local session. Refresh before approval work.",
+        "Guarded web actions request a short-lived same-origin local session automatically. Refresh manually only after an authorization warning.",
       snapshot: readStudioMutationSessionSnapshot(),
       tone: "idle",
     }),
@@ -66,7 +66,7 @@ export function StudioMutationSessionPanel() {
         <div>
           <h3 id='studio-session-heading'>Local web control session</h3>
           <p className='artifact-description'>
-            Required for same-origin approval and review actions in Studio.
+            Used automatically for same-origin approval and review actions in Studio.
           </p>
         </div>
         <span className={sessionPillClassName(state)}>
@@ -80,7 +80,7 @@ export function StudioMutationSessionPanel() {
         </p>
       ) : (
         <p className='artifact-action'>
-          No mutation is trusted without a matching HttpOnly cookie and session header.
+          Studio will request a matching HttpOnly cookie and session header before a mutation.
         </p>
       )}
       <Button

@@ -8,6 +8,8 @@ import { RunChannelHandoffDecisionPanel } from "./RunChannelHandoffDecisionPanel
 import { RunRenderDecisionActionPanel } from "./RunRenderDecisionActionPanel";
 import { RunRenderDecisionCommandsPanel } from "./RunRenderDecisionCommandsPanel";
 import { RunRenderDecisionStatusPanel } from "./RunRenderDecisionStatusPanel";
+import { RunRevisionActionPanel } from "./RunRevisionActionPanel";
+import { RunStageActionPanel } from "./RunStageActionPanel";
 
 type RunReviewDecisionRailProps = Readonly<{
   run: StudioRunDetail;
@@ -33,6 +35,8 @@ export function RunReviewDecisionRail({ run }: RunReviewDecisionRailProps) {
         evidenceNextAction={run.evidenceNextAction}
         evidenceStatus={run.evidenceStatus}
       />
+      <RunRevisionActionPanel run={run} />
+      <RunStageActionPanel run={run} />
       <RunApprovalActionPanel run={run} />
       <RunRenderDecisionStatusPanel renderDecision={run.renderDecision} />
       <RunRenderDecisionActionPanel

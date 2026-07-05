@@ -11,6 +11,7 @@ import {
 } from "@/lib/studioApprovalAction";
 import { buildStudioActionPreflight } from "@/lib/studioActionPreflight";
 import { useStudioGuardedActionSubmit } from "@/lib/useStudioGuardedActionSubmit";
+import { StudioMutationResultPanel } from "../studio/StudioMutationResultPanel";
 import { RunActionPreflightPanel } from "./RunActionPreflightPanel";
 import { RunApprovalConfirmationDialog } from "./RunApprovalConfirmationDialog";
 import { RunIdeaApprovalSelector } from "./RunIdeaApprovalSelector";
@@ -129,7 +130,7 @@ export function RunApprovalActionPanel({ run }: RunApprovalActionPanelProps) {
         onConfirm={confirmApproval}
         onOpenChange={setConfirmationOpen}
       />
-      <p className={state.kind === "error" ? "blocked" : undefined}>{state.message}</p>
+      <StudioMutationResultPanel state={state} />
       {run.nextRecommendedCommand ? (
         <p className='artifact-action'>CLI equivalent: {run.nextRecommendedCommand}</p>
       ) : null}

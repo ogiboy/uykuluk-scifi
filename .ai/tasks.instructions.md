@@ -7,8 +7,9 @@
 - Keep `pnpm qa:usage` passing after workflow changes.
 - Keep `pnpm qa:product` passing before broad production-loop PRs or merge-adjacent handoff; it is
   the optional product UAT gate for happy-path, malicious, stale, tampered, and publish-blocked
-  local workflows plus manual analytics import/report feedback, operator desk command/diagnostic
-  visibility, durable render decisions, and Studio read-only service visibility.
+  local workflows plus manual analytics import/report feedback, guarded Studio workflow and
+  analytics actions, operator desk command/diagnostic visibility, durable render decisions, and
+  Studio read-only service visibility.
 - Keep visual asset inventory and the read-only Studio `/assets` page current.
 - Keep content and asset guard coverage aligned with the operator checklist.
 - Keep `apps/studio` thin until shared service contracts exist.
@@ -158,20 +159,23 @@
   artifact records for visibility, but the text must say they are not current evidence proof and
   reuse the shared production-media review guidance.
 - Keep the Studio mutation-service status panel aligned with route-security and service contract
-  changes; it may show guarded local approval/review routes, but upload/publish actions must remain
-  disabled. Keep the Studio action workbench aligned with the same contracts so operators can see
-  whether the current run has a guarded web action, a CLI-only next action, or no safe action
-  without implying upload, publish, paid-provider execution, or frontend-owned workflow state.
+  changes; it may show guarded local approval/review/workflow-stage routes, but upload/publish
+  actions must remain disabled. Keep the Studio action workbench aligned with the same contracts so
+  operators can see whether the current run has a guarded web action, a CLI-only next action, or no
+  safe action without implying upload, publish, paid-provider execution, or frontend-owned workflow
+  state.
 - Harden manual analytics feedback with import edge cases and richer comparisons while keeping data
-  operator-provided and local-only. Run-linked summaries, unmapped-record visibility, non-causal
-  repeat / avoid-without-revision / mixed-signal inspect / test-next prompts, simple
-  confidence/missingness framing, a fillable run-link CSV template for missing `run_id` values, and
-  the shared CLI/Studio import data-quality summary plus read-only Studio analytics overview with
-  report freshness summaries are implemented.
+  operator-provided and local-only. Guarded Studio import/report routes now call the local CLI
+  without YouTube APIs, upload, publish, or run workflow mutation. Run-linked summaries,
+  unmapped-record visibility, non-causal repeat / avoid-without-revision / mixed-signal inspect /
+  test-next prompts, simple confidence/missingness framing, a fillable run-link CSV template for
+  missing `run_id` values, and the shared CLI/Studio import data-quality summary plus read-only
+  Studio analytics overview with report freshness summaries are implemented.
 - Maintain typed Studio mutation service contracts that both CLI and web can use before adding
   additional Studio mutations. Current contracts cover guarded idea/script/cost/render approvals,
-  the guarded local render-decision and channel-handoff decision evidence writes, plus disabled
-  upload/publish actions.
+  guarded idea-run and workflow-stage/review actions, bounded script/package-artifact revision
+  actions, guarded manual analytics actions, the guarded local render-decision and channel-handoff
+  decision evidence writes, plus disabled upload/publish actions.
 - Keep local prompt overrides safe before adding a prompt editor. Tracked `prompts/defaults/`
   runtime defaults, typed keys, source paths, and prompt hashes are implemented; ignored
   `prompts/local/*.md` overrides are now explicit `producer.config.json` inputs and must remain
@@ -183,8 +187,9 @@
   records revision evidence. Future work can extend this to richer editor UX and per-field diffs
   without weakening the cost/render approval boundary.
 - Maintain route security requirements before any additional web action routes exist; current tests
-  cover read-only page routes, guarded local approval/review decision routes, disabled
-  upload/publish action routes, and bind each action route to a shared service contract.
+  cover read-only page routes, guarded local approval/review/workflow-stage routes, bounded revision
+  routes, manual analytics routes, disabled upload/publish action routes, and bind each action route
+  to a shared service contract.
 - Keep the internal reserved-provider execution contract ready for a separately approved real
   adapter without adding paid SDKs, credentials, or operator execution commands.
 

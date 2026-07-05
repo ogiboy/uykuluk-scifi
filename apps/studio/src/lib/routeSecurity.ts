@@ -1,5 +1,6 @@
 import type { StudioMutationActionId } from "../../../../src/studio/actionServiceMetadata";
 import { routeFindings } from "./routeSecurityFindings";
+import type { StudioCliMutationActionId } from "./studioCliMutationArgs";
 
 export type StudioRouteMethod = "DELETE" | "GET" | "PATCH" | "POST" | "PUT";
 export type StudioRouteRisk =
@@ -12,13 +13,28 @@ export type StudioRouteSecurityContract = {
   id: string;
   path: string;
   requiredApproval:
-    "cost" | "idea" | "none" | "publish" | "render" | "review" | "script" | "upload";
+    | "analytics"
+    | "cost"
+    | "idea"
+    | "none"
+    | "publish"
+    | "render"
+    | "review"
+    | "script"
+    | "upload"
+    | "workflow";
   requiresCoreServiceContract: boolean;
   requiresCsrfProtection: boolean;
   requiresEvidenceWrite: boolean;
   risk: StudioRouteRisk;
   serviceContractId: StudioMutationActionId | null;
 };
+
+type DisabledStudioActionId = Extract<
+  StudioMutationActionId,
+  "publish.schedule" | "upload.private"
+>;
+type StudioRouteActionId = DisabledStudioActionId | StudioCliMutationActionId;
 
 export const readOnlyStudioRoutes = [
   route("home", "/"),
@@ -52,6 +68,31 @@ export const enabledStudioActionRoutes = [
     "local-mutation",
     true,
   ),
+  action("analytics.import", "/actions/analytics-import", "analytics", "local-mutation", true),
+  action("analytics.report", "/actions/analytics-report", "analytics", "local-mutation", true),
+  action("ideas.run", "/actions/run-ideas", "workflow", "local-mutation", true),
+  action("script.run", "/actions/run-script", "workflow", "local-mutation", true),
+  action("script.review", "/actions/review-script", "workflow", "local-mutation", true),
+  action("script.revise", "/actions/revise-script", "script", "local-mutation", true),
+  action("package.run", "/actions/run-package", "workflow", "local-mutation", true),
+  action(
+    "package-artifact.revise",
+    "/actions/revise-package-artifact",
+    "script",
+    "local-mutation",
+    true,
+  ),
+  action("render-plan.run", "/actions/run-render-plan", "workflow", "local-mutation", true),
+  action("render-plan.review", "/actions/review-render-plan", "workflow", "local-mutation", true),
+  action("estimate.run", "/actions/run-estimate", "workflow", "local-mutation", true),
+  action("evidence.run", "/actions/run-evidence", "workflow", "local-mutation", true),
+  action("readiness.run", "/actions/run-readiness", "workflow", "local-mutation", true),
+  action("voice.run", "/actions/run-voice", "workflow", "local-mutation", true),
+  action("voice.review", "/actions/review-voice", "workflow", "local-mutation", true),
+  action("render.run", "/actions/run-render", "workflow", "local-mutation", true),
+  action("render.review", "/actions/review-render", "workflow", "local-mutation", true),
+  action("review-bundle.run", "/actions/run-review-bundle", "workflow", "local-mutation", true),
+  action("channel-handoff.run", "/actions/run-channel-handoff", "workflow", "local-mutation", true),
 ] as const satisfies readonly StudioRouteSecurityContract[];
 
 export const studioSessionRoutes = [
@@ -138,7 +179,7 @@ function sessionRoute(id: string, path: string): StudioRouteSecurityContract {
  * @returns The configured Studio route security contract
  */
 function action(
-  id: StudioMutationActionId,
+  id: StudioRouteActionId,
   path: string,
   requiredApproval: StudioRouteSecurityContract["requiredApproval"],
   risk: Exclude<StudioRouteRisk, "read-only">,

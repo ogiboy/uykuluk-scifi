@@ -24,6 +24,41 @@ const runOnlyPayloadSchema = z.strictObject({
   runId: runIdSchema,
 });
 
+const emptyPayloadSchema = z.strictObject({});
+
+const revisionContentSchema = z.string().min(1).max(200_000);
+const analyticsImportContentSchema = z.string().min(1).max(1_000_000);
+const analyticsSourceFileNameSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(120)
+  .refine(
+    (value) => !value.includes("/") && !value.includes("\\") && value !== "." && value !== "..",
+    { message: "Analytics source file name must not contain path separators." },
+  );
+
+const analyticsImportPayloadSchema = z.strictObject({
+  content: analyticsImportContentSchema,
+  format: z.enum(["csv", "json"]),
+  sourceFileName: analyticsSourceFileNameSchema,
+});
+
+const scriptRevisionPayloadSchema = z.strictObject({
+  content: revisionContentSchema,
+  editor: z.string().trim().min(1).max(200),
+  reason: z.string().trim().min(1).max(4_000),
+  runId: runIdSchema,
+});
+
+const packageArtifactRevisionPayloadSchema = z.strictObject({
+  artifactKey: z.enum(["subtitles", "scenes", "popup-cards", "youtube-metadata"]),
+  content: revisionContentSchema,
+  editor: z.string().trim().min(1).max(200),
+  reason: z.string().trim().min(1).max(4_000),
+  runId: runIdSchema,
+});
+
 const renderDecisionPayloadSchema = z.strictObject({
   decision: z.enum(renderDecisionValues),
   ...localReviewPayloadShape,
@@ -56,8 +91,30 @@ export function parseScriptApprovalPayload(
   return scriptApprovalPayloadSchema.parse(payload);
 }
 
+export function parseScriptRevisionPayload(
+  payload: unknown,
+): z.infer<typeof scriptRevisionPayloadSchema> {
+  return scriptRevisionPayloadSchema.parse(payload);
+}
+
+export function parsePackageArtifactRevisionPayload(
+  payload: unknown,
+): z.infer<typeof packageArtifactRevisionPayloadSchema> {
+  return packageArtifactRevisionPayloadSchema.parse(payload);
+}
+
+export function parseAnalyticsImportPayload(
+  payload: unknown,
+): z.infer<typeof analyticsImportPayloadSchema> {
+  return analyticsImportPayloadSchema.parse(payload);
+}
+
 export function parseRunOnlyPayload(payload: unknown): z.infer<typeof runOnlyPayloadSchema> {
   return runOnlyPayloadSchema.parse(payload);
+}
+
+export function parseEmptyPayload(payload: unknown): z.infer<typeof emptyPayloadSchema> {
+  return emptyPayloadSchema.parse(payload);
 }
 
 export function parseRenderDecisionPayload(

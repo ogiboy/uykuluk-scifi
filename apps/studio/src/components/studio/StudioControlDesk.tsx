@@ -2,22 +2,27 @@ import Link from "next/link";
 import { ActiveRunActions } from "@/components/studio/ActiveRunActions";
 import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
 import type { StudioRunSummary } from "@/lib/runSummaries";
+import type { StudioDoctorOverview } from "@/lib/doctorOverview";
 import {
   formatRunRenderDecision,
   formatRunReviewCounts,
   getNextSafeCommand,
-  NO_RUNS_NEXT_COMMAND,
 } from "@/lib/runSummaryCopy";
 import type { StudioActionServiceStatus } from "@/lib/actionServiceStatus";
 import {
   buildStudioActionWorkbench,
   type StudioActionWorkbenchTone,
 } from "@/lib/studioActionWorkbench";
+import { startIdeasReadinessFromDoctor } from "@/lib/startIdeasReadiness";
 import { CopyableCommand } from "./CopyableCommand";
+import { EmptyRunCard } from "./EmptyRunCard";
+import { HomeActionQueuePanel } from "./HomeActionQueuePanel";
+import { StartNewRunPanel } from "./StartNewRunPanel";
 import { StudioMutationSessionPanel } from "./StudioMutationSessionPanel";
 
 type StudioControlDeskProps = Readonly<{
   actionStatus: StudioActionServiceStatus;
+  doctorOverview: StudioDoctorOverview;
   runs: readonly StudioRunSummary[];
 }>;
 
@@ -25,11 +30,13 @@ type StudioControlDeskProps = Readonly<{
  * Renders the Studio home control surface for the current local production queue.
  *
  * @param actionStatus - Current guarded Studio action contract status.
+ * @param doctorOverview - Latest persisted producer doctor overview.
  * @param runs - Persisted producer run summaries, newest first.
  * @returns The first-screen operator control desk.
  */
-export function StudioControlDesk({ actionStatus, runs }: StudioControlDeskProps) {
+export function StudioControlDesk({ actionStatus, doctorOverview, runs }: StudioControlDeskProps) {
   const latestRun = runs[0] ?? null;
+  const startIdeasReadiness = startIdeasReadinessFromDoctor(doctorOverview);
   return (
     <section className='control-desk' aria-labelledby='control-desk-heading'>
       <div className='control-desk-primary'>
@@ -43,13 +50,18 @@ export function StudioControlDesk({ actionStatus, runs }: StudioControlDeskProps
           </Link>
         </div>
 
-        {latestRun ? <ActiveRunCard run={latestRun} /> : <EmptyRunCard />}
+        {latestRun ? (
+          <ActiveRunCard run={latestRun} />
+        ) : (
+          <EmptyRunCard readiness={startIdeasReadiness} />
+        )}
       </div>
 
       <aside className='control-desk-rail' aria-label='Studio safety and queue summary'>
         <StudioMutationSessionPanel />
+        {latestRun ? <StartNewRunPanel readiness={startIdeasReadiness} /> : null}
         <SafetyGateSummary actionStatus={actionStatus} />
-        <QueueSnapshot runs={runs} />
+        <HomeActionQueuePanel runs={runs} />
       </aside>
     </section>
   );
@@ -143,22 +155,6 @@ function formatWorkbenchTone(tone: StudioActionWorkbenchTone): string {
   }
 }
 
-function EmptyRunCard() {
-  return (
-    <article className='active-run-card'>
-      <h3>No local runs yet</h3>
-      <p>
-        Start with a safe local idea run. Studio will show the persisted run queue, evidence,
-        readiness, and guarded approval actions once CLI/core creates the run.
-      </p>
-      <div className='operator-command-block'>
-        <strong>Next safe action</strong>
-        <CopyableCommand command={NO_RUNS_NEXT_COMMAND} label='Next safe action' />
-      </div>
-    </article>
-  );
-}
-
 function SafetyGateSummary({
   actionStatus,
 }: Readonly<{ actionStatus: StudioActionServiceStatus }>) {
@@ -185,30 +181,6 @@ function SafetyGateSummary({
           <dd>{actionStatus.readyForCliCount}</dd>
         </div>
       </dl>
-    </section>
-  );
-}
-
-function QueueSnapshot({ runs }: Readonly<{ runs: readonly StudioRunSummary[] }>) {
-  return (
-    <section className='panel compact-panel' aria-labelledby='queue-snapshot-heading'>
-      <h3 id='queue-snapshot-heading'>Queue snapshot</h3>
-      {runs.length > 0 ? (
-        <ol className='queue-list'>
-          {runs.slice(0, 5).map((run) => (
-            <li key={run.runId}>
-              <Link href={`/runs/${run.runId}`}>
-                <strong>{run.runId}</strong>
-                <span>
-                  {run.state} · {run.readinessStatus}
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ol>
-      ) : (
-        <p>No persisted runs found.</p>
-      )}
     </section>
   );
 }

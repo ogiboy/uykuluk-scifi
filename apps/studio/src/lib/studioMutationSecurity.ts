@@ -38,14 +38,15 @@ export function validateStudioMutationRequest(
       status: 403,
     };
   }
+  const hasValidSession = hasValidStudioSession(request);
   if (!isSameOriginMutation(request)) {
     return {
-      message: "Studio mutations require a same-origin request.",
+      message: "Studio mutations require a trusted same-origin or local Studio request.",
       ok: false,
       status: 403,
     };
   }
-  if (!hasValidStudioSession(request)) {
+  if (!hasValidSession) {
     return {
       message:
         "Studio mutations require a valid local session token. Refresh the local web control session before retrying.",
@@ -57,17 +58,12 @@ export function validateStudioMutationRequest(
 }
 
 function isSameOriginMutation(request: Request): boolean {
-  const origin = request.headers.get("origin");
+  const origin = parseOrigin(request.headers.get("origin"));
+  const candidates = requestOriginCandidates(request);
   if (!origin) {
-    return false;
+    return isTrustedOriginlessLocalMutation(request, candidates);
   }
-  let requestOrigin: string;
-  try {
-    requestOrigin = new URL(request.url).origin;
-  } catch {
-    return false;
-  }
-  return origin === requestOrigin;
+  return candidates.some((candidate) => originsMatch(origin, candidate));
 }
 
 function hasValidStudioSession(request: Request): boolean {
@@ -90,4 +86,90 @@ function cookieValue(cookieHeader: string, name: string): string | null {
 
 function isStudioSessionToken(value: string): boolean {
   return /^[A-Za-z0-9_-]{32,128}$/.test(value);
+}
+
+function requestOriginCandidates(request: Request): URL[] {
+  return uniqueOrigins([
+    parseOrigin(request.url),
+    hostHeaderOrigin(request),
+    forwardedHeaderOrigin(request),
+  ]);
+}
+
+function forwardedHeaderOrigin(request: Request): URL | null {
+  const host = firstHeaderValue(request.headers.get("x-forwarded-host"));
+  const protocol = forwardedProtocol(request);
+  return host && protocol ? parseOrigin(`${protocol}://${host}`) : null;
+}
+
+function hostHeaderOrigin(request: Request): URL | null {
+  const host = request.headers.get("host");
+  const protocol = forwardedProtocol(request) ?? parseOrigin(request.url)?.protocol.slice(0, -1);
+  return host && protocol ? parseOrigin(`${protocol}://${host}`) : null;
+}
+
+function forwardedProtocol(request: Request): "http" | "https" | null {
+  const value = firstHeaderValue(request.headers.get("x-forwarded-proto"));
+  return value === "http" || value === "https" ? value : null;
+}
+
+function firstHeaderValue(value: string | null): string | null {
+  return value?.split(",").at(0)?.trim() || null;
+}
+
+function parseOrigin(value: string | null | undefined): URL | null {
+  if (!value) {
+    return null;
+  }
+  try {
+    return new URL(new URL(value).origin);
+  } catch {
+    return null;
+  }
+}
+
+function originsMatch(left: URL, right: URL): boolean {
+  if (left.origin === right.origin) {
+    return true;
+  }
+  return (
+    left.protocol === right.protocol &&
+    isLoopbackLikeHost(left.hostname) &&
+    isLoopbackLikeHost(right.hostname)
+  );
+}
+
+function isTrustedOriginlessLocalMutation(request: Request, candidates: readonly URL[]): boolean {
+  const fetchSite = request.headers.get("sec-fetch-site");
+  if (fetchSite && !["none", "same-origin", "same-site"].includes(fetchSite)) {
+    return false;
+  }
+  return candidates.some(isLocalHttpOrigin);
+}
+
+function isLocalHttpOrigin(origin: URL): boolean {
+  return (
+    (origin.protocol === "http:" || origin.protocol === "https:") &&
+    isLoopbackLikeHost(origin.hostname)
+  );
+}
+
+function isLoopbackLikeHost(hostname: string): boolean {
+  return (
+    hostname === "localhost" ||
+    hostname === "127.0.0.1" ||
+    hostname === "0.0.0.0" ||
+    hostname === "[::1]"
+  );
+}
+
+function uniqueOrigins(origins: Array<URL | null>): URL[] {
+  const seen = new Set<string>();
+  return origins.filter((origin): origin is URL => {
+    if (!origin || seen.has(origin.origin)) {
+      return false;
+    }
+    seen.add(origin.origin);
+    return true;
+  });
 }

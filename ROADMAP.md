@@ -104,9 +104,10 @@ Next Real Production Loop slices:
 Status: run review, artifact preview, asset inventory, home-page latest-run readiness, home-page
 manual analytics feedback summary, home-page and `/doctor` producer doctor diagnostics, runtime
 prompt inventory, mutation-service status, manual analytics overview, route-security contract
-foundations, shared mutation service contract foundations, guarded local approval routes, the local
-mutation session route, and the guarded local render-decision and channel-handoff decision routes
-exist. Upload and publish route implementations remain deferred.
+foundations, shared mutation service contract foundations, guarded local approval routes, guarded
+idea-run and workflow-stage/review routes, the local mutation session route, and the guarded local
+render-decision and channel-handoff decision routes exist. Upload and publish route implementations
+remain deferred.
 
 The Studio should be a local operator surface over CLI/core contracts.
 
@@ -114,7 +115,8 @@ Priority order:
 
 - maintain the read-only run index with state, warnings, approvals, readiness, and next action;
 - maintain the run detail with evidence, readiness, warning counts, approvals, review artifact
-  availability, and guarded local approval forms only where CLI/core contracts are enabled;
+  availability, guarded local approval forms, and guarded workflow-stage actions only where CLI/core
+  contracts are enabled;
 - maintain the read-only home latest-run readiness panel over existing run summaries without
   triggering CLI work;
 - maintain the read-only home manual analytics summary over existing local analytics artifacts
@@ -145,8 +147,8 @@ Frontend constraints:
 
 ## Phase D - Monetization Feedback Loop
 
-Status: initial local CLI import/report foundation and read-only Studio overview implemented; API
-integrations remain deferred.
+Status: local CLI import/report foundation, guarded Studio import/report actions, and Studio
+overview implemented; API integrations remain deferred.
 
 The product should eventually learn from channel performance, but manual import comes before API
 integrations.
@@ -159,8 +161,8 @@ Minimum loop:
   visibility plus a fillable run-link CSV template;
 - summarize CTR, views, average view duration, retention notes, subscriber deltas, and qualitative
   comments where provided - implemented in `analytics/performance_report.md`;
-- review the imported local dataset and report preview in Studio without YouTube API calls, workflow
-  mutation, upload, publish, or causal claims, including stale/missing report visibility;
+- import and review the local dataset/report preview in Studio without YouTube API calls, run
+  workflow mutation, upload, publish, or causal claims, including stale/missing report visibility;
 - produce “repeat / avoid / mixed-signal inspect / test next” recommendations for future ideas,
   titles, formats, and thumbnail directions - implemented as non-causal operator planning prompts
   with confidence/missingness framing in `analytics/performance_report.md`.

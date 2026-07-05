@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { Route } from "next";
 import { CopyableCommand } from "@/components/studio/CopyableCommand";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,8 +21,10 @@ import {
   PopoverTitle,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { runReviewHrefFromSummary } from "@/lib/runReviewNavigation";
 import { getNextSafeCommand } from "@/lib/runSummaryCopy";
 import type { StudioRunSummary } from "@/lib/runSummaries";
+import { RunQuickStageActionButton } from "./RunQuickStageActionButton";
 
 type RunSummaryRowActionsProps = Readonly<{
   run: StudioRunSummary;
@@ -35,8 +38,11 @@ type RunSummaryRowActionsProps = Readonly<{
  */
 export function RunSummaryRowActions({ run }: RunSummaryRowActionsProps) {
   const command = getNextSafeCommand(run);
+  const reviewHref = runReviewHrefFromSummary(run) as Route;
+  const decisionRailHref = runReviewHrefFromSummary(run, "review-decision") as Route;
   return (
     <div className='run-row-actions'>
+      <RunQuickStageActionButton label='Run' run={run} variant='secondary' />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button type='button' variant='secondary'>
@@ -47,10 +53,10 @@ export function RunSummaryRowActions({ run }: RunSummaryRowActionsProps) {
           <DropdownMenuLabel>{run.runId}</DropdownMenuLabel>
           <DropdownMenuGroup>
             <DropdownMenuItem asChild>
-              <Link href={`/runs/${run.runId}`}>Open review workspace</Link>
+              <Link href={reviewHref}>Open review workspace</Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link href={`/runs/${run.runId}#review-decision`}>Open decision rail</Link>
+              <Link href={decisionRailHref}>Open decision rail</Link>
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />

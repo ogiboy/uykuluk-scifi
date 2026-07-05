@@ -10,34 +10,69 @@ import {
 
 export { studioMutationActionIds } from "./actionServiceMetadata.js";
 
-const runIdSchema = z.string().refine(isValidRunId, { message: "Invalid run id." });
+export const runIdSchema = z.string().refine(isValidRunId, { message: "Invalid run id." });
 
-const ideaApprovalRequestSchema = z.strictObject({
+export const ideaApprovalRequestSchema = z.strictObject({
   ideaId: z.string().min(1),
   runId: runIdSchema,
 });
 
-const scriptApprovalRequestSchema = z.strictObject({
+export const scriptApprovalRequestSchema = z.strictObject({
   acknowledgeWarnings: z.boolean().default(false),
   runId: runIdSchema,
 });
 
-const runOnlyRequestSchema = z.strictObject({
+export const runOnlyRequestSchema = z.strictObject({
   runId: runIdSchema,
 });
 
-const localReviewRequestShape = {
+export const emptyRequestSchema = z.strictObject({});
+
+export const revisionContentSchema = z.string().min(1).max(200_000);
+export const analyticsImportContentSchema = z.string().min(1).max(1_000_000);
+export const analyticsSourceFileNameSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(120)
+  .refine(
+    (value) => !value.includes("/") && !value.includes("\\") && value !== "." && value !== "..",
+    { message: "Analytics source file name must not contain path separators." },
+  );
+
+export const analyticsImportRequestSchema = z.strictObject({
+  content: analyticsImportContentSchema,
+  format: z.enum(["csv", "json"]),
+  sourceFileName: analyticsSourceFileNameSchema,
+});
+
+export const scriptRevisionRequestSchema = z.strictObject({
+  content: revisionContentSchema,
+  editor: z.string().trim().min(1).max(200),
+  reason: z.string().trim().min(1).max(4_000),
+  runId: runIdSchema,
+});
+
+export const packageArtifactRevisionRequestSchema = z.strictObject({
+  artifactKey: z.enum(["subtitles", "scenes", "popup-cards", "youtube-metadata"]),
+  content: revisionContentSchema,
+  editor: z.string().trim().min(1).max(200),
+  reason: z.string().trim().min(1).max(4_000),
+  runId: runIdSchema,
+});
+
+export const localReviewRequestShape = {
   notes: z.string().trim().min(1).max(4_000),
   reviewedBy: z.string().trim().min(1).max(200),
   runId: runIdSchema,
 } as const;
 
-const renderDecisionRequestSchema = z.strictObject({
+export const renderDecisionRequestSchema = z.strictObject({
   decision: z.enum(renderDecisionValues),
   ...localReviewRequestShape,
 });
 
-const channelHandoffDecisionRequestSchema = z
+export const channelHandoffDecisionRequestSchema = z
   .strictObject({
     decision: z.enum(channelHandoffDecisionValues),
     ...localReviewRequestShape,
@@ -53,15 +88,64 @@ const channelHandoffDecisionRequestSchema = z
   );
 
 type StudioActionRequestById = {
+  "analytics.import": z.infer<typeof analyticsImportRequestSchema>;
+  "analytics.report": z.infer<typeof emptyRequestSchema>;
   "channel-handoff.decide": z.infer<typeof channelHandoffDecisionRequestSchema>;
+  "channel-handoff.run": z.infer<typeof runOnlyRequestSchema>;
   "cost.approve": z.infer<typeof runOnlyRequestSchema>;
+  "estimate.run": z.infer<typeof runOnlyRequestSchema>;
+  "evidence.run": z.infer<typeof runOnlyRequestSchema>;
   "idea.approve": z.infer<typeof ideaApprovalRequestSchema>;
+  "ideas.run": z.infer<typeof emptyRequestSchema>;
+  "package.run": z.infer<typeof runOnlyRequestSchema>;
   "publish.schedule": z.infer<typeof runOnlyRequestSchema>;
+  "readiness.run": z.infer<typeof runOnlyRequestSchema>;
   "render.approve": z.infer<typeof runOnlyRequestSchema>;
   "render.decide": z.infer<typeof renderDecisionRequestSchema>;
+  "render.review": z.infer<typeof runOnlyRequestSchema>;
+  "render.run": z.infer<typeof runOnlyRequestSchema>;
+  "render-plan.review": z.infer<typeof runOnlyRequestSchema>;
+  "render-plan.run": z.infer<typeof runOnlyRequestSchema>;
+  "review-bundle.run": z.infer<typeof runOnlyRequestSchema>;
   "script.approve": z.infer<typeof scriptApprovalRequestSchema>;
+  "script.review": z.infer<typeof runOnlyRequestSchema>;
+  "script.revise": z.infer<typeof scriptRevisionRequestSchema>;
+  "script.run": z.infer<typeof runOnlyRequestSchema>;
+  "package-artifact.revise": z.infer<typeof packageArtifactRevisionRequestSchema>;
   "upload.private": z.infer<typeof runOnlyRequestSchema>;
+  "voice.review": z.infer<typeof runOnlyRequestSchema>;
+  "voice.run": z.infer<typeof runOnlyRequestSchema>;
 };
+
+export const studioMutationRequestSchemaByAction = {
+  "analytics.import": analyticsImportRequestSchema,
+  "analytics.report": emptyRequestSchema,
+  "channel-handoff.decide": channelHandoffDecisionRequestSchema,
+  "channel-handoff.run": runOnlyRequestSchema,
+  "cost.approve": runOnlyRequestSchema,
+  "estimate.run": runOnlyRequestSchema,
+  "evidence.run": runOnlyRequestSchema,
+  "idea.approve": ideaApprovalRequestSchema,
+  "ideas.run": emptyRequestSchema,
+  "package.run": runOnlyRequestSchema,
+  "publish.schedule": runOnlyRequestSchema,
+  "readiness.run": runOnlyRequestSchema,
+  "render.approve": runOnlyRequestSchema,
+  "render.decide": renderDecisionRequestSchema,
+  "render.review": runOnlyRequestSchema,
+  "render.run": runOnlyRequestSchema,
+  "render-plan.review": runOnlyRequestSchema,
+  "render-plan.run": runOnlyRequestSchema,
+  "review-bundle.run": runOnlyRequestSchema,
+  "script.approve": scriptApprovalRequestSchema,
+  "script.review": runOnlyRequestSchema,
+  "script.revise": scriptRevisionRequestSchema,
+  "script.run": runOnlyRequestSchema,
+  "package-artifact.revise": packageArtifactRevisionRequestSchema,
+  "upload.private": runOnlyRequestSchema,
+  "voice.review": runOnlyRequestSchema,
+  "voice.run": runOnlyRequestSchema,
+} as const satisfies Record<StudioMutationActionId, z.ZodType>;
 
 export type StudioMutationServiceContract = {
   actionId: StudioMutationActionId;
@@ -135,17 +219,5 @@ export function hasStudioMutationServiceContract(actionId: string): boolean {
  * @returns The schema that validates the action payload.
  */
 function requestSchemaForAction(actionId: StudioMutationActionId): z.ZodType {
-  if (actionId === "idea.approve") {
-    return ideaApprovalRequestSchema;
-  }
-  if (actionId === "script.approve") {
-    return scriptApprovalRequestSchema;
-  }
-  if (actionId === "render.decide") {
-    return renderDecisionRequestSchema;
-  }
-  if (actionId === "channel-handoff.decide") {
-    return channelHandoffDecisionRequestSchema;
-  }
-  return runOnlyRequestSchema;
+  return studioMutationRequestSchemaByAction[actionId];
 }

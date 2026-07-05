@@ -241,13 +241,13 @@
   `production/thumbnail_candidates.*` with copy-ready, digest-bound manual prep fields.
 - `producer decide channel-handoff` writes durable `production/channel_handoff_decision.*` evidence
   for selected-thumbnail/manual prep surfaced without YouTube APIs or upload/publish approval.
-- Studio run detail shows guarded local approval forms for eligible idea/script/cost/render states,
-  render-decision and channel-handoff decision routes matching CLI/core evidence writes, and action
-  surfaces for guarded web actions, CLI-only next actions, and safety boundaries. It does not
-  generate artifacts, render media, upload, or publish.
+- Studio run detail shows guarded approval, workflow-stage/review/revision, render-decision, and
+  channel-handoff decision routes over CLI/core evidence contracts. Home can start ideas, and
+  home/queue can run no-extra-input workflow-stage actions only when CLI/core recommends them.
+  Guarded action panels show compact producer record summaries after completion. Upload/publish stay
+  disabled.
 - Readiness diagnostics that strictly parse and revalidate persisted cost quotes, live hard budgets,
   complete production-package integrity, and exact paid-generation cost approval when required.
-- Final readiness diagnostics agree with the post-transition run state.
 - Blocked and warning `producer readiness` checks print and persist next-action guidance for common
   operator steps such as render-plan generation, cost estimation, local voiceover generation, render
   approval, local draft render, exact quote approval, and evidence refresh.
@@ -325,20 +325,21 @@
   `prompts/defaults/` sources and configured ignored `prompts/local/*.md` overrides, including
   source paths, hashes, warnings, and doctor remediation. They do not edit prompts, call providers,
   approve prompt changes, or read `.ai/` as runtime state.
-- Studio home and `/analytics` surface read-only manual analytics feedback from ignored local
-  analytics artifacts. They show import/report status, data-quality guidance, and the next safe CLI
-  command without calling YouTube APIs or mutating run state.
+- Studio home and `/analytics` surface ignored local analytics artifacts. `/analytics` can import
+  operator-provided CSV/JSON text and refresh the local report through guarded CLI-backed routes
+  without YouTube APIs, upload, publish, or run workflow mutation.
 - Studio has a typed route-security contract for current read-only pages, the local session route,
-  guarded local idea/script/cost/render approval routes, the guarded local render-decision route,
-  and disabled upload/publish action routes. Tests assert that current App Router pages are covered,
-  enabled local mutations require POST-only same-origin JSON, action headers, service-contract
-  handling, local session proof, and cached-session cleanup after 401; disabled upload/publish
-  actions require CLI/core contracts, durable evidence, explicit approvals, and disabled publish
-  risk.
-- Shared Studio mutation service contract foundations exist for guarded idea/script/cost/render
-  approval actions, the active local render-decision and channel-handoff decision evidence writes,
-  and disabled upload/publish actions. Contracts validate request payloads, bind each action to the
-  CLI/core module/export, and require CSRF protection, durable evidence, and explicit approval.
+  guarded local idea/script/cost/render approval routes, guarded idea-run and workflow-stage/review/
+  revision routes, guarded manual analytics import/report routes, guarded local render-decision and
+  channel-handoff-decision routes, and disabled upload/publish action routes. Tests assert that
+  current App Router pages are covered, enabled local mutations require POST-only same-origin JSON,
+  action headers, service-contract handling, local session proof, and cached-session cleanup after
+  401; disabled upload/publish actions require CLI/core contracts, durable evidence, explicit
+  approvals, and disabled publish risk.
+- Shared Studio mutation service contracts exist for guarded idea/script/cost/render approvals,
+  idea-run and workflow-stage/review/revision actions, local render/channel-handoff decisions,
+  manual analytics actions, and disabled upload/publish actions. Contracts validate payloads, bind
+  actions to CLI/core modules/exports, and require CSRF, durable evidence, and explicit approval.
 - Studio home renders a mutation-service status panel showing guarded local approval/review routes,
   disabled upload/publish routes, CLI-ready action contracts, route-security findings, and
   upload/publish risk boundaries without exposing upload/publish web mutations.

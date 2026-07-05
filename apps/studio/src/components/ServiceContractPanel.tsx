@@ -14,8 +14,8 @@ export function ServiceContractPanel() {
     <section id='actions' aria-labelledby='actions-heading'>
       <h2 id='actions-heading'>Mutation Service Contracts</h2>
       <p>
-        Studio exposes one guarded local render-decision route over the shared CLI/core contract.
-        Approval, upload, and publish actions remain disabled or CLI-only.
+        Studio exposes guarded local approval, review, and workflow-stage routes over shared
+        CLI/core contracts. Upload and publish actions remain disabled.
       </p>
       <div className='status-grid'>
         <article className='status-card'>
@@ -28,7 +28,7 @@ export function ServiceContractPanel() {
         <article className='status-card'>
           <p>CLI-ready Contracts</p>
           <strong>{status.readyForCliCount}</strong>
-          <p>Approval and local review actions are bound to existing CLI/core functions.</p>
+          <p>Approval, review, and local workflow-stage actions are bound to CLI/core functions.</p>
         </article>
         <article className='status-card'>
           <p>External Risk</p>

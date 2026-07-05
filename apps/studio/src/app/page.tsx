@@ -56,7 +56,7 @@ export default async function StudioHomePage() {
         </div>
       </header>
 
-      <StudioControlDesk actionStatus={actionStatus} runs={runs} />
+      <StudioControlDesk actionStatus={actionStatus} doctorOverview={doctorOverview} runs={runs} />
       <StatusGrid />
       <DoctorStatusPanel overview={doctorOverview} />
       <ModelEvalStatusPanel overview={modelEvalOverview} />
