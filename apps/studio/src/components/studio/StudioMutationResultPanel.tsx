@@ -1,7 +1,10 @@
 import Link from "next/link";
 import type { Route } from "next";
-import { runReviewHref } from "@/lib/runReviewNavigation";
 import { studioMutationRecoveryCopy } from "@/lib/studioMutationRecoveryCopy";
+import {
+  studioMutationResultHref,
+  studioMutationResultLinkLabel,
+} from "@/lib/studioMutationResultNavigation";
 import type { StudioGuardedActionSubmitState } from "@/lib/useStudioGuardedActionSubmit";
 
 type StudioMutationResultPanelProps = Readonly<{
@@ -55,9 +58,11 @@ export function StudioMutationResultPanel({ state }: StudioMutationResultPanelPr
           {state.recordSummary.runId ? (
             <Link
               className='mutation-result-link'
-              href={runReviewHref(state.recordSummary.runId, "progress") as Route}
+              href={
+                studioMutationResultHref(state.recordSummary.runId, state.action.actionId) as Route
+              }
             >
-              Open affected run
+              {studioMutationResultLinkLabel(state.action.actionId)}
             </Link>
           ) : null}
           <dl aria-label='Producer record summary'>

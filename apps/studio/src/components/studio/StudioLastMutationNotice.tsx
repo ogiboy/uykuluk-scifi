@@ -4,7 +4,6 @@ import Link from "next/link";
 import type { Route } from "next";
 import { useMemo, useSyncExternalStore } from "react";
 import { Button } from "@/components/ui/button";
-import { runReviewHref } from "@/lib/runReviewNavigation";
 import {
   clearStudioLastMutationResult,
   parseStudioLastMutationResult,
@@ -12,6 +11,10 @@ import {
   studioLastMutationResultEventName,
   type StudioLastMutationResult,
 } from "@/lib/studioLastMutationResult";
+import {
+  studioMutationResultHref,
+  studioMutationResultLinkLabel,
+} from "@/lib/studioMutationResultNavigation";
 
 /**
  * Shows the latest guarded web action result after route refreshes.
@@ -66,9 +69,9 @@ export function StudioLastMutationNotice() {
       {result.runId ? (
         <Link
           className='mutation-result-link'
-          href={runReviewHref(result.runId, "progress") as Route}
+          href={studioMutationResultHref(result.runId, result.actionId) as Route}
         >
-          Open affected run
+          {studioMutationResultLinkLabel(result.actionId)}
         </Link>
       ) : null}
       {result.facts.length > 0 ? (
