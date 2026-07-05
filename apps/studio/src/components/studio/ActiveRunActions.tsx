@@ -28,7 +28,7 @@ export function ActiveRunActions({ run }: Readonly<{ run: StudioRunSummary }>) {
   const reviewHref = runReviewHrefFromSummary(run) as Route;
 
   return (
-    <div className='active-run-actions'>
+    <div className='flex flex-wrap items-center gap-2 sm:justify-end'>
       <Badge variant={run.blockedActionCount > 0 ? "destructive" : "secondary"}>
         {run.blockedActionCount > 0 ? "Needs attention" : "Reviewable"}
       </Badge>
@@ -50,18 +50,18 @@ export function ActiveRunActions({ run }: Readonly<{ run: StudioRunSummary }>) {
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuLabel>Safety state</DropdownMenuLabel>
-          <dl className='dropdown-status-list' aria-label='Current run safety state'>
-            <div>
-              <dt>State</dt>
-              <dd>{run.state}</dd>
+          <dl className='grid gap-2 px-2 py-1 text-xs' aria-label='Current run safety state'>
+            <div className='grid grid-cols-[5.5rem_minmax(0,1fr)] gap-2'>
+              <dt className='text-muted-foreground'>State</dt>
+              <dd className='truncate font-medium'>{run.state}</dd>
             </div>
-            <div>
-              <dt>Readiness</dt>
-              <dd>{run.readinessStatus}</dd>
+            <div className='grid grid-cols-[5.5rem_minmax(0,1fr)] gap-2'>
+              <dt className='text-muted-foreground'>Readiness</dt>
+              <dd className='truncate font-medium'>{run.readinessStatus}</dd>
             </div>
-            <div>
-              <dt>Evidence</dt>
-              <dd>{run.evidenceStatus}</dd>
+            <div className='grid grid-cols-[5.5rem_minmax(0,1fr)] gap-2'>
+              <dt className='text-muted-foreground'>Evidence</dt>
+              <dd className='truncate font-medium'>{run.evidenceStatus}</dd>
             </div>
           </dl>
         </DropdownMenuContent>
@@ -72,7 +72,7 @@ export function ActiveRunActions({ run }: Readonly<{ run: StudioRunSummary }>) {
             Safe command
           </Button>
         </PopoverTrigger>
-        <PopoverContent align='end' className='w-96'>
+        <PopoverContent align='end' className='w-[min(24rem,calc(100vw-2rem))]'>
           <PopoverHeader>
             <PopoverTitle>Copy the next safe CLI action</PopoverTitle>
             <PopoverDescription>
@@ -80,7 +80,9 @@ export function ActiveRunActions({ run }: Readonly<{ run: StudioRunSummary }>) {
               artifact files.
             </PopoverDescription>
           </PopoverHeader>
-          <CopyableCommand command={getNextSafeCommand(run)} label='Next safe action' />
+          <div className='pt-3'>
+            <CopyableCommand command={getNextSafeCommand(run)} label='Next safe action' />
+          </div>
         </PopoverContent>
       </Popover>
     </div>

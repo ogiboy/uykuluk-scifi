@@ -3,6 +3,9 @@ import { RunPrimaryActionPanel } from "@/components/runs/RunPrimaryActionPanel";
 import { RunGuidedControlLoopPanel } from "@/components/runs/RunGuidedControlLoopPanel";
 import { ActiveRunActions } from "@/components/studio/ActiveRunActions";
 import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
+import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { StudioRunSummary } from "@/lib/runSummaries";
 import type { StudioDoctorOverview } from "@/lib/doctorOverview";
 import { formatRunRenderDecision, formatRunReviewCounts } from "@/lib/runSummaryCopy";
@@ -33,14 +36,21 @@ export function StudioControlDesk({ actionStatus, doctorOverview, runs }: Studio
   const latestRun = runs[0] ?? null;
   const startIdeasReadiness = startIdeasReadinessFromDoctor(doctorOverview);
   return (
-    <section className='control-desk' aria-labelledby='control-desk-heading'>
-      <div className='control-desk-primary'>
-        <div className='control-desk-heading'>
-          <div>
-            <p className='eyebrow'>Operator control desk</p>
-            <h2 id='control-desk-heading'>Current production queue</h2>
+    <section
+      className='grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]'
+      aria-labelledby='control-desk-heading'
+    >
+      <div className='grid min-w-0 content-start gap-4'>
+        <div className='grid gap-4 sm:grid-cols-[1fr_auto] sm:items-start'>
+          <div className='space-y-2'>
+            <p className='text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground'>
+              Operator control desk
+            </p>
+            <h2 className='text-2xl font-semibold tracking-tight' id='control-desk-heading'>
+              Current production queue
+            </h2>
           </div>
-          <Link className='status-pill small' href='/runs'>
+          <Link className={buttonVariants({ variant: "secondary" })} href='/runs'>
             Open all runs
           </Link>
         </div>
@@ -52,7 +62,10 @@ export function StudioControlDesk({ actionStatus, doctorOverview, runs }: Studio
         )}
       </div>
 
-      <aside className='control-desk-rail' aria-label='Studio safety and queue summary'>
+      <aside
+        className='grid min-w-0 content-start gap-4 lg:grid-cols-2 xl:grid-cols-1'
+        aria-label='Studio safety and queue summary'
+      >
         <StudioMutationSessionPanel />
         <StudioLastMutationNotice />
         {latestRun ? <StartNewRunPanel readiness={startIdeasReadiness} /> : null}
@@ -73,54 +86,66 @@ function ActiveRunCard({ run }: Readonly<{ run: StudioRunSummary }>) {
   const completedSteps = run.workflowProgress.filter((step) => step.status === "done").length;
 
   return (
-    <article className='active-run-card'>
-      <div className='active-run-header'>
-        <div>
-          <p className='artifact-description'>Active run</p>
-          <h3>{run.runId}</h3>
+    <Card>
+      <CardHeader className='gap-4 sm:grid-cols-[1fr_auto]'>
+        <div className='min-w-0 space-y-2'>
+          <p className='text-sm text-muted-foreground'>Active run</p>
+          <CardTitle>
+            <span className='block truncate' title={run.runId}>
+              {run.runId}
+            </span>
+          </CardTitle>
         </div>
         <ActiveRunActions run={run} />
-      </div>
+      </CardHeader>
+      <CardContent className='space-y-5'>
+        <MetricGrid
+          metrics={[
+            { label: "State", value: run.state },
+            { label: "Readiness", value: run.readinessStatus },
+            { label: "Evidence", value: run.evidenceStatus },
+            { label: "Render decision", value: formatRunRenderDecision(run) },
+            { label: "Blocks", value: formatStudioInteger(run.blockedActionCount) },
+            { label: "Progress", value: `${completedSteps}/${run.workflowProgress.length}` },
+          ]}
+        />
 
-      <MetricGrid
-        metrics={[
-          { label: "State", value: run.state },
-          { label: "Readiness", value: run.readinessStatus },
-          { label: "Evidence", value: run.evidenceStatus },
-          { label: "Render decision", value: formatRunRenderDecision(run) },
-          { label: "Blocks", value: formatStudioInteger(run.blockedActionCount) },
-          { label: "Progress", value: `${completedSteps}/${run.workflowProgress.length}` },
-        ]}
-      />
+        <RunPrimaryActionPanel compact railHref={decisionRailHref} run={run} />
 
-      <RunPrimaryActionPanel compact railHref={decisionRailHref} run={run} />
+        <RunGuidedControlLoopPanel compact run={run} />
 
-      <RunGuidedControlLoopPanel compact run={run} />
-
-      <ol className='workflow-strip' aria-label='Current workflow attention'>
-        {visibleCurrentSteps.length > 0 ? (
-          visibleCurrentSteps.map((step) => (
-            <li className={`workflow-chip workflow-chip-${step.status}`} key={step.label}>
-              <strong>{step.label}</strong>
-              <span>{step.detail}</span>
+        <ol className='grid gap-3 md:grid-cols-2' aria-label='Current workflow attention'>
+          {visibleCurrentSteps.length > 0 ? (
+            visibleCurrentSteps.map((step) => (
+              <li className='grid gap-1 rounded-lg border bg-muted/20 p-3 text-sm' key={step.label}>
+                <span className='flex flex-wrap items-center gap-2'>
+                  <Badge variant={step.status === "blocked" ? "destructive" : "secondary"}>
+                    {step.status}
+                  </Badge>
+                  <strong>{step.label}</strong>
+                </span>
+                <span className='text-muted-foreground'>{step.detail}</span>
+              </li>
+            ))
+          ) : (
+            <li className='grid gap-1 rounded-lg border bg-muted/20 p-3 text-sm'>
+              <strong>No active blocker</strong>
+              <span className='text-muted-foreground'>
+                Review the run detail before the next irreversible action.
+              </span>
             </li>
-          ))
-        ) : (
-          <li className='workflow-chip workflow-chip-pending'>
-            <strong>No active blocker</strong>
-            <span>Review the run detail before the next irreversible action.</span>
-          </li>
-        )}
-        {hiddenCurrentStepCount > 0 ? (
-          <li className='workflow-chip workflow-chip-more'>
-            <strong>+{hiddenCurrentStepCount} more</strong>
-            <span>Open the run detail for the full list.</span>
-          </li>
-        ) : null}
-      </ol>
+          )}
+          {hiddenCurrentStepCount > 0 ? (
+            <li className='grid gap-1 rounded-lg border bg-muted/20 p-3 text-sm'>
+              <strong>+{hiddenCurrentStepCount} more</strong>
+              <span className='text-muted-foreground'>Open the run detail for the full list.</span>
+            </li>
+          ) : null}
+        </ol>
 
-      <p className='artifact-description'>{formatRunReviewCounts(run)}</p>
-    </article>
+        <p className='text-sm text-muted-foreground'>{formatRunReviewCounts(run)}</p>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -130,26 +155,47 @@ function SafetyGateSummary({
   const findingTone = actionStatus.findings.length > 0 ? "blocked" : undefined;
 
   return (
-    <section className='panel compact-panel' aria-labelledby='safety-gates-heading'>
-      <h3 id='safety-gates-heading'>Safety gates</h3>
-      <dl className='decision-list'>
-        <div>
-          <dt>Web actions</dt>
-          <dd>{actionStatus.webMutationsEnabled ? "Guarded local routes" : "Disabled"}</dd>
-        </div>
-        <div>
-          <dt>Upload / publish</dt>
-          <dd className='blocked'>Disabled by default</dd>
-        </div>
-        <div>
-          <dt>Route findings</dt>
-          <dd className={findingTone}>{actionStatus.findings.length}</dd>
-        </div>
-        <div>
-          <dt>CLI-ready contracts</dt>
-          <dd>{actionStatus.readyForCliCount}</dd>
-        </div>
-      </dl>
+    <section aria-labelledby='safety-gates-heading'>
+      <Card>
+        <CardHeader>
+          <CardTitle id='safety-gates-heading'>Safety gates</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <dl className='grid gap-3 text-sm'>
+            <SafetyGateFact
+              label='Web actions'
+              value={actionStatus.webMutationsEnabled ? "Guarded local routes" : "Disabled"}
+            />
+            <SafetyGateFact label='Upload / publish' tone='blocked' value='Disabled by default' />
+            <SafetyGateFact
+              label='Route findings'
+              tone={findingTone}
+              value={String(actionStatus.findings.length)}
+            />
+            <SafetyGateFact
+              label='CLI-ready contracts'
+              value={String(actionStatus.readyForCliCount)}
+            />
+          </dl>
+        </CardContent>
+      </Card>
     </section>
+  );
+}
+
+type SafetyGateFactProps = Readonly<{
+  label: string;
+  tone?: "blocked";
+  value: string;
+}>;
+
+function SafetyGateFact({ label, tone, value }: SafetyGateFactProps) {
+  return (
+    <div className='grid grid-cols-[minmax(0,1fr)_auto] gap-3 rounded-lg border bg-muted/20 p-3'>
+      <dt className='text-muted-foreground'>{label}</dt>
+      <dd className={tone === "blocked" ? "font-semibold text-destructive" : "font-semibold"}>
+        {value}
+      </dd>
+    </div>
   );
 }
