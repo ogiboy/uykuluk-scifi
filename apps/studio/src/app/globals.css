@@ -1252,25 +1252,6 @@ h3 {
   gap: 16px;
 }
 
-.prompt-inventory,
-.prompt-card-grid,
-.prompt-card {
-  display: grid;
-  gap: 12px;
-}
-
-.prompt-card-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.prompt-card {
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--studio-surface-raised);
-  min-width: 0;
-  padding: 12px;
-}
-
 .run-metadata {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1293,19 +1274,6 @@ h3 {
   min-width: 0;
 }
 
-.artifact-preview-header {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-  justify-content: space-between;
-}
-
-.artifact-preview-header strong,
-.artifact-preview-header span {
-  display: block;
-}
-
-.artifact-preview-header span,
 .artifact-meta {
   color: var(--muted);
   font-size: 12px;
@@ -1327,8 +1295,7 @@ h3 {
   line-height: 1.5;
 }
 
-.asset-file-list,
-.plain-list {
+.asset-file-list {
   display: grid;
   gap: 6px;
   margin: 0;
@@ -1464,10 +1431,6 @@ h3 {
 }
 
 @media (max-width: 1180px) {
-  .prompt-card-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
   .run-detail-hero,
   .run-review-cockpit {
     grid-template-columns: 1fr;
@@ -1494,8 +1457,7 @@ h3 {
   .run-review-workspace,
   .run-detail-grid,
   .analytics-detail-grid,
-  .asset-categories,
-  .prompt-card-grid {
+  .asset-categories {
     grid-template-columns: 1fr;
   }
 
