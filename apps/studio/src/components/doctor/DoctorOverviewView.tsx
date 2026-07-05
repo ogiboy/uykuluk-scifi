@@ -3,6 +3,7 @@ import type {
   StudioDoctorOverview,
   StudioDoctorStatus,
 } from "@/lib/doctorOverview";
+import { ArtifactPreview } from "@/components/studio/ArtifactPreview";
 import { CopyableCommand } from "@/components/studio/CopyableCommand";
 import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
 import { Badge } from "@/components/ui/badge";
@@ -106,7 +107,7 @@ export function DoctorOverviewView({ overview }: DoctorOverviewViewProps) {
               {overview.reportPreviewTruncated ? " · preview truncated" : ""}
             </p>
             {overview.reportPreview ? (
-              <pre className='artifact-preview'>{overview.reportPreview}</pre>
+              <ArtifactPreview>{overview.reportPreview}</ArtifactPreview>
             ) : (
               <p className='text-sm text-muted-foreground'>
                 Run doctor from Studio or CLI to refresh the local Markdown report artifact.

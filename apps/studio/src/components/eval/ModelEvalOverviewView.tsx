@@ -1,4 +1,5 @@
 import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
+import { ArtifactPreview } from "@/components/studio/ArtifactPreview";
 import { CopyableCommand } from "@/components/studio/CopyableCommand";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import type { StudioModelEvalOverview } from "@/lib/modelEvalOverview";
@@ -119,7 +120,7 @@ export function ModelEvalOverviewView({ overview }: ModelEvalOverviewViewProps) 
               {overview.singleReportPreviewTruncated ? " · preview truncated" : ""}
             </p>
             {overview.singleReportPreview ? (
-              <pre className='artifact-preview'>{overview.singleReportPreview}</pre>
+              <ArtifactPreview>{overview.singleReportPreview}</ArtifactPreview>
             ) : (
               <p className='text-sm text-muted-foreground'>
                 Run the CLI local model evaluation command to generate a report artifact.
@@ -145,7 +146,7 @@ export function ModelEvalOverviewView({ overview }: ModelEvalOverviewViewProps) 
               {overview.candidateReportPreviewTruncated ? " · preview truncated" : ""}
             </p>
             {overview.candidateReportPreview ? (
-              <pre className='artifact-preview'>{overview.candidateReportPreview}</pre>
+              <ArtifactPreview>{overview.candidateReportPreview}</ArtifactPreview>
             ) : (
               <p className='text-sm text-muted-foreground'>
                 Run the CLI candidate evaluation command to generate a comparison artifact.

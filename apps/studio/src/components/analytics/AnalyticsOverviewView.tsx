@@ -1,4 +1,5 @@
 import type { StudioAnalyticsOverview } from "@/lib/analyticsOverview";
+import { ArtifactPreview } from "@/components/studio/ArtifactPreview";
 import { CopyableCommand } from "@/components/studio/CopyableCommand";
 import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
 import { Badge } from "@/components/ui/badge";
@@ -158,7 +159,7 @@ export function AnalyticsOverviewView({ overview }: AnalyticsOverviewViewProps) 
               <p className='text-sm text-destructive'>{overview.reportWarning}</p>
             ) : null}
             {overview.reportPreview ? (
-              <pre className='artifact-preview'>{overview.reportPreview}</pre>
+              <ArtifactPreview>{overview.reportPreview}</ArtifactPreview>
             ) : (
               <p className='text-sm text-muted-foreground'>
                 Run the CLI analytics report command to refresh the local report artifact.

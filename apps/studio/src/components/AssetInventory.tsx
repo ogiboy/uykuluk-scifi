@@ -12,7 +12,7 @@ export function AssetInventory({ inventory }: Readonly<{ inventory: StudioAssetI
   return (
     <section id='assets' aria-labelledby='asset-heading'>
       <h2 id='asset-heading'>Asset Inventory</h2>
-      <p className='section-copy'>
+      <p className='mb-3 text-sm leading-6 text-muted-foreground [&_a]:text-primary'>
         {inventory.totalFiles} committed file(s) across configured visual asset categories.{" "}
         <Link href='/assets'>Open detailed read-only inventory</Link>.
       </p>

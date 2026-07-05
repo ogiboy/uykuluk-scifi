@@ -77,7 +77,7 @@ export function AnalyticsActionPanel() {
     <section aria-labelledby='analytics-import-heading'>
       <Card>
         <CardHeader>
-          <p className='eyebrow'>Local feedback loop</p>
+          <p className='text-sm text-muted-foreground'>Local feedback loop</p>
           <CardTitle>
             <h2 id='analytics-import-heading'>Import Manual Analytics</h2>
           </CardTitle>

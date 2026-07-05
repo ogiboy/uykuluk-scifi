@@ -68,12 +68,12 @@ export function StudioTabs({
   return (
     <section id='prompts' aria-labelledby='studio-tabs-heading'>
       <h2 id='studio-tabs-heading'>Studio Modules</h2>
-      <Tabs className='tabs-root' defaultValue='runs'>
-        <TabsList className='tabs-list' aria-label='Studio modules'>
+      <Tabs className='grid gap-3' defaultValue='runs'>
+        <TabsList className='h-auto flex-wrap justify-start' aria-label='Studio modules'>
           {tabItems.map((item) => {
             const Icon = item.icon;
             return (
-              <TabsTrigger className='tabs-trigger' key={item.value} value={item.value}>
+              <TabsTrigger key={item.value} value={item.value}>
                 <Icon aria-hidden='true' />
                 {item.label}
               </TabsTrigger>
@@ -81,13 +81,17 @@ export function StudioTabs({
           })}
         </TabsList>
         {tabItems.map((item) => (
-          <TabsContent className='tabs-content' key={item.value} value={item.value}>
+          <TabsContent
+            className='rounded-lg border bg-card p-4'
+            key={item.value}
+            value={item.value}
+          >
             {item.value === "prompts" ? (
               <PromptInventoryView inventory={promptInventory} />
             ) : (
               <Card ref={item.value === "runs" ? panelRef : undefined}>
                 <CardHeader>
-                  <div className='studio-module-card-heading'>
+                  <div className='flex items-start justify-between gap-3'>
                     <div>
                       <CardTitle>{item.label}</CardTitle>
                       <CardDescription>{item.summary}</CardDescription>
@@ -99,7 +103,7 @@ export function StudioTabs({
                 </CardHeader>
                 <CardContent>
                   <Separator />
-                  <p className='section-copy'>
+                  <p className='mt-3 max-w-3xl text-sm leading-6 text-muted-foreground'>
                     This module remains a Studio surface over local CLI/core contracts. It must not
                     duplicate workflow state or infer approvals from files.
                   </p>
