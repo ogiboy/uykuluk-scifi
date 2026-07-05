@@ -24,6 +24,7 @@ import {
 import { runReviewHrefFromSummary } from "@/lib/runReviewNavigation";
 import { getNextSafeCommand } from "@/lib/runSummaryCopy";
 import type { StudioRunSummary } from "@/lib/runSummaries";
+import { operatorActionForRun } from "./runSummaryOperatorAction";
 import { RunQuickStageActionButton } from "./RunQuickStageActionButton";
 
 type RunSummaryRowActionsProps = Readonly<{
@@ -37,12 +38,13 @@ type RunSummaryRowActionsProps = Readonly<{
  * @returns Read-only row actions for opening the run workspace and copying CLI/core commands.
  */
 export function RunSummaryRowActions({ run }: RunSummaryRowActionsProps) {
+  const action = operatorActionForRun(run);
   const command = getNextSafeCommand(run);
   const reviewHref = runReviewHrefFromSummary(run) as Route;
   const decisionRailHref = runReviewHrefFromSummary(run, "review-decision") as Route;
   return (
     <div className='run-row-actions'>
-      <RunQuickStageActionButton label='Run' run={run} variant='secondary' />
+      <RunQuickStageActionButton label={action.label} run={run} variant='secondary' />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button type='button' variant='secondary'>

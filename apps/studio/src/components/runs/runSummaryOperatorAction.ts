@@ -15,6 +15,19 @@ export function operatorActionDetail(action: OperatorAction): string {
   return "No safe action";
 }
 
+export function operatorActionToneLabel(action: OperatorAction): string {
+  if (action.tone === "available" && action.routePath) {
+    return "web";
+  }
+  if (action.tone === "blocked") {
+    return "blocked";
+  }
+  if (action.tone === "complete") {
+    return "done";
+  }
+  return "CLI";
+}
+
 export function operatorActionForRun(run: StudioRunSummary): OperatorAction {
   const cached = operatorActionCache.get(run);
   if (cached) {
