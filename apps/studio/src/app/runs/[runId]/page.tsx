@@ -6,6 +6,7 @@ import {
   type RunReviewSearchParams,
 } from "@/lib/runReviewNavigation";
 import { getStudioRunDetail } from "@/lib/runSummaries";
+import { isRunId } from "@/lib/runSummaryFiles";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -19,6 +20,9 @@ export default async function RunDetailPage({
   searchParams,
 }: Readonly<RunDetailPageProps>) {
   const { runId } = await params;
+  if (!isRunId(runId)) {
+    notFound();
+  }
   const run = await getStudioRunDetail(runId);
   if (!run) {
     notFound();

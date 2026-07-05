@@ -4,7 +4,7 @@ import { useEffect } from "react";
 
 import { StudioRouteBoundaryCard } from "@/components/studio/StudioRouteBoundaryCard";
 import { Button } from "@/components/ui/button";
-import { runDetailErrorCopy } from "@/lib/runRouteBoundaryCopy";
+import { runDetailErrorCopy } from "@/lib/studioRouteBoundaryCopy";
 
 type RunDetailErrorPageProps = Readonly<{
   error: Error & { digest?: string };
@@ -26,7 +26,7 @@ export default function RunDetailErrorPage({ error, reset }: RunDetailErrorPageP
     <main className='studio-main page-shell' aria-labelledby='run-detail-error-heading'>
       <header className='studio-header'>
         <div>
-          <p className='eyebrow'>Run review boundary</p>
+          <p className='eyebrow'>{runDetailErrorCopy.eyebrow}</p>
           <h1 id='run-detail-error-heading'>{runDetailErrorCopy.heading}</h1>
         </div>
         <span className='status-pill blocked'>{runDetailErrorCopy.status}</span>
