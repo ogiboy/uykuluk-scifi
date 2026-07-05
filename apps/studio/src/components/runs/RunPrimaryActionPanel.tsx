@@ -1,5 +1,6 @@
 "use client";
 
+import { useId } from "react";
 import { Badge } from "@/components/ui/badge";
 import {
   buildStudioRunPrimaryAction,
@@ -28,18 +29,17 @@ export function RunPrimaryActionPanel({
   run,
 }: RunPrimaryActionPanelProps) {
   const action = buildStudioRunPrimaryAction(run);
+  const headingId = useId();
 
   return (
     <section
       className={compact ? "run-primary-action compact" : "run-primary-action"}
-      aria-labelledby={compact ? "mobile-primary-action-heading" : "primary-action-heading"}
+      aria-labelledby={headingId}
     >
       <div className='run-primary-action-heading'>
         <div>
           <p className='eyebrow'>Primary web action</p>
-          <h3 id={compact ? "mobile-primary-action-heading" : "primary-action-heading"}>
-            {action.label}
-          </h3>
+          <h3 id={headingId}>{action.label}</h3>
         </div>
         <Badge variant={badgeVariant(action.tone)}>{formatTone(action.tone)}</Badge>
       </div>

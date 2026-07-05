@@ -7,6 +7,7 @@ import { RunQuickStageActionButton } from "@/components/runs/RunQuickStageAction
 import {
   operatorActionDetail,
   operatorActionForRun,
+  operatorActionToneLabel,
   type OperatorAction,
 } from "@/components/runs/runSummaryOperatorAction";
 import { homeActionQueueSummaryItems } from "@/lib/homeActionQueueSummary";
@@ -80,9 +81,9 @@ function HomeActionQueueList({ runs }: HomeActionQueuePanelProps) {
               </div>
               <div className='home-action-queue-controls'>
                 <Badge variant={action.tone === "blocked" ? "destructive" : "secondary"}>
-                  {formatActionTone(action)}
+                  {operatorActionToneLabel(action)}
                 </Badge>
-                <RunQuickStageActionButton label='Run' run={run} variant='secondary' />
+                <RunQuickStageActionButton label={action.label} run={run} variant='secondary' />
                 <Link
                   className='home-action-queue-open'
                   href={runReviewHrefFromSummary(run, "review-decision") as Route}
@@ -122,17 +123,4 @@ function actionTonePriority(action: OperatorAction): number {
     case "complete":
       return 3;
   }
-}
-
-function formatActionTone(action: OperatorAction): string {
-  if (action.tone === "available" && action.routePath) {
-    return "web";
-  }
-  if (action.tone === "blocked") {
-    return "blocked";
-  }
-  if (action.tone === "complete") {
-    return "done";
-  }
-  return "CLI";
 }

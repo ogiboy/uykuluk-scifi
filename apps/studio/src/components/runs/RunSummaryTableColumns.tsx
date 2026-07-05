@@ -1,4 +1,5 @@
 import type { StudioRunSummary } from "@/lib/runSummaries";
+import { Badge } from "@/components/ui/badge";
 import { runReviewHrefFromSummary } from "@/lib/runReviewNavigation";
 import {
   formatRunChannelHandoff,
@@ -14,6 +15,7 @@ import {
   operatorActionDetail,
   operatorActionForRun,
   operatorActionSearchText,
+  operatorActionToneLabel,
 } from "./runSummaryOperatorAction";
 import { RunSummaryRowActions } from "./RunSummaryRowActions";
 
@@ -80,7 +82,12 @@ export function runSummaryColumns(): ColumnDef<StudioRunSummary>[] {
         const action = operatorActionForRun(row.original);
         return (
           <span className='run-cell-stack'>
-            <strong>{action.label}</strong>
+            <span className='run-operator-action-heading'>
+              <strong>{action.label}</strong>
+              <Badge variant={action.tone === "blocked" ? "destructive" : "secondary"}>
+                {operatorActionToneLabel(action)}
+              </Badge>
+            </span>
             <small>{operatorActionDetail(action)}</small>
             {action.routePath ? <small>{action.routePath}</small> : null}
           </span>

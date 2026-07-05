@@ -892,6 +892,17 @@ h3 {
   align-items: center;
 }
 
+.home-action-queue-controls .quick-stage-action-control {
+  display: block;
+  max-width: 100%;
+}
+
+.home-action-queue-controls .quick-stage-action-control > button {
+  max-width: 190px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .home-action-queue-copy {
   display: grid;
   gap: 4px;
@@ -1068,10 +1079,21 @@ h3 {
 
 .run-row-actions {
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   gap: 8px;
   align-items: center;
   justify-content: flex-end;
+}
+
+.run-row-actions .quick-stage-action-control {
+  display: block;
+  max-width: 100%;
+}
+
+.run-row-actions .quick-stage-action-control > button {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .run-row-actions button {
@@ -1165,6 +1187,13 @@ h3 {
   display: grid;
   gap: 4px;
   min-width: 0;
+}
+
+.run-operator-action-heading {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
 }
 
 .run-cell-stack strong {
