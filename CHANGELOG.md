@@ -11,6 +11,13 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.77.0 (2026-07-05)
+
+### Features
+
+- clarify queue action controls (cd3b040)
+- expose active run web action (daf79f0)
+
 ## v0.76.0 (2026-07-05)
 
 ### Fixes
