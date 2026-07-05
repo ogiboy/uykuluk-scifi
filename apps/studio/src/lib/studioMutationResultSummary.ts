@@ -1,5 +1,6 @@
 export type StudioMutationRecordSummary = Readonly<{
   facts: readonly string[];
+  runId: string | null;
 }>;
 
 const stringFields = [
@@ -37,7 +38,7 @@ export function summarizeStudioMutationRecord(record: unknown): StudioMutationRe
     actionFact(record),
   ].filter(isString);
 
-  return facts.length > 0 ? { facts } : null;
+  return facts.length > 0 ? { facts, runId: stringValue(record.runId) } : null;
 }
 
 function stateTransitionFact(record: Record<string, unknown>): string | null {

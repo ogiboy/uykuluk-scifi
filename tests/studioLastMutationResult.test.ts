@@ -22,6 +22,7 @@ describe("Studio last mutation result", () => {
       recordedAtIso: "2026-07-05T11:36:14.000Z",
       refreshedPersistedState: true,
       routePath: "/actions/run-ideas",
+      runId: "run_latest",
     });
 
     expect(readStudioLastMutationResult()).toEqual({
@@ -32,6 +33,7 @@ describe("Studio last mutation result", () => {
       recordedAtIso: "2026-07-05T11:36:14.000Z",
       refreshedPersistedState: true,
       routePath: "/actions/run-ideas",
+      runId: "run_latest",
       status: undefined,
     });
   });
@@ -47,6 +49,7 @@ describe("Studio last mutation result", () => {
       recordedAtIso: "2026-07-05T11:36:14.000Z",
       refreshedPersistedState: true,
       routePath: "/actions/run-readiness",
+      runId: null,
       status: 409,
     });
     clearStudioLastMutationResult();

@@ -8,6 +8,7 @@ export type StudioLastMutationResult = Readonly<{
   recordedAtIso: string;
   refreshedPersistedState: boolean;
   routePath: string;
+  runId: string | null;
   status?: number;
 }>;
 
@@ -106,6 +107,7 @@ export function parseStudioLastMutationResult(value: unknown): StudioLastMutatio
     recordedAtIso,
     refreshedPersistedState: value.refreshedPersistedState === true,
     routePath,
+    runId: boundedString(value.runId),
     status: finiteStatus(value.status),
   });
 }
@@ -124,6 +126,7 @@ function normalizeStudioLastMutationResult(
     recordedAtIso: boundedString(result.recordedAtIso) ?? new Date().toISOString(),
     refreshedPersistedState: result.refreshedPersistedState,
     routePath: boundedString(result.routePath) ?? "unknown",
+    runId: boundedString(result.runId),
     status: finiteStatus(result.status),
   };
 }

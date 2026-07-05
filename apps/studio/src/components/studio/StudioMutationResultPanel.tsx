@@ -1,4 +1,6 @@
 import Link from "next/link";
+import type { Route } from "next";
+import { runReviewHref } from "@/lib/runReviewNavigation";
 import { studioMutationRecoveryCopy } from "@/lib/studioMutationRecoveryCopy";
 import type { StudioGuardedActionSubmitState } from "@/lib/useStudioGuardedActionSubmit";
 
@@ -49,14 +51,24 @@ export function StudioMutationResultPanel({ state }: StudioMutationResultPanelPr
         </div>
       ) : null}
       {hasStudioMutationRecordSummary(state) ? (
-        <dl aria-label='Producer record summary'>
-          {state.recordSummary.facts.map((fact, index) => (
-            <div key={`${fact}-${index}`}>
-              <dt>Result</dt>
-              <dd>{fact}</dd>
-            </div>
-          ))}
-        </dl>
+        <>
+          {state.recordSummary.runId ? (
+            <Link
+              className='mutation-result-link'
+              href={runReviewHref(state.recordSummary.runId, "progress") as Route}
+            >
+              Open affected run
+            </Link>
+          ) : null}
+          <dl aria-label='Producer record summary'>
+            {state.recordSummary.facts.map((fact, index) => (
+              <div key={`${fact}-${index}`}>
+                <dt>Result</dt>
+                <dd>{fact}</dd>
+              </div>
+            ))}
+          </dl>
+        </>
       ) : null}
     </section>
   );

@@ -1,7 +1,10 @@
 "use client";
 
+import Link from "next/link";
+import type { Route } from "next";
 import { useMemo, useSyncExternalStore } from "react";
 import { Button } from "@/components/ui/button";
+import { runReviewHref } from "@/lib/runReviewNavigation";
 import {
   clearStudioLastMutationResult,
   parseStudioLastMutationResult,
@@ -60,6 +63,14 @@ export function StudioLastMutationNotice() {
           </div>
         ) : null}
       </dl>
+      {result.runId ? (
+        <Link
+          className='mutation-result-link'
+          href={runReviewHref(result.runId, "progress") as Route}
+        >
+          Open affected run
+        </Link>
+      ) : null}
       {result.facts.length > 0 ? (
         <ul className='last-mutation-facts' aria-label='Latest action facts'>
           {result.facts.map((fact) => (
