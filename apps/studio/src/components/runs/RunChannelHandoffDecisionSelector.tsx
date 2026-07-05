@@ -1,3 +1,4 @@
+import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 export type ChannelHandoffDecisionValue =
@@ -42,9 +43,10 @@ export function RunChannelHandoffDecisionSelector({
   onDecisionChange,
 }: RunChannelHandoffDecisionSelectorProps) {
   return (
-    <fieldset className='render-decision-selector'>
-      <legend>Decision</legend>
+    <fieldset className='space-y-3'>
+      <legend className='text-sm font-medium'>Decision</legend>
       <RadioGroup
+        className='grid gap-3'
         value={decision}
         onValueChange={(value) => {
           if (isChannelHandoffDecision(value)) {
@@ -53,13 +55,16 @@ export function RunChannelHandoffDecisionSelector({
         }}
       >
         {channelHandoffDecisionOptions.map((item) => (
-          <label className='render-decision-option' key={item.decision}>
-            <RadioGroupItem value={item.decision} />
-            <span>
-              <strong>{item.label}</strong>
-              <span>{item.guidance}</span>
+          <Label
+            className='grid cursor-pointer grid-cols-[auto_1fr] items-start gap-3 rounded-lg border bg-card p-3 text-sm transition-colors hover:bg-accent/10'
+            key={item.decision}
+          >
+            <RadioGroupItem className='mt-1' value={item.decision} />
+            <span className='space-y-2'>
+              <strong className='block'>{item.label}</strong>
+              <span className='block text-muted-foreground'>{item.guidance}</span>
             </span>
-          </label>
+          </Label>
         ))}
       </RadioGroup>
     </fieldset>
