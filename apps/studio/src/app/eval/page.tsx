@@ -1,4 +1,5 @@
 import { ModelEvalOverviewView } from "@/components/eval/ModelEvalOverviewView";
+import { StudioPageHeader } from "@/components/studio/StudioPageHeader";
 import { StudioShell } from "@/components/studio/StudioShell";
 import { getStudioModelEvalOverview } from "@/lib/modelEvalOverview";
 
@@ -14,13 +15,11 @@ export default async function ModelEvalPage() {
 
   return (
     <StudioShell>
-      <header className='studio-header'>
-        <div>
-          <p className='eyebrow'>Read-only local model evidence</p>
-          <h1>Local model evaluation</h1>
-        </div>
-        <span className='status-pill'>No provider calls</span>
-      </header>
+      <StudioPageHeader
+        badge='No provider calls'
+        eyebrow='Read-only local model evidence'
+        title='Local model evaluation'
+      />
       <ModelEvalOverviewView overview={overview} />
     </StudioShell>
   );

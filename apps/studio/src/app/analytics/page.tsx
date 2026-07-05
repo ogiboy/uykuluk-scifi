@@ -1,4 +1,5 @@
 import { AnalyticsOverviewView } from "@/components/analytics/AnalyticsOverviewView";
+import { StudioPageHeader } from "@/components/studio/StudioPageHeader";
 import { StudioShell } from "@/components/studio/StudioShell";
 import { getStudioAnalyticsOverview } from "@/lib/analyticsOverview";
 
@@ -14,13 +15,11 @@ export default async function AnalyticsPage() {
 
   return (
     <StudioShell>
-      <header className='studio-header'>
-        <div>
-          <p className='eyebrow'>Read-only manual feedback loop</p>
-          <h1>Analytics feedback</h1>
-        </div>
-        <span className='status-pill'>Manual import only</span>
-      </header>
+      <StudioPageHeader
+        badge='Manual import only'
+        eyebrow='Read-only manual feedback loop'
+        title='Analytics feedback'
+      />
       <AnalyticsOverviewView overview={overview} />
     </StudioShell>
   );

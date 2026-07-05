@@ -286,28 +286,6 @@ a {
   min-height: 100vh;
 }
 
-.studio-header {
-  display: flex;
-  gap: 18px;
-  align-items: flex-start;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--line);
-  padding-bottom: 20px;
-}
-
-.studio-header > div {
-  min-width: 0;
-}
-
-.studio-header-actions {
-  display: flex;
-  flex: 0 0 auto;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
-  justify-content: flex-end;
-}
-
 .toaster {
   --normal-bg: var(--panel);
   --normal-text: var(--text);
@@ -2320,8 +2298,7 @@ h3 {
   }
 
   .brand-lockup,
-  .studio-rail nav,
-  .studio-header-actions {
+  .studio-rail nav {
     min-width: 0;
   }
 
@@ -2336,14 +2313,6 @@ h3 {
 
   .studio-main {
     padding: 20px 16px;
-  }
-
-  .studio-header {
-    display: grid;
-  }
-
-  .studio-header > .status-pill {
-    justify-self: start;
   }
 
   h1 {

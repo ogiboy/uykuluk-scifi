@@ -1,5 +1,7 @@
 import { RunDetailView } from "@/components/runs/RunDetailView";
+import { StudioPageHeader } from "@/components/studio/StudioPageHeader";
 import { StudioShell } from "@/components/studio/StudioShell";
+import { buttonVariants } from "@/components/ui/button";
 import {
   defaultRunReviewTab,
   runReviewTabFromSearchParams,
@@ -31,15 +33,15 @@ export default async function RunDetailPage({
 
   return (
     <StudioShell>
-      <header className='studio-header'>
-        <div>
-          <p className='eyebrow'>Run review workspace</p>
-          <h1>{run.runId}</h1>
-        </div>
-        <Link className='status-pill' href='/runs'>
-          All runs
-        </Link>
-      </header>
+      <StudioPageHeader
+        actions={
+          <Link className={buttonVariants({ variant: "secondary" })} href='/runs'>
+            All runs
+          </Link>
+        }
+        eyebrow='Run review workspace'
+        title={run.runId}
+      />
       <RunDetailView initialTab={initialTab} run={run} />
     </StudioShell>
   );

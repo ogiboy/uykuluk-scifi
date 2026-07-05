@@ -1,4 +1,5 @@
 import { PromptInventoryView } from "@/components/prompts/PromptInventoryView";
+import { StudioPageHeader } from "@/components/studio/StudioPageHeader";
 import { StudioShell } from "@/components/studio/StudioShell";
 import { getStudioPromptInventory } from "@/lib/promptInventory";
 
@@ -14,13 +15,11 @@ export default async function PromptsPage() {
 
   return (
     <StudioShell>
-      <header className='studio-header'>
-        <div>
-          <p className='eyebrow'>Read-only prompt sources</p>
-          <h1>Runtime prompt inventory</h1>
-        </div>
-        <span className='status-pill'>Read-only prompts</span>
-      </header>
+      <StudioPageHeader
+        badge='Read-only prompts'
+        eyebrow='Read-only prompt sources'
+        title='Runtime prompt inventory'
+      />
       <PromptInventoryView inventory={inventory} />
     </StudioShell>
   );

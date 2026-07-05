@@ -1,4 +1,5 @@
 import { AssetInventoryView } from "@/components/assets/AssetInventoryView";
+import { StudioPageHeader } from "@/components/studio/StudioPageHeader";
 import { StudioShell } from "@/components/studio/StudioShell";
 import { getStudioAssetInventory } from "@/lib/assetInventory";
 
@@ -14,13 +15,11 @@ export default async function AssetsPage() {
 
   return (
     <StudioShell>
-      <header className='studio-header'>
-        <div>
-          <p className='eyebrow'>Read-only production inputs</p>
-          <h1>Visual asset inventory</h1>
-        </div>
-        <span className='status-pill'>Tracked assets only</span>
-      </header>
+      <StudioPageHeader
+        badge='Tracked assets only'
+        eyebrow='Read-only production inputs'
+        title='Visual asset inventory'
+      />
       <AssetInventoryView inventory={inventory} />
     </StudioShell>
   );
