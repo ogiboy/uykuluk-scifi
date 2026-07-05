@@ -18,7 +18,7 @@ type AssetInventoryViewProps = Readonly<{
  */
 export function AssetInventoryView({ inventory }: AssetInventoryViewProps) {
   return (
-    <div className='asset-detail-grid'>
+    <div className='grid gap-4'>
       <section aria-labelledby='asset-overview-heading'>
         <Card>
           <CardHeader>
@@ -69,7 +69,7 @@ export function AssetInventoryView({ inventory }: AssetInventoryViewProps) {
         </Card>
       </section>
 
-      <section className='asset-categories' aria-label='Asset categories'>
+      <section className='grid gap-4 lg:grid-cols-2' aria-label='Asset categories'>
         {inventory.categories.map((category) => (
           <AssetCategoryCard category={category} key={category.id} />
         ))}
@@ -119,7 +119,7 @@ function AssetCategoryCard({ category }: Readonly<{ category: StudioAssetCategor
             ))}
           </ul>
         ) : null}
-        <ul className='asset-file-list'>
+        <ul className='grid max-h-44 list-disc gap-1 overflow-auto rounded-md border bg-muted/20 py-2 pl-6 pr-3 font-mono text-xs leading-relaxed text-muted-foreground'>
           {category.files.map((file, index) => (
             <li key={listKey(`${category.id}-file`, file, index)}>{file}</li>
           ))}
