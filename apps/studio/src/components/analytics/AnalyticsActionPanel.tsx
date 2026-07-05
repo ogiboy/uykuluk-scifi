@@ -87,8 +87,8 @@ export function AnalyticsActionPanel() {
           </CardDescription>
         </CardHeader>
         <CardContent className='grid gap-4'>
-          <form className='studio-form' onSubmit={submitImport}>
-            <label>
+          <form className='grid gap-3' onSubmit={submitImport}>
+            <label className='grid gap-1.5 text-sm text-muted-foreground'>
               Source file name
               <Input
                 maxLength={120}
@@ -98,7 +98,7 @@ export function AnalyticsActionPanel() {
                 onChange={(event) => setSourceFileName(event.target.value)}
               />
             </label>
-            <label>
+            <label className='grid gap-1.5 text-sm text-muted-foreground'>
               Format
               <Select value={format} onValueChange={(value) => setFormat(value as AnalyticsFormat)}>
                 <SelectTrigger aria-label='Analytics import format'>
@@ -112,7 +112,7 @@ export function AnalyticsActionPanel() {
                 </SelectContent>
               </Select>
             </label>
-            <label>
+            <label className='grid gap-1.5 text-sm text-muted-foreground'>
               Load local file into the browser
               <Input
                 accept='.csv,.json,text/csv,application/json'
@@ -120,7 +120,7 @@ export function AnalyticsActionPanel() {
                 onChange={loadSelectedFile}
               />
             </label>
-            <label>
+            <label className='grid gap-1.5 text-sm text-muted-foreground'>
               Analytics content
               <Textarea
                 className='resize-y'
@@ -132,7 +132,7 @@ export function AnalyticsActionPanel() {
                 onChange={(event) => setContent(event.target.value)}
               />
             </label>
-            <div className='analytics-action-buttons'>
+            <div className='flex flex-wrap gap-2'>
               <Button disabled={!ready} type='submit'>
                 {state.kind === "submitting" ? "Working..." : "Import analytics"}
               </Button>

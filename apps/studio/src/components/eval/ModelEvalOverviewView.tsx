@@ -16,7 +16,7 @@ type ModelEvalOverviewViewProps = Readonly<{
  */
 export function ModelEvalOverviewView({ overview }: ModelEvalOverviewViewProps) {
   return (
-    <div className='analytics-detail-grid'>
+    <div className='grid gap-4 lg:grid-cols-2'>
       <section aria-labelledby='model-eval-overview-heading'>
         <Card>
           <CardHeader>

@@ -17,7 +17,7 @@ type AnalyticsOverviewViewProps = Readonly<{
  */
 export function AnalyticsOverviewView({ overview }: AnalyticsOverviewViewProps) {
   return (
-    <div className='analytics-detail-grid'>
+    <div className='grid gap-4 lg:grid-cols-2'>
       <section aria-labelledby='analytics-overview-heading'>
         <Card>
           <CardHeader>

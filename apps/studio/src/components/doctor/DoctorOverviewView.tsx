@@ -21,7 +21,7 @@ type DoctorOverviewViewProps = Readonly<{
  */
 export function DoctorOverviewView({ overview }: DoctorOverviewViewProps) {
   return (
-    <div className='analytics-detail-grid'>
+    <div className='grid gap-4 lg:grid-cols-2'>
       <section aria-labelledby='doctor-overview-heading'>
         <Card>
           <CardHeader>
