@@ -317,11 +317,6 @@ h3 {
   gap: 12px;
 }
 
-.queue-list span {
-  color: var(--muted);
-  font-size: 12px;
-}
-
 .action-preflight {
   display: grid;
   gap: 12px;
@@ -370,118 +365,6 @@ h3 {
   color: var(--muted);
   font-size: 12px;
   line-height: 1.5;
-}
-
-.queue-list {
-  display: grid;
-  gap: 8px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.queue-list a {
-  display: grid;
-  gap: 4px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--studio-surface-inset);
-  padding: 10px;
-}
-
-.queue-list a:hover {
-  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
-}
-
-.home-action-queue-list {
-  display: grid;
-  gap: 8px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.home-action-queue-summary {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
-  gap: 8px;
-  margin: 0;
-}
-
-.home-action-queue-summary div {
-  display: grid;
-  gap: 3px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--studio-surface-inset);
-  padding: 9px;
-}
-
-.home-action-queue-summary div[data-tone="web"] {
-  border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
-}
-
-.home-action-queue-summary div[data-tone="blocked"] {
-  border-color: color-mix(in srgb, var(--danger) 45%, var(--line));
-}
-
-.home-action-queue-summary dt,
-.home-action-queue-summary small {
-  color: var(--muted);
-  font-size: 11px;
-  line-height: 1.35;
-}
-
-.home-action-queue-summary dd {
-  margin: 0;
-  font-size: 22px;
-  font-weight: 800;
-  line-height: 1;
-}
-
-.home-action-queue-item {
-  display: grid;
-  gap: 10px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--studio-surface-inset);
-  padding: 10px;
-}
-
-.home-action-queue-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-}
-
-.home-action-queue-controls .quick-stage-action-control {
-  display: block;
-  max-width: 100%;
-}
-
-.home-action-queue-controls .quick-stage-action-control > button {
-  max-width: 190px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.home-action-queue-copy {
-  display: grid;
-  gap: 4px;
-}
-
-.home-action-queue-copy span,
-.home-action-queue-copy small {
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.4;
-}
-
-.home-action-queue-open {
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 700;
 }
 
 .segmented-filter {
