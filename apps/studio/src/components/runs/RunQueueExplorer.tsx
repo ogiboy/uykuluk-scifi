@@ -30,35 +30,23 @@ import {
 } from "@/lib/runQueueWorkbench";
 import type { StudioRunSummary } from "@/lib/runSummaries";
 import type { StartIdeasReadinessSummary } from "@/lib/startIdeasReadiness";
-import { countStudioActionWorkbench } from "@/lib/studioActionWorkbench";
+import { countStudioActionWorkbench } from "@/lib/studioActionWorkbenchCounts";
 import { applyEnumSelectValue } from "@/lib/utils";
 import { StartIdeasActionPanel } from "../studio/StartIdeasActionPanel";
 import { maxBlockedActionSliderValue, RunQueueTunePopover } from "./RunQueueTunePopover";
+import {
+  defaultRunQueueDensity,
+  defaultRunQueueFilter,
+  defaultRunQueueSort,
+  filterLabels,
+  sortLabels,
+} from "./runQueueExplorerOptions";
 import { RunSummaryTable } from "./RunSummaryTable";
 
 type RunQueueExplorerProps = Readonly<{
   runs: readonly StudioRunSummary[];
   startIdeasReadiness?: StartIdeasReadinessSummary;
 }>;
-
-const filterLabels = {
-  all: "All",
-  attention: "Needs attention",
-  ready: "Ready evidence",
-  rendered: "Rendered",
-  decision: "Needs decision",
-} as const satisfies Record<RunQueueFilter, string>;
-
-const sortLabels = {
-  "blocked-first": "Blocked first",
-  "decision-first": "Review decision first",
-  "oldest-first": "Oldest first",
-  "updated-desc": "Newest first",
-} as const satisfies Record<RunQueueSort, string>;
-
-const defaultRunQueueFilter = "all" satisfies RunQueueFilter;
-const defaultRunQueueDensity = "comfortable" satisfies RunQueueDensity;
-const defaultRunQueueSort = "updated-desc" satisfies RunQueueSort;
 
 /**
  * Renders a filterable operator queue for persisted Studio runs.

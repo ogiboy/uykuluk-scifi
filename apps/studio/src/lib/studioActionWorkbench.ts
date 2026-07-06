@@ -26,14 +26,6 @@ export type StudioActionWorkbench = Readonly<{
   primary: StudioActionWorkbenchPrimary;
 }>;
 
-export type StudioActionWorkbenchCounts = Readonly<{
-  blockedCli: number;
-  cliOnly: number;
-  complete: number;
-  needsReview: number;
-  webAction: number;
-}>;
-
 export type StudioActionWorkbenchRun = Pick<
   StudioRunDetail,
   "blockedActionCount" | "nextRecommendedCommand" | "readinessStatus" | "runId" | "state"
@@ -63,42 +55,6 @@ export function buildStudioActionWorkbench(run: StudioActionWorkbenchRun): Studi
     boundaries: actionWorkbenchBoundaries(run.runId),
     primary: primaryWorkbenchAction(run),
   };
-}
-
-/**
- * Counts action-workbench categories for an operator queue projection.
- *
- * @param runs - Run summaries or details shown in the current queue.
- * @returns Counts for guarded web actions, blocked CLI recovery, CLI-only actions, review-needed states, and no-action states.
- */
-export function countStudioActionWorkbench(
-  runs: readonly StudioActionWorkbenchRun[],
-): StudioActionWorkbenchCounts {
-  return runs.reduce<StudioActionWorkbenchCounts>(
-    (counts, run) => {
-      const tone = buildStudioActionWorkbench(run).primary.tone;
-      if (tone === "available") {
-        return { ...counts, webAction: counts.webAction + 1 };
-      }
-      if (tone === "blocked") {
-        return { ...counts, blockedCli: counts.blockedCli + 1 };
-      }
-      if (tone === "attention") {
-        return { ...counts, needsReview: counts.needsReview + 1 };
-      }
-      if (tone === "cli-only") {
-        return { ...counts, cliOnly: counts.cliOnly + 1 };
-      }
-      return { ...counts, complete: counts.complete + 1 };
-    },
-    {
-      blockedCli: 0,
-      cliOnly: 0,
-      complete: 0,
-      needsReview: 0,
-      webAction: 0,
-    },
-  );
 }
 
 function primaryWorkbenchAction(run: StudioActionWorkbenchRun): StudioActionWorkbenchPrimary {

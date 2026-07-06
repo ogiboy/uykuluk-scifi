@@ -1,8 +1,8 @@
 import {
   countStudioActionWorkbench,
   type StudioActionWorkbenchCounts,
-  type StudioActionWorkbenchRun,
-} from "./studioActionWorkbench";
+} from "./studioActionWorkbenchCounts";
+import type { StudioActionWorkbenchRun } from "./studioActionWorkbench";
 
 export type HomeActionQueueSummaryKey = keyof StudioActionWorkbenchCounts;
 

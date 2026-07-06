@@ -257,16 +257,11 @@
   operator steps such as render-plan generation, cost estimation, local voiceover generation, render
   approval, local draft render, exact quote approval, and evidence refresh.
 - Disabled upload and publish placeholders.
-- Basic Next.js Producer Studio shell under `apps/studio` with read-only run index and run detail
-  routes backed by local run/evidence/readiness service contracts.
+- Basic Next.js Producer Studio shell under `apps/studio` with read-only run, idea-history, and
+  detail routes backed by local service contracts.
 - Visual asset pack imported under `assets/`.
-- Clean-copy usage smoke script.
-- Optional clean-copy product UAT smoke script via `pnpm qa:product`, covering rendered happy path,
-  traversal rejection, incorrect ordering, stale evidence recovery, tampered render review command
-  rejection, post-approval voiceover tamper blocking, disabled upload/publish safeguards, manual
-  analytics import/report malformed-input recovery, operator desk command/diagnostic visibility,
-  durable local render decisions, and Studio read-only service visibility for runs, production
-  media, analytics, and disabled mutation contracts.
+- Optional `pnpm qa:product` smoke covers happy path, tamper/order abuse, disabled upload/publish,
+  analytics recovery, render decisions, and Studio visibility.
 - Production build emits a Node-runnable `dist/cli.js` and `pnpm build:smoke` verifies the built CLI
   starts and can initialize a fresh project from an arbitrary working directory.
 - Direct mock/Ollama/llama.cpp provider diagnostics and upload/publish safeguard tests.

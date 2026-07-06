@@ -75,7 +75,8 @@ agent-tracking state only; runtime code must not require it.
   guarded render-decision and channel-handoff decision evidence writes, visual asset inventory,
   producer doctor diagnostics on the home page and `/doctor`, latest-run readiness visibility, local
   model evaluation summaries, manual analytics feedback summary on the home page, runtime prompt
-  inventory, mutation-service status, and manual analytics feedback routes.
+  inventory, read-only idea history/originality visibility, mutation-service status, and manual
+  analytics feedback routes.
 - Studio foundation with Tailwind CSS v4, shadcn-style primitives, Radix UI, lucide icons, GSAP, and
   `next/font`.
 - Mock-first provider layer with Ollama and local `llama.cpp` adapters.
@@ -453,6 +454,8 @@ Current Studio scope:
 - production desk shell;
 - read-only `/runs` index over persisted local run state with approval/warning/artifact counts,
   readiness/evidence status, stale or invalid artifact remediation, and next safe action visibility;
+- read-only `/ideas` page over persisted `runs/*/ideas.json` artifacts so operators can see which
+  generated and approved titles are hard-blocked from exact reuse;
 - `/runs/<run_id>` detail view with next action, readiness status, and review artifact availability
   plus approval ledger entries, warning lists, production media evidence details, shared v1 workflow
   progress, per-row review guidance, guarded idea/script/cost/render approval forms for eligible

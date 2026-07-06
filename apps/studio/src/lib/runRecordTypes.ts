@@ -4,6 +4,7 @@ export type StudioRunState = RunState;
 
 export type RunRecord = {
   approvals?: unknown[];
+  approvedIdeaId?: string;
   artifacts?: string[];
   createdAt?: string;
   runId?: string;

@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   buildStudioActionWorkbench,
-  countStudioActionWorkbench,
   type StudioActionWorkbenchRun,
 } from "../apps/studio/src/lib/studioActionWorkbench";
+import { countStudioActionWorkbench } from "../apps/studio/src/lib/studioActionWorkbenchCounts";
 
 describe("Studio action workbench", () => {
   it("surfaces guarded approval routes without weakening CLI/core enforcement", () => {

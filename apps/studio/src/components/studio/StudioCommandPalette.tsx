@@ -35,6 +35,11 @@ type StudioCommandPaletteProps = Readonly<{
 const navigationTargets = [
   { href: "/", label: "Studio home", keywords: "control desk current production queue" },
   { href: "/runs", label: "Runs", keywords: "queue review evidence readiness" },
+  {
+    href: "/ideas" as Route,
+    label: "Ideas",
+    keywords: "history originality generated approved titles",
+  },
   { href: "/doctor", label: "Doctor", keywords: "diagnostics config setup" },
   { href: "/eval", label: "Model eval", keywords: "local model llama ollama qwen" },
   { href: "/assets", label: "Assets", keywords: "brand render visuals inventory" },

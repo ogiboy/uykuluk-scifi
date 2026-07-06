@@ -7,6 +7,7 @@ import { getStudioAnalyticsOverview } from "@/lib/analyticsOverview";
 import { getStudioActionServiceStatus } from "@/lib/actionServiceStatus";
 import { getStudioAssetInventory } from "@/lib/assetInventory";
 import { getStudioDoctorOverview } from "@/lib/doctorOverview";
+import { getStudioIdeaHistoryOverview } from "@/lib/ideaHistoryOverview";
 import { getStudioModelEvalOverview } from "@/lib/modelEvalOverview";
 import { getStudioPromptInventory } from "@/lib/promptInventory";
 import { listStudioRuns } from "@/lib/runSummaries";
@@ -24,6 +25,7 @@ export default async function StudioHomePage() {
     analyticsOverview,
     assetInventory,
     doctorOverview,
+    ideaHistoryOverview,
     modelEvalOverview,
     promptInventory,
     runs,
@@ -31,6 +33,7 @@ export default async function StudioHomePage() {
     getStudioAnalyticsOverview(),
     getStudioAssetInventory(),
     getStudioDoctorOverview(),
+    getStudioIdeaHistoryOverview(),
     getStudioModelEvalOverview(),
     getStudioPromptInventory(),
     listStudioRuns(),
@@ -64,6 +67,7 @@ export default async function StudioHomePage() {
         analyticsOverview={analyticsOverview}
         assetInventory={assetInventory}
         doctorOverview={doctorOverview}
+        ideaHistoryOverview={ideaHistoryOverview}
         modelEvalOverview={modelEvalOverview}
         promptInventory={promptInventory}
         runs={runs}

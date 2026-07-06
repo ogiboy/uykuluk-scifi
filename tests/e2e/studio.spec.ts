@@ -16,6 +16,7 @@ test("studio shell renders operator surfaces", async ({ page }) => {
   ).toBeVisible();
   await expect(page.getByRole("heading", { name: "Home shortcuts" })).toBeVisible();
   await expect(page.getByRole("heading", { name: /focused operator pages/i })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Open ideas" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Open doctor" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Open analytics" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Open assets" })).toBeVisible();
@@ -53,6 +54,16 @@ test("studio exposes the read-only run index route", async ({ page }) => {
   await page.goto("/runs");
 
   await expect(page.getByRole("heading", { name: /producer runs/i })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Studio home" })).toBeVisible();
+});
+
+test("studio exposes the read-only idea history route", async ({ page }) => {
+  await page.goto("/ideas");
+
+  await expect(page.getByRole("heading", { name: /idea history/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /generated and approved titles/i })).toBeVisible();
+  await expect(page.getByText("Runtime idea history")).toBeVisible();
+  await expect(page.getByText("Generated + approved")).toBeVisible();
   await expect(page.getByRole("link", { name: "Studio home" })).toBeVisible();
 });
 

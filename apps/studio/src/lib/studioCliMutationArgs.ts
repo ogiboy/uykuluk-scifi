@@ -1,6 +1,3 @@
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import path from "node:path";
 import type { StudioMutationActionId } from "../../../../src/studio/actionServiceMetadata";
 import {
   parseAnalyticsImportPayload,
@@ -14,6 +11,7 @@ import {
   parseScriptApprovalPayload,
   parseScriptRevisionPayload,
 } from "./studioMutationPayloadContracts";
+import { writeTemporaryInputFile } from "./studioCliMutationTempFile";
 
 export const studioCliMutationActionIds = [
   "analytics.import",
@@ -255,21 +253,4 @@ function analyticsImportTempFileName(sourceFileName: string, format: "csv" | "js
   return sourceFileName.toLowerCase().endsWith(extension)
     ? sourceFileName
     : `${sourceFileName}${extension}`;
-}
-
-async function writeTemporaryInputFile(
-  content: string,
-  directoryPrefix: string,
-  fileName: string,
-): Promise<{
-  cleanup: () => Promise<void>;
-  filePath: string;
-}> {
-  const directory = await mkdtemp(path.join(tmpdir(), directoryPrefix));
-  const filePath = path.join(directory, fileName);
-  await writeFile(filePath, content, { encoding: "utf8", mode: 0o600 });
-  return {
-    cleanup: () => rm(directory, { force: true, recursive: true }),
-    filePath,
-  };
 }
