@@ -81,7 +81,7 @@ type StudioRouteBoundaryHeaderProps = Readonly<{
  */
 export function StudioRouteBoundaryHeader({ copy, headingId }: StudioRouteBoundaryHeaderProps) {
   return (
-    <header className='grid gap-4 border-b pb-6 sm:grid-cols-[1fr_auto] sm:items-start'>
+    <header className='grid gap-4 border-b border-border/40 pb-6 sm:grid-cols-[1fr_auto] sm:items-start'>
       <div className='space-y-2'>
         <p className='text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground'>
           {copy.eyebrow}
