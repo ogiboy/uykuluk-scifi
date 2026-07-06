@@ -1,6 +1,11 @@
 import Link from "next/link";
-import type { Route } from "next";
 import { CopyableCommand } from "@/components/studio/CopyableCommand";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,16 +14,13 @@ import {
   type StudioActionServiceStatus,
   type StudioActionServiceSummary,
 } from "@/lib/actionServiceStatus";
+import {
+  actionSurface,
+  serviceBoundaryCopy,
+  serviceContractGroups,
+} from "@/lib/serviceContractPanel";
 
-type ServiceContractPanelProps = Readonly<{
-  status?: StudioActionServiceStatus;
-}>;
-
-type ServiceContractGroup = Readonly<{
-  description: string;
-  summaries: readonly StudioActionServiceSummary[];
-  title: string;
-}>;
+type ServiceContractPanelProps = Readonly<{ status?: StudioActionServiceStatus }>;
 
 /**
  * Displays the Studio mutation service contract status panel.
@@ -86,61 +88,79 @@ export function ServiceContractPanel({
           </CardContent>
         </Card>
       ) : null}
-      <div className='mt-4 grid gap-6'>
+      <div className='mt-4 grid gap-4'>
         {groups.map((group) => (
-          <section className='space-y-3' key={group.title} aria-label={group.title}>
-            <div className='flex flex-wrap items-start justify-between gap-3'>
+          <Card key={group.title} aria-label={group.title}>
+            <CardHeader className='gap-3 sm:grid-cols-[minmax(0,1fr)_auto]'>
               <div className='space-y-1'>
-                <h3 className='text-lg font-semibold tracking-tight'>{group.title}</h3>
-                <p className='max-w-4xl text-sm text-muted-foreground'>{group.description}</p>
+                <CardTitle>{group.title}</CardTitle>
+                <CardDescription>{group.description}</CardDescription>
               </div>
-              <Badge variant='secondary'>{group.summaries.length}</Badge>
-            </div>
-            <div className='grid gap-4 lg:grid-cols-2'>
-              {group.summaries.map((summary) => (
-                <ServiceContractCard key={summary.actionId} summary={summary} />
-              ))}
-            </div>
-          </section>
+              <Badge className='justify-self-start sm:justify-self-end' variant='secondary'>
+                {group.summaries.length}
+              </Badge>
+            </CardHeader>
+            <CardContent>
+              <ServiceContractAccordion summaries={group.summaries} />
+            </CardContent>
+          </Card>
         ))}
       </div>
     </section>
   );
 }
 
-function ServiceContractCard({ summary }: Readonly<{ summary: StudioActionServiceSummary }>) {
+function ServiceContractAccordion({
+  summaries,
+}: Readonly<{ summaries: readonly StudioActionServiceSummary[] }>) {
   return (
-    <Card>
-      <CardHeader>
-        <div className='flex flex-wrap items-start justify-between gap-3'>
-          <div className='space-y-2'>
-            <CardTitle>{summary.actionId}</CardTitle>
-            <CardDescription>{summary.description}</CardDescription>
-          </div>
-          <Badge
-            variant={summary.availability === "disabled-external" ? "destructive" : "secondary"}
-          >
-            {summary.availability === "disabled-external" ? "disabled" : "guarded"}
-          </Badge>
+    <Accordion className='rounded-xl bg-muted/20 px-3' type='multiple'>
+      {summaries.map((summary) => (
+        <AccordionItem className='border-border/40' key={summary.actionId} value={summary.actionId}>
+          <AccordionTrigger className='hover:no-underline'>
+            <span className='grid min-w-0 gap-1'>
+              <span className='flex flex-wrap items-center gap-2'>
+                <span className='break-all font-semibold'>{summary.actionId}</span>
+                <Badge
+                  variant={
+                    summary.availability === "disabled-external" ? "destructive" : "secondary"
+                  }
+                >
+                  {summary.availability === "disabled-external" ? "disabled" : "guarded"}
+                </Badge>
+              </span>
+              <span className='text-sm font-normal text-muted-foreground'>
+                {summary.description}
+              </span>
+            </span>
+          </AccordionTrigger>
+          <AccordionContent>
+            <ServiceContractDetails summary={summary} />
+          </AccordionContent>
+        </AccordionItem>
+      ))}
+    </Accordion>
+  );
+}
+
+function ServiceContractDetails({ summary }: Readonly<{ summary: StudioActionServiceSummary }>) {
+  return (
+    <div className='grid gap-3 rounded-xl bg-background/70 p-3'>
+      <ActionRouteControl summary={summary} />
+      <CopyableCommand command={summary.cliCommand} label={`${summary.actionId} command`} />
+      <dl className='grid gap-2 text-sm text-muted-foreground sm:grid-cols-2'>
+        <div className='space-y-1 rounded-lg bg-muted/40 p-3'>
+          <dt className='font-medium text-foreground'>Route</dt>
+          <dd>
+            <code className='break-all text-xs text-foreground'>{summary.routePath}</code>
+          </dd>
         </div>
-      </CardHeader>
-      <CardContent className='space-y-3'>
-        <ActionRouteControl summary={summary} />
-        <CopyableCommand command={summary.cliCommand} label={`${summary.actionId} command`} />
-        <dl className='grid gap-2 text-sm text-muted-foreground sm:grid-cols-2'>
-          <div className='space-y-1 rounded-md border bg-muted/20 p-3'>
-            <dt className='font-medium text-foreground'>Route</dt>
-            <dd>
-              <code className='break-all text-xs text-foreground'>{summary.routePath}</code>
-            </dd>
-          </div>
-          <div className='space-y-1 rounded-md border bg-muted/20 p-3'>
-            <dt className='font-medium text-foreground'>Boundary</dt>
-            <dd>{serviceBoundaryCopy(summary)}</dd>
-          </div>
-        </dl>
-      </CardContent>
-    </Card>
+        <div className='space-y-1 rounded-lg bg-muted/40 p-3'>
+          <dt className='font-medium text-foreground'>Boundary</dt>
+          <dd>{serviceBoundaryCopy(summary)}</dd>
+        </div>
+      </dl>
+    </div>
   );
 }
 
@@ -161,24 +181,6 @@ function ActionRouteControl({ summary }: Readonly<{ summary: StudioActionService
       Web execution is disabled for this action.
     </p>
   );
-}
-
-type ActionSurface = Readonly<{
-  href: Route;
-  label: string;
-}>;
-
-function actionSurface(actionId: string): ActionSurface {
-  if (actionId.startsWith("analytics.")) {
-    return { href: "/analytics" as Route, label: "Open analytics surface" };
-  }
-  if (actionId === "doctor.run") {
-    return { href: "/doctor" as Route, label: "Open doctor surface" };
-  }
-  if (actionId === "ideas.run") {
-    return { href: "/" as Route, label: "Open start-run surface" };
-  }
-  return { href: "/runs" as Route, label: "Open run queue" };
 }
 
 type ServiceMetricCardProps = Readonly<{
@@ -206,35 +208,4 @@ function ServiceMetricCard({ detail, label, tone = "neutral", value }: ServiceMe
       </CardContent>
     </Card>
   );
-}
-
-function serviceContractGroups(
-  summaries: readonly StudioActionServiceSummary[],
-): readonly ServiceContractGroup[] {
-  const guarded = summaries.filter((summary) => summary.availability === "ready-for-cli");
-  const disabled = summaries.filter((summary) => summary.availability === "disabled-external");
-  return [
-    {
-      description:
-        "These routes are local-only POST actions backed by typed CLI/core contracts and route security.",
-      summaries: guarded,
-      title: "Guarded local actions",
-    },
-    {
-      description:
-        "These public or external-risk actions remain unavailable from Studio until future config, approval, and evidence contracts exist.",
-      summaries: disabled,
-      title: "Disabled external actions",
-    },
-  ];
-}
-
-function serviceBoundaryCopy(summary: StudioActionServiceSummary): string {
-  if (summary.availability === "disabled-external") {
-    return "No Studio route executes this action; upload and publish stay blocked.";
-  }
-  if (summary.routePath === "unrouted") {
-    return "Contract exists, but no guarded route is currently exposed.";
-  }
-  return "Same-origin JSON, Studio action header, local session proof, and CLI/core gates required.";
 }
