@@ -60,7 +60,7 @@ function PromptInventoryCard({ prompt }: Readonly<{ prompt: StudioPromptEntry }>
           <PromptFact label='Hash' value={shortHash(prompt.selectedHash ?? prompt.defaultHash)} />
         </dl>
         <p className='text-sm text-muted-foreground'>{prompt.message}</p>
-        <p className='rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-900 dark:text-amber-100'>
+        <p className='rounded-xl bg-amber-500/10 p-3 text-sm text-amber-900 ring-1 ring-amber-500/20 dark:text-amber-100'>
           {prompt.nextAction}
         </p>
       </CardContent>
@@ -70,7 +70,7 @@ function PromptInventoryCard({ prompt }: Readonly<{ prompt: StudioPromptEntry }>
 
 function PromptFact({ label, value }: Readonly<{ label: string; value: string }>) {
   return (
-    <div className='min-w-0 space-y-1 rounded-lg border bg-muted/20 p-3'>
+    <div className='min-w-0 space-y-1 rounded-xl bg-muted/25 p-3'>
       <dt className='text-xs font-medium text-muted-foreground'>{label}</dt>
       <dd className='break-all font-semibold'>{value}</dd>
     </div>

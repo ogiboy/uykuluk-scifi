@@ -72,10 +72,7 @@ function RunArtifactReviewActionCard({
   }
 
   return (
-    <Card
-      aria-labelledby={`${action.actionId}-heading`}
-      className='border-dashed border-sky-500/30 bg-sky-500/5'
-    >
+    <Card aria-labelledby={`${action.actionId}-heading`} className='border-sky-500/20 bg-sky-500/5'>
       <CardHeader>
         <CardDescription>{action.eyebrow}</CardDescription>
         <CardTitle>
@@ -89,7 +86,7 @@ function RunArtifactReviewActionCard({
           upload, schedule, or publish.
         </p>
         <StudioMutationResultPanel state={state} />
-        <p className='rounded-md border bg-background px-3 py-2 font-mono text-xs text-foreground'>
+        <p className='rounded-lg bg-background/70 px-3 py-2 font-mono text-xs text-foreground ring-1 ring-border/20'>
           CLI equivalent: {action.command}
         </p>
       </CardContent>

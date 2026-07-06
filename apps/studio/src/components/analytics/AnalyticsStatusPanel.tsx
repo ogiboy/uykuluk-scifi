@@ -42,7 +42,7 @@ export function AnalyticsStatusPanel({ overview }: AnalyticsStatusPanelProps) {
           <p className='text-sm text-muted-foreground'>
             {overview.dataQuality.nextDataQualityAction}
           </p>
-          <div className='space-y-3 rounded-lg border bg-muted/20 p-3'>
+          <div className='space-y-3 rounded-xl bg-muted/25 p-3'>
             <strong className='text-sm'>Next safe action</strong>
             <CopyableCommand command={overview.nextCommand} label='Analytics command' />
           </div>

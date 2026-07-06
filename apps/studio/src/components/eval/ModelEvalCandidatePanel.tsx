@@ -37,7 +37,7 @@ export function ModelEvalCandidatePanel({ candidateReport }: ModelEvalCandidateP
                 {candidateReport.recommendedCandidate?.configuredModel ?? "none yet"}
               </p>
               {candidateReport.operatorGuidance ? (
-                <div className='grid gap-3 rounded-lg border bg-muted/20 p-3'>
+                <div className='grid gap-3 rounded-xl bg-muted/25 p-3'>
                   <p className='text-sm text-muted-foreground'>
                     {candidateReport.operatorGuidance.message}
                   </p>
@@ -50,7 +50,7 @@ export function ModelEvalCandidatePanel({ candidateReport }: ModelEvalCandidateP
               <ul className='grid gap-3'>
                 {candidateReport.candidates.map((candidate, index) => (
                   <li
-                    className='grid min-w-0 gap-3 rounded-lg border bg-muted/20 p-3'
+                    className='grid min-w-0 gap-3 rounded-xl bg-muted/25 p-3'
                     key={`${candidate.configuredModel}-${index}`}
                   >
                     <div className='grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start'>
@@ -92,7 +92,7 @@ export function ModelEvalCheckList({ checks, ownerId }: ModelEvalCheckListProps)
     <ul className='grid gap-3'>
       {checks.map((check) => (
         <li
-          className='grid min-w-0 gap-3 rounded-lg border bg-muted/20 p-3'
+          className='grid min-w-0 gap-3 rounded-xl bg-muted/25 p-3'
           key={`${ownerId}-${check.name}`}
         >
           <div className='grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start'>

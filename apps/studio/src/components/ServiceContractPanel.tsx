@@ -56,7 +56,7 @@ export function ServiceContractPanel({
         />
       </div>
       {status.findings.length > 0 ? (
-        <Card className='mt-4 border-destructive/40 bg-destructive/10'>
+        <Card className='mt-4 border-destructive/25 bg-destructive/10'>
           <CardHeader>
             <CardTitle>Route security findings</CardTitle>
             <CardDescription>
@@ -66,7 +66,10 @@ export function ServiceContractPanel({
           <CardContent>
             <ul className='grid gap-2 text-sm text-muted-foreground'>
               {status.findings.map((finding, index) => (
-                <li className='rounded-md border bg-card px-3 py-2' key={`${index}-${finding}`}>
+                <li
+                  className='rounded-lg bg-card/70 px-3 py-2 ring-1 ring-destructive/20'
+                  key={`${index}-${finding}`}
+                >
                   {finding}
                 </li>
               ))}

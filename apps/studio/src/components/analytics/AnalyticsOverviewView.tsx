@@ -121,7 +121,7 @@ export function AnalyticsOverviewView({ overview }: AnalyticsOverviewViewProps) 
             {overview.topVideos.length > 0 ? (
               <ul className='grid gap-3'>
                 {overview.topVideos.map((video) => (
-                  <li className='grid gap-3 rounded-lg border bg-muted/20 p-3' key={video.videoId}>
+                  <li className='grid gap-3 rounded-xl bg-muted/25 p-3' key={video.videoId}>
                     <div className='grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start'>
                       <div className='min-w-0 space-y-1'>
                         <strong>{video.title}</strong>
