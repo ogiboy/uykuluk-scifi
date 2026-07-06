@@ -29,13 +29,16 @@ import {
   runQueueSortValues,
 } from "@/lib/runQueueWorkbench";
 import type { StudioRunSummary } from "@/lib/runSummaries";
+import type { StartIdeasReadinessSummary } from "@/lib/startIdeasReadiness";
 import { countStudioActionWorkbench } from "@/lib/studioActionWorkbench";
 import { applyEnumSelectValue } from "@/lib/utils";
+import { StartIdeasActionPanel } from "../studio/StartIdeasActionPanel";
 import { maxBlockedActionSliderValue, RunQueueTunePopover } from "./RunQueueTunePopover";
 import { RunSummaryTable } from "./RunSummaryTable";
 
 type RunQueueExplorerProps = Readonly<{
   runs: readonly StudioRunSummary[];
+  startIdeasReadiness?: StartIdeasReadinessSummary;
 }>;
 
 const filterLabels = {
@@ -61,9 +64,10 @@ const defaultRunQueueSort = "updated-desc" satisfies RunQueueSort;
  * Renders a filterable operator queue for persisted Studio runs.
  *
  * @param runs - Persisted local run summaries, newest first.
+ * @param startIdeasReadiness - Optional doctor-derived context for the first-run web action.
  * @returns The interactive run queue explorer.
  */
-export function RunQueueExplorer({ runs }: RunQueueExplorerProps) {
+export function RunQueueExplorer({ runs, startIdeasReadiness }: RunQueueExplorerProps) {
   const highestBlockedActionCount = Math.max(
     0,
     ...runs.map((run) => Math.min(run.blockedActionCount, maxBlockedActionSliderValue)),
@@ -95,6 +99,14 @@ export function RunQueueExplorer({ runs }: RunQueueExplorerProps) {
     query.trim() !== "" ||
     sort !== defaultRunQueueSort;
   const emptyState = runQueueEmptyState(runs.length, matchingRuns.length, filteredRuns.length);
+  const emptyAction =
+    runs.length === 0 && startIdeasReadiness ? (
+      <StartIdeasActionPanel
+        buttonLabel='Start idea run'
+        description='Create the first local idea run from Studio while CLI/core keeps provider, budget, and parser guards authoritative.'
+        readiness={startIdeasReadiness}
+      />
+    ) : null;
 
   function resetQueueView() {
     setDensity(defaultRunQueueDensity);
@@ -199,7 +211,12 @@ export function RunQueueExplorer({ runs }: RunQueueExplorerProps) {
           </p>
         </CardContent>
       </Card>
-      <RunSummaryTable density={density} emptyState={emptyState} runs={filteredRuns} />
+      <RunSummaryTable
+        density={density}
+        emptyAction={emptyAction}
+        emptyState={emptyState}
+        runs={filteredRuns}
+      />
     </section>
   );
 }

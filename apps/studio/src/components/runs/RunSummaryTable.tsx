@@ -21,7 +21,7 @@ import {
   type SortingState,
   type VisibilityState,
 } from "@tanstack/react-table";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { runColumnClassName, runSummaryColumns } from "./RunSummaryTableColumns";
 import {
   ColumnVisibilityMenu,
@@ -32,6 +32,7 @@ import {
 
 type RunSummaryTableProps = Readonly<{
   density?: RunQueueDensity;
+  emptyAction?: ReactNode;
   emptyState?: Readonly<{
     heading: string;
     message: string;
@@ -58,6 +59,7 @@ const initialPagination = {
  */
 export function RunSummaryTable({
   density = "comfortable",
+  emptyAction,
   emptyState = {
     heading: "No runs yet",
     message: "Use the Start idea run control to create the first local production run.",
@@ -108,6 +110,7 @@ export function RunSummaryTable({
             <CardTitle id='runs-empty-heading'>{emptyState.heading}</CardTitle>
             <CardDescription>{emptyState.message}</CardDescription>
           </CardHeader>
+          {emptyAction ? <CardContent>{emptyAction}</CardContent> : null}
         </Card>
       </section>
     );

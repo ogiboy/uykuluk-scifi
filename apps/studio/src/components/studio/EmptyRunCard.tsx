@@ -1,7 +1,5 @@
-import { CopyableCommand } from "./CopyableCommand";
 import { StartIdeasActionPanel } from "./StartIdeasActionPanel";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { NO_RUNS_NEXT_COMMAND } from "@/lib/runSummaryCopy";
 import type { StartIdeasReadinessSummary } from "@/lib/startIdeasReadiness";
 
 type EmptyRunCardProps = Readonly<{
@@ -24,11 +22,7 @@ export function EmptyRunCard({ readiness }: EmptyRunCardProps) {
           readiness, and guarded approval actions once CLI/core creates the run.
         </CardDescription>
       </CardHeader>
-      <CardContent className='space-y-5'>
-        <div className='grid gap-2 rounded-lg border bg-muted/20 p-4'>
-          <strong className='text-sm'>Next safe action</strong>
-          <CopyableCommand command={NO_RUNS_NEXT_COMMAND} label='Next safe action' />
-        </div>
+      <CardContent>
         <StartIdeasActionPanel readiness={readiness} />
       </CardContent>
     </Card>
