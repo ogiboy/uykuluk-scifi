@@ -5,6 +5,22 @@ import {
 } from "../apps/studio/src/lib/runPrimaryAction";
 
 describe("Studio run primary action", () => {
+  it("promotes a new ideas run to the guarded web action", () => {
+    const action = buildStudioRunPrimaryAction(
+      runPrimaryActionFixture({
+        nextRecommendedCommand: "pnpm producer ideas",
+        state: "NEW",
+      }),
+    );
+
+    expect(action).toMatchObject({
+      label: "Start Ideas Run",
+      mode: "stage",
+      routePath: "/actions/run-ideas",
+      tone: "available",
+    });
+  });
+
   it("promotes no-extra-input stage actions to inline web controls", () => {
     const action = buildStudioRunPrimaryAction(
       runPrimaryActionFixture({

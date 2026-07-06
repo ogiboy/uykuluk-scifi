@@ -39,7 +39,7 @@ export function useStudioStageActionSubmit(
     setConfirmationOpen(false);
     await submit({
       actionId: action.actionId,
-      body: { runId: run.runId },
+      body: action.requiresRunId ? { runId: run.runId } : {},
       errorToastTitle: messages.errorToastTitle,
       fallbackError: messages.fallbackError,
       routePath: action.routePath,
