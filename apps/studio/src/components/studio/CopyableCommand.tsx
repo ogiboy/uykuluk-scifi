@@ -30,7 +30,7 @@ export function CopyableCommand({ command, label = "Command" }: CopyableCommandP
   }
 
   return (
-    <div className='grid gap-2 rounded-lg border bg-background p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center'>
+    <div className='grid gap-2 rounded-lg bg-background/70 p-3 ring-1 ring-border/10 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center'>
       <code className='min-w-0 break-all font-mono text-xs text-foreground'>{command}</code>
       <Tooltip>
         <TooltipTrigger asChild>

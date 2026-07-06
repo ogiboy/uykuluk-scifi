@@ -65,11 +65,11 @@ function LatestRunSummary({ latestRun }: Readonly<{ latestRun: StudioRunSummary 
       <p className='text-sm text-muted-foreground'>{formatRunReviewCounts(latestRun)}</p>
       <p className='text-sm'>{latestRun.readinessMessage}</p>
       {latestRun.readinessNextAction ? (
-        <p className='rounded-lg border bg-muted/20 p-3 text-sm text-muted-foreground'>
+        <p className='rounded-lg bg-muted/20 p-3 text-sm text-muted-foreground ring-1 ring-border/10'>
           Readiness action: {latestRun.readinessNextAction}
         </p>
       ) : null}
-      <div className='space-y-3 rounded-lg border bg-muted/20 p-3'>
+      <div className='space-y-3 rounded-lg bg-muted/20 p-3 ring-1 ring-border/10'>
         <strong className='text-sm'>Next safe action</strong>
         <CopyableCommand command={getNextSafeCommand(latestRun)} label='Next safe action' />
       </div>
@@ -84,7 +84,7 @@ function NoRunsSummary() {
   return (
     <>
       <MetricGrid metrics={[{ label: "Runs", value: "0" }]} />
-      <div className='space-y-3 rounded-lg border bg-muted/20 p-3'>
+      <div className='space-y-3 rounded-lg bg-muted/20 p-3 ring-1 ring-border/10'>
         <strong className='text-sm'>Next safe action</strong>
         <CopyableCommand command={NO_RUNS_NEXT_COMMAND} label='Next safe action' />
       </div>

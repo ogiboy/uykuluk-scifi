@@ -53,20 +53,20 @@ export function StudioLastMutationNotice() {
         <CardContent className='space-y-4'>
           <p className='text-sm'>{result.message}</p>
           <dl className='grid gap-3 text-sm sm:grid-cols-2'>
-            <div className='space-y-1 rounded-lg border bg-muted/20 p-3'>
+            <div className='space-y-1 rounded-lg bg-muted/20 p-3 ring-1 ring-border/10'>
               <dt className='font-medium text-muted-foreground'>Action</dt>
               <dd className='break-all'>{result.actionId}</dd>
             </div>
-            <div className='space-y-1 rounded-lg border bg-muted/20 p-3'>
+            <div className='space-y-1 rounded-lg bg-muted/20 p-3 ring-1 ring-border/10'>
               <dt className='font-medium text-muted-foreground'>Route</dt>
               <dd className='break-all'>{result.routePath}</dd>
             </div>
-            <div className='space-y-1 rounded-lg border bg-muted/20 p-3'>
+            <div className='space-y-1 rounded-lg bg-muted/20 p-3 ring-1 ring-border/10'>
               <dt className='font-medium text-muted-foreground'>Refresh</dt>
               <dd>{result.refreshedPersistedState ? "Requested" : "Not requested"}</dd>
             </div>
             {result.status ? (
-              <div className='space-y-1 rounded-lg border bg-muted/20 p-3'>
+              <div className='space-y-1 rounded-lg bg-muted/20 p-3 ring-1 ring-border/10'>
                 <dt className='font-medium text-muted-foreground'>HTTP</dt>
                 <dd>{result.status}</dd>
               </div>
@@ -83,7 +83,7 @@ export function StudioLastMutationNotice() {
           {result.facts.length > 0 ? (
             <ul className='grid gap-2 text-sm' aria-label='Latest action facts'>
               {result.facts.map((fact) => (
-                <li className='rounded-md border bg-muted/20 px-3 py-2' key={fact}>
+                <li className='rounded-md bg-muted/20 px-3 py-2 ring-1 ring-border/10' key={fact}>
                   {fact}
                 </li>
               ))}

@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Route } from "next";
 import { RunQuickStageActionButton } from "@/components/runs/RunQuickStageActionButton";
 import { CopyableCommand } from "@/components/studio/CopyableCommand";
+import { StartIdeasActionPanel } from "@/components/studio/StartIdeasActionPanel";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -96,9 +97,16 @@ function EmptyOperatorBrief({
           </div>
           <Badge variant='secondary'>{startIdeasReadiness.label}</Badge>
         </CardHeader>
-        <CardContent className='grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end'>
-          <div className='space-y-2'>
-            <p className='text-sm text-muted-foreground'>{startIdeasReadiness.detail}</p>
+        <CardContent className='grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,24rem)] lg:items-start'>
+          <StartIdeasActionPanel
+            buttonLabel='Start first idea run'
+            description='Create the first local idea run through the guarded Studio route. CLI/core still checks provider, budget, parser, and workflow gates before writing artifacts.'
+            readiness={startIdeasReadiness}
+          />
+          <div className='space-y-2 rounded-xl bg-background/50 p-3'>
+            <p className='text-xs font-medium uppercase tracking-wide text-muted-foreground'>
+              CLI fallback
+            </p>
             <CopyableCommand command={NO_RUNS_NEXT_COMMAND} label='First run command' />
           </div>
         </CardContent>

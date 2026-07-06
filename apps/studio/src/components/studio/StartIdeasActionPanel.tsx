@@ -116,7 +116,7 @@ function StartIdeasReadinessNotice({
 }: Readonly<{ readiness: StartIdeasReadinessSummary }>) {
   return (
     <div
-      className='grid gap-2 rounded-lg border bg-muted/20 p-3 text-sm'
+      className='grid gap-2 rounded-lg bg-muted/20 p-3 text-sm ring-1 ring-border/10'
       data-tone={readiness.tone}
     >
       <div className='flex flex-wrap items-center gap-2'>
