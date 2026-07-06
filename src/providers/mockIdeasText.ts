@@ -11,8 +11,15 @@ type MockIdea = {
   fit: string;
 };
 
-export function generateMockIdeasText(): string {
-  return JSON.stringify({ ideas: mockIdeas() });
+export function generateMockIdeasText(variant = 0): string {
+  return JSON.stringify({ ideas: mockIdeas(variant) });
+}
+
+export function generateHistoryAwareMockIdeasText(prompt: string, model: string): string {
+  if (model === "mock-repeat-history-ideas") {
+    return generateMockIdeasText();
+  }
+  return generateMockIdeasText(nextMockIdeaVariant(prompt));
 }
 
 export function generateInvalidDuplicateIdeasText(): string {
@@ -78,11 +85,12 @@ export function generateInvalidRepeatedPremiseFrameIdeasText(): string {
   });
 }
 
-function mockIdeas(): MockIdea[] {
+function mockIdeas(variant: number): MockIdea[] {
+  const title = (value: string) => titleWithVariant(value, variant);
   return [
     {
       id: "idea_001",
-      title: "Derin Buzun Altındaki Nabız",
+      title: title("Derin Buzun Altındaki Nabız"),
       premise:
         "Buz kabuğunun altındaki okyanusta ölçülen yavaş titreşimler, yaşam kanıtı olmadan da merak uyandıran bir keşfe dönüşür.",
       targetDuration: "8-10 dakika",
@@ -93,7 +101,7 @@ function mockIdeas(): MockIdea[] {
     },
     {
       id: "idea_002",
-      title: "Titan Arşivindeki Yağmur",
+      title: title("Titan Arşivindeki Yağmur"),
       premise:
         "Metan yağmurlarıyla dolu uzak bir dünyada eski bir sonda, iklim döngülerini yanlış yorumlamadan kayda alır.",
       targetDuration: "9-11 dakika",
@@ -104,7 +112,7 @@ function mockIdeas(): MockIdea[] {
     },
     {
       id: "idea_003",
-      title: "Mars Tozundaki Eski Sinyal",
+      title: title("Mars Tozundaki Eski Sinyal"),
       premise:
         "Terk edilmiş bir habitatın kayıtlarında bulunan ritim, önce cihaz hatası olarak incelenir, sonra dikkatli bir öykü kapısı aralar.",
       targetDuration: "8-10 dakika",
@@ -115,7 +123,7 @@ function mockIdeas(): MockIdea[] {
     },
     {
       id: "idea_004",
-      title: "Neptün Gölgesinde Yavaş Saat",
+      title: title("Neptün Gölgesinde Yavaş Saat"),
       premise:
         "Bir araştırma istasyonu, zaman ölçümlerindeki küçük sapmaları felaket değil, ölçüm sınırı ve olasılık olarak ele alır.",
       targetDuration: "10-12 dakika",
@@ -126,7 +134,7 @@ function mockIdeas(): MockIdea[] {
     },
     {
       id: "idea_005",
-      title: "Ay Tozunda Saklı Laboratuvar",
+      title: title("Ay Tozunda Saklı Laboratuvar"),
       premise:
         "Ay yüzeyindeki eski bir deney düzeneği, insan hatası ile beklenmedik veri arasındaki ince çizgiyi gösterir.",
       targetDuration: "7-9 dakika",
@@ -137,7 +145,7 @@ function mockIdeas(): MockIdea[] {
     },
     {
       id: "idea_006",
-      title: "Venüs Bulutlarında Kayıp Ölçüm",
+      title: title("Venüs Bulutlarında Kayıp Ölçüm"),
       premise:
         "Kalın atmosferde kaybolan bir balon sondası, yaşam iddiası yerine kimya ve basınç hakkında temkinli sorular bırakır.",
       targetDuration: "9-11 dakika",
@@ -148,7 +156,7 @@ function mockIdeas(): MockIdea[] {
     },
     {
       id: "idea_007",
-      title: "Kuyruklu Taştaki Kırık Harita",
+      title: title("Kuyruklu Taştaki Kırık Harita"),
       premise:
         "Bir kuyruklu taşın yüzeyindeki çatlak desenleri, harita gibi görünse de önce doğal süreçlerle açıklanmaya çalışılır.",
       targetDuration: "8-10 dakika",
@@ -159,7 +167,7 @@ function mockIdeas(): MockIdea[] {
     },
     {
       id: "idea_008",
-      title: "Satürn Halkasında Sessiz Deney",
+      title: title("Satürn Halkasında Sessiz Deney"),
       premise:
         "Halka parçacıkları arasına bırakılan küçük bir ölçüm cihazı, evrenin düzenini sakin verilerle düşündürür.",
       targetDuration: "8-10 dakika",
@@ -169,4 +177,17 @@ function mockIdeas(): MockIdea[] {
       fit: "UykulukSciFi için görsel ritim, bilimsel merak ve yavaş anlatı dengesini korur.",
     },
   ];
+}
+
+function nextMockIdeaVariant(prompt: string): number {
+  let highestSeenVariant = 0;
+  const titlePattern = /Derin Buzun Altındaki Nabız(?: (?<variant>\d+))?/gu;
+  for (const match of prompt.matchAll(titlePattern)) {
+    highestSeenVariant = Math.max(highestSeenVariant, Number(match.groups?.variant ?? "1"));
+  }
+  return highestSeenVariant;
+}
+
+function titleWithVariant(title: string, variant: number): string {
+  return variant > 0 ? `${title} ${variant + 1}` : title;
 }

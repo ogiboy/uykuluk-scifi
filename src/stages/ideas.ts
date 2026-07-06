@@ -12,6 +12,13 @@ import type { GenerateTextResult, LlmProvider } from "../providers/llmProvider.j
 import { createPromptProvenance } from "../prompts/provenance.js";
 import { renderIdeasPrompt, type RenderedPrompt } from "../prompts/templates.js";
 import { persistIdeaGenerationFailure } from "./ideaFailureDiagnostics.js";
+import {
+  historicalIdeaTitleIssue,
+  ideaHistoryEvidence,
+  ideaHistoryPromptBlock,
+  readIdeaHistory,
+  type IdeaHistoryEntry,
+} from "./ideaHistory.js";
 import { ideasValidationSummary, renderIdeaRepairPrompt } from "./ideaRepairPrompt.js";
 import { parseIdeasProviderPayload } from "./providerPayloads.js";
 import { ideasResponseFormat } from "./providerResponseFormats.js";
@@ -63,9 +70,12 @@ export async function runIdeas(): Promise<{ runId: string; ideas: VideoIdea[] }>
       estimatedUsd,
       recordCostEvent: false,
     });
-    const prompt = await renderIdeasPrompt();
+    const ideaHistory = await readIdeaHistory({ excludeRunId: run.runId });
+    const promptContext = ideaHistoryPromptBlock(ideaHistory);
+    const prompt = await renderIdeasPrompt(promptContext ? [promptContext] : []);
     const generation = await generateIdeasWithRepair({
       config,
+      ideaHistory,
       prompt,
       provider,
       runId: run.runId,
@@ -82,6 +92,7 @@ export async function runIdeas(): Promise<{ runId: string; ideas: VideoIdea[] }>
       durationMs: generation.result.durationMs,
     });
     run = await writeRunJson(run, "ideas", "ideas.json", {
+      history: ideaHistoryEvidence(ideaHistory),
       ideas: generation.ideas,
       prompt: createPromptProvenance(prompt.key, prompt.text, "ideas.json", prompt.source),
       repair: repairEvidenceWithPrompt(prompt.key, generation),
@@ -103,6 +114,7 @@ export async function runIdeas(): Promise<{ runId: string; ideas: VideoIdea[] }>
 
 async function generateIdeasWithRepair(input: {
   config: ProducerConfig;
+  ideaHistory: readonly IdeaHistoryEntry[];
   prompt: RenderedPrompt;
   provider: LlmProvider;
   runId: string;
@@ -114,8 +126,13 @@ async function generateIdeasWithRepair(input: {
     const result = await requestIdeas(input.provider, input.config, promptText);
     results.push(result);
     try {
+      const ideas = parseIdeasProviderPayload(result.text);
+      const historyIssue = historicalIdeaTitleIssue(ideas, input.ideaHistory);
+      if (historyIssue) {
+        throw new SafeExitError(`Invalid ideas provider response: ${historyIssue}`);
+      }
       return {
-        ideas: parseIdeasProviderPayload(result.text),
+        ideas,
         repairPromptText: validationErrors.length ? promptText : undefined,
         repair: repairEvidence(validationErrors),
         result: combineProviderResults(results),

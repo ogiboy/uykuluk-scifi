@@ -226,6 +226,10 @@ agent-tracking state only; runtime code must not require it.
 - Idea slate validation rejects repeated local-model boilerplate in `fit` explanations, uncertainty
   openers, unknown-species phrases, weak premise action frames, English scientific leftovers, and
   repeated weak inspection/clue verbs before ideas can reach operator approval.
+- Idea generation reads title-only history from previous runtime `ideas.json` artifacts and appends
+  a compact originality context to the planner prompt. Reusing a previously generated or approved
+  title is treated as an invalid provider response, so the stage repairs or fails closed without
+  writing a fresh idea artifact.
 - Idea, script, and production-package generation re-check existing per-video, daily, and weekly
   budgets, using the stage pricing estimate, before calling a provider or writing generated
   artifacts.
@@ -729,12 +733,13 @@ review artifact.
 into bounded hook, context, development, and outro sections. Each section is drafted once and then
 expanded through three smaller bounded JSON chunks so local models can finish valid payloads. The
 run persists draft/expansion receipts before it can advance. If a local model returns malformed
-JSON, English operator-facing text, duplicate/boilerplate ideas, or an incomplete script section,
-the stage fails closed before writing the next review artifact; provider failure diagnostics are
-persisted under the run when safe to record. Repeated sentence or label blockers get bounded
-raw-output-free repair retries, and a later successful script run clears stale failure diagnostics
-before advancing. `producer status` and the read-only Studio run detail surface safe idea/script
-failure diagnostic summaries so the next blocker is visible without opening JSON artifacts by hand.
+JSON, English operator-facing text, duplicate/boilerplate ideas, a title already present in previous
+runtime idea history, or an incomplete script section, the stage fails closed before writing the
+next review artifact; provider failure diagnostics are persisted under the run when safe to record.
+Repeated sentence, historical-title, or label blockers get bounded raw-output-free repair retries,
+and a later successful script run clears stale failure diagnostics before advancing.
+`producer status` and the read-only Studio run detail surface safe idea/script failure diagnostic
+summaries so the next blocker is visible without opening JSON artifacts by hand.
 
 `producer eval local-model` is a lightweight manual bake-off surface for local model candidates. It
 does not create a run, advance workflow state, or edit config; it calls only the configured local

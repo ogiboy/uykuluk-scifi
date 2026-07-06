@@ -14,10 +14,11 @@ export type RenderedPrompt = {
 /**
  * Renders the ideas prompt template.
  *
+ * @param context - Optional compact runtime context to append after the planner template.
  * @returns A `RenderedPrompt` containing the ideas prompt.
  */
-export async function renderIdeasPrompt(): Promise<RenderedPrompt> {
-  return renderDefaultPrompt("ideas", "IDEAS_JSON");
+export async function renderIdeasPrompt(context: string[] = []): Promise<RenderedPrompt> {
+  return renderDefaultPrompt("ideas", "IDEAS_JSON", context);
 }
 
 /**

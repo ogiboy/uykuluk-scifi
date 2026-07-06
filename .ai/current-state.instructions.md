@@ -203,6 +203,11 @@
 - Idea parsing now rejects repeated local-model boilerplate in `fit` explanations, repeated
   uncertainty openers such as `Belki bu`, generic unknown-species/trace phrases, and weak premise
   action frames such as `bilgiyi bulduktan sonra` or `anlamaya çalışır`.
+- Idea generation now reads compact title-only history from existing runtime `ideas.json` artifacts.
+  Previously generated or approved titles are fed back into the planner prompt as originality
+  context and are hard-blocked if a provider repeats the same normalized title in a later run. This
+  uses runtime artifacts only; `.ai/` remains development-only and no vector database is required
+  for the v1 guard.
 - Live qwen3 retry/repair tests proved runs stay in safe states without writing review artifacts
   when idea or script validation fails, while safe diagnostics and ledger warnings still identify
   the blocker category and stage boundary.

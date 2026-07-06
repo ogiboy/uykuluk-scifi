@@ -38,6 +38,9 @@
 - Keep local LLM generation fail-closed when models return malformed JSON, English operator-facing
   text, repeated/weak ideas, malformed labels, or incomplete scripts.
 - Keep idea and script provider failure diagnostics safe, raw-output-free, and state-preserving.
+- Keep idea originality enforcement tied to runtime artifact history: previous generated or approved
+  titles should remain compact prompt context and same-title hard blockers without script bodies,
+  `.ai` dependencies, or a required vector database.
 - Keep local-model script diagnostics and receipts complete enough to diagnose which draft or
   expansion chunk failed.
 - Keep readiness diagnostics, production-loop next actions, and evidence synchronized with persisted
