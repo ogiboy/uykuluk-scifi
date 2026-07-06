@@ -1,5 +1,6 @@
 import { CliFallbackCommand } from "@/components/studio/CliFallbackCommand";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import {
   buildStudioControlLoop,
@@ -24,41 +25,72 @@ export function RunGuidedControlLoopPanel({
   run,
 }: RunGuidedControlLoopPanelProps) {
   const loop = buildStudioControlLoop(run);
+  const headingId = compact ? "home-guided-control-loop-heading" : "guided-control-loop-heading";
+  const header = <ControlLoopHeader compact={compact} headingId={headingId} loop={loop} />;
+  const body = <ControlLoopBody compact={compact} loop={loop} />;
+
+  if (compact) {
+    return (
+      <section
+        className='space-y-4 border-t border-border/10 pt-5 text-card-foreground'
+        aria-labelledby={headingId}
+      >
+        {header}
+        {body}
+      </section>
+    );
+  }
 
   return (
-    <section
-      className={cn(
-        "space-y-4 text-card-foreground",
-        compact ? "border-t border-border/10 pt-5" : "rounded-xl bg-card/60 p-6 shadow-sm",
-      )}
-      aria-labelledby={compact ? "home-guided-control-loop-heading" : "guided-control-loop-heading"}
-    >
-      <div className='grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start'>
-        <div className='min-w-0 space-y-1'>
-          <p className='text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground'>
-            Studio control loop
-          </p>
-          <h2
-            className={cn("font-semibold tracking-tight", compact ? "text-base" : "text-xl")}
-            id={compact ? "home-guided-control-loop-heading" : "guided-control-loop-heading"}
-          >
-            {loop.title}
-          </h2>
-        </div>
-        <Badge variant={badgeVariant(loop.tone)}>{formatTone(loop.tone)}</Badge>
-      </div>
+    <section aria-labelledby={headingId}>
+      <Card className='gap-5 bg-card/70 shadow-sm shadow-black/5'>
+        <CardHeader>{header}</CardHeader>
+        <CardContent className='space-y-4'>{body}</CardContent>
+      </Card>
+    </section>
+  );
+}
 
+function ControlLoopHeader({
+  compact,
+  headingId,
+  loop,
+}: Readonly<{
+  compact: boolean;
+  headingId: string;
+  loop: ReturnType<typeof buildStudioControlLoop>;
+}>) {
+  return (
+    <div className='grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start'>
+      <div className='min-w-0 space-y-1'>
+        <p className='text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground'>
+          Studio control loop
+        </p>
+        <h2
+          className={cn("font-semibold tracking-tight", compact ? "text-base" : "text-xl")}
+          id={headingId}
+        >
+          {loop.title}
+        </h2>
+      </div>
+      <Badge variant={badgeVariant(loop.tone)}>{formatTone(loop.tone)}</Badge>
+    </div>
+  );
+}
+
+function ControlLoopBody({
+  compact,
+  loop,
+}: Readonly<{ compact: boolean; loop: ReturnType<typeof buildStudioControlLoop> }>) {
+  return (
+    <>
       <p className='text-sm text-muted-foreground'>{loop.summary}</p>
 
       {loop.currentStep ? (
         <div
           className={cn(
             "grid gap-3 rounded-lg p-3 text-sm ring-1 sm:grid-cols-[auto_minmax(0,1fr)]",
-            loop.currentStep.status === "blocked"
-              ? "bg-destructive/10 ring-destructive/15"
-              : compact
-                ? "bg-muted/10 ring-transparent"
-                : "bg-muted/15 ring-transparent",
+            controlLoopItemSurfaceClass(compact, loop.currentStep.status === "blocked"),
           )}
         >
           <Badge variant={loop.currentStep.status === "blocked" ? "destructive" : "secondary"}>
@@ -124,8 +156,15 @@ export function RunGuidedControlLoopPanel({
           </div>
         ))}
       </dl>
-    </section>
+    </>
   );
+}
+
+function controlLoopItemSurfaceClass(compact: boolean, blocked: boolean): string {
+  if (blocked) {
+    return "bg-destructive/10 ring-destructive/15";
+  }
+  return compact ? "bg-muted/10 ring-transparent" : "bg-muted/15 ring-transparent";
 }
 
 function badgeVariant(tone: StudioControlLoopTone): "destructive" | "outline" | "secondary" {
