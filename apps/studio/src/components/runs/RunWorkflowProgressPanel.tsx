@@ -34,7 +34,7 @@ export function RunWorkflowProgressPanel({ workflowProgress }: RunWorkflowProgre
       <ol className='grid gap-3'>
         {workflowProgress.map((step) => (
           <li
-            className='grid gap-2 rounded-lg border bg-muted/20 p-3 sm:grid-cols-[auto_1fr]'
+            className='grid gap-2 rounded-lg bg-muted/10 p-3 sm:grid-cols-[auto_1fr]'
             key={step.label}
           >
             <Badge className='capitalize' variant={workflowStatusBadgeVariant(step.status)}>

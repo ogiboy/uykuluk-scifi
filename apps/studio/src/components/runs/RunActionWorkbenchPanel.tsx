@@ -46,7 +46,7 @@ export function RunActionWorkbenchPanel({ run }: RunActionWorkbenchPanelProps) {
           ) : null}
 
           {workbench.primary.command ? (
-            <div className='space-y-2 rounded-lg bg-muted/20 p-3 ring-1 ring-border/10'>
+            <div className='space-y-2 rounded-lg bg-muted/10 p-3'>
               <strong className='text-sm'>CLI equivalent</strong>
               <CopyableCommand command={workbench.primary.command} label='Action command' />
             </div>
@@ -58,10 +58,7 @@ export function RunActionWorkbenchPanel({ run }: RunActionWorkbenchPanelProps) {
 
           <dl className='grid gap-3 text-sm sm:grid-cols-2'>
             {workbench.boundaries.map((boundary) => (
-              <div
-                className='space-y-1 rounded-lg bg-muted/20 p-3 ring-1 ring-border/10'
-                key={boundary.label}
-              >
+              <div className='space-y-1 rounded-lg bg-muted/10 p-3' key={boundary.label}>
                 <dt className='font-medium text-muted-foreground'>{boundary.label}</dt>
                 <dd>{boundary.detail}</dd>
               </div>

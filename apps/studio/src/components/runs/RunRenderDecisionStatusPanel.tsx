@@ -35,12 +35,12 @@ export function RunRenderDecisionStatusPanel({
       </p>
       {metadataItems.length > 0 ? <RunMetadataList items={metadataItems} /> : null}
       {renderDecision.nextAction ? (
-        <p className='rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-900 dark:text-amber-100'>
+        <p className='rounded-lg bg-amber-500/10 p-3 text-sm text-amber-900 dark:text-amber-100'>
           Next action: {renderDecision.nextAction}
         </p>
       ) : null}
       {renderDecision.kind === "present" ? (
-        <p className='rounded-lg border bg-muted/20 p-3 font-mono text-xs break-all text-muted-foreground'>
+        <p className='rounded-lg bg-muted/10 p-3 font-mono text-xs break-all text-muted-foreground'>
           Review command: {renderDecision.reviewCommand}
         </p>
       ) : null}

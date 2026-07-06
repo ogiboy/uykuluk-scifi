@@ -25,7 +25,7 @@ export function RunRenderDecisionCommandsPanel({ commands }: RunRenderDecisionCo
     >
       <ul className='grid gap-3'>
         {commands.map((item) => (
-          <li className='grid gap-3 rounded-lg border bg-muted/20 p-3' key={item.decision}>
+          <li className='grid gap-3 rounded-lg bg-muted/10 p-3' key={item.decision}>
             <Badge className='capitalize' variant='outline'>
               {item.decision}
             </Badge>

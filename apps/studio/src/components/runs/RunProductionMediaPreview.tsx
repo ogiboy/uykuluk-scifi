@@ -15,7 +15,7 @@ export function RunProductionMediaPreview({
   const captionUrl = studioCaptionArtifactUrl(runId);
   if (artifact.evidenceKey === "voiceoverAudio") {
     return (
-      <div className='grid gap-3 rounded-lg border bg-muted/20 p-3'>
+      <div className='grid gap-3 rounded-lg bg-muted/10 p-3'>
         <audio className='w-full' controls preload='metadata' src={mediaUrl}>
           <track default kind='captions' label='Türkçe altyazı' src={captionUrl} srcLang='tr' />
           <a href={mediaUrl}>Open voiceover audio</a>
@@ -29,9 +29,9 @@ export function RunProductionMediaPreview({
   }
   if (artifact.evidenceKey === "draftRender") {
     return (
-      <div className='grid gap-3 rounded-lg border bg-muted/20 p-3'>
+      <div className='grid gap-3 rounded-lg bg-muted/10 p-3'>
         <video
-          className='w-full rounded-md border bg-background'
+          className='w-full rounded-md bg-background'
           controls
           preload='metadata'
           src={mediaUrl}
@@ -56,7 +56,7 @@ function ProductionMediaReviewLinks({
   return (
     <div className='flex flex-wrap gap-2' aria-label={`${artifact.label} local media actions`}>
       <a
-        className='rounded-md border px-3 py-1.5 text-sm font-medium hover:bg-accent hover:text-accent-foreground'
+        className='rounded-md bg-muted/20 px-3 py-1.5 text-sm font-medium hover:bg-accent hover:text-accent-foreground'
         href={mediaUrl}
         target='_blank'
         rel='noreferrer'
@@ -64,7 +64,7 @@ function ProductionMediaReviewLinks({
         Open in browser
       </a>
       <a
-        className='rounded-md border px-3 py-1.5 text-sm font-medium hover:bg-accent hover:text-accent-foreground'
+        className='rounded-md bg-muted/20 px-3 py-1.5 text-sm font-medium hover:bg-accent hover:text-accent-foreground'
         href={mediaUrl}
         download={mediaDownloadName(artifact.artifactPath)}
       >

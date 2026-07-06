@@ -31,7 +31,7 @@ export function RunLedgerPanel({ approvals, warnings }: RunLedgerPanelProps) {
           <ul className='grid gap-2'>
             {approvals.map((approval, index) => (
               <li
-                className='rounded-lg border bg-muted/20 p-3 text-sm text-muted-foreground'
+                className='rounded-lg bg-muted/10 p-3 text-sm text-muted-foreground'
                 key={approvalKey(approval, index)}
               >
                 {formatApprovalLedgerItem(approval, index)}
@@ -39,7 +39,7 @@ export function RunLedgerPanel({ approvals, warnings }: RunLedgerPanelProps) {
             ))}
           </ul>
         ) : (
-          <p className='rounded-lg border bg-muted/20 p-3 text-sm text-muted-foreground'>
+          <p className='rounded-lg bg-muted/10 p-3 text-sm text-muted-foreground'>
             No approvals recorded.
           </p>
         )}
@@ -56,7 +56,7 @@ export function RunLedgerPanel({ approvals, warnings }: RunLedgerPanelProps) {
           <ul className='grid gap-2'>
             {warnings.map((warning, index) => (
               <li
-                className='rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-900 dark:text-amber-100'
+                className='rounded-lg bg-amber-500/10 p-3 text-sm text-amber-900 dark:text-amber-100'
                 key={`warning-${index}-${warning}`}
               >
                 {warning}
@@ -64,7 +64,7 @@ export function RunLedgerPanel({ approvals, warnings }: RunLedgerPanelProps) {
             ))}
           </ul>
         ) : (
-          <p className='rounded-lg border bg-muted/20 p-3 text-sm text-muted-foreground'>
+          <p className='rounded-lg bg-muted/10 p-3 text-sm text-muted-foreground'>
             No warnings recorded.
           </p>
         )}

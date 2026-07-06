@@ -40,14 +40,14 @@ export function RunBlockedActionsPanel({
       description={blockedActionsIntro(evidenceStatus)}
     >
       {evidenceStatus === "available" && blockedActions.length > 0 ? (
-        <Accordion className='rounded-lg border bg-muted/20 px-3' type='single' collapsible>
+        <Accordion className='rounded-lg bg-muted/10 px-3' type='single' collapsible>
           <AccordionItem className='border-0' value='blocked-actions'>
             <AccordionTrigger>{blockedActions.length} blocked action(s)</AccordionTrigger>
             <AccordionContent>
               <ul className='grid gap-2 pb-2 text-sm text-muted-foreground'>
                 {blockedActions.map((action, index) => (
                   <li
-                    className='rounded-md border bg-background p-2'
+                    className='rounded-md bg-background/45 p-2'
                     key={`blocked-action-${index}-${action}`}
                   >
                     {action}
@@ -58,7 +58,7 @@ export function RunBlockedActionsPanel({
           </AccordionItem>
         </Accordion>
       ) : (
-        <p className='rounded-lg border bg-muted/20 p-3 text-sm text-muted-foreground'>
+        <p className='rounded-lg bg-muted/10 p-3 text-sm text-muted-foreground'>
           {blockedActionsEmptyMessage(evidenceStatus)}
         </p>
       )}
@@ -80,7 +80,7 @@ function EvidenceRemediation({
   nextAction,
 }: Readonly<{ message: string; nextAction?: string }>) {
   return (
-    <div className='grid gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-900 dark:text-amber-100'>
+    <div className='grid gap-2 rounded-lg bg-amber-500/10 p-3 text-sm text-amber-900 dark:text-amber-100'>
       <p>Evidence: {message}</p>
       {nextAction ? <p>Evidence action: {nextAction}</p> : null}
     </div>

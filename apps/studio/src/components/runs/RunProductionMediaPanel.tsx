@@ -11,7 +11,6 @@ import { RunDetailCard } from "./RunDetailCard";
 import { CopyableCommand } from "../studio/CopyableCommand";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { Badge } from "../ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { RunProductionMediaFacts } from "./RunProductionMediaFacts";
 import { RunProductionMediaPreview } from "./RunProductionMediaPreview";
 import { RunProductionMediaSummary } from "./RunProductionMediaSummary";
@@ -97,29 +96,23 @@ function ProductionMediaCard({
 }>) {
   const mediaUrl = mediaPreviewUrl(runId, artifact);
   return (
-    <Card className='min-w-0 overflow-hidden bg-background/60'>
-      <CardHeader>
-        <CardDescription className='break-all font-mono text-xs'>
-          {artifact.artifactPath}
-        </CardDescription>
+    <article className='grid min-w-0 gap-4 rounded-lg bg-background/35 p-4'>
+      <div className='grid gap-2'>
+        <p className='break-all font-mono text-xs text-muted-foreground'>{artifact.artifactPath}</p>
         <div className='flex flex-wrap items-center justify-between gap-2'>
-          <CardTitle>
-            <h3 className='text-base'>{artifact.label}</h3>
-          </CardTitle>
+          <h3 className='text-base font-semibold'>{artifact.label}</h3>
           <Badge variant={mediaStatusBadgeVariant(artifact.status)}>{artifact.status}</Badge>
         </div>
-      </CardHeader>
-      <CardContent className='grid gap-4'>
-        <RunProductionMediaFacts artifact={artifact} />
-        {mediaUrl ? (
-          <RunProductionMediaPreview artifact={artifact} mediaUrl={mediaUrl} runId={runId} />
-        ) : null}
-        <p className='rounded-lg border bg-muted/20 p-3 text-sm text-muted-foreground'>
-          Review: {productionMediaReviewAction(evidenceStatus, artifact)}
-        </p>
-        <MediaCommandList artifact={artifact} />
-      </CardContent>
-    </Card>
+      </div>
+      <RunProductionMediaFacts artifact={artifact} />
+      {mediaUrl ? (
+        <RunProductionMediaPreview artifact={artifact} mediaUrl={mediaUrl} runId={runId} />
+      ) : null}
+      <p className='rounded-lg bg-muted/10 p-3 text-sm text-muted-foreground'>
+        Review: {productionMediaReviewAction(evidenceStatus, artifact)}
+      </p>
+      <MediaCommandList artifact={artifact} />
+    </article>
   );
 }
 

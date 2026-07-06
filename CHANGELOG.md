@@ -13,6 +13,10 @@ future generated release notes can be inserted predictably.
 
 - add guarded Studio local model candidate evaluation action.
 
+### Styles
+
+- soften Studio run review nested surfaces and command blocks.
+
 ## v0.77.0 (2026-07-05)
 
 ### Features

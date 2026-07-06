@@ -12,7 +12,7 @@ type RunProductionMediaSummaryProps = Readonly<{
 export function RunProductionMediaSummary({ summary }: RunProductionMediaSummaryProps) {
   return (
     <div
-      className='grid gap-4 rounded-lg border bg-muted/20 p-4 lg:grid-cols-[minmax(0,1fr)_auto]'
+      className='grid gap-4 rounded-lg bg-muted/10 p-4 lg:grid-cols-[minmax(0,1fr)_auto]'
       aria-label='Media review summary'
     >
       <div>
@@ -42,7 +42,7 @@ export function RunProductionMediaSummary({ summary }: RunProductionMediaSummary
 
 function ProductionMediaMetric({ label, value }: Readonly<{ label: string; value: string }>) {
   return (
-    <div className='rounded-md border bg-background p-2 text-center'>
+    <div className='rounded-md bg-background/45 p-2 text-center'>
       <dt className='text-xs text-muted-foreground'>{label}</dt>
       <dd className='mt-1 text-sm font-semibold'>{value}</dd>
     </div>

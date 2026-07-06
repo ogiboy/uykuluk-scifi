@@ -20,7 +20,7 @@ export function RunProductionMediaFacts({ artifact }: RunProductionMediaFactsPro
           <ul className='flex flex-wrap gap-2' aria-label={`${artifact.label} evidence facts`}>
             {compactFacts.map((fact, index) => (
               <li
-                className='rounded-full border bg-muted/30 px-2.5 py-1 text-xs text-muted-foreground'
+                className='rounded-full bg-muted/20 px-2.5 py-1 text-xs text-muted-foreground'
                 key={`${fact}-${index}`}
               >
                 {fact}
@@ -35,14 +35,14 @@ export function RunProductionMediaFacts({ artifact }: RunProductionMediaFactsPro
           </p>
         ) : null}
         {detailedFactCount > 0 ? (
-          <details className='rounded-lg border bg-muted/20 p-3'>
+          <details className='rounded-lg bg-muted/10 p-3'>
             <summary className='cursor-pointer text-sm font-medium'>
               Detailed media evidence
             </summary>
             <ul className='mt-3 grid gap-2 text-sm text-muted-foreground'>
               {detailedFacts.map((fact, index) => (
                 <li
-                  className='break-words rounded-md border bg-background p-2'
+                  className='break-words rounded-md bg-background/45 p-2'
                   key={`${fact}-${index}`}
                 >
                   {fact}

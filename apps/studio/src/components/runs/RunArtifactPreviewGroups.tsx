@@ -21,7 +21,7 @@ export function RunArtifactPreviewGroups({ artifactGroups }: RunArtifactPreviewG
     <div className='grid gap-4'>
       {artifactGroups.map((group, groupIndex) => (
         <details
-          className='rounded-lg bg-background/70 p-4 ring-1 ring-border/10'
+          className='rounded-lg bg-background/35 p-4'
           key={group.label}
           open={groupIndex === 0}
         >
@@ -44,7 +44,7 @@ export function RunArtifactPreviewGroups({ artifactGroups }: RunArtifactPreviewG
 
 function ArtifactPreviewCard({ artifact }: Readonly<{ artifact: StudioArtifactPreview }>) {
   return (
-    <li className='grid gap-3 rounded-lg bg-muted/20 p-4 ring-1 ring-border/10'>
+    <li className='grid gap-3 rounded-lg bg-muted/10 p-4'>
       <div className='flex flex-wrap items-start justify-between gap-3'>
         <div className='min-w-0'>
           <strong className='block text-sm'>{artifact.label}</strong>
@@ -70,16 +70,16 @@ function ArtifactPreviewCard({ artifact }: Readonly<{ artifact: StudioArtifactPr
         {artifact.previewTruncated ? " · preview truncated" : ""}
       </p>
       {artifact.preview ? (
-        <details className='grid gap-2 rounded-lg bg-background/70 p-3 ring-1 ring-border/10'>
+        <details className='grid gap-2 rounded-lg bg-background/45 p-3'>
           <summary className='cursor-pointer text-sm font-medium'>Preview excerpt</summary>
-          <pre className='max-h-56 overflow-auto whitespace-pre-wrap break-words rounded-md bg-muted/20 p-3 font-mono text-xs leading-relaxed ring-1 ring-border/10'>
+          <pre className='max-h-56 overflow-auto whitespace-pre-wrap break-words rounded-md bg-muted/10 p-3 font-mono text-xs leading-relaxed'>
             {artifact.preview}
           </pre>
         </details>
       ) : (
         <p className='text-sm text-muted-foreground'>{artifactPreviewFallback(artifact)}</p>
       )}
-      <p className='rounded-lg bg-amber-500/10 p-3 text-sm text-amber-900 ring-1 ring-amber-500/20 dark:text-amber-100'>
+      <p className='rounded-lg bg-amber-500/10 p-3 text-sm text-amber-900 dark:text-amber-100'>
         {artifact.operatorAction}
       </p>
     </li>

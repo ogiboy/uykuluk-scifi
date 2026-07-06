@@ -12,10 +12,7 @@ type RunActionPreflightPanelProps = Readonly<{
  */
 export function RunActionPreflightPanel({ preflight }: RunActionPreflightPanelProps) {
   return (
-    <section
-      className='space-y-4 rounded-lg bg-muted/25 p-4 ring-1 ring-border/10'
-      aria-label={preflight.title}
-    >
+    <section className='space-y-4 rounded-lg bg-muted/10 p-4' aria-label={preflight.title}>
       <div className='grid grid-cols-[1fr_auto] items-start gap-4'>
         <div>
           <h3 className='font-semibold'>{preflight.title}</h3>
@@ -25,7 +22,7 @@ export function RunActionPreflightPanel({ preflight }: RunActionPreflightPanelPr
       </div>
       <dl className='grid gap-3'>
         {preflight.items.map((item) => (
-          <div className='rounded-md bg-background/70 p-3 ring-1 ring-border/10' key={item.label}>
+          <div className='rounded-md bg-background/45 p-3' key={item.label}>
             <dt className='flex flex-wrap items-center gap-2 text-sm font-medium'>
               <Badge variant={preflightBadgeVariant(item.status)}>{item.status}</Badge>
               <span>{item.label}</span>

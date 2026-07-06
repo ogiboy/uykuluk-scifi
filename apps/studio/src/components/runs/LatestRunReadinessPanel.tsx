@@ -64,11 +64,11 @@ function LatestRunSummary({ latestRun }: Readonly<{ latestRun: StudioRunSummary 
       <p className='text-sm text-muted-foreground'>{formatRunReviewCounts(latestRun)}</p>
       <p className='text-sm'>{latestRun.readinessMessage}</p>
       {latestRun.readinessNextAction ? (
-        <p className='rounded-lg bg-muted/20 p-3 text-sm text-muted-foreground ring-1 ring-border/10'>
+        <p className='rounded-lg bg-muted/10 p-3 text-sm text-muted-foreground'>
           Readiness action: {latestRun.readinessNextAction}
         </p>
       ) : null}
-      <div className='space-y-3 rounded-lg bg-muted/20 p-3 ring-1 ring-border/10'>
+      <div className='space-y-3 rounded-lg bg-muted/10 p-3'>
         <strong className='text-sm'>Next safe action</strong>
         <CliFallbackCommand
           align='start'
