@@ -35,6 +35,7 @@ describe("Studio service contract panel helpers", () => {
   it("links action contracts to operator surfaces instead of API routes", () => {
     expect(actionSurface("analytics.import")).toMatchObject({ href: "/analytics" });
     expect(actionSurface("doctor.run")).toMatchObject({ href: "/doctor" });
+    expect(actionSurface("model-eval.run")).toMatchObject({ href: "/eval" });
     expect(actionSurface("ideas.run")).toMatchObject({ href: "/" });
     expect(actionSurface("render.run")).toMatchObject({ href: "/runs" });
   });

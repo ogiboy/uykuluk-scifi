@@ -179,7 +179,7 @@ describe("producer render CLI", () => {
 
 function runCli(
   args: string[],
-  env: NodeJS.ProcessEnv = {},
+  env: Partial<NodeJS.ProcessEnv> = {},
 ): { status: number | null; stderr: string; stdout: string } {
   const result = spawnSync(
     path.join(repoRoot, "node_modules", ".bin", "tsx"),

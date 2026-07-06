@@ -1,5 +1,5 @@
 import type { Route } from "next";
-import type { StudioActionServiceSummary } from "@/lib/actionServiceStatus";
+import type { StudioActionServiceSummary } from "./actionServiceStatus";
 
 export type ServiceContractAvailabilityFilter = "all" | StudioActionServiceSummary["availability"];
 
@@ -82,6 +82,9 @@ export function actionSurface(actionId: string): ActionSurface {
   }
   if (actionId === "doctor.run") {
     return { href: "/doctor" as Route, label: "Open doctor surface" };
+  }
+  if (actionId === "model-eval.run") {
+    return { href: "/eval" as Route, label: "Open model eval surface" };
   }
   if (actionId === "ideas.run") {
     return { href: "/" as Route, label: "Open start-run surface" };

@@ -4,6 +4,7 @@ import { CliFallbackCommand } from "@/components/studio/CliFallbackCommand";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import type { StudioModelEvalOverview } from "@/lib/modelEvalOverview";
 import { ModelEvalCandidatePanel, ModelEvalCheckList } from "./ModelEvalCandidatePanel";
+import { ModelEvalRunActionPanel } from "./ModelEvalRunActionPanel";
 
 type ModelEvalOverviewViewProps = Readonly<{
   overview: StudioModelEvalOverview;
@@ -69,6 +70,7 @@ export function ModelEvalOverviewView({ overview }: ModelEvalOverviewViewProps) 
             </h2>
           </CardHeader>
           <CardContent className='space-y-4'>
+            <ModelEvalRunActionPanel />
             <CliFallbackCommand
               align='start'
               command={overview.nextCommand}

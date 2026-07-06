@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { POST as runDoctor } from "../apps/studio/src/app/actions/run-doctor/route";
 import { POST as runEvidence } from "../apps/studio/src/app/actions/run-evidence/route";
 import { POST as runIdeas } from "../apps/studio/src/app/actions/run-ideas/route";
+import { POST as runModelEval } from "../apps/studio/src/app/actions/run-model-eval/route";
 import { POST as runReadiness } from "../apps/studio/src/app/actions/run-readiness/route";
 import { POST as runRenderPlan } from "../apps/studio/src/app/actions/run-render-plan/route";
 import { defaultConfig } from "../src/config/config";
@@ -40,6 +41,14 @@ describe("Studio workflow stage action routes", () => {
     await expectRouteError(
       runDoctor(
         studioJsonRequest("/actions/run-doctor", "doctor.run", {
+          runId: "run_unexpected",
+        }),
+      ),
+      400,
+    );
+    await expectRouteError(
+      runModelEval(
+        studioJsonRequest("/actions/run-model-eval", "model-eval.run", {
           runId: "run_unexpected",
         }),
       ),

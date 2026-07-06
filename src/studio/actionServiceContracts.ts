@@ -98,6 +98,7 @@ type StudioActionRequestById = {
   "evidence.run": z.infer<typeof runOnlyRequestSchema>;
   "idea.approve": z.infer<typeof ideaApprovalRequestSchema>;
   "ideas.run": z.infer<typeof emptyRequestSchema>;
+  "model-eval.run": z.infer<typeof emptyRequestSchema>;
   "package.run": z.infer<typeof runOnlyRequestSchema>;
   "publish.schedule": z.infer<typeof runOnlyRequestSchema>;
   "readiness.run": z.infer<typeof runOnlyRequestSchema>;
@@ -129,6 +130,7 @@ export const studioMutationRequestSchemaByAction = {
   "evidence.run": runOnlyRequestSchema,
   "idea.approve": ideaApprovalRequestSchema,
   "ideas.run": emptyRequestSchema,
+  "model-eval.run": emptyRequestSchema,
   "package.run": runOnlyRequestSchema,
   "publish.schedule": runOnlyRequestSchema,
   "readiness.run": runOnlyRequestSchema,

@@ -25,6 +25,7 @@ export const studioCliMutationActionIds = [
   "evidence.run",
   "idea.approve",
   "ideas.run",
+  "model-eval.run",
   "package.run",
   "package-artifact.revise",
   "readiness.run",
@@ -56,6 +57,7 @@ type RunOnlyCliActionId = Exclude<
   | "doctor.run"
   | "idea.approve"
   | "ideas.run"
+  | "model-eval.run"
   | "package-artifact.revise"
   | "render.decide"
   | "script.approve"
@@ -102,6 +104,10 @@ export async function cliArgsForAction(
   if (actionId === "ideas.run") {
     parseEmptyPayload(payload);
     return prepared(["ideas", "--json"]);
+  }
+  if (actionId === "model-eval.run") {
+    parseEmptyPayload(payload);
+    return prepared(["eval", "local-model", "--json"]);
   }
   if (actionId === "script.approve") {
     const input = parseScriptApprovalPayload(payload);
