@@ -17,7 +17,6 @@ type ServiceContractPanelProps = Readonly<{ status?: StudioActionServiceStatus }
 export function ServiceContractPanel({
   status = getStudioActionServiceStatus(),
 }: ServiceContractPanelProps) {
-  const safetyLabel = status.webMutationsEnabled ? "Review required" : "Web mutations disabled";
   const groups = serviceContractGroups(status.summaries);
 
   return (
@@ -33,25 +32,26 @@ export function ServiceContractPanel({
       </div>
       <div className='grid gap-4 md:grid-cols-2 xl:grid-cols-4'>
         <ServiceMetricCard
-          detail={`${status.disabledRouteCount} future action routes remain disabled.`}
-          label='Route Safety'
-          tone={status.webMutationsEnabled ? "blocked" : "neutral"}
-          value={safetyLabel}
+          detail='Guarded same-origin Studio routes that execute local CLI/core contracts.'
+          label='Web Controls'
+          value={String(status.webReadyCount)}
         />
         <ServiceMetricCard
-          detail='Approval, review, and local workflow-stage actions are bound to CLI/core functions.'
-          label='CLI-ready Contracts'
-          value={String(status.readyForCliCount)}
+          detail='Ready CLI/core contracts that do not yet have a web execution surface.'
+          label='CLI Fallbacks'
+          tone={status.cliFallbackCount > 0 ? "caution" : "neutral"}
+          value={String(status.cliFallbackCount)}
         />
         <ServiceMetricCard
-          detail='Upload and publish actions stay disabled and approval-gated.'
-          label='External Risk'
+          detail={`${status.disabledRouteCount} upload or publish routes remain deliberately disabled.`}
+          label='External Actions'
           tone='blocked'
           value={String(status.riskyExternalCount)}
         />
         <ServiceMetricCard
           detail='Route security findings must stay at zero before any additional mutation work.'
           label='Contract Findings'
+          tone={status.findings.length > 0 ? "blocked" : "neutral"}
           value={String(status.findings.length)}
         />
       </div>
@@ -87,7 +87,7 @@ export function ServiceContractPanel({
 type ServiceMetricCardProps = Readonly<{
   detail: string;
   label: string;
-  tone?: "blocked" | "neutral";
+  tone?: "blocked" | "caution" | "neutral";
   value: string;
 }>;
 
@@ -96,17 +96,19 @@ function ServiceMetricCard({ detail, label, tone = "neutral", value }: ServiceMe
     <Card>
       <CardContent className='space-y-2 pt-6'>
         <p className='text-sm font-medium text-muted-foreground'>{label}</p>
-        <strong
-          className={
-            tone === "blocked"
-              ? "block text-2xl font-semibold text-destructive"
-              : "block text-2xl font-semibold"
-          }
-        >
-          {value}
-        </strong>
+        <strong className={serviceMetricValueClassName(tone)}>{value}</strong>
         <p className='text-sm text-muted-foreground'>{detail}</p>
       </CardContent>
     </Card>
   );
+}
+
+function serviceMetricValueClassName(tone: NonNullable<ServiceMetricCardProps["tone"]>) {
+  if (tone === "blocked") {
+    return "block text-2xl font-semibold text-destructive";
+  }
+  if (tone === "caution") {
+    return "block text-2xl font-semibold text-amber-500";
+  }
+  return "block text-2xl font-semibold";
 }

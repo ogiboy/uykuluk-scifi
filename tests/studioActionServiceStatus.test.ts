@@ -7,10 +7,12 @@ describe("Studio action service status", () => {
 
     expect(status).toMatchObject({
       actionCount: 28,
+      cliFallbackCount: 0,
       disabledRouteCount: 2,
       findings: [],
       readyForCliCount: 26,
       riskyExternalCount: 2,
+      webReadyCount: 26,
       webMutationsEnabled: true,
     });
     expect(status.summaries).toContainEqual(

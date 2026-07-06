@@ -32,7 +32,8 @@ test("studio exposes guarded action contracts on the actions route", async ({ pa
 
   await expect(page.getByRole("heading", { exact: true, name: "Actions" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Mutation Service Contracts" })).toBeVisible();
-  await expect(page.getByText("Review required")).toBeVisible();
+  await expect(page.getByText("Web Controls")).toBeVisible();
+  await expect(page.getByText("CLI Fallbacks")).toBeVisible();
   await expect(page.getByRole("button", { name: /render\.decide/i })).toBeVisible();
   await expect(page.getByText("publish.schedule")).toBeVisible();
 });

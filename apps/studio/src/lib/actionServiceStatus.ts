@@ -7,11 +7,13 @@ import {
 
 export type StudioActionServiceStatus = {
   actionCount: number;
+  cliFallbackCount: number;
   disabledRouteCount: number;
   findings: string[];
   readyForCliCount: number;
   riskyExternalCount: number;
   summaries: StudioActionServiceSummary[];
+  webReadyCount: number;
   webMutationsEnabled: boolean;
 };
 
@@ -43,15 +45,22 @@ export function getStudioActionServiceStatus(): StudioActionServiceStatus {
       };
     })
     .sort((left, right) => left.actionId.localeCompare(right.actionId));
+  const webReadyCount = summaries.filter(
+    (summary) => summary.availability === "ready-for-cli" && summary.routePath !== "unrouted",
+  ).length;
+  const readyForCliCount = summaries.filter(
+    (summary) => summary.availability === "ready-for-cli",
+  ).length;
   return {
     actionCount: summaries.length,
+    cliFallbackCount: readyForCliCount - webReadyCount,
     disabledRouteCount: disabledStudioActionRoutes.filter((route) => !route.enabled).length,
     findings: routeSecurityFindings(),
-    readyForCliCount: summaries.filter((summary) => summary.availability === "ready-for-cli")
-      .length,
+    readyForCliCount,
     riskyExternalCount: summaries.filter((summary) => summary.availability === "disabled-external")
       .length,
     summaries,
+    webReadyCount,
     webMutationsEnabled: studioActionRoutes.some((route) => route.enabled),
   };
 }
