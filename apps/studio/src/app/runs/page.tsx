@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { RunQueueExplorer } from "@/components/runs/RunQueueExplorer";
+import { StartIdeasActionPanel } from "@/components/studio/StartIdeasActionPanel";
 import { StudioCommandPalette } from "@/components/studio/StudioCommandPalette";
 import { StudioPageHeader } from "@/components/studio/StudioPageHeader";
 import { StudioShell } from "@/components/studio/StudioShell";
@@ -16,6 +17,13 @@ export default async function RunsPage() {
       <StudioPageHeader
         actions={
           <>
+            <StartIdeasActionPanel
+              buttonLabel='Start idea run'
+              presentation='button'
+              readiness={startIdeasReadiness}
+              showResult={false}
+              variant='default'
+            />
             <StudioCommandPalette runs={runs} />
             <Badge variant='secondary'>CLI source of truth</Badge>
           </>

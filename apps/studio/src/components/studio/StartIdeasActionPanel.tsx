@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, type ButtonProps } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -18,7 +18,10 @@ import { StudioMutationResultPanel } from "./StudioMutationResultPanel";
 type StartIdeasActionPanelProps = Readonly<{
   buttonLabel?: string;
   description?: string;
+  presentation?: "button" | "panel";
   readiness?: StartIdeasReadinessSummary;
+  showResult?: boolean;
+  variant?: ButtonProps["variant"];
 }>;
 
 /**
@@ -26,12 +29,18 @@ type StartIdeasActionPanelProps = Readonly<{
  *
  * @param buttonLabel - The visible button label for the current surface.
  * @param description - Optional operator-facing copy shown above the action button.
+ * @param presentation - Whether to render a full panel or a compact button-only control.
  * @param readiness - Read-only doctor-derived provider readiness guidance.
+ * @param showResult - Whether to render the mutation result panel.
+ * @param variant - The shadcn button variant for the trigger.
  */
 export function StartIdeasActionPanel({
   buttonLabel = "Start ideas run",
   description,
+  presentation = "panel",
   readiness,
+  showResult = true,
+  variant = "default",
 }: StartIdeasActionPanelProps) {
   const [confirmationOpen, setConfirmationOpen] = useState(false);
   const { state, submit } = useStudioGuardedActionSubmit(
@@ -52,62 +61,110 @@ export function StartIdeasActionPanel({
     });
   }
 
+  const isSubmitting = state.kind === "submitting";
+  const actionButton = (
+    <Button
+      disabled={isSubmitting}
+      type='button'
+      variant={variant}
+      onClick={() => setConfirmationOpen(true)}
+    >
+      {isSubmitting ? "Starting..." : buttonLabel}
+    </Button>
+  );
+  const confirmationDialog = (
+    <StartIdeasConfirmationDialog
+      buttonLabel={buttonLabel}
+      isSubmitting={isSubmitting}
+      open={confirmationOpen}
+      readiness={readiness}
+      onConfirm={() => void submitIdeasRun()}
+      onOpenChange={setConfirmationOpen}
+    />
+  );
+
+  if (presentation === "button") {
+    return (
+      <>
+        {actionButton}
+        {confirmationDialog}
+      </>
+    );
+  }
+
   return (
     <div className='grid gap-4'>
       {description ? <p className='text-sm text-muted-foreground'>{description}</p> : null}
       {readiness ? <StartIdeasReadinessNotice readiness={readiness} /> : null}
-      <Button
-        disabled={state.kind === "submitting"}
-        type='button'
-        onClick={() => setConfirmationOpen(true)}
-      >
-        {state.kind === "submitting" ? "Starting..." : buttonLabel}
-      </Button>
-      <StudioMutationResultPanel state={state} />
-      <Dialog open={confirmationOpen} onOpenChange={setConfirmationOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirm local idea generation</DialogTitle>
-            <DialogDescription>
-              Studio will call `pnpm producer ideas` through the guarded local route. Provider
-              config, budget, parser, and failure guards remain enforced by CLI/core. Upload and
-              publish are not available here.
-            </DialogDescription>
-          </DialogHeader>
-          <div className='rounded-lg border bg-muted/30 p-4'>
-            <dl className='grid gap-3 text-sm sm:grid-cols-2'>
-              <div className='space-y-1'>
-                <dt className='font-medium text-muted-foreground'>Action</dt>
-                <dd>ideas.run</dd>
-              </div>
-              <div className='space-y-1'>
-                <dt className='font-medium text-muted-foreground'>Route</dt>
-                <dd className='break-all'>/actions/run-ideas</dd>
-              </div>
-              <div className='space-y-1'>
-                <dt className='font-medium text-muted-foreground'>CLI equivalent</dt>
-                <dd className='break-all'>pnpm producer ideas</dd>
-              </div>
-              {readiness ? (
-                <div className='space-y-1'>
-                  <dt className='font-medium text-muted-foreground'>Doctor context</dt>
-                  <dd>{readiness.label}</dd>
-                </div>
-              ) : null}
-            </dl>
-          </div>
-          <DialogFooter showCloseButton>
-            <Button
-              disabled={state.kind === "submitting"}
-              type='button'
-              onClick={() => void submitIdeasRun()}
-            >
-              {buttonLabel}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {actionButton}
+      {showResult ? <StudioMutationResultPanel state={state} /> : null}
+      {confirmationDialog}
     </div>
+  );
+}
+
+type StartIdeasConfirmationDialogProps = Readonly<{
+  buttonLabel: string;
+  isSubmitting: boolean;
+  onConfirm: () => void;
+  onOpenChange: (open: boolean) => void;
+  open: boolean;
+  readiness?: StartIdeasReadinessSummary;
+}>;
+
+/**
+ * Confirms the global idea-generation action before Studio starts a new local run.
+ *
+ * @param props - Dialog state, submit callback, and doctor-derived readiness copy.
+ */
+function StartIdeasConfirmationDialog({
+  buttonLabel,
+  isSubmitting,
+  onConfirm,
+  onOpenChange,
+  open,
+  readiness,
+}: StartIdeasConfirmationDialogProps) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Confirm local idea generation</DialogTitle>
+          <DialogDescription>
+            Studio will call `pnpm producer ideas` through the guarded local route. Provider config,
+            budget, parser, and failure guards remain enforced by CLI/core. Upload and publish are
+            not available here.
+          </DialogDescription>
+        </DialogHeader>
+        <div className='rounded-lg border bg-muted/30 p-4'>
+          <dl className='grid gap-3 text-sm sm:grid-cols-2'>
+            <div className='space-y-1'>
+              <dt className='font-medium text-muted-foreground'>Action</dt>
+              <dd>ideas.run</dd>
+            </div>
+            <div className='space-y-1'>
+              <dt className='font-medium text-muted-foreground'>Route</dt>
+              <dd className='break-all'>/actions/run-ideas</dd>
+            </div>
+            <div className='space-y-1'>
+              <dt className='font-medium text-muted-foreground'>CLI equivalent</dt>
+              <dd className='break-all'>pnpm producer ideas</dd>
+            </div>
+            {readiness ? (
+              <div className='space-y-1'>
+                <dt className='font-medium text-muted-foreground'>Doctor context</dt>
+                <dd>{readiness.label}</dd>
+              </div>
+            ) : null}
+          </dl>
+        </div>
+        <DialogFooter showCloseButton>
+          <Button disabled={isSubmitting} type='button' onClick={onConfirm}>
+            {buttonLabel}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
