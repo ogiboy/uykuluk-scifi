@@ -56,13 +56,13 @@ export function OperatorBrief({ latestRun, startIdeasReadiness }: OperatorBriefP
             {operatorBriefToneLabel(action.tone)}
           </Badge>
         </CardHeader>
-        <CardContent className='grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end'>
+        <CardContent className='grid gap-4'>
           <div className='grid gap-3 md:grid-cols-3'>
             <OperatorBriefFact label='Next safe action' value={action.label} />
             <OperatorBriefFact label='Current state' value={latestRun.state} />
             <OperatorBriefFact label='Safety boundary' value='CLI/core re-checks before writes' />
           </div>
-          <div className='grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] lg:min-w-80'>
+          <div className='grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center'>
             <p className='text-sm text-muted-foreground'>{action.description}</p>
             {control === "stage-button" ? (
               <RunQuickStageActionButton label={action.label} run={latestRun} showResult />

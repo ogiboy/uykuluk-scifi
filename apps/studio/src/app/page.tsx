@@ -56,7 +56,7 @@ export default async function StudioHomePage() {
         </div>
         <div className='flex flex-wrap items-center gap-2 sm:justify-end'>
           <StudioCommandPalette runs={runs} />
-          <Badge variant='secondary'>CLI source of truth</Badge>
+          <Badge variant='secondary'>Local core verified</Badge>
         </div>
       </header>
 

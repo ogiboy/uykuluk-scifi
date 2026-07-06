@@ -35,10 +35,7 @@ export function RunPrimaryActionPanel({
 
   if (compact) {
     return (
-      <section
-        className='space-y-4 rounded-xl bg-muted/15 p-4 ring-1 ring-border/10'
-        aria-labelledby={headingId}
-      >
+      <section className='space-y-4 rounded-xl bg-muted/10 p-4' aria-labelledby={headingId}>
         <div className='grid grid-cols-[1fr_auto] items-start gap-4'>
           <PrimaryActionHeader action={action} headingId={headingId} />
         </div>
@@ -103,7 +100,7 @@ function PrimaryActionBody({
         </a>
       ) : null}
       {action.mode === "command" && action.command ? (
-        <div className='space-y-2 rounded-md bg-background/70 p-3 ring-1 ring-border/10'>
+        <div className='space-y-2 rounded-md bg-background/50 p-3'>
           <strong className='text-sm'>Manual or CLI action</strong>
           <CopyableCommand command={action.command} label='Primary action command' />
         </div>

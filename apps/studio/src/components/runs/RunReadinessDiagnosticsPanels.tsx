@@ -36,7 +36,7 @@ function DiagnosticsPanel({ run }: Readonly<{ run: StudioRunDetail }>) {
         <ul className='grid gap-2'>
           {run.diagnostics.map((diagnostic, index) => (
             <li
-              className='grid gap-2 rounded-lg border bg-muted/20 p-3 text-sm'
+              className='grid gap-2 rounded-lg bg-muted/15 p-3 text-sm ring-1 ring-border/5'
               key={`diagnostic-${index}-${diagnostic.path}`}
             >
               <strong>{diagnostic.stage}</strong>
@@ -51,7 +51,7 @@ function DiagnosticsPanel({ run }: Readonly<{ run: StudioRunDetail }>) {
           ))}
         </ul>
       ) : (
-        <p className='rounded-lg border bg-muted/20 p-3 text-sm text-muted-foreground'>
+        <p className='rounded-lg bg-muted/15 p-3 text-sm text-muted-foreground ring-1 ring-border/5'>
           No run diagnostics recorded.
         </p>
       )}
@@ -78,7 +78,7 @@ function ReadinessChecksPanel({ run }: Readonly<{ run: StudioRunDetail }>) {
         <Accordion className='grid gap-2' type='multiple'>
           {run.readinessChecks.map((check, index) => (
             <AccordionItem
-              className='rounded-lg border bg-muted/20 px-3'
+              className='rounded-lg bg-muted/15 px-3 ring-1 ring-border/5'
               key={`readiness-check-${index}-${check.name}`}
               value={check.name}
             >

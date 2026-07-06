@@ -80,7 +80,7 @@ export function RunReviewCockpitHeader({ run }: RunReviewCockpitHeaderProps) {
       </CardContent>
       <CardContent className='col-span-full grid min-w-0 gap-3 p-0'>
         <RunPrimaryActionPanel run={run} />
-        <div className='grid gap-2 rounded-lg border bg-muted/20 p-4'>
+        <div className='grid gap-2 rounded-lg bg-muted/15 p-4 ring-1 ring-border/5'>
           <strong className='text-sm'>CLI/core source command</strong>
           <CopyableCommand command={getNextSafeCommand(run)} label='Next safe action' />
         </div>

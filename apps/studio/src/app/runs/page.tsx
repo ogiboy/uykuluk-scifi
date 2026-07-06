@@ -25,7 +25,7 @@ export default async function RunsPage() {
               variant='default'
             />
             <StudioCommandPalette runs={runs} />
-            <Badge variant='secondary'>CLI source of truth</Badge>
+            <Badge variant='secondary'>Local core verified</Badge>
           </>
         }
         eyebrow='Read-only local run review'

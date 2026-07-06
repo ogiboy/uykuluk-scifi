@@ -28,8 +28,10 @@ export function RunGuidedControlLoopPanel({
   return (
     <section
       className={cn(
-        "space-y-4 rounded-xl bg-card text-card-foreground ring-1 ring-border/10",
-        compact ? "p-4 shadow-none" : "p-6 shadow-sm",
+        "space-y-4 text-card-foreground",
+        compact
+          ? "border-t border-border/10 pt-5"
+          : "rounded-xl bg-card p-6 shadow-sm ring-1 ring-border/10",
       )}
       aria-labelledby={compact ? "home-guided-control-loop-heading" : "guided-control-loop-heading"}
     >
@@ -56,7 +58,9 @@ export function RunGuidedControlLoopPanel({
             "grid gap-3 rounded-lg p-3 text-sm ring-1 sm:grid-cols-[auto_minmax(0,1fr)]",
             loop.currentStep.status === "blocked"
               ? "bg-destructive/10 ring-destructive/20"
-              : "bg-muted/20 ring-border/10",
+              : compact
+                ? "bg-muted/10 ring-border/5"
+                : "bg-muted/20 ring-border/10",
           )}
         >
           <Badge variant={loop.currentStep.status === "blocked" ? "destructive" : "secondary"}>
@@ -70,13 +74,23 @@ export function RunGuidedControlLoopPanel({
       ) : null}
 
       {loop.nextAction.routePath ? (
-        <p className='rounded-lg bg-muted/20 p-3 text-sm text-muted-foreground ring-1 ring-border/10'>
+        <p
+          className={cn(
+            "rounded-lg p-3 text-sm text-muted-foreground",
+            compact ? "bg-muted/10" : "bg-muted/20 ring-1 ring-border/10",
+          )}
+        >
           Studio route: <code className='text-foreground'>{loop.nextAction.routePath}</code>
         </p>
       ) : null}
 
       {loop.nextAction.command ? (
-        <div className='grid gap-2 rounded-lg bg-muted/20 p-4 ring-1 ring-border/10'>
+        <div
+          className={cn(
+            "grid gap-2 rounded-lg p-4",
+            compact ? "bg-muted/10" : "bg-muted/20 ring-1 ring-border/10",
+          )}
+        >
           <strong className='text-sm'>
             {loop.nextAction.routePath ? "CLI equivalent" : "Manual/CLI action"}
           </strong>
@@ -88,7 +102,8 @@ export function RunGuidedControlLoopPanel({
         {loop.items.map((item) => (
           <div
             className={cn(
-              "grid gap-2 rounded-lg bg-muted/20 p-3 text-sm ring-1 ring-border/10",
+              "grid gap-2 rounded-lg p-3 text-sm",
+              compact ? "bg-muted/10" : "bg-muted/20 ring-1 ring-border/10",
               item.tone === "blocked" && "bg-destructive/10 ring-destructive/20",
             )}
             data-tone={item.tone}

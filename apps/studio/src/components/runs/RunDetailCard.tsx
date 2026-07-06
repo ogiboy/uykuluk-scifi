@@ -79,7 +79,7 @@ export function RunMetadataList({ items }: Readonly<{ items: readonly RunMetadat
   return (
     <dl className='grid gap-3 sm:grid-cols-2'>
       {items.map((item) => (
-        <div className='min-w-0 rounded-lg border bg-muted/20 p-3' key={item.label}>
+        <div className='min-w-0 rounded-lg bg-muted/15 p-3 ring-1 ring-border/5' key={item.label}>
           <dt className='text-xs font-medium uppercase tracking-wide text-muted-foreground'>
             {item.label}
           </dt>
