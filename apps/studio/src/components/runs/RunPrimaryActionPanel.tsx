@@ -9,7 +9,6 @@ import {
   type StudioRunPrimaryAction,
   type StudioRunPrimaryActionRun,
 } from "@/lib/runPrimaryAction";
-import { cn } from "@/lib/utils";
 import { CopyableCommand } from "../studio/CopyableCommand";
 import { RunQuickStageActionButton } from "./RunQuickStageActionButton";
 
@@ -34,46 +33,91 @@ export function RunPrimaryActionPanel({
   const action = buildStudioRunPrimaryAction(run);
   const headingId = useId();
 
-  return (
-    <Card
-      className={cn("border-accent/30 bg-card/95", compact ? "gap-4 py-4" : "gap-5")}
-      aria-labelledby={headingId}
-    >
-      <CardHeader className='grid grid-cols-[1fr_auto] items-start gap-4'>
-        <div className='space-y-1'>
-          <p className='text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground'>
-            Primary web action
-          </p>
-          <CardTitle>
-            <h3 id={headingId}>{action.label}</h3>
-          </CardTitle>
+  if (compact) {
+    return (
+      <section
+        className='space-y-4 rounded-xl bg-muted/15 p-4 ring-1 ring-border/10'
+        aria-labelledby={headingId}
+      >
+        <div className='grid grid-cols-[1fr_auto] items-start gap-4'>
+          <PrimaryActionHeader action={action} headingId={headingId} />
         </div>
-        <Badge variant={badgeVariant(action.tone)}>{formatTone(action.tone)}</Badge>
+        <PrimaryActionBody action={action} railHref={railHref} run={run} />
+        <PrimaryActionBoundary />
+      </section>
+    );
+  }
+
+  return (
+    <Card className='gap-5 border-accent/30 bg-card/95' aria-labelledby={headingId}>
+      <CardHeader className='grid grid-cols-[1fr_auto] items-start gap-4'>
+        <PrimaryActionHeader action={action} headingId={headingId} />
       </CardHeader>
       <CardContent className='space-y-4'>
-        <p className='text-sm text-muted-foreground'>{action.description}</p>
-        {action.mode === "stage" ? (
-          <RunQuickStageActionButton label={action.label} run={run} showResult />
-        ) : null}
-        {action.mode === "rail" ? (
-          <a className={buttonVariants({ variant: "default" })} href={railHref}>
-            Open action rail
-          </a>
-        ) : null}
-        {action.mode === "command" && action.command ? (
-          <div className='space-y-2 rounded-md border bg-background p-3'>
-            <strong className='text-sm'>Manual or CLI action</strong>
-            <CopyableCommand command={action.command} label='Primary action command' />
-          </div>
-        ) : null}
+        <PrimaryActionBody action={action} railHref={railHref} run={run} />
       </CardContent>
       <CardFooter>
-        <p className='text-xs text-muted-foreground'>
-          Upload, scheduling, public publish, and paid-provider execution stay unavailable from this
-          surface.
-        </p>
+        <PrimaryActionBoundary />
       </CardFooter>
     </Card>
+  );
+}
+
+function PrimaryActionHeader({
+  action,
+  headingId,
+}: Readonly<{ action: StudioRunPrimaryAction; headingId: string }>) {
+  return (
+    <>
+      <div className='space-y-1'>
+        <p className='text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground'>
+          Primary web action
+        </p>
+        <CardTitle>
+          <h3 id={headingId}>{action.label}</h3>
+        </CardTitle>
+      </div>
+      <Badge variant={badgeVariant(action.tone)}>{formatTone(action.tone)}</Badge>
+    </>
+  );
+}
+
+function PrimaryActionBody({
+  action,
+  railHref,
+  run,
+}: Readonly<{
+  action: StudioRunPrimaryAction;
+  railHref: string;
+  run: StudioRunPrimaryActionRun;
+}>) {
+  return (
+    <>
+      <p className='text-sm text-muted-foreground'>{action.description}</p>
+      {action.mode === "stage" ? (
+        <RunQuickStageActionButton label={action.label} run={run} showResult />
+      ) : null}
+      {action.mode === "rail" ? (
+        <a className={buttonVariants({ variant: "default" })} href={railHref}>
+          Open action rail
+        </a>
+      ) : null}
+      {action.mode === "command" && action.command ? (
+        <div className='space-y-2 rounded-md bg-background/70 p-3 ring-1 ring-border/10'>
+          <strong className='text-sm'>Manual or CLI action</strong>
+          <CopyableCommand command={action.command} label='Primary action command' />
+        </div>
+      ) : null}
+    </>
+  );
+}
+
+function PrimaryActionBoundary() {
+  return (
+    <p className='text-xs text-muted-foreground'>
+      Upload, scheduling, public publish, and paid-provider execution stay unavailable from this
+      surface.
+    </p>
   );
 }
 

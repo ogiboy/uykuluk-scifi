@@ -120,7 +120,10 @@ function ActiveRunCard({ run }: Readonly<{ run: StudioRunSummary }>) {
         <ol className='grid gap-3 md:grid-cols-2' aria-label='Current workflow attention'>
           {visibleCurrentSteps.length > 0 ? (
             visibleCurrentSteps.map((step) => (
-              <li className='grid gap-1 rounded-lg border bg-muted/20 p-3 text-sm' key={step.label}>
+              <li
+                className='grid gap-1 rounded-lg bg-muted/20 p-3 text-sm ring-1 ring-border/10'
+                key={step.label}
+              >
                 <span className='flex flex-wrap items-center gap-2'>
                   <Badge variant={step.status === "blocked" ? "destructive" : "secondary"}>
                     {step.status}
@@ -131,7 +134,7 @@ function ActiveRunCard({ run }: Readonly<{ run: StudioRunSummary }>) {
               </li>
             ))
           ) : (
-            <li className='grid gap-1 rounded-lg border bg-muted/20 p-3 text-sm'>
+            <li className='grid gap-1 rounded-lg bg-muted/20 p-3 text-sm ring-1 ring-border/10'>
               <strong>No active blocker</strong>
               <span className='text-muted-foreground'>
                 Review the run detail before the next irreversible action.
@@ -139,7 +142,7 @@ function ActiveRunCard({ run }: Readonly<{ run: StudioRunSummary }>) {
             </li>
           )}
           {hiddenCurrentStepCount > 0 ? (
-            <li className='grid gap-1 rounded-lg border bg-muted/20 p-3 text-sm'>
+            <li className='grid gap-1 rounded-lg bg-muted/20 p-3 text-sm ring-1 ring-border/10'>
               <strong>+{hiddenCurrentStepCount} more</strong>
               <span className='text-muted-foreground'>Open the run detail for the full list.</span>
             </li>
@@ -194,7 +197,7 @@ type SafetyGateFactProps = Readonly<{
 
 function SafetyGateFact({ label, tone, value }: SafetyGateFactProps) {
   return (
-    <div className='grid grid-cols-[minmax(0,1fr)_auto] gap-3 rounded-lg border bg-muted/20 p-3'>
+    <div className='grid grid-cols-[minmax(0,1fr)_auto] gap-3 rounded-lg bg-muted/20 p-3 ring-1 ring-border/10'>
       <dt className='text-muted-foreground'>{label}</dt>
       <dd className={tone === "blocked" ? "font-semibold text-destructive" : "font-semibold"}>
         {value}
