@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
-import { CopyableCommand } from "@/components/studio/CopyableCommand";
+import { CliFallbackCommand } from "@/components/studio/CliFallbackCommand";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { StudioModelEvalOverview } from "@/lib/modelEvalOverview";
@@ -52,7 +52,12 @@ export function ModelEvalStatusPanel({ overview }: ModelEvalStatusPanelProps) {
           />
           <div className='space-y-3 rounded-xl bg-muted/25 p-3'>
             <strong className='text-sm'>Next safe action</strong>
-            <CopyableCommand command={overview.nextCommand} label='Model eval command' />
+            <CliFallbackCommand
+              align='start'
+              command={overview.nextCommand}
+              label='Model eval command'
+              triggerLabel='Show eval fallback'
+            />
           </div>
           {overview.error ? <p className='text-sm text-destructive'>{overview.error}</p> : null}
         </CardContent>

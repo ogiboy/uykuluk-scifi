@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Route } from "next";
-import { CopyableCommand } from "@/components/studio/CopyableCommand";
+import { CliFallbackCommand } from "@/components/studio/CliFallbackCommand";
 import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -70,7 +70,11 @@ function LatestRunSummary({ latestRun }: Readonly<{ latestRun: StudioRunSummary 
       ) : null}
       <div className='space-y-3 rounded-lg bg-muted/20 p-3 ring-1 ring-border/10'>
         <strong className='text-sm'>Next safe action</strong>
-        <CopyableCommand command={getNextSafeCommand(latestRun)} label='Next safe action' />
+        <CliFallbackCommand
+          align='start'
+          command={getNextSafeCommand(latestRun)}
+          label='Next safe action'
+        />
       </div>
       <Link className={buttonVariants({ variant: "secondary" })} href={reviewHref}>
         Review latest run

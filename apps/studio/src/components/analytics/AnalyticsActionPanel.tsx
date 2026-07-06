@@ -16,6 +16,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { StudioMutationResultPanel } from "@/components/studio/StudioMutationResultPanel";
 import { useStudioGuardedActionSubmit } from "@/lib/useStudioGuardedActionSubmit";
+import { AnalyticsReportActionPanel } from "./AnalyticsReportActionPanel";
 
 type AnalyticsFormat = "csv" | "json";
 
@@ -54,19 +55,6 @@ export function AnalyticsActionPanel() {
       submittingMessage: "Importing manual analytics...",
       successMessage: "Analytics imported. Studio is refreshing the local analytics overview.",
       successToastTitle: "Analytics imported",
-    });
-  }
-
-  async function refreshReport(): Promise<void> {
-    await submit({
-      actionId: "analytics.report",
-      body: {},
-      errorToastTitle: "Analytics report refresh was blocked",
-      fallbackError: "Analytics report could not be refreshed.",
-      routePath: "/actions/analytics-report",
-      submittingMessage: "Refreshing analytics report...",
-      successMessage: "Analytics report refreshed from saved local data.",
-      successToastTitle: "Analytics report refreshed",
     });
   }
 
@@ -136,17 +124,10 @@ export function AnalyticsActionPanel() {
               <Button disabled={!ready} type='submit'>
                 {state.kind === "submitting" ? "Working..." : "Import analytics"}
               </Button>
-              <Button
-                disabled={state.kind === "submitting"}
-                type='button'
-                variant='secondary'
-                onClick={() => void refreshReport()}
-              >
-                Refresh report
-              </Button>
+              <AnalyticsReportActionPanel showResult={false} />
             </div>
           </form>
-          <StudioMutationResultPanel state={state} />
+          {state.kind !== "idle" ? <StudioMutationResultPanel state={state} /> : null}
         </CardContent>
       </Card>
     </section>

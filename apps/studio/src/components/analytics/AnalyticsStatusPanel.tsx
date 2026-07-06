@@ -1,9 +1,10 @@
 import Link from "next/link";
 import type { StudioAnalyticsOverview } from "@/lib/analyticsOverview";
 import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
-import { CopyableCommand } from "@/components/studio/CopyableCommand";
+import { CliFallbackCommand } from "@/components/studio/CliFallbackCommand";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { AnalyticsReportActionPanel } from "./AnalyticsReportActionPanel";
 
 type AnalyticsStatusPanelProps = Readonly<{
   overview: StudioAnalyticsOverview;
@@ -44,7 +45,13 @@ export function AnalyticsStatusPanel({ overview }: AnalyticsStatusPanelProps) {
           </p>
           <div className='space-y-3 rounded-xl bg-muted/25 p-3'>
             <strong className='text-sm'>Next safe action</strong>
-            <CopyableCommand command={overview.nextCommand} label='Analytics command' />
+            <AnalyticsReportActionPanel compact />
+            <CliFallbackCommand
+              align='start'
+              command={overview.nextCommand}
+              label='Analytics command'
+              triggerLabel='Show analytics fallback'
+            />
           </div>
           {overview.error ? <p className='text-sm text-destructive'>{overview.error}</p> : null}
           {overview.reportWarning ? (

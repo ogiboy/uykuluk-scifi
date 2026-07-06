@@ -1,10 +1,11 @@
 import type { StudioAnalyticsOverview } from "@/lib/analyticsOverview";
 import { ArtifactPreview } from "@/components/studio/ArtifactPreview";
-import { CopyableCommand } from "@/components/studio/CopyableCommand";
+import { CliFallbackCommand } from "@/components/studio/CliFallbackCommand";
 import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { AnalyticsActionPanel } from "./AnalyticsActionPanel";
+import { AnalyticsReportActionPanel } from "./AnalyticsReportActionPanel";
 
 type AnalyticsOverviewViewProps = Readonly<{
   overview: StudioAnalyticsOverview;
@@ -54,7 +55,13 @@ export function AnalyticsOverviewView({ overview }: AnalyticsOverviewViewProps) 
             </h2>
           </CardHeader>
           <CardContent className='space-y-4'>
-            <CopyableCommand command={overview.nextCommand} label='Analytics command' />
+            <AnalyticsReportActionPanel compact />
+            <CliFallbackCommand
+              align='start'
+              command={overview.nextCommand}
+              label='Analytics command'
+              triggerLabel='Show analytics fallback'
+            />
             <p className='text-sm text-muted-foreground'>
               Read-only display from local operator-provided analytics artifacts. Studio does not
               call YouTube APIs, infer causality, upload media, publish content, or mutate workflow
