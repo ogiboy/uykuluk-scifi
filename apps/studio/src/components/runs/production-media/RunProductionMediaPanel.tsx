@@ -7,10 +7,11 @@ import {
 } from "@/lib/runEvidenceCopy";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import { studioMediaArtifactUrl } from "@/lib/studioMediaArtifacts";
-import { RunDetailCard } from "./RunDetailCard";
-import { CopyableCommand } from "../studio/CopyableCommand";
-import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
-import { Badge } from "../ui/badge";
+import { CopyableCommand } from "@/components/studio/CopyableCommand";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { RunDetailCard } from "../RunDetailCard";
 import { RunProductionMediaFacts } from "./RunProductionMediaFacts";
 import { RunProductionMediaPreview } from "./RunProductionMediaPreview";
 import { RunProductionMediaSummary } from "./RunProductionMediaSummary";
@@ -96,23 +97,29 @@ function ProductionMediaCard({
 }>) {
   const mediaUrl = mediaPreviewUrl(runId, artifact);
   return (
-    <article className='grid min-w-0 gap-4 rounded-lg bg-background/35 p-4'>
-      <div className='grid gap-2'>
-        <p className='break-all font-mono text-xs text-muted-foreground'>{artifact.artifactPath}</p>
+    <Card className='min-w-0 gap-4 overflow-hidden border border-transparent bg-background/35 py-4 shadow-none'>
+      <CardHeader className='gap-2 px-4'>
+        <CardDescription className='break-all font-mono text-xs'>
+          {artifact.artifactPath}
+        </CardDescription>
         <div className='flex flex-wrap items-center justify-between gap-2'>
-          <h3 className='text-base font-semibold'>{artifact.label}</h3>
+          <CardTitle>
+            <h3 className='text-base font-semibold leading-snug'>{artifact.label}</h3>
+          </CardTitle>
           <Badge variant={mediaStatusBadgeVariant(artifact.status)}>{artifact.status}</Badge>
         </div>
-      </div>
-      <RunProductionMediaFacts artifact={artifact} />
-      {mediaUrl ? (
-        <RunProductionMediaPreview artifact={artifact} mediaUrl={mediaUrl} runId={runId} />
-      ) : null}
-      <p className='rounded-lg bg-muted/10 p-3 text-sm text-muted-foreground'>
-        Review: {productionMediaReviewAction(evidenceStatus, artifact)}
-      </p>
-      <MediaCommandList artifact={artifact} />
-    </article>
+      </CardHeader>
+      <CardContent className='grid gap-4 px-4'>
+        <RunProductionMediaFacts artifact={artifact} />
+        {mediaUrl ? (
+          <RunProductionMediaPreview artifact={artifact} mediaUrl={mediaUrl} runId={runId} />
+        ) : null}
+        <p className='rounded-lg bg-muted/10 p-3 text-sm text-muted-foreground'>
+          Review: {productionMediaReviewAction(evidenceStatus, artifact)}
+        </p>
+        <MediaCommandList artifact={artifact} />
+      </CardContent>
+    </Card>
   );
 }
 

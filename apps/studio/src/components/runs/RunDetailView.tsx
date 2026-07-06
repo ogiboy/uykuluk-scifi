@@ -4,7 +4,7 @@ import { TabsContent } from "@/components/ui/tabs";
 import { RunArtifactPreviewsPanel } from "./RunArtifactPreviewsPanel";
 import { RunChannelHandoffPanel } from "./RunChannelHandoffPanel";
 import { RunFinalReviewBundlePanel } from "./RunFinalReviewBundlePanel";
-import { RunProductionMediaPanel } from "./RunProductionMediaPanel";
+import { RunProductionMediaPanel } from "./production-media/RunProductionMediaPanel";
 import { RunReadinessDiagnosticsPanels } from "./RunReadinessDiagnosticsPanels";
 import { RunReviewActionSummarySheet } from "./RunReviewActionSummarySheet";
 import { RunReviewCockpitHeader } from "./RunReviewCockpitHeader";
