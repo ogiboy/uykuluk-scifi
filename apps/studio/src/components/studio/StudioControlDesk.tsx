@@ -14,6 +14,7 @@ import { startIdeasReadinessFromDoctor } from "@/lib/startIdeasReadiness";
 import { runReviewHrefFromSummary } from "@/lib/runReviewNavigation";
 import { EmptyRunCard } from "./EmptyRunCard";
 import { HomeActionQueuePanel } from "./HomeActionQueuePanel";
+import { OperatorBrief } from "./OperatorBrief";
 import { StudioLastMutationNotice } from "./StudioLastMutationNotice";
 import { StartNewRunPanel } from "./StartNewRunPanel";
 import { StudioMutationSessionPanel } from "./StudioMutationSessionPanel";
@@ -54,6 +55,8 @@ export function StudioControlDesk({ actionStatus, doctorOverview, runs }: Studio
             Open all runs
           </Link>
         </div>
+
+        <OperatorBrief latestRun={latestRun} startIdeasReadiness={startIdeasReadiness} />
 
         {latestRun ? (
           <ActiveRunCard run={latestRun} />
