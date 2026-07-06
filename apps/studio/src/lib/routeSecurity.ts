@@ -42,6 +42,7 @@ export const readOnlyStudioRoutes = [
   route("runs.index", "/runs"),
   route("runs.detail", "/runs/[runId]"),
   route("runs.media", "/runs/[runId]/media/[...artifactPath]"),
+  route("ideas.index", "/ideas"),
   route("assets.index", "/assets"),
   route("analytics.index", "/analytics"),
   route("doctor.index", "/doctor"),
