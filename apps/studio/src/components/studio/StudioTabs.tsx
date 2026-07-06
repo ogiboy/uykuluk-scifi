@@ -82,7 +82,7 @@ export function StudioTabs({
         </TabsList>
         {tabItems.map((item) => (
           <TabsContent
-            className='rounded-lg border bg-card p-4'
+            className='rounded-lg bg-card/60 p-4 ring-1 ring-border/5'
             key={item.value}
             value={item.value}
           >

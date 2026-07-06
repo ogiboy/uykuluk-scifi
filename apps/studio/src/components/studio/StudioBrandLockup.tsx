@@ -14,7 +14,7 @@ export function StudioBrandLockup() {
       href='/'
     >
       <span
-        className='grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-lg border bg-card text-primary'
+        className='grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-lg bg-card text-primary ring-1 ring-border/10'
         aria-hidden='true'
       >
         <Image

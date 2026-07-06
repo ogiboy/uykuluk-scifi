@@ -49,7 +49,7 @@ export function RunPrimaryActionPanel({
   }
 
   return (
-    <Card className='gap-5 border-accent/30 bg-card/95' aria-labelledby={headingId}>
+    <Card className='gap-5 bg-card/95 ring-primary/10' aria-labelledby={headingId}>
       <CardHeader className='grid grid-cols-[1fr_auto] items-start gap-4'>
         <PrimaryActionHeader action={action} headingId={headingId} />
       </CardHeader>

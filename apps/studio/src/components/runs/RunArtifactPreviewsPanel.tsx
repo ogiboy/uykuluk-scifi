@@ -68,7 +68,7 @@ export function RunArtifactPreviewsPanel({
     >
       <p className='text-sm text-muted-foreground'>{artifactPreviewsIntro(evidenceStatus)}</p>
       <div
-        className='grid gap-3 rounded-lg border bg-muted/20 p-3 md:grid-cols-[minmax(0,1fr)_minmax(12rem,15rem)_auto] md:items-end'
+        className='grid gap-3 rounded-lg bg-muted/20 p-3 ring-1 ring-border/10 md:grid-cols-[minmax(0,1fr)_minmax(12rem,15rem)_auto] md:items-end'
         aria-label='Artifact preview filters'
       >
         <label className='grid min-w-0 gap-2 text-xs font-semibold text-muted-foreground'>
@@ -119,7 +119,7 @@ export function RunArtifactPreviewsPanel({
         </output>
       </div>
       <section
-        className='grid gap-3 rounded-lg border bg-muted/20 p-3'
+        className='grid gap-3 rounded-lg bg-muted/20 p-3 ring-1 ring-border/10'
         aria-label='Artifact review handoff milestones'
       >
         <div className='flex flex-wrap items-start justify-between gap-3'>
@@ -138,7 +138,10 @@ export function RunArtifactPreviewsPanel({
         </div>
         <ol className='grid gap-2 md:grid-cols-2'>
           {reviewHandoff.milestones.map((milestone) => (
-            <li className='grid gap-1 rounded-lg border bg-background p-3' key={milestone.path}>
+            <li
+              className='grid gap-1 rounded-lg bg-background/70 p-3 ring-1 ring-border/10'
+              key={milestone.path}
+            >
               <Badge
                 className='justify-self-start'
                 variant={milestone.available ? "secondary" : "outline"}
@@ -153,7 +156,7 @@ export function RunArtifactPreviewsPanel({
       </section>
       {filteredArtifacts.length === 0 ? (
         <section
-          className='rounded-lg border border-dashed bg-muted/20 p-4'
+          className='rounded-lg bg-muted/20 p-4 ring-1 ring-border/10'
           aria-labelledby='artifact-preview-empty-heading'
         >
           <h3 id='artifact-preview-empty-heading' className='text-sm font-semibold'>

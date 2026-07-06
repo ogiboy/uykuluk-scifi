@@ -20,7 +20,7 @@ export function StudioPageHeader({ actions, badge, eyebrow, title }: StudioPageH
   const headerActions = actions ?? (badge ? <Badge variant='secondary'>{badge}</Badge> : null);
 
   return (
-    <header className='grid gap-4 border-b border-border/40 pb-6 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start'>
+    <header className='grid gap-4 pb-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start'>
       <div className='min-w-0 space-y-2'>
         <p className='text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground'>
           {eyebrow}
