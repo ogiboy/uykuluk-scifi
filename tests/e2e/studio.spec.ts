@@ -10,21 +10,15 @@ test("studio shell renders operator surfaces", async ({ page }) => {
   const operatorBrief = page.getByRole("region", { name: "Operator brief" });
   await expect(operatorBrief).toBeVisible();
   await expect(operatorBrief).toContainText("Next safe action");
-  await expect(page.getByRole("heading", { name: "Run Control" })).toBeVisible();
-  await expect(page.getByText("CLI/Core", { exact: true })).toBeVisible();
-  await expect(page.getByText("Blocked", { exact: true })).toBeVisible();
-  const doctorRegion = page.getByRole("region", { name: "Doctor Diagnostics" });
-  await expect(doctorRegion).toBeVisible();
-  await expect(doctorRegion.getByText("Next safe action")).toBeVisible();
-  const readinessRegion = page.getByRole("region", { name: "Latest Run Readiness" });
-  await expect(readinessRegion).toBeVisible();
-  await expect(readinessRegion.getByText("Next safe action")).toBeVisible();
-  const analyticsRegion = page.getByRole("region", { name: "Analytics Feedback" });
-  await expect(analyticsRegion).toBeVisible();
-  await expect(analyticsRegion.getByText("Next safe action")).toBeVisible();
-  await expect(page.getByRole("region", { name: "Safety gates" })).toBeVisible();
-  await expect(page.getByRole("region", { name: "Action queue" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Asset Inventory" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Run snapshot" })).toBeVisible();
+  await expect(
+    page.getByRole("complementary", { name: "Studio safety and queue summary" }),
+  ).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Home shortcuts" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /focused operator pages/i })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Open doctor" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Open analytics" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Open assets" })).toBeVisible();
 });
 
 test("studio exposes guarded action contracts on the actions route", async ({ page }) => {
@@ -36,14 +30,6 @@ test("studio exposes guarded action contracts on the actions route", async ({ pa
   await expect(page.getByText("CLI Fallbacks")).toBeVisible();
   await expect(page.getByRole("button", { name: /render\.decide/i })).toBeVisible();
   await expect(page.getByText("publish.schedule")).toBeVisible();
-});
-
-test("studio module tabs are keyboard reachable", async ({ page }) => {
-  await page.goto("/");
-
-  await page.getByRole("tab", { name: /prompts/i }).click();
-  await expect(page.getByRole("tabpanel")).toContainText("Runtime prompt inventory");
-  await expect(page.getByRole("tabpanel")).toContainText("Studio does not edit prompts");
 });
 
 test("studio locale cookie configures the document language", async ({ context, page }) => {

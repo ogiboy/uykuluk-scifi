@@ -16,7 +16,7 @@ future generated release notes can be inserted predictably.
 ### Styles
 
 - soften Studio run review nested surfaces and command blocks.
-- simplify the Studio home page into a focused control desk and compact route index.
+- simplify the Studio home page into a compact control desk, home shortcuts rail, and route index.
 
 ## v0.77.0 (2026-07-05)
 
