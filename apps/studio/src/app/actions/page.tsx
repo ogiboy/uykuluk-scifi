@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { ServiceContractPanel } from "@/components/ServiceContractPanel";
 import { StudioCommandPalette } from "@/components/studio/StudioCommandPalette";
+import { StudioActionOverviewPanel } from "@/components/studio/StudioActionOverviewPanel";
 import { StudioControlDesk } from "@/components/studio/StudioControlDesk";
 import { StudioPageHeader } from "@/components/studio/StudioPageHeader";
 import { StudioShell } from "@/components/studio/StudioShell";
@@ -31,6 +32,7 @@ export default async function ActionsPage() {
         eyebrow='Approval-gated operator controls'
         title='Actions'
       />
+      <StudioActionOverviewPanel runs={runs} status={actionStatus} />
       <StudioControlDesk actionStatus={actionStatus} doctorOverview={doctorOverview} runs={runs} />
       <ServiceContractPanel status={actionStatus} />
     </StudioShell>

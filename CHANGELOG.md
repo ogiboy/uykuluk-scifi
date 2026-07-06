@@ -12,6 +12,7 @@ future generated release notes can be inserted predictably.
 ### Features
 
 - add guarded Studio local model candidate evaluation action.
+- show a route-level guarded action overview on the Studio actions page.
 
 ### Styles
 
