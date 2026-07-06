@@ -1,7 +1,7 @@
 "use client";
 
 import { ShieldCheckIcon } from "lucide-react";
-import { CopyableCommand } from "@/components/studio/CopyableCommand";
+import { CliFallbackCommand } from "@/components/studio/CliFallbackCommand";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -79,9 +79,18 @@ export function RunReviewActionSummarySheet({ run }: RunReviewActionSummarySheet
               </Badge>
             </div>
 
-            <div className='grid gap-2 rounded-lg border bg-muted/20 p-4'>
-              <strong className='text-sm'>Next safe action</strong>
-              <CopyableCommand command={getNextSafeCommand(run)} label='Next safe action' />
+            <div className='flex flex-wrap items-center justify-between gap-3 rounded-lg bg-muted/15 p-4 ring-1 ring-border/5'>
+              <div className='grid gap-1 text-sm'>
+                <strong>CLI/core fallback</strong>
+                <span className='text-muted-foreground'>
+                  Reveal only when you need terminal recovery or audit copy.
+                </span>
+              </div>
+              <CliFallbackCommand
+                align='start'
+                command={getNextSafeCommand(run)}
+                label='Next safe action'
+              />
             </div>
 
             <RunPrimaryActionPanel compact run={run} />
@@ -102,9 +111,17 @@ export function RunReviewActionSummarySheet({ run }: RunReviewActionSummarySheet
             )}
 
             {run.evidenceNextAction ? (
-              <p className='rounded-lg border bg-muted/20 p-3 text-sm text-muted-foreground'>
-                Evidence action: <code className='text-foreground'>{run.evidenceNextAction}</code>
-              </p>
+              <div className='flex flex-wrap items-center justify-between gap-3 rounded-lg bg-muted/15 p-3 ring-1 ring-border/5'>
+                <p className='text-sm text-muted-foreground'>
+                  Evidence action is available as a CLI/core fallback.
+                </p>
+                <CliFallbackCommand
+                  align='start'
+                  command={run.evidenceNextAction}
+                  label='Evidence action'
+                  triggerLabel='Show evidence fallback'
+                />
+              </div>
             ) : (
               <p className='text-sm text-muted-foreground'>{run.evidenceMessage}</p>
             )}
