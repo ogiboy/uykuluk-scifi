@@ -5,6 +5,7 @@ import { StudioActionOverviewPanel } from "@/components/studio/StudioActionOverv
 import { StudioControlDesk } from "@/components/studio/StudioControlDesk";
 import { StudioPageHeader } from "@/components/studio/StudioPageHeader";
 import { StudioShell } from "@/components/studio/StudioShell";
+import { StudioWorkflowMatrixPanel } from "@/components/studio/actions/StudioWorkflowMatrixPanel";
 import { getStudioActionServiceStatus } from "@/lib/actionServiceStatus";
 import { getStudioDoctorOverview } from "@/lib/doctorOverview";
 import { listStudioRuns } from "@/lib/runSummaries";
@@ -33,6 +34,7 @@ export default async function ActionsPage() {
         title='Actions'
       />
       <StudioActionOverviewPanel runs={runs} status={actionStatus} />
+      <StudioWorkflowMatrixPanel status={actionStatus} />
       <StudioControlDesk actionStatus={actionStatus} doctorOverview={doctorOverview} runs={runs} />
       <ServiceContractPanel status={actionStatus} />
     </StudioShell>

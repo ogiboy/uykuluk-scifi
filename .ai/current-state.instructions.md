@@ -340,9 +340,9 @@
   idea-run and workflow-stage/review/revision actions, local render/channel-handoff decisions,
   manual analytics actions, and disabled upload/publish actions. Contracts validate payloads, bind
   actions to CLI/core modules/exports, and require CSRF, durable evidence, and explicit approval.
-- Studio home renders a mutation-service status panel showing guarded local approval/review routes,
-  disabled upload/publish routes, CLI-ready action contracts, route-security findings, and
-  upload/publish risk boundaries without exposing upload/publish web mutations.
+- Studio actions/home render mutation-service and workflow-matrix panels showing guarded local
+  approval/review routes, CLI-ready contracts, route-security findings, and disabled upload/publish
+  boundaries without exposing upload/publish web mutations.
 - Manual analytics feedback foundation. `producer analytics import --file <path>` accepts
   operator-provided CSV/JSON performance exports and writes ignored local
   `analytics/performance.json`, `analytics/performance_report.md`, and a fillable

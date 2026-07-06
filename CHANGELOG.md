@@ -14,6 +14,7 @@ future generated release notes can be inserted predictably.
 - add guarded Studio local model candidate evaluation action.
 - block repeated idea titles using compact runtime idea history.
 - surface runtime idea history on a read-only Studio page.
+- show a v1 workflow control matrix on the Studio actions page.
 - show a route-level guarded action overview on the Studio actions page.
 
 ### Styles

@@ -27,13 +27,16 @@ test("studio exposes guarded action contracts on the actions route", async ({ pa
 
   await expect(page.getByRole("heading", { exact: true, name: "Actions" })).toBeVisible();
   await expect(page.getByRole("heading", { name: /same-origin/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Workflow Control Matrix" })).toBeVisible();
+  await expect(page.getByText("Idea intake")).toBeVisible();
+  await expect(page.getByText("Local media review")).toBeVisible();
   await expect(page.getByRole("region", { name: "Run action queue" })).toBeVisible();
   await expect(page.getByRole("region", { name: "Route contracts" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Mutation Service Contracts" })).toBeVisible();
   await expect(page.getByText("Web Controls", { exact: true })).toBeVisible();
   await expect(page.getByText("CLI Fallbacks", { exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: /render\.decide/i })).toBeVisible();
-  await expect(page.getByText("publish.schedule")).toBeVisible();
+  await expect(page.getByRole("button", { name: "publish.schedule disabled" })).toBeVisible();
 });
 
 test("studio locale cookie configures the document language", async ({ context, page }) => {

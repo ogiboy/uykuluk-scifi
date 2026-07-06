@@ -470,6 +470,8 @@ Current Studio scope:
   contact sheets, asset provenance, evidence, readiness, voiceover metadata, and render manifests,
   grouped by operator review phase, with binary media limited to metadata;
 - run/workflow command overview;
+- `/actions` workflow control matrix showing which v1 production steps have guarded web routes,
+  which remain CLI fallback, and which external upload/publish actions are disabled;
 - home-page doctor diagnostics summary showing the persisted doctor status and next safe action;
 - read-only `/doctor` page over ignored `diagnostics/doctor.json` and `diagnostics/doctor.md`,
   showing local config/provider/TTS/asset/publish checks and next safe remediation without running
