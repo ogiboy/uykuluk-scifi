@@ -9,6 +9,9 @@ export function operatorActionDetail(action: OperatorAction): string {
   if (action.routePath) {
     return "Guarded local web action";
   }
+  if (action.tone === "attention") {
+    return "Needs operator review";
+  }
   if (action.command) {
     return action.tone === "blocked" ? "Blocked manual recovery" : "CLI-only next action";
   }
@@ -24,6 +27,9 @@ export function operatorActionToneLabel(action: OperatorAction): string {
   }
   if (action.tone === "complete") {
     return "done";
+  }
+  if (action.tone === "attention") {
+    return "review";
   }
   return "CLI";
 }

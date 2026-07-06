@@ -30,6 +30,7 @@ export type StudioActionWorkbenchCounts = Readonly<{
   blockedCli: number;
   cliOnly: number;
   complete: number;
+  needsReview: number;
   webAction: number;
 }>;
 
@@ -68,7 +69,7 @@ export function buildStudioActionWorkbench(run: StudioActionWorkbenchRun): Studi
  * Counts action-workbench categories for an operator queue projection.
  *
  * @param runs - Run summaries or details shown in the current queue.
- * @returns Counts for guarded web actions, blocked CLI recovery, CLI-only actions, and no-action states.
+ * @returns Counts for guarded web actions, blocked CLI recovery, CLI-only actions, review-needed states, and no-action states.
  */
 export function countStudioActionWorkbench(
   runs: readonly StudioActionWorkbenchRun[],
@@ -82,7 +83,10 @@ export function countStudioActionWorkbench(
       if (tone === "blocked") {
         return { ...counts, blockedCli: counts.blockedCli + 1 };
       }
-      if (tone === "cli-only" || tone === "attention") {
+      if (tone === "attention") {
+        return { ...counts, needsReview: counts.needsReview + 1 };
+      }
+      if (tone === "cli-only") {
         return { ...counts, cliOnly: counts.cliOnly + 1 };
       }
       return { ...counts, complete: counts.complete + 1 };
@@ -91,6 +95,7 @@ export function countStudioActionWorkbench(
       blockedCli: 0,
       cliOnly: 0,
       complete: 0,
+      needsReview: 0,
       webAction: 0,
     },
   );
@@ -134,6 +139,16 @@ function primaryWorkbenchAction(run: StudioActionWorkbenchRun): StudioActionWork
       label: stageAction.heading,
       routePath: stageAction.routePath,
       tone: "available",
+    };
+  }
+  if (isGlobalIdeasCommand(run.nextRecommendedCommand)) {
+    return {
+      command: null,
+      description:
+        "The ideas command creates a separate local run instead of advancing this persisted run. Use the Start idea run control from the control desk or runs page when you want a new idea-generation run.",
+      label: "No run-bound action",
+      routePath: null,
+      tone: "attention",
     };
   }
   if (run.nextRecommendedCommand) {
@@ -236,4 +251,16 @@ function actionWorkbenchBoundaries(runId: string): StudioActionWorkbenchBoundary
       label: "Disabled actions",
     },
   ];
+}
+
+function isGlobalIdeasCommand(command: string | null): boolean {
+  if (!command) {
+    return false;
+  }
+  const tokens = command.trim().split(/\s+/).filter(Boolean);
+  const prefix = ["pnpm", "producer", "ideas"];
+  return (
+    prefix.every((token, index) => tokens[index] === token) &&
+    tokens.slice(prefix.length).every((token) => token === "--json")
+  );
 }

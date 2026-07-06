@@ -42,5 +42,8 @@ export function operatorBriefToneLabel(tone: StudioRunPrimaryAction["tone"]): st
   if (tone === "complete") {
     return "complete";
   }
+  if (tone === "attention") {
+    return "review";
+  }
   return "CLI-only";
 }

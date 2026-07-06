@@ -140,6 +140,9 @@ export function RunQueueExplorer({ runs, startIdeasReadiness }: RunQueueExplorer
             {actionCounts.blockedCli > 0 ? (
               <Badge variant='destructive'>{actionCounts.blockedCli} blocked CLI</Badge>
             ) : null}
+            {actionCounts.needsReview > 0 ? (
+              <Badge variant='outline'>{actionCounts.needsReview} review</Badge>
+            ) : null}
             {actionCounts.cliOnly > 0 ? (
               <Badge variant='outline'>{actionCounts.cliOnly} CLI-only</Badge>
             ) : null}

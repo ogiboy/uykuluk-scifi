@@ -6,7 +6,6 @@ export type StudioStageActionId = Extract<
   | "channel-handoff.run"
   | "estimate.run"
   | "evidence.run"
-  | "ideas.run"
   | "package.run"
   | "readiness.run"
   | "render.review"
@@ -26,7 +25,6 @@ export type StudioStageActionConfig = Readonly<{
   commandPrefix: string;
   description: string;
   heading: string;
-  requiresRunId: boolean;
   routePath: string;
 }>;
 
@@ -35,33 +33,31 @@ export type StudioStageActionRun = Pick<
   "nextRecommendedCommand" | "runId" | "state"
 >;
 
-type StudioStageActionFields = readonly [string, string, string, string, boolean];
+type StudioStageActionFields = readonly [string, string, string, string];
 
 // prettier-ignore
 const studioStageActionRows = {
-  "ideas.run": ["/actions/run-ideas", "ideas", "Start Ideas Run", "Start a new local idea-generation run through the guarded local route.", false],
-  "script.run": ["/actions/run-script", "script", "Generate Script", "Generate the next script draft for the approved idea.", true],
-  "script.review": ["/actions/review-script", "review script", "Review Script", "Run the local script review and persist warnings/blockers for approval.", true],
-  "package.run": ["/actions/run-package", "package", "Generate Package", "Generate production package artifacts from the approved script.", true],
-  "render-plan.run": ["/actions/run-render-plan", "render-plan", "Generate Render Plan", "Generate the deterministic render plan, contact sheet, and asset provenance.", true],
-  "render-plan.review": ["/actions/review-render-plan", "review render-plan", "Review Render Plan", "Open the render-plan handoff through the canonical local review command.", true],
-  "estimate.run": ["/actions/run-estimate", "estimate", "Regenerate Estimate", "Regenerate the current cost estimate before approval or readiness work.", true],
-  "evidence.run": ["/actions/run-evidence", "evidence", "Regenerate Evidence", "Regenerate evidence from persisted artifacts so Studio status can trust it.", true],
-  "readiness.run": ["/actions/run-readiness", "readiness", "Run Readiness", "Run readiness diagnostics through the canonical local workflow.", true],
-  "voice.run": ["/actions/run-voice", "voice", "Generate Voiceover", "Generate local voiceover only when TTS config and workflow guards allow it.", true],
-  "voice.review": ["/actions/review-voice", "review voice", "Review Voiceover", "Open the local voiceover review handoff before render approval.", true],
-  "render.run": ["/actions/run-render", "render", "Render Draft", "Generate the local FFmpeg draft after exact render approval.", true],
-  "render.review": ["/actions/review-render", "review render", "Review Draft Render", "Open the local draft-render review handoff without upload or publish.", true],
-  "review-bundle.run": ["/actions/run-review-bundle", "review-bundle", "Create Final Review Bundle", "Create the final local review bundle after the render decision.", true],
-  "channel-handoff.run": ["/actions/run-channel-handoff", "channel-handoff", "Create Channel Handoff", "Create the manual channel handoff package while upload and publish remain disabled.", true],
+  "script.run": ["/actions/run-script", "script", "Generate Script", "Generate the next script draft for the approved idea."],
+  "script.review": ["/actions/review-script", "review script", "Review Script", "Run the local script review and persist warnings/blockers for approval."],
+  "package.run": ["/actions/run-package", "package", "Generate Package", "Generate production package artifacts from the approved script."],
+  "render-plan.run": ["/actions/run-render-plan", "render-plan", "Generate Render Plan", "Generate the deterministic render plan, contact sheet, and asset provenance."],
+  "render-plan.review": ["/actions/review-render-plan", "review render-plan", "Review Render Plan", "Open the render-plan handoff through the canonical local review command."],
+  "estimate.run": ["/actions/run-estimate", "estimate", "Regenerate Estimate", "Regenerate the current cost estimate before approval or readiness work."],
+  "evidence.run": ["/actions/run-evidence", "evidence", "Regenerate Evidence", "Regenerate evidence from persisted artifacts so Studio status can trust it."],
+  "readiness.run": ["/actions/run-readiness", "readiness", "Run Readiness", "Run readiness diagnostics through the canonical local workflow."],
+  "voice.run": ["/actions/run-voice", "voice", "Generate Voiceover", "Generate local voiceover only when TTS config and workflow guards allow it."],
+  "voice.review": ["/actions/review-voice", "review voice", "Review Voiceover", "Open the local voiceover review handoff before render approval."],
+  "render.run": ["/actions/run-render", "render", "Render Draft", "Generate the local FFmpeg draft after exact render approval."],
+  "render.review": ["/actions/review-render", "review render", "Review Draft Render", "Open the local draft-render review handoff without upload or publish."],
+  "review-bundle.run": ["/actions/run-review-bundle", "review-bundle", "Create Final Review Bundle", "Create the final local review bundle after the render decision."],
+  "channel-handoff.run": ["/actions/run-channel-handoff", "channel-handoff", "Create Channel Handoff", "Create the manual channel handoff package while upload and publish remain disabled."],
 } as const satisfies Record<StudioStageActionId, StudioStageActionFields>;
 
 const studioStageActionIds = Object.keys(studioStageActionRows) as StudioStageActionId[];
 
 export const studioStageActionConfigs = studioStageActionIds.map((actionId) => {
-  const [routePath, producerCommand, heading, description, requiresRunId] =
-    studioStageActionRows[actionId];
-  return stageAction(actionId, routePath, producerCommand, heading, description, requiresRunId);
+  const [routePath, producerCommand, heading, description] = studioStageActionRows[actionId];
+  return stageAction(actionId, routePath, producerCommand, heading, description);
 }) satisfies readonly StudioStageActionConfig[];
 
 /**
@@ -89,9 +85,7 @@ export function stageActionForRun(run: StudioStageActionRun): StudioStageActionC
   }
   return (
     studioStageActionConfigs.find((config) =>
-      config.requiresRunId
-        ? commandMatchesRunStageAction(command, run.runId, config.commandPrefix)
-        : commandMatchesGlobalStageAction(command, config.commandPrefix),
+      commandMatchesRunStageAction(command, run.runId, config.commandPrefix),
     ) ?? null
   );
 }
@@ -102,7 +96,6 @@ function stageAction(
   producerCommand: string,
   heading: string,
   description: string,
-  requiresRunId: boolean,
 ): StudioStageActionConfig {
   return {
     actionId,
@@ -110,7 +103,6 @@ function stageAction(
     commandPrefix: `pnpm producer ${producerCommand}`,
     description,
     heading,
-    requiresRunId,
     routePath,
   };
 }
@@ -129,16 +121,6 @@ function commandMatchesRunStageAction(
     (token, index) => index >= prefixTokens.length && token === "--run",
   );
   return runFlagIndex >= 0 && tokens[runFlagIndex + 1] === runId;
-}
-
-function commandMatchesGlobalStageAction(command: string, commandPrefix: string): boolean {
-  const tokens = commandTokens(command);
-  const prefixTokens = commandTokens(commandPrefix);
-  if (!tokensStartWith(tokens, prefixTokens)) {
-    return false;
-  }
-  const trailingTokens = tokens.slice(prefixTokens.length);
-  return trailingTokens.every((token) => token === "--json");
 }
 
 function commandTokens(command: string): string[] {

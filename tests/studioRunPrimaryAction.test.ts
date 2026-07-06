@@ -5,7 +5,7 @@ import {
 } from "../apps/studio/src/lib/runPrimaryAction";
 
 describe("Studio run primary action", () => {
-  it("promotes a new ideas run to the guarded web action", () => {
+  it("does not promote global ideas generation as a run-bound web action", () => {
     const action = buildStudioRunPrimaryAction(
       runPrimaryActionFixture({
         nextRecommendedCommand: "pnpm producer ideas",
@@ -14,10 +14,11 @@ describe("Studio run primary action", () => {
     );
 
     expect(action).toMatchObject({
-      label: "Start Ideas Run",
-      mode: "stage",
-      routePath: "/actions/run-ideas",
-      tone: "available",
+      command: null,
+      label: "No run-bound action",
+      mode: "complete",
+      routePath: null,
+      tone: "attention",
     });
   });
 

@@ -35,18 +35,14 @@ export function RunStageActionConfirmationDialog({
   open,
   runId,
 }: RunStageActionConfirmationDialogProps) {
-  const scopeDescription = action.requiresRunId
-    ? `Studio will run the canonical producer CLI for ${runId}.`
-    : "Studio will run the canonical producer CLI to create a new local run.";
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Confirm local workflow action</DialogTitle>
           <DialogDescription>
-            {scopeDescription} Upload, scheduling, public publish, and paid-provider execution
-            remain unavailable from this action.
+            Studio will run the canonical producer CLI for {runId}. Upload, scheduling, public
+            publish, and paid-provider execution remain unavailable from this action.
           </DialogDescription>
         </DialogHeader>
         <div className='space-y-4 rounded-lg border bg-muted/30 p-4'>

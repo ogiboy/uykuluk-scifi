@@ -18,7 +18,7 @@ export type HomeActionQueueSummaryItem = Readonly<{
  * Builds the compact action-category summary shown on the Studio home queue.
  *
  * @param runs - Run summaries or details shown in the home operator queue.
- * @returns Ordered web, blocked, CLI-only, and complete counts.
+ * @returns Ordered web, blocked, review, CLI-only, and complete counts.
  */
 export function homeActionQueueSummaryItems(
   runs: readonly StudioActionWorkbenchRun[],
@@ -38,6 +38,13 @@ export function homeActionQueueSummaryItems(
       label: "Blocked CLI",
       tone: "blocked",
       value: counts.blockedCli,
+    },
+    {
+      detail: "The run needs operator review before a run-bound action is safe.",
+      key: "needsReview",
+      label: "Needs review",
+      tone: "neutral",
+      value: counts.needsReview,
     },
     {
       detail: "The safe next step is visible but not exposed as a web route.",

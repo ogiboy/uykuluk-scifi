@@ -132,6 +132,24 @@ describe("Studio action workbench", () => {
     );
   });
 
+  it("does not treat global ideas generation as a run-bound action", () => {
+    const workbench = buildStudioActionWorkbench(
+      actionRunFixture({
+        nextRecommendedCommand: "pnpm producer ideas",
+        state: "NEW",
+      }),
+    );
+
+    expect(workbench.primary).toEqual(
+      expect.objectContaining({
+        command: null,
+        label: "No run-bound action",
+        routePath: null,
+        tone: "attention",
+      }),
+    );
+  });
+
   it("selects the local channel handoff decision route after handoff evidence is present", () => {
     const nextAction =
       "pnpm producer decide channel-handoff --run run_workbench --decision accepted-for-manual-channel-prep";
@@ -180,6 +198,7 @@ describe("Studio action workbench", () => {
       blockedCli: 1,
       cliOnly: 1,
       complete: 1,
+      needsReview: 0,
       webAction: 1,
     });
   });
