@@ -1,10 +1,15 @@
 import Link from "next/link";
 import type { Route } from "next";
+import { RunQuickStageActionButton } from "@/components/runs/RunQuickStageActionButton";
 import { CopyableCommand } from "@/components/studio/CopyableCommand";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { buildStudioRunPrimaryAction } from "@/lib/runPrimaryAction";
+import {
+  operatorBriefControlForAction,
+  operatorBriefToneLabel,
+} from "@/lib/operatorBriefPresentation";
 import { runReviewHrefFromSummary } from "@/lib/runReviewNavigation";
 import { NO_RUNS_NEXT_COMMAND } from "@/lib/runSummaryCopy";
 import type { StudioRunSummary } from "@/lib/runSummaries";
@@ -30,6 +35,7 @@ export function OperatorBrief({ latestRun, startIdeasReadiness }: OperatorBriefP
   }
 
   const action = buildStudioRunPrimaryAction(latestRun);
+  const control = operatorBriefControlForAction(action);
   const briefHref = runReviewHrefFromSummary(latestRun, "review-decision") as Route;
   return (
     <section aria-label='Operator brief'>
@@ -46,7 +52,7 @@ export function OperatorBrief({ latestRun, startIdeasReadiness }: OperatorBriefP
             </CardTitle>
           </div>
           <Badge variant={action.tone === "blocked" ? "destructive" : "secondary"}>
-            {briefToneLabel(action.tone)}
+            {operatorBriefToneLabel(action.tone)}
           </Badge>
         </CardHeader>
         <CardContent className='grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end'>
@@ -57,13 +63,17 @@ export function OperatorBrief({ latestRun, startIdeasReadiness }: OperatorBriefP
           </div>
           <div className='grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] lg:min-w-80'>
             <p className='text-sm text-muted-foreground'>{action.description}</p>
-            {action.command ? (
+            {control === "stage-button" ? (
+              <RunQuickStageActionButton label={action.label} run={latestRun} showResult />
+            ) : null}
+            {control === "copy-command" && action.command ? (
               <CopyableCommand command={action.command} label='Operator brief command' />
-            ) : (
+            ) : null}
+            {control === "run-controls-link" || control === "done" ? (
               <Link className={buttonVariants({ variant: "default" })} href={briefHref}>
                 Open run controls
               </Link>
-            )}
+            ) : null}
           </div>
         </CardContent>
       </Card>
@@ -106,17 +116,4 @@ function OperatorBriefFact({ label, value }: Readonly<{ label: string; value: st
       </p>
     </div>
   );
-}
-
-function briefToneLabel(tone: ReturnType<typeof buildStudioRunPrimaryAction>["tone"]): string {
-  if (tone === "available") {
-    return "web-ready";
-  }
-  if (tone === "blocked") {
-    return "blocked";
-  }
-  if (tone === "complete") {
-    return "complete";
-  }
-  return "CLI-only";
 }
