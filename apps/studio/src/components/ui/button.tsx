@@ -10,7 +10,7 @@ const buttonVariants = cva(
         default:
           "border-[color:var(--accent)] bg-[color:var(--accent)] text-[#071012] hover:bg-[color:color-mix(in_srgb,var(--accent)_78%,white)]",
         secondary:
-          "border-[color:var(--line)] bg-[color:var(--panel)] text-[color:var(--text)] hover:bg-[color:var(--panel-strong)]",
+          "border-transparent bg-[color:color-mix(in_srgb,var(--panel)_72%,transparent)] text-[color:var(--text)] hover:bg-[color:var(--panel-strong)]",
         ghost:
           "border-transparent text-[color:var(--muted)] hover:bg-[color:var(--panel)] hover:text-[color:var(--text)]",
       },

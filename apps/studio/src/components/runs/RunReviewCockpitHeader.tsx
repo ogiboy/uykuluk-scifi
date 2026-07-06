@@ -80,7 +80,7 @@ export function RunReviewCockpitHeader({ run }: RunReviewCockpitHeaderProps) {
       </CardContent>
       <CardContent className='col-span-full grid min-w-0 gap-3 p-0'>
         <RunPrimaryActionPanel run={run} />
-        <div className='flex flex-wrap items-center justify-between gap-3 rounded-lg bg-muted/15 p-4 ring-1 ring-border/5'>
+        <div className='flex flex-wrap items-center justify-between gap-3 rounded-lg bg-muted/10 p-4'>
           <div className='grid gap-1 text-sm'>
             <strong>CLI/core audit fallback</strong>
             <span className='text-muted-foreground'>

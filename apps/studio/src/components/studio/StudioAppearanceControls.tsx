@@ -74,7 +74,7 @@ export function StudioAppearanceControls({
 
   return (
     <section
-      className='mt-6 grid gap-3 rounded-xl bg-card/70 p-3 ring-1 ring-border/10'
+      className='mt-6 grid gap-3 rounded-xl bg-card/40 p-3'
       aria-labelledby='appearance-controls-heading'
     >
       <div>

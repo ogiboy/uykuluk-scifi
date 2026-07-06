@@ -40,7 +40,7 @@ export function OperatorBrief({ latestRun, startIdeasReadiness }: OperatorBriefP
   const briefHref = runReviewHrefFromSummary(latestRun, "review-decision") as Route;
   return (
     <section aria-label='Operator brief'>
-      <Card className='border-primary/20 bg-primary/5'>
+      <Card className='bg-primary/5'>
         <CardHeader className='gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start'>
           <div className='min-w-0 space-y-1'>
             <p className='text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground'>
@@ -87,7 +87,7 @@ function EmptyOperatorBrief({
 }: Readonly<{ startIdeasReadiness: StartIdeasReadinessSummary }>) {
   return (
     <section aria-label='Operator brief'>
-      <Card className='border-primary/20 bg-primary/5'>
+      <Card className='bg-primary/5'>
         <CardHeader className='gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start'>
           <div className='space-y-1'>
             <p className='text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground'>
@@ -119,7 +119,7 @@ function EmptyOperatorBrief({
 
 function OperatorBriefFact({ label, value }: Readonly<{ label: string; value: string }>) {
   return (
-    <div className='min-w-0 rounded-xl bg-background/60 p-3'>
+    <div className='min-w-0 rounded-xl bg-background/30 p-3'>
       <p className='text-xs font-medium text-muted-foreground'>{label}</p>
       <p className='mt-1 truncate font-semibold' title={value}>
         {value}

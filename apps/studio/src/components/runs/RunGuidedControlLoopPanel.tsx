@@ -29,9 +29,7 @@ export function RunGuidedControlLoopPanel({
     <section
       className={cn(
         "space-y-4 text-card-foreground",
-        compact
-          ? "border-t border-border/10 pt-5"
-          : "rounded-xl bg-card p-6 shadow-sm ring-1 ring-border/10",
+        compact ? "border-t border-border/10 pt-5" : "rounded-xl bg-card/60 p-6 shadow-sm",
       )}
       aria-labelledby={compact ? "home-guided-control-loop-heading" : "guided-control-loop-heading"}
     >
@@ -57,10 +55,10 @@ export function RunGuidedControlLoopPanel({
           className={cn(
             "grid gap-3 rounded-lg p-3 text-sm ring-1 sm:grid-cols-[auto_minmax(0,1fr)]",
             loop.currentStep.status === "blocked"
-              ? "bg-destructive/10 ring-destructive/20"
+              ? "bg-destructive/10 ring-destructive/15"
               : compact
-                ? "bg-muted/10 ring-border/5"
-                : "bg-muted/20 ring-border/10",
+                ? "bg-muted/10 ring-transparent"
+                : "bg-muted/15 ring-transparent",
           )}
         >
           <Badge variant={loop.currentStep.status === "blocked" ? "destructive" : "secondary"}>
@@ -77,7 +75,7 @@ export function RunGuidedControlLoopPanel({
         <p
           className={cn(
             "rounded-lg p-3 text-sm text-muted-foreground",
-            compact ? "bg-muted/10" : "bg-muted/20 ring-1 ring-border/10",
+            compact ? "bg-muted/10" : "bg-muted/15",
           )}
         >
           Studio route: <code className='text-foreground'>{loop.nextAction.routePath}</code>
@@ -88,7 +86,7 @@ export function RunGuidedControlLoopPanel({
         <div
           className={cn(
             "flex flex-wrap items-center justify-between gap-3 rounded-lg p-4",
-            compact ? "bg-muted/10" : "bg-muted/20 ring-1 ring-border/10",
+            compact ? "bg-muted/10" : "bg-muted/15",
           )}
         >
           <div className='grid gap-1 text-sm'>
@@ -112,8 +110,8 @@ export function RunGuidedControlLoopPanel({
           <div
             className={cn(
               "grid gap-2 rounded-lg p-3 text-sm",
-              compact ? "bg-muted/10" : "bg-muted/20 ring-1 ring-border/10",
-              item.tone === "blocked" && "bg-destructive/10 ring-destructive/20",
+              compact ? "bg-muted/10" : "bg-muted/15",
+              item.tone === "blocked" && "bg-destructive/10 ring-1 ring-destructive/15",
             )}
             data-tone={item.tone}
             key={item.label}
