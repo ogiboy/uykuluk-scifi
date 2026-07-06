@@ -25,7 +25,7 @@ export function RunRenderDecisionStatusPanel({
     <RunDetailCard
       headingId='render-decision-status-heading'
       title='Render Decision Status'
-      description='Read-only display. Use the CLI to record or repair local render decisions.'
+      description='Read-only display. Use the Studio decision rail when available, or the CLI/core fallback for recovery.'
     >
       <p className='flex flex-wrap items-center gap-2'>
         <RunDetailStatusBadge tone={renderDecisionStatusTone(renderDecision.kind)}>

@@ -78,7 +78,7 @@ export function StudioCommandPalette({ runs }: StudioCommandPaletteProps) {
       toast.success("Next safe command copied", { description: run.runId });
     } catch {
       toast.error("Command could not be copied", {
-        description: "Use the run detail page to copy the CLI command manually.",
+        description: "Open the run detail page and reveal the CLI/core fallback manually.",
       });
     }
   }
@@ -98,7 +98,8 @@ export function StudioCommandPalette({ runs }: StudioCommandPaletteProps) {
         <DialogHeader className='px-6 pt-6'>
           <DialogTitle>Operator command palette</DialogTitle>
           <DialogDescription>
-            Navigate Studio surfaces or copy safe CLI commands. This palette never mutates a run.
+            Navigate Studio surfaces or copy safe CLI/core fallback commands. This palette never
+            mutates a run.
           </DialogDescription>
         </DialogHeader>
         <Command className='rounded-none'>

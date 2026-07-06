@@ -1,3 +1,4 @@
+import { CliFallbackCommand } from "@/components/studio/CliFallbackCommand";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
@@ -6,7 +7,6 @@ import {
   type StudioControlLoopRun,
   type StudioControlLoopTone,
 } from "@/lib/studioControlLoop";
-import { CopyableCommand } from "../studio/CopyableCommand";
 
 type RunGuidedControlLoopPanelProps = Readonly<{
   compact?: boolean;
@@ -87,14 +87,23 @@ export function RunGuidedControlLoopPanel({
       {loop.nextAction.command ? (
         <div
           className={cn(
-            "grid gap-2 rounded-lg p-4",
+            "flex flex-wrap items-center justify-between gap-3 rounded-lg p-4",
             compact ? "bg-muted/10" : "bg-muted/20 ring-1 ring-border/10",
           )}
         >
-          <strong className='text-sm'>
-            {loop.nextAction.routePath ? "CLI equivalent" : "Manual/CLI action"}
-          </strong>
-          <CopyableCommand command={loop.nextAction.command} label='Control-loop action' />
+          <div className='grid gap-1 text-sm'>
+            <strong>{loop.nextAction.routePath ? "CLI equivalent" : "Manual fallback"}</strong>
+            <span className='text-muted-foreground'>
+              {loop.nextAction.routePath
+                ? "Web controls stay primary; reveal the equivalent only for audit or recovery."
+                : "Reveal the manual command when this run cannot be advanced by a run-bound web action."}
+            </span>
+          </div>
+          <CliFallbackCommand
+            command={loop.nextAction.command}
+            label='Control-loop action'
+            triggerLabel={loop.nextAction.routePath ? "Show equivalent" : "Show command"}
+          />
         </div>
       ) : null}
 

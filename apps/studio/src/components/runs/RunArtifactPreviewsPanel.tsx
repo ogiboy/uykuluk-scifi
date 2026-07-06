@@ -64,7 +64,7 @@ export function RunArtifactPreviewsPanel({
     <RunDetailCard
       headingId='artifact-heading'
       title='Artifact Previews'
-      description='Read-only excerpts grouped by operator review phase. Use CLI commands to change workflow state.'
+      description='Read-only excerpts grouped by operator review phase. Use Studio action rails when available, with CLI/core fallback for recovery.'
     >
       <p className='text-sm text-muted-foreground'>{artifactPreviewsIntro(evidenceStatus)}</p>
       <div

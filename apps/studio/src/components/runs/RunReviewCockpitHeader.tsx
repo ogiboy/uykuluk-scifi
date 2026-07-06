@@ -1,4 +1,4 @@
-import { CopyableCommand } from "@/components/studio/CopyableCommand";
+import { CliFallbackCommand } from "@/components/studio/CliFallbackCommand";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getNextSafeCommand } from "@/lib/runSummaryCopy";
@@ -80,9 +80,15 @@ export function RunReviewCockpitHeader({ run }: RunReviewCockpitHeaderProps) {
       </CardContent>
       <CardContent className='col-span-full grid min-w-0 gap-3 p-0'>
         <RunPrimaryActionPanel run={run} />
-        <div className='grid gap-2 rounded-lg bg-muted/15 p-4 ring-1 ring-border/5'>
-          <strong className='text-sm'>CLI/core source command</strong>
-          <CopyableCommand command={getNextSafeCommand(run)} label='Next safe action' />
+        <div className='flex flex-wrap items-center justify-between gap-3 rounded-lg bg-muted/15 p-4 ring-1 ring-border/5'>
+          <div className='grid gap-1 text-sm'>
+            <strong>CLI/core audit fallback</strong>
+            <span className='text-muted-foreground'>
+              Studio keeps the web action primary while preserving the exact source command for
+              recovery.
+            </span>
+          </div>
+          <CliFallbackCommand command={getNextSafeCommand(run)} label='Next safe action' />
         </div>
       </CardContent>
     </Card>

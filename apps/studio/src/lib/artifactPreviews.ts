@@ -23,7 +23,7 @@ type ReviewArtifactDefinition = {
 };
 
 const REVIEW_ARTIFACTS = parseArtifactTable(`
-script.md	Script draft	markdown	Script Review	Operator-readable episode script generated from the approved idea.	Review script warnings and approve by digest from the CLI.
+script.md	Script draft	markdown	Script Review	Operator-readable episode script generated from the approved idea.	Review script warnings and approve by digest from the Studio action rail or CLI/core fallback.
 reviews/script_review.md	Script review	markdown	Script Review	Safety, quality, and approval guidance for the current script digest.	Resolve blockers or acknowledge non-blocking warnings before approval.
 production/production_package.md	Production package	markdown	Production Package	Voiceover, scenes, subtitles, popup cards, and YouTube metadata package.	Inspect package completeness before render planning.
 production/render_plan.json	Render plan	json	Render Planning	Deterministic intro/outro and scene-to-asset mapping for the local draft render.	Review bookend timing, scene timing, and asset choices before voice/render work.
@@ -31,7 +31,7 @@ production/storyboard_contact_sheet.md	Storyboard contact sheet	markdown	Render 
 production/asset_provenance.json	Asset provenance	json	Render Planning	Exact committed asset paths and roles used by the render plan.	Confirm assets are tracked, licensed, and visually appropriate.
 production/audio/voiceover.wav	Voiceover audio	binary	Audio And Render	Local TTS WAV generated after readiness, script approval, and render-plan evidence.	Listen locally outside Studio; binary preview is metadata-only.
 production/audio/voiceover.meta.json	Voiceover metadata	json	Audio And Render	Local TTS metadata, source digest, duration, and render-plan binding.	Confirm voiceover source and duration before render approval.
-production/audio/voiceover_review.md	Voiceover review	markdown	Audio And Render	Operator-readable local TTS review checklist generated with the WAV.	Use producer review voice from CLI/status before render approval.
+production/audio/voiceover_review.md	Voiceover review	markdown	Audio And Render	Operator-readable local TTS review checklist generated with the WAV.	Use Studio review controls or producer review voice fallback before render approval.
 production/render/render_manifest.json	Render manifest	json	Audio And Render	Local FFmpeg draft-render manifest with input digests, voiceover classification, intro-to-outro timeline, overlays, ffprobe media evidence, review command, and checklist.	Use with the MP4 for local final review; upload remains disabled.
 production/render/draft_review.md	Draft render review	markdown	Audio And Render	Operator-readable final draft review checklist generated with the local MP4.	Review this before any future private upload approval; upload remains disabled.
 production/render/youtube_chapters.json	YouTube chapter draft	json	Audio And Render	Machine-readable local chapter draft bound to the draft-render manifest.	Use as upload-prep evidence only; upload remains disabled.
@@ -47,7 +47,7 @@ production/channel_handoff.json	Manual channel handoff	json	Final Review	Local m
 production/channel_handoff.md	Manual channel handoff	markdown	Final Review	Operator checklist for manual channel preparation after accepted local final review.	Review manually before any future private-upload approval path; upload remains disabled.
 production/channel_handoff_decision.json	Manual channel handoff decision	json	Final Review	Durable operator decision for manual channel preparation and selected thumbnail candidate.	Use as local review evidence only; it is not upload or publish approval.
 production/channel_handoff_decision.md	Manual channel handoff decision	markdown	Final Review	Operator-readable manual channel-prep decision notes and next safe action.	Keep with the handoff package; upload and publish remain disabled.
-evidence_bundle.json	Evidence bundle	json	Evidence And Readiness	Current run evidence, blocked actions, and next safe command.	Use evidence as the review handoff before any next CLI action.
+evidence_bundle.json	Evidence bundle	json	Evidence And Readiness	Current run evidence, blocked actions, and next safe command.	Use evidence as the review handoff before any next Studio or CLI/core action.
 diagnostics/readiness.json	Readiness diagnostics	json	Evidence And Readiness	Readiness checks for package, cost, render plan, TTS, and publish safety.	Resolve failed checks before production or render work.
 `);
 

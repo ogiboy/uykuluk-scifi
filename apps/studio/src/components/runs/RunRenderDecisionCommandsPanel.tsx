@@ -21,7 +21,7 @@ export function RunRenderDecisionCommandsPanel({ commands }: RunRenderDecisionCo
     <RunDetailCard
       headingId='render-decision-commands-heading'
       title='Local Render Decision'
-      description='After watching the local draft MP4, record exactly one durable CLI decision. These commands do not approve upload or publish.'
+      description='After watching the local draft MP4, record exactly one durable operator decision. These fallbacks do not approve upload or publish.'
     >
       <ul className='grid gap-3'>
         {commands.map((item) => (
