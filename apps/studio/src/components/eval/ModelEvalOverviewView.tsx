@@ -1,6 +1,6 @@
 import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
 import { ArtifactPreview } from "@/components/studio/ArtifactPreview";
-import { CopyableCommand } from "@/components/studio/CopyableCommand";
+import { CliFallbackCommand } from "@/components/studio/CliFallbackCommand";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import type { StudioModelEvalOverview } from "@/lib/modelEvalOverview";
 import { ModelEvalCandidatePanel, ModelEvalCheckList } from "./ModelEvalCandidatePanel";
@@ -69,7 +69,12 @@ export function ModelEvalOverviewView({ overview }: ModelEvalOverviewViewProps) 
             </h2>
           </CardHeader>
           <CardContent className='space-y-4'>
-            <CopyableCommand command={overview.nextCommand} label='Model eval command' />
+            <CliFallbackCommand
+              align='start'
+              command={overview.nextCommand}
+              label='Model eval command'
+              triggerLabel='Show eval fallback'
+            />
             <p className='text-sm text-muted-foreground'>
               Read-only display from local diagnostics artifacts. Studio does not call Ollama,
               llama.cpp, hosted APIs, edit config, create runs, approve stages, upload media, or

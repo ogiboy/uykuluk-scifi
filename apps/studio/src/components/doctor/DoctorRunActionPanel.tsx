@@ -52,7 +52,7 @@ export function DoctorRunActionPanel({ compact = false }: DoctorRunActionPanelPr
       >
         {state.kind === "submitting" ? "Running doctor..." : "Run doctor"}
       </Button>
-      <StudioMutationResultPanel state={state} />
+      {state.kind !== "idle" ? <StudioMutationResultPanel state={state} /> : null}
       <Dialog open={confirmationOpen} onOpenChange={setConfirmationOpen}>
         <DialogContent>
           <DialogHeader>

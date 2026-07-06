@@ -1,4 +1,4 @@
-import { CopyableCommand } from "@/components/studio/CopyableCommand";
+import { CliFallbackCommand } from "@/components/studio/CliFallbackCommand";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import type {
@@ -41,9 +41,11 @@ export function ModelEvalCandidatePanel({ candidateReport }: ModelEvalCandidateP
                   <p className='text-sm text-muted-foreground'>
                     {candidateReport.operatorGuidance.message}
                   </p>
-                  <CopyableCommand
+                  <CliFallbackCommand
+                    align='start'
                     command={candidateReport.operatorGuidance.nextCommand}
                     label='Candidate eval command'
+                    triggerLabel='Show candidate eval fallback'
                   />
                 </div>
               ) : null}

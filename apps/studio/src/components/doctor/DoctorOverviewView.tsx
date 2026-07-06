@@ -4,7 +4,7 @@ import type {
   StudioDoctorStatus,
 } from "@/lib/doctorOverview";
 import { ArtifactPreview } from "@/components/studio/ArtifactPreview";
-import { CopyableCommand } from "@/components/studio/CopyableCommand";
+import { CliFallbackCommand } from "@/components/studio/CliFallbackCommand";
 import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -60,7 +60,12 @@ export function DoctorOverviewView({ overview }: DoctorOverviewViewProps) {
           </CardHeader>
           <CardContent className='space-y-4'>
             <DoctorRunActionPanel />
-            <CopyableCommand command={overview.nextAction} label='Doctor command' />
+            <CliFallbackCommand
+              align='start'
+              command={overview.nextAction}
+              label='Doctor command'
+              triggerLabel='Show doctor fallback'
+            />
             <p className='text-sm text-muted-foreground'>
               Studio can refresh local doctor artifacts through the guarded CLI route. It does not
               edit config, start providers, download models, upload media, publish content, or
@@ -128,7 +133,7 @@ export function DoctorOverviewView({ overview }: DoctorOverviewViewProps) {
  */
 function DoctorCheckCard({ check }: Readonly<{ check: StudioDoctorCheckSummary }>) {
   return (
-    <li className='grid gap-3 rounded-lg border bg-muted/20 p-3'>
+    <li className='grid gap-3 rounded-lg bg-muted/20 p-3'>
       <div className='grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start'>
         <div className='min-w-0 space-y-1'>
           <strong>{check.name}</strong>
@@ -137,7 +142,7 @@ function DoctorCheckCard({ check }: Readonly<{ check: StudioDoctorCheckSummary }
         <Badge variant={doctorStatusBadgeVariant(check.status)}>{check.status}</Badge>
       </div>
       {check.nextAction ? (
-        <p className='rounded-lg border bg-background p-3 text-sm text-muted-foreground'>
+        <p className='rounded-lg bg-background/55 p-3 text-sm text-muted-foreground'>
           {check.nextAction}
         </p>
       ) : null}
