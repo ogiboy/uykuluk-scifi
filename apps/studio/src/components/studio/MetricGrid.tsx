@@ -17,10 +17,7 @@ export function MetricGrid({ metrics }: MetricGridProps) {
   return (
     <dl className='grid gap-3 sm:grid-cols-2 lg:grid-cols-4'>
       {metrics.map((metric) => (
-        <div
-          className='min-w-0 rounded-lg bg-muted/20 p-3 ring-1 ring-border/10'
-          key={metric.label}
-        >
+        <div className='min-w-0 rounded-lg bg-background/25 p-3' key={metric.label}>
           <dt className='text-xs font-medium uppercase tracking-wide text-muted-foreground'>
             {metric.label}
           </dt>

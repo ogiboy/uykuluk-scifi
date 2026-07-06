@@ -36,8 +36,8 @@ export function StudioMutationResultPanel({ state }: StudioMutationResultPanelPr
   return (
     <section
       className={cn(
-        "grid gap-3 rounded-lg border bg-muted/20 p-3 text-sm",
-        isProblem && "border-destructive/40 bg-destructive/10",
+        "grid gap-3 rounded-lg bg-muted/20 p-3 text-sm",
+        isProblem && "border border-destructive/40 bg-destructive/10",
       )}
       aria-label='Latest local action result'
       aria-live={isProblem ? "assertive" : "polite"}
@@ -49,7 +49,7 @@ export function StudioMutationResultPanel({ state }: StudioMutationResultPanelPr
       {actionFacts.length > 0 ? (
         <dl className='grid gap-2 sm:grid-cols-2' aria-label='Local Studio action boundary'>
           {actionFacts.map((fact, index) => (
-            <div className='rounded-md border bg-background p-2' key={`${fact.label}-${index}`}>
+            <div className='rounded-md bg-background/55 p-2' key={`${fact.label}-${index}`}>
               <dt className='text-xs font-medium uppercase tracking-wide text-muted-foreground'>
                 {fact.label}
               </dt>
@@ -80,7 +80,7 @@ export function StudioMutationResultPanel({ state }: StudioMutationResultPanelPr
           ) : null}
           <dl className='grid gap-2' aria-label='Producer record summary'>
             {state.recordSummary.facts.map((fact, index) => (
-              <div className='rounded-md border bg-background p-2' key={`${fact}-${index}`}>
+              <div className='rounded-md bg-background/55 p-2' key={`${fact}-${index}`}>
                 <dt className='text-xs font-medium uppercase tracking-wide text-muted-foreground'>
                   Result
                 </dt>
