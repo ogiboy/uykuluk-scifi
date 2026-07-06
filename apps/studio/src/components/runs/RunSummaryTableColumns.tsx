@@ -101,7 +101,7 @@ export function runColumnClassName(columnId: string): string {
     case "readinessStatus":
       return "min-w-56 max-[1100px]:hidden";
     case "runId":
-      return "sticky left-0 z-10 min-w-44 border-b bg-card px-3 py-3 text-left align-top text-sm";
+      return "sticky left-0 z-10 min-w-44 border-b border-border/20 bg-card px-3 py-3 text-left align-top text-sm";
     case "state":
       return "min-w-44";
     case "evidenceStatus":

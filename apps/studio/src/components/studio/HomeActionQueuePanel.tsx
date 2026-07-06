@@ -63,7 +63,7 @@ function HomeActionQueueSummary({ runs }: HomeActionQueuePanelProps) {
       aria-label='Home action queue summary'
     >
       {homeActionQueueSummaryItems(runs).map((item) => (
-        <div className='rounded-lg border bg-muted/20 p-3' key={item.key} data-tone={item.tone}>
+        <div className='rounded-xl bg-muted/25 p-3' key={item.key} data-tone={item.tone}>
           <dt className='text-xs font-medium text-muted-foreground'>{item.label}</dt>
           <dd className='mt-1 text-lg font-semibold'>{item.value}</dd>
           <small className='mt-1 block text-muted-foreground'>{item.detail}</small>
@@ -80,20 +80,21 @@ function HomeActionQueueList({ runs }: HomeActionQueuePanelProps) {
         .slice(0, 5)
         .map(({ action, run }) => (
           <li key={run.runId}>
-            <div className='grid gap-3 rounded-lg border bg-card p-3 sm:grid-cols-[1fr_auto] sm:items-center'>
+            <div className='grid gap-3 rounded-xl bg-muted/25 p-3'>
               <div className='min-w-0 space-y-1'>
                 <Link
-                  className='font-semibold underline-offset-4 hover:underline'
+                  className='block truncate font-semibold underline-offset-4 hover:underline'
                   href={runReviewHrefFromSummary(run) as Route}
+                  title={run.runId}
                 >
                   <strong>{run.runId}</strong>
                 </Link>
-                <span className='block break-words text-sm text-muted-foreground'>
+                <span className='block text-sm text-muted-foreground'>
                   {run.state} · {operatorActionDetail(action)}
                 </span>
                 <small className='block text-muted-foreground'>{action.label}</small>
               </div>
-              <div className='flex flex-wrap items-center gap-2 sm:justify-end'>
+              <div className='flex flex-wrap items-center gap-2'>
                 <Badge variant={action.tone === "blocked" ? "destructive" : "secondary"}>
                   {operatorActionToneLabel(action)}
                 </Badge>
