@@ -10,7 +10,6 @@ import {
   formatRunRenderDecision,
   formatRunReviewCounts,
   getNextSafeCommand,
-  NO_RUNS_NEXT_COMMAND,
 } from "@/lib/runSummaryCopy";
 
 type LatestRunReadinessPanelProps = Readonly<{
@@ -84,12 +83,9 @@ function NoRunsSummary() {
   return (
     <>
       <MetricGrid metrics={[{ label: "Runs", value: "0" }]} />
-      <div className='space-y-3 rounded-lg bg-muted/20 p-3 ring-1 ring-border/10'>
-        <strong className='text-sm'>Next safe action</strong>
-        <CopyableCommand command={NO_RUNS_NEXT_COMMAND} label='Next safe action' />
-      </div>
       <p className='text-sm text-muted-foreground'>
-        Start a run from the CLI; Studio will only display persisted local state.
+        Start the first idea run from the guarded control desk action. CLI/core still owns the
+        workflow state and evidence written after that action completes.
       </p>
     </>
   );

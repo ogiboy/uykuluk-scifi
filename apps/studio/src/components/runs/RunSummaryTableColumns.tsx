@@ -68,7 +68,7 @@ export function runSummaryColumns(): ColumnDef<StudioRunSummary>[] {
       meta: { label: "Channel handoff" } satisfies RunTableColumnMeta,
     },
     {
-      accessorFn: (run) => run.nextRecommendedCommand ?? "Generate evidence from CLI",
+      accessorFn: (run) => run.nextRecommendedCommand ?? "Generate evidence",
       cell: ({ row }) => <RunNextActionCell run={row.original} />,
       header: "Next action",
       id: "nextAction",

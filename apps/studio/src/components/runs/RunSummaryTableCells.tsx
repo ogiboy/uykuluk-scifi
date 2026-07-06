@@ -146,7 +146,7 @@ export function RunChannelHandoffCell({ run }: RunSummaryCellProps) {
 export function RunNextActionCell({ run }: RunSummaryCellProps) {
   return (
     <span className='block max-w-96 break-words'>
-      {run.nextRecommendedCommand ?? "Generate evidence from CLI"}
+      {run.nextRecommendedCommand ?? "Generate evidence"}
     </span>
   );
 }

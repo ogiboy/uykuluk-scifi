@@ -103,12 +103,14 @@ function EmptyOperatorBrief({
             description='Create the first local idea run through the guarded Studio route. CLI/core still checks provider, budget, parser, and workflow gates before writing artifacts.'
             readiness={startIdeasReadiness}
           />
-          <div className='space-y-2 rounded-xl bg-background/50 p-3'>
-            <p className='text-xs font-medium uppercase tracking-wide text-muted-foreground'>
-              CLI fallback
-            </p>
-            <CopyableCommand command={NO_RUNS_NEXT_COMMAND} label='First run command' />
-          </div>
+          <details className='rounded-xl bg-background/50 p-3 text-sm text-muted-foreground'>
+            <summary className='cursor-pointer font-medium text-foreground'>
+              Need a terminal fallback?
+            </summary>
+            <div className='mt-3'>
+              <CopyableCommand command={NO_RUNS_NEXT_COMMAND} label='First run command' />
+            </div>
+          </details>
         </CardContent>
       </Card>
     </section>
