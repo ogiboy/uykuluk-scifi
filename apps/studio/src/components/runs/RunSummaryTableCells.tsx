@@ -50,10 +50,12 @@ export function RunReadinessCell({ run }: RunSummaryCellProps) {
     <span className='grid min-w-0 gap-1'>
       <strong>{run.readinessStatus}</strong>
       {run.readinessStatus === "passed" ? null : (
-        <small className='text-muted-foreground'>{run.readinessMessage}</small>
+        <small className='line-clamp-2 text-muted-foreground'>{run.readinessMessage}</small>
       )}
       {run.readinessNextAction ? (
-        <small className='break-words text-muted-foreground'>{run.readinessNextAction}</small>
+        <small className='line-clamp-1 break-words text-muted-foreground'>
+          {run.readinessNextAction}
+        </small>
       ) : null}
     </span>
   );

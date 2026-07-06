@@ -136,7 +136,7 @@ export function RunSummaryTable({
         </CardHeader>
         <CardContent className='space-y-4'>
           <Table
-            className={`min-w-[1120px] max-[1100px]:min-w-[640px] ${density === "compact" ? "text-xs" : ""}`}
+            className={`min-w-[920px] max-[1100px]:min-w-[640px] ${density === "compact" ? "text-xs" : ""}`}
             data-density={density}
           >
             <TableCaption className='sr-only'>

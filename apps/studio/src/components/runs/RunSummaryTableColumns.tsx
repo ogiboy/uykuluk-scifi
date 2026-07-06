@@ -88,7 +88,7 @@ export function runSummaryColumns(): ColumnDef<StudioRunSummary>[] {
 export function runColumnClassName(columnId: string): string {
   switch (columnId) {
     case "actions":
-      return "sticky right-0 z-20 w-56 bg-card shadow-[-16px_0_24px_-24px_hsl(var(--foreground))]";
+      return "w-56";
     case "blockedActionCount":
       return "w-20 text-center max-[1400px]:hidden";
     case "channelHandoff":
@@ -101,7 +101,7 @@ export function runColumnClassName(columnId: string): string {
     case "readinessStatus":
       return "min-w-56 max-[1100px]:hidden";
     case "runId":
-      return "sticky left-0 z-10 min-w-44 border-b border-border/20 bg-card px-3 py-3 text-left align-top text-sm";
+      return "min-w-44 px-3 py-3 text-left align-top text-sm";
     case "state":
       return "min-w-44";
     case "evidenceStatus":
