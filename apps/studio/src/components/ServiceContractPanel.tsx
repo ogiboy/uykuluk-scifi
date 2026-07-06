@@ -146,12 +146,13 @@ function ServiceContractCard({ summary }: Readonly<{ summary: StudioActionServic
 
 function ActionRouteControl({ summary }: Readonly<{ summary: StudioActionServiceSummary }>) {
   if (summary.availability === "ready-for-cli" && summary.routePath !== "unrouted") {
+    const surface = actionSurface(summary.actionId);
     return (
       <Link
         className={buttonVariants({ className: "w-full sm:w-fit", variant: "default" })}
-        href={summary.routePath as Route}
+        href={surface.href}
       >
-        Open web action
+        {surface.label}
       </Link>
     );
   }
@@ -160,6 +161,24 @@ function ActionRouteControl({ summary }: Readonly<{ summary: StudioActionService
       Web execution is disabled for this action.
     </p>
   );
+}
+
+type ActionSurface = Readonly<{
+  href: Route;
+  label: string;
+}>;
+
+function actionSurface(actionId: string): ActionSurface {
+  if (actionId.startsWith("analytics.")) {
+    return { href: "/analytics" as Route, label: "Open analytics surface" };
+  }
+  if (actionId === "doctor.run") {
+    return { href: "/doctor" as Route, label: "Open doctor surface" };
+  }
+  if (actionId === "ideas.run") {
+    return { href: "/" as Route, label: "Open start-run surface" };
+  }
+  return { href: "/runs" as Route, label: "Open run queue" };
 }
 
 type ServiceMetricCardProps = Readonly<{
