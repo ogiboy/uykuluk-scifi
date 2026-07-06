@@ -83,7 +83,7 @@ export function actionSurface(actionId: string): ActionSurface {
   if (actionId === "doctor.run") {
     return { href: "/doctor" as Route, label: "Open doctor surface" };
   }
-  if (actionId === "model-eval.run") {
+  if (actionId === "model-eval.run" || actionId === "model-eval-candidates.run") {
     return { href: "/eval" as Route, label: "Open model eval surface" };
   }
   if (actionId === "ideas.run") {

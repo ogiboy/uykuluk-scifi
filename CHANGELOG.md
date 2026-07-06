@@ -9,7 +9,9 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Features
+
+- add guarded Studio local model candidate evaluation action.
 
 ## v0.77.0 (2026-07-05)
 

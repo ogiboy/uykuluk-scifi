@@ -5,6 +5,7 @@ import type {
   StudioCandidateEvalSummary,
   StudioModelEvalCheckSummary,
 } from "@/lib/modelEvalOverview";
+import { ModelEvalCandidateRunActionPanel } from "./ModelEvalCandidateRunActionPanel";
 
 type ModelEvalCandidatePanelProps = Readonly<{
   candidateReport: StudioCandidateEvalSummary | null;
@@ -30,6 +31,7 @@ export function ModelEvalCandidatePanel({ candidateReport }: ModelEvalCandidateP
           </h2>
         </CardHeader>
         <CardContent className='space-y-4'>
+          <ModelEvalCandidateRunActionPanel />
           {candidateReport ? (
             <>
               <p className='text-xs text-muted-foreground'>

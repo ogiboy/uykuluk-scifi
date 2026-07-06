@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { POST as runDoctor } from "../apps/studio/src/app/actions/run-doctor/route";
 import { POST as runEvidence } from "../apps/studio/src/app/actions/run-evidence/route";
 import { POST as runIdeas } from "../apps/studio/src/app/actions/run-ideas/route";
+import { POST as runModelEvalCandidates } from "../apps/studio/src/app/actions/run-model-eval-candidates/route";
 import { POST as runModelEval } from "../apps/studio/src/app/actions/run-model-eval/route";
 import { POST as runReadiness } from "../apps/studio/src/app/actions/run-readiness/route";
 import { POST as runRenderPlan } from "../apps/studio/src/app/actions/run-render-plan/route";
@@ -50,6 +51,30 @@ describe("Studio workflow stage action routes", () => {
       runModelEval(
         studioJsonRequest("/actions/run-model-eval", "model-eval.run", {
           runId: "run_unexpected",
+        }),
+      ),
+      400,
+    );
+    await expectRouteError(
+      runModelEvalCandidates(
+        studioJsonRequest("/actions/run-model-eval-candidates", "model-eval-candidates.run", {}),
+      ),
+      400,
+    );
+    await expectRouteError(
+      runModelEvalCandidates(
+        studioJsonRequest("/actions/run-model-eval-candidates", "model-eval-candidates.run", {
+          candidates: [],
+          includeLocalGguf: false,
+        }),
+      ),
+      400,
+    );
+    await expectRouteError(
+      runModelEvalCandidates(
+        studioJsonRequest("/actions/run-model-eval-candidates", "model-eval-candidates.run", {
+          candidates: ["gemma-3-4b-it-q4_0"],
+          extra: true,
         }),
       ),
       400,

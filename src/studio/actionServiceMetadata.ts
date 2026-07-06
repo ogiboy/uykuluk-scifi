@@ -2,7 +2,7 @@
 export const studioMutationActionIds = [
   "idea.approve", "script.approve", "cost.approve", "render.approve", "render.decide",
   "channel-handoff.decide", "analytics.import", "analytics.report", "doctor.run", "ideas.run",
-  "model-eval.run", "script.run", "script.review", "script.revise", "package.run",
+  "model-eval.run", "model-eval-candidates.run", "script.run", "script.review", "script.revise", "package.run",
   "package-artifact.revise", "render-plan.run", "render-plan.review", "estimate.run", "evidence.run", "readiness.run",
   "voice.run", "voice.review", "render.run", "render.review", "review-bundle.run",
   "channel-handoff.run", "upload.private", "publish.schedule",
@@ -40,6 +40,7 @@ const studioMutationServiceRows = [
   ["analytics.report", readyForCli, "pnpm producer analytics report", "refreshSavedAnalyticsReport", "src/analytics/import.ts", "Refresh the local manual analytics report from the saved dataset."],
   ["doctor.run", readyForCli, "pnpm producer doctor", "runDoctor", "src/diagnostics/doctor.ts", "Refresh local config, provider, asset, media-toolchain, and publish-safety diagnostics."],
   ["model-eval.run", readyForCli, "pnpm producer eval local-model", "runLocalModelEval", "src/diagnostics/localModelEval.ts", "Refresh single-model local parser-contract evaluation evidence."],
+  ["model-eval-candidates.run", readyForCli, "pnpm producer eval local-model-candidates --candidate <model>", "runLocalModelCandidateEval", "src/diagnostics/localModelCandidateEval.ts", "Compare local model candidates through parser-contract checks without mutating config."],
   ["ideas.run", readyForCli, "pnpm producer ideas", "runIdeas", "src/stages/ideas.ts", "Start a new local idea-generation run through the canonical workflow."],
   ["script.run", readyForCli, "pnpm producer script --run <run_id>", "generateScript", "src/stages/script.ts", "Generate a script for an approved idea through the canonical workflow."],
   ["script.review", readyForCli, "pnpm producer review script --run <run_id>", "reviewScript", "src/stages/reviewScript.ts", "Run the local script review and persist review evidence for operator approval."],

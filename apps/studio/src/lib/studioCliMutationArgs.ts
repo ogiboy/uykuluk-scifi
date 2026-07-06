@@ -7,6 +7,7 @@ import {
   parseChannelHandoffDecisionPayload,
   parseEmptyPayload,
   parseIdeaApprovalPayload,
+  parseLocalModelCandidateEvalPayload,
   parsePackageArtifactRevisionPayload,
   parseRenderDecisionPayload,
   parseRunOnlyPayload,
@@ -25,6 +26,7 @@ export const studioCliMutationActionIds = [
   "evidence.run",
   "idea.approve",
   "ideas.run",
+  "model-eval-candidates.run",
   "model-eval.run",
   "package.run",
   "package-artifact.revise",
@@ -58,6 +60,7 @@ type RunOnlyCliActionId = Exclude<
   | "idea.approve"
   | "ideas.run"
   | "model-eval.run"
+  | "model-eval-candidates.run"
   | "package-artifact.revise"
   | "render.decide"
   | "script.approve"
@@ -108,6 +111,16 @@ export async function cliArgsForAction(
   if (actionId === "model-eval.run") {
     parseEmptyPayload(payload);
     return prepared(["eval", "local-model", "--json"]);
+  }
+  if (actionId === "model-eval-candidates.run") {
+    const input = parseLocalModelCandidateEvalPayload(payload);
+    return prepared([
+      "eval",
+      "local-model-candidates",
+      ...input.candidates.flatMap((candidate) => ["--candidate", candidate]),
+      ...(input.includeLocalGguf ? ["--include-local-gguf"] : []),
+      "--json",
+    ]);
   }
   if (actionId === "script.approve") {
     const input = parseScriptApprovalPayload(payload);
