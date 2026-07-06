@@ -1,6 +1,8 @@
 import type { Route } from "next";
 import type { StudioActionServiceSummary } from "@/lib/actionServiceStatus";
 
+export type ServiceContractAvailabilityFilter = "all" | StudioActionServiceSummary["availability"];
+
 export type ServiceContractGroup = Readonly<{
   description: string;
   summaries: readonly StudioActionServiceSummary[];
@@ -40,6 +42,32 @@ export function serviceContractGroups(
 }
 
 /**
+ * Filters service contract groups for the interactive Studio catalog.
+ *
+ * @param groups - Grouped service contracts.
+ * @param query - Free-text operator search over action id, description, command, and route.
+ * @param availability - Availability filter selected in Studio.
+ * @returns Groups with only matching summaries, omitting empty groups.
+ */
+export function filterServiceContractGroups(
+  groups: readonly ServiceContractGroup[],
+  query: string,
+  availability: ServiceContractAvailabilityFilter,
+): readonly ServiceContractGroup[] {
+  const normalizedQuery = query.trim().toLowerCase();
+  return groups
+    .map((group) => ({
+      ...group,
+      summaries: group.summaries.filter(
+        (summary) =>
+          serviceContractAvailabilityMatches(summary, availability) &&
+          serviceContractQueryMatches(summary, normalizedQuery),
+      ),
+    }))
+    .filter((group) => group.summaries.length > 0);
+}
+
+/**
  * Resolves the real operator surface for an action contract.
  *
  * Action routes are POST endpoints, not pages. The catalog links to the safe Studio surface where
@@ -75,4 +103,30 @@ export function serviceBoundaryCopy(summary: StudioActionServiceSummary): string
     return "Contract exists, but no guarded route is currently exposed.";
   }
   return "Same-origin JSON, Studio action header, local session proof, and CLI/core gates required.";
+}
+
+function serviceContractAvailabilityMatches(
+  summary: StudioActionServiceSummary,
+  availability: ServiceContractAvailabilityFilter,
+): boolean {
+  return availability === "all" || summary.availability === availability;
+}
+
+function serviceContractQueryMatches(
+  summary: StudioActionServiceSummary,
+  normalizedQuery: string,
+): boolean {
+  if (!normalizedQuery) {
+    return true;
+  }
+  return [
+    summary.actionId,
+    summary.availability,
+    summary.cliCommand,
+    summary.description,
+    summary.routePath,
+  ]
+    .join("\n")
+    .toLowerCase()
+    .includes(normalizedQuery);
 }
