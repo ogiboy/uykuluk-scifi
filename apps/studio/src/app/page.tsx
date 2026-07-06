@@ -1,6 +1,5 @@
 import { AssetInventory } from "@/components/AssetInventory";
 import { CommandPanel } from "@/components/CommandPanel";
-import { ServiceContractPanel } from "@/components/ServiceContractPanel";
 import { StatusGrid } from "@/components/StatusGrid";
 import { AnalyticsStatusPanel } from "@/components/analytics/AnalyticsStatusPanel";
 import { DoctorStatusPanel } from "@/components/doctor/DoctorStatusPanel";
@@ -68,7 +67,6 @@ export default async function StudioHomePage() {
       <LatestRunReadinessPanel latestRun={runs[0] ?? null} />
       <AnalyticsStatusPanel overview={analyticsOverview} />
       <CommandPanel />
-      <ServiceContractPanel status={actionStatus} />
       <AssetInventory inventory={assetInventory} />
       <StudioTabs promptInventory={promptInventory} />
     </StudioShell>

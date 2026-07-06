@@ -19,10 +19,19 @@ test("studio shell renders operator surfaces", async ({ page }) => {
   const analyticsRegion = page.getByRole("region", { name: "Analytics Feedback" });
   await expect(analyticsRegion).toBeVisible();
   await expect(analyticsRegion.getByText("Next safe action")).toBeVisible();
+  await expect(page.getByRole("region", { name: "Safety gates" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Action queue" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Asset Inventory" })).toBeVisible();
+});
+
+test("studio exposes guarded action contracts on the actions route", async ({ page }) => {
+  await page.goto("/actions");
+
+  await expect(page.getByRole("heading", { exact: true, name: "Actions" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Mutation Service Contracts" })).toBeVisible();
   await expect(page.getByText("Review required")).toBeVisible();
-  await expect(page.getByRole("heading", { name: "render.decide" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Asset Inventory" })).toBeVisible();
+  await expect(page.getByRole("button", { name: /render\.decide/i })).toBeVisible();
+  await expect(page.getByText("publish.schedule")).toBeVisible();
 });
 
 test("studio module tabs are keyboard reachable", async ({ page }) => {
