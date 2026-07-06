@@ -1,14 +1,7 @@
-import { AssetInventory } from "@/components/AssetInventory";
-import { CommandPanel } from "@/components/CommandPanel";
-import { StatusGrid } from "@/components/StatusGrid";
-import { AnalyticsStatusPanel } from "@/components/analytics/AnalyticsStatusPanel";
-import { DoctorStatusPanel } from "@/components/doctor/DoctorStatusPanel";
-import { ModelEvalStatusPanel } from "@/components/eval/ModelEvalStatusPanel";
-import { LatestRunReadinessPanel } from "@/components/runs/LatestRunReadinessPanel";
 import { StudioControlDesk } from "@/components/studio/StudioControlDesk";
 import { StudioCommandPalette } from "@/components/studio/StudioCommandPalette";
+import { HomeSurfaceLinks } from "@/components/studio/HomeSurfaceLinks";
 import { StudioShell } from "@/components/studio/StudioShell";
-import { StudioTabs } from "@/components/studio/StudioTabs";
 import { Badge } from "@/components/ui/badge";
 import { getStudioAnalyticsOverview } from "@/lib/analyticsOverview";
 import { getStudioActionServiceStatus } from "@/lib/actionServiceStatus";
@@ -61,14 +54,15 @@ export default async function StudioHomePage() {
       </header>
 
       <StudioControlDesk actionStatus={actionStatus} doctorOverview={doctorOverview} runs={runs} />
-      <StatusGrid />
-      <DoctorStatusPanel overview={doctorOverview} />
-      <ModelEvalStatusPanel overview={modelEvalOverview} />
-      <LatestRunReadinessPanel latestRun={runs[0] ?? null} />
-      <AnalyticsStatusPanel overview={analyticsOverview} />
-      <CommandPanel />
-      <AssetInventory inventory={assetInventory} />
-      <StudioTabs promptInventory={promptInventory} />
+      <HomeSurfaceLinks
+        actionStatus={actionStatus}
+        analyticsOverview={analyticsOverview}
+        assetInventory={assetInventory}
+        doctorOverview={doctorOverview}
+        modelEvalOverview={modelEvalOverview}
+        promptInventory={promptInventory}
+        runs={runs}
+      />
     </StudioShell>
   );
 }
