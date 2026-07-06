@@ -60,7 +60,7 @@ export function RunSummaryTable({
   density = "comfortable",
   emptyState = {
     heading: "No runs yet",
-    message: "Start with the CLI source of truth: pnpm producer ideas.",
+    message: "Use the Start idea run control to create the first local production run.",
   },
   runs,
 }: RunSummaryTableProps) {

@@ -166,7 +166,7 @@ describe("Studio run queue filters", () => {
   it("distinguishes an empty run store from filtered-away queue views", () => {
     expect(runQueueEmptyState(0, 0, 0)).toEqual({
       heading: "No runs yet",
-      message: "Start with the CLI source of truth: pnpm producer ideas.",
+      message: "Use the Start idea run control to create the first local production run.",
     });
     expect(runQueueEmptyState(4, 0, 0)).toEqual({
       heading: "No matching runs",

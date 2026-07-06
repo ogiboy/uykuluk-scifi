@@ -56,7 +56,7 @@ export function runQueueEmptyState(
   if (totalRuns === 0) {
     return {
       heading: "No runs yet",
-      message: "Start with the CLI source of truth: pnpm producer ideas.",
+      message: "Use the Start idea run control to create the first local production run.",
     };
   }
   if (matchingRuns === 0) {
