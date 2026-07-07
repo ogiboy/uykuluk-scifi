@@ -39,10 +39,7 @@ export function validateIdeaQuality(
     return repeatedSentenceIssue;
   }
   if (ideaRatingValues.has(idea.fit.trim().toLocaleLowerCase("tr"))) {
-    return {
-      path: ["fit"],
-      message: "Fit must be a Turkish explanation, not a rating.",
-    };
+    return { path: ["fit"], message: "Fit must be a Turkish explanation, not a rating." };
   }
   if (!idea.targetDuration.toLocaleLowerCase("tr").includes("dakika")) {
     return {
@@ -56,10 +53,7 @@ export function validateIdeaQuality(
   }
   const humanText = [idea.title, idea.premise, idea.targetDuration, idea.style, idea.fit].join(" ");
   if (!looksLikeTurkishOperatorText(humanText)) {
-    return {
-      path: [],
-      message: "Human-facing idea fields must be Turkish.",
-    };
+    return { path: [], message: "Human-facing idea fields must be Turkish." };
   }
   return undefined;
 }
@@ -83,10 +77,7 @@ function brandSpellingIssue(
 ): { path: string[]; message: string } | undefined {
   const field = brandCheckedFields.find((key) => hasMalformedBrandFragment(String(idea[key])));
   return field
-    ? {
-        path: [field],
-        message: "UykulukSciFi brand spelling must be exact.",
-      }
+    ? { path: [field], message: "UykulukSciFi brand spelling must be exact." }
     : undefined;
 }
 
@@ -95,10 +86,7 @@ function englishOperatorFieldIssue(
 ): { path: string[]; message: string } | undefined {
   const field = humanFacingFields.find((key) => containsEnglishIdeaText(String(idea[key])));
   return field
-    ? {
-        path: [field],
-        message: "Human-facing idea fields must not contain English operator text.",
-      }
+    ? { path: [field], message: "Human-facing idea fields must not contain English operator text." }
     : undefined;
 }
 

@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,8 +22,8 @@ import {
 } from "@/lib/runQueueFilters";
 import {
   applyRunQueueWorkbenchControls,
-  runQueueEmptyState,
   type RunQueueDensity,
+  runQueueEmptyState,
   type RunQueueSort,
   runQueueSortValues,
 } from "@/lib/runQueueWorkbench";
@@ -32,8 +31,8 @@ import type { StudioRunSummary } from "@/lib/runSummaries";
 import type { StartIdeasReadinessSummary } from "@/lib/startIdeasReadiness";
 import { countStudioActionWorkbench } from "@/lib/studioActionWorkbenchCounts";
 import { applyEnumSelectValue } from "@/lib/utils";
+import { useMemo, useState } from "react";
 import { StartIdeasActionPanel } from "../studio/StartIdeasActionPanel";
-import { maxBlockedActionSliderValue, RunQueueTunePopover } from "./RunQueueTunePopover";
 import {
   defaultRunQueueDensity,
   defaultRunQueueFilter,
@@ -41,6 +40,7 @@ import {
   filterLabels,
   sortLabels,
 } from "./runQueueExplorerOptions";
+import { maxBlockedActionSliderValue, RunQueueTunePopover } from "./RunQueueTunePopover";
 import { RunSummaryTable } from "./RunSummaryTable";
 
 type RunQueueExplorerProps = Readonly<{
@@ -71,11 +71,7 @@ export function RunQueueExplorer({ runs, startIdeasReadiness }: RunQueueExplorer
     [filter, query, runs],
   );
   const filteredRuns = useMemo(
-    () =>
-      applyRunQueueWorkbenchControls(matchingRuns, {
-        maxBlockedActions,
-        sort,
-      }),
+    () => applyRunQueueWorkbenchControls(matchingRuns, { maxBlockedActions, sort }),
     [matchingRuns, maxBlockedActions, sort],
   );
   const actionCounts = useMemo(() => countStudioActionWorkbench(filteredRuns), [filteredRuns]);
@@ -109,7 +105,7 @@ export function RunQueueExplorer({ runs, startIdeasReadiness }: RunQueueExplorer
       <Card>
         <CardHeader className='gap-4 sm:grid-cols-[1fr_auto]'>
           <div className='space-y-2'>
-            <p className='text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground'>
+            <p className='text-muted-foreground text-xs font-semibold tracking-[0.28em] uppercase'>
               Operator queue
             </p>
             <CardTitle id='runs-queue-heading'>Find the next safe run action</CardTitle>
@@ -196,7 +192,7 @@ export function RunQueueExplorer({ runs, startIdeasReadiness }: RunQueueExplorer
               Reset view
             </Button>
           </div>
-          <p className='text-sm text-muted-foreground'>
+          <p className='text-muted-foreground text-sm'>
             Filters are read-only projections over persisted CLI/core run summaries. Approvals and
             render decisions remain on each guarded run detail page.
           </p>

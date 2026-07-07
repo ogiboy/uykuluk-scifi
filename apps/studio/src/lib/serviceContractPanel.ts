@@ -9,10 +9,7 @@ export type ServiceContractGroup = Readonly<{
   title: string;
 }>;
 
-export type ActionSurface = Readonly<{
-  href: Route;
-  label: string;
-}>;
+export type ActionSurface = Readonly<{ href: Route; label: string }>;
 
 /**
  * Groups Studio action contracts by operator availability.

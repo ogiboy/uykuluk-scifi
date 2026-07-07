@@ -13,15 +13,9 @@ type RunDetailCardProps = Readonly<{
 
 type RunDetailStatusTone = "blocked" | "neutral" | "success" | "warning";
 
-type RunDetailStatusBadgeProps = Readonly<{
-  children: ReactNode;
-  tone: RunDetailStatusTone;
-}>;
+type RunDetailStatusBadgeProps = Readonly<{ children: ReactNode; tone: RunDetailStatusTone }>;
 
-export type RunMetadataItem = Readonly<{
-  label: string;
-  value: ReactNode;
-}>;
+export type RunMetadataItem = Readonly<{ label: string; value: ReactNode }>;
 
 /**
  * Renders a consistent shadcn/Tailwind card shell for read-only run detail panels.
@@ -79,11 +73,11 @@ export function RunMetadataList({ items }: Readonly<{ items: readonly RunMetadat
   return (
     <dl className='grid gap-3 sm:grid-cols-2'>
       {items.map((item) => (
-        <div className='min-w-0 rounded-lg bg-muted/10 p-3' key={item.label}>
-          <dt className='text-xs font-medium uppercase tracking-wide text-muted-foreground'>
+        <div className='bg-muted/10 min-w-0 rounded-lg p-3' key={item.label}>
+          <dt className='text-muted-foreground text-xs font-medium tracking-wide uppercase'>
             {item.label}
           </dt>
-          <dd className='mt-1 min-w-0 break-words text-sm text-foreground'>{item.value}</dd>
+          <dd className='text-foreground mt-1 min-w-0 text-sm break-words'>{item.value}</dd>
         </div>
       ))}
     </dl>

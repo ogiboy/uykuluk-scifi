@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
-  scriptContinuationResponseFormat,
   parseScriptContinuationProviderPayload,
   renderScriptContinuationPrompt,
+  scriptContinuationResponseFormat,
   scriptContinuationTokenCap,
 } from "../src/stages/scriptContinuation";
 import { scriptContinuationMaxLength } from "../src/stages/scriptContinuationParsing";
@@ -138,10 +138,7 @@ describe("script continuation parsing", () => {
     const prompt = renderScriptContinuationPrompt(
       "Anlatıcı: Mevcut sakin senaryo kısa kalır.",
       "## Approved Idea\nKuşak gemisi arşivinde temkinli bir keşif.",
-      {
-        chunk: { index: 2, focus: "scientific caution" },
-        missingWords: 180,
-      },
+      { chunk: { index: 2, focus: "scientific caution" }, missingWords: 180 },
     );
 
     expect(prompt).toContain("Target length: 150-220 Turkish words.");

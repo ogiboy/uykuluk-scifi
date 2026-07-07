@@ -6,9 +6,7 @@ import {
 } from "@/components/runs/RunDetailCard";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 
-type RunChannelHandoffPanelProps = Readonly<{
-  channelHandoff: StudioRunDetail["channelHandoff"];
-}>;
+type RunChannelHandoffPanelProps = Readonly<{ channelHandoff: StudioRunDetail["channelHandoff"] }>;
 
 /**
  * Renders the read-only manual channel-handoff status for a run.

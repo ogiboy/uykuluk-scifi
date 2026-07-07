@@ -24,14 +24,9 @@ export type IdeaHistoryPromptSummary = Readonly<{
   generatedTitles: readonly string[];
 }>;
 
-const persistedIdeaSchema = z.object({
-  id: z.string().min(1),
-  title: z.string().min(1),
-});
+const persistedIdeaSchema = z.object({ id: z.string().min(1), title: z.string().min(1) });
 
-const ideasArtifactSchema = z.object({
-  ideas: z.array(persistedIdeaSchema),
-});
+const ideasArtifactSchema = z.object({ ideas: z.array(persistedIdeaSchema) });
 
 const maxHistoryPromptTitles = 16;
 const maxIdeaHistoryEntries = 120;
@@ -46,9 +41,7 @@ const maxIdeaHistoryEntries = 120;
  * @returns Recent idea titles with approval status derived from run state.
  */
 export async function readIdeaHistory(
-  options: {
-    excludeRunId?: string;
-  } = {},
+  options: { excludeRunId?: string } = {},
 ): Promise<IdeaHistoryEntry[]> {
   const entries: IdeaHistoryEntry[] = [];
   for (const run of await listRuns()) {

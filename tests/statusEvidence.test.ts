@@ -4,8 +4,8 @@ import { artifactPath } from "../src/core/artifacts";
 import { createRun, saveRun } from "../src/core/runStore";
 import { formatRunStatus, readRunStatus } from "../src/stages/status";
 import { useTempProject } from "./helpers";
-import { studioEvidenceFixture } from "./studioRunFixtures";
 import { passingRenderedEvidence } from "./statusOutputEvidenceFixtures";
+import { studioEvidenceFixture } from "./studioRunFixtures";
 
 describe("status evidence validity", () => {
   useTempProject();
@@ -81,11 +81,7 @@ describe("status evidence validity", () => {
 
   it("marks evidence generated for a previous run state as stale", async () => {
     const run = await createRun();
-    await saveRun({
-      ...run,
-      artifacts: ["evidence_bundle.json"],
-      state: "SCRIPT_APPROVED",
-    });
+    await saveRun({ ...run, artifacts: ["evidence_bundle.json"], state: "SCRIPT_APPROVED" });
     await writeFile(
       artifactPath(run.runId, "evidence_bundle.json"),
       JSON.stringify(
@@ -124,11 +120,7 @@ describe("status evidence validity", () => {
 
   it("marks evidence with malformed schema fields as invalid", async () => {
     const run = await createRun();
-    await saveRun({
-      ...run,
-      artifacts: ["evidence_bundle.json"],
-      state: "SCRIPT_APPROVED",
-    });
+    await saveRun({ ...run, artifacts: ["evidence_bundle.json"], state: "SCRIPT_APPROVED" });
     await writeFile(
       artifactPath(run.runId, "evidence_bundle.json"),
       JSON.stringify(

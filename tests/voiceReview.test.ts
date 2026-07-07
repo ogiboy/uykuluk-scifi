@@ -1,14 +1,14 @@
-import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { artifactPath } from "../src/core/artifacts";
 import { createRun, loadRun, saveRun } from "../src/core/runStore";
-import { formatVoiceoverReviewConsole, reviewVoiceover } from "../src/stages/reviewVoiceover";
 import { readRenderPlanEvidence } from "../src/stages/renderPlan";
-import { renderVoiceoverReviewMarkdown } from "../src/stages/voiceoverReviewMarkdown";
+import { formatVoiceoverReviewConsole, reviewVoiceover } from "../src/stages/reviewVoiceover";
 import type { VoiceoverAudioMeta } from "../src/stages/voiceoverEvidence";
+import { renderVoiceoverReviewMarkdown } from "../src/stages/voiceoverReviewMarkdown";
 import { useTempProject } from "./helpers";
 import { prepareReadyRunWithoutVoiceover, prepareVoiceoverReadyRun } from "./renderPipelineHelpers";
 
@@ -158,17 +158,10 @@ async function writeLocalPiperVoiceover(runId: string): Promise<void> {
       modelSha256: "d".repeat(64),
     },
     quality: "local-piper",
-    renderPlan: {
-      digest: renderPlan.digest,
-      path: "production/render_plan.json",
-    },
+    renderPlan: { digest: renderPlan.digest, path: "production/render_plan.json" },
     runId,
     schemaVersion: 1,
-    source: {
-      path: "production/voiceover.txt",
-      sha256: "b".repeat(64),
-      wordCount: 42,
-    },
+    source: { path: "production/voiceover.txt", sha256: "b".repeat(64), wordCount: 42 },
   };
 
   await mkdir(path.dirname(artifactPath(runId, "production/audio/voiceover.wav")), {

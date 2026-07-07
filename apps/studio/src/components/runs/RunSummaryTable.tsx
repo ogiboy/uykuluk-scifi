@@ -33,10 +33,7 @@ import {
 type RunSummaryTableProps = Readonly<{
   density?: RunQueueDensity;
   emptyAction?: ReactNode;
-  emptyState?: Readonly<{
-    heading: string;
-    message: string;
-  }>;
+  emptyState?: Readonly<{ heading: string; message: string }>;
   runs: readonly StudioRunSummary[];
 }>;
 
@@ -46,10 +43,7 @@ const initialColumnVisibility = {
   nextAction: false,
 } as const satisfies VisibilityState;
 
-const initialPagination = {
-  pageIndex: 0,
-  pageSize: 10,
-} as const satisfies PaginationState;
+const initialPagination = { pageIndex: 0, pageSize: 10 } as const satisfies PaginationState;
 
 /**
  * Displays a TanStack-powered summary grid of saved producer runs.
@@ -83,11 +77,7 @@ export function RunSummaryTable({
     onColumnVisibilityChange: setColumnVisibility,
     onPaginationChange: setPagination,
     onSortingChange: setSorting,
-    state: {
-      columnVisibility,
-      pagination,
-      sorting,
-    },
+    state: { columnVisibility, pagination, sorting },
   });
   const totalRows = table.getPrePaginationRowModel().rows.length;
   const visibleRows = table.getRowModel().rows;
@@ -136,7 +126,7 @@ export function RunSummaryTable({
         </CardHeader>
         <CardContent className='space-y-4'>
           <Table
-            className={`min-w-[920px] max-[1100px]:min-w-[640px] ${density === "compact" ? "text-xs" : ""}`}
+            className={`min-w-230 max-[1100px]:min-w-160 ${density === "compact" ? "text-xs" : ""}`}
             data-density={density}
           >
             <TableCaption className='sr-only'>
@@ -161,7 +151,7 @@ export function RunSummaryTable({
               {visibleRows.length === 0 ? (
                 <TableRow>
                   <td
-                    className='px-3 py-6 text-center text-sm text-muted-foreground'
+                    className='text-muted-foreground px-3 py-6 text-center text-sm'
                     colSpan={visibleColumnCount}
                   >
                     The current queue view changed. Resetting to the first page.

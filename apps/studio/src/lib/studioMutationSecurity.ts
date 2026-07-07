@@ -3,14 +3,7 @@ export const studioSessionCookieName = "uykuluk_studio_session";
 export const studioSessionHeaderName = "x-uykuluk-studio-session";
 
 export type StudioMutationSecurityResult =
-  | {
-      ok: true;
-    }
-  | {
-      message: string;
-      ok: false;
-      status: 400 | 401 | 403 | 415;
-    };
+  { ok: true } | { message: string; ok: false; status: 400 | 401 | 403 | 415 };
 
 /**
  * Validates the common browser-to-Studio mutation boundary.

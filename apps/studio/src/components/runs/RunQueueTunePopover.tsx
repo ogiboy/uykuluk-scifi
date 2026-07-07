@@ -17,10 +17,10 @@ type RunQueueTunePopoverProps = Readonly<{
   onMaxBlockedActionsChange: (value: number) => void;
 }>;
 
-const densityLabels = {
-  compact: "Compact",
-  comfortable: "Comfortable",
-} as const satisfies Record<RunQueueDensity, string>;
+const densityLabels = { compact: "Compact", comfortable: "Comfortable" } as const satisfies Record<
+  RunQueueDensity,
+  string
+>;
 
 /**
  * Renders read-only queue display tuning controls for the Studio run workbench.
@@ -49,14 +49,14 @@ export function RunQueueTunePopover({
         <div className='grid gap-3'>
           <div>
             <h3 className='font-semibold'>Review surface</h3>
-            <p className='text-sm leading-relaxed text-muted-foreground'>
+            <p className='text-muted-foreground text-sm leading-relaxed'>
               Local projection only. These controls never approve, render, upload, or mutate.
             </p>
           </div>
           <div className='grid gap-3'>
             <div className='flex items-center justify-between gap-3'>
               <Label htmlFor='max-blocked-actions'>Max blockers shown</Label>
-              <strong className='font-mono text-primary'>{maxBlockedActions}</strong>
+              <strong className='text-primary font-mono'>{maxBlockedActions}</strong>
             </div>
             <Slider
               id='max-blocked-actions'
@@ -66,7 +66,7 @@ export function RunQueueTunePopover({
               value={[maxBlockedActions]}
               onValueChange={(value) => onMaxBlockedActionsChange(value[0] ?? 0)}
             />
-            <small className='text-sm leading-relaxed text-muted-foreground'>
+            <small className='text-muted-foreground text-sm leading-relaxed'>
               Current data reaches {highestBlockedActionCount}. Set 0 to review only fully unblocked
               runs.
             </small>
@@ -81,7 +81,7 @@ export function RunQueueTunePopover({
             >
               {runQueueDensityValues.map((value) => (
                 <label
-                  className='flex items-center justify-start gap-3 rounded-lg border bg-muted/20 p-3 text-sm'
+                  className='bg-muted/20 flex items-center justify-start gap-3 rounded-lg border p-3 text-sm'
                   key={value}
                 >
                   <RadioGroupItem value={value} />

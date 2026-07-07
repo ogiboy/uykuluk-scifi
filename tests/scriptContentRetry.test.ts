@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { generateScriptContentWithBlockerRetry } from "../src/stages/scriptContentRetry";
 import type {
   GenerateTextInput,
   GenerateTextResult,
   LlmProvider,
 } from "../src/providers/llmProvider";
+import { generateScriptContentWithBlockerRetry } from "../src/stages/scriptContentRetry";
 
 describe("script content retry", () => {
   it("retries safe contract parse failures without persisting raw provider text", async () => {
@@ -83,9 +83,7 @@ class FlakyJsonProvider implements LlmProvider {
     const text =
       this.prompts.length === 1
         ? this.firstText
-        : JSON.stringify({
-            text: "Anlatıcı: Geçerli ve sakin bir Türkçe cümle kurulur.",
-          });
+        : JSON.stringify({ text: "Anlatıcı: Geçerli ve sakin bir Türkçe cümle kurulur." });
 
     return {
       durationMs: 1,

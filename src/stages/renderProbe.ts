@@ -14,10 +14,7 @@ const ffprobeStreamSchema = z.looseObject({
 
 const ffprobeOutputSchema = z.looseObject({
   format: z
-    .looseObject({
-      duration: z.string().optional(),
-      format_name: z.string().optional(),
-    })
+    .looseObject({ duration: z.string().optional(), format_name: z.string().optional() })
     .optional(),
   streams: z.array(ffprobeStreamSchema).default([]),
 });
@@ -75,11 +72,7 @@ export async function probeDraftRender(
     binary,
     durationSeconds,
     formatName: parsed.format?.format_name,
-    video: {
-      codecName: video.codec_name,
-      height,
-      width,
-    },
+    video: { codecName: video.codec_name, height, width },
   });
 }
 

@@ -3,10 +3,7 @@ import type { DraftRenderManifest } from "./renderEvidenceContracts.js";
 
 type ChapterSource = {
   runId: string;
-  output: {
-    path: string;
-    sha256: string;
-  };
+  output: { path: string; sha256: string };
   timeline: DraftRenderManifest["timeline"];
 };
 
@@ -22,10 +19,7 @@ export type DraftRenderChapter = {
 export type DraftRenderChapterDraft = {
   schemaVersion: 1;
   runId: string;
-  source: {
-    draftRenderPath: string;
-    draftRenderSha256: string;
-  };
+  source: { draftRenderPath: string; draftRenderSha256: string };
   chapters: DraftRenderChapter[];
   copyBlock: string;
   operatorNotes: string[];
@@ -43,10 +37,7 @@ export function buildDraftRenderChapterDraft(manifest: ChapterSource): DraftRend
   return {
     schemaVersion: 1,
     runId: manifest.runId,
-    source: {
-      draftRenderPath: manifest.output.path,
-      draftRenderSha256: manifest.output.sha256,
-    },
+    source: { draftRenderPath: manifest.output.path, draftRenderSha256: manifest.output.sha256 },
     chapters,
     copyBlock: chapters.map((chapter) => `${chapter.timestamp} ${chapter.title}`).join("\n"),
     operatorNotes: [

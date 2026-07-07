@@ -35,11 +35,7 @@ describe("Studio render decision action route", () => {
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toMatchObject({
       actionId: "render.decide",
-      record: {
-        decision: "accepted-for-local-review",
-        reviewedBy: "operator",
-        runId,
-      },
+      record: { decision: "accepted-for-local-review", reviewedBy: "operator", runId },
       status: "ok",
     });
     const run = await loadRun(runId);
@@ -51,15 +47,7 @@ describe("Studio render decision action route", () => {
 
   it("rejects unsafe or malformed Studio mutation requests before core execution", async () => {
     await expectRouteError(studioJsonRequest({}, { actionHeader: "" }), 403);
-    await expectRouteError(
-      studioJsonRequest(
-        {},
-        {
-          origin: "https://attacker.example",
-        },
-      ),
-      403,
-    );
+    await expectRouteError(studioJsonRequest({}, { origin: "https://attacker.example" }), 403);
     await expectRouteError(
       new Request("http://localhost:3000/actions/decide-render", {
         body: "decision=accepted-for-local-review",

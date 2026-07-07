@@ -126,12 +126,14 @@ function summarizeReadinessArtifact(
     };
   }
   const checks = artifact.checks;
-  const attention = checks.filter(isAttentionCheck).map((check) => ({
-    message: check.message,
-    name: check.name,
-    nextAction: materializeRunCommand(check.nextAction, runId),
-    status: check.status,
-  }));
+  const attention = checks
+    .filter(isAttentionCheck)
+    .map((check) => ({
+      message: check.message,
+      name: check.name,
+      nextAction: materializeRunCommand(check.nextAction, runId),
+      status: check.status,
+    }));
   const blockCount = attention.filter((check) => check.status === "block").length;
   const warnCount = attention.length - blockCount;
   return {

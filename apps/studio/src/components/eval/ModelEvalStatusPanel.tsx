@@ -1,14 +1,12 @@
 import Link from "next/link";
 
-import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
 import { CliFallbackCommand } from "@/components/studio/CliFallbackCommand";
+import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { StudioModelEvalOverview } from "@/lib/modelEvalOverview";
 
-type ModelEvalStatusPanelProps = Readonly<{
-  overview: StudioModelEvalOverview;
-}>;
+type ModelEvalStatusPanelProps = Readonly<{ overview: StudioModelEvalOverview }>;
 
 /**
  * Renders a compact read-only local model evaluation summary on the Studio home page.
@@ -50,7 +48,7 @@ export function ModelEvalStatusPanel({ overview }: ModelEvalStatusPanelProps) {
               },
             ]}
           />
-          <div className='space-y-3 rounded-xl bg-muted/25 p-3'>
+          <div className='bg-muted/25 space-y-3 rounded-xl p-3'>
             <strong className='text-sm'>Next safe action</strong>
             <CliFallbackCommand
               align='start'
@@ -59,7 +57,7 @@ export function ModelEvalStatusPanel({ overview }: ModelEvalStatusPanelProps) {
               triggerLabel='Show eval fallback'
             />
           </div>
-          {overview.error ? <p className='text-sm text-destructive'>{overview.error}</p> : null}
+          {overview.error ? <p className='text-destructive text-sm'>{overview.error}</p> : null}
         </CardContent>
       </Card>
     </section>

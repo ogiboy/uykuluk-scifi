@@ -24,10 +24,7 @@ describe("script generation failure diagnostics", () => {
           ...defaultConfig,
           providers: {
             ...defaultConfig.providers,
-            llm: {
-              ...defaultConfig.providers.llm,
-              model: "mock-invalid-script-json",
-            },
+            llm: { ...defaultConfig.providers.llm, model: "mock-invalid-script-json" },
           },
         },
         null,
@@ -74,10 +71,7 @@ describe("script generation failure diagnostics", () => {
           ...defaultConfig,
           providers: {
             ...defaultConfig.providers,
-            llm: {
-              ...defaultConfig.providers.llm,
-              model: "mock-repeated-script-expansion",
-            },
+            llm: { ...defaultConfig.providers.llm, model: "mock-repeated-script-expansion" },
           },
         },
         null,
@@ -116,10 +110,7 @@ describe("script generation failure diagnostics", () => {
           ...defaultConfig,
           providers: {
             ...defaultConfig.providers,
-            llm: {
-              ...defaultConfig.providers.llm,
-              model: "mock-malformed-script-labels",
-            },
+            llm: { ...defaultConfig.providers.llm, model: "mock-malformed-script-labels" },
           },
         },
         null,
@@ -153,10 +144,7 @@ describe("script generation failure diagnostics", () => {
           ...defaultConfig,
           providers: {
             ...defaultConfig.providers,
-            llm: {
-              ...defaultConfig.providers.llm,
-              model: "mock-invalid-continuation-json",
-            },
+            llm: { ...defaultConfig.providers.llm, model: "mock-invalid-continuation-json" },
           },
         },
         null,
@@ -191,10 +179,7 @@ describe("script generation failure diagnostics", () => {
           ...defaultConfig,
           providers: {
             ...defaultConfig.providers,
-            llm: {
-              ...defaultConfig.providers.llm,
-              model: "mock-repeated-script-expansion",
-            },
+            llm: { ...defaultConfig.providers.llm, model: "mock-repeated-script-expansion" },
           },
         },
         null,

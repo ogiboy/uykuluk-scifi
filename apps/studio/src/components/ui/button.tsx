@@ -15,9 +15,7 @@ const buttonVariants = cva(
           "border-transparent text-[color:var(--muted)] hover:bg-[color:var(--panel)] hover:text-[color:var(--text)]",
       },
     },
-    defaultVariants: {
-      variant: "default",
-    },
+    defaultVariants: { variant: "default" },
   },
 );
 

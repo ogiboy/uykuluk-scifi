@@ -116,12 +116,7 @@ export async function reconcileCostReservation(
         actualUsdMicros: number;
         reason: string;
       }
-    | {
-        runId: string;
-        reservationId: string;
-        outcome: "released";
-        reason: string;
-      },
+    | { runId: string; reservationId: string; outcome: "released"; reason: string },
 ): Promise<CostReservationSummary> {
   requireReservationText(input.reason, "reconciliation reason");
   return withCostReservationLock(async () => {

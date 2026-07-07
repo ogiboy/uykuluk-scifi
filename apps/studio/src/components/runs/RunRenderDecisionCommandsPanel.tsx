@@ -25,11 +25,11 @@ export function RunRenderDecisionCommandsPanel({ commands }: RunRenderDecisionCo
     >
       <ul className='grid gap-3'>
         {commands.map((item) => (
-          <li className='grid gap-3 rounded-lg bg-muted/10 p-3' key={item.decision}>
+          <li className='bg-muted/10 grid gap-3 rounded-lg p-3' key={item.decision}>
             <Badge className='capitalize' variant='outline'>
               {item.decision}
             </Badge>
-            <p className='text-sm text-muted-foreground'>{item.guidance}</p>
+            <p className='text-muted-foreground text-sm'>{item.guidance}</p>
             <CopyableCommand command={item.command} label={`${item.decision} decision command`} />
           </li>
         ))}

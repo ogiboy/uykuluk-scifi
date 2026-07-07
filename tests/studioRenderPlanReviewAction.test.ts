@@ -21,10 +21,7 @@ describe("Studio render-plan review action", () => {
           nextRecommendedCommand: "pnpm producer estimate --run run_render_plan_review",
         }),
       ),
-    ).toMatchObject({
-      actionId: "render-plan.review",
-      routePath: "/actions/review-render-plan",
-    });
+    ).toMatchObject({ actionId: "render-plan.review", routePath: "/actions/review-render-plan" });
   });
 
   it("does not duplicate the stage action when review is already the recommended command", () => {
@@ -124,8 +121,5 @@ function renderPlanReviewRunFixture(
 }
 
 function artifactPreview(path: string): StudioRenderPlanReviewActionRun["artifacts"][number] {
-  return {
-    exists: true,
-    path,
-  };
+  return { exists: true, path };
 }

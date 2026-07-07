@@ -7,8 +7,8 @@ import {
   channelHandoffSchema,
   comparableChannelHandoffPayload,
   isLegacyChannelHandoff,
-  type ChannelHandoff,
   youtubeMetadataSchema,
+  type ChannelHandoff,
 } from "../../../../src/stages/channelHandoffContracts";
 import { finalReviewBundleJsonPath } from "../../../../src/stages/finalReviewBundleContracts";
 import {
@@ -198,11 +198,7 @@ function missingHandoff(
       nextAction,
     };
   }
-  return {
-    kind: "missing",
-    message: "Manual channel handoff has not been generated.",
-    nextAction,
-  };
+  return { kind: "missing", message: "Manual channel handoff has not been generated.", nextAction };
 }
 
 function invalidHandoff(

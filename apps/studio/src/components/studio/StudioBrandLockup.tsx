@@ -10,11 +10,11 @@ export function StudioBrandLockup() {
   return (
     <Link
       aria-label='Studio home'
-      className='mb-7 flex min-w-0 items-center gap-3 rounded-md text-foreground'
+      className='text-foreground mb-7 flex min-w-0 items-center gap-3 rounded-md'
       href='/'
     >
       <span
-        className='grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-lg bg-card/60 text-primary shadow-sm shadow-black/10'
+        className='bg-card/60 text-primary grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-lg shadow-sm shadow-black/10'
         aria-hidden='true'
       >
         <Image
@@ -28,7 +28,7 @@ export function StudioBrandLockup() {
         />
       </span>
       <div>
-        <p className='text-sm text-muted-foreground'>UykulukSciFi</p>
+        <p className='text-muted-foreground text-sm'>UykulukSciFi</p>
         <strong className='mt-0.5 block text-sm font-semibold'>Producer Studio</strong>
       </div>
     </Link>

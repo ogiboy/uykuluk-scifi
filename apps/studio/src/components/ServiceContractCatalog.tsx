@@ -1,7 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import { useMemo, useState } from "react";
 import { CopyableCommand } from "@/components/studio/CopyableCommand";
 import {
   Accordion,
@@ -28,10 +26,10 @@ import {
   type ServiceContractAvailabilityFilter,
   type ServiceContractGroup,
 } from "@/lib/serviceContractPanel";
+import Link from "next/link";
+import { useMemo, useState } from "react";
 
-type ServiceContractCatalogProps = Readonly<{
-  groups: readonly ServiceContractGroup[];
-}>;
+type ServiceContractCatalogProps = Readonly<{ groups: readonly ServiceContractGroup[] }>;
 
 /**
  * Renders the interactive Studio action contract catalog as a client leaf.
@@ -49,7 +47,7 @@ export function ServiceContractCatalog({ groups }: ServiceContractCatalogProps) 
 
   return (
     <div className='grid gap-4'>
-      <div className='grid gap-3 rounded-2xl bg-muted/20 p-3 lg:grid-cols-[minmax(0,1fr)_14rem_auto] lg:items-end'>
+      <div className='bg-muted/20 grid gap-3 rounded-2xl p-3 lg:grid-cols-[minmax(0,1fr)_14rem_auto] lg:items-end'>
         <div className='grid gap-2'>
           <Label htmlFor='service-contract-search'>Search action contracts</Label>
           <Input
@@ -75,7 +73,7 @@ export function ServiceContractCatalog({ groups }: ServiceContractCatalogProps) 
             </SelectContent>
           </Select>
         </div>
-        <p className='rounded-lg bg-background/70 px-3 py-2 text-sm text-muted-foreground'>
+        <p className='bg-background/70 text-muted-foreground rounded-lg px-3 py-2 text-sm'>
           {visibleCount} visible
         </p>
       </div>
@@ -83,7 +81,7 @@ export function ServiceContractCatalog({ groups }: ServiceContractCatalogProps) 
       {filteredGroups.length > 0 ? (
         filteredGroups.map((group) => <ServiceContractGroupCard group={group} key={group.title} />)
       ) : (
-        <p className='rounded-2xl bg-muted/20 p-4 text-sm text-muted-foreground'>
+        <p className='bg-muted/20 text-muted-foreground rounded-2xl p-4 text-sm'>
           No action contracts match the current search. Clear the query or change availability.
         </p>
       )}
@@ -97,7 +95,7 @@ function ServiceContractGroupCard({ group }: Readonly<{ group: ServiceContractGr
       <div className='flex flex-wrap items-start justify-between gap-3'>
         <div className='space-y-1'>
           <h3 className='text-lg font-semibold tracking-tight'>{group.title}</h3>
-          <p className='max-w-4xl text-sm text-muted-foreground'>{group.description}</p>
+          <p className='text-muted-foreground max-w-4xl text-sm'>{group.description}</p>
         </div>
         <Badge variant='secondary'>{group.summaries.length}</Badge>
       </div>
@@ -110,13 +108,13 @@ function ServiceContractAccordion({
   summaries,
 }: Readonly<{ summaries: readonly StudioActionServiceSummary[] }>) {
   return (
-    <Accordion className='rounded-xl bg-muted/20 px-3' type='multiple'>
+    <Accordion className='bg-muted/20 rounded-xl px-3' type='multiple'>
       {summaries.map((summary) => (
         <AccordionItem className='border-border/40' key={summary.actionId} value={summary.actionId}>
           <AccordionTrigger className='hover:no-underline'>
             <span className='grid min-w-0 gap-1'>
               <span className='flex flex-wrap items-center gap-2'>
-                <span className='break-all font-semibold'>{summary.actionId}</span>
+                <span className='font-semibold break-all'>{summary.actionId}</span>
                 <Badge
                   variant={
                     summary.availability === "disabled-external" ? "destructive" : "secondary"
@@ -125,7 +123,7 @@ function ServiceContractAccordion({
                   {summary.availability === "disabled-external" ? "disabled" : "guarded"}
                 </Badge>
               </span>
-              <span className='text-sm font-normal text-muted-foreground'>
+              <span className='text-muted-foreground text-sm font-normal'>
                 {summary.description}
               </span>
             </span>
@@ -141,18 +139,18 @@ function ServiceContractAccordion({
 
 function ServiceContractDetails({ summary }: Readonly<{ summary: StudioActionServiceSummary }>) {
   return (
-    <div className='grid gap-3 rounded-xl bg-background/70 p-3'>
+    <div className='bg-background/70 grid gap-3 rounded-xl p-3'>
       <ActionRouteControl summary={summary} />
       <CopyableCommand command={summary.cliCommand} label={`${summary.actionId} command`} />
-      <dl className='grid gap-2 text-sm text-muted-foreground sm:grid-cols-2'>
-        <div className='space-y-1 rounded-lg bg-muted/40 p-3'>
-          <dt className='font-medium text-foreground'>Route</dt>
+      <dl className='text-muted-foreground grid gap-2 text-sm sm:grid-cols-2'>
+        <div className='bg-muted/40 space-y-1 rounded-lg p-3'>
+          <dt className='text-foreground font-medium'>Route</dt>
           <dd>
-            <code className='break-all text-xs text-foreground'>{summary.routePath}</code>
+            <code className='text-foreground text-xs break-all'>{summary.routePath}</code>
           </dd>
         </div>
-        <div className='space-y-1 rounded-lg bg-muted/40 p-3'>
-          <dt className='font-medium text-foreground'>Boundary</dt>
+        <div className='bg-muted/40 space-y-1 rounded-lg p-3'>
+          <dt className='text-foreground font-medium'>Boundary</dt>
           <dd>{serviceBoundaryCopy(summary)}</dd>
         </div>
       </dl>
@@ -173,7 +171,7 @@ function ActionRouteControl({ summary }: Readonly<{ summary: StudioActionService
     );
   }
   return (
-    <p className='rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive'>
+    <p className='border-destructive/30 bg-destructive/10 text-destructive rounded-md border px-3 py-2 text-sm'>
       Web execution is disabled for this action.
     </p>
   );

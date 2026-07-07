@@ -1,7 +1,7 @@
-import type { StudioChannelHandoffSummary } from "./channelHandoffSummaries";
-import { readStudioChannelHandoffSummary } from "./channelHandoffSummaries";
 import type { StudioChannelHandoffDecisionSummary } from "./channelHandoffDecisionSummaries";
 import { readStudioChannelHandoffDecisionSummary } from "./channelHandoffDecisionSummaries";
+import type { StudioChannelHandoffSummary } from "./channelHandoffSummaries";
+import { readStudioChannelHandoffSummary } from "./channelHandoffSummaries";
 import type { StudioEvidenceSummary } from "./evidenceSummaries";
 import { readStudioEvidenceSummary } from "./evidenceSummaries";
 import type { StudioFinalReviewBundleSummary } from "./finalReviewBundleSummaries";
@@ -12,10 +12,7 @@ import type { StudioRenderDecisionSummary } from "./renderDecisionSummaries";
 import { readStudioRenderDecisionSummary } from "./renderDecisionSummaries";
 import type { RunRecord, StudioRunState } from "./runRecordTypes";
 
-type LoadedRunRecord = RunRecord & {
-  runId: string;
-  state: StudioRunState;
-};
+type LoadedRunRecord = RunRecord & { runId: string; state: StudioRunState };
 
 export type RunSummaryInputs = {
   channelHandoff: StudioChannelHandoffSummary;

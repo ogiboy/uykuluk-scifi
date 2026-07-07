@@ -1,18 +1,16 @@
 import { CliFallbackCommand } from "@/components/studio/CliFallbackCommand";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getNextSafeCommand } from "@/lib/runSummaryCopy";
 import {
   buildStudioRunReviewBrief,
   type StudioRunReviewBriefCheckpoint,
 } from "@/lib/runReviewBrief";
 import { runReviewTabFocus } from "@/lib/runReviewNavigation";
 import type { StudioRunDetail } from "@/lib/runSummaries";
+import { getNextSafeCommand } from "@/lib/runSummaryCopy";
 import { RunPrimaryActionPanel } from "./RunPrimaryActionPanel";
 
-type RunReviewCockpitHeaderProps = Readonly<{
-  run: StudioRunDetail;
-}>;
+type RunReviewCockpitHeaderProps = Readonly<{ run: StudioRunDetail }>;
 
 /**
  * Renders the primary run-detail operator summary.
@@ -59,8 +57,8 @@ export function RunReviewCockpitHeader({ run }: RunReviewCockpitHeaderProps) {
             <p
               className={
                 brief.severity === "blocked"
-                  ? "mb-1.5 text-[11px] font-extrabold uppercase tracking-[0.14em] text-destructive"
-                  : "mb-1.5 text-[11px] font-extrabold uppercase tracking-[0.14em] text-primary"
+                  ? "text-destructive mb-1.5 text-[11px] font-extrabold tracking-[0.14em] uppercase"
+                  : "text-primary mb-1.5 text-[11px] font-extrabold tracking-[0.14em] uppercase"
               }
             >
               {brief.severity}
@@ -69,7 +67,7 @@ export function RunReviewCockpitHeader({ run }: RunReviewCockpitHeaderProps) {
               {brief.title}
             </h3>
             <p>{brief.summary}</p>
-            <p className='text-sm text-muted-foreground'>{tabFocus.detail}</p>
+            <p className='text-muted-foreground text-sm'>{tabFocus.detail}</p>
           </div>
           <ul className='grid list-none gap-2 p-0'>
             {brief.checkpoints.map((checkpoint) => (
@@ -80,7 +78,7 @@ export function RunReviewCockpitHeader({ run }: RunReviewCockpitHeaderProps) {
       </CardContent>
       <CardContent className='col-span-full grid min-w-0 gap-3 p-0'>
         <RunPrimaryActionPanel run={run} />
-        <div className='flex flex-wrap items-center justify-between gap-3 rounded-lg bg-muted/10 p-4'>
+        <div className='bg-muted/10 flex flex-wrap items-center justify-between gap-3 rounded-lg p-4'>
           <div className='grid gap-1 text-sm'>
             <strong>CLI/core audit fallback</strong>
             <span className='text-muted-foreground'>
@@ -115,7 +113,7 @@ function ReviewBriefCheckpoint({
       </Badge>
       <div>
         <strong>{checkpoint.label}</strong>
-        <p className='mt-0.5 text-xs text-muted-foreground'>{checkpoint.detail}</p>
+        <p className='text-muted-foreground mt-0.5 text-xs'>{checkpoint.detail}</p>
       </div>
     </li>
   );
@@ -133,8 +131,8 @@ function checkpointBadgeVariant(
 function RunMetric({ label, value }: Readonly<{ label: string; value: number | string }>) {
   return (
     <div className='min-w-0'>
-      <dt className='text-xs text-muted-foreground'>{label}</dt>
-      <dd className='mt-1 break-words font-semibold'>{value}</dd>
+      <dt className='text-muted-foreground text-xs'>{label}</dt>
+      <dd className='mt-1 font-semibold break-words'>{value}</dd>
     </div>
   );
 }

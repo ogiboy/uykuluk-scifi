@@ -70,14 +70,7 @@ describe("provider payload parsing", () => {
 
   it("rejects Turkish rating-only fit values from local providers", () => {
     expect(() =>
-      parseIdeasProviderPayload(
-        JSON.stringify([
-          {
-            ...validIdea,
-            fit: "yüksek",
-          },
-        ]),
-      ),
+      parseIdeasProviderPayload(JSON.stringify([{ ...validIdea, fit: "yüksek" }])),
     ).toThrow(/Fit must be a Turkish explanation, not a rating/);
   });
 
@@ -85,10 +78,7 @@ describe("provider payload parsing", () => {
     expect(() =>
       parseIdeasProviderPayload(
         JSON.stringify([
-          {
-            ...validIdea,
-            style: "Calm cinematic science fiction with surreal imagery",
-          },
+          { ...validIdea, style: "Calm cinematic science fiction with surreal imagery" },
         ]),
       ),
     ).toThrow(/Invalid ideas provider response/);
@@ -98,10 +88,7 @@ describe("provider payload parsing", () => {
     expect(
       parseIdeasProviderPayload(
         JSON.stringify([
-          {
-            ...validIdea,
-            fit: "UykulukSci, görsel anlatımla kozmik bağları derinleştirir.",
-          },
+          { ...validIdea, fit: "UykulukSci, görsel anlatımla kozmik bağları derinleştirir." },
           {
             ...validIdea,
             id: "idea_002",
@@ -111,10 +98,7 @@ describe("provider payload parsing", () => {
         ]),
       ),
     ).toEqual([
-      {
-        ...validIdea,
-        fit: "UykulukSciFi, görsel anlatımla kozmik bağları derinleştirir.",
-      },
+      { ...validIdea, fit: "UykulukSciFi, görsel anlatımla kozmik bağları derinleştirir." },
       {
         ...validIdea,
         id: "idea_002",

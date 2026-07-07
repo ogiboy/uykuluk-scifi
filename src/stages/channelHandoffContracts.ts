@@ -9,9 +9,7 @@ export function channelHandoffCommand(runId: string): string {
   return `pnpm producer channel-handoff --run ${runId}`;
 }
 
-const legacyChannelHandoffSchema = z.looseObject({
-  schemaVersion: z.literal(1),
-});
+const legacyChannelHandoffSchema = z.looseObject({ schemaVersion: z.literal(1) });
 
 export const channelHandoffSchema = z.strictObject({
   schemaVersion: z.literal(2),

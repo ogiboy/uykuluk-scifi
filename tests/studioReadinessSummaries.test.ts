@@ -80,12 +80,7 @@ describe("Studio readiness summary validity", () => {
     await mkdir("outside/diagnostics", { recursive: true });
     await writeFile(
       "outside/diagnostics/readiness.json",
-      JSON.stringify({
-        checks: [],
-        currentState: "NEW",
-        passed: true,
-        runId: "../outside",
-      }),
+      JSON.stringify({ checks: [], currentState: "NEW", passed: true, runId: "../outside" }),
       "utf8",
     );
 

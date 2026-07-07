@@ -1,6 +1,5 @@
 "use client";
 
-import { ShieldCheckIcon } from "lucide-react";
 import { CliFallbackCommand } from "@/components/studio/CliFallbackCommand";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -13,8 +12,9 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { getNextSafeCommand } from "@/lib/runSummaryCopy";
 import type { StudioRunDetail } from "@/lib/runSummaries";
+import { getNextSafeCommand } from "@/lib/runSummaryCopy";
+import { ShieldCheckIcon } from "lucide-react";
 import { RunPrimaryActionPanel } from "./RunPrimaryActionPanel";
 
 type RunReviewActionSummarySheetProps = Readonly<{
@@ -79,7 +79,7 @@ export function RunReviewActionSummarySheet({ run }: RunReviewActionSummarySheet
               </Badge>
             </div>
 
-            <div className='flex flex-wrap items-center justify-between gap-3 rounded-lg bg-muted/15 p-4 ring-1 ring-border/5'>
+            <div className='bg-muted/15 ring-border/5 flex flex-wrap items-center justify-between gap-3 rounded-lg p-4 ring-1'>
               <div className='grid gap-1 text-sm'>
                 <strong>CLI/core fallback</strong>
                 <span className='text-muted-foreground'>
@@ -98,21 +98,21 @@ export function RunReviewActionSummarySheet({ run }: RunReviewActionSummarySheet
             {run.blockedActions.length > 0 ? (
               <div className='grid gap-3'>
                 <strong>Blocking evidence</strong>
-                <ul className='grid gap-2 pl-5 text-muted-foreground'>
+                <ul className='text-muted-foreground grid gap-2 pl-5'>
                   {run.blockedActions.slice(0, 4).map((action, index) => (
                     <li key={`mobile-blocker-${index}-${action}`}>{action}</li>
                   ))}
                 </ul>
               </div>
             ) : (
-              <p className='text-sm text-muted-foreground'>
+              <p className='text-muted-foreground text-sm'>
                 No blocked actions are projected from the current evidence bundle.
               </p>
             )}
 
             {run.evidenceNextAction ? (
-              <div className='flex flex-wrap items-center justify-between gap-3 rounded-lg bg-muted/15 p-3 ring-1 ring-border/5'>
-                <p className='text-sm text-muted-foreground'>
+              <div className='bg-muted/15 ring-border/5 flex flex-wrap items-center justify-between gap-3 rounded-lg p-3 ring-1'>
+                <p className='text-muted-foreground text-sm'>
                   Evidence action is available as a CLI/core fallback.
                 </p>
                 <CliFallbackCommand
@@ -123,7 +123,7 @@ export function RunReviewActionSummarySheet({ run }: RunReviewActionSummarySheet
                 />
               </div>
             ) : (
-              <p className='text-sm text-muted-foreground'>{run.evidenceMessage}</p>
+              <p className='text-muted-foreground text-sm'>{run.evidenceMessage}</p>
             )}
           </div>
         </SheetContent>

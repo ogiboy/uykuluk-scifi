@@ -1,5 +1,5 @@
-import type { StudioRunSummary } from "./runSummaries";
 import { operatorDecisionPriority } from "./runQueueDecisions";
+import type { StudioRunSummary } from "./runSummaries";
 
 export const runQueueSortValues = [
   "updated-desc",
@@ -14,15 +14,9 @@ export const runQueueDensityValues = ["compact", "comfortable"] as const;
 
 export type RunQueueDensity = (typeof runQueueDensityValues)[number];
 
-export type RunQueueWorkbenchInput = Readonly<{
-  maxBlockedActions: number;
-  sort: RunQueueSort;
-}>;
+export type RunQueueWorkbenchInput = Readonly<{ maxBlockedActions: number; sort: RunQueueSort }>;
 
-export type RunQueueEmptyState = Readonly<{
-  heading: string;
-  message: string;
-}>;
+export type RunQueueEmptyState = Readonly<{ heading: string; message: string }>;
 
 /**
  * Applies operator-facing queue controls after the primary run filter/search projection.

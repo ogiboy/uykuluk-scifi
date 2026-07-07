@@ -6,17 +6,12 @@ import { appendLedgerEvent } from "../core/ledger.js";
 import { loadRun, setRunState } from "../core/runStore.js";
 import { assertTransition } from "../core/transitions.js";
 import { defaultStagePricing } from "../costs/pricing.js";
-import { enforceBudget } from "../safeguards/budgetGuard.js";
-import { requireApproval, requireState } from "../safeguards/approvalGuard.js";
-import { createLlmProvider } from "../providers/index.js";
 import { createPromptProvenance } from "../prompts/provenance.js";
 import { renderProductionPackagePrompt } from "../prompts/templates.js";
+import { createLlmProvider } from "../providers/index.js";
+import { requireApproval, requireState } from "../safeguards/approvalGuard.js";
+import { enforceBudget } from "../safeguards/budgetGuard.js";
 import { sha256 } from "../utils/hash.js";
-import {
-  PackageProviderPayload,
-  parseProductionPackageProviderPayload,
-} from "./providerPayloads.js";
-import { productionPackageResponseFormat } from "./providerResponseFormats.js";
 import {
   createProductionPackageManifest,
   type ProductionPackageManifest,
@@ -26,6 +21,11 @@ import {
   buildWrappedSrt,
   renderVoiceoverText,
 } from "./productionPackageScript.js";
+import {
+  PackageProviderPayload,
+  parseProductionPackageProviderPayload,
+} from "./providerPayloads.js";
+import { productionPackageResponseFormat } from "./providerResponseFormats.js";
 import { ProductionScene } from "./types.js";
 
 /**

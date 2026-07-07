@@ -1,14 +1,11 @@
 "use client";
 
-import { CopyIcon } from "lucide-react";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { CopyIcon } from "lucide-react";
+import { toast } from "sonner";
 
-type CopyableCommandProps = Readonly<{
-  command: string;
-  label?: string;
-}>;
+type CopyableCommandProps = Readonly<{ command: string; label?: string }>;
 
 /**
  * Renders an operator CLI command with a one-click local clipboard copy action.
@@ -30,8 +27,8 @@ export function CopyableCommand({ command, label = "Command" }: CopyableCommandP
   }
 
   return (
-    <div className='grid gap-2 rounded-lg bg-background/35 p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center'>
-      <code className='min-w-0 break-all font-mono text-xs text-foreground'>{command}</code>
+    <div className='bg-background/35 grid gap-2 rounded-lg p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center'>
+      <code className='text-foreground min-w-0 font-mono text-xs break-all'>{command}</code>
       <Tooltip>
         <TooltipTrigger asChild>
           <Button

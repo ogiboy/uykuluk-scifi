@@ -86,13 +86,9 @@ describe("script blocker retry", () => {
     expect(retriedContinuation?.blockerRetry).toMatchObject({
       attemptCount: 2,
       blockers: expect.stringContaining("repeated_sentence_loop"),
-      rejectedAttempt: {
-        contentHash: expect.stringMatching(/^[a-f0-9]{64}$/),
-      },
+      rejectedAttempt: { contentHash: expect.stringMatching(/^[a-f0-9]{64}$/) },
       rejectedAttempts: [
-        expect.objectContaining({
-          contentHash: expect.stringMatching(/^[a-f0-9]{64}$/),
-        }),
+        expect.objectContaining({ contentHash: expect.stringMatching(/^[a-f0-9]{64}$/) }),
       ],
     });
     expect(JSON.stringify(sections)).not.toContain(repeatedSentence);
@@ -105,13 +101,7 @@ async function generateScriptSectionsWithModel(model: string): Promise<ScriptSec
     `${JSON.stringify(
       {
         ...defaultConfig,
-        providers: {
-          ...defaultConfig.providers,
-          llm: {
-            ...defaultConfig.providers.llm,
-            model,
-          },
-        },
+        providers: { ...defaultConfig.providers, llm: { ...defaultConfig.providers.llm, model } },
       },
       null,
       2,
@@ -132,11 +122,7 @@ type ScriptSectionsArtifact = {
     blockerRetry?: {
       attemptCount: number;
       blockers: string;
-      rejectedAttempt: {
-        contentHash: string;
-        outputTokensApprox?: number;
-        promptHash?: string;
-      };
+      rejectedAttempt: { contentHash: string; outputTokensApprox?: number; promptHash?: string };
       rejectedAttempts?: Array<{
         contentHash: string;
         outputTokensApprox?: number;

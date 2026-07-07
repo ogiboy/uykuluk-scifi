@@ -91,12 +91,9 @@ export async function buildCostEstimate(
 }
 
 /** Reads a quote and verifies its operator Markdown matches the persisted JSON. */
-export async function readCostEstimate(runId: string): Promise<{
-  estimate: CostEstimate;
-  text: string;
-  markdownText: string;
-  digest: string;
-}> {
+export async function readCostEstimate(
+  runId: string,
+): Promise<{ estimate: CostEstimate; text: string; markdownText: string; digest: string }> {
   const text = await readFile(artifactPath(runId, "costs/estimate.json"), "utf8");
   const markdownText = await readFile(artifactPath(runId, "costs/estimate.md"), "utf8");
   const estimate = costEstimateSchema.parse(JSON.parse(text) as unknown);
@@ -104,12 +101,7 @@ export async function readCostEstimate(runId: string): Promise<{
   if (markdownText !== expectedMarkdown) {
     throw new SafeExitError("Cost quote Markdown does not match the persisted JSON quote.");
   }
-  return {
-    estimate,
-    text,
-    markdownText,
-    digest: sha256(`${text}\0${markdownText}`),
-  };
+  return { estimate, text, markdownText, digest: sha256(`${text}\0${markdownText}`) };
 }
 
 /** Returns all package, config, pricing, and live-budget reasons that make a quote stale. */

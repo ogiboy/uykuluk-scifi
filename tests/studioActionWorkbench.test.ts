@@ -78,10 +78,7 @@ describe("Studio action workbench", () => {
     const nextAction =
       "pnpm producer decide render --run run_workbench --decision accepted-for-local-review";
     const workbench = buildStudioActionWorkbench(
-      actionRunFixture({
-        renderDecision: { kind: "missing", nextAction },
-        state: "RENDERED",
-      }),
+      actionRunFixture({ renderDecision: { kind: "missing", nextAction }, state: "RENDERED" }),
     );
 
     expect(workbench.primary).toEqual(
@@ -134,10 +131,7 @@ describe("Studio action workbench", () => {
 
   it("does not treat global ideas generation as a run-bound action", () => {
     const workbench = buildStudioActionWorkbench(
-      actionRunFixture({
-        nextRecommendedCommand: "pnpm producer ideas",
-        state: "NEW",
-      }),
+      actionRunFixture({ nextRecommendedCommand: "pnpm producer ideas", state: "NEW" }),
     );
 
     expect(workbench.primary).toEqual(
@@ -187,20 +181,11 @@ describe("Studio action workbench", () => {
           state: "RENDERED",
         }),
         actionRunFixture({
-          renderDecision: {
-            kind: "present",
-            nextAction: "Local final review handoff is ready.",
-          },
+          renderDecision: { kind: "present", nextAction: "Local final review handoff is ready." },
           state: "RENDERED",
         }),
       ]),
-    ).toEqual({
-      blockedCli: 1,
-      cliOnly: 1,
-      complete: 1,
-      needsReview: 0,
-      webAction: 1,
-    });
+    ).toEqual({ blockedCli: 1, cliOnly: 1, complete: 1, needsReview: 0, webAction: 1 });
   });
 });
 

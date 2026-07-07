@@ -104,12 +104,7 @@ export function isStudioDensity(value: unknown): value is StudioDensity {
 }
 
 function defaultPreference(locale: StudioLocale): StudioAppearancePreference {
-  return {
-    density: "standard",
-    locale,
-    palette: "cyan",
-    theme: "dark",
-  };
+  return { density: "standard", locale, palette: "cyan", theme: "dark" };
 }
 
 function parseStoredPreference(rawPreference: string): unknown {

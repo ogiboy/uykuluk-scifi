@@ -28,10 +28,7 @@ describe("RunChannelHandoffDecisionPanel", () => {
             templatePath: "assets/thumbnails/thumbnail_template_01_left_1280x720.jpg",
             templateSha256: "b".repeat(64),
           },
-          youtube: {
-            metadataPath: "production/youtube_metadata.json",
-            title: "Fixture title",
-          },
+          youtube: { metadataPath: "production/youtube_metadata.json", title: "Fixture title" },
         },
         kind: "present",
         message: "Channel handoff decision recorded: accepted-for-manual-channel-prep.",

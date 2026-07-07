@@ -117,11 +117,10 @@ describe("Studio mutation service contracts", () => {
         runId: "run_operator_review",
       }),
     ).toEqual({ acknowledgeWarnings: true, runId: "run_operator_review" });
-    expect(
-      parseStudioMutationRequest("script.approve", {
-        runId: "run_operator_review",
-      }),
-    ).toEqual({ acknowledgeWarnings: false, runId: "run_operator_review" });
+    expect(parseStudioMutationRequest("script.approve", { runId: "run_operator_review" })).toEqual({
+      acknowledgeWarnings: false,
+      runId: "run_operator_review",
+    });
     expect(
       parseStudioMutationRequest("channel-handoff.decide", {
         decision: "accepted-for-manual-channel-prep",
@@ -202,10 +201,7 @@ describe("Studio mutation service contracts", () => {
       ).toThrow(/Invalid run id/);
     }
     expect(() =>
-      parseStudioMutationRequest("cost.approve", {
-        extra: true,
-        runId: "run_operator_review",
-      }),
+      parseStudioMutationRequest("cost.approve", { extra: true, runId: "run_operator_review" }),
     ).toThrow(/Unrecognized key/);
     expect(parseStudioMutationRequest("render-plan.run", { runId: "run_operator_review" })).toEqual(
       { runId: "run_operator_review" },
@@ -219,10 +215,7 @@ describe("Studio mutation service contracts", () => {
       parseStudioMutationRequest("doctor.run", { runId: "run_operator_review" }),
     ).toThrow(/Unrecognized key/);
     expect(() =>
-      parseStudioMutationRequest("voice.run", {
-        extra: true,
-        runId: "run_operator_review",
-      }),
+      parseStudioMutationRequest("voice.run", { extra: true, runId: "run_operator_review" }),
     ).toThrow(/Unrecognized key/);
   });
 

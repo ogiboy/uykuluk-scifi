@@ -1,7 +1,7 @@
-import { appendLedgerEvent } from "../core/ledger.js";
-import { RunRecord } from "../core/state.js";
 import { ProducerConfig } from "../config/schema.js";
 import { SafeExitError } from "../core/errors.js";
+import { appendLedgerEvent } from "../core/ledger.js";
+import { RunRecord } from "../core/state.js";
 
 export async function blockPrivateUploadUnlessExplicitlyEnabled(
   run: RunRecord,

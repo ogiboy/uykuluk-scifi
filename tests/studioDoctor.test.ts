@@ -6,11 +6,7 @@ import { useTempProject } from "./helpers";
 
 const passingDoctorReport = {
   checks: [
-    {
-      message: "producer.config.json is valid.",
-      name: "project config",
-      status: "pass",
-    },
+    { message: "producer.config.json is valid.", name: "project config", status: "pass" },
     {
       message: "YouTube upload and public/scheduled publish remain disabled.",
       name: "publish defaults",

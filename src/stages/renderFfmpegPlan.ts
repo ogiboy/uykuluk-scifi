@@ -1,19 +1,19 @@
 import path from "node:path";
 import { artifactPath } from "../core/artifacts.js";
 import { SafeExitError } from "../core/errors.js";
-import { voiceoverAudioPath } from "./voiceoverEvidence.js";
-import { RenderPlan } from "./renderPlanSchemas.js";
 import {
   buildDraftRenderComposition,
   type DraftRenderComposition,
   type DraftRenderOverlay,
 } from "./renderComposition.js";
-import { buildDraftRenderTimeline, type DraftRenderTimeline } from "./renderTimeline.js";
 import { buildFfmpegTimelineInputs } from "./renderFfmpegInputs.js";
 import { buildPopupTextFilters, hasPopupText } from "./renderFfmpegPopupText.js";
+import { RenderPlan } from "./renderPlanSchemas.js";
+import { buildDraftRenderTimeline, type DraftRenderTimeline } from "./renderTimeline.js";
+import { voiceoverAudioPath } from "./voiceoverEvidence.js";
 
-export { buildDraftRenderTimeline, clampRenderDuration } from "./renderTimeline.js";
 export { buildFfmpegTimelineInputs } from "./renderFfmpegInputs.js";
+export { buildDraftRenderTimeline, clampRenderDuration } from "./renderTimeline.js";
 export type { DraftRenderTimeline } from "./renderTimeline.js";
 
 /**
@@ -189,10 +189,7 @@ function overlayFilters(input: {
     inputLabel = outputLabel;
     return filters;
   });
-  return {
-    filters,
-    outputLabel: filters.length > 0 ? inputLabel : input.firstInputLabel,
-  };
+  return { filters, outputLabel: filters.length > 0 ? inputLabel : input.firstInputLabel };
 }
 
 const ffmpegFilterEscape = String.fromCodePoint(92);

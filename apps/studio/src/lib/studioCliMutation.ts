@@ -9,11 +9,7 @@ import { validateStudioMutationRequest } from "./studioMutationSecurity";
 
 export type { StudioCliMutationActionId } from "./studioCliMutationArgs";
 
-type CliResult = Readonly<{
-  stderr: string;
-  stdout: string;
-  status: number;
-}>;
+type CliResult = Readonly<{ stderr: string; stdout: string; status: number }>;
 
 const studioCliTimeoutMs = 20 * 60 * 1000;
 const studioCliKillGraceMs = 5_000;
@@ -51,11 +47,7 @@ export async function runStudioCliMutationRoute(
       return jsonError(cliErrorMessage(result.stderr), 409, parseCliJsonOrNull(result.stdout));
     }
     return Response.json(
-      {
-        actionId,
-        record: parseCliJson(result.stdout),
-        status: "ok",
-      },
+      { actionId, record: parseCliJson(result.stdout), status: "ok" },
       { headers: noStoreHeaders() },
     );
   } catch (error) {
@@ -79,11 +71,7 @@ async function runProducerCliWithCleanup(
 
 function jsonError(message: string, status: number, record: unknown = null): Response {
   return Response.json(
-    {
-      message,
-      ...(record ? { record } : {}),
-      status: "error",
-    },
+    { message, ...(record ? { record } : {}), status: "error" },
     { headers: noStoreHeaders(), status },
   );
 }
@@ -98,12 +86,7 @@ function runProducerCli(args: readonly string[]): Promise<CliResult> {
     const child = spawn(
       path.join(sourceRoot, "node_modules", ".bin", "tsx"),
       [path.join(sourceRoot, "src", "cli.ts"), ...args],
-      {
-        cwd: projectRoot(),
-        env: process.env,
-        shell: false,
-        windowsHide: true,
-      },
+      { cwd: projectRoot(), env: process.env, shell: false, windowsHide: true },
     );
     let settled = false;
     let timedOut = false;

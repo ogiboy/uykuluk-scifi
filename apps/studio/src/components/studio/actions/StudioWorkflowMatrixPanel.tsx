@@ -7,9 +7,7 @@ import {
   type StudioWorkflowActionStatus,
 } from "@/lib/studioWorkflowActions";
 
-type StudioWorkflowMatrixPanelProps = Readonly<{
-  status: StudioActionServiceStatus;
-}>;
+type StudioWorkflowMatrixPanelProps = Readonly<{ status: StudioActionServiceStatus }>;
 
 /**
  * Renders the v1 workflow-to-web-control matrix from shared mutation contracts.
@@ -26,7 +24,7 @@ export function StudioWorkflowMatrixPanel({ status }: StudioWorkflowMatrixPanelP
         <h2 className='text-2xl font-semibold tracking-tight' id='workflow-action-matrix-heading'>
           Workflow Control Matrix
         </h2>
-        <p className='max-w-4xl text-sm text-muted-foreground'>
+        <p className='text-muted-foreground max-w-4xl text-sm'>
           Studio maps each safe v1 workflow step to shared CLI/core service contracts. This is a
           route-readiness view, not a second workflow engine.
         </p>
@@ -41,11 +39,11 @@ export function StudioWorkflowMatrixPanel({ status }: StudioWorkflowMatrixPanelP
             <CardContent>
               <ul className='grid gap-3'>
                 {step.actions.map((action) => (
-                  <li className='grid gap-2 rounded-lg bg-muted/10 p-3' key={action.actionId}>
+                  <li className='bg-muted/10 grid gap-2 rounded-lg p-3' key={action.actionId}>
                     <div className='flex flex-wrap items-start justify-between gap-2'>
                       <div className='min-w-0'>
-                        <strong className='break-all text-sm'>{action.actionId}</strong>
-                        <p className='mt-1 text-sm text-muted-foreground'>{action.description}</p>
+                        <strong className='text-sm break-all'>{action.actionId}</strong>
+                        <p className='text-muted-foreground mt-1 text-sm'>{action.description}</p>
                       </div>
                       <Badge variant={statusBadgeVariant(action.status)}>
                         {statusLabel(action.status)}
@@ -67,7 +65,7 @@ function ActionRouteFact({ action }: Readonly<{ action: StudioWorkflowAction }>)
   const routeCopy =
     action.status === "web-ready" ? action.routePath : action.cliCommand.replace(/\s+/g, " ");
   return (
-    <code className='break-all rounded bg-background/45 px-2 py-1 font-mono text-xs text-muted-foreground'>
+    <code className='bg-background/45 text-muted-foreground rounded px-2 py-1 font-mono text-xs break-all'>
       {routeCopy}
     </code>
   );

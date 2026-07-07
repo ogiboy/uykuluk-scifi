@@ -40,14 +40,14 @@ export function RunBlockedActionsPanel({
       description={blockedActionsIntro(evidenceStatus)}
     >
       {evidenceStatus === "available" && blockedActions.length > 0 ? (
-        <Accordion className='rounded-lg bg-muted/10 px-3' type='single' collapsible>
+        <Accordion className='bg-muted/10 rounded-lg px-3' type='single' collapsible>
           <AccordionItem className='border-0' value='blocked-actions'>
             <AccordionTrigger>{blockedActions.length} blocked action(s)</AccordionTrigger>
             <AccordionContent>
-              <ul className='grid gap-2 pb-2 text-sm text-muted-foreground'>
+              <ul className='text-muted-foreground grid gap-2 pb-2 text-sm'>
                 {blockedActions.map((action, index) => (
                   <li
-                    className='rounded-md bg-background/45 p-2'
+                    className='bg-background/45 rounded-md p-2'
                     key={`blocked-action-${index}-${action}`}
                   >
                     {action}
@@ -58,7 +58,7 @@ export function RunBlockedActionsPanel({
           </AccordionItem>
         </Accordion>
       ) : (
-        <p className='rounded-lg bg-muted/10 p-3 text-sm text-muted-foreground'>
+        <p className='bg-muted/10 text-muted-foreground rounded-lg p-3 text-sm'>
           {blockedActionsEmptyMessage(evidenceStatus)}
         </p>
       )}

@@ -22,11 +22,7 @@ export const releaseCommitTypes = [
 
 export type ReleaseCommitType = (typeof releaseCommitTypes)[number];
 
-export type GitCommit = {
-  hash: string;
-  parents: string[];
-  subject: string;
-};
+export type GitCommit = { hash: string; parents: string[]; subject: string };
 
 export type ParsedCommit = GitCommit & {
   breaking: boolean;

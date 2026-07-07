@@ -3,21 +3,21 @@ import { describe, expect, it } from "vitest";
 import { defaultConfig } from "../src/config/config";
 import { artifactPath } from "../src/core/artifacts";
 import { loadRun } from "../src/core/runStore";
+import { reviewScriptContent } from "../src/safeguards/contentGuard";
 import { approveIdea } from "../src/stages/approveIdea";
 import { runIdeas } from "../src/stages/ideas";
 import { generateScript } from "../src/stages/script";
-import { reviewScriptContent } from "../src/safeguards/contentGuard";
 import { scriptContinuationTokenCap } from "../src/stages/scriptContinuation";
 import {
+  parseScriptSectionProviderPayload,
   renderScriptSectionExpansionPrompt,
   renderScriptSectionPrompt,
-  scriptSectionExpansionResponseFormat,
   scriptSectionExpansionChunks,
+  scriptSectionExpansionResponseFormat,
   scriptSectionPlans,
   scriptSectionResponseFormat,
   sectionExpansionTokenCap,
   sectionTokenCap,
-  parseScriptSectionProviderPayload,
 } from "../src/stages/scriptSections";
 import { useTempProject } from "./helpers";
 
@@ -102,10 +102,7 @@ describe("sectional script generation", () => {
           ...defaultConfig,
           providers: {
             ...defaultConfig.providers,
-            llm: {
-              ...defaultConfig.providers.llm,
-              model: "mock-short-script",
-            },
+            llm: { ...defaultConfig.providers.llm, model: "mock-short-script" },
           },
         },
         null,
@@ -186,9 +183,7 @@ describe("sectional script generation", () => {
     expect(scriptSectionResponseFormat.properties.text).toMatchObject({ maxLength: 750 });
     expect(scriptSectionExpansionChunks).toHaveLength(3);
     expect(sectionExpansionTokenCap(3200)).toBe(1000);
-    expect(scriptSectionExpansionResponseFormat.properties.text).toMatchObject({
-      maxLength: 1400,
-    });
+    expect(scriptSectionExpansionResponseFormat.properties.text).toMatchObject({ maxLength: 1400 });
   });
 
   it("keeps continuation token caps within the configured script cap", () => {

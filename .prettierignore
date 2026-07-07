@@ -7,8 +7,8 @@ build
 coverage
 test-results
 playwright-report
-runs/run_*
-.ai/qa/artifacts/usage-smoke-*
+runs/*
+.ai/*
 producer.config.json
 .DS_Store
 *.png

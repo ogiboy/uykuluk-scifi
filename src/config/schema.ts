@@ -1,11 +1,7 @@
 import { z } from "zod";
 
 export const producerConfigSchema = z.object({
-  channel: z.object({
-    name: z.string(),
-    language: z.string(),
-    defaultTone: z.string(),
-  }),
+  channel: z.object({ name: z.string(), language: z.string(), defaultTone: z.string() }),
   prompts: z
     .object({
       overrides: z
@@ -31,11 +27,7 @@ export const producerConfigSchema = z.object({
           script: z.int().positive().default(3200),
           productionPackage: z.int().positive().default(2000),
         })
-        .default({
-          ideas: 3000,
-          script: 3200,
-          productionPackage: 2000,
-        }),
+        .default({ ideas: 3000, script: 3200, productionPackage: 2000 }),
     }),
     tts: z.object({
       enabled: z.boolean(),
@@ -44,10 +36,7 @@ export const producerConfigSchema = z.object({
       piperModelPath: z.string().min(1).optional(),
       piperConfigPath: z.string().min(1).optional(),
     }),
-    imageGeneration: z.object({
-      enabled: z.boolean(),
-      requiresApproval: z.boolean(),
-    }),
+    imageGeneration: z.object({ enabled: z.boolean(), requiresApproval: z.boolean() }),
     youtube: z.object({
       enabled: z.boolean(),
       allowPrivateUpload: z.boolean(),

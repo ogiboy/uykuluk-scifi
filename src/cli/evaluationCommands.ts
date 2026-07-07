@@ -1,6 +1,6 @@
+import { Command } from "commander";
 import { readdir } from "node:fs/promises";
 import path from "node:path";
-import { Command } from "commander";
 import { z } from "zod";
 import { SafeExitError } from "../core/errors.js";
 import {
@@ -111,10 +111,7 @@ export function registerEvaluationCommands(program: Command, wrap: Wrap): void {
 function parseLocalModelEvalOverrides(
   options: LocalModelEvalCliOptions,
 ): LocalModelEvalLlmOverrides {
-  return {
-    ...parseLocalModelEvalBaseOverrides(options),
-    model: options.model,
-  };
+  return { ...parseLocalModelEvalBaseOverrides(options), model: options.model };
 }
 
 /**

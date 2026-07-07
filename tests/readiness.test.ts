@@ -2,21 +2,21 @@ import { writeFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { artifactPath } from "../src/core/artifacts";
 import { loadRun } from "../src/core/runStore";
-import { readJsonFile } from "../src/utils/json";
-import { uploadPrivatePlaceholder, publishSchedulePlaceholder } from "../src/stages/disabled";
 import { approveIdea } from "../src/stages/approveIdea";
 import { approveRender } from "../src/stages/approveRender";
 import { approveScript } from "../src/stages/approveScript";
-import { generateEvidenceBundle } from "../src/stages/evidence";
+import { publishSchedulePlaceholder, uploadPrivatePlaceholder } from "../src/stages/disabled";
 import { estimateCost } from "../src/stages/estimate";
+import { generateEvidenceBundle } from "../src/stages/evidence";
 import { runIdeas } from "../src/stages/ideas";
 import { generateProductionPackage } from "../src/stages/productionPackage";
-import { generateRenderPlan } from "../src/stages/renderPlan";
 import { runReadiness } from "../src/stages/readiness";
 import { formatReadinessConsole } from "../src/stages/readinessConsole";
+import { generateRenderPlan } from "../src/stages/renderPlan";
 import { reviewScript } from "../src/stages/reviewScript";
 import { generateScript } from "../src/stages/script";
 import { generateVoiceoverAudio } from "../src/stages/voice";
+import { readJsonFile } from "../src/utils/json";
 import { useTempProject } from "./helpers";
 import { createMinimalRenderAssets, enableDeterministicTts } from "./renderTestHelpers";
 
@@ -80,10 +80,7 @@ describe("readiness and disabled public actions", () => {
     await writeFile(
       artifactPath(runId, "costs/estimate.json"),
       `${JSON.stringify(
-        {
-          nextStepAllowed: false,
-          blockedReasons: ["Per-video budget exceeded: 2 > 1."],
-        },
+        { nextStepAllowed: false, blockedReasons: ["Per-video budget exceeded: 2 > 1."] },
         null,
         2,
       )}\n`,

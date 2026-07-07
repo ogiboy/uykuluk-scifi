@@ -36,10 +36,7 @@ describe("Studio stage action mapping", () => {
         runId: "run_review",
         state: "RENDERED",
       }),
-    ).toMatchObject({
-      actionId: "render.review",
-      routePath: "/actions/review-render",
-    });
+    ).toMatchObject({ actionId: "render.review", routePath: "/actions/review-render" });
   });
 
   it("rejects commands for a different run id", () => {

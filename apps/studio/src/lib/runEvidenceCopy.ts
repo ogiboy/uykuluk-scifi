@@ -1,8 +1,8 @@
-import type { StudioEvidenceSummary } from "./evidenceSummaries";
 import {
   productionMediaReviewAction as coreProductionMediaReviewAction,
   type ProductionMediaStatus,
 } from "../../../../src/stages/statusMediaReview";
+import type { StudioEvidenceSummary } from "./evidenceSummaries";
 
 export type { ProductionMediaStatus } from "../../../../src/stages/statusMediaReview";
 

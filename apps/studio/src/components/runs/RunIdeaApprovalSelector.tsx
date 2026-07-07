@@ -44,7 +44,7 @@ export function RunIdeaApprovalSelector({
       <RadioGroup className='grid gap-3' value={ideaId} onValueChange={onIdeaIdChange}>
         {ideas.map((idea) => (
           <Label
-            className='grid cursor-pointer grid-cols-[auto_1fr] items-start gap-3 rounded-lg border bg-card p-3 text-sm transition-colors hover:bg-accent/10'
+            className='bg-card hover:bg-accent/10 grid cursor-pointer grid-cols-[auto_1fr] items-start gap-3 rounded-lg border p-3 text-sm transition-colors'
             key={idea.id}
           >
             <RadioGroupItem className='mt-1' value={idea.id} />
@@ -53,7 +53,7 @@ export function RunIdeaApprovalSelector({
                 {idea.id}: {idea.title}
               </strong>
               {idea.premise ? (
-                <span className='block text-muted-foreground'>{idea.premise}</span>
+                <span className='text-muted-foreground block'>{idea.premise}</span>
               ) : null}
               <span className='flex flex-wrap gap-2'>
                 {idea.targetDuration ? (

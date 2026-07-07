@@ -6,9 +6,9 @@ import {
 import { renderPlanArtifactPaths } from "../../../../src/stages/renderPlanSchemas";
 import type { StatusWorkflowStep } from "../../../../src/stages/statusWorkflow";
 import { buildStatusWorkflowProgress } from "../../../../src/stages/statusWorkflow";
-import { evidenceNextRecommendedCommand, type StudioEvidenceSummary } from "./evidenceSummaries";
 import type { StudioChannelHandoffDecisionSummary } from "./channelHandoffDecisionSummaries";
 import type { StudioChannelHandoffSummary } from "./channelHandoffSummaries";
+import { evidenceNextRecommendedCommand, type StudioEvidenceSummary } from "./evidenceSummaries";
 import type { StudioFinalReviewBundleSummary } from "./finalReviewBundleSummaries";
 import type { StudioRenderDecisionSummary } from "./renderDecisionSummaries";
 import type { RunRecord, StudioRunState } from "./runRecordTypes";
@@ -127,16 +127,10 @@ function studioWorkflowRenderDecision(
   renderDecision: StudioRenderDecisionSummary,
 ): Parameters<typeof buildStatusWorkflowProgress>[0]["renderDecision"] {
   if (renderDecision.kind === "present") {
-    return {
-      kind: "present",
-      message: renderDecision.message,
-    };
+    return { kind: "present", message: renderDecision.message };
   }
   if (renderDecision.kind === "invalid" || renderDecision.kind === "stale") {
-    return {
-      kind: renderDecision.kind,
-      message: renderDecision.message,
-    };
+    return { kind: renderDecision.kind, message: renderDecision.message };
   }
   return { kind: "missing" };
 }
@@ -152,10 +146,7 @@ function studioWorkflowArtifactStatus(
     };
   }
   if (artifact.kind === "invalid" || artifact.kind === "stale") {
-    return {
-      kind: artifact.kind,
-      message: artifact.message,
-    };
+    return { kind: artifact.kind, message: artifact.message };
   }
   return { kind: "missing" };
 }

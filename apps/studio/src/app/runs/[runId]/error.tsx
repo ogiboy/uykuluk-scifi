@@ -9,10 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { runDetailErrorCopy } from "@/lib/studioRouteBoundaryCopy";
 
-type RunDetailErrorPageProps = Readonly<{
-  error: Error & { digest?: string };
-  reset: () => void;
-}>;
+type RunDetailErrorPageProps = Readonly<{ error: Error & { digest?: string }; reset: () => void }>;
 
 /**
  * Renders the run-detail route error boundary.
@@ -27,7 +24,7 @@ export default function RunDetailErrorPage({ error, reset }: RunDetailErrorPageP
 
   return (
     <main
-      className='mx-auto grid min-h-screen max-w-5xl content-start gap-6 px-6 py-8 text-foreground md:px-10'
+      className='text-foreground mx-auto grid min-h-screen max-w-5xl content-start gap-6 px-6 py-8 md:px-10'
       aria-labelledby='run-detail-error-heading'
     >
       <StudioRouteBoundaryHeader copy={runDetailErrorCopy} headingId='run-detail-error-heading' />
@@ -43,7 +40,7 @@ export default function RunDetailErrorPage({ error, reset }: RunDetailErrorPageP
       </StudioRouteBoundaryCard>
 
       {error.digest ? (
-        <p className='text-sm text-muted-foreground'>Boundary digest: {error.digest}</p>
+        <p className='text-muted-foreground text-sm'>Boundary digest: {error.digest}</p>
       ) : null}
     </main>
   );

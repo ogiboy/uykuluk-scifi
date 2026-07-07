@@ -1,7 +1,6 @@
 "use client";
 
-import type { ChangeEvent } from "react";
-import { useState } from "react";
+import { StudioMutationResultPanel } from "@/components/studio/StudioMutationResultPanel";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -14,8 +13,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { StudioMutationResultPanel } from "@/components/studio/StudioMutationResultPanel";
 import { useStudioGuardedActionSubmit } from "@/lib/useStudioGuardedActionSubmit";
+import type { ChangeEvent } from "react";
+import { useState } from "react";
 import { AnalyticsReportActionPanel } from "./AnalyticsReportActionPanel";
 
 type AnalyticsFormat = "csv" | "json";
@@ -65,7 +65,7 @@ export function AnalyticsActionPanel() {
     <section aria-labelledby='analytics-import-heading'>
       <Card>
         <CardHeader>
-          <p className='text-sm text-muted-foreground'>Local feedback loop</p>
+          <p className='text-muted-foreground text-sm'>Local feedback loop</p>
           <CardTitle>
             <h2 id='analytics-import-heading'>Import Manual Analytics</h2>
           </CardTitle>
@@ -76,7 +76,7 @@ export function AnalyticsActionPanel() {
         </CardHeader>
         <CardContent className='grid gap-4'>
           <form className='grid gap-3' onSubmit={submitImport}>
-            <label className='grid gap-1.5 text-sm text-muted-foreground'>
+            <label className='text-muted-foreground grid gap-1.5 text-sm'>
               Source file name
               <Input
                 maxLength={120}
@@ -86,7 +86,7 @@ export function AnalyticsActionPanel() {
                 onChange={(event) => setSourceFileName(event.target.value)}
               />
             </label>
-            <label className='grid gap-1.5 text-sm text-muted-foreground'>
+            <label className='text-muted-foreground grid gap-1.5 text-sm'>
               Format
               <Select value={format} onValueChange={(value) => setFormat(value as AnalyticsFormat)}>
                 <SelectTrigger aria-label='Analytics import format'>
@@ -100,7 +100,7 @@ export function AnalyticsActionPanel() {
                 </SelectContent>
               </Select>
             </label>
-            <label className='grid gap-1.5 text-sm text-muted-foreground'>
+            <label className='text-muted-foreground grid gap-1.5 text-sm'>
               Load local file into the browser
               <Input
                 accept='.csv,.json,text/csv,application/json'
@@ -108,7 +108,7 @@ export function AnalyticsActionPanel() {
                 onChange={loadSelectedFile}
               />
             </label>
-            <label className='grid gap-1.5 text-sm text-muted-foreground'>
+            <label className='text-muted-foreground grid gap-1.5 text-sm'>
               Analytics content
               <Textarea
                 className='resize-y'

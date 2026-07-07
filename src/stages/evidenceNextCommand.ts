@@ -1,27 +1,15 @@
-type CostQuoteNextStep = {
-  invalid?: boolean;
-  approvalRequired: boolean;
-  approved: boolean;
-} | null;
+type CostQuoteNextStep = { invalid?: boolean; approvalRequired: boolean; approved: boolean } | null;
 
 type ScriptReviewNextStep = {
   scriptReviewBlockerCount?: number;
   scriptReviewWarningCount?: number;
 };
 
-type RenderPlanNextStep = {
-  status?: string;
-} | null;
+type RenderPlanNextStep = { status?: string } | null;
 
-type VoiceoverNextStep = {
-  productionVoiceCandidate?: boolean | null;
-  status?: string;
-} | null;
+type VoiceoverNextStep = { productionVoiceCandidate?: boolean | null; status?: string } | null;
 
-type DraftRenderNextStep = {
-  status?: string;
-  voiceoverProductionVoiceCandidate?: boolean;
-} | null;
+type DraftRenderNextStep = { status?: string; voiceoverProductionVoiceCandidate?: boolean } | null;
 
 type EvidenceNextCommandInput = {
   costQuote: CostQuoteNextStep;

@@ -1,24 +1,24 @@
 import { SafeExitError } from "../core/errors.js";
 import { listRuns } from "../core/runStore.js";
 import type { RunState } from "../core/state.js";
+import type { ChannelHandoffDecisionStatus } from "../stages/channelHandoffDecisionStatus.js";
 import type { ChannelHandoffStatus } from "../stages/channelHandoffStatus.js";
 import type { FinalReviewBundleStatus } from "../stages/finalReviewBundleStatus.js";
 import type { RenderDecisionStatus } from "../stages/renderDecisionStatus.js";
 import { readRunStatus, type RunStatusSummary } from "../stages/status.js";
-import type { ChannelHandoffDecisionStatus } from "../stages/channelHandoffDecisionStatus.js";
 import { formatProductionMediaStatus, type ProductionMediaStatus } from "../stages/statusMedia.js";
 import { buildStatusWorkflowProgress, type StatusWorkflowStep } from "../stages/statusWorkflow.js";
+import { channelHandoffLines, channelHandoffSummary } from "./operatorDeskChannelHandoff.js";
 import {
   channelHandoffDecisionLines,
   channelHandoffDecisionSummary,
 } from "./operatorDeskChannelHandoffDecision.js";
-import { channelHandoffLines, channelHandoffSummary } from "./operatorDeskChannelHandoff.js";
-import { finalReviewBundleLines, finalReviewBundleSummary } from "./operatorDeskFinalReview.js";
 import {
   buildOperatorDeskCommandQueue,
   formatOperatorDeskCommandLines,
   type OperatorDeskCommand,
 } from "./operatorDeskCommands.js";
+import { finalReviewBundleLines, finalReviewBundleSummary } from "./operatorDeskFinalReview.js";
 import {
   formatOperatorDeskBlockedActionLines,
   formatOperatorDeskDiagnosticLines,
@@ -30,10 +30,7 @@ import { renderDecisionReviewLines, renderDecisionSummary } from "./operatorDesk
 
 const RECENT_RUN_LIMIT = 8;
 
-export type OperatorDeskOptions = {
-  latest?: boolean;
-  runId?: string;
-};
+export type OperatorDeskOptions = { latest?: boolean; runId?: string };
 
 export type OperatorDeskRun = {
   approvalCount: number;

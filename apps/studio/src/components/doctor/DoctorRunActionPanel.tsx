@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,11 +10,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useStudioGuardedActionSubmit } from "@/lib/useStudioGuardedActionSubmit";
+import { useState } from "react";
 import { StudioMutationResultPanel } from "../studio/StudioMutationResultPanel";
 
-type DoctorRunActionPanelProps = Readonly<{
-  compact?: boolean;
-}>;
+type DoctorRunActionPanelProps = Readonly<{ compact?: boolean }>;
 
 /**
  * Renders the guarded Studio action that refreshes local producer doctor diagnostics.
@@ -65,19 +63,19 @@ export function DoctorRunActionPanel({ compact = false }: DoctorRunActionPanelPr
           </DialogHeader>
           <dl className='grid gap-3 text-sm sm:grid-cols-2'>
             <div>
-              <dt className='font-medium text-muted-foreground'>Action</dt>
+              <dt className='text-muted-foreground font-medium'>Action</dt>
               <dd className='break-all'>doctor.run</dd>
             </div>
             <div>
-              <dt className='font-medium text-muted-foreground'>Route</dt>
+              <dt className='text-muted-foreground font-medium'>Route</dt>
               <dd className='break-all'>/actions/run-doctor</dd>
             </div>
             <div>
-              <dt className='font-medium text-muted-foreground'>CLI equivalent</dt>
+              <dt className='text-muted-foreground font-medium'>CLI equivalent</dt>
               <dd className='break-all'>pnpm producer doctor</dd>
             </div>
             <div>
-              <dt className='font-medium text-muted-foreground'>Boundary</dt>
+              <dt className='text-muted-foreground font-medium'>Boundary</dt>
               <dd>No config edits, provider startup, model download, upload, or publish action.</dd>
             </div>
           </dl>

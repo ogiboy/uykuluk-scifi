@@ -9,7 +9,7 @@ export function CommandPanel() {
         <h2 className='text-2xl font-semibold tracking-tight' id='workflow-heading'>
           Workflow Fallbacks
         </h2>
-        <p className='text-sm text-muted-foreground'>
+        <p className='text-muted-foreground text-sm'>
           Studio controls should be used first. Reveal these CLI/core commands only for audit,
           recovery, or terminal-driven operation.
         </p>

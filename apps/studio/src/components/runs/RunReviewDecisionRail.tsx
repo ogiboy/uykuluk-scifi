@@ -2,8 +2,8 @@ import type { StudioRunDetail } from "@/lib/runSummaries";
 import { StudioMutationSessionPanel } from "../studio/StudioMutationSessionPanel";
 import { RunApprovalActionPanel } from "./RunApprovalActionPanel";
 import { RunArtifactReviewActionsPanel } from "./RunArtifactReviewActionsPanel";
-import { RunChannelHandoffDecisionActionPanel } from "./RunChannelHandoffDecisionActionPanel";
 import { RunBlockedActionsPanel } from "./RunBlockedActionsPanel";
+import { RunChannelHandoffDecisionActionPanel } from "./RunChannelHandoffDecisionActionPanel";
 import { RunChannelHandoffDecisionPanel } from "./RunChannelHandoffDecisionPanel";
 import { RunGuidedControlLoopPanel } from "./RunGuidedControlLoopPanel";
 import { RunRenderDecisionActionPanel } from "./RunRenderDecisionActionPanel";
@@ -12,9 +12,7 @@ import { RunRenderDecisionStatusPanel } from "./RunRenderDecisionStatusPanel";
 import { RunRevisionActionPanel } from "./RunRevisionActionPanel";
 import { RunStageActionPanel } from "./RunStageActionPanel";
 
-type RunReviewDecisionRailProps = Readonly<{
-  run: StudioRunDetail;
-}>;
+type RunReviewDecisionRailProps = Readonly<{ run: StudioRunDetail }>;
 
 /**
  * Renders guarded local decision and approval controls for a run.

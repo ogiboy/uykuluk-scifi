@@ -3,13 +3,13 @@ import { artifactPath } from "../core/artifacts.js";
 import type { RunRecord } from "../core/state.js";
 import { sha256 } from "../utils/hash.js";
 import { channelHandoffJsonPath } from "./channelHandoffContracts.js";
-import type { ChannelHandoffStatus } from "./channelHandoffStatus.js";
 import {
   channelHandoffDecisionCommand,
   channelHandoffDecisionJsonPath,
   channelHandoffDecisionRecordSchema,
   type ChannelHandoffDecisionRecord,
 } from "./channelHandoffDecisionContracts.js";
+import type { ChannelHandoffStatus } from "./channelHandoffStatus.js";
 
 export type ChannelHandoffDecisionStatus =
   | { kind: "missing"; nextAction: string | null }

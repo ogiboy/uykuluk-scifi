@@ -11,8 +11,8 @@ import {
   channelHandoffSchema,
   comparableChannelHandoffPayload,
   isLegacyChannelHandoff,
-  type ChannelHandoff,
   youtubeMetadataSchema,
+  type ChannelHandoff,
 } from "./channelHandoffContracts.js";
 import { finalReviewBundleJsonPath } from "./finalReviewBundleContracts.js";
 import type { FinalReviewBundleStatus } from "./finalReviewBundleStatus.js";

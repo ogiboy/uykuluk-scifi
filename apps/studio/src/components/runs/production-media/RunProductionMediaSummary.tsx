@@ -1,8 +1,6 @@
 import type { ProductionMediaReviewSummary } from "@/lib/runEvidenceCopy";
 
-type RunProductionMediaSummaryProps = Readonly<{
-  summary: ProductionMediaReviewSummary;
-}>;
+type RunProductionMediaSummaryProps = Readonly<{ summary: ProductionMediaReviewSummary }>;
 
 /**
  * Renders aggregate production-media review counts and the next local focus.
@@ -12,17 +10,17 @@ type RunProductionMediaSummaryProps = Readonly<{
 export function RunProductionMediaSummary({ summary }: RunProductionMediaSummaryProps) {
   return (
     <div
-      className='grid gap-4 rounded-lg bg-muted/10 p-4 lg:grid-cols-[minmax(0,1fr)_auto]'
+      className='bg-muted/10 grid gap-4 rounded-lg p-4 lg:grid-cols-[minmax(0,1fr)_auto]'
       aria-label='Media review summary'
     >
       <div>
         <strong className='text-sm'>{summary.title}</strong>
         {summary.focus ? (
-          <p className='mt-1 text-sm text-muted-foreground'>
+          <p className='text-muted-foreground mt-1 text-sm'>
             Next focus: {summary.focus.label} ({summary.focus.status}) — {summary.focus.action}
           </p>
         ) : (
-          <p className='mt-1 text-sm text-muted-foreground'>
+          <p className='text-muted-foreground mt-1 text-sm'>
             No local media rows are available for this run yet.
           </p>
         )}
@@ -42,8 +40,8 @@ export function RunProductionMediaSummary({ summary }: RunProductionMediaSummary
 
 function ProductionMediaMetric({ label, value }: Readonly<{ label: string; value: string }>) {
   return (
-    <div className='rounded-md bg-background/45 p-2 text-center'>
-      <dt className='text-xs text-muted-foreground'>{label}</dt>
+    <div className='bg-background/45 rounded-md p-2 text-center'>
+      <dt className='text-muted-foreground text-xs'>{label}</dt>
       <dd className='mt-1 text-sm font-semibold'>{value}</dd>
     </div>
   );

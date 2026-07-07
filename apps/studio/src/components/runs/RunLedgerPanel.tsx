@@ -2,10 +2,7 @@ import { RunDetailCard } from "@/components/runs/RunDetailCard";
 import { Badge } from "@/components/ui/badge";
 import { formatApprovalLedgerItem } from "@/lib/runLedgerCopy";
 
-type RunLedgerPanelProps = Readonly<{
-  approvals: readonly unknown[];
-  warnings: readonly string[];
-}>;
+type RunLedgerPanelProps = Readonly<{ approvals: readonly unknown[]; warnings: readonly string[] }>;
 
 /**
  * Renders the approval ledger and warning list for a run.
@@ -31,7 +28,7 @@ export function RunLedgerPanel({ approvals, warnings }: RunLedgerPanelProps) {
           <ul className='grid gap-2'>
             {approvals.map((approval, index) => (
               <li
-                className='rounded-lg bg-muted/10 p-3 text-sm text-muted-foreground'
+                className='bg-muted/10 text-muted-foreground rounded-lg p-3 text-sm'
                 key={approvalKey(approval, index)}
               >
                 {formatApprovalLedgerItem(approval, index)}
@@ -39,7 +36,7 @@ export function RunLedgerPanel({ approvals, warnings }: RunLedgerPanelProps) {
             ))}
           </ul>
         ) : (
-          <p className='rounded-lg bg-muted/10 p-3 text-sm text-muted-foreground'>
+          <p className='bg-muted/10 text-muted-foreground rounded-lg p-3 text-sm'>
             No approvals recorded.
           </p>
         )}
@@ -64,7 +61,7 @@ export function RunLedgerPanel({ approvals, warnings }: RunLedgerPanelProps) {
             ))}
           </ul>
         ) : (
-          <p className='rounded-lg bg-muted/10 p-3 text-sm text-muted-foreground'>
+          <p className='bg-muted/10 text-muted-foreground rounded-lg p-3 text-sm'>
             No warnings recorded.
           </p>
         )}

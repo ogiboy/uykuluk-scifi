@@ -1,10 +1,10 @@
-import type { StudioRunDetail } from "@/lib/runSummaries";
-import { defaultRunReviewTab, type RunReviewTab } from "@/lib/runReviewNavigation";
 import { TabsContent } from "@/components/ui/tabs";
+import { defaultRunReviewTab, type RunReviewTab } from "@/lib/runReviewNavigation";
+import type { StudioRunDetail } from "@/lib/runSummaries";
+import { RunProductionMediaPanel } from "./production-media/RunProductionMediaPanel";
 import { RunArtifactPreviewsPanel } from "./RunArtifactPreviewsPanel";
 import { RunChannelHandoffPanel } from "./RunChannelHandoffPanel";
 import { RunFinalReviewBundlePanel } from "./RunFinalReviewBundlePanel";
-import { RunProductionMediaPanel } from "./production-media/RunProductionMediaPanel";
 import { RunReadinessDiagnosticsPanels } from "./RunReadinessDiagnosticsPanels";
 import { RunReviewActionSummarySheet } from "./RunReviewActionSummarySheet";
 import { RunReviewCockpitHeader } from "./RunReviewCockpitHeader";

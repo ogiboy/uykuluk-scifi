@@ -86,11 +86,7 @@ describe("Studio mutation submit", () => {
         Response.json(
           {
             message: "Readiness is blocked.",
-            record: {
-              checks: [{ status: "block" }],
-              passed: false,
-              runId: "run_blocked_submit",
-            },
+            record: { checks: [{ status: "block" }], passed: false, runId: "run_blocked_submit" },
             status: "error",
           },
           { status: 409 },
@@ -108,10 +104,7 @@ describe("Studio mutation submit", () => {
     expect(result).toEqual({
       kind: "blocked",
       message: "Readiness is blocked.",
-      recordSummary: {
-        facts: ["Run: run_blocked_submit"],
-        runId: "run_blocked_submit",
-      },
+      recordSummary: { facts: ["Run: run_blocked_submit"], runId: "run_blocked_submit" },
       status: 409,
     });
     expect(readStudioMutationSessionSnapshot()).toMatchObject({ status: "ready" });

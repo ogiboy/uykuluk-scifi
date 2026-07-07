@@ -1,7 +1,4 @@
-export type YoutubeClient = {
-  uploadPrivate(): Promise<never>;
-  publishScheduled(): Promise<never>;
-};
+export type YoutubeClient = { uploadPrivate(): Promise<never>; publishScheduled(): Promise<never> };
 
 export function createDisabledYoutubeClient(): YoutubeClient {
   return {

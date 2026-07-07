@@ -18,9 +18,7 @@ describe("Studio model-eval mutation service contracts", () => {
       includeLocalGguf: false,
     });
     expect(
-      parseStudioMutationRequest("model-eval-candidates.run", {
-        includeLocalGguf: true,
-      }),
+      parseStudioMutationRequest("model-eval-candidates.run", { includeLocalGguf: true }),
     ).toEqual({ candidates: [], includeLocalGguf: true });
     expect(() => parseStudioMutationRequest("model-eval-candidates.run", {})).toThrow(
       /Candidate evaluation requires/,

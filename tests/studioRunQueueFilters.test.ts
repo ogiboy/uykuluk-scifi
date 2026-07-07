@@ -137,16 +137,14 @@ describe("Studio run queue filters", () => {
 
   it("applies operator workbench controls without mutating persisted run order", () => {
     expect(
-      applyRunQueueWorkbenchControls(runs, {
-        maxBlockedActions: 0,
-        sort: "decision-first",
-      }).map((run) => run.runId),
+      applyRunQueueWorkbenchControls(runs, { maxBlockedActions: 0, sort: "decision-first" }).map(
+        (run) => run.runId,
+      ),
     ).toEqual(["run_channel_decision", "run_needs_decision", "run_missing", "run_ready"]);
     expect(
-      applyRunQueueWorkbenchControls(runs, {
-        maxBlockedActions: 5,
-        sort: "blocked-first",
-      }).map((run) => run.runId),
+      applyRunQueueWorkbenchControls(runs, { maxBlockedActions: 5, sort: "blocked-first" }).map(
+        (run) => run.runId,
+      ),
     ).toEqual([
       "run_blocked",
       "run_channel_decision",

@@ -2,9 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { StartIdeasReadinessSummary } from "@/lib/startIdeasReadiness";
 import { StartIdeasActionPanel } from "./StartIdeasActionPanel";
 
-type StartNewRunPanelProps = Readonly<{
-  readiness: StartIdeasReadinessSummary;
-}>;
+type StartNewRunPanelProps = Readonly<{ readiness: StartIdeasReadinessSummary }>;
 
 /**
  * Renders the always-available guarded entry point for a new idea-generation run.

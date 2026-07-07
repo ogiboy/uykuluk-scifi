@@ -41,11 +41,7 @@ test("studio exposes guarded action contracts on the actions route", async ({ pa
 
 test("studio locale cookie configures the document language", async ({ context, page }) => {
   await context.addCookies([
-    {
-      name: "uykuluk_studio_locale",
-      value: "tr",
-      url: "http://127.0.0.1:3000",
-    },
+    { name: "uykuluk_studio_locale", value: "tr", url: "http://127.0.0.1:3000" },
   ]);
 
   await page.goto("/");

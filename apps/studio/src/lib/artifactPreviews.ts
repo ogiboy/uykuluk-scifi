@@ -150,13 +150,7 @@ async function readArtifactPreview(
 }
 
 function missingArtifact(artifact: ReviewArtifactDefinition): StudioArtifactPreview {
-  return {
-    ...artifact,
-    exists: false,
-    preview: null,
-    previewTruncated: false,
-    sizeBytes: null,
-  };
+  return { ...artifact, exists: false, preview: null, previewTruncated: false, sizeBytes: null };
 }
 
 function unavailableArtifact(

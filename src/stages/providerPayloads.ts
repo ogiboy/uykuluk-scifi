@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { SafeExitError } from "../core/errors.js";
-import { normalizeIdeaBrandSpelling, validateIdeaQuality } from "./providerIdeaQuality.js";
 import { validateIdeaListQuality } from "./providerIdeaListQuality.js";
+import { normalizeIdeaBrandSpelling, validateIdeaQuality } from "./providerIdeaQuality.js";
 import { parseProviderJson } from "./providerJson.js";
 import { VideoIdea } from "./types.js";
 
@@ -31,25 +31,13 @@ const providerVideoIdeaSchema = z
     const estimatedDifficulty = idea.estimatedDifficulty ?? idea.estimated_difficulty;
     const riskLevel = idea.riskLevel ?? idea.risk_level;
     if (!targetDuration) {
-      context.addIssue({
-        code: "custom",
-        path: ["targetDuration"],
-        message: "Required",
-      });
+      context.addIssue({ code: "custom", path: ["targetDuration"], message: "Required" });
     }
     if (!estimatedDifficulty) {
-      context.addIssue({
-        code: "custom",
-        path: ["estimatedDifficulty"],
-        message: "Required",
-      });
+      context.addIssue({ code: "custom", path: ["estimatedDifficulty"], message: "Required" });
     }
     if (!riskLevel) {
-      context.addIssue({
-        code: "custom",
-        path: ["riskLevel"],
-        message: "Required",
-      });
+      context.addIssue({ code: "custom", path: ["riskLevel"], message: "Required" });
     }
     if (!targetDuration || !estimatedDifficulty || !riskLevel) {
       return z.NEVER;
@@ -65,11 +53,7 @@ const providerVideoIdeaSchema = z
     });
     const qualityIssue = validateIdeaQuality(normalizedIdea);
     if (qualityIssue) {
-      context.addIssue({
-        code: "custom",
-        path: qualityIssue.path,
-        message: qualityIssue.message,
-      });
+      context.addIssue({ code: "custom", path: qualityIssue.path, message: qualityIssue.message });
       return z.NEVER;
     }
     return normalizedIdea;
@@ -93,27 +77,15 @@ const productionPackageProviderPayloadSchema = z
     const popupCards = payload.popupCards ?? payload.popup_cards;
     const lowerThirds = payload.lowerThirds ?? payload.lower_thirds;
     if (!popupCards) {
-      context.addIssue({
-        code: "custom",
-        path: ["popupCards"],
-        message: "Required",
-      });
+      context.addIssue({ code: "custom", path: ["popupCards"], message: "Required" });
     }
     if (!lowerThirds) {
-      context.addIssue({
-        code: "custom",
-        path: ["lowerThirds"],
-        message: "Required",
-      });
+      context.addIssue({ code: "custom", path: ["lowerThirds"], message: "Required" });
     }
     if (!popupCards || !lowerThirds) {
       return z.NEVER;
     }
-    return {
-      popupCards,
-      lowerThirds,
-      youtube: payload.youtube,
-    };
+    return { popupCards, lowerThirds, youtube: payload.youtube };
   });
 
 const productionPackageRuntimePayloadSchema = z.strictObject({

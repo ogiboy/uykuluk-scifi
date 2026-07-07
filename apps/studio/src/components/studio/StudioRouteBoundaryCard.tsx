@@ -6,10 +6,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { StudioRouteBoundaryCopy } from "@/lib/studioRouteBoundaryCopy";
 
-export type StudioRouteBoundaryAction = Readonly<{
-  href: "/" | "/runs";
-  label: string;
-}>;
+export type StudioRouteBoundaryAction = Readonly<{ href: "/" | "/runs"; label: string }>;
 
 type StudioRouteBoundaryCardProps = Readonly<{
   actions?: readonly StudioRouteBoundaryAction[];
@@ -81,9 +78,9 @@ type StudioRouteBoundaryHeaderProps = Readonly<{
  */
 export function StudioRouteBoundaryHeader({ copy, headingId }: StudioRouteBoundaryHeaderProps) {
   return (
-    <header className='grid gap-4 border-b border-border/40 pb-6 sm:grid-cols-[1fr_auto] sm:items-start'>
+    <header className='border-border/40 grid gap-4 border-b pb-6 sm:grid-cols-[1fr_auto] sm:items-start'>
       <div className='space-y-2'>
-        <p className='text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground'>
+        <p className='text-muted-foreground text-xs font-semibold tracking-[0.28em] uppercase'>
           {copy.eyebrow}
         </p>
         <h1 className='text-3xl font-semibold tracking-tight sm:text-4xl' id={headingId}>

@@ -136,10 +136,7 @@ async function useOllamaConfig(budgets = defaultConfig.budgets): Promise<void> {
         ...defaultConfig,
         providers: {
           ...defaultConfig.providers,
-          llm: {
-            ...defaultConfig.providers.llm,
-            mode: "ollama",
-          },
+          llm: { ...defaultConfig.providers.llm, mode: "ollama" },
         },
         budgets,
       },

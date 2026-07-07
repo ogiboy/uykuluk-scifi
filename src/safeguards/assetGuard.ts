@@ -2,11 +2,7 @@ import { readdir } from "node:fs/promises";
 import path from "node:path";
 import type { ProducerConfig } from "../config/schema.js";
 
-export type AssetCheck = {
-  passed: boolean;
-  warnings: string[];
-  found: Record<string, string[]>;
-};
+export type AssetCheck = { passed: boolean; warnings: string[]; found: Record<string, string[]> };
 
 /**
  * Verifies the availability of required asset files in configured directories.
@@ -43,16 +39,7 @@ export async function checkAssets(
   if (outro.length === 0) {
     warnings.push("Missing outro asset in assets/outro.");
   }
-  return {
-    passed: warnings.length === 0,
-    warnings,
-    found: {
-      brand,
-      overlays,
-      intro,
-      outro,
-    },
-  };
+  return { passed: warnings.length === 0, warnings, found: { brand, overlays, intro, outro } };
 }
 
 async function listFilesIfExists(directory: string): Promise<string[]> {

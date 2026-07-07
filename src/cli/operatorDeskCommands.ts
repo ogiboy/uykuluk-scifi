@@ -2,10 +2,7 @@ import type { RenderDecisionStatus } from "../stages/renderDecisionStatus.js";
 import type { RunStatusSummary } from "../stages/status.js";
 import type { ProductionMediaStatus } from "../stages/statusMedia.js";
 
-export type OperatorDeskCommand = {
-  command: string;
-  label: string;
-};
+export type OperatorDeskCommand = { command: string; label: string };
 
 /**
  * Builds the copyable operator command queue from the shared status summary.

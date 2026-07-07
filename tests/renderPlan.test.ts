@@ -4,12 +4,12 @@ import { artifactPath } from "../src/core/artifacts";
 import { loadRun } from "../src/core/runStore";
 import { approveIdea } from "../src/stages/approveIdea";
 import { approveScript } from "../src/stages/approveScript";
-import { generateEvidenceBundle } from "../src/stages/evidence";
 import { estimateCost } from "../src/stages/estimate";
+import { generateEvidenceBundle } from "../src/stages/evidence";
 import { runIdeas } from "../src/stages/ideas";
 import { generateProductionPackage } from "../src/stages/productionPackage";
-import { generateRenderPlan, readRenderPlanEvidence } from "../src/stages/renderPlan";
 import { runReadiness } from "../src/stages/readiness";
+import { generateRenderPlan, readRenderPlanEvidence } from "../src/stages/renderPlan";
 import { reviewScript } from "../src/stages/reviewScript";
 import { generateScript } from "../src/stages/script";
 import { pathExists } from "../src/utils/fs";
@@ -194,10 +194,7 @@ describe("render plan", () => {
     });
     expect(
       (await runReadiness(runId)).checks.find((check) => check.name === "render plan available"),
-    ).toMatchObject({
-      status: "block",
-      nextAction: `pnpm producer render-plan --run ${runId}`,
-    });
+    ).toMatchObject({ status: "block", nextAction: `pnpm producer render-plan --run ${runId}` });
   });
 });
 

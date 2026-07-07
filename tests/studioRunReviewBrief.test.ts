@@ -43,10 +43,7 @@ describe("Studio run review brief", () => {
       }),
     );
 
-    expect(brief).toMatchObject({
-      severity: "ready",
-      title: "Draft review decision needed",
-    });
+    expect(brief).toMatchObject({ severity: "ready", title: "Draft review decision needed" });
     expect(brief.summary).toContain("Record one durable operator decision");
     expect(brief.checkpoints).toEqual(
       expect.arrayContaining([
@@ -125,11 +122,7 @@ describe("Studio run review brief", () => {
   });
 
   it("does not mark missing media artifacts as complete", () => {
-    const brief = buildStudioRunReviewBrief(
-      runBriefFixture({
-        productionMedia: [],
-      }),
-    );
+    const brief = buildStudioRunReviewBrief(runBriefFixture({ productionMedia: [] }));
 
     expect(brief.checkpoints).toEqual(
       expect.arrayContaining([
@@ -234,10 +227,7 @@ describe("Studio run review brief", () => {
       }),
     );
 
-    expect(brief).toMatchObject({
-      severity: "review",
-      title: "Manual channel package ready",
-    });
+    expect(brief).toMatchObject({ severity: "review", title: "Manual channel package ready" });
     expect(brief.summary).toContain("upload and publish remain guarded");
   });
 });

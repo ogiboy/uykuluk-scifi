@@ -26,7 +26,7 @@ export function RunReviewSectionTabs({ run }: RunReviewSectionTabsProps) {
 
   return (
     <TabsList
-      className='sticky top-0 z-10 h-auto min-h-13 w-full flex-wrap gap-2 rounded-lg bg-background/90 p-2 ring-1 ring-border/10 backdrop-blur'
+      className='bg-background/90 ring-border/10 sticky top-0 z-10 h-auto min-h-13 w-full flex-wrap gap-2 rounded-lg p-2 ring-1 backdrop-blur'
       aria-label='Run review sections'
     >
       <RunReviewTab value='progress' label='Progress' status={formatCount(activeWorkflowCount)} />

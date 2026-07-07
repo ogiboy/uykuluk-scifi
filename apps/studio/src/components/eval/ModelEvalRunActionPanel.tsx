@@ -61,19 +61,19 @@ export function ModelEvalRunActionPanel() {
           </DialogHeader>
           <dl className='grid gap-3 text-sm sm:grid-cols-2'>
             <div>
-              <dt className='font-medium text-muted-foreground'>Action</dt>
+              <dt className='text-muted-foreground font-medium'>Action</dt>
               <dd className='break-all'>model-eval.run</dd>
             </div>
             <div>
-              <dt className='font-medium text-muted-foreground'>Route</dt>
+              <dt className='text-muted-foreground font-medium'>Route</dt>
               <dd className='break-all'>/actions/run-model-eval</dd>
             </div>
             <div>
-              <dt className='font-medium text-muted-foreground'>CLI equivalent</dt>
+              <dt className='text-muted-foreground font-medium'>CLI equivalent</dt>
               <dd className='break-all'>pnpm producer eval local-model --json</dd>
             </div>
             <div>
-              <dt className='font-medium text-muted-foreground'>Boundary</dt>
+              <dt className='text-muted-foreground font-medium'>Boundary</dt>
               <dd>Single configured model only; candidate comparison remains manual for now.</dd>
             </div>
           </dl>

@@ -46,9 +46,7 @@ describe("manual channel handoff", () => {
         draftRenderPath: "production/render/draft.mp4",
         subtitlesPath: "production/subtitles.srt",
       },
-      youtube: {
-        metadataPath: "production/youtube_metadata.json",
-      },
+      youtube: { metadataPath: "production/youtube_metadata.json" },
       thumbnailCandidates: {
         jsonPath: thumbnailCandidatesJsonPath,
         markdownPath: thumbnailCandidatesMarkdownPath,

@@ -1,10 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import type { Route } from "next";
-import { useRouter } from "next/navigation";
-import { CopyIcon, ExternalLinkIcon, SearchIcon, TerminalIcon } from "lucide-react";
-import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -23,14 +19,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { runReviewHrefFromSummary } from "@/lib/runReviewNavigation";
-import { getNextSafeCommand } from "@/lib/runSummaryCopy";
 import type { StudioRunSummary } from "@/lib/runSummaries";
+import { getNextSafeCommand } from "@/lib/runSummaryCopy";
+import { CopyIcon, ExternalLinkIcon, SearchIcon, TerminalIcon } from "lucide-react";
+import type { Route } from "next";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 
-type StudioCommandPaletteProps = Readonly<{
-  runs: readonly StudioRunSummary[];
-}>;
+type StudioCommandPaletteProps = Readonly<{ runs: readonly StudioRunSummary[] }>;
 
 const navigationTargets = [
   { href: "/", label: "Studio home", keywords: "control desk current production queue" },
@@ -94,7 +92,7 @@ export function StudioCommandPalette({ runs }: StudioCommandPaletteProps) {
         <Button type='button' variant='secondary'>
           <SearchIcon data-icon='inline-start' />
           Command palette
-          <kbd className='rounded border bg-background px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground'>
+          <kbd className='bg-background text-muted-foreground rounded border px-1.5 py-0.5 font-mono text-[10px]'>
             ⌘K
           </kbd>
         </Button>
@@ -135,7 +133,7 @@ export function StudioCommandPalette({ runs }: StudioCommandPaletteProps) {
                   <TerminalIcon />
                   <span className='grid min-w-0 flex-1 gap-1'>
                     <strong className='truncate'>{run.runId}</strong>
-                    <span className='truncate text-xs text-muted-foreground'>
+                    <span className='text-muted-foreground truncate text-xs'>
                       {run.state} · readiness {run.readinessStatus} · evidence {run.evidenceStatus}
                     </span>
                   </span>
@@ -154,7 +152,7 @@ export function StudioCommandPalette({ runs }: StudioCommandPaletteProps) {
                   <CopyIcon />
                   <span className='grid min-w-0 flex-1 gap-1'>
                     <strong className='truncate'>{run.runId}</strong>
-                    <code className='truncate font-mono text-xs text-muted-foreground'>
+                    <code className='text-muted-foreground truncate font-mono text-xs'>
                       {getNextSafeCommand(run)}
                     </code>
                   </span>

@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import type { StudioRunPrimaryAction } from "../apps/studio/src/lib/runPrimaryAction";
 import {
   operatorBriefControlForAction,
   operatorBriefToneLabel,
 } from "../apps/studio/src/lib/operatorBriefPresentation";
+import type { StudioRunPrimaryAction } from "../apps/studio/src/lib/runPrimaryAction";
 
 describe("Studio operator brief presentation", () => {
   it("keeps guarded stage actions on the web control path even when a CLI command exists", () => {

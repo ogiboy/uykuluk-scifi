@@ -9,10 +9,7 @@ import { formatRenderPlanReviewConsole, reviewRenderPlan } from "../stages/revie
 import { reviewScript } from "../stages/reviewScript.js";
 import { formatVoiceoverReviewConsole, reviewVoiceover } from "../stages/reviewVoiceover.js";
 
-type ReviewOptions = {
-  json?: boolean;
-  run: string;
-};
+type ReviewOptions = { json?: boolean; run: string };
 
 type WrapReviewAction = (
   handler: (options: ReviewOptions) => Promise<void>,

@@ -3,14 +3,9 @@ import { loadConfig } from "../config/config.js";
 import { ProducerConfig } from "../config/schema.js";
 import { LlamaCppProvider } from "../providers/llamaCppProvider.js";
 import { writeTextFile } from "../utils/fs.js";
-import { nowIso } from "../utils/time.js";
 import { writeJsonFile } from "../utils/json.js";
 import { shellQuote } from "../utils/shell.js";
-import {
-  applyLocalModelEvalOverrides,
-  LocalModelEvalLlmOverrides,
-} from "./localModelEvalConfig.js";
-import { LocalModelEvalReport, runLocalModelEvalWithConfig } from "./localModelEval.js";
+import { nowIso } from "../utils/time.js";
 import { renderLocalModelCandidateEvalMarkdown } from "./localModelCandidateEvalFormatting.js";
 import {
   llamaCppDiagnosticFailureReport,
@@ -20,6 +15,11 @@ import {
   selectRecommendedLocalModelCandidate,
   type LocalModelCandidateRecommendation,
 } from "./localModelCandidateRecommendation.js";
+import { LocalModelEvalReport, runLocalModelEvalWithConfig } from "./localModelEval.js";
+import {
+  applyLocalModelEvalOverrides,
+  LocalModelEvalLlmOverrides,
+} from "./localModelEvalConfig.js";
 
 export { selectRecommendedLocalModelCandidate } from "./localModelCandidateRecommendation.js";
 
@@ -47,14 +47,7 @@ export type LocalModelCandidateOperatorGuidance = {
 };
 
 type ServedLlamaCppModelsResult =
-  | {
-      models: string[];
-      status: "pass";
-    }
-  | {
-      message: string;
-      status: "block";
-    };
+  { models: string[]; status: "pass" } | { message: string; status: "block" };
 
 /**
  * Gets the absolute path to the local model candidate evaluation JSON report.
@@ -145,13 +138,7 @@ async function evaluateCandidates(
       await runLocalModelEvalWithConfig(
         {
           ...config,
-          providers: {
-            ...config.providers,
-            llm: {
-              ...config.providers.llm,
-              model: candidate,
-            },
-          },
+          providers: { ...config.providers, llm: { ...config.providers.llm, model: candidate } },
         },
         [...baseOverrides, "model"],
       ),

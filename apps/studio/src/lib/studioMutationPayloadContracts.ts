@@ -10,19 +10,14 @@ const localReviewPayloadShape = {
   runId: runIdSchema,
 } as const;
 
-const ideaApprovalPayloadSchema = z.strictObject({
-  ideaId: z.string().min(1),
-  runId: runIdSchema,
-});
+const ideaApprovalPayloadSchema = z.strictObject({ ideaId: z.string().min(1), runId: runIdSchema });
 
 const scriptApprovalPayloadSchema = z.strictObject({
   acknowledgeWarnings: z.boolean().default(false),
   runId: runIdSchema,
 });
 
-const runOnlyPayloadSchema = z.strictObject({
-  runId: runIdSchema,
-});
+const runOnlyPayloadSchema = z.strictObject({ runId: runIdSchema });
 
 const emptyPayloadSchema = z.strictObject({});
 const localModelCandidateNameSchema = z.string().trim().min(1).max(240);

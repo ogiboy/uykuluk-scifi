@@ -17,8 +17,8 @@ import {
   type FinalReviewDecisionBinding,
 } from "../../../../src/stages/finalReviewBundleValidation";
 import type { EvidenceStatus } from "../../../../src/stages/statusMediaSummary";
-import { studioRunFilePath } from "./runFilePaths";
 import type { StudioRenderDecisionSummary } from "./renderDecisionSummaries";
+import { studioRunFilePath } from "./runFilePaths";
 import type { RunRecord } from "./runRecordTypes";
 
 const draftRenderDigestSchema = z.looseObject({
@@ -124,11 +124,7 @@ function missingBundle(
       nextAction,
     };
   }
-  return {
-    kind: "missing",
-    message: "Final review bundle has not been generated.",
-    nextAction,
-  };
+  return { kind: "missing", message: "Final review bundle has not been generated.", nextAction };
 }
 
 function invalidBundle(

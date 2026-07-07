@@ -32,11 +32,11 @@ export function StudioActionOverviewPanel({ runs, status }: StudioActionOverview
   return (
     <section
       aria-labelledby='action-overview-heading'
-      className='rounded-2xl bg-card/55 p-5 shadow-sm shadow-black/10'
+      className='bg-card/55 rounded-2xl p-5 shadow-sm shadow-black/10'
     >
       <div className='grid gap-3 pb-4 sm:grid-cols-[1fr_auto] sm:items-end'>
         <div className='space-y-1'>
-          <p className='text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground'>
+          <p className='text-muted-foreground text-xs font-semibold tracking-[0.28em] uppercase'>
             Guarded action map
           </p>
           <h2 className='text-xl font-semibold tracking-tight' id='action-overview-heading'>
@@ -58,14 +58,14 @@ export function StudioActionOverviewPanel({ runs, status }: StudioActionOverview
         <ActionFactGroup facts={contractFacts} heading='Route contracts' />
       </div>
 
-      <ul className='mt-4 grid gap-3 text-sm text-muted-foreground md:grid-cols-3'>
-        <li className='rounded-xl bg-background/45 p-3'>
+      <ul className='text-muted-foreground mt-4 grid gap-3 text-sm md:grid-cols-3'>
+        <li className='bg-background/45 rounded-xl p-3'>
           Web routes call guarded local POST endpoints; they do not own workflow state.
         </li>
-        <li className='rounded-xl bg-background/45 p-3'>
+        <li className='bg-background/45 rounded-xl p-3'>
           CLI/core still validates approvals, readiness, evidence, budget, and provider boundaries.
         </li>
-        <li className='rounded-xl bg-background/45 p-3'>
+        <li className='bg-background/45 rounded-xl p-3'>
           Upload, public publish, scheduling, and paid-provider execution stay disabled here.
         </li>
       </ul>
@@ -78,13 +78,13 @@ function ActionFactGroup({
   heading,
 }: Readonly<{ facts: readonly ActionOverviewFact[]; heading: string }>) {
   return (
-    <section aria-label={heading} className='grid gap-3 rounded-xl bg-background/35 p-4'>
-      <h3 className='text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground'>
+    <section aria-label={heading} className='bg-background/35 grid gap-3 rounded-xl p-4'>
+      <h3 className='text-muted-foreground text-sm font-semibold tracking-[0.18em] uppercase'>
         {heading}
       </h3>
       <dl className='grid gap-3 sm:grid-cols-2'>
         {facts.map((fact) => (
-          <div className='grid gap-2 rounded-lg bg-muted/10 p-3 text-sm' key={fact.label}>
+          <div className='bg-muted/10 grid gap-2 rounded-lg p-3 text-sm' key={fact.label}>
             <dt className='flex items-center justify-between gap-3'>
               <span className='text-muted-foreground'>{fact.label}</span>
               <Badge variant={badgeVariant(fact.tone)}>{fact.value}</Badge>

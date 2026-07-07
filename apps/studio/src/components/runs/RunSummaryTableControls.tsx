@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { TableCell } from "@/components/ui/table";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -16,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { TableCell } from "@/components/ui/table";
 import type { StudioRunSummary } from "@/lib/runSummaries";
 import { flexRender, type Cell, type Header, type Table } from "@tanstack/react-table";
 import { runColumnClassName, runColumnLabel } from "./RunSummaryTableColumns";
@@ -23,17 +23,11 @@ import { runColumnClassName, runColumnLabel } from "./RunSummaryTableColumns";
 type RunTableCellModel = Cell<StudioRunSummary, unknown>;
 type RunTableHeader = Header<StudioRunSummary, unknown>;
 
-type ColumnVisibilityMenuProps = Readonly<{
-  table: Table<StudioRunSummary>;
-}>;
+type ColumnVisibilityMenuProps = Readonly<{ table: Table<StudioRunSummary> }>;
 
-type RunSortableHeaderProps = Readonly<{
-  header: RunTableHeader;
-}>;
+type RunSortableHeaderProps = Readonly<{ header: RunTableHeader }>;
 
-type RunTableCellProps = Readonly<{
-  cell: RunTableCellModel;
-}>;
+type RunTableCellProps = Readonly<{ cell: RunTableCellModel }>;
 
 const pageSizeOptions = [10, 25, 50] as const;
 
@@ -73,7 +67,7 @@ export function RunTablePagination({ table }: ColumnVisibilityMenuProps) {
 
   return (
     <div
-      className='flex flex-col gap-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between'
+      className='text-muted-foreground flex flex-col gap-3 text-sm sm:flex-row sm:items-center sm:justify-between'
       aria-label='Run table pagination'
     >
       <p aria-live='polite'>
@@ -145,7 +139,7 @@ export function RunSortableHeader({ header }: RunSortableHeaderProps) {
   }
   return (
     <button
-      className='inline-flex w-full items-center justify-between gap-2 rounded-md px-2 py-1 text-left transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+      className='hover:bg-muted focus-visible:ring-ring inline-flex w-full items-center justify-between gap-2 rounded-md px-2 py-1 text-left transition-colors focus-visible:ring-2 focus-visible:outline-none'
       type='button'
       aria-label={`Sort by ${label}`}
       onClick={header.column.getToggleSortingHandler()}

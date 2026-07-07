@@ -23,10 +23,7 @@ describe("script word-floor enforcement", () => {
           ...defaultConfig,
           providers: {
             ...defaultConfig.providers,
-            llm: {
-              ...defaultConfig.providers.llm,
-              model: "mock-underfilled-continuations",
-            },
+            llm: { ...defaultConfig.providers.llm, model: "mock-underfilled-continuations" },
           },
         },
         null,

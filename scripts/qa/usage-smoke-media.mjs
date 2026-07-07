@@ -87,9 +87,7 @@ export async function runLocalMediaSmoke({ run, pnpm, workdir, runId, assertFile
   run([pnpm, "producer", "render", "--run", runId], {
     label: "fake ffmpeg draft render",
     expectOutput: "Draft render available",
-    env: {
-      PATH: `${fakeMediaTools.binDir}${path.delimiter}${process.env.PATH ?? ""}`,
-    },
+    env: { PATH: `${fakeMediaTools.binDir}${path.delimiter}${process.env.PATH ?? ""}` },
   });
   const review = run([pnpm, "producer", "review", "render", "--run", runId], {
     label: "render review handoff",

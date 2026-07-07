@@ -22,9 +22,7 @@ import {
   RunUpdatedCell,
 } from "./RunSummaryTableCells";
 
-type RunTableColumnMeta = Readonly<{
-  label: string;
-}>;
+type RunTableColumnMeta = Readonly<{ label: string }>;
 
 export function runSummaryColumns(): ColumnDef<StudioRunSummary>[] {
   return [

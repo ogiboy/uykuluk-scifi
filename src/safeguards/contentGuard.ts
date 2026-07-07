@@ -1,16 +1,16 @@
-import { malformedProductionLabelDetails } from "./productionLabelDetails.js";
-import { repeatedSentenceLoopDetails } from "./scriptRepetitionDetails.js";
 import {
   containsLiteralModelEscapes,
   containsProviderArtifactMetadata,
   containsRepeatedWordStutter,
 } from "./modelArtifactText.js";
 import { containsModelMetaCommentary } from "./modelMetaCommentary.js";
+import { malformedProductionLabelDetails } from "./productionLabelDetails.js";
 import {
   scriptLongFormUpperWarning,
   scriptLongFormWordFloor,
   scriptTargetDurationLabel,
 } from "./scriptLengthContract.js";
+import { repeatedSentenceLoopDetails } from "./scriptRepetitionDetails.js";
 
 export type ScriptReviewWarning = {
   code: string;

@@ -66,11 +66,7 @@ describe("Studio approval action routes", () => {
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toMatchObject({
       actionId: "idea.approve",
-      record: {
-        approvedRef: "idea_001",
-        nextState: "IDEA_APPROVED",
-        target: "idea",
-      },
+      record: { approvedRef: "idea_001", nextState: "IDEA_APPROVED", target: "idea" },
       status: "ok",
     });
     const updated = await loadRun(run.runId);
@@ -163,9 +159,7 @@ describe("Studio approval action routes", () => {
     );
     await expectConflict(
       approveCost(
-        studioJsonRequest("/actions/approve-cost", "cost.approve", {
-          runId: "run_missing_cost",
-        }),
+        studioJsonRequest("/actions/approve-cost", "cost.approve", { runId: "run_missing_cost" }),
       ),
       "Run not found",
     );

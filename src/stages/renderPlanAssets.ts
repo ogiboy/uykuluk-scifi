@@ -131,11 +131,7 @@ async function assetRef(role: string, relativePath: string): Promise<AssetRef> {
     throw new SafeExitError(`Render planning asset must live under assets/: ${normalized}`);
   }
   const bytes = await readFile(path.join(process.cwd(), normalized));
-  return {
-    role,
-    path: normalized,
-    digest: createHash("sha256").update(bytes).digest("hex"),
-  };
+  return { role, path: normalized, digest: createHash("sha256").update(bytes).digest("hex") };
 }
 
 function toPosix(value: string): string {

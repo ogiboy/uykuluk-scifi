@@ -1,15 +1,13 @@
-import type { StudioAnalyticsOverview } from "@/lib/analyticsOverview";
 import { ArtifactPreview } from "@/components/studio/ArtifactPreview";
 import { CliFallbackCommand } from "@/components/studio/CliFallbackCommand";
 import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import type { StudioAnalyticsOverview } from "@/lib/analyticsOverview";
 import { AnalyticsActionPanel } from "./AnalyticsActionPanel";
 import { AnalyticsReportActionPanel } from "./AnalyticsReportActionPanel";
 
-type AnalyticsOverviewViewProps = Readonly<{
-  overview: StudioAnalyticsOverview;
-}>;
+type AnalyticsOverviewViewProps = Readonly<{ overview: StudioAnalyticsOverview }>;
 
 /**
  * Renders a read-only analytics overview dashboard.
@@ -62,12 +60,12 @@ export function AnalyticsOverviewView({ overview }: AnalyticsOverviewViewProps) 
               label='Analytics command'
               triggerLabel='Show analytics fallback'
             />
-            <p className='text-sm text-muted-foreground'>
+            <p className='text-muted-foreground text-sm'>
               Read-only display from local operator-provided analytics artifacts. Studio does not
               call YouTube APIs, infer causality, upload media, publish content, or mutate workflow
               state.
             </p>
-            {overview.error ? <p className='text-sm text-destructive'>{overview.error}</p> : null}
+            {overview.error ? <p className='text-destructive text-sm'>{overview.error}</p> : null}
           </CardContent>
         </Card>
       </section>
@@ -110,7 +108,7 @@ export function AnalyticsOverviewView({ overview }: AnalyticsOverviewViewProps) 
                 },
               ]}
             />
-            <p className='text-sm text-muted-foreground'>
+            <p className='text-muted-foreground text-sm'>
               {overview.dataQuality.nextDataQualityAction}
             </p>
           </CardContent>
@@ -128,20 +126,20 @@ export function AnalyticsOverviewView({ overview }: AnalyticsOverviewViewProps) 
             {overview.topVideos.length > 0 ? (
               <ul className='grid gap-3'>
                 {overview.topVideos.map((video) => (
-                  <li className='grid gap-3 rounded-xl bg-muted/25 p-3' key={video.videoId}>
+                  <li className='bg-muted/25 grid gap-3 rounded-xl p-3' key={video.videoId}>
                     <div className='grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start'>
                       <div className='min-w-0 space-y-1'>
                         <strong>{video.title}</strong>
-                        <span className='block text-sm text-muted-foreground'>{video.videoId}</span>
+                        <span className='text-muted-foreground block text-sm'>{video.videoId}</span>
                       </div>
                       <Badge variant='secondary'>{formatStudioInteger(video.views)} views</Badge>
                     </div>
-                    <p className='text-xs text-muted-foreground'>{video.runId ?? "unmapped run"}</p>
+                    <p className='text-muted-foreground text-xs'>{video.runId ?? "unmapped run"}</p>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className='text-sm text-muted-foreground'>No imported video records yet.</p>
+              <p className='text-muted-foreground text-sm'>No imported video records yet.</p>
             )}
           </CardContent>
         </Card>
@@ -155,20 +153,20 @@ export function AnalyticsOverviewView({ overview }: AnalyticsOverviewViewProps) 
             </h2>
           </CardHeader>
           <CardContent className='space-y-3'>
-            <p className='text-xs text-muted-foreground'>
+            <p className='text-muted-foreground text-xs'>
               {overview.reportPath} · report status: {overview.reportStatus}
               {overview.reportPreviewTruncated ? " · preview truncated" : ""}
             </p>
-            <p className='text-xs text-muted-foreground'>
+            <p className='text-muted-foreground text-xs'>
               Run link template: {overview.runLinkTemplatePath}
             </p>
             {overview.reportWarning ? (
-              <p className='text-sm text-destructive'>{overview.reportWarning}</p>
+              <p className='text-destructive text-sm'>{overview.reportWarning}</p>
             ) : null}
             {overview.reportPreview ? (
               <ArtifactPreview>{overview.reportPreview}</ArtifactPreview>
             ) : (
-              <p className='text-sm text-muted-foreground'>
+              <p className='text-muted-foreground text-sm'>
                 Run the CLI analytics report command to refresh the local report artifact.
               </p>
             )}

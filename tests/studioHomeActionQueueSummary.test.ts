@@ -15,15 +15,9 @@ describe("Studio home action queue summary", () => {
         nextRecommendedCommand: "Inspect archived output manually.",
         state: "ARCHIVED",
       }),
+      actionRunFixture({ nextRecommendedCommand: "pnpm producer ideas", state: "NEW" }),
       actionRunFixture({
-        nextRecommendedCommand: "pnpm producer ideas",
-        state: "NEW",
-      }),
-      actionRunFixture({
-        renderDecision: {
-          kind: "present",
-          nextAction: "Local draft-render decision is recorded.",
-        },
+        renderDecision: { kind: "present", nextAction: "Local draft-render decision is recorded." },
         state: "RENDERED",
       }),
     ]);

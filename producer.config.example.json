@@ -4,9 +4,7 @@
     "language": "tr",
     "defaultTone": "cinematic, scientifically careful, accessible Turkish narration"
   },
-  "prompts": {
-    "overrides": {}
-  },
+  "prompts": { "overrides": {} },
   "providers": {
     "llm": {
       "mode": "mock",
@@ -15,11 +13,7 @@
       "model": "qwen3:8b",
       "thinkingMode": "default",
       "requestTimeoutMs": 120000,
-      "maxOutputTokens": {
-        "ideas": 3000,
-        "script": 3200,
-        "productionPackage": 2000
-      }
+      "maxOutputTokens": { "ideas": 3000, "script": 3200, "productionPackage": 2000 }
     },
     "tts": {
       "enabled": false,
@@ -28,22 +22,10 @@
       "piperModelPath": "models/piper/tr_TR/fahrettin-medium/model.onnx",
       "piperConfigPath": "models/piper/tr_TR/fahrettin-medium/model.onnx.json"
     },
-    "imageGeneration": {
-      "enabled": false,
-      "requiresApproval": true
-    },
-    "youtube": {
-      "enabled": false,
-      "allowPrivateUpload": false,
-      "allowPublicPublish": false
-    }
+    "imageGeneration": { "enabled": false, "requiresApproval": true },
+    "youtube": { "enabled": false, "allowPrivateUpload": false, "allowPublicPublish": false }
   },
-  "budgets": {
-    "perVideoUsd": 0.5,
-    "dailyUsd": 1,
-    "weeklyUsd": 5,
-    "requireApprovalAboveUsd": 0.01
-  },
+  "budgets": { "perVideoUsd": 0.5, "dailyUsd": 1, "weeklyUsd": 5, "requireApprovalAboveUsd": 0.01 },
   "safeguards": {
     "requireIdeaApproval": true,
     "requireScriptApproval": true,

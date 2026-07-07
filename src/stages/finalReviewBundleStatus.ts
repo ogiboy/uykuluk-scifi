@@ -102,11 +102,7 @@ async function finalReviewBundleStaleReason(
 }
 
 function stale(message: string, runId: string): FinalReviewBundleStatus {
-  return {
-    kind: "stale",
-    message,
-    nextAction: finalReviewBundleCommand(runId),
-  };
+  return { kind: "stale", message, nextAction: finalReviewBundleCommand(runId) };
 }
 
 function finalReviewDecisionBinding(

@@ -1,8 +1,5 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import gsap from "gsap";
-import { FileText, Image, LockKeyhole, Terminal } from "lucide-react";
 import { PromptInventoryView } from "@/components/prompts/PromptInventoryView";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,6 +14,9 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { StudioPromptInventory } from "@/lib/promptInventory";
+import gsap from "gsap";
+import { FileText, Image, LockKeyhole, Terminal } from "lucide-react";
+import { useEffect, useRef } from "react";
 
 const tabItems = [
   {
@@ -82,7 +82,7 @@ export function StudioTabs({
         </TabsList>
         {tabItems.map((item) => (
           <TabsContent
-            className='rounded-lg bg-card/60 p-4 ring-1 ring-border/5'
+            className='bg-card/60 ring-border/5 rounded-lg p-4 ring-1'
             key={item.value}
             value={item.value}
           >
@@ -103,7 +103,7 @@ export function StudioTabs({
                 </CardHeader>
                 <CardContent>
                   <Separator />
-                  <p className='mt-3 max-w-3xl text-sm leading-6 text-muted-foreground'>
+                  <p className='text-muted-foreground mt-3 max-w-3xl text-sm leading-6'>
                     This module remains a Studio surface over local CLI/core contracts. It must not
                     duplicate workflow state or infer approvals from files.
                   </p>

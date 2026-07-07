@@ -8,11 +8,7 @@ describe("voice WAV helpers", () => {
     const pcm = Buffer.alloc(sampleRateHz * channels * 2);
     const wav = wavFromPcm16(pcm, sampleRateHz, channels);
 
-    expect(readWavInfo(wav)).toEqual({
-      channels,
-      durationSeconds: 1,
-      sampleRateHz,
-    });
+    expect(readWavInfo(wav)).toEqual({ channels, durationSeconds: 1, sampleRateHz });
   });
 
   it("rejects non-WAV and incomplete WAV buffers", () => {

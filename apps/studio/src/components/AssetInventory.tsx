@@ -12,7 +12,7 @@ export function AssetInventory({ inventory }: Readonly<{ inventory: StudioAssetI
   return (
     <section id='assets' aria-labelledby='asset-heading'>
       <h2 id='asset-heading'>Asset Inventory</h2>
-      <p className='mb-3 text-sm leading-6 text-muted-foreground [&_a]:text-primary'>
+      <p className='text-muted-foreground [&_a]:text-primary mb-3 text-sm leading-6'>
         {inventory.totalFiles} committed file(s) across configured visual asset categories.{" "}
         <Link href='/assets'>Open detailed read-only inventory</Link>.
       </p>
@@ -24,7 +24,7 @@ export function AssetInventory({ inventory }: Readonly<{ inventory: StudioAssetI
                 <h3 className='text-base'>{category.label}</h3>
               </CardTitle>
             </CardHeader>
-            <CardContent className='grid gap-2 text-sm text-muted-foreground'>
+            <CardContent className='text-muted-foreground grid gap-2 text-sm'>
               <p>
                 {category.files.length} file(s) · {category.status}
               </p>

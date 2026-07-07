@@ -74,11 +74,11 @@ export function StudioAppearanceControls({
 
   return (
     <section
-      className='mt-6 grid gap-3 rounded-xl bg-card/40 p-3'
+      className='bg-card/40 mt-6 grid gap-3 rounded-xl p-3'
       aria-labelledby='appearance-controls-heading'
     >
       <div>
-        <p className='text-xs text-muted-foreground'>Operator view</p>
+        <p className='text-muted-foreground text-xs'>Operator view</p>
         <h2 className='text-sm font-semibold' id='appearance-controls-heading'>
           Appearance
         </h2>
@@ -86,7 +86,7 @@ export function StudioAppearanceControls({
 
       <div className='grid gap-2'>
         <div className='grid min-w-0 gap-2'>
-          <Label className='text-xs text-muted-foreground' htmlFor='studio-theme-select'>
+          <Label className='text-muted-foreground text-xs' htmlFor='studio-theme-select'>
             Theme
           </Label>
           <Select value={preference.theme} onValueChange={updateTheme}>
@@ -104,7 +104,7 @@ export function StudioAppearanceControls({
         </div>
 
         <div className='grid min-w-0 gap-2'>
-          <Label className='text-xs text-muted-foreground' htmlFor='studio-palette-select'>
+          <Label className='text-muted-foreground text-xs' htmlFor='studio-palette-select'>
             Palette
           </Label>
           <Select value={preference.palette} onValueChange={updatePalette}>
@@ -122,7 +122,7 @@ export function StudioAppearanceControls({
         </div>
 
         <div className='grid min-w-0 gap-2'>
-          <Label className='text-xs text-muted-foreground' htmlFor='studio-locale-select'>
+          <Label className='text-muted-foreground text-xs' htmlFor='studio-locale-select'>
             Language
           </Label>
           <Select value={preference.locale} onValueChange={updateLocale}>
@@ -140,7 +140,7 @@ export function StudioAppearanceControls({
         </div>
 
         <div className='grid min-w-0 gap-2'>
-          <Label className='text-xs text-muted-foreground' id='studio-density-label'>
+          <Label className='text-muted-foreground text-xs' id='studio-density-label'>
             Density
           </Label>
           <ToggleGroup

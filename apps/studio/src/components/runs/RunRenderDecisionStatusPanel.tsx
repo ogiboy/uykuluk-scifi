@@ -40,7 +40,7 @@ export function RunRenderDecisionStatusPanel({
         </p>
       ) : null}
       {renderDecision.kind === "present" ? (
-        <p className='rounded-lg bg-muted/10 p-3 font-mono text-xs break-all text-muted-foreground'>
+        <p className='bg-muted/10 text-muted-foreground rounded-lg p-3 font-mono text-xs break-all'>
           Review command: {renderDecision.reviewCommand}
         </p>
       ) : null}

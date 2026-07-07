@@ -4,15 +4,11 @@
     "projectKey": "uykulukscifi-producer"
   },
   "editor.formatOnSave": true,
-  "editor.codeActionsOnSave": {
-    "source.organizeImports": "explicit"
-  },
+  "editor.codeActionsOnSave": { "source.organizeImports": "explicit" },
   "editor.cursorStyle": "underline",
   "files.encoding": "utf8",
   "files.autoGuessEncoding": true,
-  "files.associations": {
-    "*.css": "tailwindcss"
-  },
+  "files.associations": { "*.css": "tailwindcss" },
   "files.watcherExclude": {
     ".agents/**": true,
     ".claude/**": true,
@@ -31,35 +27,26 @@
     "**/.claude-flow/**": true,
     "**/skills-lock.json": true
   },
-  "[yaml]": {
-    "editor.defaultFormatter": "redhat.vscode-yaml"
-  },
-  "[markdown]": {
-    "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
-  },
-  "[json]": {
-    "editor.defaultFormatter": "vscode.json-language-features"
-  },
-  "[typescript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[instructions]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[jsonc]": {
-    "editor.defaultFormatter": "vscode.json-language-features"
-  },
-  "[typescriptreact]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[tailwindcss]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
+  "[yaml]": { "editor.defaultFormatter": "redhat.vscode-yaml" },
+  "[markdown]": { "editor.defaultFormatter": "DavidAnson.vscode-markdownlint" },
+  "[json]": { "editor.defaultFormatter": "vscode.json-language-features" },
+  "[typescript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[instructions]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[jsonc]": { "editor.defaultFormatter": "vscode.json-language-features" },
+  "[typescriptreact]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[tailwindcss]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
   "css.lint.importStatement": "ignore",
   "css.lint.boxModel": "ignore",
   "css.lint.universalSelector": "ignore",
   "tailwindCSS.experimental.configFile": {
     "apps/studio/src/app/globals.css": "apps/studio/src/**/*"
   },
-  "editor.defaultFormatter": "esbenp.prettier-vscode"
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "prettier.documentSelectors": ["**/*"],
+  "prettier.enableDebugLogs": true,
+  "prettier.endOfLine": "lf",
+  "prettier.printWidth": 120,
+  "prettier.requireConfig": true,
+  "prettier.semi": false,
+  "prettier.singleQuote": true
 }

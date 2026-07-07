@@ -11,10 +11,7 @@ type ModelEvalCandidatePanelProps = Readonly<{
   candidateReport: StudioCandidateEvalSummary | null;
 }>;
 
-type ModelEvalCheckListProps = Readonly<{
-  checks: StudioModelEvalCheckSummary[];
-  ownerId: string;
-}>;
+type ModelEvalCheckListProps = Readonly<{ checks: StudioModelEvalCheckSummary[]; ownerId: string }>;
 
 /**
  * Renders the candidate model comparison panel from local evaluation artifacts.
@@ -34,13 +31,13 @@ export function ModelEvalCandidatePanel({ candidateReport }: ModelEvalCandidateP
           <ModelEvalCandidateRunActionPanel />
           {candidateReport ? (
             <>
-              <p className='text-xs text-muted-foreground'>
+              <p className='text-muted-foreground text-xs'>
                 Recommended passing candidate:{" "}
                 {candidateReport.recommendedCandidate?.configuredModel ?? "none yet"}
               </p>
               {candidateReport.operatorGuidance ? (
-                <div className='grid gap-3 rounded-xl bg-muted/25 p-3'>
-                  <p className='text-sm text-muted-foreground'>
+                <div className='bg-muted/25 grid gap-3 rounded-xl p-3'>
+                  <p className='text-muted-foreground text-sm'>
                     {candidateReport.operatorGuidance.message}
                   </p>
                   <CliFallbackCommand
@@ -54,13 +51,13 @@ export function ModelEvalCandidatePanel({ candidateReport }: ModelEvalCandidateP
               <ul className='grid gap-3'>
                 {candidateReport.candidates.map((candidate, index) => (
                   <li
-                    className='grid min-w-0 gap-3 rounded-xl bg-muted/25 p-3'
+                    className='bg-muted/25 grid min-w-0 gap-3 rounded-xl p-3'
                     key={`${candidate.configuredModel}-${index}`}
                   >
                     <div className='grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start'>
                       <div className='min-w-0 space-y-1'>
                         <strong className='break-all'>{candidate.configuredModel}</strong>
-                        <span className='block text-sm text-muted-foreground'>
+                        <span className='text-muted-foreground block text-sm'>
                           {candidate.passCount} passed · {candidate.blockCount} blocked checks ·{" "}
                           {candidate.durationMs}ms
                         </span>
@@ -75,7 +72,7 @@ export function ModelEvalCandidatePanel({ candidateReport }: ModelEvalCandidateP
               </ul>
             </>
           ) : (
-            <p className='text-sm text-muted-foreground'>
+            <p className='text-muted-foreground text-sm'>
               No candidate comparison report has been generated.
             </p>
           )}
@@ -96,19 +93,19 @@ export function ModelEvalCheckList({ checks, ownerId }: ModelEvalCheckListProps)
     <ul className='grid gap-3'>
       {checks.map((check) => (
         <li
-          className='grid min-w-0 gap-3 rounded-xl bg-muted/25 p-3'
+          className='bg-muted/25 grid min-w-0 gap-3 rounded-xl p-3'
           key={`${ownerId}-${check.name}`}
         >
           <div className='grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start'>
             <div className='min-w-0 space-y-1'>
               <strong className='break-all'>{check.name}</strong>
-              <span className='block text-sm text-muted-foreground'>{check.message}</span>
+              <span className='text-muted-foreground block text-sm'>{check.message}</span>
             </div>
             <Badge variant={check.status === "pass" ? "secondary" : "destructive"}>
               {check.status}
             </Badge>
           </div>
-          <p className='break-all text-xs text-muted-foreground'>
+          <p className='text-muted-foreground text-xs break-all'>
             {check.durationMs === null ? "duration n/a" : `${check.durationMs}ms`}
             {" · "}
             input {check.inputTokensApprox ?? "n/a"} / output {check.outputTokensApprox ?? "n/a"}

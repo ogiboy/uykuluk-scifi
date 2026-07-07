@@ -1,5 +1,3 @@
-import Link from "next/link";
-import type { Route } from "next";
 import { CopyableCommand } from "@/components/studio/CopyableCommand";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,8 +19,10 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { runReviewHrefFromSummary } from "@/lib/runReviewNavigation";
-import { getNextSafeCommand } from "@/lib/runSummaryCopy";
 import type { StudioRunSummary } from "@/lib/runSummaries";
+import { getNextSafeCommand } from "@/lib/runSummaryCopy";
+import type { Route } from "next";
+import Link from "next/link";
 
 export function ActiveRunActions({ run }: Readonly<{ run: StudioRunSummary }>) {
   const reviewHref = runReviewHrefFromSummary(run) as Route;

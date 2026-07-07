@@ -44,11 +44,7 @@ describe("manual analytics import", () => {
           ctr: 0.075,
           averagePercentageViewed: 0.42,
         }),
-        expect.objectContaining({
-          videoId: "yt_002",
-          ctr: 0.021,
-          averagePercentageViewed: 0.19,
-        }),
+        expect.objectContaining({ videoId: "yt_002", ctr: 0.021, averagePercentageViewed: 0.19 }),
       ]),
     );
     expect(report).toContain("Manual Analytics Report");

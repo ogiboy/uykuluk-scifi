@@ -11,16 +11,7 @@ export const runtime = "nodejs";
 export async function GET(): Promise<Response> {
   const session = createStudioMutationSession();
   return Response.json(
-    {
-      expiresInSeconds: session.maxAgeSeconds,
-      status: "ok",
-      token: session.token,
-    },
-    {
-      headers: {
-        "cache-control": "no-store",
-        "set-cookie": session.cookie,
-      },
-    },
+    { expiresInSeconds: session.maxAgeSeconds, status: "ok", token: session.token },
+    { headers: { "cache-control": "no-store", "set-cookie": session.cookie } },
   );
 }

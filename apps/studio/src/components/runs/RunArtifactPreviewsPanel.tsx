@@ -1,6 +1,5 @@
 "use client";
 
-import type { StudioArtifactPreview } from "@/lib/artifactPreviews";
 import {
   artifactPreviewEmptyState,
   artifactPreviewStatusFilters,
@@ -8,12 +7,12 @@ import {
   filterArtifactPreviews,
   type ArtifactPreviewStatusFilter,
 } from "@/lib/artifactPreviewFilters";
+import type { StudioArtifactPreview } from "@/lib/artifactPreviews";
 import { buildArtifactReviewHandoff } from "@/lib/artifactReviewHandoff";
 import { artifactPreviewsIntro } from "@/lib/runEvidenceCopy";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import { applyEnumSelectValue } from "@/lib/utils";
 import { useMemo, useState } from "react";
-import { RunDetailCard } from "./RunDetailCard";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -27,6 +26,7 @@ import {
   SelectValue,
 } from "../ui/select";
 import { RunArtifactPreviewGroups } from "./RunArtifactPreviewGroups";
+import { RunDetailCard } from "./RunDetailCard";
 
 type RunArtifactPreviewsPanelProps = Readonly<{
   artifacts: StudioRunDetail["artifacts"];
@@ -66,12 +66,12 @@ export function RunArtifactPreviewsPanel({
       title='Artifact Previews'
       description='Read-only excerpts grouped by operator review phase. Use Studio action rails when available, with CLI/core fallback for recovery.'
     >
-      <p className='text-sm text-muted-foreground'>{artifactPreviewsIntro(evidenceStatus)}</p>
+      <p className='text-muted-foreground text-sm'>{artifactPreviewsIntro(evidenceStatus)}</p>
       <div
-        className='grid gap-3 rounded-lg bg-muted/10 p-3 md:grid-cols-[minmax(0,1fr)_minmax(12rem,15rem)_auto] md:items-end'
+        className='bg-muted/10 grid gap-3 rounded-lg p-3 md:grid-cols-[minmax(0,1fr)_minmax(12rem,15rem)_auto] md:items-end'
         aria-label='Artifact preview filters'
       >
-        <label className='grid min-w-0 gap-2 text-xs font-semibold text-muted-foreground'>
+        <label className='text-muted-foreground grid min-w-0 gap-2 text-xs font-semibold'>
           Search artifacts
           <Input
             placeholder='path, label, phase, review action'
@@ -119,13 +119,13 @@ export function RunArtifactPreviewsPanel({
         </output>
       </div>
       <section
-        className='grid gap-3 rounded-lg bg-muted/10 p-3'
+        className='bg-muted/10 grid gap-3 rounded-lg p-3'
         aria-label='Artifact review handoff milestones'
       >
         <div className='flex flex-wrap items-start justify-between gap-3'>
           <div>
             <h3 className='text-sm font-semibold'>Review handoff path</h3>
-            <p className='mt-1 text-sm text-muted-foreground'>
+            <p className='text-muted-foreground mt-1 text-sm'>
               {reviewHandoff.availableCount}/{reviewHandoff.totalCount} review milestones are
               available as local artifacts.
             </p>
@@ -138,7 +138,7 @@ export function RunArtifactPreviewsPanel({
         </div>
         <ol className='grid gap-2 md:grid-cols-2'>
           {reviewHandoff.milestones.map((milestone) => (
-            <li className='grid gap-1 rounded-lg bg-background/45 p-3' key={milestone.path}>
+            <li className='bg-background/45 grid gap-1 rounded-lg p-3' key={milestone.path}>
               <Badge
                 className='justify-self-start'
                 variant={milestone.available ? "secondary" : "outline"}
@@ -146,20 +146,20 @@ export function RunArtifactPreviewsPanel({
                 {milestone.available ? "available" : "pending"}
               </Badge>
               <strong className='text-sm'>{milestone.label}</strong>
-              <small className='break-all text-xs text-muted-foreground'>{milestone.path}</small>
+              <small className='text-muted-foreground text-xs break-all'>{milestone.path}</small>
             </li>
           ))}
         </ol>
       </section>
       {filteredArtifacts.length === 0 ? (
         <section
-          className='rounded-lg bg-muted/10 p-4'
+          className='bg-muted/10 rounded-lg p-4'
           aria-labelledby='artifact-preview-empty-heading'
         >
           <h3 id='artifact-preview-empty-heading' className='text-sm font-semibold'>
             {emptyState.heading}
           </h3>
-          <p className='mt-1 text-sm text-muted-foreground'>{emptyState.message}</p>
+          <p className='text-muted-foreground mt-1 text-sm'>{emptyState.message}</p>
         </section>
       ) : (
         <RunArtifactPreviewGroups artifactGroups={artifactGroups} />

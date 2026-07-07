@@ -23,20 +23,10 @@ const importedDataset = {
       videoId: "yt_002",
       views: 250,
     },
-    {
-      impressions: 4_000,
-      title: "Haritasız Uydu",
-      videoId: "yt_003",
-      views: 100,
-    },
+    { impressions: 4_000, title: "Haritasız Uydu", videoId: "yt_003", views: 100 },
   ],
   schemaVersion: 1,
-  source: {
-    fileName: "performance.csv",
-    format: "csv",
-    recordCount: 3,
-    sha256: "a".repeat(64),
-  },
+  source: { fileName: "performance.csv", format: "csv", recordCount: 3, sha256: "a".repeat(64) },
 };
 
 describe("Studio analytics overview", () => {
@@ -123,18 +113,8 @@ describe("Studio analytics overview", () => {
         videoId: "yt_001",
         views: 1_200,
       },
-      {
-        runId: "run_20260625010101_abcd12",
-        title: "Kayıp Sonda",
-        videoId: "yt_002",
-        views: 250,
-      },
-      {
-        runId: null,
-        title: "Haritasız Uydu",
-        videoId: "yt_003",
-        views: 100,
-      },
+      { runId: "run_20260625010101_abcd12", title: "Kayıp Sonda", videoId: "yt_002", views: 250 },
+      { runId: null, title: "Haritasız Uydu", videoId: "yt_003", views: 100 },
     ]);
   });
 

@@ -22,9 +22,7 @@ export const scriptApprovalRequestSchema = z.strictObject({
   runId: runIdSchema,
 });
 
-export const runOnlyRequestSchema = z.strictObject({
-  runId: runIdSchema,
-});
+export const runOnlyRequestSchema = z.strictObject({ runId: runIdSchema });
 
 export const emptyRequestSchema = z.strictObject({});
 export const localModelCandidateNameSchema = z.string().trim().min(1).max(240);

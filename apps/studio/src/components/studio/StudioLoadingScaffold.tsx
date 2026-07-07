@@ -1,5 +1,5 @@
-import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { studioSections } from "@/lib/studioData";
 
 import { StudioBrandLockup } from "./StudioBrandLockup";
@@ -55,7 +55,7 @@ function StudioLoadingRail() {
       <nav className='grid gap-2' aria-label='Loading Studio navigation'>
         {studioSections.map((section) => (
           <span
-            className='rounded-md px-3 py-2 text-sm font-medium text-muted-foreground'
+            className='text-muted-foreground rounded-md px-3 py-2 text-sm font-medium'
             key={section.id}
           >
             {section.label}
@@ -86,9 +86,9 @@ function StudioLoadingContent({
   const railPanelKeys = Array.from({ length: railPanels }, (_, index) => `rail-${index}`);
   return (
     <>
-      <header className='grid gap-4 border-b border-border/40 pb-6 sm:grid-cols-[1fr_auto] sm:items-start'>
+      <header className='border-border/40 grid gap-4 border-b pb-6 sm:grid-cols-[1fr_auto] sm:items-start'>
         <div className='space-y-2'>
-          <p className='text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground'>
+          <p className='text-muted-foreground text-xs font-semibold tracking-[0.28em] uppercase'>
             {eyebrow}
           </p>
           <h1 className='text-3xl font-semibold tracking-tight sm:text-4xl'>{title}</h1>

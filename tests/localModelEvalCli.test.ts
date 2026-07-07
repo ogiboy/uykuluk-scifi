@@ -1,6 +1,6 @@
-import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { useTempProject } from "./helpers";
 
@@ -86,9 +86,7 @@ describe("producer local-model eval CLI", () => {
     expect(result.stderr).toContain("Local model candidate eval needs more candidates.");
     expect(JSON.parse(result.stdout) as unknown).toMatchObject({
       passed: false,
-      operatorGuidance: expect.objectContaining({
-        decision: "try-more-candidates",
-      }),
+      operatorGuidance: expect.objectContaining({ decision: "try-more-candidates" }),
       recommendedCandidate: null,
     });
   });

@@ -1,14 +1,12 @@
-import Link from "next/link";
-import type { StudioAnalyticsOverview } from "@/lib/analyticsOverview";
-import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
 import { CliFallbackCommand } from "@/components/studio/CliFallbackCommand";
+import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import type { StudioAnalyticsOverview } from "@/lib/analyticsOverview";
+import Link from "next/link";
 import { AnalyticsReportActionPanel } from "./AnalyticsReportActionPanel";
 
-type AnalyticsStatusPanelProps = Readonly<{
-  overview: StudioAnalyticsOverview;
-}>;
+type AnalyticsStatusPanelProps = Readonly<{ overview: StudioAnalyticsOverview }>;
 
 /**
  * Renders a compact manual analytics summary on the Studio home page.
@@ -40,10 +38,10 @@ export function AnalyticsStatusPanel({ overview }: AnalyticsStatusPanelProps) {
               { label: "Report", value: overview.reportStatus },
             ]}
           />
-          <p className='text-sm text-muted-foreground'>
+          <p className='text-muted-foreground text-sm'>
             {overview.dataQuality.nextDataQualityAction}
           </p>
-          <div className='space-y-3 rounded-xl bg-muted/25 p-3'>
+          <div className='bg-muted/25 space-y-3 rounded-xl p-3'>
             <strong className='text-sm'>Next safe action</strong>
             <AnalyticsReportActionPanel compact />
             <CliFallbackCommand
@@ -53,9 +51,9 @@ export function AnalyticsStatusPanel({ overview }: AnalyticsStatusPanelProps) {
               triggerLabel='Show analytics fallback'
             />
           </div>
-          {overview.error ? <p className='text-sm text-destructive'>{overview.error}</p> : null}
+          {overview.error ? <p className='text-destructive text-sm'>{overview.error}</p> : null}
           {overview.reportWarning ? (
-            <p className='text-sm text-destructive'>{overview.reportWarning}</p>
+            <p className='text-destructive text-sm'>{overview.reportWarning}</p>
           ) : null}
         </CardContent>
       </Card>

@@ -7,8 +7,8 @@ import {
   enableDeterministicTts,
   prepareWorkspace,
   runProductCommand,
-  writeRunDiagnosticFixture,
   writeProductUatReports,
+  writeRunDiagnosticFixture,
 } from "./product-uat-helpers.mjs";
 import {
   assertRenderedArtifacts,

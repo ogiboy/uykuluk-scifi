@@ -52,28 +52,28 @@ export function RunChannelHandoffDecisionConfirmationDialog({
             This writes local review evidence for {runId}. Upload and public publish stay disabled.
           </DialogDescription>
         </DialogHeader>
-        <div className='space-y-4 rounded-lg border bg-muted/30 p-4'>
+        <div className='bg-muted/30 space-y-4 rounded-lg border p-4'>
           <dl className='grid gap-3 text-sm sm:grid-cols-2'>
             <div className='space-y-1'>
-              <dt className='font-medium text-muted-foreground'>Decision</dt>
+              <dt className='text-muted-foreground font-medium'>Decision</dt>
               <dd className='break-all'>{pendingPayload?.decision ?? decision}</dd>
             </div>
             <div className='space-y-1'>
-              <dt className='font-medium text-muted-foreground'>Thumbnail</dt>
+              <dt className='text-muted-foreground font-medium'>Thumbnail</dt>
               <dd className='break-all'>
                 {pendingPayload?.thumbnailCandidateId ?? "not selected for this decision"}
               </dd>
             </div>
             <div className='space-y-1'>
-              <dt className='font-medium text-muted-foreground'>Reviewed by</dt>
+              <dt className='text-muted-foreground font-medium'>Reviewed by</dt>
               <dd className='break-all'>{pendingPayload?.reviewedBy ?? reviewedBy}</dd>
             </div>
             <div className='space-y-1'>
-              <dt className='font-medium text-muted-foreground'>Run</dt>
+              <dt className='text-muted-foreground font-medium'>Run</dt>
               <dd className='break-all'>{runId}</dd>
             </div>
           </dl>
-          <p className='text-sm text-muted-foreground'>
+          <p className='text-muted-foreground text-sm'>
             Notes are required and will be persisted with the local channel handoff decision.
           </p>
         </div>

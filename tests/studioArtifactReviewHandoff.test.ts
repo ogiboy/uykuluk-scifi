@@ -13,10 +13,7 @@ describe("Studio artifact review handoff", () => {
 
     expect(handoff).toMatchObject({
       availableCount: 2,
-      nextFocus: {
-        label: "Voiceover review",
-        path: "production/audio/voiceover_review.md",
-      },
+      nextFocus: { label: "Voiceover review", path: "production/audio/voiceover_review.md" },
       totalCount: 6,
     });
     expect(handoff.milestones.map((milestone) => milestone.path)).toEqual([

@@ -20,11 +20,7 @@ const eslintConfig = defineConfig([
     "../CLAUDE.md",
     "../skills-lock.json",
   ]),
-  {
-    settings: {
-      react: { version: "19" },
-    },
-  },
+  { settings: { react: { version: "19" } } },
 ]);
 
 export default eslintConfig;

@@ -30,9 +30,7 @@ const draftRenderChapterBindingSchema = z.strictObject({
 
 const finalReviewBundleV1Schema = z.looseObject({
   schemaVersion: z.literal(1),
-  draftRender: z.looseObject({
-    chapters: z.undefined().optional(),
-  }),
+  draftRender: z.looseObject({ chapters: z.undefined().optional() }),
 });
 
 export const finalReviewBundleSchema = z.strictObject({

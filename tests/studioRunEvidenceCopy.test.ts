@@ -131,10 +131,7 @@ describe("Studio run evidence copy", () => {
 
     expect(summary).toMatchObject({
       blockedCount: 1,
-      focus: {
-        label: "Draft render",
-        status: "block",
-      },
+      focus: { label: "Draft render", status: "block" },
       title: "Media review blocked",
       tone: "blocked",
     });
@@ -149,10 +146,7 @@ describe("Studio run evidence copy", () => {
     ]);
 
     expect(summary).toMatchObject({
-      focus: {
-        label: "Draft render",
-        status: "pass",
-      },
+      focus: { label: "Draft render", status: "pass" },
       title: "Local media ready for review",
       tone: "ready",
       verifiedCount: 3,
@@ -166,10 +160,5 @@ function mediaStatus(
   artifactPath: string,
   status: ProductionMediaStatus["status"],
 ): ProductionMediaStatus {
-  return {
-    artifactPath,
-    evidenceKey,
-    label,
-    status,
-  };
+  return { artifactPath, evidenceKey, label, status };
 }

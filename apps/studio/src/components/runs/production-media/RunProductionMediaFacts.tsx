@@ -1,8 +1,6 @@
 import type { ProductionMediaStatus } from "@/lib/runEvidenceCopy";
 
-type RunProductionMediaFactsProps = Readonly<{
-  artifact: ProductionMediaStatus;
-}>;
+type RunProductionMediaFactsProps = Readonly<{ artifact: ProductionMediaStatus }>;
 
 /**
  * Renders structured evidence facts for a production-media artifact.
@@ -20,7 +18,7 @@ export function RunProductionMediaFacts({ artifact }: RunProductionMediaFactsPro
           <ul className='flex flex-wrap gap-2' aria-label={`${artifact.label} evidence facts`}>
             {compactFacts.map((fact, index) => (
               <li
-                className='rounded-full bg-muted/20 px-2.5 py-1 text-xs text-muted-foreground'
+                className='bg-muted/20 text-muted-foreground rounded-full px-2.5 py-1 text-xs'
                 key={`${fact}-${index}`}
               >
                 {fact}
@@ -29,20 +27,20 @@ export function RunProductionMediaFacts({ artifact }: RunProductionMediaFactsPro
           </ul>
         ) : null}
         {detailedFactCount > 0 ? (
-          <p className='text-sm text-muted-foreground'>
+          <p className='text-muted-foreground text-sm'>
             {detailedFactCount} detailed evidence item{detailedFactCount === 1 ? "" : "s"} available
             below.
           </p>
         ) : null}
         {detailedFactCount > 0 ? (
-          <details className='rounded-lg bg-muted/10 p-3'>
+          <details className='bg-muted/10 rounded-lg p-3'>
             <summary className='cursor-pointer text-sm font-medium'>
               Detailed media evidence
             </summary>
-            <ul className='mt-3 grid gap-2 text-sm text-muted-foreground'>
+            <ul className='text-muted-foreground mt-3 grid gap-2 text-sm'>
               {detailedFacts.map((fact, index) => (
                 <li
-                  className='break-words rounded-md bg-background/45 p-2'
+                  className='bg-background/45 rounded-md p-2 break-words'
                   key={`${fact}-${index}`}
                 >
                   {fact}
@@ -55,7 +53,7 @@ export function RunProductionMediaFacts({ artifact }: RunProductionMediaFactsPro
     );
   }
   return artifact.detail ? (
-    <p className='text-sm text-muted-foreground'>{artifact.detail}</p>
+    <p className='text-muted-foreground text-sm'>{artifact.detail}</p>
   ) : null;
 }
 

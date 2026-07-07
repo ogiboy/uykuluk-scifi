@@ -106,11 +106,7 @@ function uncertaintyOpeners(premise: string): string[] {
   return repeatedUncertaintyOpeners.filter((opener) => signature.includes(opener));
 }
 
-type WeakMotif = {
-  label: string;
-  pattern: RegExp;
-  triggerCount?: number;
-};
+type WeakMotif = { label: string; pattern: RegExp; triggerCount?: number };
 
 function repeatedWeakPremiseMotifIssue(ideas: NormalizedProviderIdea[]): string | undefined {
   const motifOwners = new Map<string, Set<number>>();
@@ -179,22 +175,14 @@ const weakPremiseMotifs: readonly WeakMotif[] = [
   { label: "varlığına dair ipucu", pattern: /\bvarlığ\p{L}* dair bir ipucu\b/u },
   { label: "bilgiyi bulduktan sonra", pattern: /\bbilgiyi bulduktan sonra\b/u },
   { label: "anlamaya çalışmak", pattern: /\banlamaya çalış\p{L}*/u },
-  {
-    label: "anlamak için yola çıkmak",
-    pattern: /\banlamak için yola çık\p{L}*/u,
-    triggerCount: 2,
-  },
+  { label: "anlamak için yola çıkmak", pattern: /\banlamak için yola çık\p{L}*/u, triggerCount: 2 },
   {
     label: "hakkında ipuçları içeriyor",
     pattern: /\bhakkında ipuçlar\p{L}* içer\p{L}*/u,
     triggerCount: 2,
   },
   { label: "yansıtmakta", pattern: /\byansıtmakta\b/u },
-  {
-    label: "gösteriyor olabilir mi",
-    pattern: /\bgöster\p{L}* olabilir mi\b/u,
-    triggerCount: 2,
-  },
+  { label: "gösteriyor olabilir mi", pattern: /\bgöster\p{L}* olabilir mi\b/u, triggerCount: 2 },
 ];
 
 const weakFitMotifs: readonly WeakMotif[] = [
@@ -202,11 +190,7 @@ const weakFitMotifs: readonly WeakMotif[] = [
   { label: "doğasıyla uyumludur", pattern: /\bdoğas\p{L}* uyumlu\p{L}*/u },
   { label: "etik dilemleri", pattern: /\betik dilemler\p{L}*/u },
   { label: "bilimsel sınırı aşan", pattern: /\bbilimsel sınırı aşan\b/u },
-  {
-    label: "incelemeyi öngörmek",
-    pattern: /\bincelemeyi öngör\p{L}*/u,
-    triggerCount: 2,
-  },
+  { label: "incelemeyi öngörmek", pattern: /\bincelemeyi öngör\p{L}*/u, triggerCount: 2 },
   {
     label: "hakkında ipuçları içeriyor",
     pattern: /\bhakkında ipuçlar\p{L}* içer\p{L}*/u,

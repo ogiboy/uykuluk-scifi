@@ -1,8 +1,6 @@
 import { z } from "zod";
 
-type EvidenceStatus = {
-  [key: string]: unknown;
-};
+type EvidenceStatus = { [key: string]: unknown };
 
 export type EvidenceStatusValidationResult =
   | { evidence: EvidenceStatus; kind: "present" }
@@ -98,10 +96,7 @@ const draftRenderPassSchema = z.looseObject({
   voiceoverMode: z.enum(["deterministic-local", "local-piper"]),
   voiceoverProductionVoiceCandidate: z.boolean(),
   voiceoverQuality: z.enum(["deterministic-local-reference", "local-piper"]),
-  renderApproval: z.strictObject({
-    approvalId: z.string().min(1),
-    approvedRef: digestSchema,
-  }),
+  renderApproval: z.strictObject({ approvalId: z.string().min(1), approvedRef: digestSchema }),
   mediaProbe: mediaProbeSchema,
 });
 
@@ -165,5 +160,5 @@ export function validateEvidenceStatusSnapshot(
       )}, but the run is ${currentState}.`,
     };
   }
-  return { evidence: parsed.data as EvidenceStatus, kind: "present" };
+  return { evidence: parsed.data, kind: "present" };
 }

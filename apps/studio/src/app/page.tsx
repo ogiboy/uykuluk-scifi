@@ -1,10 +1,10 @@
-import { StudioControlDesk } from "@/components/studio/StudioControlDesk";
-import { StudioCommandPalette } from "@/components/studio/StudioCommandPalette";
 import { HomeSurfaceLinks } from "@/components/studio/HomeSurfaceLinks";
+import { StudioCommandPalette } from "@/components/studio/StudioCommandPalette";
+import { StudioControlDesk } from "@/components/studio/StudioControlDesk";
 import { StudioShell } from "@/components/studio/StudioShell";
 import { Badge } from "@/components/ui/badge";
-import { getStudioAnalyticsOverview } from "@/lib/analyticsOverview";
 import { getStudioActionServiceStatus } from "@/lib/actionServiceStatus";
+import { getStudioAnalyticsOverview } from "@/lib/analyticsOverview";
 import { getStudioAssetInventory } from "@/lib/assetInventory";
 import { getStudioDoctorOverview } from "@/lib/doctorOverview";
 import { getStudioIdeaHistoryOverview } from "@/lib/ideaHistoryOverview";
@@ -43,7 +43,7 @@ export default async function StudioHomePage() {
     <StudioShell>
       <header className='grid gap-4 pb-2 sm:grid-cols-[1fr_auto] sm:items-start'>
         <div className='space-y-2'>
-          <p className='text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground'>
+          <p className='text-muted-foreground text-xs font-semibold tracking-[0.28em] uppercase'>
             Local-first production desk
           </p>
           <h1 className='max-w-4xl text-3xl font-semibold tracking-tight sm:text-4xl'>

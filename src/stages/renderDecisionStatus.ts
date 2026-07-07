@@ -1,11 +1,11 @@
 import type { RunRecord } from "../core/state.js";
 import { readJsonFile } from "../utils/json.js";
+import { renderDecisionArtifactPaths } from "./renderDecision.js";
 import { renderDecisionNextAction, renderDecisionReviewCommand } from "./renderDecisionCommands.js";
 import {
   renderDecisionRecordSchema,
   type RenderDecisionRecord,
 } from "./renderDecisionContracts.js";
-import { renderDecisionArtifactPaths } from "./renderDecision.js";
 import { reviewDraftRender } from "./reviewRender.js";
 
 export type RenderDecisionStatus =
@@ -35,11 +35,7 @@ export async function readRenderDecisionStatus(run: RunRecord): Promise<RenderDe
       await readJsonFile<unknown>(renderDecisionArtifactPaths(run.runId).json),
     );
     if (decision.runId !== run.runId) {
-      return {
-        kind: "stale",
-        message: "Render decision belongs to a different run.",
-        nextAction,
-      };
+      return { kind: "stale", message: "Render decision belongs to a different run.", nextAction };
     }
     const staleReason = await renderDecisionStaleReason(run, decision);
     if (staleReason) {
@@ -54,10 +50,7 @@ export async function readRenderDecisionStatus(run: RunRecord): Promise<RenderDe
     };
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-      return {
-        kind: "missing",
-        nextAction: run.state === "RENDERED" ? nextAction : null,
-      };
+      return { kind: "missing", nextAction: run.state === "RENDERED" ? nextAction : null };
     }
     return {
       kind: "invalid",

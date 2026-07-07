@@ -4,9 +4,9 @@ import { artifactPath } from "../src/core/artifacts";
 import { loadRun } from "../src/core/runStore";
 import { approveRender } from "../src/stages/approveRender";
 import { generateEvidenceBundle } from "../src/stages/evidence";
+import { runReadiness } from "../src/stages/readiness";
 import { renderDraft } from "../src/stages/render";
 import type { DraftRenderEvidence, DraftRenderManifest } from "../src/stages/renderEvidence";
-import { runReadiness } from "../src/stages/readiness";
 import { readJsonFile } from "../src/utils/json";
 import { useTempProject } from "./helpers";
 import { prepareVoiceoverReadyRun } from "./renderPipelineHelpers";
@@ -49,10 +49,7 @@ describe("draft render", () => {
     );
     const draftRenderArtifactPath = artifactPath(runId, "production/render/draft.mp4");
     expect(manifest.schemaVersion).toBe(7);
-    expect(manifest.renderApproval).toEqual({
-      approvalId: approval.approvalId,
-      approvedRef,
-    });
+    expect(manifest.renderApproval).toEqual({ approvalId: approval.approvalId, approvedRef });
     expect(manifest.output).toMatchObject({
       path: "production/render/draft.mp4",
       sha256: expect.stringMatching(/^[a-f0-9]{64}$/),
@@ -192,14 +189,8 @@ describe("draft render", () => {
       voiceoverMode: "deterministic-local",
       voiceoverProductionVoiceCandidate: false,
       voiceoverQuality: "deterministic-local-reference",
-      renderApproval: {
-        approvalId: approval.approvalId,
-        approvedRef,
-      },
-      mediaProbe: {
-        audio: { codecName: "aac" },
-        video: { height: 720, width: 1280 },
-      },
+      renderApproval: { approvalId: approval.approvalId, approvedRef },
+      mediaProbe: { audio: { codecName: "aac" }, video: { height: 720, width: 1280 } },
     });
     const evidenceMarkdown = await readFile(artifactPath(runId, "evidence_bundle.md"), "utf8");
     expect(evidenceMarkdown).toContain("## Production Media Summary");

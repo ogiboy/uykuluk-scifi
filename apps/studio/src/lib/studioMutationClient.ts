@@ -1,25 +1,12 @@
 import { studioActionHeaderName, studioSessionHeaderName } from "./studioMutationSecurity";
 
-type StudioSessionResponse = Readonly<{
-  expiresInSeconds?: unknown;
-  token?: unknown;
-}>;
+type StudioSessionResponse = Readonly<{ expiresInSeconds?: unknown; token?: unknown }>;
 
 export type StudioMutationSessionSnapshot = Readonly<
-  | {
-      expiresAtMs: number;
-      expiresInSeconds: number;
-      status: "ready";
-    }
-  | {
-      status: "missing";
-    }
+  { expiresAtMs: number; expiresInSeconds: number; status: "ready" } | { status: "missing" }
 >;
 
-type CachedStudioMutationSession = Readonly<{
-  expiresAtMs: number;
-  token: string;
-}>;
+type CachedStudioMutationSession = Readonly<{ expiresAtMs: number; token: string }>;
 
 const sessionExpirySkewMs = 30_000;
 let cachedStudioMutationSession: CachedStudioMutationSession | null = null;
@@ -64,10 +51,7 @@ export function readStudioMutationSessionSnapshot(): StudioMutationSessionSnapsh
  * @returns The refreshed local session snapshot.
  */
 export async function refreshStudioMutationSession(): Promise<StudioMutationSessionSnapshot> {
-  const response = await fetch("/actions/session", {
-    cache: "no-store",
-    method: "GET",
-  });
+  const response = await fetch("/actions/session", { cache: "no-store", method: "GET" });
   const payload = (await response.json().catch(() => null)) as StudioSessionResponse | null;
   const token = payload?.token;
   const expiresInSeconds = payload?.expiresInSeconds;
@@ -82,10 +66,7 @@ export async function refreshStudioMutationSession(): Promise<StudioMutationSess
     cachedStudioMutationSession = null;
     throw new Error("Studio local session could not be established.");
   }
-  cachedStudioMutationSession = {
-    expiresAtMs: Date.now() + expiresInSeconds * 1000,
-    token,
-  };
+  cachedStudioMutationSession = { expiresAtMs: Date.now() + expiresInSeconds * 1000, token };
   if (sessionIsExpiring(cachedStudioMutationSession)) {
     cachedStudioMutationSession = null;
     return { status: "missing" };

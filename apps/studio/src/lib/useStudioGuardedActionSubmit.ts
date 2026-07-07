@@ -137,9 +137,5 @@ function actionMetadata(
   input: StudioGuardedActionSubmitInput,
   refreshedPersistedState: boolean,
 ): StudioGuardedActionMetadata {
-  return {
-    actionId: input.actionId,
-    refreshedPersistedState,
-    routePath: input.routePath,
-  };
+  return { actionId: input.actionId, refreshedPersistedState, routePath: input.routePath };
 }

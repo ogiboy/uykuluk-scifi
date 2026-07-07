@@ -3,9 +3,9 @@ import { describe, expect, it } from "vitest";
 import { GET as getRunMedia } from "../apps/studio/src/app/runs/[runId]/media/[...artifactPath]/route";
 import {
   readStudioMediaArtifact,
+  srtToWebVtt,
   studioCaptionArtifactUrl,
   studioMediaArtifactUrl,
-  srtToWebVtt,
 } from "../apps/studio/src/lib/studioMediaArtifacts";
 import { artifactPath } from "../src/core/artifacts";
 import { createRun, saveRun } from "../src/core/runStore";
@@ -62,10 +62,7 @@ describe("Studio local media artifacts", () => {
     );
 
     const response = await getRunMedia(mediaRequest(run.runId, "production/subtitles.vtt"), {
-      params: Promise.resolve({
-        artifactPath: ["production", "subtitles.vtt"],
-        runId: run.runId,
-      }),
+      params: Promise.resolve({ artifactPath: ["production", "subtitles.vtt"], runId: run.runId }),
     });
 
     expect(response.status).toBe(200);

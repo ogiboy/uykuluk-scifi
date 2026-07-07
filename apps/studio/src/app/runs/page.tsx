@@ -1,9 +1,9 @@
-import { Badge } from "@/components/ui/badge";
 import { RunQueueExplorer } from "@/components/runs/RunQueueExplorer";
 import { StartIdeasActionPanel } from "@/components/studio/StartIdeasActionPanel";
 import { StudioCommandPalette } from "@/components/studio/StudioCommandPalette";
 import { StudioPageHeader } from "@/components/studio/StudioPageHeader";
 import { StudioShell } from "@/components/studio/StudioShell";
+import { Badge } from "@/components/ui/badge";
 import { getStudioDoctorOverview } from "@/lib/doctorOverview";
 import { listStudioRuns } from "@/lib/runSummaries";
 import { startIdeasReadinessFromDoctor } from "@/lib/startIdeasReadiness";

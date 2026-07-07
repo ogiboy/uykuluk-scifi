@@ -43,14 +43,14 @@ export function RunStageActionPanel({ run }: RunStageActionPanelProps) {
     <section aria-labelledby='stage-action-heading'>
       <Card>
         <CardHeader>
-          <p className='text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground'>
+          <p className='text-muted-foreground text-xs font-semibold tracking-[0.28em] uppercase'>
             Workflow control
           </p>
           <CardTitle id='stage-action-heading'>{action.heading}</CardTitle>
           <CardDescription>{action.description}</CardDescription>
         </CardHeader>
         <CardContent className='space-y-4'>
-          <p className='text-sm text-muted-foreground'>
+          <p className='text-muted-foreground text-sm'>
             Studio will call a guarded local route, which then runs the canonical producer CLI. Core
             state, approvals, cost checks, provider config, readiness, and evidence remain
             authoritative.
@@ -66,7 +66,7 @@ export function RunStageActionPanel({ run }: RunStageActionPanelProps) {
             {state.kind === "submitting" ? "Running..." : action.buttonLabel}
           </Button>
           {run.nextRecommendedCommand ? (
-            <code className='max-w-full break-all rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground'>
+            <code className='bg-muted text-muted-foreground max-w-full rounded-md px-2 py-1 text-xs break-all'>
               CLI equivalent: {run.nextRecommendedCommand}
             </code>
           ) : null}

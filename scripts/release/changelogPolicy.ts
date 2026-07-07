@@ -2,11 +2,7 @@ export const changelogMarker = "<!-- version list -->";
 
 export type ChangelogReleaseSource = "commit-derived" | "none" | "unreleased";
 
-export type UnreleasedSection = {
-  after: string;
-  before: string;
-  content: string;
-};
+export type UnreleasedSection = { after: string; before: string; content: string };
 
 export function changelogReleaseSource(
   changelogText: string,

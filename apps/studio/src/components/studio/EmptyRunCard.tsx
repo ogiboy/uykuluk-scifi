@@ -1,10 +1,8 @@
-import { StartIdeasActionPanel } from "./StartIdeasActionPanel";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { StartIdeasReadinessSummary } from "@/lib/startIdeasReadiness";
+import { StartIdeasActionPanel } from "./StartIdeasActionPanel";
 
-type EmptyRunCardProps = Readonly<{
-  readiness: StartIdeasReadinessSummary;
-}>;
+type EmptyRunCardProps = Readonly<{ readiness: StartIdeasReadinessSummary }>;
 
 /**
  * Renders the first-run empty state with guarded local idea generation.

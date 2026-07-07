@@ -14,11 +14,7 @@ describe("evidence Markdown media summary", () => {
         path: "production/audio/voiceover.wav",
         message: "bad voiceover",
       },
-      draftRender: {
-        status: "block",
-        path: "production/render/draft.mp4",
-        message: "bad render",
-      },
+      draftRender: { status: "block", path: "production/render/draft.mp4", message: "bad render" },
     });
 
     expect(markdown).toContain("Render plan: block (bad plan).");
@@ -68,10 +64,7 @@ describe("evidence Markdown media summary", () => {
         voiceoverMode: "deterministic-local",
         voiceoverProductionVoiceCandidate: false,
         voiceoverQuality: "deterministic-local-reference",
-        renderApproval: {
-          approvalId: "approval_render_trace",
-          approvedRef: digest(),
-        },
+        renderApproval: { approvalId: "approval_render_trace", approvedRef: digest() },
         mediaProbe: {
           binary: "ffprobe",
           durationSeconds: 3.1,

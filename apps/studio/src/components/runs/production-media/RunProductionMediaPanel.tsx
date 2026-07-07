@@ -1,16 +1,16 @@
+import { CopyableCommand } from "@/components/studio/CopyableCommand";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   productionMediaIntro,
-  productionMediaReviewSummary,
   productionMediaReviewAction,
+  productionMediaReviewSummary,
   shouldShowEvidenceRemediation,
   type ProductionMediaStatus,
 } from "@/lib/runEvidenceCopy";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import { studioMediaArtifactUrl } from "@/lib/studioMediaArtifacts";
-import { CopyableCommand } from "@/components/studio/CopyableCommand";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { RunDetailCard } from "../RunDetailCard";
 import { RunProductionMediaFacts } from "./RunProductionMediaFacts";
 import { RunProductionMediaPreview } from "./RunProductionMediaPreview";
@@ -97,14 +97,14 @@ function ProductionMediaCard({
 }>) {
   const mediaUrl = mediaPreviewUrl(runId, artifact);
   return (
-    <Card className='min-w-0 gap-4 overflow-hidden border border-transparent bg-background/35 py-4 shadow-none'>
+    <Card className='bg-background/35 min-w-0 gap-4 overflow-hidden border border-transparent py-4 shadow-none'>
       <CardHeader className='gap-2 px-4'>
-        <CardDescription className='break-all font-mono text-xs'>
+        <CardDescription className='font-mono text-xs break-all'>
           {artifact.artifactPath}
         </CardDescription>
         <div className='flex flex-wrap items-center justify-between gap-2'>
           <CardTitle>
-            <h3 className='text-base font-semibold leading-snug'>{artifact.label}</h3>
+            <h3 className='text-base leading-snug font-semibold'>{artifact.label}</h3>
           </CardTitle>
           <Badge variant={mediaStatusBadgeVariant(artifact.status)}>{artifact.status}</Badge>
         </div>
@@ -114,7 +114,7 @@ function ProductionMediaCard({
         {mediaUrl ? (
           <RunProductionMediaPreview artifact={artifact} mediaUrl={mediaUrl} runId={runId} />
         ) : null}
-        <p className='rounded-lg bg-muted/10 p-3 text-sm text-muted-foreground'>
+        <p className='bg-muted/10 text-muted-foreground rounded-lg p-3 text-sm'>
           Review: {productionMediaReviewAction(evidenceStatus, artifact)}
         </p>
         <MediaCommandList artifact={artifact} />

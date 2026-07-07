@@ -1,18 +1,16 @@
 import { RunDetailCard } from "@/components/runs/RunDetailCard";
 import { CopyableCommand } from "@/components/studio/CopyableCommand";
-import { Badge } from "@/components/ui/badge";
-import type { StudioRunDetail } from "@/lib/runSummaries";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
+import type { StudioRunDetail } from "@/lib/runSummaries";
 import { RunLedgerPanel } from "./RunLedgerPanel";
 
-type RunReadinessDiagnosticsPanelsProps = Readonly<{
-  run: StudioRunDetail;
-}>;
+type RunReadinessDiagnosticsPanelsProps = Readonly<{ run: StudioRunDetail }>;
 
 /**
  * Renders readiness, ledger, and diagnostic evidence for a run.
@@ -36,12 +34,12 @@ function DiagnosticsPanel({ run }: Readonly<{ run: StudioRunDetail }>) {
         <ul className='grid gap-2'>
           {run.diagnostics.map((diagnostic, index) => (
             <li
-              className='grid gap-2 rounded-lg bg-muted/15 p-3 text-sm ring-1 ring-border/5'
+              className='bg-muted/15 ring-border/5 grid gap-2 rounded-lg p-3 text-sm ring-1'
               key={`diagnostic-${index}-${diagnostic.path}`}
             >
               <strong>{diagnostic.stage}</strong>
               <span className='text-muted-foreground'>{diagnostic.message}</span>
-              <span className='break-all font-mono text-xs text-muted-foreground'>
+              <span className='text-muted-foreground font-mono text-xs break-all'>
                 {diagnostic.path}
               </span>
               {diagnostic.nextAction ? (
@@ -51,7 +49,7 @@ function DiagnosticsPanel({ run }: Readonly<{ run: StudioRunDetail }>) {
           ))}
         </ul>
       ) : (
-        <p className='rounded-lg bg-muted/15 p-3 text-sm text-muted-foreground ring-1 ring-border/5'>
+        <p className='bg-muted/15 text-muted-foreground ring-border/5 rounded-lg p-3 text-sm ring-1'>
           No run diagnostics recorded.
         </p>
       )}
@@ -69,7 +67,7 @@ function ReadinessChecksPanel({ run }: Readonly<{ run: StudioRunDetail }>) {
       {run.readinessNextAction ? (
         <CopyableCommand command={run.readinessNextAction} label='Readiness next action' />
       ) : null}
-      <p className='text-sm text-muted-foreground'>
+      <p className='text-muted-foreground text-sm'>
         {run.readinessChecks.length > 0
           ? `${run.readinessChecks.length} check(s) recorded.`
           : "No readiness checks recorded."}
@@ -78,7 +76,7 @@ function ReadinessChecksPanel({ run }: Readonly<{ run: StudioRunDetail }>) {
         <Accordion className='grid gap-2' type='multiple'>
           {run.readinessChecks.map((check, index) => (
             <AccordionItem
-              className='rounded-lg bg-muted/15 px-3 ring-1 ring-border/5'
+              className='bg-muted/15 ring-border/5 rounded-lg px-3 ring-1'
               key={`readiness-check-${index}-${check.name}`}
               value={check.name}
             >
@@ -89,7 +87,7 @@ function ReadinessChecksPanel({ run }: Readonly<{ run: StudioRunDetail }>) {
                 </Badge>
               </AccordionTrigger>
               <AccordionContent>
-                <p className='pb-3 text-sm text-muted-foreground'>{check.message}</p>
+                <p className='text-muted-foreground pb-3 text-sm'>{check.message}</p>
                 {check.nextAction ? (
                   <CopyableCommand command={check.nextAction} label='Readiness check next action' />
                 ) : null}

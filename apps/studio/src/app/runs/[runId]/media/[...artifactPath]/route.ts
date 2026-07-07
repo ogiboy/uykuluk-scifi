@@ -29,8 +29,5 @@ export async function GET(request: Request, context: RunMediaRouteContext): Prom
   if (result.status !== 200 && result.status !== 206) {
     return new Response("Media artifact not available.", { status: 404 });
   }
-  return new Response(result.body, {
-    headers: result.headers,
-    status: result.status,
-  });
+  return new Response(result.body, { headers: result.headers, status: result.status });
 }

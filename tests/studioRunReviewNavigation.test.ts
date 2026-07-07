@@ -74,10 +74,7 @@ describe("Studio run review navigation", () => {
     );
     expect(
       runReviewHrefFromSummary(
-        navigationFixture({
-          blockedActionCount: 1,
-          runId: "run needs attention",
-        }),
+        navigationFixture({ blockedActionCount: 1, runId: "run needs attention" }),
       ),
     ).toBe("/runs/run%20needs%20attention?tab=readiness");
     expect(
@@ -102,11 +99,7 @@ describe("Studio run review navigation", () => {
   it("selects a useful tab from compact run summary data", () => {
     expect(
       defaultRunReviewTabFromSummary(
-        navigationFixture({
-          artifactCount: 2,
-          productionMedia: [],
-          state: "SCRIPT_APPROVED",
-        }),
+        navigationFixture({ artifactCount: 2, productionMedia: [], state: "SCRIPT_APPROVED" }),
       ),
     ).toBe("artifacts");
   });
@@ -114,11 +107,7 @@ describe("Studio run review navigation", () => {
   it("falls back to artifacts before progress when only local artifacts exist", () => {
     expect(
       defaultRunReviewTab(
-        navigationFixture({
-          artifactCount: 2,
-          productionMedia: [],
-          state: "SCRIPT_APPROVED",
-        }),
+        navigationFixture({ artifactCount: 2, productionMedia: [], state: "SCRIPT_APPROVED" }),
       ),
     ).toBe("artifacts");
   });
@@ -126,11 +115,7 @@ describe("Studio run review navigation", () => {
   it("keeps new empty runs on progress", () => {
     expect(
       defaultRunReviewTab(
-        navigationFixture({
-          artifactCount: 0,
-          productionMedia: [],
-          state: "NEW",
-        }),
+        navigationFixture({ artifactCount: 0, productionMedia: [], state: "NEW" }),
       ),
     ).toBe("progress");
   });

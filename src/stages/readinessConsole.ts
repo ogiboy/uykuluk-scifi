@@ -1,9 +1,6 @@
 import type { ReadinessCheck } from "./readiness.js";
 
-export type ReadinessResult = {
-  passed: boolean;
-  checks: readonly ReadinessCheck[];
-};
+export type ReadinessResult = { passed: boolean; checks: readonly ReadinessCheck[] };
 
 /**
  * Formats a readiness report for console output.

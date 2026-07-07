@@ -16,9 +16,7 @@ describe("thumbnail candidate asset trust", () => {
   });
 
   it("marks packs stale when a referenced thumbnail asset is missing", async () => {
-    const pack = await trustedPack({
-      templatePath: "assets/thumbnails/missing_template.jpg",
-    });
+    const pack = await trustedPack({ templatePath: "assets/thumbnails/missing_template.jpg" });
 
     await expect(thumbnailAssetStaleReason(pack)).resolves.toBe(
       "Thumbnail asset is missing: assets/thumbnails/missing_template.jpg",

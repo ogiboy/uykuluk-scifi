@@ -1,10 +1,6 @@
 import { SafeExitError } from "../core/errors.js";
 
-type JsonScanState = {
-  depth: number;
-  escaped: boolean;
-  inString: boolean;
-};
+type JsonScanState = { depth: number; escaped: boolean; inString: boolean };
 
 export function parseProviderJson(text: string, label: string): unknown {
   const normalized = stripProviderThinking(text);
@@ -51,14 +47,7 @@ function stripJsonFence(text: string): string {
   return trimmed.slice(firstLineEnd + 1, -3).trim();
 }
 
-type JsonParseResult =
-  | {
-      success: true;
-      value: unknown;
-    }
-  | {
-      success: false;
-    };
+type JsonParseResult = { success: true; value: unknown } | { success: false };
 
 function tryParseJson(text: string): JsonParseResult {
   try {

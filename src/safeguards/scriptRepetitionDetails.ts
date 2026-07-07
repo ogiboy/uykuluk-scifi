@@ -1,9 +1,6 @@
 import { sha256 } from "../utils/hash.js";
 
-export type RepeatedSentenceLoopDetails = {
-  repeatCount: string;
-  sentenceFingerprint: string;
-};
+export type RepeatedSentenceLoopDetails = { repeatCount: string; sentenceFingerprint: string };
 
 const repeatedSentenceThreshold = 3;
 
@@ -14,10 +11,7 @@ export function repeatedSentenceLoopDetails(
   for (const sentence of normalizedSentences(script)) {
     const count = (sentenceCounts.get(sentence) ?? 0) + 1;
     if (count >= repeatedSentenceThreshold) {
-      return {
-        repeatCount: String(count),
-        sentenceFingerprint: sha256(sentence).slice(0, 16),
-      };
+      return { repeatCount: String(count), sentenceFingerprint: sha256(sentence).slice(0, 16) };
     }
     sentenceCounts.set(sentence, count);
   }

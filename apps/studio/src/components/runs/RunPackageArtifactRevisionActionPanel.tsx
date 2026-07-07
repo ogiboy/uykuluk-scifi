@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -25,6 +24,7 @@ import type { StudioPackageRevisionSource } from "@/lib/revisionSources";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import { isStudioPackageArtifactRevisionState } from "@/lib/studioRevisionEligibility";
 import { useStudioGuardedActionSubmit } from "@/lib/useStudioGuardedActionSubmit";
+import { useState } from "react";
 import { StudioMutationResultPanel } from "../studio/StudioMutationResultPanel";
 import { RunRevisionConfirmationDialog } from "./RunRevisionConfirmationDialog";
 
@@ -32,9 +32,7 @@ type RunPackageArtifactRevisionActionPanelProps = Readonly<{
   run: Pick<StudioRunDetail, "revisionSources" | "runId" | "state">;
 }>;
 
-type FormSubmitEvent = Readonly<{
-  preventDefault: () => void;
-}>;
+type FormSubmitEvent = Readonly<{ preventDefault: () => void }>;
 
 type PackageArtifactDrafts = Record<string, string>;
 
@@ -105,7 +103,7 @@ function RunPackageArtifactRevisionForm({ run }: RunPackageArtifactRevisionActio
 
   return (
     <section aria-labelledby='package-revision-heading'>
-      <Card className='border-dashed bg-card/70 shadow-none'>
+      <Card className='bg-card/70 border-dashed shadow-none'>
         <CardHeader>
           <CardTitle id='package-revision-heading'>Revise package artifact</CardTitle>
           <CardDescription>
@@ -133,7 +131,7 @@ function RunPackageArtifactRevisionForm({ run }: RunPackageArtifactRevisionActio
               </Select>
             </Label>
             {selectedSource ? (
-              <code className='max-w-full break-all rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground'>
+              <code className='bg-muted text-muted-foreground max-w-full rounded-md px-2 py-1 text-xs break-all'>
                 {selectedSource.path}
               </code>
             ) : null}
@@ -182,10 +180,7 @@ function RunPackageArtifactRevisionForm({ run }: RunPackageArtifactRevisionActio
     nextContent: string,
   ): void {
     if (!source) return;
-    setDraftsByArtifactKey((current) => ({
-      ...current,
-      [source.artifactKey]: nextContent,
-    }));
+    setDraftsByArtifactKey((current) => ({ ...current, [source.artifactKey]: nextContent }));
   }
 }
 
@@ -212,7 +207,7 @@ function UnavailablePackageSources({
     return null;
   }
   return (
-    <p className='text-sm text-muted-foreground'>
+    <p className='text-muted-foreground text-sm'>
       Unavailable: {unavailable.map((source) => `${source.label} (${source.message})`).join("; ")}
     </p>
   );

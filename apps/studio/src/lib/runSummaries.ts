@@ -1,34 +1,34 @@
 import path from "node:path";
+import type { RenderDecisionCommandTemplate } from "../../../../src/stages/renderDecisionCommands";
 import type { RunDiagnosticSummary } from "../../../../src/stages/runDiagnosticSummaryContracts";
+import { evidenceBlockedActionMessages } from "../../../../src/stages/statusBlockedActions";
 import {
   productionMediaStatus,
   type ProductionMediaStatus,
 } from "../../../../src/stages/statusMediaSummary";
-import type { RenderDecisionCommandTemplate } from "../../../../src/stages/renderDecisionCommands";
 import type { StatusWorkflowStep } from "../../../../src/stages/statusWorkflow";
-import { evidenceBlockedActionMessages } from "../../../../src/stages/statusBlockedActions";
 import { readReviewArtifactPreviews, type StudioArtifactPreview } from "./artifactPreviews";
 import type { StudioChannelHandoffDecisionSummary } from "./channelHandoffDecisionSummaries";
 import type { StudioChannelHandoffSummary } from "./channelHandoffSummaries";
 import type { StudioEvidenceSummary } from "./evidenceSummaries";
 import type { StudioFinalReviewBundleSummary } from "./finalReviewBundleSummaries";
-import { projectRoot } from "./projectRoot";
 import { readStudioGeneratedIdeas, type StudioGeneratedIdea } from "./ideaSummaries";
+import { projectRoot } from "./projectRoot";
 import {
   type ReadinessSnapshot,
   type StudioReadinessCheck,
   type StudioReadinessSummary,
 } from "./readinessSummaries";
 import type { StudioRenderDecisionSummary } from "./renderDecisionSummaries";
+import { readStudioRevisionSources, type StudioRevisionSources } from "./revisionSources";
 import {
   studioNextRecommendedCommand,
   studioRenderDecisionCommands,
   studioWorkflowProgress,
 } from "./runDecisionProjection";
-import { readStudioRevisionSources, type StudioRevisionSources } from "./revisionSources";
-import { loadRunSummaryInputs } from "./runSummaryInputs";
 import type { RunRecord, StudioRunState } from "./runRecordTypes";
 import { isRunId, readRunRecord, readStudioRunDiagnostics, safeReaddir } from "./runSummaryFiles";
+import { loadRunSummaryInputs } from "./runSummaryInputs";
 
 export type StudioRunSummary = {
   approvalCount: number;

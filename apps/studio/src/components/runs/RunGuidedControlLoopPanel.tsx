@@ -1,18 +1,15 @@
 import { CliFallbackCommand } from "@/components/studio/CliFallbackCommand";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 import {
   buildStudioControlLoop,
   type StudioControlLoopItem,
   type StudioControlLoopRun,
   type StudioControlLoopTone,
 } from "@/lib/studioControlLoop";
+import { cn } from "@/lib/utils";
 
-type RunGuidedControlLoopPanelProps = Readonly<{
-  compact?: boolean;
-  run: StudioControlLoopRun;
-}>;
+type RunGuidedControlLoopPanelProps = Readonly<{ compact?: boolean; run: StudioControlLoopRun }>;
 
 /**
  * Renders the primary Studio-native control-loop summary for a run.
@@ -32,7 +29,7 @@ export function RunGuidedControlLoopPanel({
   if (compact) {
     return (
       <section
-        className='space-y-4 border-t border-border/10 pt-5 text-card-foreground'
+        className='border-border/10 text-card-foreground space-y-4 border-t pt-5'
         aria-labelledby={headingId}
       >
         {header}
@@ -43,7 +40,7 @@ export function RunGuidedControlLoopPanel({
 
   return (
     <section aria-labelledby={headingId}>
-      <Card className='gap-5 bg-card/70 shadow-sm shadow-black/5'>
+      <Card className='bg-card/70 gap-5 shadow-sm shadow-black/5'>
         <CardHeader>{header}</CardHeader>
         <CardContent className='space-y-4'>{body}</CardContent>
       </Card>
@@ -63,7 +60,7 @@ function ControlLoopHeader({
   return (
     <div className='grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start'>
       <div className='min-w-0 space-y-1'>
-        <p className='text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground'>
+        <p className='text-muted-foreground text-xs font-semibold tracking-[0.24em] uppercase'>
           Studio control loop
         </p>
         <h2
@@ -84,7 +81,7 @@ function ControlLoopBody({
 }: Readonly<{ compact: boolean; loop: ReturnType<typeof buildStudioControlLoop> }>) {
   return (
     <>
-      <p className='text-sm text-muted-foreground'>{loop.summary}</p>
+      <p className='text-muted-foreground text-sm'>{loop.summary}</p>
 
       {loop.currentStep ? (
         <div
@@ -106,7 +103,7 @@ function ControlLoopBody({
       {loop.nextAction.routePath ? (
         <p
           className={cn(
-            "rounded-lg p-3 text-sm text-muted-foreground",
+            "text-muted-foreground rounded-lg p-3 text-sm",
             compact ? "bg-muted/10" : "bg-muted/15",
           )}
         >
@@ -143,7 +140,7 @@ function ControlLoopBody({
             className={cn(
               "grid gap-2 rounded-lg p-3 text-sm",
               compact ? "bg-muted/10" : "bg-muted/15",
-              item.tone === "blocked" && "bg-destructive/10 ring-1 ring-destructive/15",
+              item.tone === "blocked" && "bg-destructive/10 ring-destructive/15 ring-1",
             )}
             data-tone={item.tone}
             key={item.label}

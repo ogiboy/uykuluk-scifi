@@ -5,10 +5,7 @@ import { requireReservation } from "./costReservationContext.js";
 import { withCostReservationLock } from "./costReservationLock.js";
 import { appendCostReservationEvent, CostReservationSummary } from "./costReservationStore.js";
 
-type AdapterIdentity = {
-  provider: string;
-  model?: string;
-};
+type AdapterIdentity = { provider: string; model?: string };
 
 /** Atomically claims one matching reservation for a single callback invocation. */
 export async function beginCostReservationExecution(input: {

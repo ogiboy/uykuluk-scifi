@@ -27,7 +27,7 @@ export default function StudioRouteErrorPage({ error, reset }: StudioRouteErrorP
 
   return (
     <main
-      className='mx-auto grid min-h-screen max-w-5xl content-start gap-6 px-6 py-8 text-foreground md:px-10'
+      className='text-foreground mx-auto grid min-h-screen max-w-5xl content-start gap-6 px-6 py-8 md:px-10'
       aria-labelledby='studio-error-heading'
     >
       <StudioRouteBoundaryHeader copy={studioErrorCopy} headingId='studio-error-heading' />
@@ -43,7 +43,7 @@ export default function StudioRouteErrorPage({ error, reset }: StudioRouteErrorP
       </StudioRouteBoundaryCard>
 
       {error.digest ? (
-        <p className='text-sm text-muted-foreground'>Boundary digest: {error.digest}</p>
+        <p className='text-muted-foreground text-sm'>Boundary digest: {error.digest}</p>
       ) : null}
     </main>
   );

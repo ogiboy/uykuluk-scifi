@@ -1,16 +1,16 @@
-import type { ProducerConfig } from "../config/schema.js";
 import { loadConfig } from "../config/config.js";
-import { SafeExitError } from "../core/errors.js";
+import type { ProducerConfig } from "../config/schema.js";
 import { writeRunJson, writeRunText } from "../core/artifacts.js";
+import { SafeExitError } from "../core/errors.js";
+import { appendLedgerEvent } from "../core/ledger.js";
 import { createRun, setRunState } from "../core/runStore.js";
 import { assertTransition } from "../core/transitions.js";
-import { appendLedgerEvent } from "../core/ledger.js";
 import { defaultStagePricing } from "../costs/pricing.js";
-import { enforceBudget } from "../safeguards/budgetGuard.js";
-import { createLlmProvider } from "../providers/index.js";
-import type { GenerateTextResult, LlmProvider } from "../providers/llmProvider.js";
 import { createPromptProvenance } from "../prompts/provenance.js";
 import { renderIdeasPrompt, type RenderedPrompt } from "../prompts/templates.js";
+import { createLlmProvider } from "../providers/index.js";
+import type { GenerateTextResult, LlmProvider } from "../providers/llmProvider.js";
+import { enforceBudget } from "../safeguards/budgetGuard.js";
 import { persistIdeaGenerationFailure } from "./ideaFailureDiagnostics.js";
 import {
   historicalIdeaTitleIssue,
@@ -42,11 +42,7 @@ type IdeaGenerationOutcome = {
   result: GenerateTextResult;
 };
 
-const noIdeaRepair: IdeaRepairEvidence = {
-  attempted: false,
-  attempts: 0,
-  validationErrors: [],
-};
+const noIdeaRepair: IdeaRepairEvidence = { attempted: false, attempts: 0, validationErrors: [] };
 const maxIdeaRepairAttempts = 2;
 
 /**

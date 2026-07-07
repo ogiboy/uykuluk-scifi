@@ -158,12 +158,6 @@ function isDerivedFromScriptReview(relativePath: string): boolean {
  * @param data - Optional additional context to include in the ledger event
  */
 async function blockRevision(runId: string, message: string, data?: unknown): Promise<never> {
-  await appendLedgerEvent({
-    runId,
-    type: "GUARD_BLOCKED",
-    stage: "revise-script",
-    message,
-    data,
-  });
+  await appendLedgerEvent({ runId, type: "GUARD_BLOCKED", stage: "revise-script", message, data });
   throw new SafeExitError(`Blocked: ${message}`);
 }

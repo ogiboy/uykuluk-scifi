@@ -1,5 +1,5 @@
-import Link from "next/link";
 import type { Route } from "next";
+import Link from "next/link";
 
 import { RunGuidedControlLoopPanel } from "@/components/runs/RunGuidedControlLoopPanel";
 import { RunPrimaryActionPanel } from "@/components/runs/RunPrimaryActionPanel";
@@ -13,8 +13,8 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { runReviewHrefFromSummary } from "@/lib/runReviewNavigation";
-import { formatRunRenderDecision, formatRunReviewCounts } from "@/lib/runSummaryCopy";
 import type { StudioRunSummary } from "@/lib/runSummaries";
+import { formatRunRenderDecision, formatRunReviewCounts } from "@/lib/runSummaryCopy";
 
 export function ActiveRunSnapshot({ run }: Readonly<{ run: StudioRunSummary }>) {
   const reviewHref = runReviewHrefFromSummary(run, "review-decision");
@@ -29,11 +29,11 @@ export function ActiveRunSnapshot({ run }: Readonly<{ run: StudioRunSummary }>) 
     <Card>
       <CardHeader className='gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start'>
         <div className='min-w-0 space-y-2'>
-          <p className='text-sm text-muted-foreground'>Active run</p>
+          <p className='text-muted-foreground text-sm'>Active run</p>
           <CardTitle>
             <h3>Run snapshot</h3>
           </CardTitle>
-          <p className='truncate text-sm font-medium text-muted-foreground' title={run.runId}>
+          <p className='text-muted-foreground truncate text-sm font-medium' title={run.runId}>
             {run.runId}
           </p>
         </div>
@@ -56,7 +56,7 @@ export function ActiveRunSnapshot({ run }: Readonly<{ run: StudioRunSummary }>) 
           ]}
         />
 
-        <div className='grid gap-3 rounded-xl bg-muted/10 p-4 text-sm md:grid-cols-[auto_minmax(0,1fr)]'>
+        <div className='bg-muted/10 grid gap-3 rounded-xl p-4 text-sm md:grid-cols-[auto_minmax(0,1fr)]'>
           <Badge variant={focusStep?.status === "blocked" ? "destructive" : "outline"}>
             {focusStep?.status ?? "review"}
           </Badge>
@@ -69,7 +69,7 @@ export function ActiveRunSnapshot({ run }: Readonly<{ run: StudioRunSummary }>) 
           </div>
         </div>
 
-        <p className='text-sm text-muted-foreground'>{formatRunReviewCounts(run)}</p>
+        <p className='text-muted-foreground text-sm'>{formatRunReviewCounts(run)}</p>
       </CardContent>
     </Card>
   );
@@ -88,7 +88,7 @@ export function ActiveRunCard({ run }: Readonly<{ run: StudioRunSummary }>) {
     <Card>
       <CardHeader className='gap-4 sm:grid-cols-[1fr_auto]'>
         <div className='min-w-0 space-y-2'>
-          <p className='text-sm text-muted-foreground'>Active run</p>
+          <p className='text-muted-foreground text-sm'>Active run</p>
           <CardTitle>
             <span className='block truncate' title={run.runId}>
               {run.runId}
@@ -114,7 +114,7 @@ export function ActiveRunCard({ run }: Readonly<{ run: StudioRunSummary }>) {
         <ol className='grid gap-3 md:grid-cols-2' aria-label='Current workflow attention'>
           {visibleCurrentSteps.length > 0 ? (
             visibleCurrentSteps.map((step) => (
-              <li className='grid gap-1 rounded-lg bg-muted/10 p-3 text-sm' key={step.label}>
+              <li className='bg-muted/10 grid gap-1 rounded-lg p-3 text-sm' key={step.label}>
                 <span className='flex flex-wrap items-center gap-2'>
                   <Badge variant={step.status === "blocked" ? "destructive" : "secondary"}>
                     {step.status}
@@ -125,7 +125,7 @@ export function ActiveRunCard({ run }: Readonly<{ run: StudioRunSummary }>) {
               </li>
             ))
           ) : (
-            <li className='grid gap-1 rounded-lg bg-muted/10 p-3 text-sm'>
+            <li className='bg-muted/10 grid gap-1 rounded-lg p-3 text-sm'>
               <strong>No active blocker</strong>
               <span className='text-muted-foreground'>
                 Review the run detail before the next irreversible action.
@@ -133,14 +133,14 @@ export function ActiveRunCard({ run }: Readonly<{ run: StudioRunSummary }>) {
             </li>
           )}
           {hiddenCurrentStepCount > 0 ? (
-            <li className='grid gap-1 rounded-lg bg-muted/10 p-3 text-sm'>
+            <li className='bg-muted/10 grid gap-1 rounded-lg p-3 text-sm'>
               <strong>+{hiddenCurrentStepCount} more</strong>
               <span className='text-muted-foreground'>Open the run detail for the full list.</span>
             </li>
           ) : null}
         </ol>
 
-        <p className='text-sm text-muted-foreground'>{formatRunReviewCounts(run)}</p>
+        <p className='text-muted-foreground text-sm'>{formatRunReviewCounts(run)}</p>
       </CardContent>
     </Card>
   );

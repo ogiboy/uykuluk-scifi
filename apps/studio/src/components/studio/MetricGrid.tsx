@@ -1,11 +1,6 @@
-export type StudioMetric = {
-  label: string;
-  value: string;
-};
+export type StudioMetric = { label: string; value: string };
 
-type MetricGridProps = Readonly<{
-  metrics: readonly StudioMetric[];
-}>;
+type MetricGridProps = Readonly<{ metrics: readonly StudioMetric[] }>;
 
 /**
  * Renders a Studio metadata grid with label/value pairs.
@@ -17,11 +12,11 @@ export function MetricGrid({ metrics }: MetricGridProps) {
   return (
     <dl className='grid gap-3 sm:grid-cols-2 lg:grid-cols-4'>
       {metrics.map((metric) => (
-        <div className='min-w-0 rounded-lg bg-background/20 p-3' key={metric.label}>
-          <dt className='text-xs font-medium uppercase tracking-wide text-muted-foreground'>
+        <div className='bg-background/20 min-w-0 rounded-lg p-3' key={metric.label}>
+          <dt className='text-muted-foreground text-xs font-medium tracking-wide uppercase'>
             {metric.label}
           </dt>
-          <dd className='mt-1 break-words text-sm font-semibold' title={metric.value}>
+          <dd className='mt-1 text-sm font-semibold break-words' title={metric.value}>
             {metric.value}
           </dd>
         </div>

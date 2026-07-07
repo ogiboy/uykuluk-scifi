@@ -1,14 +1,12 @@
-import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
 import { ArtifactPreview } from "@/components/studio/ArtifactPreview";
 import { CliFallbackCommand } from "@/components/studio/CliFallbackCommand";
+import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import type { StudioModelEvalOverview } from "@/lib/modelEvalOverview";
 import { ModelEvalCandidatePanel, ModelEvalCheckList } from "./ModelEvalCandidatePanel";
 import { ModelEvalRunActionPanel } from "./ModelEvalRunActionPanel";
 
-type ModelEvalOverviewViewProps = Readonly<{
-  overview: StudioModelEvalOverview;
-}>;
+type ModelEvalOverviewViewProps = Readonly<{ overview: StudioModelEvalOverview }>;
 
 /**
  * Renders the read-only local model evaluation overview.
@@ -77,12 +75,12 @@ export function ModelEvalOverviewView({ overview }: ModelEvalOverviewViewProps) 
               label='Model eval command'
               triggerLabel='Show eval fallback'
             />
-            <p className='text-sm text-muted-foreground'>
+            <p className='text-muted-foreground text-sm'>
               Read-only display from local diagnostics artifacts. Studio does not call Ollama,
               llama.cpp, hosted APIs, edit config, create runs, approve stages, upload media, or
               publish content.
             </p>
-            {overview.error ? <p className='text-sm text-destructive'>{overview.error}</p> : null}
+            {overview.error ? <p className='text-destructive text-sm'>{overview.error}</p> : null}
           </CardContent>
         </Card>
       </section>
@@ -101,7 +99,7 @@ export function ModelEvalOverviewView({ overview }: ModelEvalOverviewViewProps) 
             {overview.singleReport ? (
               <ModelEvalCheckList checks={overview.singleReport.checks} ownerId='single-model' />
             ) : (
-              <p className='text-sm text-muted-foreground'>
+              <p className='text-muted-foreground text-sm'>
                 No single-model check results are available.
               </p>
             )}
@@ -122,14 +120,14 @@ export function ModelEvalOverviewView({ overview }: ModelEvalOverviewViewProps) 
             </h2>
           </CardHeader>
           <CardContent className='space-y-3'>
-            <p className='text-xs text-muted-foreground'>
+            <p className='text-muted-foreground text-xs'>
               {overview.singleMarkdownPath}
               {overview.singleReportPreviewTruncated ? " · preview truncated" : ""}
             </p>
             {overview.singleReportPreview ? (
               <ArtifactPreview>{overview.singleReportPreview}</ArtifactPreview>
             ) : (
-              <p className='text-sm text-muted-foreground'>
+              <p className='text-muted-foreground text-sm'>
                 Run the CLI local model evaluation command to generate a report artifact.
               </p>
             )}
@@ -148,14 +146,14 @@ export function ModelEvalOverviewView({ overview }: ModelEvalOverviewViewProps) 
             </h2>
           </CardHeader>
           <CardContent className='space-y-3'>
-            <p className='text-xs text-muted-foreground'>
+            <p className='text-muted-foreground text-xs'>
               {overview.candidateMarkdownPath}
               {overview.candidateReportPreviewTruncated ? " · preview truncated" : ""}
             </p>
             {overview.candidateReportPreview ? (
               <ArtifactPreview>{overview.candidateReportPreview}</ArtifactPreview>
             ) : (
-              <p className='text-sm text-muted-foreground'>
+              <p className='text-muted-foreground text-sm'>
                 Run the CLI candidate evaluation command to generate a comparison artifact.
               </p>
             )}

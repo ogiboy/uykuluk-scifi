@@ -1,6 +1,5 @@
 "use client";
 
-import { useId, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -17,6 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import { buildStudioActionPreflight } from "@/lib/studioActionPreflight";
 import { useStudioGuardedActionSubmit } from "@/lib/useStudioGuardedActionSubmit";
+import { useId, useState } from "react";
 import { StudioMutationResultPanel } from "../studio/StudioMutationResultPanel";
 import { RunActionPreflightPanel } from "./RunActionPreflightPanel";
 import { RunRenderDecisionSelector } from "./RunRenderDecisionSelector";
@@ -46,9 +46,7 @@ type PendingRenderDecisionPayload = Readonly<{
   runId: string;
 }>;
 
-type FormSubmitEvent = Readonly<{
-  preventDefault: () => void;
-}>;
+type FormSubmitEvent = Readonly<{ preventDefault: () => void }>;
 
 /**
  * Renders the guarded Studio form for recording one local render decision.
@@ -76,10 +74,7 @@ export function RunRenderDecisionActionPanel({
     return null;
   }
 
-  const preflight = buildStudioActionPreflight({
-    actionId: "render.decide",
-    run,
-  });
+  const preflight = buildStudioActionPreflight({ actionId: "render.decide", run });
 
   function requestDecisionConfirmation(event: FormSubmitEvent): void {
     event.preventDefault();
@@ -113,7 +108,7 @@ export function RunRenderDecisionActionPanel({
         </CardTitle>
       </CardHeader>
       <CardContent className='space-y-6'>
-        <p className='text-sm text-muted-foreground'>
+        <p className='text-muted-foreground text-sm'>
           This guarded Studio action writes the same local decision evidence as the CLI. It does not
           approve upload or publish.
         </p>
@@ -162,22 +157,22 @@ export function RunRenderDecisionActionPanel({
               disabled.
             </DialogDescription>
           </DialogHeader>
-          <div className='space-y-4 rounded-lg border bg-muted/30 p-4'>
+          <div className='bg-muted/30 space-y-4 rounded-lg border p-4'>
             <dl className='grid gap-3 text-sm sm:grid-cols-2'>
               <div className='space-y-1'>
-                <dt className='font-medium text-muted-foreground'>Decision</dt>
+                <dt className='text-muted-foreground font-medium'>Decision</dt>
                 <dd className='break-all'>{pendingPayload?.decision ?? decision}</dd>
               </div>
               <div className='space-y-1'>
-                <dt className='font-medium text-muted-foreground'>Reviewed by</dt>
+                <dt className='text-muted-foreground font-medium'>Reviewed by</dt>
                 <dd className='break-all'>{pendingPayload?.reviewedBy ?? reviewedBy}</dd>
               </div>
               <div className='space-y-1'>
-                <dt className='font-medium text-muted-foreground'>Run</dt>
+                <dt className='text-muted-foreground font-medium'>Run</dt>
                 <dd className='break-all'>{runId}</dd>
               </div>
             </dl>
-            <p className='text-sm text-muted-foreground'>
+            <p className='text-muted-foreground text-sm'>
               Notes are required and will be persisted with the local decision evidence.
             </p>
           </div>

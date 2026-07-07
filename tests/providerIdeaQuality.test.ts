@@ -31,10 +31,7 @@ describe("provider idea quality", () => {
     expect(() =>
       parseIdeasProviderPayload(
         JSON.stringify([
-          {
-            ...validIdea,
-            fit: "Uykul, bu öykünün sakin bilimkurgu tonuna uygun olabilir.",
-          },
+          { ...validIdea, fit: "Uykul, bu öykünün sakin bilimkurgu tonuna uygun olabilir." },
         ]),
       ),
     ).toThrow(/brand spelling/i);

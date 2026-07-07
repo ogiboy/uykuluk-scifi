@@ -6,16 +6,16 @@ import { artifactPath } from "../src/core/artifacts";
 import { channelHandoffJsonPath } from "../src/stages/channelHandoffContracts";
 import { channelHandoffDecisionJsonPath } from "../src/stages/channelHandoffDecision";
 import type { StatusWorkflowStep } from "../src/stages/statusWorkflow";
-import {
-  writeStudioFinalReviewBundle,
-  writeStudioRenderDecision,
-} from "./studioRenderDecisionFixtures";
+import { useTempProject } from "./helpers";
 import {
   writeStudioChannelHandoff,
   writeStudioChannelHandoffDecision,
 } from "./studioChannelHandoffFixtures";
+import {
+  writeStudioFinalReviewBundle,
+  writeStudioRenderDecision,
+} from "./studioRenderDecisionFixtures";
 import { createRenderedStudioRunFixture } from "./studioRunFixtures";
-import { useTempProject } from "./helpers";
 
 describe("Studio workflow progress", () => {
   useTempProject();
@@ -191,9 +191,7 @@ describe("Studio workflow progress", () => {
 
     const invalidDetail = await getStudioRunDetail(invalidRunId);
 
-    expect(invalidDetail?.channelHandoffDecision).toMatchObject({
-      kind: "invalid",
-    });
+    expect(invalidDetail?.channelHandoffDecision).toMatchObject({ kind: "invalid" });
     expect(invalidDetail?.nextRecommendedCommand).toContain("pnpm producer decide channel-handoff");
   });
 

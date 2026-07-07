@@ -1,5 +1,5 @@
-import { readFile } from "node:fs/promises";
 import { Command } from "commander";
+import { readFile } from "node:fs/promises";
 import { revisePackageArtifact } from "../revisions/packageArtifactRevision.js";
 import { reviseScript } from "../revisions/scriptRevision.js";
 

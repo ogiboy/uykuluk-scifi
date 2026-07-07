@@ -5,13 +5,13 @@ import { loadRun, saveRun } from "../src/core/runStore";
 import { approveIdea } from "../src/stages/approveIdea";
 import { approveRender } from "../src/stages/approveRender";
 import { approveScript } from "../src/stages/approveScript";
-import { generateEvidenceBundle } from "../src/stages/evidence";
 import { estimateCost } from "../src/stages/estimate";
+import { generateEvidenceBundle } from "../src/stages/evidence";
 import { runIdeas } from "../src/stages/ideas";
 import { generateProductionPackage } from "../src/stages/productionPackage";
+import { runReadiness } from "../src/stages/readiness";
 import { renderDraft } from "../src/stages/render";
 import { generateRenderPlan } from "../src/stages/renderPlan";
-import { runReadiness } from "../src/stages/readiness";
 import { reviewScript } from "../src/stages/reviewScript";
 import { generateScript } from "../src/stages/script";
 import { generateVoiceoverAudio } from "../src/stages/voice";
@@ -90,10 +90,7 @@ describe("media readiness remediation", () => {
     const readiness = await runReadiness(runId);
 
     expect(readiness.checks.find((check) => check.name === "draft render available")).toMatchObject(
-      {
-        status: "block",
-        nextAction: `pnpm producer render --run ${runId}`,
-      },
+      { status: "block", nextAction: `pnpm producer render --run ${runId}` },
     );
   });
 

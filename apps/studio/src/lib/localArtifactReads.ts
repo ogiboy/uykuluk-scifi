@@ -13,10 +13,7 @@ export async function readOptionalText(
 ): Promise<{ text: string | null; truncated: boolean }> {
   try {
     const content = await readFile(target, "utf8");
-    return {
-      text: content.slice(0, characterLimit),
-      truncated: content.length > characterLimit,
-    };
+    return { text: content.slice(0, characterLimit), truncated: content.length > characterLimit };
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") {
       return { text: null, truncated: false };

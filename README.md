@@ -610,11 +610,7 @@ Useful Ollama settings:
       "ollamaBaseUrl": "http://localhost:11434",
       "model": "qwen3:8b",
       "thinkingMode": "default",
-      "maxOutputTokens": {
-        "ideas": 3000,
-        "script": 3200,
-        "productionPackage": 2000
-      }
+      "maxOutputTokens": { "ideas": 3000, "script": 3200, "productionPackage": 2000 }
     }
   }
 }
@@ -630,11 +626,7 @@ Useful local `llama.cpp` settings for an OpenAI-compatible `llama-server`:
       "llamaCppBaseUrl": "http://localhost:8080",
       "model": "Mistral-7B-Instruct-v0.3.Q4_K_M.gguf",
       "requestTimeoutMs": 120000,
-      "maxOutputTokens": {
-        "ideas": 3000,
-        "script": 3200,
-        "productionPackage": 2000
-      }
+      "maxOutputTokens": { "ideas": 3000, "script": 3200, "productionPackage": 2000 }
     }
   }
 }
@@ -658,14 +650,7 @@ pnpm tts:piper:setup
 ```
 
 ```json
-{
-  "providers": {
-    "tts": {
-      "enabled": true,
-      "mode": "deterministic-local"
-    }
-  }
-}
+{ "providers": { "tts": { "enabled": true, "mode": "deterministic-local" } } }
 ```
 
 `deterministic-local` writes a reference WAV for timing and pipeline validation; it is not a
@@ -788,13 +773,7 @@ Local prompt experiments belong under ignored `prompts/local/` and must be expli
 from `producer.config.json`:
 
 ```json
-{
-  "prompts": {
-    "overrides": {
-      "ideas": "prompts/local/planner-experiment.md"
-    }
-  }
-}
+{ "prompts": { "overrides": { "ideas": "prompts/local/planner-experiment.md" } } }
 ```
 
 Override paths are fail-closed to Markdown files under `prompts/local/`. Prompt provenance records

@@ -1,17 +1,14 @@
 import { readdir, readFile } from "node:fs/promises";
+import { isValidRunId } from "../../../../src/core/runId";
 import {
   diagnosticSummaryArtifactPaths,
   summarizeRunDiagnosticArtifact,
   type RunDiagnosticSummary,
 } from "../../../../src/stages/runDiagnosticSummaryContracts";
-import { isValidRunId } from "../../../../src/core/runId";
 import { studioRunFilePath } from "./runFilePaths";
 import type { RunRecord, StudioRunState } from "./runRecordTypes";
 
-export type ValidRunRecord = RunRecord & {
-  runId: string;
-  state: StudioRunState;
-};
+export type ValidRunRecord = RunRecord & { runId: string; state: StudioRunState };
 
 export async function readStudioRunDiagnostics(
   root: string,

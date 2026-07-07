@@ -12,6 +12,10 @@ import { shellCommand } from "../utils/shell.js";
 import { nowIso } from "../utils/time.js";
 import { verifyProductionPackage } from "./productionPackageIntegrity.js";
 import { renderApprovalRef } from "./renderApproval.js";
+import {
+  buildDraftRenderChapterDraft,
+  renderDraftRenderChaptersMarkdown,
+} from "./renderChapters.js";
 import { buildDraftRenderComposition } from "./renderComposition.js";
 import {
   DraftRenderManifest,
@@ -32,10 +36,6 @@ import {
 import { readRenderPlanEvidence } from "./renderPlan.js";
 import { RenderPlan, renderPlanSchema } from "./renderPlanSchemas.js";
 import { probeDraftRender } from "./renderProbe.js";
-import {
-  buildDraftRenderChapterDraft,
-  renderDraftRenderChaptersMarkdown,
-} from "./renderChapters.js";
 import { renderDraftReviewMarkdown } from "./renderReviewMarkdown.js";
 import { readVoiceoverAudioEvidence, voiceoverAudioPath } from "./voiceoverEvidence.js";
 
@@ -124,10 +124,7 @@ export async function renderDraft(
       schemaVersion: 7,
       runId: run.runId,
       createdAt: nowIso(),
-      renderPlan: {
-        path: "production/render_plan.json",
-        digest: renderPlanEvidence.digest,
-      },
+      renderPlan: { path: "production/render_plan.json", digest: renderPlanEvidence.digest },
       voiceoverAudio: {
         path: voiceoverAudioPath,
         digest: voiceoverAudio.digest,
@@ -135,10 +132,7 @@ export async function renderDraft(
         productionVoiceCandidate: voiceoverAudio.productionVoiceCandidate,
         quality: voiceoverAudio.quality,
       },
-      renderApproval: {
-        approvalId: approval.approvalId,
-        approvedRef: currentApprovalRef,
-      },
+      renderApproval: { approvalId: approval.approvalId, approvedRef: currentApprovalRef },
       timeline,
       ffmpegTimelineInputs,
       composition: {

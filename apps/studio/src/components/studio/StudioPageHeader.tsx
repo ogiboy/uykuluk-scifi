@@ -1,5 +1,5 @@
-import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
+import type { ReactNode } from "react";
 
 type StudioPageHeaderProps = Readonly<{
   actions?: ReactNode;
@@ -22,7 +22,7 @@ export function StudioPageHeader({ actions, badge, eyebrow, title }: StudioPageH
   return (
     <header className='grid gap-4 pb-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start'>
       <div className='min-w-0 space-y-2'>
-        <p className='text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground'>
+        <p className='text-muted-foreground text-xs font-semibold tracking-[0.28em] uppercase'>
           {eyebrow}
         </p>
         <h1 className='max-w-3xl text-3xl font-semibold tracking-tight sm:text-4xl'>{title}</h1>

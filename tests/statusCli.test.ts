@@ -1,6 +1,6 @@
+import { spawnSync } from "node:child_process";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { spawnSync } from "node:child_process";
 import { describe, expect, it } from "vitest";
 import { artifactPath } from "../src/core/artifacts";
 import { createRun, saveRun } from "../src/core/runStore";
@@ -16,10 +16,7 @@ describe("producer status CLI", () => {
     const result = runCli(["status", "--run", run.runId, "--json"]);
 
     expect(result.status).toBe(0);
-    expect(JSON.parse(result.stdout) as unknown).toMatchObject({
-      runId: run.runId,
-      state: "NEW",
-    });
+    expect(JSON.parse(result.stdout) as unknown).toMatchObject({ runId: run.runId, state: "NEW" });
   });
 
   it("prints parseable operator summary JSON for automation", async () => {
@@ -42,10 +39,7 @@ describe("producer status CLI", () => {
       }),
       "utf8",
     );
-    await saveRun({
-      ...run,
-      artifacts: ["diagnostics/readiness.json"],
-    });
+    await saveRun({ ...run, artifacts: ["diagnostics/readiness.json"] });
 
     const result = runCli(["status", "--run", run.runId, "--summary-json"]);
 
@@ -63,10 +57,7 @@ describe("producer status CLI", () => {
         ],
         status: "blocked",
       },
-      run: {
-        runId: run.runId,
-        state: "NEW",
-      },
+      run: { runId: run.runId, state: "NEW" },
     });
   });
 

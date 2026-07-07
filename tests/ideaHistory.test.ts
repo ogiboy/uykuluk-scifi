@@ -95,10 +95,7 @@ describe("idea history originality guard", () => {
       history: {
         approvedTitlesConsidered: number;
         generatedTitlesConsidered: number;
-        promptTitles: {
-          approvedTitles: string[];
-          generatedTitles: string[];
-        };
+        promptTitles: { approvedTitles: string[]; generatedTitles: string[] };
         source: string;
       };
     }>(artifactPath(runId, "ideas.json"));
@@ -107,10 +104,7 @@ describe("idea history originality guard", () => {
       source: "runs/ideas.json",
       approvedTitlesConsidered: 0,
       generatedTitlesConsidered: 0,
-      promptTitles: {
-        approvedTitles: [],
-        generatedTitles: [],
-      },
+      promptTitles: { approvedTitles: [], generatedTitles: [] },
     });
     expect(JSON.stringify(artifact.history)).not.toContain(ideas[0].premise);
   });
@@ -122,13 +116,7 @@ async function useMockModel(model: string): Promise<void> {
     `${JSON.stringify(
       {
         ...defaultConfig,
-        providers: {
-          ...defaultConfig.providers,
-          llm: {
-            ...defaultConfig.providers.llm,
-            model,
-          },
-        },
+        providers: { ...defaultConfig.providers, llm: { ...defaultConfig.providers.llm, model } },
       },
       null,
       2,

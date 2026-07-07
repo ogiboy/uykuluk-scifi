@@ -4,21 +4,9 @@ import { studioRunFilePath } from "./runFilePaths";
 const revisionContentLimitBytes = 200_000;
 
 export const studioPackageRevisionTargets = [
-  {
-    artifactKey: "subtitles",
-    label: "Subtitles",
-    path: "production/subtitles.srt",
-  },
-  {
-    artifactKey: "scenes",
-    label: "Scenes",
-    path: "production/scenes.json",
-  },
-  {
-    artifactKey: "popup-cards",
-    label: "Popup cards",
-    path: "production/production_package.md",
-  },
+  { artifactKey: "subtitles", label: "Subtitles", path: "production/subtitles.srt" },
+  { artifactKey: "scenes", label: "Scenes", path: "production/scenes.json" },
+  { artifactKey: "popup-cards", label: "Popup cards", path: "production/production_package.md" },
   {
     artifactKey: "youtube-metadata",
     label: "YouTube metadata",
@@ -37,9 +25,7 @@ export type StudioRevisionSource = Readonly<{
 }>;
 
 export type StudioPackageRevisionSource = StudioRevisionSource &
-  Readonly<{
-    artifactKey: StudioPackageRevisionTarget["artifactKey"];
-  }>;
+  Readonly<{ artifactKey: StudioPackageRevisionTarget["artifactKey"] }>;
 
 export type StudioRevisionSources = Readonly<{
   packageArtifacts: readonly StudioPackageRevisionSource[];
@@ -63,10 +49,7 @@ export async function readStudioRevisionSources(
       artifactKey: target.artifactKey,
     })),
   );
-  return {
-    packageArtifacts,
-    script: await readRevisionSource(root, runId, "script.md", "Script"),
-  };
+  return { packageArtifacts, script: await readRevisionSource(root, runId, "script.md", "Script") };
 }
 
 async function readRevisionSource(
@@ -103,11 +86,5 @@ async function readRevisionSource(
 }
 
 function unavailableSource(label: string, path: string, message: string): StudioRevisionSource {
-  return {
-    available: false,
-    content: "",
-    label,
-    message,
-    path,
-  };
+  return { available: false, content: "", label, message, path };
 }

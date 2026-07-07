@@ -59,10 +59,7 @@ function finalReviewBundleMetadataItems(
   return [
     { label: "Status", value: finalReviewBundle.bundle.status },
     { label: "Review handoff", value: finalReviewBundle.reviewPath },
-    {
-      label: "Timestamped draft map",
-      value: finalReviewBundle.bundle.draftRender.reviewPath,
-    },
+    { label: "Timestamped draft map", value: finalReviewBundle.bundle.draftRender.reviewPath },
     { label: "Created", value: finalReviewBundle.bundle.createdAt },
   ];
 }

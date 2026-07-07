@@ -12,10 +12,7 @@ import { extractRunId, productFileExists } from "./product-uat-helpers.mjs";
  * @returns {Promise<string>} The created run id.
  */
 export async function createIdeaOnlyRun({ pnpm, run, scenario }) {
-  const ideas = run([pnpm, "producer", "ideas"], {
-    label: "generate ideas",
-    scenario,
-  });
+  const ideas = run([pnpm, "producer", "ideas"], { label: "generate ideas", scenario });
   return extractRunId(ideas.stdout);
 }
 
@@ -39,10 +36,7 @@ export async function createVoiceReadyRun({ assertCondition, pnpm, run, scenario
     scenario,
   });
   run([pnpm, "producer", "script", "--run", runId], { label: "generate script", scenario });
-  run([pnpm, "producer", "review", "script", "--run", runId], {
-    label: "review script",
-    scenario,
-  });
+  run([pnpm, "producer", "review", "script", "--run", runId], { label: "review script", scenario });
   run([pnpm, "producer", "approve", "script", "--run", runId, "--acknowledge-warnings"], {
     label: "approve script with warning acknowledgement",
     scenario,

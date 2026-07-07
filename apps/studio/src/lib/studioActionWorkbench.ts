@@ -1,8 +1,8 @@
-import type { StudioApprovalActionConfig } from "./studioApprovalAction";
-import { approvalActionForRun, approvalCommandForRun } from "./studioApprovalAction";
 import type { StudioArtifactPreview } from "./artifactPreviews";
 import { artifactReviewActionsForRun } from "./renderPlanReviewAction";
 import type { StudioRunDetail } from "./runSummaries";
+import type { StudioApprovalActionConfig } from "./studioApprovalAction";
+import { approvalActionForRun, approvalCommandForRun } from "./studioApprovalAction";
 import { stageActionForRun } from "./studioStageAction";
 
 export type StudioActionWorkbenchTone =
@@ -16,10 +16,7 @@ export type StudioActionWorkbenchPrimary = Readonly<{
   tone: StudioActionWorkbenchTone;
 }>;
 
-export type StudioActionWorkbenchBoundary = Readonly<{
-  detail: string;
-  label: string;
-}>;
+export type StudioActionWorkbenchBoundary = Readonly<{ detail: string; label: string }>;
 
 export type StudioActionWorkbench = Readonly<{
   boundaries: readonly StudioActionWorkbenchBoundary[];
@@ -51,10 +48,7 @@ export type StudioActionWorkbenchRun = Pick<
  * @returns The primary available action and permanent safety boundaries.
  */
 export function buildStudioActionWorkbench(run: StudioActionWorkbenchRun): StudioActionWorkbench {
-  return {
-    boundaries: actionWorkbenchBoundaries(run.runId),
-    primary: primaryWorkbenchAction(run),
-  };
+  return { boundaries: actionWorkbenchBoundaries(run.runId), primary: primaryWorkbenchAction(run) };
 }
 
 function primaryWorkbenchAction(run: StudioActionWorkbenchRun): StudioActionWorkbenchPrimary {

@@ -1,7 +1,7 @@
 import { loadConfig } from "../config/config.js";
 import { RunRecord } from "../core/state.js";
-import { readVoiceoverAudioEvidence } from "./voiceoverEvidence.js";
 import type { ReadinessCheck } from "./readiness.js";
+import { readVoiceoverAudioEvidence } from "./voiceoverEvidence.js";
 
 /**
  * Checks whether voiceover audio is available and suitable for rendering.

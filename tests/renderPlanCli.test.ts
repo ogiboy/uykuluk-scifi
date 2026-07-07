@@ -1,6 +1,6 @@
-import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { mkdir, writeFile } from "node:fs/promises";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { artifactPath } from "../src/core/artifacts";
 import { loadRun } from "../src/core/runStore";

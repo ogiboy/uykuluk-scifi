@@ -35,11 +35,7 @@ describe("Studio artifact preview filters", () => {
   ];
 
   it("counts artifact preview availability without relying on current filters", () => {
-    expect(countArtifactPreviewStatuses(artifacts)).toEqual({
-      all: 3,
-      available: 2,
-      missing: 1,
-    });
+    expect(countArtifactPreviewStatuses(artifacts)).toEqual({ all: 3, available: 2, missing: 1 });
   });
 
   it("filters artifact previews by search text and availability", () => {

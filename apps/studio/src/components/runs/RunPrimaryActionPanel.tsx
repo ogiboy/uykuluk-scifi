@@ -1,6 +1,5 @@
 "use client";
 
-import { useId } from "react";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +8,7 @@ import {
   type StudioRunPrimaryAction,
   type StudioRunPrimaryActionRun,
 } from "@/lib/runPrimaryAction";
+import { useId } from "react";
 import { CopyableCommand } from "../studio/CopyableCommand";
 import { RunQuickStageActionButton } from "./RunQuickStageActionButton";
 
@@ -35,7 +35,7 @@ export function RunPrimaryActionPanel({
 
   if (compact) {
     return (
-      <section className='space-y-4 rounded-xl bg-muted/10 p-4' aria-labelledby={headingId}>
+      <section className='bg-muted/10 space-y-4 rounded-xl p-4' aria-labelledby={headingId}>
         <div className='grid grid-cols-[1fr_auto] items-start gap-4'>
           <PrimaryActionHeader action={action} headingId={headingId} />
         </div>
@@ -46,7 +46,7 @@ export function RunPrimaryActionPanel({
   }
 
   return (
-    <Card className='gap-5 bg-card/95 ring-primary/10' aria-labelledby={headingId}>
+    <Card className='bg-card/95 ring-primary/10 gap-5' aria-labelledby={headingId}>
       <CardHeader className='grid grid-cols-[1fr_auto] items-start gap-4'>
         <PrimaryActionHeader action={action} headingId={headingId} />
       </CardHeader>
@@ -67,7 +67,7 @@ function PrimaryActionHeader({
   return (
     <>
       <div className='space-y-1'>
-        <p className='text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground'>
+        <p className='text-muted-foreground text-xs font-semibold tracking-[0.18em] uppercase'>
           Primary web action
         </p>
         <CardTitle>
@@ -83,14 +83,10 @@ function PrimaryActionBody({
   action,
   railHref,
   run,
-}: Readonly<{
-  action: StudioRunPrimaryAction;
-  railHref: string;
-  run: StudioRunPrimaryActionRun;
-}>) {
+}: Readonly<{ action: StudioRunPrimaryAction; railHref: string; run: StudioRunPrimaryActionRun }>) {
   return (
     <>
-      <p className='text-sm text-muted-foreground'>{action.description}</p>
+      <p className='text-muted-foreground text-sm'>{action.description}</p>
       {action.mode === "stage" ? (
         <RunQuickStageActionButton label={action.label} run={run} showResult />
       ) : null}
@@ -100,7 +96,7 @@ function PrimaryActionBody({
         </a>
       ) : null}
       {action.mode === "command" && action.command ? (
-        <div className='space-y-2 rounded-md bg-background/50 p-3'>
+        <div className='bg-background/50 space-y-2 rounded-md p-3'>
           <strong className='text-sm'>Manual or CLI action</strong>
           <CopyableCommand command={action.command} label='Primary action command' />
         </div>
@@ -111,7 +107,7 @@ function PrimaryActionBody({
 
 function PrimaryActionBoundary() {
   return (
-    <p className='text-xs text-muted-foreground'>
+    <p className='text-muted-foreground text-xs'>
       Upload, scheduling, public publish, and paid-provider execution stay unavailable from this
       surface.
     </p>

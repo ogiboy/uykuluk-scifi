@@ -1,10 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import type { Route } from "next";
-import { Badge } from "@/components/ui/badge";
-import { buttonVariants } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RunQuickStageActionButton } from "@/components/runs/RunQuickStageActionButton";
 import {
   operatorActionDetail,
@@ -12,13 +7,16 @@ import {
   operatorActionToneLabel,
   type OperatorAction,
 } from "@/components/runs/runSummaryOperatorAction";
+import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { homeActionQueueSummaryItems } from "@/lib/homeActionQueueSummary";
 import { runReviewHrefFromSummary } from "@/lib/runReviewNavigation";
 import type { StudioRunSummary } from "@/lib/runSummaries";
+import type { Route } from "next";
+import Link from "next/link";
 
-type HomeActionQueuePanelProps = Readonly<{
-  runs: readonly StudioRunSummary[];
-}>;
+type HomeActionQueuePanelProps = Readonly<{ runs: readonly StudioRunSummary[] }>;
 
 /**
  * Renders a compact action-prioritized queue for the Studio home rail.
@@ -33,7 +31,7 @@ export function HomeActionQueuePanel({ runs }: HomeActionQueuePanelProps) {
         <CardHeader className='gap-4 sm:grid-cols-[1fr_auto]'>
           <div className='space-y-2'>
             <CardTitle id='home-action-queue-heading'>Action queue</CardTitle>
-            <p className='text-sm text-muted-foreground'>
+            <p className='text-muted-foreground text-sm'>
               Prioritized from persisted CLI/core run summaries.
             </p>
           </div>
@@ -48,7 +46,7 @@ export function HomeActionQueuePanel({ runs }: HomeActionQueuePanelProps) {
               <HomeActionQueueList runs={runs} />
             </>
           ) : (
-            <p className='text-sm text-muted-foreground'>No persisted runs found.</p>
+            <p className='text-muted-foreground text-sm'>No persisted runs found.</p>
           )}
         </CardContent>
       </Card>
@@ -63,10 +61,10 @@ function HomeActionQueueSummary({ runs }: HomeActionQueuePanelProps) {
       aria-label='Home action queue summary'
     >
       {homeActionQueueSummaryItems(runs).map((item) => (
-        <div className='rounded-xl bg-muted/25 p-3' key={item.key} data-tone={item.tone}>
-          <dt className='text-xs font-medium text-muted-foreground'>{item.label}</dt>
+        <div className='bg-muted/25 rounded-xl p-3' key={item.key} data-tone={item.tone}>
+          <dt className='text-muted-foreground text-xs font-medium'>{item.label}</dt>
           <dd className='mt-1 text-lg font-semibold'>{item.value}</dd>
-          <small className='mt-1 block text-muted-foreground'>{item.detail}</small>
+          <small className='text-muted-foreground mt-1 block'>{item.detail}</small>
         </div>
       ))}
     </dl>
@@ -80,7 +78,7 @@ function HomeActionQueueList({ runs }: HomeActionQueuePanelProps) {
         .slice(0, 5)
         .map(({ action, run }) => (
           <li key={run.runId}>
-            <div className='grid gap-3 rounded-xl bg-muted/25 p-3'>
+            <div className='bg-muted/25 grid gap-3 rounded-xl p-3'>
               <div className='min-w-0 space-y-1'>
                 <Link
                   className='block truncate font-semibold underline-offset-4 hover:underline'
@@ -89,10 +87,10 @@ function HomeActionQueueList({ runs }: HomeActionQueuePanelProps) {
                 >
                   <strong>{run.runId}</strong>
                 </Link>
-                <span className='block text-sm text-muted-foreground'>
+                <span className='text-muted-foreground block text-sm'>
                   {run.state} · {operatorActionDetail(action)}
                 </span>
-                <small className='block text-muted-foreground'>{action.label}</small>
+                <small className='text-muted-foreground block'>{action.label}</small>
               </div>
               <div className='flex flex-wrap items-center gap-2'>
                 <Badge variant={action.tone === "blocked" ? "destructive" : "secondary"}>
@@ -115,10 +113,7 @@ function HomeActionQueueList({ runs }: HomeActionQueuePanelProps) {
 
 function prioritizedActionRuns(runs: readonly StudioRunSummary[]) {
   return runs
-    .map((run) => ({
-      action: operatorActionForRun(run),
-      run,
-    }))
+    .map((run) => ({ action: operatorActionForRun(run), run }))
     .sort(
       (left, right) =>
         actionTonePriority(left.action) - actionTonePriority(right.action) ||

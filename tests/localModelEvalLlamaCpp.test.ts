@@ -22,11 +22,7 @@ describe("local model evaluation with llama.cpp", () => {
       mode: "llama.cpp",
       llamaCppBaseUrl: "http://localhost:8080",
       model: "local-model.gguf",
-      maxOutputTokens: {
-        ideas: 777,
-        script: 1234,
-        productionPackage: 2000,
-      },
+      maxOutputTokens: { ideas: 777, script: 1234, productionPackage: 2000 },
     });
     const fetchMock = vi
       .fn()
@@ -93,10 +89,7 @@ describe("local model evaluation with llama.cpp", () => {
     expect(report.passed).toBe(false);
     expect(report.checks).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({
-          message: "llama.cpp provider request failed.",
-          status: "block",
-        }),
+        expect.objectContaining({ message: "llama.cpp provider request failed.", status: "block" }),
       ]),
     );
     for (const value of [
@@ -118,14 +111,16 @@ describe("local model evaluation with llama.cpp", () => {
     });
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockImplementation(() =>
-        Promise.resolve(
-          jsonResponse({
-            choices: [{ message: { content: generateMockIdeasText() } }],
-            model: "served-model.gguf",
-          }),
+      vi
+        .fn()
+        .mockImplementation(() =>
+          Promise.resolve(
+            jsonResponse({
+              choices: [{ message: { content: generateMockIdeasText() } }],
+              model: "served-model.gguf",
+            }),
+          ),
         ),
-      ),
     );
 
     const report = await runLocalModelEval();

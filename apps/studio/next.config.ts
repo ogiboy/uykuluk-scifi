@@ -18,14 +18,8 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: ["127.0.0.1", "localhost"],
   images: {
     remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "images.unsplash.com",
-      },
-      {
-        protocol: "https",
-        hostname: "ui.shadcn.com",
-      },
+      { protocol: "https", hostname: "images.unsplash.com" },
+      { protocol: "https", hostname: "ui.shadcn.com" },
     ],
   },
   turbopack: {
@@ -43,8 +37,6 @@ const nextConfig: NextConfig = {
   },
 };
 
-const withNextIntl = createNextIntlPlugin({
-  requestConfig: "./src/i18n/request.ts",
-});
+const withNextIntl = createNextIntlPlugin({ requestConfig: "./src/i18n/request.ts" });
 
 export default withNextIntl(nextConfig);

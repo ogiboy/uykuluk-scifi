@@ -1,5 +1,3 @@
-import Link from "next/link";
-import type { Route } from "next";
 import { CliFallbackCommand } from "@/components/studio/CliFallbackCommand";
 import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
 import { buttonVariants } from "@/components/ui/button";
@@ -11,10 +9,10 @@ import {
   formatRunReviewCounts,
   getNextSafeCommand,
 } from "@/lib/runSummaryCopy";
+import type { Route } from "next";
+import Link from "next/link";
 
-type LatestRunReadinessPanelProps = Readonly<{
-  latestRun: StudioRunSummary | null;
-}>;
+type LatestRunReadinessPanelProps = Readonly<{ latestRun: StudioRunSummary | null }>;
 
 /**
  * Renders the latest run readiness summary on the Studio home page.
@@ -61,14 +59,14 @@ function LatestRunSummary({ latestRun }: Readonly<{ latestRun: StudioRunSummary 
           { label: "Updated", value: latestRun.updatedAt || "unknown" },
         ]}
       />
-      <p className='text-sm text-muted-foreground'>{formatRunReviewCounts(latestRun)}</p>
+      <p className='text-muted-foreground text-sm'>{formatRunReviewCounts(latestRun)}</p>
       <p className='text-sm'>{latestRun.readinessMessage}</p>
       {latestRun.readinessNextAction ? (
-        <p className='rounded-lg bg-muted/10 p-3 text-sm text-muted-foreground'>
+        <p className='bg-muted/10 text-muted-foreground rounded-lg p-3 text-sm'>
           Readiness action: {latestRun.readinessNextAction}
         </p>
       ) : null}
-      <div className='space-y-3 rounded-lg bg-muted/10 p-3'>
+      <div className='bg-muted/10 space-y-3 rounded-lg p-3'>
         <strong className='text-sm'>Next safe action</strong>
         <CliFallbackCommand
           align='start'
@@ -87,7 +85,7 @@ function NoRunsSummary() {
   return (
     <>
       <MetricGrid metrics={[{ label: "Runs", value: "0" }]} />
-      <p className='text-sm text-muted-foreground'>
+      <p className='text-muted-foreground text-sm'>
         Start the first idea run from the guarded control desk action. CLI/core still owns the
         workflow state and evidence written after that action completes.
       </p>

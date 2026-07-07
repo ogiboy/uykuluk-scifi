@@ -34,12 +34,6 @@ export function countStudioActionWorkbench(
       }
       return { ...counts, complete: counts.complete + 1 };
     },
-    {
-      blockedCli: 0,
-      cliOnly: 0,
-      complete: 0,
-      needsReview: 0,
-      webAction: 0,
-    },
+    { blockedCli: 0, cliOnly: 0, complete: 0, needsReview: 0, webAction: 0 },
   );
 }

@@ -192,9 +192,7 @@ describe("manual channel handoff decision", () => {
 
     const status = await readRunStatus(runId);
 
-    expect(status.channelHandoffDecision).toMatchObject({
-      kind: "invalid",
-    });
+    expect(status.channelHandoffDecision).toMatchObject({ kind: "invalid" });
     expect(status.nextRecommendedCommand).toContain("pnpm producer decide channel-handoff");
   });
 });

@@ -19,12 +19,7 @@ describe("operator desk", () => {
   it("recommends idea generation when no runs exist", async () => {
     const model = await buildOperatorDeskViewModel();
 
-    expect(model).toMatchObject({
-      latestRunId: null,
-      runDetails: [],
-      runs: [],
-      selectedRun: null,
-    });
+    expect(model).toMatchObject({ latestRunId: null, runDetails: [], runs: [], selectedRun: null });
     expect(formatOperatorDeskPlain(model)).toContain("Next safe action: pnpm producer ideas");
   });
 
@@ -116,11 +111,7 @@ describe("operator desk", () => {
             nextAction: "pnpm producer voice --run <run_id>",
             status: "block",
           },
-          {
-            message: "Upload remains disabled.",
-            name: "publish-safety",
-            status: "warn",
-          },
+          { message: "Upload remains disabled.", name: "publish-safety", status: "warn" },
         ],
         currentState: "READY_FOR_MANUAL_PRODUCTION",
         passed: false,

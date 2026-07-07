@@ -55,10 +55,7 @@ describe("Studio mutation security", () => {
   it("accepts originless local browser mutations when fetch metadata is same-origin", () => {
     expect(
       validateStudioMutationRequest(
-        studioRequest("http://127.0.0.1:3000", {
-          fetchSite: "same-origin",
-          origin: null,
-        }),
+        studioRequest("http://127.0.0.1:3000", { fetchSite: "same-origin", origin: null }),
         "ideas.run",
       ),
     ).toEqual({ ok: true });
@@ -94,9 +91,7 @@ describe("Studio mutation security", () => {
   it("rejects malformed session cookies as unauthorized without throwing", () => {
     expect(
       validateStudioMutationRequest(
-        studioRequest("http://localhost:3000", {
-          cookie: `${studioSessionCookieName}=%E0%A4%A`,
-        }),
+        studioRequest("http://localhost:3000", { cookie: `${studioSessionCookieName}=%E0%A4%A` }),
         "ideas.run",
       ),
     ).toMatchObject({ ok: false, status: 401 });
@@ -132,9 +127,5 @@ function studioRequest(
   if (options.fetchSite) {
     headers["sec-fetch-site"] = options.fetchSite;
   }
-  return new Request(`${requestOrigin}/actions/run-ideas`, {
-    body: "{}",
-    headers,
-    method: "POST",
-  });
+  return new Request(`${requestOrigin}/actions/run-ideas`, { body: "{}", headers, method: "POST" });
 }

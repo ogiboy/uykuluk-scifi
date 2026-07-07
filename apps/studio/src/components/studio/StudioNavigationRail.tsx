@@ -1,5 +1,5 @@
-import Link from "next/link";
 import type { Route } from "next";
+import Link from "next/link";
 
 import type { StudioLocale } from "@/i18n/locales";
 import { studioSections } from "@/lib/studioData";
@@ -20,7 +20,7 @@ export function StudioNavigationRail({ locale }: Readonly<{ locale: StudioLocale
       <nav className='grid gap-1 max-[900px]:grid-cols-2'>
         {studioSections.map((section) => (
           <Link
-            className='rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-card hover:text-foreground max-[900px]:min-w-0 max-[900px]:break-words'
+            className='text-muted-foreground hover:bg-card hover:text-foreground rounded-md px-3 py-2 text-sm font-medium transition-colors max-[900px]:min-w-0 max-[900px]:break-words'
             key={section.id}
             href={section.href as Route}
           >

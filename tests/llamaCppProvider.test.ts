@@ -26,16 +26,18 @@ describe("llama.cpp provider", () => {
   });
 
   it("records model, token usage, and OpenAI-compatible chat payloads", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(
-      new Response(
-        JSON.stringify({
-          choices: [{ message: { content: '{"ideas":[]}' } }],
-          model: "Mistral-7B-Instruct-v0.3.Q4_K_M.gguf",
-          usage: { prompt_tokens: 10, completion_tokens: 4 },
-        }),
-        { status: 200, headers: { "content-type": "application/json" } },
-      ),
-    );
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            choices: [{ message: { content: '{"ideas":[]}' } }],
+            model: "Mistral-7B-Instruct-v0.3.Q4_K_M.gguf",
+            usage: { prompt_tokens: 10, completion_tokens: 4 },
+          }),
+          { status: 200, headers: { "content-type": "application/json" } },
+        ),
+      );
     vi.stubGlobal("fetch", fetchMock);
     const provider = new LlamaCppProvider(
       "http://localhost:8080/",
@@ -79,12 +81,14 @@ describe("llama.cpp provider", () => {
   });
 
   it("passes JSON schema response format through", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({ choices: [{ message: { content: '{"text":"tamam"}' } }] }), {
-        status: 200,
-        headers: { "content-type": "application/json" },
-      }),
-    );
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ choices: [{ message: { content: '{"text":"tamam"}' } }] }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        }),
+      );
     vi.stubGlobal("fetch", fetchMock);
     const provider = new LlamaCppProvider("http://localhost:8080", "local-model.gguf");
 
@@ -109,12 +113,14 @@ describe("llama.cpp provider", () => {
   it("uses legacy text choices when chat message content is absent", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue(
-        new Response(JSON.stringify({ choices: [{ text: "legacy completion" }] }), {
-          status: 200,
-          headers: { "content-type": "application/json" },
-        }),
-      ),
+      vi
+        .fn()
+        .mockResolvedValue(
+          new Response(JSON.stringify({ choices: [{ text: "legacy completion" }] }), {
+            status: 200,
+            headers: { "content-type": "application/json" },
+          }),
+        ),
     );
     const provider = new LlamaCppProvider("http://localhost:8080", "local-model.gguf");
 
@@ -139,12 +145,14 @@ describe("llama.cpp provider", () => {
   it("reports generation HTTP failures without response bodies", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue(
-        new Response("local-secret-response", {
-          status: 500,
-          statusText: "Internal Server Error",
-        }),
-      ),
+      vi
+        .fn()
+        .mockResolvedValue(
+          new Response("local-secret-response", {
+            status: 500,
+            statusText: "Internal Server Error",
+          }),
+        ),
     );
     const provider = new LlamaCppProvider("http://localhost:8080", "local-model.gguf");
 
@@ -172,12 +180,14 @@ describe("llama.cpp provider", () => {
   it("reports provider error payloads without echoing provider content", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue(
-        new Response(JSON.stringify({ error: { message: "local-secret-response" } }), {
-          status: 200,
-          headers: { "content-type": "application/json" },
-        }),
-      ),
+      vi
+        .fn()
+        .mockResolvedValue(
+          new Response(JSON.stringify({ error: { message: "local-secret-response" } }), {
+            status: 200,
+            headers: { "content-type": "application/json" },
+          }),
+        ),
     );
     const provider = new LlamaCppProvider("http://localhost:8080", "local-model.gguf");
 
@@ -189,12 +199,14 @@ describe("llama.cpp provider", () => {
   it("reports clear diagnostics without persisting response bodies", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue(
-        new Response("local-secret-response", {
-          status: 500,
-          statusText: "Internal Server Error",
-        }),
-      ),
+      vi
+        .fn()
+        .mockResolvedValue(
+          new Response("local-secret-response", {
+            status: 500,
+            statusText: "Internal Server Error",
+          }),
+        ),
     );
     const provider = new LlamaCppProvider("http://localhost:8080", "local-model.gguf");
 
@@ -224,12 +236,14 @@ describe("llama.cpp provider", () => {
   it("blocks when the configured model is not served", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue(
-        new Response(JSON.stringify({ data: [{ id: "other-model.gguf" }] }), {
-          status: 200,
-          headers: { "content-type": "application/json" },
-        }),
-      ),
+      vi
+        .fn()
+        .mockResolvedValue(
+          new Response(JSON.stringify({ data: [{ id: "other-model.gguf" }] }), {
+            status: 200,
+            headers: { "content-type": "application/json" },
+          }),
+        ),
     );
     const provider = new LlamaCppProvider("http://localhost:8080", "local-model.gguf");
 

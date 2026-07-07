@@ -25,7 +25,7 @@ export function ServiceContractPanel({
         <h2 className='text-2xl font-semibold tracking-tight' id='actions-heading'>
           Mutation Service Contracts
         </h2>
-        <p className='max-w-4xl text-sm text-muted-foreground'>
+        <p className='text-muted-foreground max-w-4xl text-sm'>
           Studio exposes guarded local approval, review, and workflow-stage routes over shared
           CLI/core contracts. Upload and publish actions remain disabled.
         </p>
@@ -56,7 +56,7 @@ export function ServiceContractPanel({
         />
       </div>
       {status.findings.length > 0 ? (
-        <Card className='mt-4 border-destructive/25 bg-destructive/10'>
+        <Card className='border-destructive/25 bg-destructive/10 mt-4'>
           <CardHeader>
             <CardTitle>Route security findings</CardTitle>
             <CardDescription>
@@ -64,10 +64,10 @@ export function ServiceContractPanel({
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ul className='grid gap-2 text-sm text-muted-foreground'>
+            <ul className='text-muted-foreground grid gap-2 text-sm'>
               {status.findings.map((finding, index) => (
                 <li
-                  className='rounded-lg bg-card/70 px-3 py-2 ring-1 ring-destructive/20'
+                  className='bg-card/70 ring-destructive/20 rounded-lg px-3 py-2 ring-1'
                   key={`${index}-${finding}`}
                 >
                   {finding}
@@ -95,9 +95,9 @@ function ServiceMetricCard({ detail, label, tone = "neutral", value }: ServiceMe
   return (
     <Card>
       <CardContent className='space-y-2 pt-6'>
-        <p className='text-sm font-medium text-muted-foreground'>{label}</p>
+        <p className='text-muted-foreground text-sm font-medium'>{label}</p>
         <strong className={serviceMetricValueClassName(tone)}>{value}</strong>
-        <p className='text-sm text-muted-foreground'>{detail}</p>
+        <p className='text-muted-foreground text-sm'>{detail}</p>
       </CardContent>
     </Card>
   );

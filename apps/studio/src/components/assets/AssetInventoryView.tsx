@@ -6,9 +6,7 @@ import type {
 import { Badge } from "../ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 
-type AssetInventoryViewProps = Readonly<{
-  inventory: StudioAssetInventory;
-}>;
+type AssetInventoryViewProps = Readonly<{ inventory: StudioAssetInventory }>;
 
 /**
  * Renders a read-only overview of an asset inventory.
@@ -52,7 +50,7 @@ export function AssetInventoryView({ inventory }: AssetInventoryViewProps) {
           </CardHeader>
           <CardContent>
             {inventory.warnings.length > 0 ? (
-              <ul className='grid gap-2 text-sm text-muted-foreground'>
+              <ul className='text-muted-foreground grid gap-2 text-sm'>
                 {inventory.warnings.map((warning, index) => (
                   <li
                     className='rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-amber-900 dark:text-amber-100'
@@ -63,7 +61,7 @@ export function AssetInventoryView({ inventory }: AssetInventoryViewProps) {
                 ))}
               </ul>
             ) : (
-              <p className='text-sm text-muted-foreground'>No configured asset guard warnings.</p>
+              <p className='text-muted-foreground text-sm'>No configured asset guard warnings.</p>
             )}
           </CardContent>
         </Card>
@@ -92,7 +90,7 @@ function AssetCategoryCard({ category }: Readonly<{ category: StudioAssetCategor
             <CardTitle>
               <h2 className='text-base'>{category.label}</h2>
             </CardTitle>
-            <CardDescription className='break-all font-mono text-xs'>
+            <CardDescription className='font-mono text-xs break-all'>
               {category.directory}
             </CardDescription>
           </div>
@@ -102,24 +100,24 @@ function AssetCategoryCard({ category }: Readonly<{ category: StudioAssetCategor
         </div>
       </CardHeader>
       <CardContent className='grid gap-3'>
-        <p className='text-sm text-muted-foreground'>{category.description}</p>
+        <p className='text-muted-foreground text-sm'>{category.description}</p>
         <p className='rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-900 dark:text-amber-100'>
           {category.requiredFor}
         </p>
-        <p className='text-xs text-muted-foreground'>
+        <p className='text-muted-foreground text-xs'>
           {category.files.length} file(s)
           {category.guarded
             ? " · guarded by producer doctor/readiness checks"
             : " · inventory only"}
         </p>
         {category.warnings.length > 0 ? (
-          <ul className='grid gap-2 text-sm text-muted-foreground'>
+          <ul className='text-muted-foreground grid gap-2 text-sm'>
             {category.warnings.map((warning, index) => (
               <li key={listKey(`${category.id}-warning`, warning, index)}>{warning}</li>
             ))}
           </ul>
         ) : null}
-        <ul className='grid max-h-44 list-disc gap-1 overflow-auto rounded-md border bg-muted/20 py-2 pl-6 pr-3 font-mono text-xs leading-relaxed text-muted-foreground'>
+        <ul className='bg-muted/20 text-muted-foreground grid max-h-44 list-disc gap-1 overflow-auto rounded-md border py-2 pr-3 pl-6 font-mono text-xs leading-relaxed'>
           {category.files.map((file, index) => (
             <li key={listKey(`${category.id}-file`, file, index)}>{file}</li>
           ))}
@@ -173,11 +171,11 @@ function AssetMetadataGrid({
   return (
     <dl className='grid gap-3 sm:grid-cols-2'>
       {items.map((item) => (
-        <div className='rounded-lg border bg-muted/20 p-3' key={item.label}>
-          <dt className='text-xs font-medium uppercase tracking-wide text-muted-foreground'>
+        <div className='bg-muted/20 rounded-lg border p-3' key={item.label}>
+          <dt className='text-muted-foreground text-xs font-medium tracking-wide uppercase'>
             {item.label}
           </dt>
-          <dd className='mt-1 break-words text-sm'>{item.value}</dd>
+          <dd className='mt-1 text-sm wrap-break-word'>{item.value}</dd>
         </div>
       ))}
     </dl>

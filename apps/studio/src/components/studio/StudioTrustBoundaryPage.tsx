@@ -1,3 +1,4 @@
+import type { StudioRouteBoundaryCopy } from "@/lib/studioRouteBoundaryCopy";
 import {
   defaultStudioRouteBoundaryActions,
   StudioRouteBoundaryCard,
@@ -5,11 +6,8 @@ import {
   type StudioRouteBoundaryAction,
 } from "./StudioRouteBoundaryCard";
 import { StudioShell } from "./StudioShell";
-import type { StudioRouteBoundaryCopy } from "@/lib/studioRouteBoundaryCopy";
 
-type StudioTrustBoundaryPageProps = Readonly<{
-  copy: StudioRouteBoundaryCopy;
-}>;
+type StudioTrustBoundaryPageProps = Readonly<{ copy: StudioRouteBoundaryCopy }>;
 
 /**
  * Renders stable Studio trust-boundary pages without enabling experimental Next auth interrupts.
@@ -38,10 +36,7 @@ function studioTrustBoundaryActions(
     return defaultStudioRouteBoundaryActions;
   }
   return [
-    {
-      href: copy.primaryActionHref,
-      label: copy.primaryActionLabel,
-    },
+    { href: copy.primaryActionHref, label: copy.primaryActionLabel },
     ...defaultStudioRouteBoundaryActions.filter((action) => action.href !== copy.primaryActionHref),
   ];
 }

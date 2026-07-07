@@ -1,8 +1,8 @@
-import path from "node:path";
 import { copyFile } from "node:fs/promises";
-import { ProducerConfig, producerConfigSchema } from "./schema.js";
+import path from "node:path";
 import { ensureDir, pathExists } from "../utils/fs.js";
 import { readJsonFile } from "../utils/json.js";
+import { ProducerConfig, producerConfigSchema } from "./schema.js";
 
 const defaultConfigTemplateUrl = new URL("../../producer.config.example.json", import.meta.url);
 
@@ -12,9 +12,7 @@ export const defaultConfig: ProducerConfig = {
     language: "tr",
     defaultTone: "cinematic, scientifically careful, accessible Turkish narration",
   },
-  prompts: {
-    overrides: {},
-  },
+  prompts: { overrides: {} },
   providers: {
     llm: {
       mode: "mock",
@@ -23,33 +21,13 @@ export const defaultConfig: ProducerConfig = {
       model: "qwen3:8b",
       thinkingMode: "default",
       requestTimeoutMs: 120_000,
-      maxOutputTokens: {
-        ideas: 3000,
-        script: 3200,
-        productionPackage: 2000,
-      },
+      maxOutputTokens: { ideas: 3000, script: 3200, productionPackage: 2000 },
     },
-    tts: {
-      enabled: false,
-      mode: "local-piper",
-      piperBinary: "piper",
-    },
-    imageGeneration: {
-      enabled: false,
-      requiresApproval: true,
-    },
-    youtube: {
-      enabled: false,
-      allowPrivateUpload: false,
-      allowPublicPublish: false,
-    },
+    tts: { enabled: false, mode: "local-piper", piperBinary: "piper" },
+    imageGeneration: { enabled: false, requiresApproval: true },
+    youtube: { enabled: false, allowPrivateUpload: false, allowPublicPublish: false },
   },
-  budgets: {
-    perVideoUsd: 0.5,
-    dailyUsd: 1,
-    weeklyUsd: 5,
-    requireApprovalAboveUsd: 0.01,
-  },
+  budgets: { perVideoUsd: 0.5, dailyUsd: 1, weeklyUsd: 5, requireApprovalAboveUsd: 0.01 },
   safeguards: {
     requireIdeaApproval: true,
     requireScriptApproval: true,

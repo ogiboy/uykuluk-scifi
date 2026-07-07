@@ -1,14 +1,14 @@
 import { readFile } from "node:fs/promises";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
-  formatLocalModelEvalConsole,
-  renderLocalModelEvalMarkdown,
-} from "../src/diagnostics/localModelEvalFormatting";
-import {
   localModelEvalJsonPath,
   localModelEvalMarkdownPath,
   runLocalModelEval,
 } from "../src/diagnostics/localModelEval";
+import {
+  formatLocalModelEvalConsole,
+  renderLocalModelEvalMarkdown,
+} from "../src/diagnostics/localModelEvalFormatting";
 import { safeLocalModelEvalErrorMessage } from "../src/diagnostics/localModelEvalSafety";
 import { pathExists } from "../src/utils/fs";
 import { readJsonFile } from "../src/utils/json";
@@ -51,12 +51,14 @@ describe("local model evaluation", () => {
     await useOllamaConfig();
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue(
-        new Response("local-secret-response", {
-          status: 500,
-          statusText: "Internal Server Error",
-        }),
-      ),
+      vi
+        .fn()
+        .mockResolvedValue(
+          new Response("local-secret-response", {
+            status: 500,
+            statusText: "Internal Server Error",
+          }),
+        ),
     );
 
     const report = await runLocalModelEval();
@@ -64,10 +66,7 @@ describe("local model evaluation", () => {
     expect(report.passed).toBe(false);
     expect(report.checks).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({
-          message: "Ollama request failed (500).",
-          status: "block",
-        }),
+        expect.objectContaining({ message: "Ollama request failed (500).", status: "block" }),
       ]),
     );
     expect(JSON.stringify(report)).not.toContain("local-secret-response");
@@ -127,10 +126,7 @@ describe("local model evaluation", () => {
     expect(report.passed).toBe(false);
     expect(report.checks).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({
-          name: "script-section-json",
-          status: "pass",
-        }),
+        expect.objectContaining({ name: "script-section-json", status: "pass" }),
         expect.objectContaining({
           name: "script-quality-guard",
           status: "block",
@@ -151,12 +147,14 @@ describe("local model evaluation", () => {
     await useOllamaConfig();
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue(
-        new Response(JSON.stringify({ error: "local-secret-response" }), {
-          status: 200,
-          headers: { "content-type": "application/json" },
-        }),
-      ),
+      vi
+        .fn()
+        .mockResolvedValue(
+          new Response(JSON.stringify({ error: "local-secret-response" }), {
+            status: 200,
+            headers: { "content-type": "application/json" },
+          }),
+        ),
     );
 
     const report = await runLocalModelEval();
@@ -164,10 +162,7 @@ describe("local model evaluation", () => {
     expect(report.passed).toBe(false);
     expect(report.checks).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({
-          message: "Ollama provider reported an error.",
-          status: "block",
-        }),
+        expect.objectContaining({ message: "Ollama provider reported an error.", status: "block" }),
       ]),
     );
     expect(JSON.stringify(report)).not.toContain("local-secret-response");
@@ -196,10 +191,7 @@ describe("local model evaluation", () => {
     const beforeConfig = await readFile("producer.config.json", "utf8");
 
     const report = await runLocalModelEval({
-      llmOverrides: {
-        mode: "mock",
-        model: "mock-invalid-script-json",
-      },
+      llmOverrides: { mode: "mock", model: "mock-invalid-script-json" },
     });
 
     expect(report).toMatchObject({
@@ -209,10 +201,7 @@ describe("local model evaluation", () => {
       providerMode: "mock",
       passed: false,
       checks: expect.arrayContaining([
-        expect.objectContaining({
-          name: "script-section-json",
-          status: "block",
-        }),
+        expect.objectContaining({ name: "script-section-json", status: "block" }),
       ]),
     });
     await expect(readFile("producer.config.json", "utf8")).resolves.toBe(beforeConfig);

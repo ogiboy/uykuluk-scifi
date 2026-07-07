@@ -53,7 +53,7 @@ export function ModelEvalCandidateRunActionPanel() {
   }
 
   return (
-    <div className='grid gap-4 rounded-xl bg-muted/20 p-4'>
+    <div className='bg-muted/20 grid gap-4 rounded-xl p-4'>
       <div className='grid gap-2'>
         <Label htmlFor='model-eval-candidates'>Candidate models</Label>
         <Textarea
@@ -65,12 +65,12 @@ export function ModelEvalCandidateRunActionPanel() {
           value={candidateText}
           onChange={(event) => setCandidateText(event.target.value)}
         />
-        <p className='text-xs text-muted-foreground' id='model-eval-candidates-help'>
+        <p className='text-muted-foreground text-xs' id='model-eval-candidates-help'>
           Separate up to {maxCandidateCount} local provider model names with commas or new lines.
           This does not edit config or download models.
         </p>
         {validationMessage ? (
-          <p className='text-xs text-destructive' id='model-eval-candidates-error'>
+          <p className='text-destructive text-xs' id='model-eval-candidates-error'>
             {validationMessage}
           </p>
         ) : null}
@@ -84,7 +84,7 @@ export function ModelEvalCandidateRunActionPanel() {
         />
         <Label className='grid gap-1 leading-snug' htmlFor='model-eval-local-gguf'>
           <span>Include ignored local GGUF discovery</span>
-          <span className='text-xs font-normal text-muted-foreground'>
+          <span className='text-muted-foreground text-xs font-normal'>
             Adds `--include-local-gguf` so the CLI can include workstation-local GGUF files already
             outside tracked source.
           </span>
@@ -98,7 +98,7 @@ export function ModelEvalCandidateRunActionPanel() {
         >
           {submitting ? "Running candidates..." : "Run candidate eval"}
         </Button>
-        <p className='text-xs text-muted-foreground'>
+        <p className='text-muted-foreground text-xs'>
           {candidates.length} named candidate{candidates.length === 1 ? "" : "s"} selected
           {includeLocalGguf ? " · local GGUF discovery enabled" : ""}.
         </p>
@@ -117,19 +117,19 @@ export function ModelEvalCandidateRunActionPanel() {
           </DialogHeader>
           <dl className='grid gap-3 text-sm sm:grid-cols-2'>
             <div>
-              <dt className='font-medium text-muted-foreground'>Action</dt>
+              <dt className='text-muted-foreground font-medium'>Action</dt>
               <dd className='break-all'>model-eval-candidates.run</dd>
             </div>
             <div>
-              <dt className='font-medium text-muted-foreground'>Route</dt>
+              <dt className='text-muted-foreground font-medium'>Route</dt>
               <dd className='break-all'>/actions/run-model-eval-candidates</dd>
             </div>
             <div>
-              <dt className='font-medium text-muted-foreground'>Named candidates</dt>
+              <dt className='text-muted-foreground font-medium'>Named candidates</dt>
               <dd>{candidates.length ? candidates.join(", ") : "none"}</dd>
             </div>
             <div>
-              <dt className='font-medium text-muted-foreground'>Local GGUF discovery</dt>
+              <dt className='text-muted-foreground font-medium'>Local GGUF discovery</dt>
               <dd>{includeLocalGguf ? "enabled" : "disabled"}</dd>
             </div>
           </dl>

@@ -20,11 +20,7 @@ const passingSingleReport = {
       promptHash: "idea-prompt-hash",
       status: "pass",
     },
-    {
-      message: "180 words parsed.",
-      name: "script-section-json",
-      status: "pass",
-    },
+    { message: "180 words parsed.", name: "script-section-json", status: "pass" },
     {
       message: "Script section passed production content blockers.",
       name: "script-quality-guard",
@@ -48,11 +44,7 @@ const blockedCandidateReport = {
       appliedOverrides: ["mode", "model"],
       checks: [
         passingSingleReport.checks[0],
-        {
-          message: "Invalid script section.",
-          name: "script-section-json",
-          status: "block",
-        },
+        { message: "Invalid script section.", name: "script-section-json", status: "block" },
       ],
       configuredModel: "mock-invalid-script-json",
       passed: false,

@@ -1,6 +1,6 @@
 import { RunRecord } from "../core/state.js";
-import { readRenderPlanEvidence } from "./renderPlan.js";
 import type { ReadinessCheck } from "./readiness.js";
+import { readRenderPlanEvidence } from "./renderPlan.js";
 
 /**
  * Checks whether a render plan exists and is ready to use.

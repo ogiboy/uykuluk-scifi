@@ -114,10 +114,7 @@ export async function writeStudioChannelHandoffDecision(
       textSafeOverlayPath: "assets/thumbnails/thumbnail_text_safe_overlay_01_left_1280x720.png",
       textSafeOverlaySha256: "f".repeat(64),
     },
-    youtube: {
-      metadataPath: "production/youtube_metadata.json",
-      title: "Fixture title",
-    },
+    youtube: { metadataPath: "production/youtube_metadata.json", title: "Fixture title" },
   };
   await writeFile(
     artifactPath(runId, channelHandoffDecisionJsonPath),

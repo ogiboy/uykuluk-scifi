@@ -8,22 +8,20 @@ import {
   formatRunRenderDecision,
   formatRunReviewCounts,
 } from "@/lib/runSummaryCopy";
-import Link from "next/link";
 import type { Route } from "next";
+import Link from "next/link";
 import {
   operatorActionDetail,
   operatorActionForRun,
   operatorActionToneLabel,
 } from "./runSummaryOperatorAction";
 
-type RunSummaryCellProps = Readonly<{
-  run: StudioRunSummary;
-}>;
+type RunSummaryCellProps = Readonly<{ run: StudioRunSummary }>;
 
 export function RunIdCell({ run }: RunSummaryCellProps) {
   return (
     <Link
-      className='font-semibold text-foreground underline-offset-4 hover:underline'
+      className='text-foreground font-semibold underline-offset-4 hover:underline'
       href={runReviewHrefFromSummary(run) as Route}
     >
       {run.runId}
@@ -38,7 +36,7 @@ export function RunStateCell({ run }: RunSummaryCellProps) {
       <strong className='truncate' title={run.state}>
         {run.state}
       </strong>
-      <small className='truncate text-muted-foreground' title={reviewCounts}>
+      <small className='text-muted-foreground truncate' title={reviewCounts}>
         {reviewCounts}
       </small>
     </span>
@@ -50,10 +48,10 @@ export function RunReadinessCell({ run }: RunSummaryCellProps) {
     <span className='grid min-w-0 gap-1'>
       <strong>{run.readinessStatus}</strong>
       {run.readinessStatus === "passed" ? null : (
-        <small className='line-clamp-2 text-muted-foreground'>{run.readinessMessage}</small>
+        <small className='text-muted-foreground line-clamp-2'>{run.readinessMessage}</small>
       )}
       {run.readinessNextAction ? (
-        <small className='line-clamp-1 break-words text-muted-foreground'>
+        <small className='text-muted-foreground line-clamp-1 break-words'>
           {run.readinessNextAction}
         </small>
       ) : null}
@@ -84,7 +82,7 @@ export function RunOperatorActionCell({ run }: RunSummaryCellProps) {
       </span>
       <small className='text-muted-foreground'>{operatorActionDetail(action)}</small>
       {action.routePath ? (
-        <small className='break-all text-muted-foreground'>{action.routePath}</small>
+        <small className='text-muted-foreground break-all'>{action.routePath}</small>
       ) : null}
     </span>
   );
@@ -123,7 +121,7 @@ export function RunFinalBundleCell({ run }: RunSummaryCellProps) {
     <span className='grid min-w-0 gap-1'>
       <strong>{formatRunFinalReviewBundle(run)}</strong>
       {run.finalReviewBundle.kind === "present" ? (
-        <small className='break-all text-muted-foreground'>
+        <small className='text-muted-foreground break-all'>
           {run.finalReviewBundle.reviewPath}
         </small>
       ) : null}
@@ -136,7 +134,7 @@ export function RunChannelHandoffCell({ run }: RunSummaryCellProps) {
     <span className='grid min-w-0 gap-1'>
       <strong>{formatRunChannelHandoff(run)}</strong>
       {run.channelHandoff.kind === "present" ? (
-        <small className='break-all text-muted-foreground'>{run.channelHandoff.reviewPath}</small>
+        <small className='text-muted-foreground break-all'>{run.channelHandoff.reviewPath}</small>
       ) : null}
       {run.channelHandoffDecision.kind === "present" ? (
         <small className='text-muted-foreground'>{formatRunChannelHandoffDecision(run)}</small>

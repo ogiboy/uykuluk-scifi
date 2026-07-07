@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -16,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import { isStudioScriptRevisionState } from "@/lib/studioRevisionEligibility";
 import { useStudioGuardedActionSubmit } from "@/lib/useStudioGuardedActionSubmit";
+import { useState } from "react";
 import { StudioMutationResultPanel } from "../studio/StudioMutationResultPanel";
 import { RunRevisionConfirmationDialog } from "./RunRevisionConfirmationDialog";
 
@@ -23,9 +23,7 @@ type RunScriptRevisionActionPanelProps = Readonly<{
   run: Pick<StudioRunDetail, "revisionSources" | "runId" | "state">;
 }>;
 
-type FormSubmitEvent = Readonly<{
-  preventDefault: () => void;
-}>;
+type FormSubmitEvent = Readonly<{ preventDefault: () => void }>;
 
 /**
  * Renders a guarded script revision form for states where CLI/core allows script edits.
@@ -76,7 +74,7 @@ function RunScriptRevisionForm({ run }: RunScriptRevisionActionPanelProps) {
 
   return (
     <section aria-labelledby='script-revision-heading'>
-      <Card className='border-dashed bg-card/70 shadow-none'>
+      <Card className='bg-card/70 border-dashed shadow-none'>
         <CardHeader>
           <CardTitle id='script-revision-heading'>Revise script</CardTitle>
           <CardDescription>{source.message}</CardDescription>

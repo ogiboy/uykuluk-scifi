@@ -1,15 +1,15 @@
 import { appendFile, writeFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { artifactPath } from "../src/core/artifacts";
+import { readLedger } from "../src/core/ledger";
+import { loadRun } from "../src/core/runStore";
 import { requireApproval } from "../src/safeguards/approvalGuard";
 import { approveIdea } from "../src/stages/approveIdea";
 import { approveScript } from "../src/stages/approveScript";
-import { generateProductionPackage } from "../src/stages/productionPackage";
 import { runIdeas } from "../src/stages/ideas";
+import { generateProductionPackage } from "../src/stages/productionPackage";
 import { reviewScript } from "../src/stages/reviewScript";
 import { generateScript } from "../src/stages/script";
-import { loadRun } from "../src/core/runStore";
-import { readLedger } from "../src/core/ledger";
 import { useTempProject } from "./helpers";
 
 describe("approval guard", () => {

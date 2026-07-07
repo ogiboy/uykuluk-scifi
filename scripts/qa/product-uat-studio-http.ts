@@ -8,10 +8,7 @@ const baseUrl = "http://localhost:3000";
 
 export type StudioUatAssert = (condition: boolean, message: string) => asserts condition;
 
-export type StudioUatSession = Readonly<{
-  cookie: string;
-  token: string;
-}>;
+export type StudioUatSession = Readonly<{ cookie: string; token: string }>;
 
 /**
  * Builds a guarded same-origin Studio mutation request for product UAT route handlers.

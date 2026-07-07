@@ -5,18 +5,18 @@ import { loadRun } from "../core/runStore.js";
 import { readJsonFile } from "../utils/json.js";
 import { readRenderPlanEvidence } from "./renderPlan.js";
 import {
+  summarizeRenderPlanReview,
+  type CountedValue,
+  type RenderPlanBookendReview,
+  type RenderPlanSceneAssetReview,
+  type RenderPlanTimingReview,
+} from "./renderPlanReviewSummary.js";
+import {
   assetProvenanceSchema,
   renderPlanArtifactPaths,
   renderPlanSchema,
   type RenderPlan,
 } from "./renderPlanSchemas.js";
-import {
-  summarizeRenderPlanReview,
-  type RenderPlanBookendReview,
-  type CountedValue,
-  type RenderPlanSceneAssetReview,
-  type RenderPlanTimingReview,
-} from "./renderPlanReviewSummary.js";
 
 const [renderPlanPath, contactSheetPath, assetProvenancePath] = renderPlanArtifactPaths;
 

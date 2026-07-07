@@ -1,5 +1,3 @@
-import Link from "next/link";
-import type { Route } from "next";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { studioMutationRecoveryCopy } from "@/lib/studioMutationRecoveryCopy";
@@ -7,12 +5,12 @@ import {
   studioMutationResultHref,
   studioMutationResultLinkLabel,
 } from "@/lib/studioMutationResultNavigation";
-import { cn } from "@/lib/utils";
 import type { StudioGuardedActionSubmitState } from "@/lib/useStudioGuardedActionSubmit";
+import { cn } from "@/lib/utils";
+import type { Route } from "next";
+import Link from "next/link";
 
-type StudioMutationResultPanelProps = Readonly<{
-  state: StudioGuardedActionSubmitState;
-}>;
+type StudioMutationResultPanelProps = Readonly<{ state: StudioGuardedActionSubmitState }>;
 
 type StudioMutationStateWithAction = Extract<StudioGuardedActionSubmitState, { action: unknown }>;
 type StudioMutationStateWithOptionalRecordSummary = Extract<
@@ -36,8 +34,8 @@ export function StudioMutationResultPanel({ state }: StudioMutationResultPanelPr
   return (
     <section
       className={cn(
-        "grid gap-3 rounded-lg bg-muted/20 p-3 text-sm",
-        isProblem && "border border-destructive/40 bg-destructive/10",
+        "bg-muted/20 grid gap-3 rounded-lg p-3 text-sm",
+        isProblem && "border-destructive/40 bg-destructive/10 border",
       )}
       aria-label='Latest local action result'
       aria-live={isProblem ? "assertive" : "polite"}
@@ -49,8 +47,8 @@ export function StudioMutationResultPanel({ state }: StudioMutationResultPanelPr
       {actionFacts.length > 0 ? (
         <dl className='grid gap-2 sm:grid-cols-2' aria-label='Local Studio action boundary'>
           {actionFacts.map((fact, index) => (
-            <div className='rounded-md bg-background/55 p-2' key={`${fact.label}-${index}`}>
-              <dt className='text-xs font-medium uppercase tracking-wide text-muted-foreground'>
+            <div className='bg-background/55 rounded-md p-2' key={`${fact.label}-${index}`}>
+              <dt className='text-muted-foreground text-xs font-medium tracking-wide uppercase'>
                 {fact.label}
               </dt>
               <dd className='mt-1 break-all'>{fact.value}</dd>
@@ -59,7 +57,7 @@ export function StudioMutationResultPanel({ state }: StudioMutationResultPanelPr
         </dl>
       ) : null}
       {recovery ? (
-        <div className='grid gap-2 rounded-lg border border-destructive/40 bg-destructive/10 p-3'>
+        <div className='border-destructive/40 bg-destructive/10 grid gap-2 rounded-lg border p-3'>
           <p className='text-destructive'>{recovery.detail}</p>
           <Link className={buttonVariants({ variant: "secondary" })} href={recovery.href}>
             {recovery.label}
@@ -80,8 +78,8 @@ export function StudioMutationResultPanel({ state }: StudioMutationResultPanelPr
           ) : null}
           <dl className='grid gap-2' aria-label='Producer record summary'>
             {state.recordSummary.facts.map((fact, index) => (
-              <div className='rounded-md bg-background/55 p-2' key={`${fact}-${index}`}>
-                <dt className='text-xs font-medium uppercase tracking-wide text-muted-foreground'>
+              <div className='bg-background/55 rounded-md p-2' key={`${fact}-${index}`}>
+                <dt className='text-muted-foreground text-xs font-medium tracking-wide uppercase'>
                   Result
                 </dt>
                 <dd className='mt-1 break-words'>{fact}</dd>

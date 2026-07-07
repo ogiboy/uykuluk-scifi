@@ -38,10 +38,7 @@ describe("Studio action preflight", () => {
 
     expect(preflight.items).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({
-          label: "Payload",
-          status: "attention",
-        }),
+        expect.objectContaining({ label: "Payload", status: "attention" }),
         expect.objectContaining({
           detail: expect.stringContaining("Evidence bundle is stale."),
           label: "Evidence",

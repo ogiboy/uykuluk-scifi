@@ -1,7 +1,7 @@
+import { spawnSync } from "node:child_process";
 import { mkdtemp, rm, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { spawnSync } from "node:child_process";
 
 const workdir = await mkdtemp(path.join(tmpdir(), "uykulukscifi-build-smoke-"));
 

@@ -6,16 +6,16 @@ import { sha256 } from "../utils/hash.js";
 import { readJsonFile } from "../utils/json.js";
 import { nowIso } from "../utils/time.js";
 import {
+  buildChannelHandoffPayload,
+  type ChannelHandoff,
   channelHandoffJsonPath,
   channelHandoffMarkdownPath,
   channelHandoffSchema,
-  buildChannelHandoffPayload,
-  type ChannelHandoff,
   youtubeMetadataSchema,
 } from "./channelHandoffContracts.js";
+import { renderChannelHandoffMarkdown } from "./channelHandoffMarkdown.js";
 import { finalReviewBundleJsonPath } from "./finalReviewBundleContracts.js";
 import { readFinalReviewBundleStatus } from "./finalReviewBundleStatus.js";
-import { renderChannelHandoffMarkdown } from "./channelHandoffMarkdown.js";
 import { verifyProductionPackage } from "./productionPackageIntegrity.js";
 import {
   buildThumbnailCandidatePack,

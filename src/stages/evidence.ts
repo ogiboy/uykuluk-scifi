@@ -1,20 +1,20 @@
 import { loadConfig } from "../config/config.js";
+import { artifactPath, writeRunJson, writeRunText } from "../core/artifacts.js";
+import { readLedger } from "../core/ledger.js";
+import { loadRun, saveRun } from "../core/runStore.js";
 import { readCostEstimate } from "../costs/costEstimate.js";
+import { readCostEvents } from "../costs/costLedger.js";
 import {
   isActiveCostReservation,
   readCostReservationSummaries,
 } from "../costs/costReservationStore.js";
-import { artifactPath, writeRunJson, writeRunText } from "../core/artifacts.js";
-import { readLedger } from "../core/ledger.js";
-import { loadRun, saveRun } from "../core/runStore.js";
-import { readCostEvents } from "../costs/costLedger.js";
 import { PromptProvenance } from "../prompts/provenance.js";
 import { pathExists } from "../utils/fs.js";
 import { readJsonFile } from "../utils/json.js";
 import { nowIso } from "../utils/time.js";
-import { evidenceNextCommand, materializeRunCommand } from "./evidenceNextCommand.js";
 import { evidenceBlockedActions } from "./evidenceBlockedActions.js";
 import { renderEvidenceMarkdown } from "./evidenceMarkdown.js";
+import { evidenceNextCommand, materializeRunCommand } from "./evidenceNextCommand.js";
 import { readProductionPackageIntegrityEvidence } from "./productionPackageIntegrity.js";
 import { readDraftRenderEvidence } from "./renderEvidence.js";
 import { readRenderPlanEvidence } from "./renderPlan.js";
@@ -106,7 +106,9 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
 }
 
 /** Reads quote evidence, preserving parse failures as explicit invalid status. */
-export async function readCostQuoteEvidence(run: Awaited<ReturnType<typeof loadRun>>): Promise<{
+export async function readCostQuoteEvidence(
+  run: Awaited<ReturnType<typeof loadRun>>,
+): Promise<{
   path: string;
   digest: string;
   estimatedUsd: number;

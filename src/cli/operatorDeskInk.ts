@@ -1,7 +1,8 @@
-import React, { useState } from "react";
 import { Box, render, Text, useApp, useInput } from "ink";
-import { channelHandoffDecisionLines } from "./operatorDeskChannelHandoffDecision.js";
+import React, { useState } from "react";
 import { channelHandoffLines } from "./operatorDeskChannelHandoff.js";
+import { channelHandoffDecisionLines } from "./operatorDeskChannelHandoffDecision.js";
+import { formatOperatorDeskCommandLines } from "./operatorDeskCommands.js";
 import { finalReviewBundleLines } from "./operatorDeskFinalReview.js";
 import {
   formatOperatorDeskBlockedActionLines,
@@ -10,17 +11,14 @@ import {
   formatOperatorDeskRecentArtifactLines,
   formatOperatorDeskWorkflowLines,
 } from "./operatorDeskFormatting.js";
-import { formatOperatorDeskCommandLines } from "./operatorDeskCommands.js";
-import { formatOperatorDeskMediaArtifactLine } from "./operatorDeskModel.js";
 import type {
   OperatorDeskRun,
   OperatorDeskSelectedRun,
   OperatorDeskViewModel,
 } from "./operatorDeskModel.js";
+import { formatOperatorDeskMediaArtifactLine } from "./operatorDeskModel.js";
 
-type OperatorDeskAppProps = {
-  model: OperatorDeskViewModel;
-};
+type OperatorDeskAppProps = { model: OperatorDeskViewModel };
 
 /**
  * Mounts the operator desk as an interactive Ink terminal UI.
@@ -116,10 +114,7 @@ function RunList({
       const selectionMarker = index === selectedIndex ? ">" : " ";
       return React.createElement(
         Text,
-        {
-          color: index === selectedIndex ? "green" : undefined,
-          key: run.runId,
-        },
+        { color: index === selectedIndex ? "green" : undefined, key: run.runId },
         formatRecentRunLine(run, selectionMarker),
       );
     }),

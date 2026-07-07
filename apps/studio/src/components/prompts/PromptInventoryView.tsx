@@ -13,7 +13,7 @@ export function PromptInventoryView({ inventory }: Readonly<{ inventory: StudioP
         <h3 className='text-xl font-semibold tracking-tight' id='prompt-inventory-heading'>
           Runtime prompt inventory
         </h3>
-        <p className='text-sm text-muted-foreground'>
+        <p className='text-muted-foreground text-sm'>
           Read-only prompt source visibility. Studio does not edit prompts, approve prompt changes,
           call providers, or make `.ai/` part of runtime.
         </p>
@@ -23,13 +23,13 @@ export function PromptInventoryView({ inventory }: Readonly<{ inventory: StudioP
         <PromptFact label='Status' value={inventory.passed ? "Ready" : "Needs action"} />
       </dl>
       {inventory.warnings.length > 0 ? (
-        <ul className='grid list-disc gap-2 pl-5 text-sm text-muted-foreground'>
+        <ul className='text-muted-foreground grid list-disc gap-2 pl-5 text-sm'>
           {inventory.warnings.map((warning, index) => (
             <li key={`${warning}-${index}`}>{warning}</li>
           ))}
         </ul>
       ) : (
-        <p className='text-sm text-muted-foreground'>No prompt inventory warnings.</p>
+        <p className='text-muted-foreground text-sm'>No prompt inventory warnings.</p>
       )}
       <div className='grid gap-3 lg:grid-cols-2 xl:grid-cols-3'>
         {inventory.prompts.map((prompt) => (
@@ -46,7 +46,7 @@ function PromptInventoryCard({ prompt }: Readonly<{ prompt: StudioPromptEntry }>
       <CardHeader className='gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start'>
         <div className='min-w-0 space-y-1'>
           <CardTitle className='text-base'>{prompt.label}</CardTitle>
-          <span className='block break-all text-xs text-muted-foreground'>
+          <span className='text-muted-foreground block text-xs break-all'>
             {prompt.contractMarker}
           </span>
         </div>
@@ -59,7 +59,7 @@ function PromptInventoryCard({ prompt }: Readonly<{ prompt: StudioPromptEntry }>
           <PromptFact label='Mode' value={prompt.mode} />
           <PromptFact label='Hash' value={shortHash(prompt.selectedHash ?? prompt.defaultHash)} />
         </dl>
-        <p className='text-sm text-muted-foreground'>{prompt.message}</p>
+        <p className='text-muted-foreground text-sm'>{prompt.message}</p>
         <p className='rounded-xl bg-amber-500/10 p-3 text-sm text-amber-900 ring-1 ring-amber-500/20 dark:text-amber-100'>
           {prompt.nextAction}
         </p>
@@ -70,9 +70,9 @@ function PromptInventoryCard({ prompt }: Readonly<{ prompt: StudioPromptEntry }>
 
 function PromptFact({ label, value }: Readonly<{ label: string; value: string }>) {
   return (
-    <div className='min-w-0 space-y-1 rounded-xl bg-muted/25 p-3'>
-      <dt className='text-xs font-medium text-muted-foreground'>{label}</dt>
-      <dd className='break-all font-semibold'>{value}</dd>
+    <div className='bg-muted/25 min-w-0 space-y-1 rounded-xl p-3'>
+      <dt className='text-muted-foreground text-xs font-medium'>{label}</dt>
+      <dd className='font-semibold break-all'>{value}</dd>
     </div>
   );
 }

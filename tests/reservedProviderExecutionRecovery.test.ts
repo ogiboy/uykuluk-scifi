@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { artifactPath } from "../src/core/artifacts";
 import { readCostEvents } from "../src/costs/costLedger";
 import { beginCostReservationExecution } from "../src/costs/costReservationExecutionState";
 import {
@@ -6,10 +7,9 @@ import {
   reserveApprovedCost,
   settleCostReservation,
 } from "../src/costs/costReservationService";
-import { executeReservedProviderOperation } from "../src/costs/reservedProviderExecution";
 import { readCostReservationSummaries } from "../src/costs/costReservationStore";
 import { defaultStagePricing } from "../src/costs/pricing";
-import { artifactPath } from "../src/core/artifacts";
+import { executeReservedProviderOperation } from "../src/costs/reservedProviderExecution";
 import { generateEvidenceBundle } from "../src/stages/evidence";
 import { sha256 } from "../src/utils/hash";
 import { readJsonFile } from "../src/utils/json";
@@ -154,10 +154,7 @@ describe("reserved provider execution recovery", () => {
       stage: "tts",
       operationId: "tts-uncertain-evidence",
       timeoutMs: 100,
-      adapter: reservedAdapter(async () => ({
-        kind: "unknown",
-        reason: "transport",
-      })),
+      adapter: reservedAdapter(async () => ({ kind: "unknown", reason: "transport" })),
     });
 
     await generateEvidenceBundle(runId);

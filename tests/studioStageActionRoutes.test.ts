@@ -32,26 +32,18 @@ describe("Studio workflow stage action routes", () => {
       403,
     );
     await expectRouteError(
-      runIdeas(
-        studioJsonRequest("/actions/run-ideas", "ideas.run", {
-          runId: "run_unexpected",
-        }),
-      ),
+      runIdeas(studioJsonRequest("/actions/run-ideas", "ideas.run", { runId: "run_unexpected" })),
       400,
     );
     await expectRouteError(
       runDoctor(
-        studioJsonRequest("/actions/run-doctor", "doctor.run", {
-          runId: "run_unexpected",
-        }),
+        studioJsonRequest("/actions/run-doctor", "doctor.run", { runId: "run_unexpected" }),
       ),
       400,
     );
     await expectRouteError(
       runModelEval(
-        studioJsonRequest("/actions/run-model-eval", "model-eval.run", {
-          runId: "run_unexpected",
-        }),
+        studioJsonRequest("/actions/run-model-eval", "model-eval.run", { runId: "run_unexpected" }),
       ),
       400,
     );
@@ -81,9 +73,7 @@ describe("Studio workflow stage action routes", () => {
     );
     await expectRouteError(
       runEvidence(
-        studioJsonRequest("/actions/run-evidence", "evidence.run", {
-          runId: "../escape",
-        }),
+        studioJsonRequest("/actions/run-evidence", "evidence.run", { runId: "../escape" }),
       ),
       400,
     );
@@ -105,15 +95,11 @@ describe("Studio workflow stage action routes", () => {
     expect(ideasResponse.status).toBe(200);
     await expect(ideasResponse.json()).resolves.toMatchObject({
       actionId: "ideas.run",
-      record: {
-        runId: expect.stringMatching(/^run_/),
-      },
+      record: { runId: expect.stringMatching(/^run_/) },
       status: "ok",
     });
     const response = await runEvidence(
-      studioJsonRequest("/actions/run-evidence", "evidence.run", {
-        runId: "run_missing_stage",
-      }),
+      studioJsonRequest("/actions/run-evidence", "evidence.run", { runId: "run_missing_stage" }),
     );
 
     expect(response.status).toBe(409);
@@ -127,17 +113,12 @@ describe("Studio workflow stage action routes", () => {
     const run = await createRun();
 
     const response = await runReadiness(
-      studioJsonRequest("/actions/run-readiness", "readiness.run", {
-        runId: run.runId,
-      }),
+      studioJsonRequest("/actions/run-readiness", "readiness.run", { runId: run.runId }),
     );
 
     expect(response.status).toBe(409);
     await expect(response.json()).resolves.toMatchObject({
-      record: {
-        checks: expect.any(Array),
-        passed: false,
-      },
+      record: { checks: expect.any(Array), passed: false },
       status: "error",
     });
   });
@@ -150,11 +131,7 @@ describe("Studio workflow stage action routes", () => {
           ...defaultConfig,
           providers: {
             ...defaultConfig.providers,
-            youtube: {
-              enabled: true,
-              allowPrivateUpload: true,
-              allowPublicPublish: true,
-            },
+            youtube: { enabled: true, allowPrivateUpload: true, allowPublicPublish: true },
           },
           safeguards: {
             ...defaultConfig.safeguards,
@@ -171,10 +148,7 @@ describe("Studio workflow stage action routes", () => {
 
     expect(response.status).toBe(409);
     await expect(response.json()).resolves.toMatchObject({
-      record: {
-        checks: expect.any(Array),
-        passed: false,
-      },
+      record: { checks: expect.any(Array), passed: false },
       status: "error",
     });
   });

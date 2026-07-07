@@ -1,18 +1,16 @@
-import type {
-  StudioDoctorCheckSummary,
-  StudioDoctorOverview,
-  StudioDoctorStatus,
-} from "@/lib/doctorOverview";
 import { ArtifactPreview } from "@/components/studio/ArtifactPreview";
 import { CliFallbackCommand } from "@/components/studio/CliFallbackCommand";
 import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import type {
+  StudioDoctorCheckSummary,
+  StudioDoctorOverview,
+  StudioDoctorStatus,
+} from "@/lib/doctorOverview";
 import { DoctorRunActionPanel } from "./DoctorRunActionPanel";
 
-type DoctorOverviewViewProps = Readonly<{
-  overview: StudioDoctorOverview;
-}>;
+type DoctorOverviewViewProps = Readonly<{ overview: StudioDoctorOverview }>;
 
 /**
  * Renders the read-only producer doctor diagnostics overview.
@@ -66,12 +64,12 @@ export function DoctorOverviewView({ overview }: DoctorOverviewViewProps) {
               label='Doctor command'
               triggerLabel='Show doctor fallback'
             />
-            <p className='text-sm text-muted-foreground'>
+            <p className='text-muted-foreground text-sm'>
               Studio can refresh local doctor artifacts through the guarded CLI route. It does not
               edit config, start providers, download models, upload media, publish content, or
               mutate run workflow state outside the canonical doctor command.
             </p>
-            {overview.error ? <p className='text-sm text-destructive'>{overview.error}</p> : null}
+            {overview.error ? <p className='text-destructive text-sm'>{overview.error}</p> : null}
           </CardContent>
         </Card>
       </section>
@@ -91,7 +89,7 @@ export function DoctorOverviewView({ overview }: DoctorOverviewViewProps) {
                 ))}
               </ul>
             ) : (
-              <p className='text-sm text-muted-foreground'>
+              <p className='text-muted-foreground text-sm'>
                 Run doctor from Studio or CLI to generate local diagnostics.
               </p>
             )}
@@ -107,14 +105,14 @@ export function DoctorOverviewView({ overview }: DoctorOverviewViewProps) {
             </h2>
           </CardHeader>
           <CardContent className='space-y-3'>
-            <p className='text-xs text-muted-foreground'>
+            <p className='text-muted-foreground text-xs'>
               {overview.markdownPath}
               {overview.reportPreviewTruncated ? " · preview truncated" : ""}
             </p>
             {overview.reportPreview ? (
               <ArtifactPreview>{overview.reportPreview}</ArtifactPreview>
             ) : (
-              <p className='text-sm text-muted-foreground'>
+              <p className='text-muted-foreground text-sm'>
                 Run doctor from Studio or CLI to refresh the local Markdown report artifact.
               </p>
             )}
@@ -133,16 +131,16 @@ export function DoctorOverviewView({ overview }: DoctorOverviewViewProps) {
  */
 function DoctorCheckCard({ check }: Readonly<{ check: StudioDoctorCheckSummary }>) {
   return (
-    <li className='grid gap-3 rounded-lg bg-muted/20 p-3'>
+    <li className='bg-muted/20 grid gap-3 rounded-lg p-3'>
       <div className='grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start'>
         <div className='min-w-0 space-y-1'>
           <strong>{check.name}</strong>
-          <span className='block text-sm text-muted-foreground'>{check.message}</span>
+          <span className='text-muted-foreground block text-sm'>{check.message}</span>
         </div>
         <Badge variant={doctorStatusBadgeVariant(check.status)}>{check.status}</Badge>
       </div>
       {check.nextAction ? (
-        <p className='rounded-lg bg-background/55 p-3 text-sm text-muted-foreground'>
+        <p className='bg-background/55 text-muted-foreground rounded-lg p-3 text-sm'>
           {check.nextAction}
         </p>
       ) : null}

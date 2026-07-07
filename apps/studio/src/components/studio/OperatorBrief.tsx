@@ -1,20 +1,20 @@
-import Link from "next/link";
-import type { Route } from "next";
 import { RunQuickStageActionButton } from "@/components/runs/RunQuickStageActionButton";
 import { CopyableCommand } from "@/components/studio/CopyableCommand";
 import { StartIdeasActionPanel } from "@/components/studio/StartIdeasActionPanel";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { buildStudioRunPrimaryAction } from "@/lib/runPrimaryAction";
 import {
   operatorBriefControlForAction,
   operatorBriefToneLabel,
 } from "@/lib/operatorBriefPresentation";
+import { buildStudioRunPrimaryAction } from "@/lib/runPrimaryAction";
 import { runReviewHrefFromSummary } from "@/lib/runReviewNavigation";
-import { NO_RUNS_NEXT_COMMAND } from "@/lib/runSummaryCopy";
 import type { StudioRunSummary } from "@/lib/runSummaries";
+import { NO_RUNS_NEXT_COMMAND } from "@/lib/runSummaryCopy";
 import type { StartIdeasReadinessSummary } from "@/lib/startIdeasReadiness";
+import type { Route } from "next";
+import Link from "next/link";
 
 type OperatorBriefProps = Readonly<{
   latestRun: StudioRunSummary | null;
@@ -43,7 +43,7 @@ export function OperatorBrief({ latestRun, startIdeasReadiness }: OperatorBriefP
       <Card className='bg-primary/5'>
         <CardHeader className='gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start'>
           <div className='min-w-0 space-y-1'>
-            <p className='text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground'>
+            <p className='text-muted-foreground text-xs font-semibold tracking-[0.18em] uppercase'>
               Operator brief
             </p>
             <CardTitle>
@@ -63,7 +63,7 @@ export function OperatorBrief({ latestRun, startIdeasReadiness }: OperatorBriefP
             <OperatorBriefFact label='Safety boundary' value='CLI/core re-checks before writes' />
           </div>
           <div className='grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center'>
-            <p className='text-sm text-muted-foreground'>{action.description}</p>
+            <p className='text-muted-foreground text-sm'>{action.description}</p>
             {control === "stage-button" ? (
               <RunQuickStageActionButton label={action.label} run={latestRun} showResult />
             ) : null}
@@ -90,7 +90,7 @@ function EmptyOperatorBrief({
       <Card className='bg-primary/5'>
         <CardHeader className='gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start'>
           <div className='space-y-1'>
-            <p className='text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground'>
+            <p className='text-muted-foreground text-xs font-semibold tracking-[0.18em] uppercase'>
               Operator brief
             </p>
             <CardTitle>Start the first local run</CardTitle>
@@ -103,8 +103,8 @@ function EmptyOperatorBrief({
             description='Create the first local idea run through the guarded Studio route. CLI/core still checks provider, budget, parser, and workflow gates before writing artifacts.'
             readiness={startIdeasReadiness}
           />
-          <details className='rounded-xl bg-background/50 p-3 text-sm text-muted-foreground'>
-            <summary className='cursor-pointer font-medium text-foreground'>
+          <details className='bg-background/50 text-muted-foreground rounded-xl p-3 text-sm'>
+            <summary className='text-foreground cursor-pointer font-medium'>
               Need a terminal fallback?
             </summary>
             <div className='mt-3'>
@@ -119,8 +119,8 @@ function EmptyOperatorBrief({
 
 function OperatorBriefFact({ label, value }: Readonly<{ label: string; value: string }>) {
   return (
-    <div className='min-w-0 rounded-xl bg-background/30 p-3'>
-      <p className='text-xs font-medium text-muted-foreground'>{label}</p>
+    <div className='bg-background/30 min-w-0 rounded-xl p-3'>
+      <p className='text-muted-foreground text-xs font-medium'>{label}</p>
       <p className='mt-1 truncate font-semibold' title={value}>
         {value}
       </p>

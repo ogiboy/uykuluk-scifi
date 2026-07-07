@@ -2,7 +2,7 @@ import { writeFile } from "node:fs/promises";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { artifactPath } from "../src/core/artifacts";
-import { createChannelHandoff, channelHandoffJsonPath } from "../src/stages/channelHandoff";
+import { channelHandoffJsonPath, createChannelHandoff } from "../src/stages/channelHandoff";
 import { createFinalReviewBundle } from "../src/stages/finalReviewBundle";
 import { recordRenderDecision } from "../src/stages/renderDecision";
 import { readRunStatus } from "../src/stages/status";

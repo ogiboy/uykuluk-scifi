@@ -43,17 +43,8 @@ export const productionPackageManifestSchema = z.strictObject({
 
 export type ProductionPackageManifest = z.infer<typeof productionPackageManifestSchema>;
 export type ProductionPackageIntegrityEvidence =
-  | {
-      status: "pass";
-      path: string;
-      digest: string;
-      artifactCount: number;
-    }
-  | {
-      status: "block";
-      path: string;
-      message: string;
-    }
+  | { status: "pass"; path: string; digest: string; artifactCount: number }
+  | { status: "block"; path: string; message: string }
   | null;
 
 type ProductionPackageProviderEvidence = {
@@ -98,10 +89,9 @@ export async function createProductionPackageManifest(
   });
 }
 
-export async function verifyProductionPackage(run: RunRecord): Promise<{
-  manifest: ProductionPackageManifest;
-  digest: string;
-}> {
+export async function verifyProductionPackage(
+  run: RunRecord,
+): Promise<{ manifest: ProductionPackageManifest; digest: string }> {
   try {
     const manifestText = await readPackageArtifact(run.runId, productionPackageManifestPath);
     const manifest = productionPackageManifestSchema.parse(JSON.parse(manifestText) as unknown);
@@ -142,10 +132,7 @@ export async function verifyProductionPackage(run: RunRecord): Promise<{
         );
       }
     }
-    return {
-      manifest,
-      digest: sha256(manifestText),
-    };
+    return { manifest, digest: sha256(manifestText) };
   } catch (error) {
     if (
       error instanceof SafeExitError &&

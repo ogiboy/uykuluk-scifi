@@ -2,10 +2,7 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
-export type StudioTemporaryInputFile = Readonly<{
-  cleanup: () => Promise<void>;
-  filePath: string;
-}>;
+export type StudioTemporaryInputFile = Readonly<{ cleanup: () => Promise<void>; filePath: string }>;
 
 /**
  * Writes a short-lived local input file for guarded Studio CLI mutations.
@@ -23,8 +20,5 @@ export async function writeTemporaryInputFile(
   const directory = await mkdtemp(path.join(tmpdir(), directoryPrefix));
   const filePath = path.join(directory, fileName);
   await writeFile(filePath, content, { encoding: "utf8", mode: 0o600 });
-  return {
-    cleanup: () => rm(directory, { force: true, recursive: true }),
-    filePath,
-  };
+  return { cleanup: () => rm(directory, { force: true, recursive: true }), filePath };
 }

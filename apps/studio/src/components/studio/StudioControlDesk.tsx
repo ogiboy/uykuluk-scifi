@@ -51,7 +51,7 @@ export function StudioControlDesk({
       <div className='grid min-w-0 content-start gap-4'>
         <div className='grid gap-4 sm:grid-cols-[1fr_auto] sm:items-start'>
           <div className='space-y-2'>
-            <p className='text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground'>
+            <p className='text-muted-foreground text-xs font-semibold tracking-[0.28em] uppercase'>
               Operator control desk
             </p>
             <h2 className='text-2xl font-semibold tracking-tight' id='control-desk-heading'>

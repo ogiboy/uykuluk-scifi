@@ -62,12 +62,7 @@ async function writePiperConfig(tts: {
         ...defaultConfig,
         providers: {
           ...defaultConfig.providers,
-          tts: {
-            ...defaultConfig.providers.tts,
-            enabled: true,
-            mode: "local-piper",
-            ...tts,
-          },
+          tts: { ...defaultConfig.providers.tts, enabled: true, mode: "local-piper", ...tts },
         },
       },
       null,

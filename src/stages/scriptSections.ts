@@ -1,37 +1,29 @@
 import { z } from "zod";
-import { GenerateTextResult } from "../providers/llmProvider.js";
 import { SafeExitError } from "../core/errors.js";
+import { GenerateTextResult } from "../providers/llmProvider.js";
+import { sha256 } from "../utils/hash.js";
+import { parseProviderJson } from "./providerJson.js";
 import type { ScriptContentBlockerRetryEvidence } from "./scriptContentRetry.js";
 import type { ScriptLabelRepairEvidence } from "./scriptLabelRepair.js";
 import { repairScriptProductionLabels } from "./scriptLabelRepair.js";
-import { parseProviderJson } from "./providerJson.js";
 import { stripLeadingMarkdownHeading } from "./scriptMarkdown.js";
 import {
   renderPreviousExpansionContext,
   renderScopedScriptSectionContext,
 } from "./scriptSectionPromptContext.js";
-import { sha256 } from "../utils/hash.js";
 
-const scriptSectionPayloadSchema = z.strictObject({
-  text: z.string().min(1).max(750),
-});
-const scriptSectionExpansionPayloadSchema = z.strictObject({
-  text: z.string().min(1).max(1400),
-});
+const scriptSectionPayloadSchema = z.strictObject({ text: z.string().min(1).max(750) });
+const scriptSectionExpansionPayloadSchema = z.strictObject({ text: z.string().min(1).max(1400) });
 
 export const scriptSectionResponseFormat = {
   type: "object",
-  properties: {
-    text: { type: "string", minLength: 1, maxLength: 750 },
-  },
+  properties: { text: { type: "string", minLength: 1, maxLength: 750 } },
   required: ["text"],
 } as const satisfies Record<string, unknown>;
 
 export const scriptSectionExpansionResponseFormat = {
   type: "object",
-  properties: {
-    text: { type: "string", minLength: 1, maxLength: 1400 },
-  },
+  properties: { text: { type: "string", minLength: 1, maxLength: 1400 } },
   required: ["text"],
 } as const satisfies Record<string, unknown>;
 
@@ -83,10 +75,7 @@ export const scriptSectionPlans: ScriptSectionPlan[] = [
   },
 ];
 
-export type ScriptSectionExpansionChunk = {
-  index: 1 | 2 | 3;
-  focus: string;
-};
+export type ScriptSectionExpansionChunk = { index: 1 | 2 | 3; focus: string };
 
 export const scriptSectionExpansionChunks: ScriptSectionExpansionChunk[] = [
   { index: 1, focus: "strong image, hook continuity, and scene-setting narration" },

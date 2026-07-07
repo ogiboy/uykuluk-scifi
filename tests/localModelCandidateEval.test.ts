@@ -32,14 +32,8 @@ describe("local model candidate evaluation", () => {
     expect(report).toMatchObject({
       baseOverrides: ["mode"],
       candidates: [
-        expect.objectContaining({
-          configuredModel: "mock-deterministic",
-          passed: true,
-        }),
-        expect.objectContaining({
-          configuredModel: "mock-invalid-script-json",
-          passed: false,
-        }),
+        expect.objectContaining({ configuredModel: "mock-deterministic", passed: true }),
+        expect.objectContaining({ configuredModel: "mock-invalid-script-json", passed: false }),
       ],
       configSource: "cli-overrides",
       passed: false,
@@ -97,10 +91,7 @@ describe("local model candidate evaluation", () => {
 
     expect(report).toMatchObject({
       candidates: [
-        expect.objectContaining({
-          configuredModel: "mock-invalid-script-json",
-          passed: false,
-        }),
+        expect.objectContaining({ configuredModel: "mock-invalid-script-json", passed: false }),
       ],
       passed: false,
       operatorGuidance: {
@@ -134,9 +125,7 @@ describe("local model candidate evaluation", () => {
     expect(report).toMatchObject({
       candidates: [],
       passed: false,
-      operatorGuidance: {
-        decision: "try-more-candidates",
-      },
+      operatorGuidance: { decision: "try-more-candidates" },
       recommendedCandidate: null,
     });
   });
@@ -201,11 +190,7 @@ function localModelCandidateReport(
         name: "ideas-json",
         status: passed ? "pass" : "block",
       },
-      {
-        message: "42 words parsed.",
-        name: "script-section-json",
-        status: "pass",
-      },
+      { message: "42 words parsed.", name: "script-section-json", status: "pass" },
       {
         message: "Script section passed production content blockers.",
         name: "script-quality-guard",
@@ -233,13 +218,7 @@ async function writeLlmConfig(
     `${JSON.stringify(
       {
         ...defaultConfig,
-        providers: {
-          ...defaultConfig.providers,
-          llm: {
-            ...defaultConfig.providers.llm,
-            ...llm,
-          },
-        },
+        providers: { ...defaultConfig.providers, llm: { ...defaultConfig.providers.llm, ...llm } },
       },
       null,
       2,

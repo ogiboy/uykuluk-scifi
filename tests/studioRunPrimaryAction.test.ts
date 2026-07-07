@@ -7,10 +7,7 @@ import {
 describe("Studio run primary action", () => {
   it("does not promote global ideas generation as a run-bound web action", () => {
     const action = buildStudioRunPrimaryAction(
-      runPrimaryActionFixture({
-        nextRecommendedCommand: "pnpm producer ideas",
-        state: "NEW",
-      }),
+      runPrimaryActionFixture({ nextRecommendedCommand: "pnpm producer ideas", state: "NEW" }),
     );
 
     expect(action).toMatchObject({
@@ -116,10 +113,7 @@ describe("Studio run primary action", () => {
           nextAction: "Manual channel handoff decision is recorded.",
         },
         nextRecommendedCommand: null,
-        renderDecision: {
-          kind: "present",
-          nextAction: "Local render decision is recorded.",
-        },
+        renderDecision: { kind: "present", nextAction: "Local render decision is recorded." },
       }),
     );
 

@@ -13,17 +13,17 @@ export function StatusGrid() {
         {statusCards.map((card) => (
           <Card key={card.label}>
             <CardContent className='space-y-2 pt-6'>
-              <p className='text-sm font-medium text-muted-foreground'>{card.label}</p>
+              <p className='text-muted-foreground text-sm font-medium'>{card.label}</p>
               <strong
                 className={
                   card.tone === "blocked"
-                    ? "text-2xl font-semibold text-destructive"
+                    ? "text-destructive text-2xl font-semibold"
                     : "text-2xl font-semibold"
                 }
               >
                 {card.value}
               </strong>
-              <p className='text-sm text-muted-foreground'>{card.detail}</p>
+              <p className='text-muted-foreground text-sm'>{card.detail}</p>
             </CardContent>
           </Card>
         ))}

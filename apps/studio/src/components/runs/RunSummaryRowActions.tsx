@@ -1,7 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import type { Route } from "next";
 import { CopyableCommand } from "@/components/studio/CopyableCommand";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,14 +20,14 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { runReviewHrefFromSummary } from "@/lib/runReviewNavigation";
-import { getNextSafeCommand } from "@/lib/runSummaryCopy";
 import type { StudioRunSummary } from "@/lib/runSummaries";
-import { operatorActionForRun } from "./runSummaryOperatorAction";
+import { getNextSafeCommand } from "@/lib/runSummaryCopy";
+import type { Route } from "next";
+import Link from "next/link";
 import { RunQuickStageActionButton } from "./RunQuickStageActionButton";
+import { operatorActionForRun } from "./runSummaryOperatorAction";
 
-type RunSummaryRowActionsProps = Readonly<{
-  run: StudioRunSummary;
-}>;
+type RunSummaryRowActionsProps = Readonly<{ run: StudioRunSummary }>;
 
 /**
  * Renders row-scoped navigation and safe-command affordances for the run table.

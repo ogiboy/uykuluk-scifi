@@ -62,10 +62,7 @@ describe("render operator decision", () => {
     const ledger = await readLedger(runId);
     expect(ledger).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({
-          stage: "decide-render",
-          type: "REVIEW_DECISION_RECORDED",
-        }),
+        expect.objectContaining({ stage: "decide-render", type: "REVIEW_DECISION_RECORDED" }),
       ]),
     );
     expect(run.approvals.map((approval) => approval.target)).not.toContain("upload");

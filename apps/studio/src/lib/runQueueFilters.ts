@@ -1,15 +1,12 @@
-import type { StudioRunSummary } from "./runSummaries";
 import { needsOperatorReviewDecision } from "./runQueueDecisions";
+import type { StudioRunSummary } from "./runSummaries";
 import { buildStudioActionWorkbench } from "./studioActionWorkbench";
 
 export const runQueueFilterValues = ["all", "attention", "ready", "rendered", "decision"] as const;
 
 export type RunQueueFilter = (typeof runQueueFilterValues)[number];
 
-export type RunQueueFilterInput = Readonly<{
-  filter: RunQueueFilter;
-  query: string;
-}>;
+export type RunQueueFilterInput = Readonly<{ filter: RunQueueFilter; query: string }>;
 
 /**
  * Filters Studio run summaries for operator queue views.

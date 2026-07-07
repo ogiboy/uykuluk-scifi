@@ -1,8 +1,8 @@
-import "./product-uat-studio-readonly";
 import { POST as importAnalytics } from "../../apps/studio/src/app/actions/analytics-import/route";
 import { POST as refreshAnalyticsReport } from "../../apps/studio/src/app/actions/analytics-report/route";
 import { getStudioAnalyticsOverview } from "../../apps/studio/src/lib/analyticsOverview";
 import { studioJsonRequest, studioSessionCookie } from "./product-uat-studio-http";
+import "./product-uat-studio-readonly";
 
 const runId = process.argv[2];
 
@@ -24,9 +24,7 @@ await expectRouteError(
 );
 await expectRouteError(
   refreshAnalyticsReport(
-    studioJsonRequest(session, "/actions/analytics-report", "analytics.report", {
-      runId,
-    }),
+    studioJsonRequest(session, "/actions/analytics-report", "analytics.report", { runId }),
   ),
   400,
 );

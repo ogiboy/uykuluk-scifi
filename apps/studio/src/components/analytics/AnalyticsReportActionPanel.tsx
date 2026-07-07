@@ -1,13 +1,10 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { StudioMutationResultPanel } from "@/components/studio/StudioMutationResultPanel";
+import { Button } from "@/components/ui/button";
 import { useStudioGuardedActionSubmit } from "@/lib/useStudioGuardedActionSubmit";
 
-type AnalyticsReportActionPanelProps = Readonly<{
-  compact?: boolean;
-  showResult?: boolean;
-}>;
+type AnalyticsReportActionPanelProps = Readonly<{ compact?: boolean; showResult?: boolean }>;
 
 /**
  * Renders the guarded Studio action that refreshes the manual analytics report.

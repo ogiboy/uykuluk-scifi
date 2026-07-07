@@ -1,11 +1,11 @@
 import { readFile } from "node:fs/promises";
+import { isValidRunId } from "../../../../src/core/runId";
 import {
   materializeRunCommand,
   staticEvidenceNextCommand,
 } from "../../../../src/stages/evidenceNextCommand";
-import { isValidRunId } from "../../../../src/core/runId";
-import type { EvidenceStatus } from "../../../../src/stages/statusMediaSummary";
 import { validateEvidenceStatusSnapshot } from "../../../../src/stages/statusEvidenceSchema";
+import type { EvidenceStatus } from "../../../../src/stages/statusMediaSummary";
 import { studioRunFilePath } from "./runFilePaths";
 
 export type StudioEvidenceSummary = {

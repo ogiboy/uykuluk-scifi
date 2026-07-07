@@ -1,15 +1,15 @@
-import path from "node:path";
 import { spawnSync } from "node:child_process";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { loadRun } from "../src/core/runStore";
 import { approveIdea } from "../src/stages/approveIdea";
 import { approveScript } from "../src/stages/approveScript";
-import { generateEvidenceBundle } from "../src/stages/evidence";
 import { estimateCost } from "../src/stages/estimate";
+import { generateEvidenceBundle } from "../src/stages/evidence";
 import { runIdeas } from "../src/stages/ideas";
 import { generateProductionPackage } from "../src/stages/productionPackage";
-import { generateRenderPlan } from "../src/stages/renderPlan";
 import { runReadiness } from "../src/stages/readiness";
+import { generateRenderPlan } from "../src/stages/renderPlan";
 import { reviewScript } from "../src/stages/reviewScript";
 import { generateScript } from "../src/stages/script";
 import { generateVoiceoverAudio } from "../src/stages/voice";

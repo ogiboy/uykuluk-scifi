@@ -1,12 +1,12 @@
 import Link from "next/link";
 
-import { Badge } from "@/components/ui/badge";
-import { buttonVariants } from "@/components/ui/button";
 import {
   buildHomeSurfaces,
   type HomeSurfaceLinksProps,
   type SurfaceTone,
 } from "@/components/studio/home/homeSurfaces";
+import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
 
 type BadgeVariant = "destructive" | "outline" | "secondary";
 
@@ -40,11 +40,11 @@ export function HomeSurfaceLinks({
   return (
     <section
       aria-labelledby='studio-surfaces-heading'
-      className='rounded-2xl bg-card/55 p-5 shadow-sm shadow-black/10'
+      className='bg-card/55 rounded-2xl p-5 shadow-sm shadow-black/10'
     >
       <div className='grid gap-3 pb-4 sm:grid-cols-[1fr_auto] sm:items-end'>
         <div className='space-y-1'>
-          <p className='text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground'>
+          <p className='text-muted-foreground text-xs font-semibold tracking-[0.28em] uppercase'>
             Detail routes
           </p>
           <h2 className='text-xl font-semibold tracking-tight' id='studio-surfaces-heading'>
@@ -58,19 +58,19 @@ export function HomeSurfaceLinks({
 
       <ul className='grid gap-3 md:grid-cols-2 xl:grid-cols-3' aria-label='Studio operator pages'>
         {surfaces.map((surface) => (
-          <li className='min-w-0 rounded-xl bg-background/45 p-4' key={surface.href}>
+          <li className='bg-background/45 min-w-0 rounded-xl p-4' key={surface.href}>
             <div className='flex min-w-0 flex-wrap items-start justify-between gap-3'>
               <div className='min-w-0 space-y-1'>
                 <h3 className='truncate text-sm font-semibold' title={surface.label}>
                   {surface.label}
                 </h3>
-                <p className='text-xs text-muted-foreground'>{surface.metric}</p>
+                <p className='text-muted-foreground text-xs'>{surface.metric}</p>
               </div>
               <Badge variant={badgeVariant(surface.tone)}>{surface.status}</Badge>
             </div>
-            <p className='mt-3 min-h-10 text-sm text-muted-foreground'>{surface.detail}</p>
+            <p className='text-muted-foreground mt-3 min-h-10 text-sm'>{surface.detail}</p>
             <Link
-              className='mt-3 inline-flex text-sm font-medium text-foreground underline-offset-4 hover:underline'
+              className='text-foreground mt-3 inline-flex text-sm font-medium underline-offset-4 hover:underline'
               href={surface.href}
             >
               Open {surface.label.toLowerCase()}

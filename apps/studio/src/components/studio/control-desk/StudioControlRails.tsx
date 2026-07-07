@@ -70,7 +70,7 @@ export function HomeControlRail({
               </Link>
             </div>
 
-            <p className='text-xs text-muted-foreground'>
+            <p className='text-muted-foreground text-xs'>
               Upload, scheduling, public publish, and paid-provider execution stay disabled from the
               web surface.
             </p>
@@ -144,15 +144,11 @@ function SafetyGateFact({
   label,
   tone,
   value,
-}: Readonly<{
-  label: string;
-  tone?: "blocked";
-  value: string;
-}>) {
+}: Readonly<{ label: string; tone?: "blocked"; value: string }>) {
   return (
-    <div className='grid grid-cols-[minmax(0,1fr)_auto] gap-3 rounded-lg bg-muted/10 p-3'>
+    <div className='bg-muted/10 grid grid-cols-[minmax(0,1fr)_auto] gap-3 rounded-lg p-3'>
       <dt className='text-muted-foreground'>{label}</dt>
-      <dd className={tone === "blocked" ? "font-semibold text-destructive" : "font-semibold"}>
+      <dd className={tone === "blocked" ? "text-destructive font-semibold" : "font-semibold"}>
         {value}
       </dd>
     </div>

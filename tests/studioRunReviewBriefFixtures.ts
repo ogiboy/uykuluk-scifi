@@ -31,18 +31,11 @@ export function acceptedRenderDecision(): RenderDecisionFixture {
     },
     nextSafeAction: "pnpm producer review-bundle --run run_brief",
     notes: "Accepted for local review.",
-    renderApproval: {
-      approvalId: "approval_render_1",
-      approvedRef: "2".repeat(64),
-    },
+    renderApproval: { approvalId: "approval_render_1", approvedRef: "2".repeat(64) },
     reviewedBy: "operator",
     runId: "run_brief",
     schemaVersion: 1,
-    voiceover: {
-      mode: "production",
-      productionVoiceCandidate: true,
-      quality: "high",
-    },
+    voiceover: { mode: "production", productionVoiceCandidate: true, quality: "high" },
   };
 }
 
@@ -70,12 +63,7 @@ export function finalReviewBundleFixture(): FinalReviewBundleFixture {
       },
       durationSeconds: 42,
       manifestPath: "production/render/draft_render_manifest.json",
-      media: {
-        audioCodec: "pcm_s16le",
-        height: 1080,
-        videoCodec: "h264",
-        width: 1920,
-      },
+      media: { audioCodec: "pcm_s16le", height: 1080, videoCodec: "h264", width: 1920 },
       path: "production/render/draft.mp4",
       reviewCommand: "pnpm producer review render --run run_brief",
       reviewPath: "production/review/render_review.md",
@@ -133,10 +121,7 @@ export function channelHandoffDecisionFixture(): ChannelHandoffDecisionFixture {
     runId: "run_brief",
     schemaVersion: 1,
     selectedThumbnailCandidate: null,
-    youtube: {
-      metadataPath: "production/youtube_metadata.json",
-      title: "UykulukSciFi test title",
-    },
+    youtube: { metadataPath: "production/youtube_metadata.json", title: "UykulukSciFi test title" },
   };
 }
 
@@ -225,5 +210,5 @@ export function runBriefFixture(
     ...overrides,
   } satisfies Partial<StudioRunDetail>;
 
-  return fixture as Parameters<typeof buildStudioRunReviewBrief>[0];
+  return fixture;
 }

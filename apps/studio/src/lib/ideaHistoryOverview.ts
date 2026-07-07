@@ -1,10 +1,10 @@
-import path from "node:path";
 import { readFile } from "node:fs/promises";
+import path from "node:path";
 import { z } from "zod";
 
 import { projectRoot } from "./projectRoot";
-import { readRunRecord, safeReaddir, isRunId } from "./runSummaryFiles";
 import { studioRunFilePath } from "./runFilePaths";
+import { isRunId, readRunRecord, safeReaddir } from "./runSummaryFiles";
 
 const studioIdeaHistoryItemSchema = z.object({
   id: z.string().min(1),
