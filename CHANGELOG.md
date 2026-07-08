@@ -11,6 +11,12 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.78.2 (2026-07-08)
+
+### Chores
+
+- bump radix-ui from 1.6.1 to 1.6.2 (347b56b)
+
 ## v0.78.1 (2026-07-08)
 
 ### Chores
