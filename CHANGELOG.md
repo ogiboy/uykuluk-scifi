@@ -11,6 +11,12 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.78.1 (2026-07-08)
+
+### Chores
+
+- bump the github-actions group with 2 updates (5176388)
+
 ## v0.78.0 (2026-07-05)
 
 ### Refactoring
