@@ -68,8 +68,8 @@ importers:
   apps/studio:
     dependencies:
       '@radix-ui/react-tabs':
-        specifier: ^1.1.16
-        version: 1.1.16(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+        specifier: ^1.1.17
+        version: 1.1.17(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       '@tailwindcss/postcss':
         specifier: ^4.3.2
         version: 4.3.2
@@ -1146,6 +1146,7 @@ packages:
     peerDependencies:
       '@types/react': '*'
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+      react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
       '@types/react':
         optional: true
