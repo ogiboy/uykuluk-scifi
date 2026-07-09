@@ -1,6 +1,6 @@
 {
   "name": "uykuluk-scifi",
-  "version": "0.78.3",
+  "version": "0.78.4",
   "private": true,
   "type": "module",
   "description": "Approval-gated local-first producer CLI and Studio shell for the UykulukSciFi YouTube workflow.",
