@@ -30,6 +30,30 @@ future generated release notes can be inserted predictably.
 - constrain local provider endpoints, encode idea-history prompt data, and add Studio security
   headers.
 
+## v0.78.4 (2026-07-09)
+
+### Fixes
+
+- lockfile issue (236113c)
+
+## v0.78.3 (2026-07-08)
+
+### Chores
+
+- bump @radix-ui/react-tabs in the studio group (ef32404)
+
+## v0.78.2 (2026-07-08)
+
+### Chores
+
+- bump radix-ui from 1.6.1 to 1.6.2 (347b56b)
+
+## v0.78.1 (2026-07-08)
+
+### Chores
+
+- bump the github-actions group with 2 updates (5176388)
+
 ## v0.78.0 (2026-07-05)
 
 ### Refactoring
