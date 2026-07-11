@@ -9,6 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
+_No unreleased changes yet._
+
+## v0.79.0 (2026-07-11)
+
 ### Features
 
 - add optional privacy-minimal Sentry capture for Studio error boundaries.
