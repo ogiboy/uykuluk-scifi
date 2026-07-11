@@ -14,7 +14,9 @@ export function EmptyRunCard({ readiness }: EmptyRunCardProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>No local runs yet</CardTitle>
+        <CardTitle>
+          <h3>No local runs yet</h3>
+        </CardTitle>
         <CardDescription>
           Start with a safe local idea run. Studio will show the persisted run queue, evidence,
           readiness, and guarded approval actions once CLI/core creates the run.
