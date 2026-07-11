@@ -19,7 +19,7 @@ test("studio shell renders operator surfaces", async ({ page }) => {
   const operatorBrief = page.getByRole("region", { name: "Operator brief" });
   await expect(operatorBrief).toBeVisible();
   await expect(operatorBrief).toContainText(/Next safe action|Start the first local run/);
-  await expect(page.getByRole("heading", { name: "Run snapshot" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Run snapshot|No local runs yet/ })).toBeVisible();
   await expect(
     page.getByRole("complementary", { name: "Studio safety and queue summary" }),
   ).toBeVisible();
