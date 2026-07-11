@@ -57,11 +57,19 @@ const nextConfig: NextConfig = {
 };
 
 const withNextIntl = createNextIntlPlugin({ requestConfig: "./src/i18n/request.ts" });
+const localizedNextConfig = withNextIntl(nextConfig);
+const sentryBuildCredentialsConfigured = [
+  process.env.SENTRY_AUTH_TOKEN,
+  process.env.SENTRY_ORG,
+  process.env.SENTRY_PROJECT,
+].every((value) => typeof value === "string" && value.trim().length > 0);
 
-export default withSentryConfig(withNextIntl(nextConfig), {
-  authToken: process.env.SENTRY_AUTH_TOKEN,
-  org: process.env.SENTRY_ORG,
-  project: process.env.SENTRY_PROJECT,
-  silent: !process.env.CI,
-  telemetry: false,
-});
+export default sentryBuildCredentialsConfigured
+  ? withSentryConfig(localizedNextConfig, {
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+      silent: !process.env.CI,
+      telemetry: false,
+    })
+  : localizedNextConfig;
