@@ -136,10 +136,11 @@
   bounds belong in parser validation, not provider grammar schemas.
 - Keep `producer doctor` config/provider/model/TTS/render-toolchain/asset/publish diagnostics and
   evidence passing.
-- Keep the read-only Studio home doctor summary and `/doctor` route aligned with persisted
-  `producer doctor` JSON/Markdown artifacts, including malformed or missing diagnostics states and
-  safe remediation commands. They must not run doctor, edit config, start providers, download
-  models, or mutate workflow state.
+- Keep the Studio home doctor summary and `/doctor` route aligned with persisted `producer doctor`
+  JSON/Markdown artifacts, including malformed or missing diagnostics states and safe remediation
+  commands. The explicit guarded doctor action may run the canonical workflow-read-only CLI
+  diagnostic refresh, which writes ignored diagnostics but must not edit config, start providers,
+  download models, or mutate workflow state.
 - Keep the read-only Studio home latest-run readiness summary aligned with `listStudioRuns()` and
   persisted readiness/evidence artifacts. It must not duplicate workflow state or trigger CLI work.
 - Keep the read-only Studio home manual analytics summary aligned with
@@ -151,10 +152,13 @@
 - Keep Studio read-only prompt inventory and `/prompts` route aligned with prompt defaults and local
   override safety. Prompt source/status visibility is allowed; editing, diff approval, rollback,
   provider calls, and prompt revision history remain future work.
-- Keep Studio read-only local model evaluation summaries aligned with ignored
-  `diagnostics/local_model_eval.*` and `diagnostics/local_model_candidates_eval.*` artifacts. Studio
-  may show parser-contract evidence and next safe CLI commands, but must not call local models, edit
-  provider config, generate runs, or weaken fail-closed provider checks.
+- Keep Studio local model evaluation summaries aligned with ignored `diagnostics/local_model_eval.*`
+  and `diagnostics/local_model_candidates_eval.*` artifacts. Explicit guarded evaluation actions may
+  call the canonical local CLI evaluation, but must not edit provider config, start/download models,
+  generate production runs, call hosted providers, or weaken fail-closed parser checks.
+- Keep optional Studio observability best-effort and privacy-minimal. Sentry must remain disabled
+  without DSN configuration, exclude mutation payloads and artifact contents, and never affect
+  route authorization, workflow outcomes, approvals, evidence, or retries.
 - Keep Studio evidence panels conservative: missing, malformed, or stale evidence must point back to
   `producer evidence --run <run_id>` and must not imply blocked actions are absent or media is
   review-proof.

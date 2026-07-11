@@ -11,6 +11,7 @@ future generated release notes can be inserted predictably.
 
 ### Features
 
+- add optional privacy-minimal Sentry capture for Studio error boundaries.
 - add guarded Studio local model candidate evaluation action.
 - block repeated idea titles using compact runtime idea history.
 - surface runtime idea history on a read-only Studio page.
@@ -21,6 +22,13 @@ future generated release notes can be inserted predictably.
 
 - soften Studio run review nested surfaces and command blocks.
 - simplify the Studio home page into a compact control desk, home shortcuts rail, and route index.
+
+### Fixes
+
+- harden local Studio session issuance and distinguish CLI timeout from output-limit failures.
+- align guarded Studio control copy, mutation snapshots, and shadcn button behavior.
+- constrain local provider endpoints, encode idea-history prompt data, and add Studio security
+  headers.
 
 ## v0.78.0 (2026-07-05)
 

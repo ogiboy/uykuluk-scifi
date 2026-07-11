@@ -129,7 +129,7 @@ function IdeaHistoryList({ entries }: Readonly<{ entries: readonly StudioIdeaHis
               className='border-border/20 border-b last:border-b-0'
               key={`${entry.runId}:${entry.ideaId}`}
             >
-              <td className='max-w-[22rem] py-3 pr-4 align-top'>
+              <td className='max-w-88 py-3 pr-4 align-top'>
                 <p className='font-medium'>{entry.title}</p>
                 <p className='text-muted-foreground mt-1 text-xs'>{entry.ideaId}</p>
               </td>
@@ -147,7 +147,7 @@ function IdeaHistoryList({ entries }: Readonly<{ entries: readonly StudioIdeaHis
                 </Link>
                 <p className='text-muted-foreground mt-1 text-xs'>{entry.state}</p>
               </td>
-              <td className='text-muted-foreground max-w-[30rem] py-3 pr-4 align-top'>
+              <td className='text-muted-foreground max-w-120 py-3 pr-4 align-top'>
                 {entry.premise ?? "No premise stored."}
               </td>
             </tr>

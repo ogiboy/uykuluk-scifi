@@ -1,3 +1,7 @@
+import type {
+  StudioMutationActionId,
+  StudioMutationAvailability,
+} from "../../../../src/studio/actionServiceMetadata";
 import { studioMutationServiceMetadata } from "../../../../src/studio/actionServiceMetadata";
 import {
   disabledStudioActionRoutes,
@@ -18,8 +22,8 @@ export type StudioActionServiceStatus = {
 };
 
 export type StudioActionServiceSummary = {
-  actionId: string;
-  availability: string;
+  actionId: StudioMutationActionId;
+  availability: StudioMutationAvailability;
   cliCommand: string;
   description: string;
   routePath: string;

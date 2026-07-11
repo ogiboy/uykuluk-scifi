@@ -13,15 +13,16 @@ layer so agents can discover broadly once, then load narrowly per task.
 
 1. Read the current task and the relevant project contract under `.ai/`.
 2. Classify the task using `.ai/capabilities/routing.instructions.md`.
-3. Check availability and exclusions in `.ai/capabilities/inventory.instructions.md`.
-4. Choose the smallest useful capability set:
+3. For security-sensitive work, load `.ai/capabilities/security-skills.instructions.md` and follow its limits before opening security tools.
+4. Check availability and exclusions in `.ai/capabilities/inventory.instructions.md`.
+5. Choose the smallest useful capability set:
    - one primary workflow or planning skill;
    - normally one specialist skill;
    - at most one frontend taste skill;
    - only the MCP/connector needed for the next concrete action.
-5. For multi-step or delegated work, apply `.ai/capabilities/orchestration.instructions.md`.
-6. Load the full `SKILL.md` body only for capabilities actually selected.
-7. Record a durable checkpoint before a long task approaches a context reset.
+6. For multi-step or delegated work, apply `.ai/capabilities/orchestration.instructions.md`.
+7. Load the full `SKILL.md` body only for capabilities actually selected.
+8. Record a durable checkpoint before a long task approaches a context reset.
 
 ## Context Budget
 

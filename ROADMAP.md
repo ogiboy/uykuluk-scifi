@@ -107,7 +107,8 @@ prompt inventory, mutation-service status, manual analytics overview, route-secu
 foundations, shared mutation service contract foundations, guarded local approval routes, guarded
 idea-run and workflow-stage/review routes, the local mutation session route, and the guarded local
 render-decision and channel-handoff decision routes exist. Upload and publish route implementations
-remain deferred.
+remain deferred. Optional privacy-minimal Sentry capture now covers unexpected Next.js and guarded
+mutation-boundary failures without becoming a workflow dependency.
 
 The Studio should be a local operator surface over CLI/core contracts.
 
@@ -125,10 +126,14 @@ Priority order:
   render evidence, and readiness artifacts;
 - maintain the read-only visual asset inventory page backed by configured guard checks;
 - maintain the read-only producer doctor diagnostics page backed by ignored local doctor artifacts;
+- maintain the explicit guarded doctor refresh action as a canonical workflow-read-only CLI
+  diagnostic that may write ignored diagnostics but is not a configuration or workflow mutation;
 - maintain read-only runtime prompt source/status visibility for tracked defaults and explicit local
   overrides before any prompt editor work, including the `/prompts` operator route;
 - maintain mutation-service status so operators can see which local approval/review actions are
   guarded and which upload/publish actions remain disabled;
+- maintain guarded local model evaluation refresh actions without starting/downloading models or
+  changing provider configuration;
 - maintain the read-only manual analytics overview and import data-quality summary backed by ignored
   local CLI analytics artifacts;
 - maintain shared service contracts for any Studio read/write operation;

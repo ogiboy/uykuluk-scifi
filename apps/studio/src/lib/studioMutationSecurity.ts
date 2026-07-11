@@ -1,3 +1,5 @@
+import { timingSafeEqual } from "node:crypto";
+
 export const studioActionHeaderName = "x-uykuluk-studio-action";
 export const studioSessionCookieName = "uykuluk_studio_session";
 export const studioSessionHeaderName = "x-uykuluk-studio-session";
@@ -50,13 +52,30 @@ export function validateStudioMutationRequest(
   return { ok: true };
 }
 
+export function isTrustedStudioBrowserRequest(request: Request): boolean {
+  return isSameOriginMutation(request);
+}
+
 function isSameOriginMutation(request: Request): boolean {
   const origin = parseOrigin(request.headers.get("origin"));
   const candidates = requestOriginCandidates(request);
-  if (!origin) {
-    return isTrustedOriginlessLocalMutation(request, candidates);
+  const declaredOrigins = declaredAuthorityOrigins(request);
+  if (declaredOrigins.length === 0) {
+    return false;
   }
-  return candidates.some((candidate) => originsMatch(origin, candidate));
+  if (!origin) {
+    return (
+      declaredOrigins.every(isLocalHttpOrigin) &&
+      isTrustedOriginlessLocalMutation(request, candidates)
+    );
+  }
+  return (
+    isLocalHttpOrigin(origin) &&
+    declaredOrigins.every(
+      (candidate) => isLocalHttpOrigin(candidate) && originsMatch(origin, candidate),
+    ) &&
+    candidates.some((candidate) => isLocalHttpOrigin(candidate) && originsMatch(origin, candidate))
+  );
 }
 
 function hasValidStudioSession(request: Request): boolean {
@@ -64,7 +83,19 @@ function hasValidStudioSession(request: Request): boolean {
   if (!headerToken || !isStudioSessionToken(headerToken)) {
     return false;
   }
-  return cookieValue(request.headers.get("cookie") ?? "", studioSessionCookieName) === headerToken;
+  const cookieToken = cookieValue(request.headers.get("cookie") ?? "", studioSessionCookieName);
+  if (
+    !cookieToken ||
+    !isStudioSessionToken(cookieToken) ||
+    cookieToken.length !== headerToken.length
+  ) {
+    return false;
+  }
+  try {
+    return timingSafeEqual(Buffer.from(cookieToken, "utf8"), Buffer.from(headerToken, "utf8"));
+  } catch {
+    return false;
+  }
 }
 
 function cookieValue(cookieHeader: string, name: string): string | null {
@@ -91,6 +122,10 @@ function requestOriginCandidates(request: Request): URL[] {
     hostHeaderOrigin(request),
     forwardedHeaderOrigin(request),
   ]);
+}
+
+function declaredAuthorityOrigins(request: Request): URL[] {
+  return uniqueOrigins([hostHeaderOrigin(request), forwardedHeaderOrigin(request)]);
 }
 
 function forwardedHeaderOrigin(request: Request): URL | null {
@@ -153,12 +188,7 @@ function isLocalHttpOrigin(origin: URL): boolean {
 }
 
 function isLoopbackLikeHost(hostname: string): boolean {
-  return (
-    hostname === "localhost" ||
-    hostname === "127.0.0.1" ||
-    hostname === "0.0.0.0" ||
-    hostname === "[::1]"
-  );
+  return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "[::1]";
 }
 
 function uniqueOrigins(origins: Array<URL | null>): URL[] {

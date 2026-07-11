@@ -13,6 +13,17 @@ import type { StudioFinalReviewBundleSummary } from "./finalReviewBundleSummarie
 import type { StudioRenderDecisionSummary } from "./renderDecisionSummaries";
 import type { RunRecord, StudioRunState } from "./runRecordTypes";
 
+export type StudioNextRecommendedCommandInput = Readonly<{
+  artifacts: readonly string[];
+  channelHandoff: StudioChannelHandoffSummary;
+  channelHandoffDecision: StudioChannelHandoffDecisionSummary;
+  evidence: StudioEvidenceSummary;
+  finalReviewBundle: StudioFinalReviewBundleSummary;
+  renderDecision: StudioRenderDecisionSummary;
+  runId: string;
+  state: string;
+}>;
+
 /**
  * Builds the read-only workflow progress projection for a Studio run.
  *
@@ -40,26 +51,22 @@ export function studioWorkflowProgress(input: {
 /**
  * Chooses the Studio next safe action while honoring durable render decisions.
  *
- * @param evidence - The current evidence summary.
- * @param state - The run state.
- * @param runId - The run identifier.
- * @param artifacts - The artifacts already registered on the run record.
- * @param renderDecision - The local render decision summary.
- * @param finalReviewBundle - The local final review bundle summary.
- * @param channelHandoff - The manual channel handoff summary.
- * @param channelHandoffDecision - The manual channel handoff decision summary.
+ * @param input - Current evidence, decisions, artifacts, and run identity.
  * @returns A command or operator action for the next safe step.
  */
 export function studioNextRecommendedCommand(
-  evidence: StudioEvidenceSummary,
-  state: string,
-  runId: string,
-  artifacts: readonly string[],
-  renderDecision: StudioRenderDecisionSummary,
-  finalReviewBundle: StudioFinalReviewBundleSummary,
-  channelHandoff: StudioChannelHandoffSummary,
-  channelHandoffDecision: StudioChannelHandoffDecisionSummary,
+  input: StudioNextRecommendedCommandInput,
 ): string | null {
+  const {
+    artifacts,
+    channelHandoff,
+    channelHandoffDecision,
+    evidence,
+    finalReviewBundle,
+    renderDecision,
+    runId,
+    state,
+  } = input;
   if (finalReviewBundle.kind === "invalid" || finalReviewBundle.kind === "stale") {
     return finalReviewBundle.nextAction;
   }

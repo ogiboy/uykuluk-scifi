@@ -23,7 +23,12 @@ describe("Studio approval action routes", () => {
   useTempProject();
 
   it("issues a no-store local session for guarded Studio mutations", async () => {
-    const response = await issueStudioSession();
+    const response = await issueStudioSession(
+      new Request("http://localhost:3000/actions/session", {
+        headers: { host: "localhost:3000", origin: "http://localhost:3000" },
+        method: "GET",
+      }),
+    );
 
     expect(response.status).toBe(200);
     expect(response.headers.get("cache-control")).toBe("no-store");
@@ -35,6 +40,25 @@ describe("Studio approval action routes", () => {
       status: "ok",
       token: expect.stringMatching(/^[A-Za-z0-9_-]{32,128}$/),
     });
+  });
+
+  it("rejects Studio session issuance outside the local same-origin boundary", async () => {
+    const external = await issueStudioSession(
+      new Request("https://studio.example/actions/session", {
+        headers: { origin: "https://studio.example" },
+        method: "GET",
+      }),
+    );
+    const mismatchedPort = await issueStudioSession(
+      new Request("http://localhost:3000/actions/session", {
+        headers: { origin: "http://localhost:4000" },
+        method: "GET",
+      }),
+    );
+
+    expect(external.status).toBe(403);
+    expect(mismatchedPort.status).toBe(403);
+    await expect(external.json()).resolves.toMatchObject({ status: "error" });
   });
 
   it("records explicit idea approval through the guarded Studio route", async () => {
@@ -96,6 +120,7 @@ describe("Studio approval action routes", () => {
             [studioSessionHeaderName]: testStudioSessionToken,
             cookie: `${studioSessionCookieName}=${testStudioSessionToken}`,
             "content-type": "application/x-www-form-urlencoded",
+            host: "localhost:3000",
             origin: "http://localhost:3000",
           },
           method: "POST",

@@ -9,6 +9,8 @@ test-results
 playwright-report
 runs/*
 .ai/*
+.omx/
+.agents/
 producer.config.json
 .DS_Store
 *.png

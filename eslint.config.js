@@ -35,4 +35,5 @@ export default [
     },
   },
   eslintConfigPrettier,
+  { settings: { react: { version: "19" } } },
 ];

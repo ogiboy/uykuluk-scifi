@@ -37,7 +37,7 @@ export function studioMutationRecoveryCopy(
   return null;
 }
 
-function hasHttpStatus(
+export function hasHttpStatus(
   state: StudioGuardedActionSubmitState,
 ): state is Extract<StudioGuardedActionSubmitState, { status?: number }> &
   Readonly<{ status: number }> {

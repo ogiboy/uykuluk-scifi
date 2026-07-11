@@ -127,9 +127,9 @@
   server are blocked without generation, and provider responses that report a different served model
   than requested fail closed. A 2026-06-28 qwen3:8b run stayed fail-closed on non-slot-specific idea
   `fit` explanations while its script-section sample parsed.
-- Studio reads the ignored local model evaluation JSON/Markdown artifacts on the home page and
-  `/eval`, distinguishing missing, malformed, schema-invalid, passing, and blocked reports without
-  calling Ollama, `llama.cpp`, hosted APIs, or mutating configuration.
+- Studio reads ignored local model evaluation JSON/Markdown artifacts on home and `/eval`, including
+  missing, malformed, schema-invalid, passing, and blocked reports. A guarded action refreshes the
+  canonical CLI evaluation without editing providers, starting servers, downloading models, calling hosted APIs, or weakening parser gates.
 - Script generation uses bounded hook/context/development/outro provider calls, writes
   `script.sections.json` draft and expansion-chunk receipts, and assembles `script.md` only after
   all sections pass blocking quality checks.
@@ -440,14 +440,13 @@ Corepack/PATH before treating failures as product failures.
   regression target while Mistral/Gemma/Turkish GGUF candidates are evaluated through the same
   approval, JSON, repetition, Turkish-label, word-floor, and operator-quality gates before any model
   becomes the recommended local default.
+- Ollama and `llama.cpp` configuration accepts only credential-free loopback HTTP(S) origins, preventing local adapters from silently becoming arbitrary outbound endpoints; hosted or LAN provider support needs a separately reviewed adapter boundary.
 - No paid provider adapter is implemented. Exact cost quote approval remains separate from spend
   authorization. The execution boundary is ready for a future approved adapter, but no SDK,
   credential, network integration, or CLI mutation exposes it.
-- Current Next.js Studio is still local-only and mostly read/review-oriented. Artifact previews now
-  include grouped review metadata, and route-security requirements cover current read-only pages,
-  guarded local approval/review routes with short-lived local session proof, and disabled
-  upload/publish actions. Guarded local approval routes use CLI/core contracts; generation, render
-  execution, upload, and publish remain CLI-only or disabled.
+- Current local-only Studio combines read/review pages and grouped artifact metadata with guarded mutations backed by canonical CLI/core contracts. Route security covers page reads, short-lived session proof, same-origin actions, and disabled upload/publish; generation and local render run only through guarded contracts.
+- Optional Sentry captures unexpected Next.js and Studio mutation-boundary failures without request bodies or artifact contents. Without a DSN it is disabled
+  and never affects workflow state, approvals, readiness, evidence, or route authorization.
 - Local prompt overrides are implemented as explicit ignored `prompts/local/*.md` paths configured
   in `producer.config.json` and recorded in prompt provenance. Prompt editing UI and prompt revision
   history remain future work; tracked defaults stay read-only runtime inputs. Locale infrastructure

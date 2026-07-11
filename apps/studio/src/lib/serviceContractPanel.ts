@@ -75,18 +75,18 @@ export function filterServiceContractGroups(
  */
 export function actionSurface(actionId: string): ActionSurface {
   if (actionId.startsWith("analytics.")) {
-    return { href: "/analytics" as Route, label: "Open analytics surface" };
+    return { href: "/analytics", label: "Open analytics surface" };
   }
   if (actionId === "doctor.run") {
-    return { href: "/doctor" as Route, label: "Open doctor surface" };
+    return { href: "/doctor", label: "Open doctor surface" };
   }
   if (actionId === "model-eval.run" || actionId === "model-eval-candidates.run") {
-    return { href: "/eval" as Route, label: "Open model eval surface" };
+    return { href: "/eval", label: "Open model eval surface" };
   }
   if (actionId === "ideas.run") {
-    return { href: "/" as Route, label: "Open start-run surface" };
+    return { href: "/", label: "Open start-run surface" };
   }
-  return { href: "/runs" as Route, label: "Open run queue" };
+  return { href: "/runs", label: "Open run queue" };
 }
 
 /**

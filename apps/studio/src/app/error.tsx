@@ -7,6 +7,7 @@ import {
   StudioRouteBoundaryHeader,
 } from "@/components/studio/StudioRouteBoundaryCard";
 import { Button } from "@/components/ui/button";
+import { captureStudioUnexpectedError } from "@/lib/studioObservability";
 import { studioErrorCopy } from "@/lib/studioRouteBoundaryCopy";
 
 type StudioRouteErrorPageProps = Readonly<{
@@ -22,8 +23,8 @@ type StudioRouteErrorPageProps = Readonly<{
  */
 export default function StudioRouteErrorPage({ error, reset }: StudioRouteErrorPageProps) {
   useEffect(() => {
-    console.warn("Studio route failed safely.", { digest: error.digest });
-  }, [error.digest]);
+    captureStudioUnexpectedError(error, { boundary: "route-render" });
+  }, [error]);
 
   return (
     <main

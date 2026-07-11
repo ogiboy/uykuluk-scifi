@@ -1,5 +1,6 @@
 import type { StudioMutationActionId } from "../../../../src/studio/actionServiceMetadata";
 import { writeTemporaryInputFile } from "./studioCliMutationTempFile";
+import { isStaticCliAction, staticCliCommand } from "./studioCliStaticCommands";
 import {
   parseAnalyticsImportPayload,
   parseChannelHandoffDecisionPayload,
@@ -81,6 +82,10 @@ export async function cliArgsForAction(
   actionId: StudioCliMutationActionId,
   payload: unknown,
 ): Promise<StudioPreparedCliArgs> {
+  if (isStaticCliAction(actionId)) {
+    parseEmptyPayload(payload);
+    return prepared([...staticCliCommand(actionId), "--json"]);
+  }
   if (actionId === "analytics.import") {
     const input = parseAnalyticsImportPayload(payload);
     const temp = await writeTemporaryInputFile(
@@ -90,25 +95,9 @@ export async function cliArgsForAction(
     );
     return prepared(["analytics", "import", "--file", temp.filePath, "--json"], temp.cleanup);
   }
-  if (actionId === "analytics.report") {
-    parseEmptyPayload(payload);
-    return prepared(["analytics", "report", "--json"]);
-  }
-  if (actionId === "doctor.run") {
-    parseEmptyPayload(payload);
-    return prepared(["doctor", "--json"]);
-  }
   if (actionId === "idea.approve") {
     const input = parseIdeaApprovalPayload(payload);
     return prepared(["approve", "idea", "--run", input.runId, "--idea", input.ideaId, "--json"]);
-  }
-  if (actionId === "ideas.run") {
-    parseEmptyPayload(payload);
-    return prepared(["ideas", "--json"]);
-  }
-  if (actionId === "model-eval.run") {
-    parseEmptyPayload(payload);
-    return prepared(["eval", "local-model", "--json"]);
   }
   if (actionId === "model-eval-candidates.run") {
     const input = parseLocalModelCandidateEvalPayload(payload);

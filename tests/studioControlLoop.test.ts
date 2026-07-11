@@ -55,6 +55,7 @@ describe("Studio control loop", () => {
     expect(loop.items).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ label: "Evidence", tone: "attention" }),
+        expect.objectContaining({ label: "Readiness", tone: "blocked" }),
         expect.objectContaining({ label: "Blocked actions", tone: "blocked" }),
       ]),
     );

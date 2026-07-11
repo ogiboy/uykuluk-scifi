@@ -47,3 +47,4 @@ agentdb.rvf.lock
 ruvector.db
 
 /.understand-anything/
+.agents/

@@ -1,3 +1,4 @@
+import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 import { dirname } from "node:path";
@@ -14,14 +15,31 @@ const stageSourceAliases = [
 ] as const;
 
 const nextConfig: NextConfig = {
-  typedRoutes: true,
   allowedDevOrigins: ["127.0.0.1", "localhost"],
+  async headers() {
+    return [
+      {
+        headers: [
+          {
+            key: "Content-Security-Policy",
+            value: "base-uri 'self'; frame-ancestors 'none'; object-src 'none'",
+          },
+          { key: "Permissions-Policy", value: "camera=(), geolocation=(), microphone=()" },
+          { key: "Referrer-Policy", value: "no-referrer" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "DENY" },
+        ],
+        source: "/:path*",
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "ui.shadcn.com" },
     ],
   },
+  poweredByHeader: false,
   turbopack: {
     ignoreIssue: [
       {
@@ -35,8 +53,15 @@ const nextConfig: NextConfig = {
     ),
     root: repoRoot,
   },
+  typedRoutes: true,
 };
 
 const withNextIntl = createNextIntlPlugin({ requestConfig: "./src/i18n/request.ts" });
 
-export default withNextIntl(nextConfig);
+export default withSentryConfig(withNextIntl(nextConfig), {
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  silent: !process.env.CI,
+  telemetry: false,
+});

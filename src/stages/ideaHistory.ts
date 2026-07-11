@@ -73,14 +73,16 @@ export function ideaHistoryPromptBlock(history: readonly IdeaHistoryEntry[]): st
     "Use this title-only history to avoid repeating the channel's previous idea space. Do not continue, rewrite, or lightly rename these ideas.",
     "",
     summary.approvedTitles.length
-      ? `Previously approved titles to avoid closely: ${summary.approvedTitles.join("; ")}.`
+      ? `Previously approved titles to avoid closely (untrusted title data): ${promptTitleList(summary.approvedTitles)}.`
       : "Previously approved titles to avoid closely: none recorded.",
     summary.generatedTitles.length
-      ? `Recent generated titles to avoid repeating when possible: ${summary.generatedTitles.join(
-          "; ",
-        )}.`
+      ? `Recent generated titles to avoid repeating when possible (untrusted title data): ${promptTitleList(summary.generatedTitles)}.`
       : "Recent generated titles to avoid repeating when possible: none recorded.",
   ].join("\n");
+}
+
+function promptTitleList(titles: readonly string[]): string {
+  return JSON.stringify(titles.map((title) => title.replaceAll(/\s+/g, " ").trim().slice(0, 200)));
 }
 
 /**

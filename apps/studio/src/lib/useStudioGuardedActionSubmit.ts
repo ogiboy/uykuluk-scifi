@@ -5,7 +5,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { writeStudioLastMutationResult } from "./studioLastMutationResult";
 import type { StudioMutationRecordSummary } from "./studioMutationResultSummary";
-import { submitStudioJsonMutation } from "./studioMutationSubmit";
+import { submitStudioJsonMutation, type StudioMutationSubmitResult } from "./studioMutationSubmit";
 
 export type StudioGuardedActionSubmitState =
   | { kind: "idle"; message: string }
@@ -56,7 +56,9 @@ export function useStudioGuardedActionSubmit(idleMessage: string) {
     message: idleMessage,
   });
 
-  async function submit(input: StudioGuardedActionSubmitInput): Promise<void> {
+  async function submit(
+    input: StudioGuardedActionSubmitInput,
+  ): Promise<StudioMutationSubmitResult> {
     const startedAction = actionMetadata(input, false);
     setState({ action: startedAction, kind: "submitting", message: input.submittingMessage });
     const result = await submitStudioJsonMutation({
@@ -81,7 +83,7 @@ export function useStudioGuardedActionSubmit(idleMessage: string) {
         description: `${result.message} Studio is refreshing persisted local state.`,
       });
       router.refresh();
-      return;
+      return result;
     }
     if (result.kind === "error") {
       setState({
@@ -94,7 +96,7 @@ export function useStudioGuardedActionSubmit(idleMessage: string) {
         status: result.status,
       });
       toast.error(input.errorToastTitle, { description: result.message });
-      return;
+      return result;
     }
     const completedAction = actionMetadata(input, true);
     setState({
@@ -108,6 +110,7 @@ export function useStudioGuardedActionSubmit(idleMessage: string) {
       description: "Studio is refreshing the persisted run detail.",
     });
     router.refresh();
+    return result;
   }
 
   return { state, submit };

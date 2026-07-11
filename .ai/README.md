@@ -30,4 +30,4 @@ Durable project guidance:
 - `templates/` - bounded agent brief and handoff contracts.
 - `workflows/` - feature, frontend, QA, security, and tooling workflows.
 - `agents/` - development-only review lenses.
-- `security/` - threat model.
+- `security/` - threat models and development-time security review evidence.

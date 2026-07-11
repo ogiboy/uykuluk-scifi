@@ -38,6 +38,7 @@ export function StudioControlDesk({
   const latestRun = runs[0] ?? null;
   const startIdeasReadiness = startIdeasReadinessFromDoctor(doctorOverview);
   const compact = variant === "compact";
+  const activeRun = activeRunContent(latestRun, compact, startIdeasReadiness);
 
   return (
     <section
@@ -65,15 +66,7 @@ export function StudioControlDesk({
 
         <OperatorBrief latestRun={latestRun} startIdeasReadiness={startIdeasReadiness} />
 
-        {latestRun ? (
-          compact ? (
-            <ActiveRunSnapshot run={latestRun} />
-          ) : (
-            <ActiveRunCard run={latestRun} />
-          )
-        ) : (
-          <EmptyRunCard readiness={startIdeasReadiness} />
-        )}
+        {activeRun}
       </div>
 
       {compact ? (
@@ -92,4 +85,18 @@ export function StudioControlDesk({
       )}
     </section>
   );
+}
+
+function activeRunContent(
+  latestRun: StudioRunSummary | null,
+  compact: boolean,
+  readiness: ReturnType<typeof startIdeasReadinessFromDoctor>,
+) {
+  if (!latestRun) {
+    return <EmptyRunCard readiness={readiness} />;
+  }
+  if (compact) {
+    return <ActiveRunSnapshot run={latestRun} />;
+  }
+  return <ActiveRunCard run={latestRun} />;
 }

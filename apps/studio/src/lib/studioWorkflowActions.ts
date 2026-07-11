@@ -1,9 +1,10 @@
+import type { StudioMutationActionId } from "../../../../src/studio/actionServiceMetadata";
 import type { StudioActionServiceStatus, StudioActionServiceSummary } from "./actionServiceStatus";
 
 export type StudioWorkflowActionStatus = "disabled" | "unrouted" | "web-ready";
 
 export type StudioWorkflowAction = Readonly<{
-  actionId: string;
+  actionId: StudioMutationActionId;
   cliCommand: string;
   description: string;
   routePath: string;
@@ -17,7 +18,7 @@ export type StudioWorkflowActionStep = Readonly<{
 }>;
 
 type StudioWorkflowActionStepDefinition = Readonly<{
-  actionIds: readonly string[];
+  actionIds: readonly StudioMutationActionId[];
   label: string;
   summary: string;
 }>;
@@ -93,7 +94,7 @@ export function studioWorkflowActionSteps(
 }
 
 function workflowAction(
-  actionId: string,
+  actionId: StudioMutationActionId,
   summaries: ReadonlyMap<string, StudioActionServiceSummary>,
 ): StudioWorkflowAction {
   const summary = summaries.get(actionId);

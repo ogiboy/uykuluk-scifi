@@ -3,6 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { SheetClose } from "@/components/ui/sheet";
 import {
   buildStudioRunPrimaryAction,
   type StudioRunPrimaryAction,
@@ -39,7 +40,12 @@ export function RunPrimaryActionPanel({
         <div className='grid grid-cols-[1fr_auto] items-start gap-4'>
           <PrimaryActionHeader action={action} headingId={headingId} />
         </div>
-        <PrimaryActionBody action={action} railHref={railHref} run={run} />
+        <PrimaryActionBody
+          action={action}
+          closeRailAction={compact}
+          railHref={railHref}
+          run={run}
+        />
         <PrimaryActionBoundary />
       </section>
     );
@@ -51,7 +57,7 @@ export function RunPrimaryActionPanel({
         <PrimaryActionHeader action={action} headingId={headingId} />
       </CardHeader>
       <CardContent className='space-y-4'>
-        <PrimaryActionBody action={action} railHref={railHref} run={run} />
+        <PrimaryActionBody action={action} closeRailAction={false} railHref={railHref} run={run} />
       </CardContent>
       <CardFooter>
         <PrimaryActionBoundary />
@@ -81,20 +87,32 @@ function PrimaryActionHeader({
 
 function PrimaryActionBody({
   action,
+  closeRailAction,
   railHref,
   run,
-}: Readonly<{ action: StudioRunPrimaryAction; railHref: string; run: StudioRunPrimaryActionRun }>) {
+}: Readonly<{
+  action: StudioRunPrimaryAction;
+  closeRailAction: boolean;
+  railHref: string;
+  run: StudioRunPrimaryActionRun;
+}>) {
+  const railAction = (
+    <a className={buttonVariants({ variant: "default" })} href={railHref}>
+      Open action rail
+    </a>
+  );
+  const renderedRailAction = closeRailAction ? (
+    <SheetClose asChild>{railAction}</SheetClose>
+  ) : (
+    railAction
+  );
   return (
     <>
       <p className='text-muted-foreground text-sm'>{action.description}</p>
       {action.mode === "stage" ? (
         <RunQuickStageActionButton label={action.label} run={run} showResult />
       ) : null}
-      {action.mode === "rail" ? (
-        <a className={buttonVariants({ variant: "default" })} href={railHref}>
-          Open action rail
-        </a>
-      ) : null}
+      {action.mode === "rail" ? renderedRailAction : null}
       {action.mode === "command" && action.command ? (
         <div className='bg-background/50 space-y-2 rounded-md p-3'>
           <strong className='text-sm'>Manual or CLI action</strong>

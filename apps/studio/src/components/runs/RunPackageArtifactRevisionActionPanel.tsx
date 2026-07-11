@@ -47,7 +47,7 @@ export function RunPackageArtifactRevisionActionPanel({
   if (!isStudioPackageArtifactRevisionState(run.state)) {
     return null;
   }
-  return <RunPackageArtifactRevisionForm key={packageSourcesKey(run)} run={run} />;
+  return <RunPackageArtifactRevisionForm key={run.runId} run={run} />;
 }
 
 function RunPackageArtifactRevisionForm({ run }: RunPackageArtifactRevisionActionPanelProps) {
@@ -68,11 +68,7 @@ function RunPackageArtifactRevisionForm({ run }: RunPackageArtifactRevisionActio
   const content = selectedSource
     ? (draftsByArtifactKey[selectedSource.artifactKey] ?? selectedSource.content)
     : "";
-  const ready =
-    Boolean(selectedSource) &&
-    content.trim() !== "" &&
-    editor.trim() !== "" &&
-    reason.trim() !== "";
+  const ready = Boolean(selectedSource) && [content, editor, reason].every((value) => value.trim());
 
   function selectArtifact(nextArtifactKey: string): void {
     const nextSource = availableSources.find((source) => source.artifactKey === nextArtifactKey);
@@ -89,7 +85,7 @@ function RunPackageArtifactRevisionForm({ run }: RunPackageArtifactRevisionActio
   async function confirmRevision(): Promise<void> {
     if (!selectedSource || !ready) return;
     setConfirmationOpen(false);
-    await submit({
+    const result = await submit({
       actionId: "package-artifact.revise",
       body: { artifactKey: selectedSource.artifactKey, content, editor, reason, runId: run.runId },
       errorToastTitle: "Package artifact revision was blocked",
@@ -99,6 +95,13 @@ function RunPackageArtifactRevisionForm({ run }: RunPackageArtifactRevisionActio
       successMessage: "Package artifact revision recorded. Regenerate evidence/readiness next.",
       successToastTitle: "Package artifact revision recorded",
     });
+    if (result.kind === "success") {
+      setDraftsByArtifactKey((current) => {
+        const next = { ...current };
+        delete next[selectedSource.artifactKey];
+        return next;
+      });
+    }
   }
 
   return (
@@ -113,9 +116,19 @@ function RunPackageArtifactRevisionForm({ run }: RunPackageArtifactRevisionActio
         </CardHeader>
         <CardContent>
           <form className='grid gap-4' onSubmit={requestConfirmation}>
+            {availableSources.length === 0 ? (
+              <p className='text-muted-foreground text-sm'>
+                No package artifact is currently available for revision. Regenerate the production
+                package before opening this editor.
+              </p>
+            ) : null}
             <Label className='grid gap-2'>
               <span>Artifact</span>
-              <Select value={selectedSource?.artifactKey ?? ""} onValueChange={selectArtifact}>
+              <Select
+                disabled={availableSources.length === 0}
+                value={selectedSource?.artifactKey ?? ""}
+                onValueChange={selectArtifact}
+              >
                 <SelectTrigger aria-label='Package artifact revision target'>
                   <SelectValue placeholder='Choose artifact' />
                 </SelectTrigger>
@@ -150,7 +163,14 @@ function RunPackageArtifactRevisionForm({ run }: RunPackageArtifactRevisionActio
                 disabled={!selectedSource}
                 rows={10}
                 value={content}
-                onChange={(event) => setArtifactDraft(selectedSource, event.target.value)}
+                onChange={(event) => {
+                  if (selectedSource) {
+                    setDraftsByArtifactKey((current) => ({
+                      ...current,
+                      [selectedSource.artifactKey]: event.target.value,
+                    }));
+                  }
+                }}
               />
             </Label>
             <Button disabled={state.kind === "submitting" || !ready} type='submit'>
@@ -174,21 +194,6 @@ function RunPackageArtifactRevisionForm({ run }: RunPackageArtifactRevisionActio
       />
     </section>
   );
-
-  function setArtifactDraft(
-    source: StudioPackageRevisionSource | undefined,
-    nextContent: string,
-  ): void {
-    if (!source) return;
-    setDraftsByArtifactKey((current) => ({ ...current, [source.artifactKey]: nextContent }));
-  }
-}
-
-function packageSourcesKey(run: RunPackageArtifactRevisionActionPanelProps["run"]): string {
-  const sourceKey = run.revisionSources.packageArtifacts
-    .map((source) => `${source.artifactKey}:${source.available}:${source.path}:${source.content}`)
-    .join("\u0000");
-  return `${run.runId}:${sourceKey}`;
 }
 
 function draftsFromSources(sources: readonly StudioPackageRevisionSource[]): PackageArtifactDrafts {

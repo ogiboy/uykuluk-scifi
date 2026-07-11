@@ -2,6 +2,7 @@ import { Command } from "commander";
 import { readdir } from "node:fs/promises";
 import path from "node:path";
 import { z } from "zod";
+import { localProviderBaseUrlSchema } from "../config/schema.js";
 import { SafeExitError } from "../core/errors.js";
 import {
   localModelCandidateEvalRequiresMoreCandidates,
@@ -128,9 +129,15 @@ function parseLocalModelEvalBaseOverrides(
       ? undefined
       : z.coerce.number().int().positive().parse(options.requestTimeoutMs);
   return {
-    llamaCppBaseUrl: options.llamaCppBaseUrl,
+    llamaCppBaseUrl:
+      options.llamaCppBaseUrl === undefined
+        ? undefined
+        : localProviderBaseUrlSchema.parse(options.llamaCppBaseUrl),
     mode: options.llmMode === undefined ? undefined : llmModeSchema.parse(options.llmMode),
-    ollamaBaseUrl: options.ollamaBaseUrl,
+    ollamaBaseUrl:
+      options.ollamaBaseUrl === undefined
+        ? undefined
+        : localProviderBaseUrlSchema.parse(options.ollamaBaseUrl),
     requestTimeoutMs,
     thinkingMode:
       options.thinkingMode === undefined

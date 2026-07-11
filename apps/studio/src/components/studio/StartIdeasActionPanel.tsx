@@ -21,7 +21,7 @@ type StartIdeasActionPanelProps = Readonly<{
   presentation?: "button" | "panel";
   readiness?: StartIdeasReadinessSummary;
   showResult?: boolean;
-  variant?: ButtonProps["variant"];
+  variant?: NonNullable<ButtonProps["variant"]>;
 }>;
 
 /**

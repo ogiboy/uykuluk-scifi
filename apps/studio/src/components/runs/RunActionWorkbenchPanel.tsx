@@ -20,7 +20,7 @@ export function RunActionWorkbenchPanel({ run }: RunActionWorkbenchPanelProps) {
   return (
     <section aria-labelledby='action-workbench-heading'>
       <Card>
-        <CardHeader className='gap-4 sm:grid-cols-[1fr_auto]'>
+        <CardHeader className='grid gap-4 sm:grid-cols-[1fr_auto]'>
           <div className='space-y-2'>
             <p className='text-muted-foreground text-xs font-semibold tracking-[0.28em] uppercase'>
               Action workbench

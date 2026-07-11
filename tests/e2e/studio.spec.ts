@@ -1,7 +1,16 @@
 import { expect, test } from "@playwright/test";
 
 test("studio shell renders operator surfaces", async ({ page }) => {
-  await page.goto("/");
+  const response = await page.goto("/");
+
+  expect(response?.headers()["x-powered-by"]).toBeUndefined();
+  expect(response?.headers()["content-security-policy"]).toContain("frame-ancestors 'none'");
+  expect(response?.headers()["permissions-policy"]).toBe(
+    "camera=(), geolocation=(), microphone=()",
+  );
+  expect(response?.headers()["referrer-policy"]).toBe("no-referrer");
+  expect(response?.headers()["x-content-type-options"]).toBe("nosniff");
+  expect(response?.headers()["x-frame-options"]).toBe("DENY");
 
   await expect(
     page.getByRole("heading", { name: /control uykulukscifi production/i }),
@@ -23,7 +32,12 @@ test("studio shell renders operator surfaces", async ({ page }) => {
 });
 
 test("studio exposes guarded action contracts on the actions route", async ({ page }) => {
-  await page.goto("/actions");
+  const response = await page.goto("/actions");
+
+  expect(response?.headers()["permissions-policy"]).toBe(
+    "camera=(), geolocation=(), microphone=()",
+  );
+  expect(response?.headers()["referrer-policy"]).toBe("no-referrer");
 
   await expect(page.getByRole("heading", { exact: true, name: "Actions" })).toBeVisible();
   await expect(page.getByRole("heading", { name: /same-origin/i })).toBeVisible();

@@ -18,16 +18,40 @@ describe("Studio mutation security", () => {
   it("accepts local loopback aliases on the same protocol and port", () => {
     expect(
       validateStudioMutationRequest(
-        studioRequest("http://0.0.0.0:3000", { origin: "http://localhost:3000" }),
-        "ideas.run",
-      ),
-    ).toEqual({ ok: true });
-    expect(
-      validateStudioMutationRequest(
         studioRequest("http://127.0.0.1:3000", { origin: "http://localhost:3000" }),
         "ideas.run",
       ),
     ).toEqual({ ok: true });
+  });
+
+  it("rejects the wildcard bind address as a trusted loopback origin", () => {
+    expect(
+      validateStudioMutationRequest(
+        studioRequest("http://0.0.0.0:3000", { origin: "http://localhost:3000" }),
+        "ideas.run",
+      ),
+    ).toMatchObject({ ok: false, status: 403 });
+  });
+
+  it("rejects a wildcard Host header even when the runtime request URL remains loopback", () => {
+    expect(
+      validateStudioMutationRequest(
+        studioRequest("http://127.0.0.1:3000", {
+          host: "0.0.0.0:3000",
+          origin: "http://127.0.0.1:3000",
+        }),
+        "ideas.run",
+      ),
+    ).toMatchObject({ ok: false, status: 403 });
+  });
+
+  it("rejects requests without a declared Host or forwarded authority", () => {
+    expect(
+      validateStudioMutationRequest(
+        studioRequest("http://127.0.0.1:3000", { host: null }),
+        "ideas.run",
+      ),
+    ).toMatchObject({ ok: false, status: 403 });
   });
 
   it("rejects local loopback aliases when the port differs", () => {
@@ -45,6 +69,7 @@ describe("Studio mutation security", () => {
         studioRequest("http://0.0.0.0:3000", {
           forwardedHost: "localhost:3000",
           forwardedProto: "http",
+          host: "localhost:3000",
           origin: "http://localhost:3000",
         }),
         "ideas.run",
@@ -104,6 +129,7 @@ function studioRequest(
     fetchSite?: "cross-site" | "none" | "same-origin" | "same-site";
     forwardedHost?: string;
     forwardedProto?: "http" | "https";
+    host?: string | null;
     origin?: string | null;
     cookie?: string;
   }> = {},
@@ -114,7 +140,9 @@ function studioRequest(
     [studioSessionHeaderName]: token,
     "content-type": "application/json",
     cookie: options.cookie ?? `${studioSessionCookieName}=${token}`,
+    host: options.host === undefined ? new URL(requestOrigin).host : (options.host ?? ""),
   };
+  if (!headers.host) delete headers.host;
   if (origin) {
     headers.origin = origin;
   }

@@ -7,6 +7,7 @@ import {
   StudioRouteBoundaryHeader,
 } from "@/components/studio/StudioRouteBoundaryCard";
 import { Button } from "@/components/ui/button";
+import { captureStudioUnexpectedError } from "@/lib/studioObservability";
 import { runDetailErrorCopy } from "@/lib/studioRouteBoundaryCopy";
 
 type RunDetailErrorPageProps = Readonly<{ error: Error & { digest?: string }; reset: () => void }>;
@@ -19,8 +20,8 @@ type RunDetailErrorPageProps = Readonly<{ error: Error & { digest?: string }; re
  */
 export default function RunDetailErrorPage({ error, reset }: RunDetailErrorPageProps) {
   useEffect(() => {
-    console.warn("Run detail route failed safely.", { digest: error.digest });
-  }, [error.digest]);
+    captureStudioUnexpectedError(error, { boundary: "route-render", routePath: "/runs/[runId]" });
+  }, [error]);
 
   return (
     <main

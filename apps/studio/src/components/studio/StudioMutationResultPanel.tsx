@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
-import { studioMutationRecoveryCopy } from "@/lib/studioMutationRecoveryCopy";
+import { hasHttpStatus, studioMutationRecoveryCopy } from "@/lib/studioMutationRecoveryCopy";
 import {
   studioMutationResultHref,
   studioMutationResultLinkLabel,
@@ -82,7 +82,7 @@ export function StudioMutationResultPanel({ state }: StudioMutationResultPanelPr
                 <dt className='text-muted-foreground text-xs font-medium tracking-wide uppercase'>
                   Result
                 </dt>
-                <dd className='mt-1 break-words'>{fact}</dd>
+                <dd className='mt-1 wrap-break-word'>{fact}</dd>
               </div>
             ))}
           </dl>
@@ -131,11 +131,4 @@ function hasStudioMutationRecordSummary(
   state: StudioGuardedActionSubmitState,
 ): state is StudioMutationStateWithRecordSummary {
   return "recordSummary" in state && state.recordSummary !== null;
-}
-
-function hasHttpStatus(
-  state: StudioGuardedActionSubmitState,
-): state is Extract<StudioGuardedActionSubmitState, { status?: number }> &
-  Readonly<{ status: number }> {
-  return "status" in state && typeof state.status === "number";
 }

@@ -81,7 +81,7 @@ describe("local model candidate evaluation with llama.cpp", () => {
   it("surfaces llama.cpp diagnostics failures separately from unserved candidates", async () => {
     await writeLlmConfig({
       mode: "llama.cpp",
-      llamaCppBaseUrl: "http://localhost:8080/private",
+      llamaCppBaseUrl: "http://localhost:8080",
       model: "served-model.gguf",
     });
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("ECONNREFUSED")));

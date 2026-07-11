@@ -79,12 +79,18 @@ agent-tracking state only; runtime code must not require it.
   analytics feedback routes.
 - Studio foundation with Tailwind CSS v4, shadcn-style primitives, Radix UI, lucide icons, GSAP, and
   `next/font`.
+- Optional Sentry error reporting at Next.js and guarded Studio mutation boundaries. It is disabled
+  without a DSN and never attaches request bodies, artifact contents, prompts, provider output,
+  credentials, or approval evidence; telemetry never controls workflow state.
 - Mock-first provider layer with Ollama and local `llama.cpp` adapters.
+- Ollama and `llama.cpp` base URLs are restricted to credential-free loopback HTTP(S) origins;
+  hosted or LAN providers require a future separately reviewed adapter contract.
 - Project-level `producer doctor` diagnostics for config, mock/Ollama/llama.cpp readiness, local
   TTS/Piper readiness, local FFmpeg/ffprobe toolchain availability, assets, and publish defaults.
 - Local model evaluation command that exercises small idea/script parser contracts, writes ignored
   `diagnostics/local_model_eval.*` reports, and never persists raw provider output; Studio exposes
-  these reports as read-only operator evidence without calling local models or changing config.
+  these reports and can explicitly refresh them through guarded canonical CLI actions without
+  changing provider config or starting/downloading models.
 - Runtime prompt defaults under `prompts/defaults/`; `.ai/` is development and agent-tracking
   guidance, not a runtime dependency.
 - Strict run state machine and explicit approval ledger.
@@ -473,9 +479,10 @@ Current Studio scope:
 - `/actions` workflow control matrix showing which v1 production steps have guarded web routes,
   which remain CLI fallback, and which external upload/publish actions are disabled;
 - home-page doctor diagnostics summary showing the persisted doctor status and next safe action;
-- read-only `/doctor` page over ignored `diagnostics/doctor.json` and `diagnostics/doctor.md`,
-  showing local config/provider/TTS/asset/publish checks and next safe remediation without running
-  doctor, editing config, starting providers, downloading models, or mutating workflow state;
+- `/doctor` page over ignored `diagnostics/doctor.json` and `diagnostics/doctor.md`, showing local
+  config/provider/TTS/asset/publish checks and next safe remediation. Its explicit guarded action
+  can run the canonical workflow-read-only doctor CLI refresh, which writes ignored diagnostics but
+  cannot edit config, start providers, download models, or mutate workflow state;
 - current asset inventory summary and read-only `/assets` detail page backed by configured asset
   guard checks;
 - read-only runtime prompt inventory and `/prompts` detail page for tracked defaults and configured
@@ -513,6 +520,15 @@ Current Studio scope:
 Next Studio work should keep artifact, asset, and prompt visibility aligned with new production
 artifacts, keep upload/publish mutations disabled, and add further guarded routes only after shared
 service contracts, local-session route security, and negative tests exist.
+
+Optional Sentry configuration lives in `apps/studio/.env.example`. Keep DSNs and build-time
+source-map credentials in local or CI secret storage. With blank values, Studio remains fully local
+and telemetry-free.
+
+Studio responses disable the framework banner and set frame, MIME-sniffing, referrer, permissions,
+and minimal CSP protections. HSTS and `Secure` session cookies remain intentionally inapplicable
+while Studio binds only to loopback HTTP; serving it beyond loopback requires a new transport
+review.
 
 ## Visual Assets
 

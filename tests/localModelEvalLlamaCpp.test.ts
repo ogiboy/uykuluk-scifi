@@ -75,11 +75,10 @@ describe("local model evaluation with llama.cpp", () => {
     );
   });
 
-  it("redacts endpoint details from blocked eval artifacts", async () => {
+  it("redacts transport details from blocked eval artifacts", async () => {
     await writeLlmConfig({
       mode: "llama.cpp",
-      llamaCppBaseUrl:
-        "http://fixture-user:fixture-password@localhost:8080/private?sample=fixture-value",
+      llamaCppBaseUrl: "http://localhost:8080",
       model: "local-model.gguf",
     });
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("ECONNREFUSED fixture-password")));
@@ -98,8 +97,6 @@ describe("local model evaluation with llama.cpp", () => {
       await readFile(localModelEvalMarkdownPath(), "utf8"),
     ]) {
       expect(value).not.toContain("fixture-password");
-      expect(value).not.toContain("fixture-user");
-      expect(value).not.toContain("/private");
     }
   });
 
