@@ -8,21 +8,28 @@ import channelLogo from "../../../../../assets/brand/uykulukscifi_channel_logo_s
  */
 export function StudioBrandLockup() {
   return (
-    <Link aria-label='Studio home' className='brand-lockup' href='/'>
-      <span className='brand-mark' aria-hidden='true'>
+    <Link
+      aria-label='Studio home'
+      className='text-foreground mb-7 flex min-w-0 items-center gap-3 rounded-md'
+      href='/'
+    >
+      <span
+        className='bg-card/60 text-primary grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-lg shadow-sm shadow-black/10'
+        aria-hidden='true'
+      >
         <Image
           alt=''
-          className='brand-mark-image'
-          height={40}
+          className='h-full w-full object-cover'
+          height={48}
           preload
-          sizes='40px'
+          sizes='48px'
           src={channelLogo}
-          width={40}
+          width={48}
         />
       </span>
       <div>
-        <p>UykulukSciFi</p>
-        <strong>Producer Studio</strong>
+        <p className='text-muted-foreground text-sm'>UykulukSciFi</p>
+        <strong className='mt-0.5 block text-sm font-semibold'>Producer Studio</strong>
       </div>
     </Link>
   );

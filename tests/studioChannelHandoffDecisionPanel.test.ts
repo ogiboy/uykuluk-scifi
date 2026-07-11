@@ -28,10 +28,7 @@ describe("RunChannelHandoffDecisionPanel", () => {
             templatePath: "assets/thumbnails/thumbnail_template_01_left_1280x720.jpg",
             templateSha256: "b".repeat(64),
           },
-          youtube: {
-            metadataPath: "production/youtube_metadata.json",
-            title: "Fixture title",
-          },
+          youtube: { metadataPath: "production/youtube_metadata.json", title: "Fixture title" },
         },
         kind: "present",
         message: "Channel handoff decision recorded: accepted-for-manual-channel-prep.",
@@ -94,7 +91,22 @@ function flattenReactText(value: unknown): string {
   }
   if (typeof value === "object" && "props" in value) {
     const props = (value as { props?: { children?: unknown } }).props;
-    return flattenReactText(props?.children);
+    return [
+      flattenReactText(propText(props, "title")),
+      flattenReactText(propText(props, "description")),
+      flattenReactText(propText(props, "items")),
+      flattenReactText(props?.children),
+    ]
+      .filter(Boolean)
+      .join(" ");
+  }
+  if (typeof value === "object" && "label" in value && "value" in value) {
+    const item = value as { label: unknown; value: unknown };
+    return [flattenReactText(item.label), flattenReactText(item.value)].filter(Boolean).join(" ");
   }
   return "";
+}
+
+function propText(props: { [key: string]: unknown } | undefined, key: string): unknown {
+  return props?.[key];
 }

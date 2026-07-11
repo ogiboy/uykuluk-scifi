@@ -1,8 +1,12 @@
+import {
+  RunDetailCard,
+  RunDetailStatusBadge,
+  RunMetadataList,
+  type RunMetadataItem,
+} from "@/components/runs/RunDetailCard";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 
-type RunChannelHandoffPanelProps = Readonly<{
-  channelHandoff: StudioRunDetail["channelHandoff"];
-}>;
+type RunChannelHandoffPanelProps = Readonly<{ channelHandoff: StudioRunDetail["channelHandoff"] }>;
 
 /**
  * Renders the read-only manual channel-handoff status for a run.
@@ -10,61 +14,53 @@ type RunChannelHandoffPanelProps = Readonly<{
  * @param channelHandoff - The Studio manual channel-handoff summary.
  */
 export function RunChannelHandoffPanel({ channelHandoff }: RunChannelHandoffPanelProps) {
+  const metadataItems =
+    channelHandoff.kind === "present" ? channelHandoffMetadataItems(channelHandoff) : [];
+
   return (
-    <section className='panel' aria-labelledby='channel-handoff-heading'>
-      <h2 id='channel-handoff-heading'>Manual Channel Handoff</h2>
-      <p>
-        <span className={channelHandoffStatusClassName(channelHandoff.kind)}>
+    <RunDetailCard
+      headingId='channel-handoff-heading'
+      title='Manual Channel Handoff'
+      description='Read-only display. This package does not upload, schedule, publish, or approve upload.'
+    >
+      <p className='flex flex-wrap items-center gap-2'>
+        <RunDetailStatusBadge tone={channelHandoffStatusTone(channelHandoff.kind)}>
           {channelHandoff.kind}
-        </span>{" "}
-        {channelHandoff.message}
+        </RunDetailStatusBadge>
+        <span>{channelHandoff.message}</span>
       </p>
-      {channelHandoff.kind === "present" ? (
-        <dl className='run-metadata'>
-          <div>
-            <dt>Status</dt>
-            <dd>{channelHandoff.handoff.status}</dd>
-          </div>
-          <div>
-            <dt>Manual handoff</dt>
-            <dd>{channelHandoff.reviewPath}</dd>
-          </div>
-          <div>
-            <dt>Draft MP4</dt>
-            <dd>{channelHandoff.handoff.media.draftRenderPath}</dd>
-          </div>
-          <div>
-            <dt>Subtitles</dt>
-            <dd>{channelHandoff.handoff.media.subtitlesPath}</dd>
-          </div>
-          <div>
-            <dt>YouTube title</dt>
-            <dd>{channelHandoff.handoff.youtube.title}</dd>
-          </div>
-          <div>
-            <dt>Metadata JSON</dt>
-            <dd>{channelHandoff.handoff.youtube.metadataPath}</dd>
-          </div>
-          <div>
-            <dt>Created</dt>
-            <dd>{channelHandoff.handoff.createdAt}</dd>
-          </div>
-        </dl>
-      ) : null}
+      {metadataItems.length > 0 ? <RunMetadataList items={metadataItems} /> : null}
       {channelHandoff.nextAction ? (
-        <p className='artifact-action'>Next action: {channelHandoff.nextAction}</p>
+        <p className='rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-900 dark:text-amber-100'>
+          Next action: {channelHandoff.nextAction}
+        </p>
       ) : null}
-      <p>Read-only display. This package does not upload, schedule, publish, or approve upload.</p>
-    </section>
+    </RunDetailCard>
   );
 }
 
-function channelHandoffStatusClassName(status: StudioRunDetail["channelHandoff"]["kind"]): string {
+function channelHandoffStatusTone(
+  status: StudioRunDetail["channelHandoff"]["kind"],
+): "blocked" | "success" | "warning" {
   if (status === "present") {
-    return "status-pill small";
+    return "success";
   }
   if (status === "missing") {
-    return "status-pill small warning";
+    return "warning";
   }
-  return "status-pill small blocked";
+  return "blocked";
+}
+
+function channelHandoffMetadataItems(
+  channelHandoff: Extract<StudioRunDetail["channelHandoff"], { kind: "present" }>,
+): RunMetadataItem[] {
+  return [
+    { label: "Status", value: channelHandoff.handoff.status },
+    { label: "Manual handoff", value: channelHandoff.reviewPath },
+    { label: "Draft MP4", value: channelHandoff.handoff.media.draftRenderPath },
+    { label: "Subtitles", value: channelHandoff.handoff.media.subtitlesPath },
+    { label: "YouTube title", value: channelHandoff.handoff.youtube.title },
+    { label: "Metadata JSON", value: channelHandoff.handoff.youtube.metadataPath },
+    { label: "Created", value: channelHandoff.handoff.createdAt },
+  ];
 }

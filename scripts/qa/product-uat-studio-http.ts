@@ -8,10 +8,7 @@ const baseUrl = "http://localhost:3000";
 
 export type StudioUatAssert = (condition: boolean, message: string) => asserts condition;
 
-export type StudioUatSession = Readonly<{
-  cookie: string;
-  token: string;
-}>;
+export type StudioUatSession = Readonly<{ cookie: string; token: string }>;
 
 /**
  * Builds a guarded same-origin Studio mutation request for product UAT route handlers.
@@ -48,7 +45,12 @@ export function studioJsonRequest(
  * @returns A local session cookie and header token pair.
  */
 export async function studioSessionCookie(assert: StudioUatAssert): Promise<StudioUatSession> {
-  const response = await issueStudioSession();
+  const response = await issueStudioSession(
+    new Request("http://localhost:3000/actions/session", {
+      headers: { origin: "http://localhost:3000" },
+      method: "GET",
+    }),
+  );
   const payload = (await response.json().catch(() => null)) as { token?: unknown } | null;
   const setCookie = response.headers.get("set-cookie");
   assert(response.status === 200, `Studio session returned HTTP ${response.status}.`);

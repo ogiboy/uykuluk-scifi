@@ -73,17 +73,24 @@ export function StudioAppearanceControls({
   }
 
   return (
-    <section className='appearance-controls' aria-labelledby='appearance-controls-heading'>
+    <section
+      className='bg-card/40 mt-6 grid gap-3 rounded-xl p-3'
+      aria-labelledby='appearance-controls-heading'
+    >
       <div>
-        <p className='eyebrow'>Operator view</p>
-        <h2 id='appearance-controls-heading'>Appearance</h2>
+        <p className='text-muted-foreground text-xs'>Operator view</p>
+        <h2 className='text-sm font-semibold' id='appearance-controls-heading'>
+          Appearance
+        </h2>
       </div>
 
-      <div className='appearance-control-grid'>
-        <div className='appearance-field'>
-          <Label htmlFor='studio-theme-select'>Theme</Label>
+      <div className='grid gap-2'>
+        <div className='grid min-w-0 gap-2'>
+          <Label className='text-muted-foreground text-xs' htmlFor='studio-theme-select'>
+            Theme
+          </Label>
           <Select value={preference.theme} onValueChange={updateTheme}>
-            <SelectTrigger id='studio-theme-select' size='sm' className='appearance-select'>
+            <SelectTrigger id='studio-theme-select' size='sm' className='w-full'>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -96,10 +103,12 @@ export function StudioAppearanceControls({
           </Select>
         </div>
 
-        <div className='appearance-field'>
-          <Label htmlFor='studio-palette-select'>Palette</Label>
+        <div className='grid min-w-0 gap-2'>
+          <Label className='text-muted-foreground text-xs' htmlFor='studio-palette-select'>
+            Palette
+          </Label>
           <Select value={preference.palette} onValueChange={updatePalette}>
-            <SelectTrigger id='studio-palette-select' size='sm' className='appearance-select'>
+            <SelectTrigger id='studio-palette-select' size='sm' className='w-full'>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -112,10 +121,12 @@ export function StudioAppearanceControls({
           </Select>
         </div>
 
-        <div className='appearance-field'>
-          <Label htmlFor='studio-locale-select'>Language</Label>
+        <div className='grid min-w-0 gap-2'>
+          <Label className='text-muted-foreground text-xs' htmlFor='studio-locale-select'>
+            Language
+          </Label>
           <Select value={preference.locale} onValueChange={updateLocale}>
-            <SelectTrigger id='studio-locale-select' size='sm' className='appearance-select'>
+            <SelectTrigger id='studio-locale-select' size='sm' className='w-full'>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -128,11 +139,13 @@ export function StudioAppearanceControls({
           </Select>
         </div>
 
-        <div className='appearance-field appearance-density-field'>
-          <Label id='studio-density-label'>Density</Label>
+        <div className='grid min-w-0 gap-2'>
+          <Label className='text-muted-foreground text-xs' id='studio-density-label'>
+            Density
+          </Label>
           <ToggleGroup
             aria-labelledby='studio-density-label'
-            className='appearance-density-toggle'
+            className='grid w-full grid-cols-3'
             onValueChange={(value: StudioDensity) => {
               if (isStudioDensity(value)) {
                 updateDensity(value);
@@ -144,7 +157,11 @@ export function StudioAppearanceControls({
             variant='outline'
           >
             {densityOptions.map((option) => (
-              <ToggleGroupItem key={option.value} value={option.value}>
+              <ToggleGroupItem
+                className='min-w-0 px-1 text-[11px]'
+                key={option.value}
+                value={option.value}
+              >
                 {option.label}
               </ToggleGroupItem>
             ))}

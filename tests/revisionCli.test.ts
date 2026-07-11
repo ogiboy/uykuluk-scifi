@@ -1,6 +1,6 @@
-import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { readFile, writeFile } from "node:fs/promises";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { artifactPath } from "../src/core/artifacts";
 import { loadRun } from "../src/core/runStore";
@@ -82,9 +82,7 @@ describe("producer revision CLI", () => {
       runId,
       schemaVersion: 1,
     });
-    await expect(loadRun(runId)).resolves.toMatchObject({
-      state: "PRODUCTION_PACKAGE_GENERATED",
-    });
+    await expect(loadRun(runId)).resolves.toMatchObject({ state: "PRODUCTION_PACKAGE_GENERATED" });
   });
 });
 

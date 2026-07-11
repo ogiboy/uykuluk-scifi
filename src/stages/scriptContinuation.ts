@@ -1,9 +1,9 @@
 import type { ProducerConfig } from "../config/schema.js";
 import { SafeExitError } from "../core/errors.js";
 import type { LlmProvider } from "../providers/llmProvider.js";
-import { parseScriptContinuationProviderPayload } from "./scriptContinuationParsing.js";
 import { scriptLongFormWordFloor } from "../safeguards/scriptLengthContract.js";
 import { generateScriptContentWithBlockerRetry } from "./scriptContentRetry.js";
+import { parseScriptContinuationProviderPayload } from "./scriptContinuationParsing.js";
 import {
   assembleScriptFromSections,
   createScriptSectionReceipt,
@@ -11,10 +11,7 @@ import {
   type ScriptSectionReceipt,
 } from "./scriptSections.js";
 
-type ScriptSectionOutput = {
-  heading: string;
-  text: string;
-};
+type ScriptSectionOutput = { heading: string; text: string };
 
 type ScriptContinuationInput = {
   basePrompt: string;
@@ -26,31 +23,20 @@ type ScriptContinuationInput = {
   title: string;
 };
 
-type ScriptContinuationChunk = {
-  focus: string;
-  index: 1 | 2 | 3;
-};
+type ScriptContinuationChunk = { focus: string; index: 1 | 2 | 3 };
 
 export const longFormWordFloor = scriptLongFormWordFloor;
 const developmentSectionId = "development";
 const developmentPlan = scriptSectionPlans.find((section) => section.id === developmentSectionId);
 export const scriptContinuationResponseFormat = {
   type: "object",
-  properties: {
-    text: { type: "string", minLength: 1 },
-  },
+  properties: { text: { type: "string", minLength: 1 } },
   required: ["text"],
 } as const satisfies Record<string, unknown>;
 
 export const scriptContinuationChunks: ScriptContinuationChunk[] = [
-  {
-    index: 1,
-    focus: "deepen the central cinematic development and add concrete visual rhythm",
-  },
-  {
-    index: 2,
-    focus: "add scientific caution, alternatives, and a smoother bridge into the outro",
-  },
+  { index: 1, focus: "deepen the central cinematic development and add concrete visual rhythm" },
+  { index: 2, focus: "add scientific caution, alternatives, and a smoother bridge into the outro" },
   {
     index: 3,
     focus: "add a short final connective beat only if the long-form floor is still missing",

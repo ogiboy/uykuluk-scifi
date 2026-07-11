@@ -5,19 +5,16 @@ import { SafeExitError } from "../core/errors.js";
 import { promptOverridePath } from "./catalog.js";
 import { PROMPT_TEMPLATE_DEFINITIONS, type PromptKey } from "./definitions.js";
 
-export type RenderedPrompt = {
-  key: PromptKey;
-  source: string;
-  text: string;
-};
+export type RenderedPrompt = { key: PromptKey; source: string; text: string };
 
 /**
  * Renders the ideas prompt template.
  *
+ * @param context - Optional compact runtime context to append after the planner template.
  * @returns A `RenderedPrompt` containing the ideas prompt.
  */
-export async function renderIdeasPrompt(): Promise<RenderedPrompt> {
-  return renderDefaultPrompt("ideas", "IDEAS_JSON");
+export async function renderIdeasPrompt(context: string[] = []): Promise<RenderedPrompt> {
+  return renderDefaultPrompt("ideas", "IDEAS_JSON", context);
 }
 
 /**
@@ -65,10 +62,9 @@ async function renderDefaultPrompt(
   };
 }
 
-async function readPromptTemplateSource(key: PromptKey): Promise<{
-  path: string;
-  template: string;
-}> {
+async function readPromptTemplateSource(
+  key: PromptKey,
+): Promise<{ path: string; template: string }> {
   let template: string;
   const overridePath = promptOverridePath(key, (await loadConfig()).prompts.overrides);
   if (overridePath) {

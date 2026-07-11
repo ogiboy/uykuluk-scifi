@@ -12,20 +12,10 @@ export function parseCsvRows(input: string): Record<string, string>[] {
   );
 }
 
-type CsvParserState = {
-  current: string;
-  inQuotes: boolean;
-  row: string[];
-  rows: string[][];
-};
+type CsvParserState = { current: string; inQuotes: boolean; row: string[]; rows: string[][] };
 
 function parseCsv(input: string): string[][] {
-  const state: CsvParserState = {
-    current: "",
-    inQuotes: false,
-    row: [],
-    rows: [],
-  };
+  const state: CsvParserState = { current: "", inQuotes: false, row: [], rows: [] };
   let index = 0;
   while (index < input.length) {
     index = readCsvCharacter(input, index, state);

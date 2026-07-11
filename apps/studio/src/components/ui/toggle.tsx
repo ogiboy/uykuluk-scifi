@@ -15,16 +15,9 @@ const toggleVariants = cva(
         outline:
           "border border-[color:var(--line)] bg-[color:var(--studio-surface-inset)] text-[color:var(--muted)] shadow-xs",
       },
-      size: {
-        default: "h-9 min-w-9 px-2",
-        sm: "h-8 min-w-8 px-1.5",
-        lg: "h-10 min-w-10 px-2.5",
-      },
+      size: { default: "h-9 min-w-9 px-2", sm: "h-8 min-w-8 px-1.5", lg: "h-10 min-w-10 px-2.5" },
     },
-    defaultVariants: {
-      variant: "default",
-      size: "default",
-    },
+    defaultVariants: { variant: "default", size: "default" },
   },
 );
 

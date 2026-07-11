@@ -1,5 +1,5 @@
-import path from "node:path";
 import { spawnSync } from "node:child_process";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { runIdeas } from "../src/stages/ideas";
 import { useTempProject } from "./helpers";

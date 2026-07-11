@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,11 +10,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useStudioGuardedActionSubmit } from "@/lib/useStudioGuardedActionSubmit";
+import { useState } from "react";
 import { StudioMutationResultPanel } from "../studio/StudioMutationResultPanel";
 
-type DoctorRunActionPanelProps = Readonly<{
-  compact?: boolean;
-}>;
+type DoctorRunActionPanelProps = Readonly<{ compact?: boolean }>;
 
 /**
  * Renders the guarded Studio action that refreshes local producer doctor diagnostics.
@@ -52,7 +50,7 @@ export function DoctorRunActionPanel({ compact = false }: DoctorRunActionPanelPr
       >
         {state.kind === "submitting" ? "Running doctor..." : "Run doctor"}
       </Button>
-      <StudioMutationResultPanel state={state} />
+      {state.kind !== "idle" ? <StudioMutationResultPanel state={state} /> : null}
       <Dialog open={confirmationOpen} onOpenChange={setConfirmationOpen}>
         <DialogContent>
           <DialogHeader>
@@ -63,21 +61,21 @@ export function DoctorRunActionPanel({ compact = false }: DoctorRunActionPanelPr
               provider downtime, missing tools, or unsafe publish defaults.
             </DialogDescription>
           </DialogHeader>
-          <dl className='decision-list'>
+          <dl className='grid gap-3 text-sm sm:grid-cols-2'>
             <div>
-              <dt>Action</dt>
-              <dd>doctor.run</dd>
+              <dt className='text-muted-foreground font-medium'>Action</dt>
+              <dd className='break-all'>doctor.run</dd>
             </div>
             <div>
-              <dt>Route</dt>
-              <dd>/actions/run-doctor</dd>
+              <dt className='text-muted-foreground font-medium'>Route</dt>
+              <dd className='break-all'>/actions/run-doctor</dd>
             </div>
             <div>
-              <dt>CLI equivalent</dt>
-              <dd>pnpm producer doctor</dd>
+              <dt className='text-muted-foreground font-medium'>CLI equivalent</dt>
+              <dd className='break-all'>pnpm producer doctor</dd>
             </div>
             <div>
-              <dt>Boundary</dt>
+              <dt className='text-muted-foreground font-medium'>Boundary</dt>
               <dd>No config edits, provider startup, model download, upload, or publish action.</dd>
             </div>
           </dl>

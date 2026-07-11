@@ -1,13 +1,6 @@
-export type ScriptLabelRepairEvidence = {
-  count: number;
-  variants: string[];
-};
+export type ScriptLabelRepairEvidence = { count: number; variants: string[] };
 
-type ScriptLabelRepairRule = {
-  pattern: RegExp;
-  replacement: string;
-  variantSuffix: ":" | " -";
-};
+type ScriptLabelRepairRule = { pattern: RegExp; replacement: string; variantSuffix: ":" | " -" };
 
 const narratorLabelRule: ScriptLabelRepairRule = {
   pattern: /(^|[^\p{L}\p{N}_])(Anlatici|Anlatyıcı|Anlatı)\s*:/gu,

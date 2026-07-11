@@ -21,7 +21,7 @@ export function RunRevisionActionPanel({ run }: RunRevisionActionPanelProps) {
     <section aria-labelledby='revision-action-heading'>
       <Card>
         <CardHeader>
-          <p className='text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground'>
+          <p className='text-muted-foreground text-xs font-semibold tracking-[0.28em] uppercase'>
             Revision control
           </p>
           <CardTitle id='revision-action-heading'>Revise local artifacts</CardTitle>

@@ -8,24 +8,13 @@ export type DraftRenderOverlay = {
   y: string;
 };
 
-export type DraftRenderComposition = {
-  overlays: DraftRenderOverlay[];
-  reviewChecklist: string[];
-};
+export type DraftRenderComposition = { overlays: DraftRenderOverlay[]; reviewChecklist: string[] };
 
 export function buildDraftRenderComposition(renderPlan: RenderPlan): DraftRenderComposition {
   const overlays = overlaySpecs.flatMap((spec) => {
     const asset = findFirstOverlayAsset(renderPlan, spec.role);
     return asset
-      ? [
-          {
-            asset,
-            placement: spec.placement,
-            width: spec.width,
-            x: spec.x,
-            y: spec.y,
-          },
-        ]
+      ? [{ asset, placement: spec.placement, width: spec.width, x: spec.x, y: spec.y }]
       : [];
   });
   return {
@@ -60,32 +49,8 @@ function findFirstOverlayAsset(renderPlan: RenderPlan, role: string): AssetRef |
 }
 
 const overlaySpecs = [
-  {
-    role: "lower-third",
-    placement: "bottom-lower-third",
-    width: 1280,
-    x: "0",
-    y: "H-h",
-  },
-  {
-    role: "waveform-overlay",
-    placement: "bottom-waveform",
-    width: 1280,
-    x: "0",
-    y: "H-h-250",
-  },
-  {
-    role: "popup-card",
-    placement: "right-info-card",
-    width: 360,
-    x: "W-w-48",
-    y: "96",
-  },
-  {
-    role: "watermark",
-    placement: "top-right-watermark",
-    width: 120,
-    x: "W-w-24",
-    y: "24",
-  },
+  { role: "lower-third", placement: "bottom-lower-third", width: 1280, x: "0", y: "H-h" },
+  { role: "waveform-overlay", placement: "bottom-waveform", width: 1280, x: "0", y: "H-h-250" },
+  { role: "popup-card", placement: "right-info-card", width: 360, x: "W-w-48", y: "96" },
+  { role: "watermark", placement: "top-right-watermark", width: 120, x: "W-w-24", y: "24" },
 ] as const;

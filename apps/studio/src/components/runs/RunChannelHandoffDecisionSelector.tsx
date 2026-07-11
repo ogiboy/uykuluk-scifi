@@ -56,13 +56,13 @@ export function RunChannelHandoffDecisionSelector({
       >
         {channelHandoffDecisionOptions.map((item) => (
           <Label
-            className='grid cursor-pointer grid-cols-[auto_1fr] items-start gap-3 rounded-lg border bg-card p-3 text-sm transition-colors hover:bg-accent/10'
+            className='bg-card hover:bg-accent/10 grid cursor-pointer grid-cols-[auto_1fr] items-start gap-3 rounded-lg border p-3 text-sm transition-colors'
             key={item.decision}
           >
             <RadioGroupItem className='mt-1' value={item.decision} />
             <span className='space-y-2'>
               <strong className='block'>{item.label}</strong>
-              <span className='block text-muted-foreground'>{item.guidance}</span>
+              <span className='text-muted-foreground block'>{item.guidance}</span>
             </span>
           </Label>
         ))}

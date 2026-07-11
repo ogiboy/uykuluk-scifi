@@ -65,7 +65,12 @@ assert(
 console.log("Studio render-decision action UAT passed.");
 
 async function studioSessionCookie(): Promise<{ cookie: string; token: string }> {
-  const response = await issueStudioSession();
+  const response = await issueStudioSession(
+    new Request("http://localhost:3000/actions/session", {
+      headers: { origin: "http://localhost:3000" },
+      method: "GET",
+    }),
+  );
   const payload = (await response.json().catch(() => null)) as { token?: unknown } | null;
   const setCookie = response.headers.get("set-cookie");
   assert(response.status === 200, `Studio session returned HTTP ${response.status}.`);

@@ -45,9 +45,7 @@ export type LocalModelEvalReport = {
   checks: LocalModelEvalCheck[];
 };
 
-export type LocalModelEvalOptions = {
-  llmOverrides?: LocalModelEvalLlmOverrides;
-};
+export type LocalModelEvalOptions = { llmOverrides?: LocalModelEvalLlmOverrides };
 
 /**
  * Gets the absolute path to the local model evaluation JSON report.
@@ -199,8 +197,5 @@ function blockingCheck(
   result: GenerateTextResult,
   message: string,
 ): LocalModelEvalCheck {
-  return {
-    ...passingCheck(name, prompt, result, message),
-    status: "block",
-  };
+  return { ...passingCheck(name, prompt, result, message), status: "block" };
 }

@@ -1,16 +1,17 @@
+import { CopyableCommand } from "@/components/studio/CopyableCommand";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   productionMediaIntro,
-  productionMediaReviewSummary,
   productionMediaReviewAction,
+  productionMediaReviewSummary,
   shouldShowEvidenceRemediation,
   type ProductionMediaStatus,
 } from "@/lib/runEvidenceCopy";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import { studioMediaArtifactUrl } from "@/lib/studioMediaArtifacts";
-import { CopyableCommand } from "../studio/CopyableCommand";
-import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
-import { Badge } from "../ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
+import { RunDetailCard } from "../RunDetailCard";
 import { RunProductionMediaFacts } from "./RunProductionMediaFacts";
 import { RunProductionMediaPreview } from "./RunProductionMediaPreview";
 import { RunProductionMediaSummary } from "./RunProductionMediaSummary";
@@ -41,14 +42,16 @@ export function RunProductionMediaPanel({
 }: RunProductionMediaPanelProps) {
   const summary = productionMediaReviewSummary(evidenceStatus, productionMedia);
   return (
-    <section className='panel' aria-labelledby='production-media-heading'>
-      <h2 id='production-media-heading'>Production Media Evidence</h2>
-      <p>{productionMediaIntro(evidenceStatus)}</p>
+    <RunDetailCard
+      headingId='production-media-heading'
+      title='Production Media Evidence'
+      description={productionMediaIntro(evidenceStatus)}
+    >
       <RunProductionMediaSummary summary={summary} />
       {shouldShowEvidenceRemediation(evidenceStatus) ? (
         <EvidenceRemediation message={evidenceMessage} nextAction={evidenceNextAction} />
       ) : null}
-      <div className='production-media-grid'>
+      <div className='grid gap-4 xl:grid-cols-2'>
         {productionMedia.map((artifact) => (
           <ProductionMediaCard
             artifact={artifact}
@@ -58,7 +61,7 @@ export function RunProductionMediaPanel({
           />
         ))}
       </div>
-    </section>
+    </RunDetailCard>
   );
 }
 
@@ -73,7 +76,7 @@ function EvidenceRemediation({
   nextAction,
 }: Readonly<{ message: string; nextAction?: string }>) {
   return (
-    <Alert className='production-media-alert'>
+    <Alert>
       <AlertTitle>Evidence needs attention</AlertTitle>
       <AlertDescription>
         <p>{message}</p>
@@ -94,22 +97,24 @@ function ProductionMediaCard({
 }>) {
   const mediaUrl = mediaPreviewUrl(runId, artifact);
   return (
-    <Card className={`production-media-card ${artifact.status}`}>
-      <CardHeader>
-        <CardDescription>{artifact.artifactPath}</CardDescription>
-        <div className='production-media-card-title'>
+    <Card className='bg-background/35 min-w-0 gap-4 overflow-hidden border border-transparent py-4 shadow-none'>
+      <CardHeader className='gap-2 px-4'>
+        <CardDescription className='font-mono text-xs break-all'>
+          {artifact.artifactPath}
+        </CardDescription>
+        <div className='flex flex-wrap items-center justify-between gap-2'>
           <CardTitle>
-            <h3>{artifact.label}</h3>
+            <h3 className='text-base leading-snug font-semibold'>{artifact.label}</h3>
           </CardTitle>
           <Badge variant={mediaStatusBadgeVariant(artifact.status)}>{artifact.status}</Badge>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className='grid gap-4 px-4'>
         <RunProductionMediaFacts artifact={artifact} />
         {mediaUrl ? (
           <RunProductionMediaPreview artifact={artifact} mediaUrl={mediaUrl} runId={runId} />
         ) : null}
-        <p className='artifact-action'>
+        <p className='bg-muted/10 text-muted-foreground rounded-lg p-3 text-sm'>
           Review: {productionMediaReviewAction(evidenceStatus, artifact)}
         </p>
         <MediaCommandList artifact={artifact} />
@@ -131,10 +136,10 @@ function MediaCommandList({ artifact }: Readonly<{ artifact: ProductionMediaStat
     return null;
   }
   return (
-    <div className='production-media-commands'>
+    <div className='grid gap-3'>
       {commands.map((command) => (
-        <div key={command.label}>
-          <strong>{command.label}</strong>
+        <div className='grid gap-2' key={command.label}>
+          <strong className='text-sm'>{command.label}</strong>
           <CopyableCommand command={command.value} label={command.label} />
         </div>
       ))}

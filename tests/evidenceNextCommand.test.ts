@@ -2,8 +2,8 @@ import { writeFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { artifactPath } from "../src/core/artifacts";
 import { approveIdea } from "../src/stages/approveIdea";
-import { evidenceNextCommand } from "../src/stages/evidenceNextCommand";
 import { generateEvidenceBundle } from "../src/stages/evidence";
+import { evidenceNextCommand } from "../src/stages/evidenceNextCommand";
 import { runIdeas } from "../src/stages/ideas";
 import { reviewScript } from "../src/stages/reviewScript";
 import { generateScript } from "../src/stages/script";
@@ -45,10 +45,7 @@ describe("evidence next command", () => {
       evidenceNextCommand({
         costQuote: null,
         hasUnresolvedCostReservation: false,
-        scriptReview: {
-          scriptReviewBlockerCount: 1,
-          scriptReviewWarningCount: 1,
-        },
+        scriptReview: { scriptReviewBlockerCount: 1, scriptReviewWarningCount: 1 },
         state: "SCRIPT_REVIEWED",
       }),
     ).not.toContain("approve script");
@@ -61,10 +58,7 @@ describe("evidence next command", () => {
         hasUnresolvedCostReservation: false,
         state: "READY_FOR_MANUAL_PRODUCTION",
         ttsEnabled: true,
-        voiceoverAudio: {
-          productionVoiceCandidate: false,
-          status: "pass",
-        },
+        voiceoverAudio: { productionVoiceCandidate: false, status: "pass" },
       }),
     ).toBe("pnpm producer review voice --run <run_id>");
   });
@@ -76,10 +70,7 @@ describe("evidence next command", () => {
         hasUnresolvedCostReservation: false,
         state: "READY_FOR_MANUAL_PRODUCTION",
         ttsEnabled: true,
-        voiceoverAudio: {
-          productionVoiceCandidate: true,
-          status: "pass",
-        },
+        voiceoverAudio: { productionVoiceCandidate: true, status: "pass" },
       }),
     ).toBe("pnpm producer review voice --run <run_id>");
   });
@@ -91,9 +82,7 @@ describe("evidence next command", () => {
         hasUnresolvedCostReservation: false,
         state: "READY_FOR_MANUAL_PRODUCTION",
         ttsEnabled: false,
-        voiceoverAudio: {
-          status: "block",
-        },
+        voiceoverAudio: { status: "block" },
       }),
     ).toBe("Enable local TTS in producer.config.json, then pnpm producer voice --run <run_id>");
   });
@@ -105,9 +94,7 @@ describe("evidence next command", () => {
         hasUnresolvedCostReservation: false,
         state: "READY_FOR_MANUAL_PRODUCTION",
         ttsEnabled: true,
-        voiceoverAudio: {
-          status: "block",
-        },
+        voiceoverAudio: { status: "block" },
       }),
     ).toBe("pnpm producer voice --run <run_id>");
   });
@@ -119,9 +106,7 @@ describe("evidence next command", () => {
         hasUnresolvedCostReservation: false,
         state: "READY_FOR_MANUAL_PRODUCTION",
         ttsEnabled: true,
-        voiceoverAudio: {
-          status: "pass",
-        },
+        voiceoverAudio: { status: "pass" },
       }),
     ).toBe("Regenerate voiceover evidence before render approval.");
   });
@@ -130,9 +115,7 @@ describe("evidence next command", () => {
     expect(
       evidenceNextCommand({
         costQuote: null,
-        draftRender: {
-          status: "block",
-        },
+        draftRender: { status: "block" },
         hasUnresolvedCostReservation: false,
         state: "RENDERED",
       }),
@@ -145,9 +128,7 @@ describe("evidence next command", () => {
     expect(
       evidenceNextCommand({
         costQuote: null,
-        draftRender: {
-          status: "missing",
-        },
+        draftRender: { status: "missing" },
         hasUnresolvedCostReservation: false,
         state: "RENDERED",
       }),
@@ -160,10 +141,7 @@ describe("evidence next command", () => {
     expect(
       evidenceNextCommand({
         costQuote: null,
-        draftRender: {
-          status: "pass",
-          voiceoverProductionVoiceCandidate: false,
-        },
+        draftRender: { status: "pass", voiceoverProductionVoiceCandidate: false },
         hasUnresolvedCostReservation: false,
         state: "RENDERED",
       }),
@@ -174,10 +152,7 @@ describe("evidence next command", () => {
     expect(
       evidenceNextCommand({
         costQuote: null,
-        draftRender: {
-          status: "pass",
-          voiceoverProductionVoiceCandidate: true,
-        },
+        draftRender: { status: "pass", voiceoverProductionVoiceCandidate: true },
         hasUnresolvedCostReservation: false,
         state: "RENDERED",
       }),

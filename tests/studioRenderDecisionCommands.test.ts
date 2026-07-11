@@ -1,7 +1,7 @@
 import { writeFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
-import { getStudioRunDetail } from "../apps/studio/src/lib/runSummaries";
 import { readStudioRenderDecisionSummary } from "../apps/studio/src/lib/renderDecisionSummaries";
+import { getStudioRunDetail } from "../apps/studio/src/lib/runSummaries";
 import { artifactPath } from "../src/core/artifacts";
 import { loadRun, saveRun } from "../src/core/runStore";
 import { renderDecisionJsonPath } from "../src/stages/renderDecisionCommands";
@@ -49,10 +49,7 @@ describe("Studio render decision commands", () => {
     expect(detail?.renderDecisionCommands).toEqual([]);
     expect(detail?.renderDecision).toMatchObject({
       kind: "present",
-      decision: {
-        decision: "accepted-for-local-review",
-        reviewedBy: "operator",
-      },
+      decision: { decision: "accepted-for-local-review", reviewedBy: "operator" },
     });
   });
 
@@ -87,10 +84,7 @@ describe("Studio render decision commands", () => {
     });
 
     await saveRun(run);
-    await writeEvidence(runId, {
-      currentState: "RENDERED",
-      draftRender: { status: "missing" },
-    });
+    await writeEvidence(runId, { currentState: "RENDERED", draftRender: { status: "missing" } });
 
     const missingEvidence = await getStudioRunDetail(runId);
 
@@ -107,10 +101,7 @@ describe("Studio render decision commands", () => {
       currentState: "RENDERED",
       draftRender: validDraftRenderEvidence({
         digest: "f".repeat(64),
-        renderApproval: {
-          approvalId: "approval_render_fixture",
-          approvedRef: "d".repeat(64),
-        },
+        renderApproval: { approvalId: "approval_render_fixture", approvedRef: "d".repeat(64) },
       }),
     });
 
@@ -127,10 +118,7 @@ describe("Studio render decision commands", () => {
       currentState: "RENDERED",
       draftRender: validDraftRenderEvidence({
         digest: "a".repeat(64),
-        renderApproval: {
-          approvalId: "approval_other",
-          approvedRef: "d".repeat(64),
-        },
+        renderApproval: { approvalId: "approval_other", approvedRef: "d".repeat(64) },
       }),
     });
 
@@ -147,10 +135,7 @@ describe("Studio render decision commands", () => {
       currentState: "RENDERED",
       draftRender: validDraftRenderEvidence({
         digest: "a".repeat(64),
-        renderApproval: {
-          approvalId: "approval_render_fixture",
-          approvedRef: "e".repeat(64),
-        },
+        renderApproval: { approvalId: "approval_render_fixture", approvedRef: "e".repeat(64) },
       }),
     });
 
@@ -165,10 +150,7 @@ describe("Studio render decision commands", () => {
   it("reports invalid render decision paths and malformed records", async () => {
     await expect(
       readStudioRenderDecisionSummary(process.cwd(), { runId: "../bad", state: "RENDERED" }, null),
-    ).resolves.toMatchObject({
-      kind: "invalid",
-      message: "Render decision path is invalid.",
-    });
+    ).resolves.toMatchObject({ kind: "invalid", message: "Render decision path is invalid." });
 
     const runId = await createRenderedStudioRunFixture();
     await writeFile(
@@ -227,10 +209,7 @@ function validDraftRenderEvidence(overrides: Record<string, unknown>): Record<st
     },
     overlayRoles: ["watermark", "popup-card"],
     path: "production/render/draft.mp4",
-    renderApproval: {
-      approvalId: "approval_render_fixture",
-      approvedRef: "d".repeat(64),
-    },
+    renderApproval: { approvalId: "approval_render_fixture", approvedRef: "d".repeat(64) },
     reviewChecklist: ["Review local draft only."],
     reviewPath: "production/render/draft_review.md",
     sourceFrameCadence: [

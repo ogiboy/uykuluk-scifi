@@ -1,10 +1,7 @@
 import { bulletList } from "../utils/markdown.js";
 import type { AssetProvenance, RenderPlan } from "./renderPlanSchemas.js";
 
-export type CountedValue = {
-  count: number;
-  value: string;
-};
+export type CountedValue = { count: number; value: string };
 
 export type RenderPlanTimingReview = {
   averageSceneDurationSeconds: number;

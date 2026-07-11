@@ -33,6 +33,15 @@ This file is the repository-local operating contract for AI agents working on Uy
 - Run heavy Node, build, test, browser, and analysis processes sequentially unless safe concurrency
   is explicitly established.
 
+## Cybersecurity Skill Routing
+
+- Security-sensitive reviews that touch route/session boundaries, CSRF checks, same-origin
+  enforcement, path traversal/symlink risks, provider boundaries, upload/publish controls,
+  secrets/release, and dependency/supply-chain checks must use:
+  - `.ai/capabilities/security-skills.instructions.md`
+- Use the installed `Anthropic-Cybersecurity-Skills` set only for defensive repository review.
+- It is for **development-time guidance only** and must never be imported or packaged at runtime.
+
 ## Quality Gates
 
 Run before push-ready handoff:

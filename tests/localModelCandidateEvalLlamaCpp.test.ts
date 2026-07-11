@@ -21,11 +21,7 @@ describe("local model candidate evaluation with llama.cpp", () => {
       "fetch",
       vi
         .fn()
-        .mockResolvedValueOnce(
-          jsonResponse({
-            data: [{ id: "served-model.gguf" }],
-          }),
-        )
+        .mockResolvedValueOnce(jsonResponse({ data: [{ id: "served-model.gguf" }] }))
         .mockResolvedValueOnce(
           jsonResponse({
             choices: [{ message: { content: generateMockIdeasText() } }],
@@ -65,10 +61,7 @@ describe("local model candidate evaluation with llama.cpp", () => {
       message: expect.stringContaining("blocked candidates"),
     });
     expect(report.candidates).toEqual([
-      expect.objectContaining({
-        configuredModel: "served-model.gguf",
-        passed: true,
-      }),
+      expect.objectContaining({ configuredModel: "served-model.gguf", passed: true }),
       expect.objectContaining({
         configuredModel: "missing-model.gguf",
         passed: false,
@@ -88,7 +81,7 @@ describe("local model candidate evaluation with llama.cpp", () => {
   it("surfaces llama.cpp diagnostics failures separately from unserved candidates", async () => {
     await writeLlmConfig({
       mode: "llama.cpp",
-      llamaCppBaseUrl: "http://localhost:8080/private",
+      llamaCppBaseUrl: "http://localhost:8080",
       model: "served-model.gguf",
     });
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("ECONNREFUSED")));
@@ -100,9 +93,7 @@ describe("local model candidate evaluation with llama.cpp", () => {
 
     expect(report).toMatchObject({
       passed: false,
-      operatorGuidance: {
-        decision: "try-more-candidates",
-      },
+      operatorGuidance: { decision: "try-more-candidates" },
       candidates: [
         expect.objectContaining({
           configuredModel: "candidate-model.gguf",

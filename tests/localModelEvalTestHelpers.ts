@@ -9,13 +9,7 @@ export async function writeLlmConfig(
     `${JSON.stringify(
       {
         ...defaultConfig,
-        providers: {
-          ...defaultConfig.providers,
-          llm: {
-            ...defaultConfig.providers.llm,
-            ...llm,
-          },
-        },
+        providers: { ...defaultConfig.providers, llm: { ...defaultConfig.providers.llm, ...llm } },
       },
       null,
       2,

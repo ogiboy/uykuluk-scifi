@@ -1,0 +1,129 @@
+import { RunQuickStageActionButton } from "@/components/runs/RunQuickStageActionButton";
+import { CopyableCommand } from "@/components/studio/CopyableCommand";
+import { StartIdeasActionPanel } from "@/components/studio/StartIdeasActionPanel";
+import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  operatorBriefControlForAction,
+  operatorBriefToneLabel,
+} from "@/lib/operatorBriefPresentation";
+import { buildStudioRunPrimaryAction } from "@/lib/runPrimaryAction";
+import { runReviewHrefFromSummary } from "@/lib/runReviewNavigation";
+import type { StudioRunSummary } from "@/lib/runSummaries";
+import { NO_RUNS_NEXT_COMMAND } from "@/lib/runSummaryCopy";
+import type { StartIdeasReadinessSummary } from "@/lib/startIdeasReadiness";
+import type { Route } from "next";
+import Link from "next/link";
+
+type OperatorBriefProps = Readonly<{
+  latestRun: StudioRunSummary | null;
+  startIdeasReadiness: StartIdeasReadinessSummary;
+}>;
+
+/**
+ * Renders the first decision summary on the Studio control desk.
+ *
+ * This is display-only. Guarded routes and CLI/core remain authoritative for approvals, state
+ * transitions, evidence writes, upload safety, publish safety, and provider execution.
+ *
+ * @param latestRun - Latest persisted local run, or null when no run exists yet.
+ * @param startIdeasReadiness - Doctor-derived readiness for starting the first or next idea run.
+ */
+export function OperatorBrief({ latestRun, startIdeasReadiness }: OperatorBriefProps) {
+  if (!latestRun) {
+    return <EmptyOperatorBrief startIdeasReadiness={startIdeasReadiness} />;
+  }
+
+  const action = buildStudioRunPrimaryAction(latestRun);
+  const control = operatorBriefControlForAction(action);
+  const briefHref = runReviewHrefFromSummary(latestRun, "review-decision") as Route;
+  return (
+    <section aria-label='Operator brief'>
+      <Card className='bg-primary/5'>
+        <CardHeader className='gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start'>
+          <div className='min-w-0 space-y-1'>
+            <p className='text-muted-foreground text-xs font-semibold tracking-[0.18em] uppercase'>
+              Operator brief
+            </p>
+            <CardTitle>
+              <span className='block truncate' title={latestRun.runId}>
+                {latestRun.runId}
+              </span>
+            </CardTitle>
+          </div>
+          <Badge variant={action.tone === "blocked" ? "destructive" : "secondary"}>
+            {operatorBriefToneLabel(action.tone)}
+          </Badge>
+        </CardHeader>
+        <CardContent className='grid gap-4'>
+          <div className='grid gap-3 md:grid-cols-3'>
+            <OperatorBriefFact label='Next safe action' value={action.label} />
+            <OperatorBriefFact label='Current state' value={latestRun.state} />
+            <OperatorBriefFact label='Safety boundary' value='CLI/core re-checks before writes' />
+          </div>
+          <div className='grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center'>
+            <p className='text-muted-foreground text-sm'>{action.description}</p>
+            {control === "stage-button" ? (
+              <RunQuickStageActionButton label={action.label} run={latestRun} showResult />
+            ) : null}
+            {control === "copy-command" && action.command ? (
+              <CopyableCommand command={action.command} label='Operator brief command' />
+            ) : null}
+            {control === "run-controls-link" || control === "done" ? (
+              <Link className={buttonVariants({ variant: "default" })} href={briefHref}>
+                Open run controls
+              </Link>
+            ) : null}
+          </div>
+        </CardContent>
+      </Card>
+    </section>
+  );
+}
+
+function EmptyOperatorBrief({
+  startIdeasReadiness,
+}: Readonly<{ startIdeasReadiness: StartIdeasReadinessSummary }>) {
+  return (
+    <section aria-label='Operator brief'>
+      <Card className='bg-primary/5'>
+        <CardHeader className='gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start'>
+          <div className='space-y-1'>
+            <p className='text-muted-foreground text-xs font-semibold tracking-[0.18em] uppercase'>
+              Operator brief
+            </p>
+            <CardTitle>Start the first local run</CardTitle>
+          </div>
+          <Badge variant='secondary'>{startIdeasReadiness.label}</Badge>
+        </CardHeader>
+        <CardContent className='grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,24rem)] lg:items-start'>
+          <StartIdeasActionPanel
+            buttonLabel='Start first idea run'
+            description='Create the first local idea run through the guarded Studio route. CLI/core still checks provider, budget, parser, and workflow gates before writing artifacts.'
+            readiness={startIdeasReadiness}
+          />
+          <details className='bg-background/50 text-muted-foreground rounded-xl p-3 text-sm'>
+            <summary className='text-foreground cursor-pointer font-medium'>
+              Need a terminal fallback?
+            </summary>
+            <div className='mt-3'>
+              <CopyableCommand command={NO_RUNS_NEXT_COMMAND} label='First run command' />
+            </div>
+          </details>
+        </CardContent>
+      </Card>
+    </section>
+  );
+}
+
+function OperatorBriefFact({ label, value }: Readonly<{ label: string; value: string }>) {
+  return (
+    <div className='bg-background/30 min-w-0 rounded-xl p-3'>
+      <p className='text-muted-foreground text-xs font-medium'>{label}</p>
+      <p className='mt-1 truncate font-semibold' title={value}>
+        {value}
+      </p>
+    </div>
+  );
+}

@@ -1,6 +1,6 @@
 #!/usr/bin/env tsx
-import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { copyFile, mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
@@ -123,11 +123,7 @@ export async function setupPiperModel(
     "utf8",
   );
 
-  return {
-    configSnippet: piperConfigSnippet(modelDir, resolved.binary),
-    files,
-    manifestPath,
-  };
+  return { configSnippet: piperConfigSnippet(modelDir, resolved.binary), files, manifestPath };
 }
 
 function parseArgs(argv: string[]): PiperSetupOptions {

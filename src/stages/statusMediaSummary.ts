@@ -1,9 +1,9 @@
+import { mediaArtifactFacts } from "./statusMediaFacts.js";
 import type {
   EvidenceMediaStatus,
   EvidenceStatus,
   ProductionMediaStatus,
 } from "./statusMediaTypes.js";
-import { mediaArtifactFacts } from "./statusMediaFacts.js";
 export type {
   EvidenceMediaStatus,
   EvidenceStatus,

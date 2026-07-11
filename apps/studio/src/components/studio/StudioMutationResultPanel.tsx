@@ -1,15 +1,16 @@
-import Link from "next/link";
-import type { Route } from "next";
-import { studioMutationRecoveryCopy } from "@/lib/studioMutationRecoveryCopy";
+import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
+import { hasHttpStatus, studioMutationRecoveryCopy } from "@/lib/studioMutationRecoveryCopy";
 import {
   studioMutationResultHref,
   studioMutationResultLinkLabel,
 } from "@/lib/studioMutationResultNavigation";
 import type { StudioGuardedActionSubmitState } from "@/lib/useStudioGuardedActionSubmit";
+import { cn } from "@/lib/utils";
+import type { Route } from "next";
+import Link from "next/link";
 
-type StudioMutationResultPanelProps = Readonly<{
-  state: StudioGuardedActionSubmitState;
-}>;
+type StudioMutationResultPanelProps = Readonly<{ state: StudioGuardedActionSubmitState }>;
 
 type StudioMutationStateWithAction = Extract<StudioGuardedActionSubmitState, { action: unknown }>;
 type StudioMutationStateWithOptionalRecordSummary = Extract<
@@ -32,32 +33,42 @@ export function StudioMutationResultPanel({ state }: StudioMutationResultPanelPr
   const recovery = studioMutationRecoveryCopy(state);
   return (
     <section
-      className={isProblem ? "mutation-result blocked" : "mutation-result"}
+      className={cn(
+        "bg-muted/20 grid gap-3 rounded-lg p-3 text-sm",
+        isProblem && "border-destructive/40 bg-destructive/10 border",
+      )}
       aria-label='Latest local action result'
       aria-live={isProblem ? "assertive" : "polite"}
     >
-      <p>{state.message}</p>
+      <div className='flex flex-wrap items-center justify-between gap-2'>
+        <p className='text-muted-foreground'>{state.message}</p>
+        <Badge variant={isProblem ? "destructive" : "secondary"}>{state.kind}</Badge>
+      </div>
       {actionFacts.length > 0 ? (
-        <dl aria-label='Local Studio action boundary'>
+        <dl className='grid gap-2 sm:grid-cols-2' aria-label='Local Studio action boundary'>
           {actionFacts.map((fact, index) => (
-            <div key={`${fact.label}-${index}`}>
-              <dt>{fact.label}</dt>
-              <dd>{fact.value}</dd>
+            <div className='bg-background/55 rounded-md p-2' key={`${fact.label}-${index}`}>
+              <dt className='text-muted-foreground text-xs font-medium tracking-wide uppercase'>
+                {fact.label}
+              </dt>
+              <dd className='mt-1 break-all'>{fact.value}</dd>
             </div>
           ))}
         </dl>
       ) : null}
       {recovery ? (
-        <div className='mutation-recovery-actions'>
-          <p>{recovery.detail}</p>
-          <Link href={recovery.href}>{recovery.label}</Link>
+        <div className='border-destructive/40 bg-destructive/10 grid gap-2 rounded-lg border p-3'>
+          <p className='text-destructive'>{recovery.detail}</p>
+          <Link className={buttonVariants({ variant: "secondary" })} href={recovery.href}>
+            {recovery.label}
+          </Link>
         </div>
       ) : null}
       {hasStudioMutationRecordSummary(state) ? (
         <>
           {state.recordSummary.runId ? (
             <Link
-              className='mutation-result-link'
+              className={buttonVariants({ variant: "secondary" })}
               href={
                 studioMutationResultHref(state.recordSummary.runId, state.action.actionId) as Route
               }
@@ -65,11 +76,13 @@ export function StudioMutationResultPanel({ state }: StudioMutationResultPanelPr
               {studioMutationResultLinkLabel(state.action.actionId)}
             </Link>
           ) : null}
-          <dl aria-label='Producer record summary'>
+          <dl className='grid gap-2' aria-label='Producer record summary'>
             {state.recordSummary.facts.map((fact, index) => (
-              <div key={`${fact}-${index}`}>
-                <dt>Result</dt>
-                <dd>{fact}</dd>
+              <div className='bg-background/55 rounded-md p-2' key={`${fact}-${index}`}>
+                <dt className='text-muted-foreground text-xs font-medium tracking-wide uppercase'>
+                  Result
+                </dt>
+                <dd className='mt-1 wrap-break-word'>{fact}</dd>
               </div>
             ))}
           </dl>
@@ -118,11 +131,4 @@ function hasStudioMutationRecordSummary(
   state: StudioGuardedActionSubmitState,
 ): state is StudioMutationStateWithRecordSummary {
   return "recordSummary" in state && state.recordSummary !== null;
-}
-
-function hasHttpStatus(
-  state: StudioGuardedActionSubmitState,
-): state is Extract<StudioGuardedActionSubmitState, { status?: number }> &
-  Readonly<{ status: number }> {
-  return "status" in state && typeof state.status === "number";
 }

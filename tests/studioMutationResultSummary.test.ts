@@ -28,10 +28,7 @@ describe("Studio mutation result summaries", () => {
 
   it("ignores non-primitive records instead of stringifying objects", () => {
     expect(
-      summarizeStudioMutationRecord({
-        nested: { unsafe: true },
-        runId: "run_summary",
-      }),
+      summarizeStudioMutationRecord({ nested: { unsafe: true }, runId: "run_summary" }),
     ).toEqual({ facts: ["Run: run_summary"], runId: "run_summary" });
     expect(summarizeStudioMutationRecord({ nested: { unsafe: true } })).toBeNull();
   });

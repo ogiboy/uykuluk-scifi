@@ -1,10 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import type { Route } from "next";
-import { useRouter } from "next/navigation";
-import { CopyIcon, ExternalLinkIcon, SearchIcon, TerminalIcon } from "lucide-react";
-import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -23,18 +19,25 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { runReviewHrefFromSummary } from "@/lib/runReviewNavigation";
-import { getNextSafeCommand } from "@/lib/runSummaryCopy";
 import type { StudioRunSummary } from "@/lib/runSummaries";
+import { getNextSafeCommand } from "@/lib/runSummaryCopy";
+import { CopyIcon, ExternalLinkIcon, SearchIcon, TerminalIcon } from "lucide-react";
+import type { Route } from "next";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 
-type StudioCommandPaletteProps = Readonly<{
-  runs: readonly StudioRunSummary[];
-}>;
+type StudioCommandPaletteProps = Readonly<{ runs: readonly StudioRunSummary[] }>;
 
 const navigationTargets = [
   { href: "/", label: "Studio home", keywords: "control desk current production queue" },
   { href: "/runs", label: "Runs", keywords: "queue review evidence readiness" },
+  {
+    href: "/ideas" as Route,
+    label: "Ideas",
+    keywords: "history originality generated approved titles",
+  },
   { href: "/doctor", label: "Doctor", keywords: "diagnostics config setup" },
   { href: "/eval", label: "Model eval", keywords: "local model llama ollama qwen" },
   { href: "/assets", label: "Assets", keywords: "brand render visuals inventory" },
@@ -78,7 +81,7 @@ export function StudioCommandPalette({ runs }: StudioCommandPaletteProps) {
       toast.success("Next safe command copied", { description: run.runId });
     } catch {
       toast.error("Command could not be copied", {
-        description: "Use the run detail page to copy the CLI command manually.",
+        description: "Open the run detail page and reveal the CLI/core fallback manually.",
       });
     }
   }
@@ -89,17 +92,20 @@ export function StudioCommandPalette({ runs }: StudioCommandPaletteProps) {
         <Button type='button' variant='secondary'>
           <SearchIcon data-icon='inline-start' />
           Command palette
-          <kbd className='keyboard-shortcut'>⌘K</kbd>
+          <kbd className='bg-background text-muted-foreground rounded border px-1.5 py-0.5 font-mono text-[10px]'>
+            ⌘K
+          </kbd>
         </Button>
       </DialogTrigger>
-      <DialogContent className='command-palette-dialog' showCloseButton={false}>
-        <DialogHeader>
+      <DialogContent className='overflow-hidden p-0 sm:max-w-2xl' showCloseButton={false}>
+        <DialogHeader className='px-6 pt-6'>
           <DialogTitle>Operator command palette</DialogTitle>
           <DialogDescription>
-            Navigate Studio surfaces or copy safe CLI commands. This palette never mutates a run.
+            Navigate Studio surfaces or copy safe CLI/core fallback commands. This palette never
+            mutates a run.
           </DialogDescription>
         </DialogHeader>
-        <Command>
+        <Command className='rounded-none'>
           <CommandInput placeholder='Search pages, runs, states, or safe commands...' />
           <CommandList>
             <CommandEmpty>No matching local Studio action.</CommandEmpty>
@@ -125,9 +131,9 @@ export function StudioCommandPalette({ runs }: StudioCommandPaletteProps) {
                   onSelect={() => navigateTo(runReviewHrefFromSummary(run) as Route)}
                 >
                   <TerminalIcon />
-                  <span className='command-item-body'>
-                    <strong>{run.runId}</strong>
-                    <span>
+                  <span className='grid min-w-0 flex-1 gap-1'>
+                    <strong className='truncate'>{run.runId}</strong>
+                    <span className='text-muted-foreground truncate text-xs'>
                       {run.state} · readiness {run.readinessStatus} · evidence {run.evidenceStatus}
                     </span>
                   </span>
@@ -144,9 +150,11 @@ export function StudioCommandPalette({ runs }: StudioCommandPaletteProps) {
                   onSelect={() => void copyCommand(run)}
                 >
                   <CopyIcon />
-                  <span className='command-item-body'>
-                    <strong>{run.runId}</strong>
-                    <code>{getNextSafeCommand(run)}</code>
+                  <span className='grid min-w-0 flex-1 gap-1'>
+                    <strong className='truncate'>{run.runId}</strong>
+                    <code className='text-muted-foreground truncate font-mono text-xs'>
+                      {getNextSafeCommand(run)}
+                    </code>
                   </span>
                   <CommandShortcut>copy</CommandShortcut>
                 </CommandItem>

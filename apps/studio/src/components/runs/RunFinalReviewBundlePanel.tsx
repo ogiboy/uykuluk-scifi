@@ -1,3 +1,9 @@
+import {
+  RunDetailCard,
+  RunDetailStatusBadge,
+  RunMetadataList,
+  type RunMetadataItem,
+} from "@/components/runs/RunDetailCard";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 
 type RunFinalReviewBundlePanelProps = Readonly<{
@@ -10,51 +16,50 @@ type RunFinalReviewBundlePanelProps = Readonly<{
  * @param finalReviewBundle - The Studio final review bundle summary.
  */
 export function RunFinalReviewBundlePanel({ finalReviewBundle }: RunFinalReviewBundlePanelProps) {
+  const metadataItems =
+    finalReviewBundle.kind === "present" ? finalReviewBundleMetadataItems(finalReviewBundle) : [];
+
   return (
-    <section className='panel' aria-labelledby='final-review-bundle-heading'>
-      <h2 id='final-review-bundle-heading'>Final Review Bundle</h2>
-      <p>
-        <span className={finalReviewBundleStatusClassName(finalReviewBundle.kind)}>
+    <RunDetailCard
+      headingId='final-review-bundle-heading'
+      title='Final Review Bundle'
+      description='Read-only display. Upload and public publishing remain disabled.'
+    >
+      <p className='flex flex-wrap items-center gap-2'>
+        <RunDetailStatusBadge tone={finalReviewBundleStatusTone(finalReviewBundle.kind)}>
           {finalReviewBundle.kind}
-        </span>{" "}
-        {finalReviewBundle.message}
+        </RunDetailStatusBadge>
+        <span>{finalReviewBundle.message}</span>
       </p>
-      {finalReviewBundle.kind === "present" ? (
-        <dl className='run-metadata'>
-          <div>
-            <dt>Status</dt>
-            <dd>{finalReviewBundle.bundle.status}</dd>
-          </div>
-          <div>
-            <dt>Review handoff</dt>
-            <dd>{finalReviewBundle.reviewPath}</dd>
-          </div>
-          <div>
-            <dt>Timestamped draft map</dt>
-            <dd>{finalReviewBundle.bundle.draftRender.reviewPath}</dd>
-          </div>
-          <div>
-            <dt>Created</dt>
-            <dd>{finalReviewBundle.bundle.createdAt}</dd>
-          </div>
-        </dl>
-      ) : null}
+      {metadataItems.length > 0 ? <RunMetadataList items={metadataItems} /> : null}
       {finalReviewBundle.nextAction ? (
-        <p className='artifact-action'>Next action: {finalReviewBundle.nextAction}</p>
+        <p className='rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-900 dark:text-amber-100'>
+          Next action: {finalReviewBundle.nextAction}
+        </p>
       ) : null}
-      <p>Read-only display. Upload and public publishing remain disabled.</p>
-    </section>
+    </RunDetailCard>
   );
 }
 
-function finalReviewBundleStatusClassName(
+function finalReviewBundleStatusTone(
   status: StudioRunDetail["finalReviewBundle"]["kind"],
-): string {
+): "blocked" | "success" | "warning" {
   if (status === "present") {
-    return "status-pill small";
+    return "success";
   }
   if (status === "missing") {
-    return "status-pill small warning";
+    return "warning";
   }
-  return "status-pill small blocked";
+  return "blocked";
+}
+
+function finalReviewBundleMetadataItems(
+  finalReviewBundle: Extract<StudioRunDetail["finalReviewBundle"], { kind: "present" }>,
+): RunMetadataItem[] {
+  return [
+    { label: "Status", value: finalReviewBundle.bundle.status },
+    { label: "Review handoff", value: finalReviewBundle.reviewPath },
+    { label: "Timestamped draft map", value: finalReviewBundle.bundle.draftRender.reviewPath },
+    { label: "Created", value: finalReviewBundle.bundle.createdAt },
+  ];
 }

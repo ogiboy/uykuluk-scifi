@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   buildStudioActionWorkbench,
-  countStudioActionWorkbench,
   type StudioActionWorkbenchRun,
 } from "../apps/studio/src/lib/studioActionWorkbench";
+import { countStudioActionWorkbench } from "../apps/studio/src/lib/studioActionWorkbenchCounts";
 
 describe("Studio action workbench", () => {
   it("surfaces guarded approval routes without weakening CLI/core enforcement", () => {
@@ -78,10 +78,7 @@ describe("Studio action workbench", () => {
     const nextAction =
       "pnpm producer decide render --run run_workbench --decision accepted-for-local-review";
     const workbench = buildStudioActionWorkbench(
-      actionRunFixture({
-        renderDecision: { kind: "missing", nextAction },
-        state: "RENDERED",
-      }),
+      actionRunFixture({ renderDecision: { kind: "missing", nextAction }, state: "RENDERED" }),
     );
 
     expect(workbench.primary).toEqual(
@@ -132,6 +129,21 @@ describe("Studio action workbench", () => {
     );
   });
 
+  it("does not treat global ideas generation as a run-bound action", () => {
+    const workbench = buildStudioActionWorkbench(
+      actionRunFixture({ nextRecommendedCommand: "pnpm producer ideas", state: "NEW" }),
+    );
+
+    expect(workbench.primary).toEqual(
+      expect.objectContaining({
+        command: null,
+        label: "No run-bound action",
+        routePath: null,
+        tone: "attention",
+      }),
+    );
+  });
+
   it("selects the local channel handoff decision route after handoff evidence is present", () => {
     const nextAction =
       "pnpm producer decide channel-handoff --run run_workbench --decision accepted-for-manual-channel-prep";
@@ -169,19 +181,11 @@ describe("Studio action workbench", () => {
           state: "RENDERED",
         }),
         actionRunFixture({
-          renderDecision: {
-            kind: "present",
-            nextAction: "Local final review handoff is ready.",
-          },
+          renderDecision: { kind: "present", nextAction: "Local final review handoff is ready." },
           state: "RENDERED",
         }),
       ]),
-    ).toEqual({
-      blockedCli: 1,
-      cliOnly: 1,
-      complete: 1,
-      webAction: 1,
-    });
+    ).toEqual({ blockedCli: 1, cliOnly: 1, complete: 1, needsReview: 0, webAction: 1 });
   });
 });
 

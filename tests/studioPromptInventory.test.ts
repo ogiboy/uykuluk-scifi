@@ -1,7 +1,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
-import { defaultConfig } from "../src/config/config";
 import { getStudioPromptInventory } from "../apps/studio/src/lib/promptInventory";
+import { defaultConfig } from "../src/config/config";
 import { useTempProject } from "./helpers";
 
 describe("Studio read-only prompt inventory", () => {
@@ -37,10 +37,7 @@ describe("Studio read-only prompt inventory", () => {
     await writeFile(
       "producer.config.json",
       `${JSON.stringify(
-        {
-          ...defaultConfig,
-          prompts: { overrides: { ideas: "prompts/local/planner.md" } },
-        },
+        { ...defaultConfig, prompts: { overrides: { ideas: "prompts/local/planner.md" } } },
         null,
         2,
       )}\n`,

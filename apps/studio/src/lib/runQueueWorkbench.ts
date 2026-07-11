@@ -1,5 +1,5 @@
-import type { StudioRunSummary } from "./runSummaries";
 import { operatorDecisionPriority } from "./runQueueDecisions";
+import type { StudioRunSummary } from "./runSummaries";
 
 export const runQueueSortValues = [
   "updated-desc",
@@ -14,15 +14,9 @@ export const runQueueDensityValues = ["compact", "comfortable"] as const;
 
 export type RunQueueDensity = (typeof runQueueDensityValues)[number];
 
-export type RunQueueWorkbenchInput = Readonly<{
-  maxBlockedActions: number;
-  sort: RunQueueSort;
-}>;
+export type RunQueueWorkbenchInput = Readonly<{ maxBlockedActions: number; sort: RunQueueSort }>;
 
-export type RunQueueEmptyState = Readonly<{
-  heading: string;
-  message: string;
-}>;
+export type RunQueueEmptyState = Readonly<{ heading: string; message: string }>;
 
 /**
  * Applies operator-facing queue controls after the primary run filter/search projection.
@@ -56,7 +50,7 @@ export function runQueueEmptyState(
   if (totalRuns === 0) {
     return {
       heading: "No runs yet",
-      message: "Start with the CLI source of truth: pnpm producer ideas.",
+      message: "Use the Start idea run control to create the first local production run.",
     };
   }
   if (matchingRuns === 0) {

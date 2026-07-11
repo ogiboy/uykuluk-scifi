@@ -1,7 +1,7 @@
 import { ProducerConfig } from "../config/schema.js";
 import { writeRunJson } from "../core/artifacts.js";
-import { RunRecord } from "../core/state.js";
 import { saveRun } from "../core/runStore.js";
+import { RunRecord } from "../core/state.js";
 import { nowIso } from "../utils/time.js";
 
 /**

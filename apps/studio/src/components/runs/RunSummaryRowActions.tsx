@@ -1,7 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import type { Route } from "next";
 import { CopyableCommand } from "@/components/studio/CopyableCommand";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,14 +20,14 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { runReviewHrefFromSummary } from "@/lib/runReviewNavigation";
-import { getNextSafeCommand } from "@/lib/runSummaryCopy";
 import type { StudioRunSummary } from "@/lib/runSummaries";
-import { operatorActionForRun } from "./runSummaryOperatorAction";
+import { getNextSafeCommand } from "@/lib/runSummaryCopy";
+import type { Route } from "next";
+import Link from "next/link";
 import { RunQuickStageActionButton } from "./RunQuickStageActionButton";
+import { operatorActionForRun } from "./runSummaryOperatorAction";
 
-type RunSummaryRowActionsProps = Readonly<{
-  run: StudioRunSummary;
-}>;
+type RunSummaryRowActionsProps = Readonly<{ run: StudioRunSummary }>;
 
 /**
  * Renders row-scoped navigation and safe-command affordances for the run table.
@@ -43,7 +41,7 @@ export function RunSummaryRowActions({ run }: RunSummaryRowActionsProps) {
   const reviewHref = runReviewHrefFromSummary(run) as Route;
   const decisionRailHref = runReviewHrefFromSummary(run, "review-decision") as Route;
   return (
-    <div className='run-row-actions'>
+    <div className='flex flex-wrap items-center justify-end gap-2 [&_button]:whitespace-nowrap'>
       <RunQuickStageActionButton label={action.label} run={run} variant='secondary' />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -51,7 +49,7 @@ export function RunSummaryRowActions({ run }: RunSummaryRowActionsProps) {
             Actions
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align='end' className='run-row-actions-menu'>
+        <DropdownMenuContent align='end' className='w-72'>
           <DropdownMenuLabel>{run.runId}</DropdownMenuLabel>
           <DropdownMenuGroup>
             <DropdownMenuItem asChild>
@@ -63,18 +61,18 @@ export function RunSummaryRowActions({ run }: RunSummaryRowActionsProps) {
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuLabel>Safety state</DropdownMenuLabel>
-          <dl className='dropdown-status-list' aria-label={`${run.runId} safety state`}>
-            <div>
-              <dt>Readiness</dt>
-              <dd>{run.readinessStatus}</dd>
+          <dl className='grid gap-2 px-2 pb-2 text-sm' aria-label={`${run.runId} safety state`}>
+            <div className='grid grid-cols-[6rem_1fr] gap-3'>
+              <dt className='text-muted-foreground'>Readiness</dt>
+              <dd className='font-semibold'>{run.readinessStatus}</dd>
             </div>
-            <div>
-              <dt>Evidence</dt>
-              <dd>{run.evidenceStatus}</dd>
+            <div className='grid grid-cols-[6rem_1fr] gap-3'>
+              <dt className='text-muted-foreground'>Evidence</dt>
+              <dd className='font-semibold'>{run.evidenceStatus}</dd>
             </div>
-            <div>
-              <dt>Blocks</dt>
-              <dd>{run.blockedActionCount}</dd>
+            <div className='grid grid-cols-[6rem_1fr] gap-3'>
+              <dt className='text-muted-foreground'>Blocks</dt>
+              <dd className='font-semibold'>{run.blockedActionCount}</dd>
             </div>
           </dl>
         </DropdownMenuContent>
@@ -85,7 +83,7 @@ export function RunSummaryRowActions({ run }: RunSummaryRowActionsProps) {
             Command
           </Button>
         </PopoverTrigger>
-        <PopoverContent align='end' className='run-row-command-popover'>
+        <PopoverContent align='end' className='w-[min(420px,calc(100vw-2rem))]'>
           <PopoverHeader>
             <PopoverTitle>Next safe CLI action</PopoverTitle>
             <PopoverDescription>

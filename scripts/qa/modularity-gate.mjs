@@ -71,11 +71,7 @@ for (const root of scanRoots) {
   }
 }
 
-const report = {
-  scannedFiles,
-  findings,
-  thresholds: limits,
-};
+const report = { scannedFiles, findings, thresholds: limits };
 
 console.log(JSON.stringify(report, null, 2));
 

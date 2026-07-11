@@ -13,21 +13,11 @@ import { useTempProject } from "./helpers";
 
 type IdeasArtifact = {
   ideas: VideoIdea[];
-  prompt: {
-    artifact: string;
-    hash: string;
-    key: string;
-    source?: string;
-  };
+  prompt: { artifact: string; hash: string; key: string; source?: string };
   repair: {
     attempted: boolean;
     attempts: number;
-    prompt?: {
-      artifact: string;
-      hash: string;
-      key: string;
-      source?: string;
-    };
+    prompt?: { artifact: string; hash: string; key: string; source?: string };
     validationErrors: string[];
   };
 };
@@ -203,13 +193,7 @@ async function useMockModel(model: string): Promise<void> {
     `${JSON.stringify(
       {
         ...defaultConfig,
-        providers: {
-          ...defaultConfig.providers,
-          llm: {
-            ...defaultConfig.providers.llm,
-            model,
-          },
-        },
+        providers: { ...defaultConfig.providers, llm: { ...defaultConfig.providers.llm, model } },
       },
       null,
       2,

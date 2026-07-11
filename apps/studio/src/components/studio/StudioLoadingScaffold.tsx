@@ -1,7 +1,13 @@
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { studioSections } from "@/lib/studioData";
 
 import { StudioBrandLockup } from "./StudioBrandLockup";
+import {
+  studioMainClassName,
+  studioRailClassName,
+  studioShellClassName,
+} from "./studioShellClasses";
 
 type StudioLoadingScaffoldProps = Readonly<{
   eyebrow: string;
@@ -29,14 +35,14 @@ export function StudioLoadingScaffold({
 }: StudioLoadingScaffoldProps) {
   if (layout === "shell") {
     return (
-      <main className='studio-shell' aria-busy='true' aria-live='polite'>
+      <main className={studioShellClassName} aria-busy='true' aria-live='polite'>
         <StudioLoadingRail />
         <StudioLoadingMain eyebrow={eyebrow} railPanels={railPanels} title={title} />
       </main>
     );
   }
   return (
-    <main className='studio-main page-shell' aria-busy='true' aria-live='polite'>
+    <main className={`${studioMainClassName} min-h-screen`} aria-busy='true' aria-live='polite'>
       <StudioLoadingContent eyebrow={eyebrow} railPanels={railPanels} title={title} />
     </main>
   );
@@ -44,11 +50,14 @@ export function StudioLoadingScaffold({
 
 function StudioLoadingRail() {
   return (
-    <aside className='studio-rail' aria-label='Studio navigation loading state'>
+    <aside className={studioRailClassName} aria-label='Studio navigation loading state'>
       <StudioBrandLockup />
-      <nav aria-label='Loading Studio navigation'>
+      <nav className='grid gap-2' aria-label='Loading Studio navigation'>
         {studioSections.map((section) => (
-          <span className='studio-loading-nav-item' key={section.id}>
+          <span
+            className='text-muted-foreground rounded-md px-3 py-2 text-sm font-medium'
+            key={section.id}
+          >
             {section.label}
           </span>
         ))}
@@ -63,7 +72,7 @@ function StudioLoadingMain({
   title,
 }: Readonly<{ eyebrow: string; railPanels: number; title: string }>) {
   return (
-    <section className='studio-main'>
+    <section className={studioMainClassName}>
       <StudioLoadingContent eyebrow={eyebrow} railPanels={railPanels} title={title} />
     </section>
   );
@@ -77,54 +86,68 @@ function StudioLoadingContent({
   const railPanelKeys = Array.from({ length: railPanels }, (_, index) => `rail-${index}`);
   return (
     <>
-      <header className='studio-header'>
-        <div>
-          <p className='eyebrow'>{eyebrow}</p>
-          <h1>{title}</h1>
+      <header className='border-border/40 grid gap-4 border-b pb-6 sm:grid-cols-[1fr_auto] sm:items-start'>
+        <div className='space-y-2'>
+          <p className='text-muted-foreground text-xs font-semibold tracking-[0.28em] uppercase'>
+            {eyebrow}
+          </p>
+          <h1 className='text-3xl font-semibold tracking-tight sm:text-4xl'>{title}</h1>
         </div>
-        <div className='studio-header-actions'>
-          <Skeleton className='studio-loading-command' />
-          <Skeleton className='studio-loading-pill' />
+        <div className='flex flex-wrap items-center gap-2 sm:justify-end'>
+          <Skeleton className='h-10 w-60 rounded-md' />
+          <Skeleton className='h-7 w-36 rounded-full' />
         </div>
       </header>
 
-      <section className='control-desk' aria-label='Loading operator control desk'>
-        <div className='control-desk-primary'>
-          <div className='control-desk-heading'>
-            <div>
-              <Skeleton className='studio-loading-line short' />
-              <Skeleton className='studio-loading-line heading' />
+      <section
+        className='grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]'
+        aria-label='Loading operator control desk'
+      >
+        <div className='grid gap-4'>
+          <div className='grid gap-4 sm:grid-cols-[1fr_auto] sm:items-start'>
+            <div className='space-y-3'>
+              <Skeleton className='h-3 w-40 rounded-full' />
+              <Skeleton className='h-7 w-80 max-w-full rounded-md' />
             </div>
-            <Skeleton className='studio-loading-pill small' />
+            <Skeleton className='h-7 w-28 rounded-full' />
           </div>
-          <article className='active-run-card studio-loading-panel'>
-            <Skeleton className='studio-loading-line label' />
-            <Skeleton className='studio-loading-line title' />
-            <div className='run-metadata'>
-              {metricSkeletons.map((metric) => (
-                <div key={metric}>
-                  <Skeleton className='studio-loading-line label' />
-                  <Skeleton className='studio-loading-line value' />
-                </div>
-              ))}
-            </div>
-            <Skeleton className='studio-loading-command wide' />
-          </article>
+          <Card className='border-dashed'>
+            <CardHeader className='space-y-3'>
+              <Skeleton className='h-3 w-32 rounded-full' />
+              <Skeleton className='h-8 w-72 max-w-full rounded-md' />
+            </CardHeader>
+            <CardContent className='space-y-5'>
+              <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>
+                {metricSkeletons.map((metric) => (
+                  <div className='space-y-2' key={metric}>
+                    <Skeleton className='h-3 w-24 rounded-full' />
+                    <Skeleton className='h-5 w-28 rounded-md' />
+                  </div>
+                ))}
+              </div>
+              <Skeleton className='h-24 w-full rounded-lg' />
+            </CardContent>
+          </Card>
         </div>
-        <aside className='control-desk-rail' aria-label='Loading safety rail'>
+        <aside className='grid content-start gap-4' aria-label='Loading safety rail'>
           {railPanelKeys.map((panelKey) => (
             <LoadingPanel key={panelKey} />
           ))}
         </aside>
       </section>
 
-      <section className='status-grid' aria-label='Loading Studio status panels'>
+      <section
+        className='grid gap-4 md:grid-cols-2 xl:grid-cols-4'
+        aria-label='Loading Studio status panels'
+      >
         {panelSkeletons.map((panel) => (
-          <article className='status-card' key={panel}>
-            <Skeleton className='studio-loading-line label' />
-            <Skeleton className='studio-loading-line value' />
-            <Skeleton className='studio-loading-line body' />
-          </article>
+          <Card key={panel}>
+            <CardContent className='space-y-3 pt-6'>
+              <Skeleton className='h-3 w-24 rounded-full' />
+              <Skeleton className='h-6 w-32 rounded-md' />
+              <Skeleton className='h-12 w-full rounded-lg' />
+            </CardContent>
+          </Card>
         ))}
       </section>
     </>
@@ -133,10 +156,12 @@ function StudioLoadingContent({
 
 function LoadingPanel() {
   return (
-    <section className='panel compact-panel'>
-      <Skeleton className='studio-loading-line heading' />
-      <Skeleton className='studio-loading-line body' />
-      <Skeleton className='studio-loading-line body narrow' />
-    </section>
+    <Card>
+      <CardContent className='space-y-3 pt-6'>
+        <Skeleton className='h-6 w-44 max-w-full rounded-md' />
+        <Skeleton className='h-4 w-full rounded-md' />
+        <Skeleton className='h-4 w-2/3 rounded-md' />
+      </CardContent>
+    </Card>
   );
 }

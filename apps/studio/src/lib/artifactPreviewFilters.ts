@@ -11,10 +11,7 @@ export type ArtifactPreviewFilterInput = Readonly<{
 
 export type ArtifactPreviewStatusCounts = Readonly<Record<ArtifactPreviewStatusFilter, number>>;
 
-export type ArtifactPreviewEmptyState = Readonly<{
-  heading: string;
-  message: string;
-}>;
+export type ArtifactPreviewEmptyState = Readonly<{ heading: string; message: string }>;
 
 /**
  * Filters Studio artifact previews without mutating the persisted artifact projection.

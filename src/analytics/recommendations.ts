@@ -1,10 +1,7 @@
 import { analyticsRecordConfidence } from "./dataQuality.js";
 import type { AnalyticsRecord } from "./schema.js";
 
-type Recommendation = {
-  reasons: string[];
-  record: AnalyticsRecord;
-};
+type Recommendation = { reasons: string[]; record: AnalyticsRecord };
 
 /**
  * Renders Markdown analytics recommendations grouped by repeat and avoid candidates.

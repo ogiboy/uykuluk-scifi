@@ -3,16 +3,12 @@ import { RunRecord } from "../core/state.js";
 import { pathExists } from "../utils/fs.js";
 import { readJsonFile } from "../utils/json.js";
 
-export async function readScriptReviewEvidence(run: RunRecord): Promise<{
-  scriptReviewWarningCount: number;
-  scriptReviewBlockerCount: number;
-}> {
+export async function readScriptReviewEvidence(
+  run: RunRecord,
+): Promise<{ scriptReviewWarningCount: number; scriptReviewBlockerCount: number }> {
   const relativePath = "reviews/script_review.json";
   if (!(await pathExists(artifactPath(run.runId, relativePath)))) {
-    return {
-      scriptReviewWarningCount: 0,
-      scriptReviewBlockerCount: 0,
-    };
+    return { scriptReviewWarningCount: 0, scriptReviewBlockerCount: 0 };
   }
   const review = await readJsonFile<{
     warningCount?: number;

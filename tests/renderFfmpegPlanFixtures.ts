@@ -104,15 +104,7 @@ function bookends(
  */
 function sourceFrames(kind: "intro" | "outro", digest: string) {
   return [
-    {
-      role: `${kind}-source-frame`,
-      path: `assets/${kind}/frames/${kind}_frame_00.jpg`,
-      digest,
-    },
-    {
-      role: `${kind}-source-frame`,
-      path: `assets/${kind}/frames/${kind}_frame_01.jpg`,
-      digest,
-    },
+    { role: `${kind}-source-frame`, path: `assets/${kind}/frames/${kind}_frame_00.jpg`, digest },
+    { role: `${kind}-source-frame`, path: `assets/${kind}/frames/${kind}_frame_01.jpg`, digest },
   ];
 }

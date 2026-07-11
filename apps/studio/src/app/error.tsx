@@ -2,8 +2,12 @@
 
 import { useEffect } from "react";
 
-import { StudioRouteBoundaryCard } from "@/components/studio/StudioRouteBoundaryCard";
+import {
+  StudioRouteBoundaryCard,
+  StudioRouteBoundaryHeader,
+} from "@/components/studio/StudioRouteBoundaryCard";
 import { Button } from "@/components/ui/button";
+import { captureStudioUnexpectedError } from "@/lib/studioObservability";
 import { studioErrorCopy } from "@/lib/studioRouteBoundaryCopy";
 
 type StudioRouteErrorPageProps = Readonly<{
@@ -19,30 +23,29 @@ type StudioRouteErrorPageProps = Readonly<{
  */
 export default function StudioRouteErrorPage({ error, reset }: StudioRouteErrorPageProps) {
   useEffect(() => {
-    console.warn("Studio route failed safely.", { digest: error.digest });
-  }, [error.digest]);
+    captureStudioUnexpectedError(error, { boundary: "route-render" });
+  }, [error]);
 
   return (
-    <main className='studio-main page-shell' aria-labelledby='studio-error-heading'>
-      <header className='studio-header'>
-        <div>
-          <p className='eyebrow'>{studioErrorCopy.eyebrow}</p>
-          <h1 id='studio-error-heading'>{studioErrorCopy.heading}</h1>
-        </div>
-        <span className='status-pill blocked'>{studioErrorCopy.status}</span>
-      </header>
+    <main
+      className='text-foreground mx-auto grid min-h-screen max-w-5xl content-start gap-6 px-6 py-8 md:px-10'
+      aria-labelledby='studio-error-heading'
+    >
+      <StudioRouteBoundaryHeader copy={studioErrorCopy} headingId='studio-error-heading' />
 
       <StudioRouteBoundaryCard
         description={studioErrorCopy.description}
         headingId={studioErrorCopy.recoveryHeadingId}
         title={studioErrorCopy.recoveryTitle}
       >
-        <Button onClick={reset} variant='secondary'>
+        <Button onClick={reset} type='button' variant='secondary'>
           Retry local read
         </Button>
       </StudioRouteBoundaryCard>
 
-      {error.digest ? <p className='artifact-meta'>Boundary digest: {error.digest}</p> : null}
+      {error.digest ? (
+        <p className='text-muted-foreground text-sm'>Boundary digest: {error.digest}</p>
+      ) : null}
     </main>
   );
 }

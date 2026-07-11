@@ -1,19 +1,18 @@
-import Link from "next/link";
-import type { Route } from "next";
-import { CopyableCommand } from "@/components/studio/CopyableCommand";
+import { CliFallbackCommand } from "@/components/studio/CliFallbackCommand";
 import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
+import { buttonVariants } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { runReviewHrefFromSummary } from "@/lib/runReviewNavigation";
 import type { StudioRunSummary } from "@/lib/runSummaries";
 import {
   formatRunRenderDecision,
   formatRunReviewCounts,
   getNextSafeCommand,
-  NO_RUNS_NEXT_COMMAND,
 } from "@/lib/runSummaryCopy";
+import type { Route } from "next";
+import Link from "next/link";
 
-type LatestRunReadinessPanelProps = Readonly<{
-  latestRun: StudioRunSummary | null;
-}>;
+type LatestRunReadinessPanelProps = Readonly<{ latestRun: StudioRunSummary | null }>;
 
 /**
  * Renders the latest run readiness summary on the Studio home page.
@@ -23,20 +22,23 @@ type LatestRunReadinessPanelProps = Readonly<{
  */
 export function LatestRunReadinessPanel({ latestRun }: LatestRunReadinessPanelProps) {
   return (
-    <section className='panel' aria-labelledby='latest-readiness-heading'>
-      <div className='artifact-preview-header'>
-        <div>
-          <h2 id='latest-readiness-heading'>Latest Run Readiness</h2>
-          <p className='artifact-description'>
-            Read-only view of current CLI readiness. Studio does not approve or rerun checks.
-          </p>
-        </div>
-        <Link className='status-pill small' href='/runs'>
-          Open runs
-        </Link>
-      </div>
-
-      {latestRun ? <LatestRunSummary latestRun={latestRun} /> : <NoRunsSummary />}
+    <section aria-labelledby='latest-readiness-heading'>
+      <Card>
+        <CardHeader className='gap-4 sm:grid-cols-[1fr_auto]'>
+          <div className='space-y-2'>
+            <CardTitle id='latest-readiness-heading'>Latest Run Readiness</CardTitle>
+            <CardDescription>
+              Read-only view of current CLI readiness. Studio does not approve or rerun checks.
+            </CardDescription>
+          </div>
+          <Link className={buttonVariants({ variant: "secondary" })} href='/runs'>
+            Open runs
+          </Link>
+        </CardHeader>
+        <CardContent className='space-y-4'>
+          {latestRun ? <LatestRunSummary latestRun={latestRun} /> : <NoRunsSummary />}
+        </CardContent>
+      </Card>
     </section>
   );
 }
@@ -57,16 +59,22 @@ function LatestRunSummary({ latestRun }: Readonly<{ latestRun: StudioRunSummary 
           { label: "Updated", value: latestRun.updatedAt || "unknown" },
         ]}
       />
-      <p className='artifact-description'>{formatRunReviewCounts(latestRun)}</p>
-      <p>{latestRun.readinessMessage}</p>
+      <p className='text-muted-foreground text-sm'>{formatRunReviewCounts(latestRun)}</p>
+      <p className='text-sm'>{latestRun.readinessMessage}</p>
       {latestRun.readinessNextAction ? (
-        <p className='artifact-action'>Readiness action: {latestRun.readinessNextAction}</p>
+        <p className='bg-muted/10 text-muted-foreground rounded-lg p-3 text-sm'>
+          Readiness action: {latestRun.readinessNextAction}
+        </p>
       ) : null}
-      <div className='artifact-action'>
-        <strong>Next safe action</strong>
-        <CopyableCommand command={getNextSafeCommand(latestRun)} label='Next safe action' />
+      <div className='bg-muted/10 space-y-3 rounded-lg p-3'>
+        <strong className='text-sm'>Next safe action</strong>
+        <CliFallbackCommand
+          align='start'
+          command={getNextSafeCommand(latestRun)}
+          label='Next safe action'
+        />
       </div>
-      <Link className='status-pill small' href={reviewHref}>
+      <Link className={buttonVariants({ variant: "secondary" })} href={reviewHref}>
         Review latest run
       </Link>
     </>
@@ -77,11 +85,10 @@ function NoRunsSummary() {
   return (
     <>
       <MetricGrid metrics={[{ label: "Runs", value: "0" }]} />
-      <div className='artifact-action'>
-        <strong>Next safe action</strong>
-        <CopyableCommand command={NO_RUNS_NEXT_COMMAND} label='Next safe action' />
-      </div>
-      <p>Start a run from the CLI; Studio will only display persisted local state.</p>
+      <p className='text-muted-foreground text-sm'>
+        Start the first idea run from the guarded control desk action. CLI/core still owns the
+        workflow state and evidence written after that action completes.
+      </p>
     </>
   );
 }

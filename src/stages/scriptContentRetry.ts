@@ -48,11 +48,7 @@ type ScriptContentGenerationInput<T> = {
   validationContext?: string;
 };
 
-type RejectedScriptAttempt = {
-  prompt: string;
-  reason: string;
-  result: GenerateTextResult;
-};
+type RejectedScriptAttempt = { prompt: string; reason: string; result: GenerateTextResult };
 
 const maxScriptContentBlockerRepairAttempts = 2;
 
@@ -163,10 +159,7 @@ async function generateAttempt<T>(
   try {
     return { parsed: input.parse(result.text), result };
   } catch (error) {
-    return {
-      parseError: error instanceof Error ? error.message : String(error),
-      result,
-    };
+    return { parseError: error instanceof Error ? error.message : String(error), result };
   }
 }
 

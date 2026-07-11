@@ -4,11 +4,7 @@ type AsyncActionWrapper = <T extends unknown[]>(
   handler: (...args: T) => Promise<void>,
 ) => (...args: T) => void;
 
-type DeskCommandOptions = {
-  latest?: boolean;
-  plain?: boolean;
-  run?: string;
-};
+type DeskCommandOptions = { latest?: boolean; plain?: boolean; run?: string };
 
 /**
  * Registers the local operator desk entry points.

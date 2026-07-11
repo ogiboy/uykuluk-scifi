@@ -75,15 +75,22 @@ agent-tracking state only; runtime code must not require it.
   guarded render-decision and channel-handoff decision evidence writes, visual asset inventory,
   producer doctor diagnostics on the home page and `/doctor`, latest-run readiness visibility, local
   model evaluation summaries, manual analytics feedback summary on the home page, runtime prompt
-  inventory, mutation-service status, and manual analytics feedback routes.
+  inventory, read-only idea history/originality visibility, mutation-service status, and manual
+  analytics feedback routes.
 - Studio foundation with Tailwind CSS v4, shadcn-style primitives, Radix UI, lucide icons, GSAP, and
   `next/font`.
+- Optional Sentry error reporting at Next.js and guarded Studio mutation boundaries. It is disabled
+  without a DSN and never attaches request bodies, artifact contents, prompts, provider output,
+  credentials, or approval evidence; telemetry never controls workflow state.
 - Mock-first provider layer with Ollama and local `llama.cpp` adapters.
+- Ollama and `llama.cpp` base URLs are restricted to credential-free loopback HTTP(S) origins;
+  hosted or LAN providers require a future separately reviewed adapter contract.
 - Project-level `producer doctor` diagnostics for config, mock/Ollama/llama.cpp readiness, local
   TTS/Piper readiness, local FFmpeg/ffprobe toolchain availability, assets, and publish defaults.
 - Local model evaluation command that exercises small idea/script parser contracts, writes ignored
   `diagnostics/local_model_eval.*` reports, and never persists raw provider output; Studio exposes
-  these reports as read-only operator evidence without calling local models or changing config.
+  these reports and can explicitly refresh them through guarded canonical CLI actions without
+  changing provider config or starting/downloading models.
 - Runtime prompt defaults under `prompts/defaults/`; `.ai/` is development and agent-tracking
   guidance, not a runtime dependency.
 - Strict run state machine and explicit approval ledger.
@@ -226,6 +233,10 @@ agent-tracking state only; runtime code must not require it.
 - Idea slate validation rejects repeated local-model boilerplate in `fit` explanations, uncertainty
   openers, unknown-species phrases, weak premise action frames, English scientific leftovers, and
   repeated weak inspection/clue verbs before ideas can reach operator approval.
+- Idea generation reads title-only history from previous runtime `ideas.json` artifacts and appends
+  a compact originality context to the planner prompt. Reusing a previously generated or approved
+  title is treated as an invalid provider response, so the stage repairs or fails closed without
+  writing a fresh idea artifact.
 - Idea, script, and production-package generation re-check existing per-video, daily, and weekly
   budgets, using the stage pricing estimate, before calling a provider or writing generated
   artifacts.
@@ -449,6 +460,8 @@ Current Studio scope:
 - production desk shell;
 - read-only `/runs` index over persisted local run state with approval/warning/artifact counts,
   readiness/evidence status, stale or invalid artifact remediation, and next safe action visibility;
+- read-only `/ideas` page over persisted `runs/*/ideas.json` artifacts so operators can see which
+  generated and approved titles are hard-blocked from exact reuse;
 - `/runs/<run_id>` detail view with next action, readiness status, and review artifact availability
   plus approval ledger entries, warning lists, production media evidence details, shared v1 workflow
   progress, per-row review guidance, guarded idea/script/cost/render approval forms for eligible
@@ -463,10 +476,13 @@ Current Studio scope:
   contact sheets, asset provenance, evidence, readiness, voiceover metadata, and render manifests,
   grouped by operator review phase, with binary media limited to metadata;
 - run/workflow command overview;
+- `/actions` workflow control matrix showing which v1 production steps have guarded web routes,
+  which remain CLI fallback, and which external upload/publish actions are disabled;
 - home-page doctor diagnostics summary showing the persisted doctor status and next safe action;
-- read-only `/doctor` page over ignored `diagnostics/doctor.json` and `diagnostics/doctor.md`,
-  showing local config/provider/TTS/asset/publish checks and next safe remediation without running
-  doctor, editing config, starting providers, downloading models, or mutating workflow state;
+- `/doctor` page over ignored `diagnostics/doctor.json` and `diagnostics/doctor.md`, showing local
+  config/provider/TTS/asset/publish checks and next safe remediation. Its explicit guarded action
+  can run the canonical workflow-read-only doctor CLI refresh, which writes ignored diagnostics but
+  cannot edit config, start providers, download models, or mutate workflow state;
 - current asset inventory summary and read-only `/assets` detail page backed by configured asset
   guard checks;
 - read-only runtime prompt inventory and `/prompts` detail page for tracked defaults and configured
@@ -504,6 +520,15 @@ Current Studio scope:
 Next Studio work should keep artifact, asset, and prompt visibility aligned with new production
 artifacts, keep upload/publish mutations disabled, and add further guarded routes only after shared
 service contracts, local-session route security, and negative tests exist.
+
+Optional Sentry configuration lives in `apps/studio/.env.example`. Keep DSNs and build-time
+source-map credentials in local or CI secret storage. With blank values, Studio remains fully local
+and telemetry-free.
+
+Studio responses disable the framework banner and set frame, MIME-sniffing, referrer, permissions,
+and minimal CSP protections. HSTS and `Secure` session cookies remain intentionally inapplicable
+while Studio binds only to loopback HTTP; serving it beyond loopback requires a new transport
+review.
 
 ## Visual Assets
 
@@ -601,11 +626,7 @@ Useful Ollama settings:
       "ollamaBaseUrl": "http://localhost:11434",
       "model": "qwen3:8b",
       "thinkingMode": "default",
-      "maxOutputTokens": {
-        "ideas": 3000,
-        "script": 3200,
-        "productionPackage": 2000
-      }
+      "maxOutputTokens": { "ideas": 3000, "script": 3200, "productionPackage": 2000 }
     }
   }
 }
@@ -621,11 +642,7 @@ Useful local `llama.cpp` settings for an OpenAI-compatible `llama-server`:
       "llamaCppBaseUrl": "http://localhost:8080",
       "model": "Mistral-7B-Instruct-v0.3.Q4_K_M.gguf",
       "requestTimeoutMs": 120000,
-      "maxOutputTokens": {
-        "ideas": 3000,
-        "script": 3200,
-        "productionPackage": 2000
-      }
+      "maxOutputTokens": { "ideas": 3000, "script": 3200, "productionPackage": 2000 }
     }
   }
 }
@@ -649,14 +666,7 @@ pnpm tts:piper:setup
 ```
 
 ```json
-{
-  "providers": {
-    "tts": {
-      "enabled": true,
-      "mode": "deterministic-local"
-    }
-  }
-}
+{ "providers": { "tts": { "enabled": true, "mode": "deterministic-local" } } }
 ```
 
 `deterministic-local` writes a reference WAV for timing and pipeline validation; it is not a
@@ -729,12 +739,13 @@ review artifact.
 into bounded hook, context, development, and outro sections. Each section is drafted once and then
 expanded through three smaller bounded JSON chunks so local models can finish valid payloads. The
 run persists draft/expansion receipts before it can advance. If a local model returns malformed
-JSON, English operator-facing text, duplicate/boilerplate ideas, or an incomplete script section,
-the stage fails closed before writing the next review artifact; provider failure diagnostics are
-persisted under the run when safe to record. Repeated sentence or label blockers get bounded
-raw-output-free repair retries, and a later successful script run clears stale failure diagnostics
-before advancing. `producer status` and the read-only Studio run detail surface safe idea/script
-failure diagnostic summaries so the next blocker is visible without opening JSON artifacts by hand.
+JSON, English operator-facing text, duplicate/boilerplate ideas, a title already present in previous
+runtime idea history, or an incomplete script section, the stage fails closed before writing the
+next review artifact; provider failure diagnostics are persisted under the run when safe to record.
+Repeated sentence, historical-title, or label blockers get bounded raw-output-free repair retries,
+and a later successful script run clears stale failure diagnostics before advancing.
+`producer status` and the read-only Studio run detail surface safe idea/script failure diagnostic
+summaries so the next blocker is visible without opening JSON artifacts by hand.
 
 `producer eval local-model` is a lightweight manual bake-off surface for local model candidates. It
 does not create a run, advance workflow state, or edit config; it calls only the configured local
@@ -778,13 +789,7 @@ Local prompt experiments belong under ignored `prompts/local/` and must be expli
 from `producer.config.json`:
 
 ```json
-{
-  "prompts": {
-    "overrides": {
-      "ideas": "prompts/local/planner-experiment.md"
-    }
-  }
-}
+{ "prompts": { "overrides": { "ideas": "prompts/local/planner-experiment.md" } } }
 ```
 
 Override paths are fail-closed to Markdown files under `prompts/local/`. Prompt provenance records

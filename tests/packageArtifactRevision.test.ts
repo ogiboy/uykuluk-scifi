@@ -6,8 +6,8 @@ import { loadRun, saveRun } from "../src/core/runStore";
 import { revisePackageArtifact } from "../src/revisions/packageArtifactRevision";
 import { approveIdea } from "../src/stages/approveIdea";
 import { approveScript } from "../src/stages/approveScript";
-import { generateEvidenceBundle } from "../src/stages/evidence";
 import { estimateCost } from "../src/stages/estimate";
+import { generateEvidenceBundle } from "../src/stages/evidence";
 import { runIdeas } from "../src/stages/ideas";
 import { generateProductionPackage } from "../src/stages/productionPackage";
 import { verifyProductionPackage } from "../src/stages/productionPackageIntegrity";
@@ -74,9 +74,7 @@ describe("package artifact revisions", () => {
     expect(await readFile(artifactPath(runId, "production/subtitles.srt"), "utf8")).toBe(
       revisedSubtitles,
     );
-    await expect(verifyProductionPackage(updated)).resolves.toMatchObject({
-      manifest: { runId },
-    });
+    await expect(verifyProductionPackage(updated)).resolves.toMatchObject({ manifest: { runId } });
     expect(await pathExists(artifactPath(runId, "production/render_plan.json"))).toBe(false);
     expect(
       (await readLedger(runId)).some(

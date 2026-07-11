@@ -1,18 +1,18 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
-import { artifactPath } from "../src/core/artifacts";
 import { defaultConfig } from "../src/config/config";
-import { sha256 } from "../src/utils/hash";
-import { readJsonFile } from "../src/utils/json";
-import { pathExists } from "../src/utils/fs";
+import { artifactPath } from "../src/core/artifacts";
+import { renderIdeasPrompt } from "../src/prompts/templates";
 import { approveIdea } from "../src/stages/approveIdea";
 import { approveScript } from "../src/stages/approveScript";
 import { runIdeas } from "../src/stages/ideas";
 import { generateProductionPackage } from "../src/stages/productionPackage";
-import { renderIdeasPrompt } from "../src/prompts/templates";
 import { reviewScript } from "../src/stages/reviewScript";
 import { generateScript } from "../src/stages/script";
 import { renderScriptSectionPrompt, scriptSectionPlans } from "../src/stages/scriptSections";
+import { pathExists } from "../src/utils/fs";
+import { sha256 } from "../src/utils/hash";
+import { readJsonFile } from "../src/utils/json";
 import { useTempProject } from "./helpers";
 
 describe("runtime prompt defaults", () => {
@@ -59,9 +59,9 @@ describe("runtime prompt defaults", () => {
     const packageTemplate = await defaultPrompt("production-package-task.md");
 
     const { runId, ideas } = await runIdeas();
-    const ideasArtifact = await readJsonFile<{
-      prompt: { hash: string; source: string };
-    }>(artifactPath(runId, "ideas.json"));
+    const ideasArtifact = await readJsonFile<{ prompt: { hash: string; source: string } }>(
+      artifactPath(runId, "ideas.json"),
+    );
     expect(ideasArtifact.prompt).toEqual({
       key: "ideas",
       hash: sha256(["IDEAS_JSON", plannerTemplate].join("\n\n")),
@@ -94,9 +94,9 @@ describe("runtime prompt defaults", () => {
     await approveScript(runId, { acknowledgeWarnings: true });
     await generateProductionPackage(runId);
     const script = await readFile(artifactPath(runId, "script.md"), "utf8");
-    const packageMeta = await readJsonFile<{
-      prompt: { hash: string; source: string };
-    }>(artifactPath(runId, "production/production_package.meta.json"));
+    const packageMeta = await readJsonFile<{ prompt: { hash: string; source: string } }>(
+      artifactPath(runId, "production/production_package.meta.json"),
+    );
     expect(packageMeta.prompt).toEqual({
       key: "production-package",
       hash: sha256(
@@ -126,9 +126,9 @@ describe("runtime prompt defaults", () => {
     });
 
     const { runId } = await runIdeas();
-    const ideasArtifact = await readJsonFile<{
-      prompt: { hash: string; source: string };
-    }>(artifactPath(runId, "ideas.json"));
+    const ideasArtifact = await readJsonFile<{ prompt: { hash: string; source: string } }>(
+      artifactPath(runId, "ideas.json"),
+    );
     expect(ideasArtifact.prompt).toEqual({
       key: "ideas",
       hash: sha256(["IDEAS_JSON", localPrompt].join("\n\n")),

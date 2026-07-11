@@ -20,14 +20,8 @@ type AssetCategoryDefinitionBase = {
 
 export type AssetCategoryDefinition = AssetCategoryDefinitionBase &
   (
-    | {
-        configuredDirectory: ConfiguredAssetDirectory;
-        directory?: never;
-      }
-    | {
-        configuredDirectory?: never;
-        directory: string;
-      }
+    | { configuredDirectory: ConfiguredAssetDirectory; directory?: never }
+    | { configuredDirectory?: never; directory: string }
   );
 
 export const ASSET_CATEGORY_DEFINITIONS = [

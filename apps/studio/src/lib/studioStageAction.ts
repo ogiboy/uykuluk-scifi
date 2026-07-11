@@ -85,7 +85,7 @@ export function stageActionForRun(run: StudioStageActionRun): StudioStageActionC
   }
   return (
     studioStageActionConfigs.find((config) =>
-      commandMatchesStageAction(command, run.runId, config.commandPrefix),
+      commandMatchesRunStageAction(command, run.runId, config.commandPrefix),
     ) ?? null
   );
 }
@@ -107,7 +107,11 @@ function stageAction(
   };
 }
 
-function commandMatchesStageAction(command: string, runId: string, commandPrefix: string): boolean {
+function commandMatchesRunStageAction(
+  command: string,
+  runId: string,
+  commandPrefix: string,
+): boolean {
   const tokens = commandTokens(command);
   const prefixTokens = commandTokens(commandPrefix);
   if (!tokensStartWith(tokens, prefixTokens)) {

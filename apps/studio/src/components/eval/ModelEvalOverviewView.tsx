@@ -1,14 +1,12 @@
+import { ArtifactPreview } from "@/components/studio/ArtifactPreview";
+import { CliFallbackCommand } from "@/components/studio/CliFallbackCommand";
 import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
-import { CopyableCommand } from "@/components/studio/CopyableCommand";
-import type {
-  StudioCandidateEvalSummary,
-  StudioModelEvalCheckSummary,
-  StudioModelEvalOverview,
-} from "@/lib/modelEvalOverview";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import type { StudioModelEvalOverview } from "@/lib/modelEvalOverview";
+import { ModelEvalCandidatePanel, ModelEvalCheckList } from "./ModelEvalCandidatePanel";
+import { ModelEvalRunActionPanel } from "./ModelEvalRunActionPanel";
 
-type ModelEvalOverviewViewProps = Readonly<{
-  overview: StudioModelEvalOverview;
-}>;
+type ModelEvalOverviewViewProps = Readonly<{ overview: StudioModelEvalOverview }>;
 
 /**
  * Renders the read-only local model evaluation overview.
@@ -18,173 +16,150 @@ type ModelEvalOverviewViewProps = Readonly<{
  */
 export function ModelEvalOverviewView({ overview }: ModelEvalOverviewViewProps) {
   return (
-    <div className='analytics-detail-grid'>
-      <section className='panel' aria-labelledby='model-eval-overview-heading'>
-        <h2 id='model-eval-overview-heading'>Local Model Evaluation Overview</h2>
-        <MetricGrid
-          metrics={[
-            { label: "Status", value: overview.status },
-            {
-              label: "Single model",
-              value: overview.singleReport?.configuredModel ?? "not evaluated",
-            },
-            {
-              label: "Single checks passed",
-              value: overview.singleReport
-                ? `${overview.singleReport.passCount}/${overview.singleReport.checkCount}`
-                : "n/a",
-            },
-            {
-              label: "Candidates",
-              value: formatStudioInteger(overview.candidateReport?.candidateCount ?? 0),
-            },
-            {
-              label: "Passing candidates",
-              value: formatStudioInteger(overview.candidateReport?.passingCandidateCount ?? 0),
-            },
-            {
-              label: "Blocked candidates",
-              value: formatStudioInteger(overview.candidateReport?.blockedCandidateCount ?? 0),
-            },
-            {
-              label: "Recommended candidate",
-              value: overview.candidateReport?.recommendedCandidate?.configuredModel ?? "none",
-            },
-          ]}
-        />
+    <div className='grid gap-4 lg:grid-cols-2'>
+      <section aria-labelledby='model-eval-overview-heading'>
+        <Card>
+          <CardHeader>
+            <h2 className='text-xl font-semibold tracking-tight' id='model-eval-overview-heading'>
+              Local Model Evaluation Overview
+            </h2>
+          </CardHeader>
+          <CardContent>
+            <MetricGrid
+              metrics={[
+                { label: "Status", value: overview.status },
+                {
+                  label: "Single model",
+                  value: overview.singleReport?.configuredModel ?? "not evaluated",
+                },
+                {
+                  label: "Single checks passed",
+                  value: overview.singleReport
+                    ? `${overview.singleReport.passCount}/${overview.singleReport.checkCount}`
+                    : "n/a",
+                },
+                {
+                  label: "Candidates",
+                  value: formatStudioInteger(overview.candidateReport?.candidateCount ?? 0),
+                },
+                {
+                  label: "Passing candidates",
+                  value: formatStudioInteger(overview.candidateReport?.passingCandidateCount ?? 0),
+                },
+                {
+                  label: "Blocked candidates",
+                  value: formatStudioInteger(overview.candidateReport?.blockedCandidateCount ?? 0),
+                },
+                {
+                  label: "Recommended candidate",
+                  value: overview.candidateReport?.recommendedCandidate?.configuredModel ?? "none",
+                },
+              ]}
+            />
+          </CardContent>
+        </Card>
       </section>
 
-      <section className='panel' aria-labelledby='model-eval-action-heading'>
-        <h2 id='model-eval-action-heading'>Next Safe Action</h2>
-        <CopyableCommand command={overview.nextCommand} label='Model eval command' />
-        <p>
-          Read-only display from local diagnostics artifacts. Studio does not call Ollama,
-          llama.cpp, hosted APIs, edit config, create runs, approve stages, upload media, or publish
-          content.
-        </p>
-        {overview.error ? <p className='blocked'>{overview.error}</p> : null}
+      <section aria-labelledby='model-eval-action-heading'>
+        <Card>
+          <CardHeader>
+            <h2 className='text-xl font-semibold tracking-tight' id='model-eval-action-heading'>
+              Next Safe Action
+            </h2>
+          </CardHeader>
+          <CardContent className='space-y-4'>
+            <ModelEvalRunActionPanel />
+            <CliFallbackCommand
+              align='start'
+              command={overview.nextCommand}
+              label='Model eval command'
+              triggerLabel='Show eval fallback'
+            />
+            <p className='text-muted-foreground text-sm'>
+              Read-only display from local diagnostics artifacts. Studio does not call Ollama,
+              llama.cpp, hosted APIs, edit config, create runs, approve stages, upload media, or
+              publish content.
+            </p>
+            {overview.error ? <p className='text-destructive text-sm'>{overview.error}</p> : null}
+          </CardContent>
+        </Card>
       </section>
 
-      <section className='panel' aria-labelledby='model-eval-single-checks-heading'>
-        <h2 id='model-eval-single-checks-heading'>Single Model Check Results</h2>
-        {overview.singleReport ? (
-          <CheckList checks={overview.singleReport.checks} ownerId='single-model' />
-        ) : (
-          <p>No single-model check results are available.</p>
-        )}
+      <section aria-labelledby='model-eval-single-checks-heading'>
+        <Card>
+          <CardHeader>
+            <h2
+              className='text-xl font-semibold tracking-tight'
+              id='model-eval-single-checks-heading'
+            >
+              Single Model Check Results
+            </h2>
+          </CardHeader>
+          <CardContent>
+            {overview.singleReport ? (
+              <ModelEvalCheckList checks={overview.singleReport.checks} ownerId='single-model' />
+            ) : (
+              <p className='text-muted-foreground text-sm'>
+                No single-model check results are available.
+              </p>
+            )}
+          </CardContent>
+        </Card>
       </section>
 
-      <CandidatePanel candidateReport={overview.candidateReport} />
+      <ModelEvalCandidatePanel candidateReport={overview.candidateReport} />
 
-      <section className='panel' aria-labelledby='model-eval-single-report-heading'>
-        <h2 id='model-eval-single-report-heading'>Single Model Report Preview</h2>
-        <p className='artifact-meta'>
-          {overview.singleMarkdownPath}
-          {overview.singleReportPreviewTruncated ? " · preview truncated" : ""}
-        </p>
-        {overview.singleReportPreview ? (
-          <pre className='artifact-preview'>{overview.singleReportPreview}</pre>
-        ) : (
-          <p>Run the CLI local model evaluation command to generate a report artifact.</p>
-        )}
+      <section aria-labelledby='model-eval-single-report-heading'>
+        <Card>
+          <CardHeader>
+            <h2
+              className='text-xl font-semibold tracking-tight'
+              id='model-eval-single-report-heading'
+            >
+              Single Model Report Preview
+            </h2>
+          </CardHeader>
+          <CardContent className='space-y-3'>
+            <p className='text-muted-foreground text-xs'>
+              {overview.singleMarkdownPath}
+              {overview.singleReportPreviewTruncated ? " · preview truncated" : ""}
+            </p>
+            {overview.singleReportPreview ? (
+              <ArtifactPreview>{overview.singleReportPreview}</ArtifactPreview>
+            ) : (
+              <p className='text-muted-foreground text-sm'>
+                Run the CLI local model evaluation command to generate a report artifact.
+              </p>
+            )}
+          </CardContent>
+        </Card>
       </section>
 
-      <section className='panel' aria-labelledby='model-eval-candidate-report-heading'>
-        <h2 id='model-eval-candidate-report-heading'>Candidate Report Preview</h2>
-        <p className='artifact-meta'>
-          {overview.candidateMarkdownPath}
-          {overview.candidateReportPreviewTruncated ? " · preview truncated" : ""}
-        </p>
-        {overview.candidateReportPreview ? (
-          <pre className='artifact-preview'>{overview.candidateReportPreview}</pre>
-        ) : (
-          <p>Run the CLI candidate evaluation command to generate a comparison artifact.</p>
-        )}
+      <section aria-labelledby='model-eval-candidate-report-heading'>
+        <Card>
+          <CardHeader>
+            <h2
+              className='text-xl font-semibold tracking-tight'
+              id='model-eval-candidate-report-heading'
+            >
+              Candidate Report Preview
+            </h2>
+          </CardHeader>
+          <CardContent className='space-y-3'>
+            <p className='text-muted-foreground text-xs'>
+              {overview.candidateMarkdownPath}
+              {overview.candidateReportPreviewTruncated ? " · preview truncated" : ""}
+            </p>
+            {overview.candidateReportPreview ? (
+              <ArtifactPreview>{overview.candidateReportPreview}</ArtifactPreview>
+            ) : (
+              <p className='text-muted-foreground text-sm'>
+                Run the CLI candidate evaluation command to generate a comparison artifact.
+              </p>
+            )}
+          </CardContent>
+        </Card>
       </section>
     </div>
-  );
-}
-
-function CandidatePanel({
-  candidateReport,
-}: Readonly<{ candidateReport: StudioCandidateEvalSummary | null }>) {
-  return (
-    <section className='panel' aria-labelledby='model-eval-candidates-heading'>
-      <h2 id='model-eval-candidates-heading'>Candidate Results</h2>
-      {candidateReport ? (
-        <>
-          <p className='artifact-meta'>
-            Recommended passing candidate:{" "}
-            {candidateReport.recommendedCandidate?.configuredModel ?? "none yet"}
-          </p>
-          {candidateReport.operatorGuidance ? (
-            <div className='artifact-action'>
-              <p>{candidateReport.operatorGuidance.message}</p>
-              <CopyableCommand
-                command={candidateReport.operatorGuidance.nextCommand}
-                label='Candidate eval command'
-              />
-            </div>
-          ) : null}
-          <ul className='artifact-preview-list'>
-            {candidateReport.candidates.map((candidate, index) => (
-              <li className='artifact-preview-card' key={`${candidate.configuredModel}-${index}`}>
-                <div className='artifact-preview-header'>
-                  <div>
-                    <strong>{candidate.configuredModel}</strong>
-                    <span>
-                      {candidate.passCount} passed · {candidate.blockCount} blocked checks ·{" "}
-                      {candidate.durationMs}ms
-                    </span>
-                  </div>
-                  <span
-                    className={candidate.passed ? "status-pill small" : "status-pill small blocked"}
-                  >
-                    {candidate.passed ? "pass" : "block"}
-                  </span>
-                </div>
-                <CheckList checks={candidate.checks} ownerId={`candidate-${index}`} />
-              </li>
-            ))}
-          </ul>
-        </>
-      ) : (
-        <p>No candidate comparison report has been generated.</p>
-      )}
-    </section>
-  );
-}
-
-function CheckList({
-  checks,
-  ownerId,
-}: Readonly<{ checks: StudioModelEvalCheckSummary[]; ownerId: string }>) {
-  return (
-    <ul className='artifact-preview-list'>
-      {checks.map((check) => (
-        <li className='artifact-preview-card' key={`${ownerId}-${check.name}`}>
-          <div className='artifact-preview-header'>
-            <div>
-              <strong>{check.name}</strong>
-              <span>{check.message}</span>
-            </div>
-            <span
-              className={
-                check.status === "pass" ? "status-pill small" : "status-pill small blocked"
-              }
-            >
-              {check.status}
-            </span>
-          </div>
-          <p className='artifact-meta'>
-            {check.durationMs === null ? "duration n/a" : `${check.durationMs}ms`}
-            {" · "}
-            input {check.inputTokensApprox ?? "n/a"} / output {check.outputTokensApprox ?? "n/a"}
-            {check.promptHash ? ` · prompt ${check.promptHash}` : ""}
-            {check.outputHash ? ` · output ${check.outputHash}` : ""}
-          </p>
-        </li>
-      ))}
-    </ul>
   );
 }

@@ -36,18 +36,20 @@ describe("LLM providers", () => {
   it("records Ollama model, token usage, and duration", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue(
-        new Response(
-          JSON.stringify({
-            response: "yanit",
-            model: "qwen3:8b",
-            prompt_eval_count: 12,
-            eval_count: 7,
-            total_duration: 2_000_000,
-          }),
-          { status: 200, headers: { "content-type": "application/json" } },
+      vi
+        .fn()
+        .mockResolvedValue(
+          new Response(
+            JSON.stringify({
+              response: "yanit",
+              model: "qwen3:8b",
+              prompt_eval_count: 12,
+              eval_count: 7,
+              total_duration: 2_000_000,
+            }),
+            { status: 200, headers: { "content-type": "application/json" } },
+          ),
         ),
-      ),
     );
     const provider = new OllamaProvider("http://localhost:11434/", "fallback");
 
@@ -62,12 +64,14 @@ describe("LLM providers", () => {
   });
 
   it("prefixes Ollama prompts when a thinking mode is configured", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({ response: "yanit", model: "qwen3:8b" }), {
-        status: 200,
-        headers: { "content-type": "application/json" },
-      }),
-    );
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ response: "yanit", model: "qwen3:8b" }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        }),
+      );
     vi.stubGlobal("fetch", fetchMock);
     const provider = new OllamaProvider("http://localhost:11434/", "qwen3:8b", "no_think");
 
@@ -78,12 +82,14 @@ describe("LLM providers", () => {
   });
 
   it("passes max token caps through to Ollama num_predict", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({ response: "yanit", model: "qwen3:8b" }), {
-        status: 200,
-        headers: { "content-type": "application/json" },
-      }),
-    );
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ response: "yanit", model: "qwen3:8b" }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        }),
+      );
     vi.stubGlobal("fetch", fetchMock);
     const provider = new OllamaProvider("http://localhost:11434/", "qwen3:8b");
 
@@ -96,12 +102,14 @@ describe("LLM providers", () => {
   });
 
   it("passes an abort signal to Ollama generation requests", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({ response: "yanit", model: "qwen3:8b" }), {
-        status: 200,
-        headers: { "content-type": "application/json" },
-      }),
-    );
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ response: "yanit", model: "qwen3:8b" }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        }),
+      );
     vi.stubGlobal("fetch", fetchMock);
     const provider = new OllamaProvider("http://localhost:11434/", "qwen3:8b", "default", 7_500);
 
@@ -113,12 +121,14 @@ describe("LLM providers", () => {
   });
 
   it("passes structured response format through to Ollama", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({ response: '{"text":"tamam"}', model: "qwen3:8b" }), {
-        status: 200,
-        headers: { "content-type": "application/json" },
-      }),
-    );
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ response: '{"text":"tamam"}', model: "qwen3:8b" }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        }),
+      );
     vi.stubGlobal("fetch", fetchMock);
     const provider = new OllamaProvider("http://localhost:11434/", "qwen3:8b");
 
@@ -127,9 +137,7 @@ describe("LLM providers", () => {
       responseFormat: { type: "object", properties: { text: { type: "string" } } },
     });
 
-    const body = JSON.parse(fetchMock.mock.calls[0]?.[1]?.body as string) as {
-      format?: unknown;
-    };
+    const body = JSON.parse(fetchMock.mock.calls[0]?.[1]?.body as string) as { format?: unknown };
     expect(body.format).toEqual({ type: "object", properties: { text: { type: "string" } } });
   });
 });

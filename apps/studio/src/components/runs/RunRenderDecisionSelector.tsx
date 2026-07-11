@@ -1,5 +1,5 @@
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 
 type RenderDecisionValue = StudioRunDetail["renderDecisionCommands"][number]["decision"];
@@ -32,14 +32,14 @@ export function RunRenderDecisionSelector({
       >
         {commands.map((item) => (
           <Label
-            className='grid cursor-pointer grid-cols-[auto_1fr] items-start gap-3 rounded-lg border bg-card p-3 text-sm transition-colors hover:bg-accent/10'
+            className='bg-card hover:bg-accent/10 grid cursor-pointer grid-cols-[auto_1fr] items-start gap-3 rounded-lg border p-3 text-sm transition-colors'
             key={item.decision}
           >
             <RadioGroupItem className='mt-1' value={item.decision} />
             <span className='space-y-2'>
               <strong className='block'>{formatRenderDecisionLabel(item.decision)}</strong>
-              <span className='block text-muted-foreground'>{item.guidance}</span>
-              <code className='block break-all rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground'>
+              <span className='text-muted-foreground block'>{item.guidance}</span>
+              <code className='bg-muted text-muted-foreground block rounded-md px-2 py-1 text-xs break-all'>
                 {item.command}
               </code>
             </span>

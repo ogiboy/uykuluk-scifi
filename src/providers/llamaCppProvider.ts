@@ -5,26 +5,13 @@ import {
   approximateTokens,
 } from "./llmProvider.js";
 
-type LlamaCppModelListResponse = {
-  data?: Array<{
-    id?: string;
-    object?: string;
-  }>;
-};
+type LlamaCppModelListResponse = { data?: Array<{ id?: string; object?: string }> };
 
 type LlamaCppChatCompletionResponse = {
-  choices?: Array<{
-    message?: {
-      content?: string;
-    };
-    text?: string;
-  }>;
+  choices?: Array<{ message?: { content?: string }; text?: string }>;
   error?: unknown;
   model?: string;
-  usage?: {
-    completion_tokens?: number;
-    prompt_tokens?: number;
-  };
+  usage?: { completion_tokens?: number; prompt_tokens?: number };
 };
 
 export type LlamaCppDiagnostic = {
@@ -54,9 +41,7 @@ export class LlamaCppProvider implements LlmProvider {
     const displayBaseUrl = displaySafeBaseUrl(this.baseUrl);
     let response: Response;
     try {
-      response = await fetch(`${baseUrl}/v1/models`, {
-        signal: AbortSignal.timeout(timeoutMs),
-      });
+      response = await fetch(`${baseUrl}/v1/models`, { signal: AbortSignal.timeout(timeoutMs) });
     } catch (error) {
       return {
         available: false,
@@ -181,7 +166,9 @@ function providerMessages(
   ];
 }
 
-function responseFormat(value: GenerateTextInput["responseFormat"]):
+function responseFormat(
+  value: GenerateTextInput["responseFormat"],
+):
   | {
       json_schema?: { name: string; schema: Record<string, unknown>; strict: boolean };
       type: string;
@@ -195,11 +182,7 @@ function responseFormat(value: GenerateTextInput["responseFormat"]):
   }
   return {
     type: "json_schema",
-    json_schema: {
-      name: "uykuluk_response",
-      schema: value,
-      strict: true,
-    },
+    json_schema: { name: "uykuluk_response", schema: value, strict: true },
   };
 }
 

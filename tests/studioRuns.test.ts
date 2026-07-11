@@ -163,11 +163,7 @@ describe("Studio read-only run summaries", () => {
             title: "Rüya Sinyali",
           },
         ],
-        prompt: {
-          key: "ideas",
-          source: "default",
-          targetArtifact: "ideas.json",
-        },
+        prompt: { key: "ideas", source: "default", targetArtifact: "ideas.json" },
       }),
       "utf8",
     );

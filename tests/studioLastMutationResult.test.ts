@@ -61,6 +61,45 @@ describe("Studio last mutation result", () => {
     expect(parseStudioLastMutationResult({ actionId: "ideas.run", kind: "unknown" })).toBeNull();
     expect(parseStudioLastMutationResult({ actionId: "ideas.run", kind: "success" })).toBeNull();
   });
+
+  it("normalizes bounded facts through the persisted schema", () => {
+    const parsed = parseStudioLastMutationResult({
+      actionId: "ideas.run",
+      facts: [
+        " first ",
+        42,
+        ...Array.from({ length: 9 }, (_, index) => `${index}-${"x".repeat(260)}`),
+      ],
+      kind: "success",
+      message: "Idea run created.",
+      recordedAtIso: "2026-07-05T11:36:14.000Z",
+      refreshedPersistedState: true,
+      routePath: "/actions/run-ideas",
+      runId: "run_latest",
+    });
+
+    expect(parsed?.facts).toHaveLength(8);
+    expect(parsed?.facts[0]).toBe("first");
+    expect(parsed?.facts[1]).toHaveLength(240);
+    expect(parsed?.facts.every((fact) => fact.length <= 240)).toBe(true);
+  });
+
+  it("rejects unknown fields and invalid HTTP statuses", () => {
+    const valid = {
+      actionId: "ideas.run",
+      facts: [],
+      kind: "success",
+      message: "Idea run created.",
+      recordedAtIso: "2026-07-05T11:36:14.000Z",
+      refreshedPersistedState: true,
+      routePath: "/actions/run-ideas",
+      runId: "run_latest",
+    } as const;
+
+    expect(parseStudioLastMutationResult({ ...valid, extra: true })).toBeNull();
+    expect(parseStudioLastMutationResult({ ...valid, status: 99 })).toBeNull();
+    expect(parseStudioLastMutationResult({ ...valid, status: 600 })).toBeNull();
+  });
 });
 
 function installSessionStorage(): void {

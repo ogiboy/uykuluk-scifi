@@ -41,9 +41,7 @@ export async function createRenderedStudioRunFixture(): Promise<string> {
   );
   await writeFile(
     artifactPath(run.runId, "production/asset_provenance.json"),
-    JSON.stringify({
-      assets: [{ path: "assets/backgrounds/nebula.png", role: "background" }],
-    }),
+    JSON.stringify({ assets: [{ path: "assets/backgrounds/nebula.png", role: "background" }] }),
     "utf8",
   );
   await writeFile(
@@ -105,10 +103,7 @@ export async function createRenderedStudioRunFixture(): Promise<string> {
       reviewPath: "production/render/draft_review.md",
       reviewChecklist: ["Review local draft only."],
       ffmpegReviewCommand: "ffmpeg -v error -i production/render/draft.mp4 -f null -",
-      renderApproval: {
-        approvalId: "approval_render_fixture",
-        approvedRef: "d".repeat(64),
-      },
+      renderApproval: { approvalId: "approval_render_fixture", approvedRef: "d".repeat(64) },
       voiceoverMode: "local-piper",
       voiceoverProductionVoiceCandidate: true,
       voiceoverQuality: "local-piper",

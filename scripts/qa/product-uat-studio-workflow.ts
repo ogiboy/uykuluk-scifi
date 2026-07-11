@@ -3,21 +3,21 @@ import { POST as approveRender } from "../../apps/studio/src/app/actions/approve
 import { POST as approveScript } from "../../apps/studio/src/app/actions/approve-script/route";
 import { POST as decideChannelHandoff } from "../../apps/studio/src/app/actions/decide-channel-handoff/route";
 import { POST as decideRender } from "../../apps/studio/src/app/actions/decide-render/route";
+import { POST as reviewRenderPlan } from "../../apps/studio/src/app/actions/review-render-plan/route";
+import { POST as reviewRender } from "../../apps/studio/src/app/actions/review-render/route";
+import { POST as reviewScript } from "../../apps/studio/src/app/actions/review-script/route";
+import { POST as reviewVoice } from "../../apps/studio/src/app/actions/review-voice/route";
 import { POST as runChannelHandoff } from "../../apps/studio/src/app/actions/run-channel-handoff/route";
 import { POST as runEstimate } from "../../apps/studio/src/app/actions/run-estimate/route";
 import { POST as runEvidence } from "../../apps/studio/src/app/actions/run-evidence/route";
 import { POST as runIdeas } from "../../apps/studio/src/app/actions/run-ideas/route";
 import { POST as runPackage } from "../../apps/studio/src/app/actions/run-package/route";
 import { POST as runReadiness } from "../../apps/studio/src/app/actions/run-readiness/route";
-import { POST as runRender } from "../../apps/studio/src/app/actions/run-render/route";
 import { POST as runRenderPlan } from "../../apps/studio/src/app/actions/run-render-plan/route";
+import { POST as runRender } from "../../apps/studio/src/app/actions/run-render/route";
 import { POST as runReviewBundle } from "../../apps/studio/src/app/actions/run-review-bundle/route";
 import { POST as runScript } from "../../apps/studio/src/app/actions/run-script/route";
 import { POST as runVoice } from "../../apps/studio/src/app/actions/run-voice/route";
-import { POST as reviewRender } from "../../apps/studio/src/app/actions/review-render/route";
-import { POST as reviewRenderPlan } from "../../apps/studio/src/app/actions/review-render-plan/route";
-import { POST as reviewScript } from "../../apps/studio/src/app/actions/review-script/route";
-import { POST as reviewVoice } from "../../apps/studio/src/app/actions/review-voice/route";
 import { getStudioRunDetail } from "../../apps/studio/src/lib/runSummaries";
 import { studioJsonRequest, studioSessionCookie } from "./product-uat-studio-http";
 
@@ -70,9 +70,7 @@ const handoff = await post(
   runChannelHandoff,
   "/actions/run-channel-handoff",
   "channel-handoff.run",
-  {
-    runId,
-  },
+  { runId },
 );
 const handoffRecord = recordObject(handoff);
 const thumbnailCandidates = objectField(handoffRecord, "thumbnailCandidates");

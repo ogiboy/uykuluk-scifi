@@ -15,11 +15,7 @@ describe("status readiness summary", () => {
       artifactPath(run.runId, "diagnostics/readiness.json"),
       JSON.stringify({
         checks: [
-          {
-            message: "Render plan exists.",
-            name: "render plan available",
-            status: "pass",
-          },
+          { message: "Render plan exists.", name: "render plan available", status: "pass" },
           {
             message: "Voiceover audio is not generated yet.",
             name: "voiceover audio available",

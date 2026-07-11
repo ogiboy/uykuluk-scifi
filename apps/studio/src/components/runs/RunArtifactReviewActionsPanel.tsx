@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -16,12 +15,11 @@ import {
   type StudioRenderPlanReviewActionRun,
 } from "@/lib/renderPlanReviewAction";
 import { useStudioGuardedActionSubmit } from "@/lib/useStudioGuardedActionSubmit";
+import { useState } from "react";
 import { StudioMutationResultPanel } from "../studio/StudioMutationResultPanel";
 import { RunStageActionConfirmationDialog } from "./RunStageActionConfirmationDialog";
 
-type RunArtifactReviewActionsPanelProps = Readonly<{
-  run: StudioRenderPlanReviewActionRun;
-}>;
+type RunArtifactReviewActionsPanelProps = Readonly<{ run: StudioRenderPlanReviewActionRun }>;
 
 type RunArtifactReviewActionCardProps = Readonly<{
   action: StudioArtifactReviewAction;
@@ -72,24 +70,21 @@ function RunArtifactReviewActionCard({
   }
 
   return (
-    <Card
-      aria-labelledby={`${action.actionId}-heading`}
-      className='border-dashed border-sky-500/30 bg-sky-500/5'
-    >
+    <Card aria-labelledby={`${action.actionId}-heading`} className='border-sky-500/20 bg-sky-500/5'>
       <CardHeader>
         <CardDescription>{action.eyebrow}</CardDescription>
         <CardTitle>
           <h2 id={`${action.actionId}-heading`}>{action.heading}</h2>
         </CardTitle>
       </CardHeader>
-      <CardContent className='space-y-3 text-sm text-muted-foreground'>
+      <CardContent className='text-muted-foreground space-y-3 text-sm'>
         <p>{action.details}</p>
         <p>
           This is a guarded local review handoff only. It does not approve cost, generate media,
           upload, schedule, or publish.
         </p>
         <StudioMutationResultPanel state={state} />
-        <p className='rounded-md border bg-background px-3 py-2 font-mono text-xs text-foreground'>
+        <p className='bg-background/70 text-foreground ring-border/20 rounded-lg px-3 py-2 font-mono text-xs ring-1'>
           CLI equivalent: {action.command}
         </p>
       </CardContent>

@@ -1,18 +1,18 @@
-import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { mkdir, readFile } from "node:fs/promises";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { artifactPath } from "../src/core/artifacts";
 import { loadRun } from "../src/core/runStore";
-import { approveRender } from "../src/stages/approveRender";
 import { approveIdea } from "../src/stages/approveIdea";
+import { approveRender } from "../src/stages/approveRender";
 import { approveScript } from "../src/stages/approveScript";
-import { generateEvidenceBundle } from "../src/stages/evidence";
 import { estimateCost } from "../src/stages/estimate";
+import { generateEvidenceBundle } from "../src/stages/evidence";
 import { runIdeas } from "../src/stages/ideas";
 import { generateProductionPackage } from "../src/stages/productionPackage";
-import { generateRenderPlan } from "../src/stages/renderPlan";
 import { runReadiness } from "../src/stages/readiness";
+import { generateRenderPlan } from "../src/stages/renderPlan";
 import { reviewScript } from "../src/stages/reviewScript";
 import { generateScript } from "../src/stages/script";
 import { generateVoiceoverAudio } from "../src/stages/voice";
@@ -66,42 +66,32 @@ describe("producer render CLI", () => {
       },
       ffmpegTimelineInputs: expect.arrayContaining([
         expect.objectContaining({
-          asset: expect.objectContaining({
-            path: "assets/intro/frames/intro_frame_00.jpg",
-          }),
+          asset: expect.objectContaining({ path: "assets/intro/frames/intro_frame_00.jpg" }),
           durationSeconds: 1,
           frameIndex: 1,
           segment: "intro",
           source: "source-frame",
         }),
         expect.objectContaining({
-          asset: expect.objectContaining({
-            path: "assets/intro/frames/intro_frame_01.jpg",
-          }),
+          asset: expect.objectContaining({ path: "assets/intro/frames/intro_frame_01.jpg" }),
           durationSeconds: 1,
           frameIndex: 2,
           segment: "intro",
           source: "source-frame",
         }),
         expect.objectContaining({
-          asset: expect.objectContaining({
-            path: "assets/backgrounds/plate_test_1920x1080.jpg",
-          }),
+          asset: expect.objectContaining({ path: "assets/backgrounds/plate_test_1920x1080.jpg" }),
           segment: "scene",
           source: "background",
         }),
         expect.objectContaining({
-          asset: expect.objectContaining({
-            path: "assets/outro/frames/outro_frame_00.jpg",
-          }),
+          asset: expect.objectContaining({ path: "assets/outro/frames/outro_frame_00.jpg" }),
           frameIndex: 1,
           segment: "outro",
           source: "source-frame",
         }),
         expect.objectContaining({
-          asset: expect.objectContaining({
-            path: "assets/outro/frames/outro_frame_01.jpg",
-          }),
+          asset: expect.objectContaining({ path: "assets/outro/frames/outro_frame_01.jpg" }),
           frameIndex: 2,
           segment: "outro",
           source: "source-frame",
@@ -111,13 +101,8 @@ describe("producer render CLI", () => {
         path: "production/render/draft.mp4",
         sha256: expect.stringMatching(/^[a-f0-9]{64}$/),
       },
-      mediaProbe: {
-        audio: { codecName: "aac" },
-        video: { height: 720, width: 1280 },
-      },
-      ffmpeg: {
-        reviewCommand: expect.stringContaining("production/render/draft.mp4"),
-      },
+      mediaProbe: { audio: { codecName: "aac" }, video: { height: 720, width: 1280 } },
+      ffmpeg: { reviewCommand: expect.stringContaining("production/render/draft.mp4") },
     });
     await expect(loadRun(runId)).resolves.toMatchObject({
       artifacts: expect.arrayContaining([
@@ -179,7 +164,7 @@ describe("producer render CLI", () => {
 
 function runCli(
   args: string[],
-  env: NodeJS.ProcessEnv = {},
+  env: Partial<NodeJS.ProcessEnv> = {},
 ): { status: number | null; stderr: string; stdout: string } {
   const result = spawnSync(
     path.join(repoRoot, "node_modules", ".bin", "tsx"),

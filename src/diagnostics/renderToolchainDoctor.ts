@@ -37,9 +37,6 @@ export function renderToolchainCheck(): DoctorCheck {
 }
 
 function isRenderToolAvailable(binary: string): boolean {
-  const result = spawnSync(binary, ["-version"], {
-    stdio: "ignore",
-    timeout: renderToolTimeoutMs,
-  });
+  const result = spawnSync(binary, ["-version"], { stdio: "ignore", timeout: renderToolTimeoutMs });
   return result.status === 0;
 }

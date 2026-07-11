@@ -29,10 +29,7 @@ export async function reserveApprovedCost(input: {
   runId: string;
   stage: string;
   operationId: string;
-  adapterIdentity: {
-    provider: string;
-    model?: string;
-  };
+  adapterIdentity: { provider: string; model?: string };
 }): Promise<CostReservationSummary> {
   requireReservationText(input.stage, "stage");
   requireReservationText(input.operationId, "operation id");

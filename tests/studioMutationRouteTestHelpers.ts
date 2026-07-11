@@ -34,6 +34,7 @@ export function studioJsonMutationRequest(
   const headers: Record<string, string> = {
     [studioActionHeaderName]: options.actionHeader ?? defaultActionHeader,
     "content-type": "application/json",
+    host: "localhost:3000",
     origin: options.origin ?? "http://localhost:3000",
   };
   if (sessionToken) {

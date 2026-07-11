@@ -1,8 +1,8 @@
-import type { StudioApprovalActionConfig } from "./studioApprovalAction";
-import { approvalActionForRun, approvalCommandForRun } from "./studioApprovalAction";
 import type { StudioArtifactPreview } from "./artifactPreviews";
 import { artifactReviewActionsForRun } from "./renderPlanReviewAction";
 import type { StudioRunDetail } from "./runSummaries";
+import type { StudioApprovalActionConfig } from "./studioApprovalAction";
+import { approvalActionForRun, approvalCommandForRun } from "./studioApprovalAction";
 import { stageActionForRun } from "./studioStageAction";
 
 export type StudioActionWorkbenchTone =
@@ -16,21 +16,11 @@ export type StudioActionWorkbenchPrimary = Readonly<{
   tone: StudioActionWorkbenchTone;
 }>;
 
-export type StudioActionWorkbenchBoundary = Readonly<{
-  detail: string;
-  label: string;
-}>;
+export type StudioActionWorkbenchBoundary = Readonly<{ detail: string; label: string }>;
 
 export type StudioActionWorkbench = Readonly<{
   boundaries: readonly StudioActionWorkbenchBoundary[];
   primary: StudioActionWorkbenchPrimary;
-}>;
-
-export type StudioActionWorkbenchCounts = Readonly<{
-  blockedCli: number;
-  cliOnly: number;
-  complete: number;
-  webAction: number;
 }>;
 
 export type StudioActionWorkbenchRun = Pick<
@@ -58,42 +48,7 @@ export type StudioActionWorkbenchRun = Pick<
  * @returns The primary available action and permanent safety boundaries.
  */
 export function buildStudioActionWorkbench(run: StudioActionWorkbenchRun): StudioActionWorkbench {
-  return {
-    boundaries: actionWorkbenchBoundaries(run.runId),
-    primary: primaryWorkbenchAction(run),
-  };
-}
-
-/**
- * Counts action-workbench categories for an operator queue projection.
- *
- * @param runs - Run summaries or details shown in the current queue.
- * @returns Counts for guarded web actions, blocked CLI recovery, CLI-only actions, and no-action states.
- */
-export function countStudioActionWorkbench(
-  runs: readonly StudioActionWorkbenchRun[],
-): StudioActionWorkbenchCounts {
-  return runs.reduce<StudioActionWorkbenchCounts>(
-    (counts, run) => {
-      const tone = buildStudioActionWorkbench(run).primary.tone;
-      if (tone === "available") {
-        return { ...counts, webAction: counts.webAction + 1 };
-      }
-      if (tone === "blocked") {
-        return { ...counts, blockedCli: counts.blockedCli + 1 };
-      }
-      if (tone === "cli-only" || tone === "attention") {
-        return { ...counts, cliOnly: counts.cliOnly + 1 };
-      }
-      return { ...counts, complete: counts.complete + 1 };
-    },
-    {
-      blockedCli: 0,
-      cliOnly: 0,
-      complete: 0,
-      webAction: 0,
-    },
-  );
+  return { boundaries: actionWorkbenchBoundaries(run.runId), primary: primaryWorkbenchAction(run) };
 }
 
 function primaryWorkbenchAction(run: StudioActionWorkbenchRun): StudioActionWorkbenchPrimary {
@@ -134,6 +89,16 @@ function primaryWorkbenchAction(run: StudioActionWorkbenchRun): StudioActionWork
       label: stageAction.heading,
       routePath: stageAction.routePath,
       tone: "available",
+    };
+  }
+  if (isGlobalIdeasCommand(run.nextRecommendedCommand)) {
+    return {
+      command: null,
+      description:
+        "The ideas command creates a separate local run instead of advancing this persisted run. Use the Start idea run control from the control desk or runs page when you want a new idea-generation run.",
+      label: "No run-bound action",
+      routePath: null,
+      tone: "attention",
     };
   }
   if (run.nextRecommendedCommand) {
@@ -236,4 +201,16 @@ function actionWorkbenchBoundaries(runId: string): StudioActionWorkbenchBoundary
       label: "Disabled actions",
     },
   ];
+}
+
+function isGlobalIdeasCommand(command: string | null): boolean {
+  if (!command) {
+    return false;
+  }
+  const tokens = command.trim().split(/\s+/).filter(Boolean);
+  const prefix = ["pnpm", "producer", "ideas"];
+  return (
+    prefix.every((token, index) => tokens[index] === token) &&
+    tokens.slice(prefix.length).every((token) => token === "--json")
+  );
 }

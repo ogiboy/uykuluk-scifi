@@ -21,14 +21,8 @@ describe("Studio control loop", () => {
     );
 
     expect(loop).toMatchObject({
-      currentStep: {
-        label: "Render plan",
-        status: "current",
-      },
-      nextAction: {
-        label: "Generate Render Plan",
-        routePath: "/actions/run-render-plan",
-      },
+      currentStep: { label: "Render plan", status: "current" },
+      nextAction: { label: "Generate Render Plan", routePath: "/actions/run-render-plan" },
       tone: "web-action",
     });
     expect(loop.summary).toContain("available from Studio");
@@ -55,15 +49,13 @@ describe("Studio control loop", () => {
     );
 
     expect(loop).toMatchObject({
-      currentStep: {
-        label: "Script review",
-        status: "blocked",
-      },
+      currentStep: { label: "Script review", status: "blocked" },
       tone: "blocked",
     });
     expect(loop.items).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ label: "Evidence", tone: "attention" }),
+        expect.objectContaining({ label: "Readiness", tone: "blocked" }),
         expect.objectContaining({ label: "Blocked actions", tone: "blocked" }),
       ]),
     );
@@ -77,26 +69,14 @@ describe("Studio control loop", () => {
           nextAction: "Manual channel handoff decision is recorded.",
         },
         nextRecommendedCommand: null,
-        renderDecision: {
-          kind: "present",
-          nextAction: "Local render decision is recorded.",
-        },
+        renderDecision: { kind: "present", nextAction: "Local render decision is recorded." },
         state: "RENDERED",
-        workflowProgress: [
-          {
-            detail: "Completed.",
-            label: "Draft render",
-            status: "done",
-          },
-        ],
+        workflowProgress: [{ detail: "Completed.", label: "Draft render", status: "done" }],
       }),
     );
 
     expect(loop).toMatchObject({
-      nextAction: {
-        command: null,
-        routePath: null,
-      },
+      nextAction: { command: null, routePath: null },
       tone: "complete",
     });
     expect(loop.items).toEqual(

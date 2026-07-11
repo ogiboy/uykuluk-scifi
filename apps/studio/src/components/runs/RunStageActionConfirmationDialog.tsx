@@ -45,27 +45,27 @@ export function RunStageActionConfirmationDialog({
             publish, and paid-provider execution remain unavailable from this action.
           </DialogDescription>
         </DialogHeader>
-        <div className='space-y-4 rounded-lg border bg-muted/30 p-4'>
+        <div className='bg-muted/30 space-y-4 rounded-lg border p-4'>
           <dl className='grid gap-3 text-sm sm:grid-cols-2'>
             <div className='space-y-1'>
-              <dt className='font-medium text-muted-foreground'>Action</dt>
+              <dt className='text-muted-foreground font-medium'>Action</dt>
               <dd className='break-all'>{action.actionId}</dd>
             </div>
             <div className='space-y-1'>
-              <dt className='font-medium text-muted-foreground'>Current state</dt>
+              <dt className='text-muted-foreground font-medium'>Current state</dt>
               <dd className='break-all'>{currentState}</dd>
             </div>
             <div className='space-y-1'>
-              <dt className='font-medium text-muted-foreground'>Run</dt>
+              <dt className='text-muted-foreground font-medium'>Run</dt>
               <dd className='break-all'>{runId}</dd>
             </div>
             <div className='space-y-1'>
-              <dt className='font-medium text-muted-foreground'>Route</dt>
+              <dt className='text-muted-foreground font-medium'>Route</dt>
               <dd className='break-all'>{action.routePath}</dd>
             </div>
           </dl>
           {nextRecommendedCommand ? (
-            <code className='block max-w-full break-all rounded-md bg-background px-2 py-1 text-xs text-muted-foreground'>
+            <code className='bg-background text-muted-foreground block max-w-full rounded-md px-2 py-1 text-xs break-all'>
               CLI equivalent: {nextRecommendedCommand}
             </code>
           ) : null}

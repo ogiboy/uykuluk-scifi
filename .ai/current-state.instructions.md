@@ -127,9 +127,9 @@
   server are blocked without generation, and provider responses that report a different served model
   than requested fail closed. A 2026-06-28 qwen3:8b run stayed fail-closed on non-slot-specific idea
   `fit` explanations while its script-section sample parsed.
-- Studio reads the ignored local model evaluation JSON/Markdown artifacts on the home page and
-  `/eval`, distinguishing missing, malformed, schema-invalid, passing, and blocked reports without
-  calling Ollama, `llama.cpp`, hosted APIs, or mutating configuration.
+- Studio reads ignored local model evaluation JSON/Markdown artifacts on home and `/eval`, including
+  missing, malformed, schema-invalid, passing, and blocked reports. A guarded action refreshes the
+  canonical CLI evaluation without editing providers, starting servers, downloading models, calling hosted APIs, or weakening parser gates.
 - Script generation uses bounded hook/context/development/outro provider calls, writes
   `script.sections.json` draft and expansion-chunk receipts, and assembles `script.md` only after
   all sections pass blocking quality checks.
@@ -203,6 +203,11 @@
 - Idea parsing now rejects repeated local-model boilerplate in `fit` explanations, repeated
   uncertainty openers such as `Belki bu`, generic unknown-species/trace phrases, and weak premise
   action frames such as `bilgiyi bulduktan sonra` or `anlamaya çalışır`.
+- Idea generation now reads compact title-only history from existing runtime `ideas.json` artifacts.
+  Previously generated or approved titles are fed back into the planner prompt as originality
+  context and are hard-blocked if a provider repeats the same normalized title in a later run. This
+  uses runtime artifacts only; `.ai/` remains development-only and no vector database is required
+  for the v1 guard.
 - Live qwen3 retry/repair tests proved runs stay in safe states without writing review artifacts
   when idea or script validation fails, while safe diagnostics and ledger warnings still identify
   the blocker category and stage boundary.
@@ -252,16 +257,11 @@
   operator steps such as render-plan generation, cost estimation, local voiceover generation, render
   approval, local draft render, exact quote approval, and evidence refresh.
 - Disabled upload and publish placeholders.
-- Basic Next.js Producer Studio shell under `apps/studio` with read-only run index and run detail
-  routes backed by local run/evidence/readiness service contracts.
+- Basic Next.js Producer Studio shell under `apps/studio` with read-only run, idea-history, and
+  detail routes backed by local service contracts.
 - Visual asset pack imported under `assets/`.
-- Clean-copy usage smoke script.
-- Optional clean-copy product UAT smoke script via `pnpm qa:product`, covering rendered happy path,
-  traversal rejection, incorrect ordering, stale evidence recovery, tampered render review command
-  rejection, post-approval voiceover tamper blocking, disabled upload/publish safeguards, manual
-  analytics import/report malformed-input recovery, operator desk command/diagnostic visibility,
-  durable local render decisions, and Studio read-only service visibility for runs, production
-  media, analytics, and disabled mutation contracts.
+- Optional `pnpm qa:product` smoke covers happy path, tamper/order abuse, disabled upload/publish,
+  analytics recovery, render decisions, and Studio visibility.
 - Production build emits a Node-runnable `dist/cli.js` and `pnpm build:smoke` verifies the built CLI
   starts and can initialize a fresh project from an arbitrary working directory.
 - Direct mock/Ollama/llama.cpp provider diagnostics and upload/publish safeguard tests.
@@ -340,9 +340,9 @@
   idea-run and workflow-stage/review/revision actions, local render/channel-handoff decisions,
   manual analytics actions, and disabled upload/publish actions. Contracts validate payloads, bind
   actions to CLI/core modules/exports, and require CSRF, durable evidence, and explicit approval.
-- Studio home renders a mutation-service status panel showing guarded local approval/review routes,
-  disabled upload/publish routes, CLI-ready action contracts, route-security findings, and
-  upload/publish risk boundaries without exposing upload/publish web mutations.
+- Studio actions/home render mutation-service and workflow-matrix panels showing guarded local
+  approval/review routes, CLI-ready contracts, route-security findings, and disabled upload/publish
+  boundaries without exposing upload/publish web mutations.
 - Manual analytics feedback foundation. `producer analytics import --file <path>` accepts
   operator-provided CSV/JSON performance exports and writes ignored local
   `analytics/performance.json`, `analytics/performance_report.md`, and a fillable
@@ -440,14 +440,13 @@ Corepack/PATH before treating failures as product failures.
   regression target while Mistral/Gemma/Turkish GGUF candidates are evaluated through the same
   approval, JSON, repetition, Turkish-label, word-floor, and operator-quality gates before any model
   becomes the recommended local default.
+- Ollama and `llama.cpp` configuration accepts only credential-free loopback HTTP(S) origins, preventing local adapters from silently becoming arbitrary outbound endpoints; hosted or LAN provider support needs a separately reviewed adapter boundary.
 - No paid provider adapter is implemented. Exact cost quote approval remains separate from spend
   authorization. The execution boundary is ready for a future approved adapter, but no SDK,
   credential, network integration, or CLI mutation exposes it.
-- Current Next.js Studio is still local-only and mostly read/review-oriented. Artifact previews now
-  include grouped review metadata, and route-security requirements cover current read-only pages,
-  guarded local approval/review routes with short-lived local session proof, and disabled
-  upload/publish actions. Guarded local approval routes use CLI/core contracts; generation, render
-  execution, upload, and publish remain CLI-only or disabled.
+- Current local-only Studio combines read/review pages and grouped artifact metadata with guarded mutations backed by canonical CLI/core contracts. Route security covers page reads, short-lived session proof, same-origin actions, and disabled upload/publish; generation and local render run only through guarded contracts.
+- Optional Sentry captures unexpected Next.js and Studio mutation-boundary failures without request bodies or artifact contents. Without a DSN it is disabled
+  and never affects workflow state, approvals, readiness, evidence, or route authorization.
 - Local prompt overrides are implemented as explicit ignored `prompts/local/*.md` paths configured
   in `producer.config.json` and recorded in prompt provenance. Prompt editing UI and prompt revision
   history remain future work; tracked defaults stay read-only runtime inputs. Locale infrastructure

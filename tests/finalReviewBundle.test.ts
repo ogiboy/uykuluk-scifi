@@ -30,10 +30,7 @@ describe("local final review bundle", () => {
       runId,
       schemaVersion: 2,
       status: "decision-pending",
-      renderDecision: {
-        kind: "missing",
-        nextAction: expect.stringContaining(`--run ${runId}`),
-      },
+      renderDecision: { kind: "missing", nextAction: expect.stringContaining(`--run ${runId}`) },
       draftRender: {
         chapters: {
           jsonPath: "production/render/youtube_chapters.json",
@@ -44,10 +41,7 @@ describe("local final review bundle", () => {
         manifestPath: "production/render/render_manifest.json",
         media: { audioCodec: "aac", videoCodec: "h264", width: 1280, height: 720 },
       },
-      voiceover: {
-        path: "production/audio/voiceover.wav",
-        productionVoiceCandidate: false,
-      },
+      voiceover: { path: "production/audio/voiceover.wav", productionVoiceCandidate: false },
     });
     expect(bundle.artifacts.map((artifact) => artifact.path)).toEqual(
       expect.arrayContaining([

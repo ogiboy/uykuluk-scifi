@@ -1,7 +1,7 @@
 import { ProducerConfig } from "../config/schema.js";
 import { writeRunJson } from "../core/artifacts.js";
-import { RunRecord } from "../core/state.js";
 import { saveRun } from "../core/runStore.js";
+import { RunRecord } from "../core/state.js";
 import { nowIso } from "../utils/time.js";
 
 /**
@@ -49,12 +49,10 @@ function isScriptProviderFailure(message: string): boolean {
   return /provider response|Ollama|llama\.cpp/i.test(message);
 }
 
-function classifyScriptFailure(message: string):
-  | {
-      failureKind: "below_long_form_floor";
-      requiredWordCount: number;
-      wordCount: number;
-    }
+function classifyScriptFailure(
+  message: string,
+):
+  | { failureKind: "below_long_form_floor"; requiredWordCount: number; wordCount: number }
   | { failureKind: "content_blocker" | "provider_contract" } {
   const longFormMatch =
     /below the long-form floor after bounded continuation passes \((\d+)\/(\d+) words\)/u.exec(

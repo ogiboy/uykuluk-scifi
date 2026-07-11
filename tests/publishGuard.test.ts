@@ -28,11 +28,7 @@ describe("publish safeguards", () => {
       ...defaultConfig,
       providers: {
         ...defaultConfig.providers,
-        youtube: {
-          enabled: true,
-          allowPrivateUpload: true,
-          allowPublicPublish: false,
-        },
+        youtube: { enabled: true, allowPrivateUpload: true, allowPublicPublish: false },
       },
     };
 
@@ -77,11 +73,7 @@ function publicPublishConfig() {
     ...defaultConfig,
     providers: {
       ...defaultConfig.providers,
-      youtube: {
-        enabled: true,
-        allowPrivateUpload: true,
-        allowPublicPublish: true,
-      },
+      youtube: { enabled: true, allowPrivateUpload: true, allowPublicPublish: true },
     },
   };
 }

@@ -4,12 +4,12 @@ import { artifactPath } from "../src/core/artifacts";
 import { loadRun } from "../src/core/runStore";
 import { approveIdea } from "../src/stages/approveIdea";
 import { approveScript } from "../src/stages/approveScript";
-import { generateEvidenceBundle } from "../src/stages/evidence";
 import { estimateCost } from "../src/stages/estimate";
+import { generateEvidenceBundle } from "../src/stages/evidence";
 import { runIdeas } from "../src/stages/ideas";
 import { generateProductionPackage } from "../src/stages/productionPackage";
-import { generateRenderPlan } from "../src/stages/renderPlan";
 import { runReadiness } from "../src/stages/readiness";
+import { generateRenderPlan } from "../src/stages/renderPlan";
 import { reviewScript } from "../src/stages/reviewScript";
 import { generateScript } from "../src/stages/script";
 import { generateVoiceoverAudio } from "../src/stages/voice";
@@ -58,10 +58,7 @@ describe("voiceover audio", () => {
         path: "production/render_plan.json",
         digest: expect.stringMatching(/^[a-f0-9]{64}$/),
       },
-      source: {
-        path: "production/voiceover.txt",
-        sha256: expect.stringMatching(/^[a-f0-9]{64}$/),
-      },
+      source: { path: "production/voiceover.txt", sha256: expect.stringMatching(/^[a-f0-9]{64}$/) },
     });
     expect(meta.output.durationSeconds).toBeGreaterThan(0);
     expect(meta.source.wordCount).toBeGreaterThan(0);
@@ -175,15 +172,8 @@ function voiceoverMetaFixture() {
     createdAt: "2026-06-25T13:00:00.000Z",
     mode: "deterministic-local",
     quality: "deterministic-local-reference",
-    source: {
-      path: "production/voiceover.txt",
-      sha256: "a".repeat(64),
-      wordCount: 10,
-    },
-    renderPlan: {
-      path: "production/render_plan.json",
-      digest: "b".repeat(64),
-    },
+    source: { path: "production/voiceover.txt", sha256: "a".repeat(64), wordCount: 10 },
+    renderPlan: { path: "production/render_plan.json", digest: "b".repeat(64) },
     output: {
       path: "production/audio/voiceover.wav",
       sha256: "c".repeat(64),

@@ -6,12 +6,23 @@ import {
 import { renderPlanArtifactPaths } from "../../../../src/stages/renderPlanSchemas";
 import type { StatusWorkflowStep } from "../../../../src/stages/statusWorkflow";
 import { buildStatusWorkflowProgress } from "../../../../src/stages/statusWorkflow";
-import { evidenceNextRecommendedCommand, type StudioEvidenceSummary } from "./evidenceSummaries";
 import type { StudioChannelHandoffDecisionSummary } from "./channelHandoffDecisionSummaries";
 import type { StudioChannelHandoffSummary } from "./channelHandoffSummaries";
+import { evidenceNextRecommendedCommand, type StudioEvidenceSummary } from "./evidenceSummaries";
 import type { StudioFinalReviewBundleSummary } from "./finalReviewBundleSummaries";
 import type { StudioRenderDecisionSummary } from "./renderDecisionSummaries";
 import type { RunRecord, StudioRunState } from "./runRecordTypes";
+
+export type StudioNextRecommendedCommandInput = Readonly<{
+  artifacts: readonly string[];
+  channelHandoff: StudioChannelHandoffSummary;
+  channelHandoffDecision: StudioChannelHandoffDecisionSummary;
+  evidence: StudioEvidenceSummary;
+  finalReviewBundle: StudioFinalReviewBundleSummary;
+  renderDecision: StudioRenderDecisionSummary;
+  runId: string;
+  state: string;
+}>;
 
 /**
  * Builds the read-only workflow progress projection for a Studio run.
@@ -40,26 +51,22 @@ export function studioWorkflowProgress(input: {
 /**
  * Chooses the Studio next safe action while honoring durable render decisions.
  *
- * @param evidence - The current evidence summary.
- * @param state - The run state.
- * @param runId - The run identifier.
- * @param artifacts - The artifacts already registered on the run record.
- * @param renderDecision - The local render decision summary.
- * @param finalReviewBundle - The local final review bundle summary.
- * @param channelHandoff - The manual channel handoff summary.
- * @param channelHandoffDecision - The manual channel handoff decision summary.
+ * @param input - Current evidence, decisions, artifacts, and run identity.
  * @returns A command or operator action for the next safe step.
  */
 export function studioNextRecommendedCommand(
-  evidence: StudioEvidenceSummary,
-  state: string,
-  runId: string,
-  artifacts: readonly string[],
-  renderDecision: StudioRenderDecisionSummary,
-  finalReviewBundle: StudioFinalReviewBundleSummary,
-  channelHandoff: StudioChannelHandoffSummary,
-  channelHandoffDecision: StudioChannelHandoffDecisionSummary,
+  input: StudioNextRecommendedCommandInput,
 ): string | null {
+  const {
+    artifacts,
+    channelHandoff,
+    channelHandoffDecision,
+    evidence,
+    finalReviewBundle,
+    renderDecision,
+    runId,
+    state,
+  } = input;
   if (finalReviewBundle.kind === "invalid" || finalReviewBundle.kind === "stale") {
     return finalReviewBundle.nextAction;
   }
@@ -127,16 +134,10 @@ function studioWorkflowRenderDecision(
   renderDecision: StudioRenderDecisionSummary,
 ): Parameters<typeof buildStatusWorkflowProgress>[0]["renderDecision"] {
   if (renderDecision.kind === "present") {
-    return {
-      kind: "present",
-      message: renderDecision.message,
-    };
+    return { kind: "present", message: renderDecision.message };
   }
   if (renderDecision.kind === "invalid" || renderDecision.kind === "stale") {
-    return {
-      kind: renderDecision.kind,
-      message: renderDecision.message,
-    };
+    return { kind: renderDecision.kind, message: renderDecision.message };
   }
   return { kind: "missing" };
 }
@@ -152,10 +153,7 @@ function studioWorkflowArtifactStatus(
     };
   }
   if (artifact.kind === "invalid" || artifact.kind === "stale") {
-    return {
-      kind: artifact.kind,
-      message: artifact.message,
-    };
+    return { kind: artifact.kind, message: artifact.message };
   }
   return { kind: "missing" };
 }

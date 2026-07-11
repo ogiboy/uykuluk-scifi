@@ -10,10 +10,7 @@ export type AnalyticsDataQualitySummary = {
   nextDataQualityAction: string;
 };
 
-export type AnalyticsRecordConfidence = {
-  details: string;
-  level: "high" | "low" | "medium";
-};
+export type AnalyticsRecordConfidence = { details: string; level: "high" | "low" | "medium" };
 
 type AnalyticsDataQualityRecord = {
   averagePercentageViewed?: number;

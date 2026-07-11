@@ -1,7 +1,7 @@
-import { mkdtemp, mkdir, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach } from "vitest";
 import { initProject } from "../src/config/config";
 
 let previousCwd = process.cwd();

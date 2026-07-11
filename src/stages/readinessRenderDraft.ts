@@ -1,7 +1,7 @@
 import { RunRecord } from "../core/state.js";
+import type { ReadinessCheck } from "./readiness.js";
 import { readDraftRenderEvidence } from "./renderEvidence.js";
 import { readVoiceoverAudioEvidence } from "./voiceoverEvidence.js";
-import type { ReadinessCheck } from "./readiness.js";
 
 /**
  * Checks whether a draft render is available and reports the current readiness status.

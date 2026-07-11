@@ -1,16 +1,16 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { afterEach, describe, expect, it } from "vitest";
 import { defaultConfig } from "../src/config/config";
-import { appendCostEvent, readCostEvents } from "../src/costs/costLedger";
-import { readCostEstimate } from "../src/costs/costEstimate";
-import { defaultStagePricing } from "../src/costs/pricing";
 import { artifactPath } from "../src/core/artifacts";
 import { loadRun } from "../src/core/runStore";
+import { readCostEstimate } from "../src/costs/costEstimate";
+import { appendCostEvent, readCostEvents } from "../src/costs/costLedger";
+import { defaultStagePricing } from "../src/costs/pricing";
 import { approvePaidGenerationCost } from "../src/stages/approveCost";
 import { approveIdea } from "../src/stages/approveIdea";
 import { approveScript } from "../src/stages/approveScript";
-import { generateEvidenceBundle } from "../src/stages/evidence";
 import { estimateCost } from "../src/stages/estimate";
+import { generateEvidenceBundle } from "../src/stages/evidence";
 import { runIdeas } from "../src/stages/ideas";
 import { generateProductionPackage } from "../src/stages/productionPackage";
 import { runReadiness } from "../src/stages/readiness";
@@ -46,10 +46,7 @@ describe("paid generation cost approval", () => {
       costQuote: { approvalRequired: boolean; approved: boolean };
       nextRecommendedCommand: string;
     }>(artifactPath(runId, "evidence_bundle.json"));
-    expect(pendingEvidence.costQuote).toMatchObject({
-      approvalRequired: true,
-      approved: false,
-    });
+    expect(pendingEvidence.costQuote).toMatchObject({ approvalRequired: true, approved: false });
     expect(pendingEvidence.nextRecommendedCommand).toContain("producer approve cost");
 
     const quoteDigest = (await readCostEstimate(runId)).digest;
@@ -195,10 +192,7 @@ async function prepareQuotedRun(input: {
         ...defaultConfig,
         providers: {
           ...defaultConfig.providers,
-          tts: {
-            ...defaultConfig.providers.tts,
-            enabled: true,
-          },
+          tts: { ...defaultConfig.providers.tts, enabled: true },
         },
         budgets: input.budgets ?? defaultConfig.budgets,
       },

@@ -12,20 +12,17 @@ import {
   parseScriptSectionProviderPayloadWithRepair,
   renderScriptSectionExpansionPrompt,
   renderScriptSectionPrompt,
-  sectionExpansionTokenCap,
-  sectionTokenCap,
-  type ScriptSectionParseResult,
-  type ScriptSectionReceipt,
   scriptSectionExpansionChunks,
   scriptSectionExpansionResponseFormat,
   scriptSectionPlans,
   scriptSectionResponseFormat,
+  sectionExpansionTokenCap,
+  sectionTokenCap,
+  type ScriptSectionParseResult,
+  type ScriptSectionReceipt,
 } from "./scriptSections.js";
 
-export type ScriptSectionOutput = {
-  heading: string;
-  text: string;
-};
+export type ScriptSectionOutput = { heading: string; text: string };
 
 export type GeneratedScriptSections = {
   promptTexts: string[];

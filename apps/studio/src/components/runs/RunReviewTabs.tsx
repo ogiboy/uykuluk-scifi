@@ -1,18 +1,15 @@
 "use client";
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import type { ReactNode } from "react";
 import { Tabs } from "@/components/ui/tabs";
 import {
   runReviewPathWithTab,
   runReviewTabFromSearchParams,
   type RunReviewTab,
 } from "@/lib/runReviewNavigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import type { ReactNode } from "react";
 
-type RunReviewTabsProps = Readonly<{
-  children: ReactNode;
-  initialTab: RunReviewTab;
-}>;
+type RunReviewTabsProps = Readonly<{ children: ReactNode; initialTab: RunReviewTab }>;
 
 /**
  * Keeps the run review tab selection reflected in the local URL.
@@ -41,7 +38,7 @@ export function RunReviewTabs({ children, initialTab }: RunReviewTabsProps) {
   }
 
   return (
-    <Tabs value={tab} onValueChange={selectTab} className='run-review-tabs'>
+    <Tabs value={tab} onValueChange={selectTab} className='grid min-w-0 gap-4'>
       {children}
     </Tabs>
   );

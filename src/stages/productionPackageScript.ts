@@ -1,19 +1,10 @@
 import type { ProductionScene } from "./types.js";
 
-type ProductionUnit = {
-  label: "narration" | "visual";
-  text: string;
-};
+type ProductionUnit = { label: "narration" | "visual"; text: string };
 
-type SceneDraft = {
-  narration: string;
-  visuals: string[];
-};
+type SceneDraft = { narration: string; visuals: string[] };
 
-type SubtitleBlock = {
-  lines: string[];
-  weight: number;
-};
+type SubtitleBlock = { lines: string[]; weight: number };
 
 const maxSubtitleLineLength = 46;
 const maxSubtitleLinesPerCue = 2;
@@ -118,10 +109,7 @@ function parseProductionLine(line: string): ProductionUnit[] {
     const end = matches[index + 1]?.index ?? line.length;
     const text = line.slice(start, end).trim();
     if (text) {
-      units.push({
-        label: match[1] === "Görsel" ? "visual" : "narration",
-        text,
-      });
+      units.push({ label: match[1] === "Görsel" ? "visual" : "narration", text });
     }
   }
   return units;
@@ -211,10 +199,7 @@ function flushLines(blocks: SubtitleBlock[], lines: readonly string[]): void {
   if (lines.length === 0) {
     return;
   }
-  blocks.push({
-    lines: [...lines],
-    weight: lines.join(" ").length || 1,
-  });
+  blocks.push({ lines: [...lines], weight: lines.join(" ").length || 1 });
 }
 
 function cleanScriptText(script: string): string {

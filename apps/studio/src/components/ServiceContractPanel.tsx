@@ -1,58 +1,114 @@
-import { CopyableCommand } from "@/components/studio/CopyableCommand";
-import { getStudioActionServiceStatus } from "@/lib/actionServiceStatus";
+import { ServiceContractCatalog } from "@/components/ServiceContractCatalog";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  getStudioActionServiceStatus,
+  type StudioActionServiceStatus,
+} from "@/lib/actionServiceStatus";
+import { serviceContractGroups } from "@/lib/serviceContractPanel";
+
+type ServiceContractPanelProps = Readonly<{ status?: StudioActionServiceStatus }>;
 
 /**
  * Displays the Studio mutation service contract status panel.
  *
+ * @param status - Optional preloaded service status shared with the current route.
  * @returns The rendered service contract status section.
  */
-export function ServiceContractPanel() {
-  const status = getStudioActionServiceStatus();
-  const safetyLabel = status.webMutationsEnabled ? "Review required" : "Web mutations disabled";
+export function ServiceContractPanel({
+  status = getStudioActionServiceStatus(),
+}: ServiceContractPanelProps) {
+  const groups = serviceContractGroups(status.summaries);
 
   return (
     <section id='actions' aria-labelledby='actions-heading'>
-      <h2 id='actions-heading'>Mutation Service Contracts</h2>
-      <p>
-        Studio exposes guarded local approval, review, and workflow-stage routes over shared
-        CLI/core contracts. Upload and publish actions remain disabled.
-      </p>
-      <div className='status-grid'>
-        <article className='status-card'>
-          <p>Route Safety</p>
-          <strong className={status.webMutationsEnabled ? "blocked" : undefined}>
-            {safetyLabel}
-          </strong>
-          <p>{status.disabledRouteCount} future action routes remain disabled.</p>
-        </article>
-        <article className='status-card'>
-          <p>CLI-ready Contracts</p>
-          <strong>{status.readyForCliCount}</strong>
-          <p>Approval, review, and local workflow-stage actions are bound to CLI/core functions.</p>
-        </article>
-        <article className='status-card'>
-          <p>External Risk</p>
-          <strong className='blocked'>{status.riskyExternalCount}</strong>
-          <p>Upload and publish actions stay disabled and approval-gated.</p>
-        </article>
-        <article className='status-card'>
-          <p>Contract Findings</p>
-          <strong>{status.findings.length}</strong>
-          <p>Route security findings must stay at zero before any additional mutation work.</p>
-        </article>
+      <div className='mb-4 space-y-2'>
+        <h2 className='text-2xl font-semibold tracking-tight' id='actions-heading'>
+          Mutation Service Contracts
+        </h2>
+        <p className='text-muted-foreground max-w-4xl text-sm'>
+          Studio exposes guarded local approval, review, and workflow-stage routes over shared
+          CLI/core contracts. Upload and publish actions remain disabled.
+        </p>
       </div>
-      <div className='command-grid'>
-        {status.summaries.map((summary) => (
-          <article className='panel' key={summary.actionId}>
-            <h3>{summary.actionId}</h3>
-            <CopyableCommand command={summary.cliCommand} label={`${summary.actionId} command`} />
-            <p>{summary.description}</p>
-            <p>
-              Route: <code>{summary.routePath}</code> · {summary.availability}
-            </p>
-          </article>
-        ))}
+      <div className='grid gap-4 md:grid-cols-2 xl:grid-cols-4'>
+        <ServiceMetricCard
+          detail='Guarded same-origin Studio routes that execute local CLI/core contracts.'
+          label='Web Controls'
+          value={String(status.webReadyCount)}
+        />
+        <ServiceMetricCard
+          detail='Ready CLI/core contracts that do not yet have a web execution surface.'
+          label='CLI Fallbacks'
+          tone={status.cliFallbackCount > 0 ? "caution" : "neutral"}
+          value={String(status.cliFallbackCount)}
+        />
+        <ServiceMetricCard
+          detail={`${status.disabledRouteCount} upload or publish routes remain deliberately disabled.`}
+          label='External Actions'
+          tone='blocked'
+          value={String(status.riskyExternalCount)}
+        />
+        <ServiceMetricCard
+          detail='Route security findings must stay at zero before any additional mutation work.'
+          label='Contract Findings'
+          tone={status.findings.length > 0 ? "blocked" : "neutral"}
+          value={String(status.findings.length)}
+        />
+      </div>
+      {status.findings.length > 0 ? (
+        <Card className='border-destructive/25 bg-destructive/10 mt-4'>
+          <CardHeader>
+            <CardTitle>Route security findings</CardTitle>
+            <CardDescription>
+              Resolve these before adding or expanding Studio mutation routes.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ul className='text-muted-foreground grid gap-2 text-sm'>
+              {status.findings.map((finding, index) => (
+                <li
+                  className='bg-card/70 ring-destructive/20 rounded-lg px-3 py-2 ring-1'
+                  key={`${index}-${finding}`}
+                >
+                  {finding}
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      ) : null}
+      <div className='mt-4'>
+        <ServiceContractCatalog groups={groups} />
       </div>
     </section>
   );
+}
+
+type ServiceMetricCardProps = Readonly<{
+  detail: string;
+  label: string;
+  tone?: "blocked" | "caution" | "neutral";
+  value: string;
+}>;
+
+function ServiceMetricCard({ detail, label, tone = "neutral", value }: ServiceMetricCardProps) {
+  return (
+    <Card>
+      <CardContent className='space-y-2 pt-6'>
+        <p className='text-muted-foreground text-sm font-medium'>{label}</p>
+        <strong className={serviceMetricValueClassName(tone)}>{value}</strong>
+        <p className='text-muted-foreground text-sm'>{detail}</p>
+      </CardContent>
+    </Card>
+  );
+}
+
+function serviceMetricValueClassName(tone: NonNullable<ServiceMetricCardProps["tone"]>) {
+  if (tone === "blocked") {
+    return "block text-2xl font-semibold text-destructive";
+  }
+  if (tone === "caution") {
+    return "block text-2xl font-semibold text-amber-500";
+  }
+  return "block text-2xl font-semibold";
 }

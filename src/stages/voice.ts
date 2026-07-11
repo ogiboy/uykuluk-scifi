@@ -1,7 +1,7 @@
+import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
 import { readFile, rm } from "node:fs/promises";
 import path from "node:path";
-import { spawn } from "node:child_process";
 import { loadConfig } from "../config/config.js";
 import {
   artifactPath,
@@ -23,8 +23,8 @@ import { readWavInfo, wavFromPcm16 } from "./voiceWav.js";
 import {
   VoiceoverAudioMeta,
   voiceoverAudioMetaPath,
-  voiceoverAudioPath,
   voiceoverAudioMetaSchema,
+  voiceoverAudioPath,
   voiceoverAudioReviewPath,
 } from "./voiceoverEvidence.js";
 import { renderVoiceoverReviewMarkdown } from "./voiceoverReviewMarkdown.js";
@@ -100,10 +100,7 @@ export async function generateVoiceoverAudio(runId: string): Promise<VoiceoverAu
     mode: config.providers.tts.mode,
     quality: audio.quality,
     source,
-    renderPlan: {
-      path: "production/render_plan.json",
-      digest: renderPlan.digest,
-    },
+    renderPlan: { path: "production/render_plan.json", digest: renderPlan.digest },
     output: {
       path: voiceoverAudioPath,
       sha256: digest,

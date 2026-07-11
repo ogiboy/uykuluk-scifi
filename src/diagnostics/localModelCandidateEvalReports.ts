@@ -45,10 +45,7 @@ export function unservedLlamaCppCandidateReport(
   });
 }
 
-type BlockedLlamaCppCandidateMessages = {
-  parserMessage: string;
-  qualityMessage: string;
-};
+type BlockedLlamaCppCandidateMessages = { parserMessage: string; qualityMessage: string };
 
 function blockedLlamaCppCandidateReport(
   config: ProducerConfig,
@@ -76,9 +73,5 @@ function blockedEvalCheck(
   name: LocalModelEvalReport["checks"][number]["name"],
   message: string,
 ): LocalModelEvalReport["checks"][number] {
-  return {
-    message,
-    name,
-    status: "block",
-  };
+  return { message, name, status: "block" };
 }

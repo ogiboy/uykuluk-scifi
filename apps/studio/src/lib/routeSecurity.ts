@@ -38,9 +38,11 @@ type StudioRouteActionId = DisabledStudioActionId | StudioCliMutationActionId;
 
 export const readOnlyStudioRoutes = [
   route("home", "/"),
+  route("actions.index", "/actions"),
   route("runs.index", "/runs"),
   route("runs.detail", "/runs/[runId]"),
   route("runs.media", "/runs/[runId]/media/[...artifactPath]"),
+  route("ideas.index", "/ideas"),
   route("assets.index", "/assets"),
   route("analytics.index", "/analytics"),
   route("doctor.index", "/doctor"),
@@ -71,6 +73,14 @@ export const enabledStudioActionRoutes = [
   action("analytics.import", "/actions/analytics-import", "analytics", "local-mutation", true),
   action("analytics.report", "/actions/analytics-report", "analytics", "local-mutation", true),
   action("doctor.run", "/actions/run-doctor", "workflow", "local-mutation", true),
+  action("model-eval.run", "/actions/run-model-eval", "workflow", "local-mutation", true),
+  action(
+    "model-eval-candidates.run",
+    "/actions/run-model-eval-candidates",
+    "workflow",
+    "local-mutation",
+    true,
+  ),
   action("ideas.run", "/actions/run-ideas", "workflow", "local-mutation", true),
   action("script.run", "/actions/run-script", "workflow", "local-mutation", true),
   action("script.review", "/actions/review-script", "workflow", "local-mutation", true),

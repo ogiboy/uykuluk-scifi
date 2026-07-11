@@ -1,10 +1,12 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
-export type StudioRouteBoundaryAction = Readonly<{
-  href: "/" | "/runs";
-  label: string;
-}>;
+import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import type { StudioRouteBoundaryCopy } from "@/lib/studioRouteBoundaryCopy";
+
+export type StudioRouteBoundaryAction = Readonly<{ href: "/" | "/runs"; label: string }>;
 
 type StudioRouteBoundaryCardProps = Readonly<{
   actions?: readonly StudioRouteBoundaryAction[];
@@ -40,17 +42,54 @@ export function StudioRouteBoundaryCard({
   title,
 }: StudioRouteBoundaryCardProps) {
   return (
-    <section className='panel' aria-labelledby={headingId}>
-      <h2 id={headingId}>{title}</h2>
-      <p>{description}</p>
-      <div className='studio-header-actions'>
-        {children}
-        {actions.map((action) => (
-          <Link className='status-pill' href={action.href} key={action.href}>
-            {action.label}
-          </Link>
-        ))}
-      </div>
+    <section aria-labelledby={headingId}>
+      <Card>
+        <CardHeader>
+          <CardTitle id={headingId}>{title}</CardTitle>
+          <CardDescription>{description}</CardDescription>
+        </CardHeader>
+        <CardContent className='flex flex-wrap items-center gap-2'>
+          {children}
+          {actions.map((action) => (
+            <Link
+              className={buttonVariants({ variant: "secondary" })}
+              href={action.href}
+              key={action.href}
+            >
+              {action.label}
+            </Link>
+          ))}
+        </CardContent>
+      </Card>
     </section>
+  );
+}
+
+type StudioRouteBoundaryHeaderProps = Readonly<{
+  copy: StudioRouteBoundaryCopy;
+  headingId?: string;
+}>;
+
+/**
+ * Renders the route-boundary heading and fail-closed status badge.
+ *
+ * @param copy - Operator-facing boundary copy.
+ * @param headingId - Optional id used when the route owns an aria-labelledby target.
+ */
+export function StudioRouteBoundaryHeader({ copy, headingId }: StudioRouteBoundaryHeaderProps) {
+  return (
+    <header className='border-border/40 grid gap-4 border-b pb-6 sm:grid-cols-[1fr_auto] sm:items-start'>
+      <div className='space-y-2'>
+        <p className='text-muted-foreground text-xs font-semibold tracking-[0.28em] uppercase'>
+          {copy.eyebrow}
+        </p>
+        <h1 className='text-3xl font-semibold tracking-tight sm:text-4xl' id={headingId}>
+          {copy.heading}
+        </h1>
+      </div>
+      <Badge className='justify-self-start sm:justify-self-end' variant='destructive'>
+        {copy.status}
+      </Badge>
+    </header>
   );
 }

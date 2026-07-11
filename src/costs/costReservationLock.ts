@@ -4,17 +4,9 @@ import path from "node:path";
 import { SafeExitError } from "../core/errors.js";
 import { runsPath } from "../core/runStore.js";
 
-type LockOptions = {
-  timeoutMs?: number;
-  retryMs?: number;
-  staleMs?: number;
-};
+type LockOptions = { timeoutMs?: number; retryMs?: number; staleMs?: number };
 
-const defaultOptions = {
-  timeoutMs: 5_000,
-  retryMs: 20,
-  staleMs: 120_000,
-};
+const defaultOptions = { timeoutMs: 5_000, retryMs: 20, staleMs: 120_000 };
 
 /**
  * Determines the filesystem path for the cost reservation lock.
@@ -135,9 +127,7 @@ async function reclaimStaleLock(target: string, staleMs: number): Promise<boolea
  */
 async function readLockOwner(target: string): Promise<{ pid?: number } | undefined> {
   try {
-    return JSON.parse(await readFile(path.join(target, "owner.json"), "utf8")) as {
-      pid?: number;
-    };
+    return JSON.parse(await readFile(path.join(target, "owner.json"), "utf8")) as { pid?: number };
   } catch {
     return undefined;
   }

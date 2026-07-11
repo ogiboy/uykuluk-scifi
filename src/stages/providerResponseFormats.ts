@@ -16,11 +16,7 @@ export const ideasResponseFormat = {
       type: "array",
       minItems: 5,
       maxItems: 10,
-      items: {
-        type: "object",
-        properties: ideaProperties,
-        required: Object.keys(ideaProperties),
-      },
+      items: { type: "object", properties: ideaProperties, required: Object.keys(ideaProperties) },
     },
   },
   required: ["ideas"],

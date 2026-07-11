@@ -14,12 +14,7 @@ type OllamaGenerateResponse = {
   error?: string;
 };
 
-type OllamaTagsResponse = {
-  models?: Array<{
-    name?: string;
-    model?: string;
-  }>;
-};
+type OllamaTagsResponse = { models?: Array<{ name?: string; model?: string }> };
 
 export type OllamaDiagnostic = {
   available: boolean;
@@ -41,9 +36,7 @@ export class OllamaProvider implements LlmProvider {
     const baseUrl = withoutTrailingSlash(this.baseUrl);
     let response: Response;
     try {
-      response = await fetch(`${baseUrl}/api/tags`, {
-        signal: AbortSignal.timeout(timeoutMs),
-      });
+      response = await fetch(`${baseUrl}/api/tags`, { signal: AbortSignal.timeout(timeoutMs) });
     } catch (error) {
       return {
         available: false,
@@ -113,10 +106,7 @@ export class OllamaProvider implements LlmProvider {
           prompt,
           format: input.responseFormat,
           system: input.system,
-          options: {
-            temperature: input.temperature,
-            num_predict: input.maxTokens,
-          },
+          options: { temperature: input.temperature, num_predict: input.maxTokens },
           stream: false,
         }),
       });

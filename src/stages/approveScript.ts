@@ -1,14 +1,14 @@
 import { readFile } from "node:fs/promises";
-import { ApprovalRecord } from "../core/state.js";
 import { artifactPath } from "../core/artifacts.js";
+import { SafeExitError } from "../core/errors.js";
 import { appendLedgerEvent } from "../core/ledger.js";
 import { loadRun, setRunState } from "../core/runStore.js";
+import { ApprovalRecord } from "../core/state.js";
 import { assertTransition } from "../core/transitions.js";
+import { requireState } from "../safeguards/approvalGuard.js";
 import { pathExists } from "../utils/fs.js";
 import { sha256 } from "../utils/hash.js";
 import { createId, nowIso } from "../utils/time.js";
-import { SafeExitError } from "../core/errors.js";
-import { requireState } from "../safeguards/approvalGuard.js";
 
 /**
  * Approves a script for a given run after verifying its content matches the previously reviewed state.

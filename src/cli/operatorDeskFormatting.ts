@@ -1,5 +1,5 @@
-import { formatStatusReadiness, type StatusReadinessSummary } from "../stages/statusReadiness.js";
 import type { RunDiagnosticSummary } from "../stages/runDiagnosticSummaryContracts.js";
+import { formatStatusReadiness, type StatusReadinessSummary } from "../stages/statusReadiness.js";
 import type { StatusWorkflowStep } from "../stages/statusWorkflow.js";
 
 /**

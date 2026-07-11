@@ -1,17 +1,17 @@
 import { writeFile } from "node:fs/promises";
 import { artifactPath } from "../src/core/artifacts";
 import { loadRun, saveRun } from "../src/core/runStore";
+import { finalReviewNextSafeAction } from "../src/stages/finalReviewBundleContent";
 import {
   finalReviewBundleJsonPath,
   finalReviewBundleMarkdownPath,
   type FinalReviewBundle,
 } from "../src/stages/finalReviewBundleContracts";
-import { finalReviewNextSafeAction } from "../src/stages/finalReviewBundleContent";
+import { renderDecisionNextSafeAction } from "../src/stages/renderDecision";
 import {
   renderDecisionJsonPath,
   renderDecisionMarkdownPath,
 } from "../src/stages/renderDecisionCommands";
-import { renderDecisionNextSafeAction } from "../src/stages/renderDecision";
 import type { RenderDecisionRecord } from "../src/stages/renderDecisionContracts";
 
 /**
@@ -41,18 +41,11 @@ export async function writeStudioRenderDecision(
     },
     nextSafeAction: renderDecisionNextSafeAction(decision, runId),
     notes: "Reviewed locally from Studio fixture.",
-    renderApproval: {
-      approvalId: "approval_render_fixture",
-      approvedRef: "d".repeat(64),
-    },
+    renderApproval: { approvalId: "approval_render_fixture", approvedRef: "d".repeat(64) },
     reviewedBy: "operator",
     runId,
     schemaVersion: 1,
-    voiceover: {
-      mode: "local-piper",
-      productionVoiceCandidate: true,
-      quality: "local-piper",
-    },
+    voiceover: { mode: "local-piper", productionVoiceCandidate: true, quality: "local-piper" },
   };
   await writeFile(artifactPath(runId, renderDecisionJsonPath), JSON.stringify(record), "utf8");
   await writeFile(
@@ -110,12 +103,7 @@ export async function writeStudioFinalReviewBundle(
       },
       durationSeconds: 8.2,
       manifestPath: "production/render/render_manifest.json",
-      media: {
-        audioCodec: "aac",
-        height: 720,
-        videoCodec: "h264",
-        width: 1280,
-      },
+      media: { audioCodec: "aac", height: 720, videoCodec: "h264", width: 1280 },
       path: "production/render/draft.mp4",
       reviewCommand: "ffmpeg -v error -i production/render/draft.mp4 -f null -",
       reviewPath: "production/render/draft_review.md",

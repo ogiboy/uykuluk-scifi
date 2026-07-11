@@ -1,7 +1,5 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +8,8 @@ import {
   refreshStudioMutationSession,
   type StudioMutationSessionSnapshot,
 } from "@/lib/studioMutationClient";
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
 
 type SessionPanelState = Readonly<{
   message: string;
@@ -53,11 +53,7 @@ export function StudioMutationSessionPanel() {
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Studio local session could not be established.";
-      setState({
-        message,
-        snapshot: { status: "missing" },
-        tone: "error",
-      });
+      setState({ message, snapshot: { status: "missing" }, tone: "error" });
       toast.error("Local session refresh failed", { description: message });
     }
   }
@@ -68,7 +64,7 @@ export function StudioMutationSessionPanel() {
         <CardHeader className='gap-4 sm:grid-cols-[1fr_auto]'>
           <div className='space-y-2'>
             <CardTitle id='studio-session-heading'>Local web control session</CardTitle>
-            <p className='text-sm text-muted-foreground'>
+            <p className='text-muted-foreground text-sm'>
               Used automatically for same-origin approval and review actions in Studio.
             </p>
           </div>
@@ -82,11 +78,11 @@ export function StudioMutationSessionPanel() {
         <CardContent className='space-y-3'>
           <p className='text-sm'>{state.message}</p>
           {state.snapshot.status === "ready" ? (
-            <code className='block max-w-full break-all rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground'>
+            <code className='bg-muted text-muted-foreground block max-w-full rounded-md px-2 py-1 text-xs break-all'>
               Expires in about {state.snapshot.expiresInSeconds} seconds.
             </code>
           ) : (
-            <p className='text-sm text-muted-foreground'>
+            <p className='text-muted-foreground text-sm'>
               Studio will request a matching HttpOnly cookie and session header before a mutation.
             </p>
           )}

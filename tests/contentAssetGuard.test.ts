@@ -24,10 +24,7 @@ describe("content and asset safeguards", () => {
     await writeFile("assets/intro/intro_frame.jpg", "intro", "utf8");
     await writeFile("assets/outro/outro_frame.jpg", "outro", "utf8");
 
-    await expect(checkAssets(defaultConfig)).resolves.toMatchObject({
-      passed: true,
-      warnings: [],
-    });
+    await expect(checkAssets(defaultConfig)).resolves.toMatchObject({ passed: true, warnings: [] });
   });
 
   it("warns on excessive clickbait title framing", () => {
@@ -43,10 +40,7 @@ describe("content and asset safeguards", () => {
 
     expect(warnings).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({
-          code: "clickbait_title",
-          severity: "warning",
-        }),
+        expect.objectContaining({ code: "clickbait_title", severity: "warning" }),
       ]),
     );
   });
@@ -63,12 +57,7 @@ describe("content and asset safeguards", () => {
     );
 
     expect(warnings).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          code: "too_short",
-          severity: "warning",
-        }),
-      ]),
+      expect.arrayContaining([expect.objectContaining({ code: "too_short", severity: "warning" })]),
     );
   });
 
@@ -105,14 +94,8 @@ describe("content and asset safeguards", () => {
 
     expect(warnings).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({
-          code: "incomplete_script",
-          severity: "blocker",
-        }),
-        expect.objectContaining({
-          code: "non_turkish_production_text",
-          severity: "blocker",
-        }),
+        expect.objectContaining({ code: "incomplete_script", severity: "blocker" }),
+        expect.objectContaining({ code: "non_turkish_production_text", severity: "blocker" }),
       ]),
     );
   });
@@ -133,10 +116,7 @@ describe("content and asset safeguards", () => {
       expect.arrayContaining([
         expect.objectContaining({
           code: "malformed_production_label",
-          details: {
-            labelFamily: "narration",
-            labelIssue: "misspelled_variant",
-          },
+          details: { labelFamily: "narration", labelIssue: "misspelled_variant" },
           severity: "blocker",
         }),
       ]),
@@ -159,10 +139,7 @@ describe("content and asset safeguards", () => {
       expect.arrayContaining([
         expect.objectContaining({
           code: "malformed_production_label",
-          details: {
-            labelFamily: "narration",
-            labelIssue: "unaccented_variant",
-          },
+          details: { labelFamily: "narration", labelIssue: "unaccented_variant" },
           severity: "blocker",
         }),
       ]),
@@ -184,10 +161,7 @@ describe("content and asset safeguards", () => {
       expect.arrayContaining([
         expect.objectContaining({
           code: "malformed_production_label",
-          details: {
-            labelFamily: "visual",
-            labelIssue: "unknown_related_label",
-          },
+          details: { labelFamily: "visual", labelIssue: "unknown_related_label" },
           severity: "blocker",
         }),
       ]),
@@ -209,10 +183,7 @@ describe("content and asset safeguards", () => {
       expect.arrayContaining([
         expect.objectContaining({
           code: "malformed_production_label",
-          details: {
-            labelFamily: "visual",
-            labelIssue: "unknown_related_label",
-          },
+          details: { labelFamily: "visual", labelIssue: "unknown_related_label" },
           severity: "blocker",
         }),
       ]),

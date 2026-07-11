@@ -2,17 +2,17 @@ import { readFile, rm, writeFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { artifactPath } from "../src/core/artifacts";
 import { loadRun } from "../src/core/runStore";
-import { sha256 } from "../src/utils/hash";
-import { readJsonFile } from "../src/utils/json";
 import { approveIdea } from "../src/stages/approveIdea";
 import { approveScript } from "../src/stages/approveScript";
-import { generateEvidenceBundle } from "../src/stages/evidence";
 import { estimateCost } from "../src/stages/estimate";
+import { generateEvidenceBundle } from "../src/stages/evidence";
 import { runIdeas } from "../src/stages/ideas";
 import { generateProductionPackage } from "../src/stages/productionPackage";
 import { runReadiness } from "../src/stages/readiness";
 import { reviewScript } from "../src/stages/reviewScript";
 import { generateScript } from "../src/stages/script";
+import { sha256 } from "../src/utils/hash";
+import { readJsonFile } from "../src/utils/json";
 import { useTempProject } from "./helpers";
 
 const packageArtifactPaths = [
@@ -113,11 +113,7 @@ describe("production package integrity", () => {
     await generateEvidenceBundle(runId);
 
     const evidence = await readJsonFile<{
-      productionPackageIntegrity: {
-        status: string;
-        path: string;
-        message: string;
-      };
+      productionPackageIntegrity: { status: string; path: string; message: string };
     }>(artifactPath(runId, "evidence_bundle.json"));
     expect(evidence.productionPackageIntegrity).toMatchObject({
       status: "block",
@@ -133,11 +129,7 @@ describe("production package integrity", () => {
     await generateEvidenceBundle(runId);
 
     const evidence = await readJsonFile<{
-      productionPackageIntegrity: {
-        status: string;
-        path: string;
-        message: string;
-      };
+      productionPackageIntegrity: { status: string; path: string; message: string };
     }>(artifactPath(runId, "evidence_bundle.json"));
     expect(evidence.productionPackageIntegrity).toMatchObject({
       status: "block",

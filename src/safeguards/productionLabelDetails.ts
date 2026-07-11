@@ -33,10 +33,7 @@ function classifyProductionLabel(
   if (!labelFamily) {
     return undefined;
   }
-  return {
-    labelFamily,
-    labelIssue: labelIssueFor(normalized),
-  };
+  return { labelFamily, labelIssue: labelIssueFor(normalized) };
 }
 
 function labelFamilyFor(label: string): MalformedProductionLabelDetails["labelFamily"] | undefined {

@@ -85,9 +85,7 @@ describe("script revisions", () => {
       editor: "operator",
     });
 
-    const evidence = (await generateEvidenceBundle(runId)) as {
-      revisions: string[];
-    };
+    const evidence = (await generateEvidenceBundle(runId)) as { revisions: string[] };
 
     expect(evidence.revisions).toEqual([`revisions/script/${revision.revisionId}/revision.json`]);
   });
@@ -99,20 +97,10 @@ describe("script revisions", () => {
     const current = await readFile(artifactPath(runId, "script.md"), "utf8");
 
     await expect(
-      reviseScript({
-        runId,
-        content: current,
-        reason: "No change",
-        editor: "operator",
-      }),
+      reviseScript({ runId, content: current, reason: "No change", editor: "operator" }),
     ).rejects.toThrow(/different/i);
     await expect(
-      reviseScript({
-        runId,
-        content: "   ",
-        reason: "Empty",
-        editor: "operator",
-      }),
+      reviseScript({ runId, content: "   ", reason: "Empty", editor: "operator" }),
     ).rejects.toThrow(/empty/i);
 
     await reviewScript(runId);

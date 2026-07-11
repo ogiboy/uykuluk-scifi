@@ -1,12 +1,11 @@
-import path from "node:path";
 import { readFile } from "node:fs/promises";
+import path from "node:path";
 import { z } from "zod";
 import { artifactPath, removeRunArtifact, writeRunJson, writeRunText } from "../core/artifacts.js";
 import { SafeExitError } from "../core/errors.js";
 import { appendLedgerEvent } from "../core/ledger.js";
 import { loadRun, saveRun } from "../core/runStore.js";
 import { runStateSchema } from "../core/state.js";
-import { productionSceneSchema, renderPlanArtifactPaths } from "../stages/renderPlanSchemas.js";
 import {
   createProductionPackageManifest,
   productionPackageArtifactPaths,
@@ -14,6 +13,7 @@ import {
   providerEvidenceFromManifest,
   verifyProductionPackage,
 } from "../stages/productionPackageIntegrity.js";
+import { productionSceneSchema, renderPlanArtifactPaths } from "../stages/renderPlanSchemas.js";
 import { sha256 } from "../utils/hash.js";
 import { createId, nowIso } from "../utils/time.js";
 
@@ -31,9 +31,7 @@ const youtubeMetadataSchema = z.strictObject({
   description: z.string().min(1),
   tags: z.array(z.string().min(1)),
 });
-const scenesArtifactSchema = z.strictObject({
-  scenes: z.array(productionSceneSchema).min(1),
-});
+const scenesArtifactSchema = z.strictObject({ scenes: z.array(productionSceneSchema).min(1) });
 const packageRevisionSchema = z.strictObject({
   schemaVersion: z.literal(1),
   revisionId: z.string().min(1),

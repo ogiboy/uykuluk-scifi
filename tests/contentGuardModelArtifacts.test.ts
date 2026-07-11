@@ -16,10 +16,7 @@ describe("content guard model artifact blockers", () => {
 
     expect(warnings).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({
-          code: "model_meta_commentary",
-          severity: "blocker",
-        }),
+        expect.objectContaining({ code: "model_meta_commentary", severity: "blocker" }),
       ]),
     );
   });
@@ -38,10 +35,7 @@ describe("content guard model artifact blockers", () => {
 
     expect(warnings).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({
-          code: "model_meta_commentary",
-          severity: "blocker",
-        }),
+        expect.objectContaining({ code: "model_meta_commentary", severity: "blocker" }),
       ]),
     );
   });
@@ -59,10 +53,7 @@ describe("content guard model artifact blockers", () => {
 
     expect(warnings).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({
-          code: "literal_model_escape_text",
-          severity: "blocker",
-        }),
+        expect.objectContaining({ code: "literal_model_escape_text", severity: "blocker" }),
       ]),
     );
   });
@@ -80,10 +71,7 @@ describe("content guard model artifact blockers", () => {
 
     expect(warnings).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({
-          code: "repeated_word_stutter",
-          severity: "blocker",
-        }),
+        expect.objectContaining({ code: "repeated_word_stutter", severity: "blocker" }),
       ]),
     );
   });
@@ -102,10 +90,7 @@ describe("content guard model artifact blockers", () => {
 
     expect(warnings).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({
-          code: "provider_artifact_metadata",
-          severity: "blocker",
-        }),
+        expect.objectContaining({ code: "provider_artifact_metadata", severity: "blocker" }),
       ]),
     );
   });

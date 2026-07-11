@@ -22,11 +22,19 @@ export const scriptApprovalRequestSchema = z.strictObject({
   runId: runIdSchema,
 });
 
-export const runOnlyRequestSchema = z.strictObject({
-  runId: runIdSchema,
-});
+export const runOnlyRequestSchema = z.strictObject({ runId: runIdSchema });
 
 export const emptyRequestSchema = z.strictObject({});
+export const localModelCandidateNameSchema = z.string().trim().min(1).max(240);
+export const localModelCandidateEvalRequestSchema = z
+  .strictObject({
+    candidates: z.array(localModelCandidateNameSchema).max(12).default([]),
+    includeLocalGguf: z.boolean().default(false),
+  })
+  .refine((input) => input.includeLocalGguf || input.candidates.length > 0, {
+    message: "Candidate evaluation requires at least one model name or local GGUF discovery.",
+    path: ["candidates"],
+  });
 
 export const revisionContentSchema = z.string().min(1).max(200_000);
 export const analyticsImportContentSchema = z.string().min(1).max(1_000_000);
@@ -98,6 +106,8 @@ type StudioActionRequestById = {
   "evidence.run": z.infer<typeof runOnlyRequestSchema>;
   "idea.approve": z.infer<typeof ideaApprovalRequestSchema>;
   "ideas.run": z.infer<typeof emptyRequestSchema>;
+  "model-eval.run": z.infer<typeof emptyRequestSchema>;
+  "model-eval-candidates.run": z.infer<typeof localModelCandidateEvalRequestSchema>;
   "package.run": z.infer<typeof runOnlyRequestSchema>;
   "publish.schedule": z.infer<typeof runOnlyRequestSchema>;
   "readiness.run": z.infer<typeof runOnlyRequestSchema>;
@@ -129,6 +139,8 @@ export const studioMutationRequestSchemaByAction = {
   "evidence.run": runOnlyRequestSchema,
   "idea.approve": ideaApprovalRequestSchema,
   "ideas.run": emptyRequestSchema,
+  "model-eval.run": emptyRequestSchema,
+  "model-eval-candidates.run": localModelCandidateEvalRequestSchema,
   "package.run": runOnlyRequestSchema,
   "publish.schedule": runOnlyRequestSchema,
   "readiness.run": runOnlyRequestSchema,

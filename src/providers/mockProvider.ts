@@ -5,9 +5,9 @@ import {
   approximateTokens,
 } from "./llmProvider.js";
 import {
+  generateHistoryAwareMockIdeasText,
   generateInvalidDuplicateIdeasText,
   generateInvalidRepeatedPremiseFrameIdeasText,
-  generateMockIdeasText,
 } from "./mockIdeasText.js";
 import { generateMockScriptContinuation, generateMockScriptSection } from "./mockScriptText.js";
 
@@ -37,7 +37,7 @@ function generateMockText(prompt: string, model = ""): string {
     return generateMockIdeaRepairText(prompt, model);
   }
   if (prompt.includes("IDEAS_JSON")) {
-    return generateMockIdeaText(model);
+    return generateMockIdeaText(model, prompt);
   }
   if (prompt.includes("SCRIPT_CONTINUATION_JSON")) {
     if (model === "mock-invalid-continuation-json") {
@@ -94,17 +94,17 @@ function generateMockText(prompt: string, model = ""): string {
 function generateMockIdeaRepairText(prompt: string, model: string): string {
   if (model === "mock-invalid-ideas-two-repairs") {
     return prompt.includes("Ideas reuse a repeated premise frame")
-      ? generateMockIdeasText()
+      ? generateHistoryAwareMockIdeasText(prompt, model)
       : generateInvalidRepeatedPremiseFrameIdeasText();
   }
   if (model === "mock-invalid-ideas-always") {
     return generateInvalidDuplicateIdeasText();
   }
-  return generateMockIdeasText();
+  return generateHistoryAwareMockIdeasText(prompt, model);
 }
 
-function generateMockIdeaText(model: string): string {
+function generateMockIdeaText(model: string, prompt = ""): string {
   return invalidInitialIdeaModels.has(model)
     ? generateInvalidDuplicateIdeasText()
-    : generateMockIdeasText();
+    : generateHistoryAwareMockIdeasText(prompt, model);
 }

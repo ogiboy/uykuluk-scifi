@@ -1,5 +1,5 @@
-import path from "node:path";
 import { readFile } from "node:fs/promises";
+import path from "node:path";
 import type { ProducerConfig } from "../config/schema.js";
 import { validateArtifactRelativePath } from "../core/artifactPaths.js";
 import { pathExists } from "../utils/fs.js";
@@ -80,10 +80,7 @@ function promptOverrideResult({
   };
 }
 
-function promptOverrideEntries(config: ProducerConfig): Array<{
-  label: string;
-  path: string;
-}> {
+function promptOverrideEntries(config: ProducerConfig): Array<{ label: string; path: string }> {
   return [
     { label: "ideas", path: config.prompts.overrides.ideas },
     { label: "script", path: config.prompts.overrides.script },

@@ -5,21 +5,16 @@ import { appendLedgerEvent } from "../core/ledger.js";
 import { loadRun, setRunState } from "../core/runStore.js";
 import { assertTransition } from "../core/transitions.js";
 import { defaultStagePricing } from "../costs/pricing.js";
-import { enforceBudget } from "../safeguards/budgetGuard.js";
-import { reviewScriptContent } from "../safeguards/contentGuard.js";
-import { requireApproval, requireState } from "../safeguards/approvalGuard.js";
-import { createLlmProvider } from "../providers/index.js";
 import { createPromptProvenance } from "../prompts/provenance.js";
 import { renderScriptPrompt } from "../prompts/templates.js";
-import { persistScriptGenerationFailure } from "./scriptFailureDiagnostics.js";
+import { createLlmProvider } from "../providers/index.js";
+import { requireApproval, requireState } from "../safeguards/approvalGuard.js";
+import { enforceBudget } from "../safeguards/budgetGuard.js";
+import { reviewScriptContent } from "../safeguards/contentGuard.js";
 import { scriptContentBlockerError } from "./scriptContentRetry.js";
 import { applyLongFormContinuations, assertLongFormWordFloor } from "./scriptContinuation.js";
+import { persistScriptGenerationFailure } from "./scriptFailureDiagnostics.js";
 import { extractClaims, extractVisualBeats } from "./scriptMetaExtractors.js";
-import {
-  assembleScriptFromSections,
-  scriptSectionExpansionChunks,
-  scriptSectionPlans,
-} from "./scriptSections.js";
 import {
   generateScriptSections,
   receiptDurationMs,
@@ -27,6 +22,11 @@ import {
   receiptOutputTokens,
   sectionProviderCallCount,
 } from "./scriptSectionGeneration.js";
+import {
+  assembleScriptFromSections,
+  scriptSectionExpansionChunks,
+  scriptSectionPlans,
+} from "./scriptSections.js";
 import { ScriptMeta, VideoIdea } from "./types.js";
 
 export async function generateScript(runId: string): Promise<ScriptMeta> {

@@ -17,10 +17,10 @@ type RunQueueTunePopoverProps = Readonly<{
   onMaxBlockedActionsChange: (value: number) => void;
 }>;
 
-const densityLabels = {
-  compact: "Compact",
-  comfortable: "Comfortable",
-} as const satisfies Record<RunQueueDensity, string>;
+const densityLabels = { compact: "Compact", comfortable: "Comfortable" } as const satisfies Record<
+  RunQueueDensity,
+  string
+>;
 
 /**
  * Renders read-only queue display tuning controls for the Studio run workbench.
@@ -41,20 +41,22 @@ export function RunQueueTunePopover({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button className='queue-tune-button' type='button' variant='secondary'>
+        <Button className='min-h-10' type='button' variant='secondary'>
           Tune review surface
         </Button>
       </PopoverTrigger>
-      <PopoverContent align='end' className='queue-tune-popover'>
-        <div className='queue-tune-stack'>
+      <PopoverContent align='end' className='w-[min(360px,calc(100vw-2rem))]'>
+        <div className='grid gap-3'>
           <div>
-            <h3>Review surface</h3>
-            <p>Local projection only. These controls never approve, render, upload, or mutate.</p>
+            <h3 className='font-semibold'>Review surface</h3>
+            <p className='text-muted-foreground text-sm leading-relaxed'>
+              Local projection only. These controls never approve, render, upload, or mutate.
+            </p>
           </div>
-          <div className='queue-slider-control'>
-            <div className='queue-slider-header'>
+          <div className='grid gap-3'>
+            <div className='flex items-center justify-between gap-3'>
               <Label htmlFor='max-blocked-actions'>Max blockers shown</Label>
-              <strong>{maxBlockedActions}</strong>
+              <strong className='text-primary font-mono'>{maxBlockedActions}</strong>
             </div>
             <Slider
               id='max-blocked-actions'
@@ -64,21 +66,24 @@ export function RunQueueTunePopover({
               value={[maxBlockedActions]}
               onValueChange={(value) => onMaxBlockedActionsChange(value[0] ?? 0)}
             />
-            <small>
+            <small className='text-muted-foreground text-sm leading-relaxed'>
               Current data reaches {highestBlockedActionCount}. Set 0 to review only fully unblocked
               runs.
             </small>
           </div>
-          <div className='queue-density-control'>
+          <div className='grid gap-3'>
             <Label id='queue-density-label'>Table density</Label>
             <RadioGroup
               aria-labelledby='queue-density-label'
-              className='queue-density-options'
+              className='grid grid-cols-2 gap-2'
               value={density}
               onValueChange={(value) => setSelectedDensity(value, onDensityChange)}
             >
               {runQueueDensityValues.map((value) => (
-                <label className='queue-density-option' key={value}>
+                <label
+                  className='bg-muted/20 flex items-center justify-start gap-3 rounded-lg border p-3 text-sm'
+                  key={value}
+                >
                   <RadioGroupItem value={value} />
                   <span>{densityLabels[value]}</span>
                 </label>

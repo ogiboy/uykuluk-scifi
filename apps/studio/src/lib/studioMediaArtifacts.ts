@@ -14,12 +14,7 @@ const studioCaptionSourcePath = "production/subtitles.srt";
 export type StudioMediaArtifactPath = keyof typeof allowedStudioMediaArtifacts;
 
 type StudioMediaReadResult =
-  | {
-      body: BodyInit;
-      headers: Headers;
-      status: 200 | 206;
-    }
-  | { status: 404 | 416 };
+  { body: BodyInit; headers: Headers; status: 200 | 206 } | { status: 404 | 416 };
 
 /**
  * Builds the Studio-local media URL for an allowlisted run artifact.

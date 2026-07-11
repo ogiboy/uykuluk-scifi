@@ -111,11 +111,7 @@ function controlLoopItems(run: StudioControlLoopRun): StudioControlLoopItem[] {
       label: "Run state",
       tone: run.state === "FAILED" ? "blocked" : "done",
     },
-    {
-      detail: run.readinessMessage,
-      label: "Readiness",
-      tone: run.readinessStatus === "passed" ? "done" : "attention",
-    },
+    { detail: run.readinessMessage, label: "Readiness", tone: readinessTone(run.readinessStatus) },
     {
       detail: run.evidenceMessage,
       label: "Evidence",
@@ -133,6 +129,15 @@ function controlLoopItems(run: StudioControlLoopRun): StudioControlLoopItem[] {
       tone: "done",
     },
   ];
+}
+
+function readinessTone(
+  status: StudioControlLoopRun["readinessStatus"],
+): StudioControlLoopItem["tone"] {
+  if (status === "passed") {
+    return "done";
+  }
+  return status === "blocked" ? "blocked" : "attention";
 }
 
 function blockedActionsDetail(blockedActionCount: number): string {

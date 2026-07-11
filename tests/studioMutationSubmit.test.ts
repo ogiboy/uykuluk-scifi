@@ -3,11 +3,24 @@ import {
   clearCachedStudioMutationSession,
   readStudioMutationSessionSnapshot,
 } from "../apps/studio/src/lib/studioMutationClient";
-import { submitStudioJsonMutation } from "../apps/studio/src/lib/studioMutationSubmit";
+import {
+  studioMutationFetchTimeoutMs,
+  submitStudioJsonMutation,
+} from "../apps/studio/src/lib/studioMutationSubmit";
+
+const captureExceptionMock = vi.hoisted(() => vi.fn());
+
+vi.mock("../apps/studio/src/lib/studioObservability", () => ({
+  captureStudioUnexpectedError: captureExceptionMock,
+}));
+
+const syntheticSessionToken = "TEST_ONLY_SESSION_TOKEN_1234567890";
 
 describe("Studio mutation submit", () => {
   afterEach(() => {
     clearCachedStudioMutationSession();
+    vi.clearAllMocks();
+    vi.useRealTimers();
     vi.unstubAllGlobals();
   });
 
@@ -15,11 +28,7 @@ describe("Studio mutation submit", () => {
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(
-        Response.json({
-          expiresInSeconds: 900,
-          status: "ok",
-          token: "session_token_submit_1234567890",
-        }),
+        Response.json({ expiresInSeconds: 900, status: "ok", token: syntheticSessionToken }),
       )
       .mockResolvedValueOnce(
         Response.json(
@@ -52,11 +61,7 @@ describe("Studio mutation submit", () => {
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(
-        Response.json({
-          expiresInSeconds: 900,
-          status: "ok",
-          token: "session_token_submit_1234567890",
-        }),
+        Response.json({ expiresInSeconds: 900, status: "ok", token: syntheticSessionToken }),
       )
       .mockResolvedValueOnce(Response.json({ message: "Run not found." }, { status: 409 }));
     vi.stubGlobal("fetch", fetchMock);
@@ -76,21 +81,13 @@ describe("Studio mutation submit", () => {
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(
-        Response.json({
-          expiresInSeconds: 900,
-          status: "ok",
-          token: "session_token_submit_1234567890",
-        }),
+        Response.json({ expiresInSeconds: 900, status: "ok", token: syntheticSessionToken }),
       )
       .mockResolvedValueOnce(
         Response.json(
           {
             message: "Readiness is blocked.",
-            record: {
-              checks: [{ status: "block" }],
-              passed: false,
-              runId: "run_blocked_submit",
-            },
+            record: { checks: [{ status: "block" }], passed: false, runId: "run_blocked_submit" },
             status: "error",
           },
           { status: 409 },
@@ -108,10 +105,7 @@ describe("Studio mutation submit", () => {
     expect(result).toEqual({
       kind: "blocked",
       message: "Readiness is blocked.",
-      recordSummary: {
-        facts: ["Run: run_blocked_submit"],
-        runId: "run_blocked_submit",
-      },
+      recordSummary: { facts: ["Run: run_blocked_submit"], runId: "run_blocked_submit" },
       status: 409,
     });
     expect(readStudioMutationSessionSnapshot()).toMatchObject({ status: "ready" });
@@ -121,11 +115,7 @@ describe("Studio mutation submit", () => {
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(
-        Response.json({
-          expiresInSeconds: 900,
-          status: "ok",
-          token: "session_token_submit_1234567890",
-        }),
+        Response.json({ expiresInSeconds: 900, status: "ok", token: syntheticSessionToken }),
       )
       .mockResolvedValueOnce(
         Response.json({
@@ -160,6 +150,94 @@ describe("Studio mutation submit", () => {
         ],
         runId: "run_submit",
       },
+    });
+  });
+
+  it("fails safely when the guarded route cannot be reached", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValueOnce(
+          Response.json({ expiresInSeconds: 900, status: "ok", token: syntheticSessionToken }),
+        )
+        .mockRejectedValueOnce(new TypeError("network unavailable")),
+    );
+
+    await expect(
+      submitStudioJsonMutation({
+        actionId: "script.run",
+        body: { runId: "run_submit" },
+        fallbackError: "Script generation could not run.",
+        routePath: "/actions/run-script",
+      }),
+    ).resolves.toEqual({ kind: "error", message: "Script generation could not run." });
+    expect(captureExceptionMock).toHaveBeenCalledWith(expect.any(TypeError), {
+      actionId: "script.run",
+      boundary: "client-mutation",
+      routePath: "/actions/run-script",
+    });
+    expect(JSON.stringify(captureExceptionMock.mock.calls)).not.toContain("run_submit");
+  });
+
+  it("distinguishes local JSON serialization failures from transport failures", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValueOnce(
+          Response.json({ expiresInSeconds: 900, status: "ok", token: syntheticSessionToken }),
+        ),
+    );
+    const cyclic: Record<string, unknown> = {};
+    cyclic.self = cyclic;
+
+    await expect(
+      submitStudioJsonMutation({
+        actionId: "script.run",
+        body: cyclic,
+        fallbackError: "Script generation could not run.",
+        routePath: "/actions/run-script",
+      }),
+    ).resolves.toEqual({ kind: "error", message: "Studio action payload is not valid JSON." });
+    expect(captureExceptionMock).not.toHaveBeenCalled();
+  });
+
+  it("fails closed when a guarded mutation route exceeds its timeout", async () => {
+    vi.useFakeTimers();
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValueOnce(
+          Response.json({ expiresInSeconds: 900, status: "ok", token: syntheticSessionToken }),
+        )
+        .mockImplementationOnce(
+          (_url: string, init: RequestInit) =>
+            new Promise((_resolve, reject) => {
+              init.signal?.addEventListener("abort", () =>
+                reject(new DOMException("aborted", "AbortError")),
+              );
+            }),
+        ),
+    );
+
+    const result = submitStudioJsonMutation({
+      actionId: "script.run",
+      body: { runId: "run_timeout" },
+      fallbackError: "Script generation timed out.",
+      routePath: "/actions/run-script",
+    });
+    await vi.advanceTimersByTimeAsync(studioMutationFetchTimeoutMs);
+
+    await expect(result).resolves.toEqual({
+      kind: "error",
+      message: "Script generation timed out.",
+    });
+    expect(captureExceptionMock).toHaveBeenCalledWith(expect.any(DOMException), {
+      actionId: "script.run",
+      boundary: "client-mutation",
+      routePath: "/actions/run-script",
     });
   });
 });

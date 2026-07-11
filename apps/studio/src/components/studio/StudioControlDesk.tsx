@@ -1,24 +1,23 @@
 import Link from "next/link";
-import { RunPrimaryActionPanel } from "@/components/runs/RunPrimaryActionPanel";
-import { RunGuidedControlLoopPanel } from "@/components/runs/RunGuidedControlLoopPanel";
-import { ActiveRunActions } from "@/components/studio/ActiveRunActions";
-import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
-import type { StudioRunSummary } from "@/lib/runSummaries";
-import type { StudioDoctorOverview } from "@/lib/doctorOverview";
-import { formatRunRenderDecision, formatRunReviewCounts } from "@/lib/runSummaryCopy";
+
+import { EmptyRunCard } from "@/components/studio/EmptyRunCard";
+import { OperatorBrief } from "@/components/studio/OperatorBrief";
+import { ActiveRunCard, ActiveRunSnapshot } from "@/components/studio/control-desk/ActiveRunCards";
+import {
+  HomeControlRail,
+  StudioSafetySummaryRail,
+} from "@/components/studio/control-desk/StudioControlRails";
+import { buttonVariants } from "@/components/ui/button";
 import type { StudioActionServiceStatus } from "@/lib/actionServiceStatus";
+import type { StudioDoctorOverview } from "@/lib/doctorOverview";
+import type { StudioRunSummary } from "@/lib/runSummaries";
 import { startIdeasReadinessFromDoctor } from "@/lib/startIdeasReadiness";
-import { runReviewHrefFromSummary } from "@/lib/runReviewNavigation";
-import { EmptyRunCard } from "./EmptyRunCard";
-import { HomeActionQueuePanel } from "./HomeActionQueuePanel";
-import { StudioLastMutationNotice } from "./StudioLastMutationNotice";
-import { StartNewRunPanel } from "./StartNewRunPanel";
-import { StudioMutationSessionPanel } from "./StudioMutationSessionPanel";
 
 type StudioControlDeskProps = Readonly<{
   actionStatus: StudioActionServiceStatus;
   doctorOverview: StudioDoctorOverview;
   runs: readonly StudioRunSummary[];
+  variant?: "compact" | "full";
 }>;
 
 /**
@@ -27,129 +26,77 @@ type StudioControlDeskProps = Readonly<{
  * @param actionStatus - Current guarded Studio action contract status.
  * @param doctorOverview - Latest persisted producer doctor overview.
  * @param runs - Persisted producer run summaries, newest first.
+ * @param variant - Whether to render the compact home view or the full action workbench view.
  * @returns The first-screen operator control desk.
  */
-export function StudioControlDesk({ actionStatus, doctorOverview, runs }: StudioControlDeskProps) {
+export function StudioControlDesk({
+  actionStatus,
+  doctorOverview,
+  runs,
+  variant = "full",
+}: StudioControlDeskProps) {
   const latestRun = runs[0] ?? null;
   const startIdeasReadiness = startIdeasReadinessFromDoctor(doctorOverview);
+  const compact = variant === "compact";
+  const activeRun = activeRunContent(latestRun, compact, startIdeasReadiness);
+
   return (
-    <section className='control-desk' aria-labelledby='control-desk-heading'>
-      <div className='control-desk-primary'>
-        <div className='control-desk-heading'>
-          <div>
-            <p className='eyebrow'>Operator control desk</p>
-            <h2 id='control-desk-heading'>Current production queue</h2>
+    <section
+      className={
+        compact
+          ? "grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_20rem]"
+          : "grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]"
+      }
+      aria-labelledby='control-desk-heading'
+    >
+      <div className='grid min-w-0 content-start gap-4'>
+        <div className='grid gap-4 sm:grid-cols-[1fr_auto] sm:items-start'>
+          <div className='space-y-2'>
+            <p className='text-muted-foreground text-xs font-semibold tracking-[0.28em] uppercase'>
+              Operator control desk
+            </p>
+            <h2 className='text-2xl font-semibold tracking-tight' id='control-desk-heading'>
+              Current production queue
+            </h2>
           </div>
-          <Link className='status-pill small' href='/runs'>
+          <Link className={buttonVariants({ variant: "secondary" })} href='/runs'>
             Open all runs
           </Link>
         </div>
 
-        {latestRun ? (
-          <ActiveRunCard run={latestRun} />
-        ) : (
-          <EmptyRunCard readiness={startIdeasReadiness} />
-        )}
+        <OperatorBrief latestRun={latestRun} startIdeasReadiness={startIdeasReadiness} />
+
+        {activeRun}
       </div>
 
-      <aside className='control-desk-rail' aria-label='Studio safety and queue summary'>
-        <StudioMutationSessionPanel />
-        <StudioLastMutationNotice />
-        {latestRun ? <StartNewRunPanel readiness={startIdeasReadiness} /> : null}
-        <SafetyGateSummary actionStatus={actionStatus} />
-        <HomeActionQueuePanel runs={runs} />
-      </aside>
+      {compact ? (
+        <HomeControlRail
+          actionStatus={actionStatus}
+          runs={runs}
+          startIdeasReadiness={startIdeasReadiness}
+        />
+      ) : (
+        <StudioSafetySummaryRail
+          actionStatus={actionStatus}
+          latestRun={latestRun}
+          runs={runs}
+          startIdeasReadiness={startIdeasReadiness}
+        />
+      )}
     </section>
   );
 }
 
-function ActiveRunCard({ run }: Readonly<{ run: StudioRunSummary }>) {
-  const decisionRailHref = runReviewHrefFromSummary(run, "review-decision");
-  const currentSteps = run.workflowProgress.filter((step) =>
-    ["blocked", "current"].includes(step.status),
-  );
-  const visibleCurrentSteps = currentSteps.slice(0, 4);
-  const hiddenCurrentStepCount = Math.max(0, currentSteps.length - visibleCurrentSteps.length);
-  const completedSteps = run.workflowProgress.filter((step) => step.status === "done").length;
-
-  return (
-    <article className='active-run-card'>
-      <div className='active-run-header'>
-        <div>
-          <p className='artifact-description'>Active run</p>
-          <h3>{run.runId}</h3>
-        </div>
-        <ActiveRunActions run={run} />
-      </div>
-
-      <MetricGrid
-        metrics={[
-          { label: "State", value: run.state },
-          { label: "Readiness", value: run.readinessStatus },
-          { label: "Evidence", value: run.evidenceStatus },
-          { label: "Render decision", value: formatRunRenderDecision(run) },
-          { label: "Blocks", value: formatStudioInteger(run.blockedActionCount) },
-          { label: "Progress", value: `${completedSteps}/${run.workflowProgress.length}` },
-        ]}
-      />
-
-      <RunPrimaryActionPanel compact railHref={decisionRailHref} run={run} />
-
-      <RunGuidedControlLoopPanel compact run={run} />
-
-      <ol className='workflow-strip' aria-label='Current workflow attention'>
-        {visibleCurrentSteps.length > 0 ? (
-          visibleCurrentSteps.map((step) => (
-            <li className={`workflow-chip workflow-chip-${step.status}`} key={step.label}>
-              <strong>{step.label}</strong>
-              <span>{step.detail}</span>
-            </li>
-          ))
-        ) : (
-          <li className='workflow-chip workflow-chip-pending'>
-            <strong>No active blocker</strong>
-            <span>Review the run detail before the next irreversible action.</span>
-          </li>
-        )}
-        {hiddenCurrentStepCount > 0 ? (
-          <li className='workflow-chip workflow-chip-more'>
-            <strong>+{hiddenCurrentStepCount} more</strong>
-            <span>Open the run detail for the full list.</span>
-          </li>
-        ) : null}
-      </ol>
-
-      <p className='artifact-description'>{formatRunReviewCounts(run)}</p>
-    </article>
-  );
-}
-
-function SafetyGateSummary({
-  actionStatus,
-}: Readonly<{ actionStatus: StudioActionServiceStatus }>) {
-  const findingTone = actionStatus.findings.length > 0 ? "blocked" : undefined;
-
-  return (
-    <section className='panel compact-panel' aria-labelledby='safety-gates-heading'>
-      <h3 id='safety-gates-heading'>Safety gates</h3>
-      <dl className='decision-list'>
-        <div>
-          <dt>Web actions</dt>
-          <dd>{actionStatus.webMutationsEnabled ? "Guarded local routes" : "Disabled"}</dd>
-        </div>
-        <div>
-          <dt>Upload / publish</dt>
-          <dd className='blocked'>Disabled by default</dd>
-        </div>
-        <div>
-          <dt>Route findings</dt>
-          <dd className={findingTone}>{actionStatus.findings.length}</dd>
-        </div>
-        <div>
-          <dt>CLI-ready contracts</dt>
-          <dd>{actionStatus.readyForCliCount}</dd>
-        </div>
-      </dl>
-    </section>
-  );
+function activeRunContent(
+  latestRun: StudioRunSummary | null,
+  compact: boolean,
+  readiness: ReturnType<typeof startIdeasReadinessFromDoctor>,
+) {
+  if (!latestRun) {
+    return <EmptyRunCard readiness={readiness} />;
+  }
+  if (compact) {
+    return <ActiveRunSnapshot run={latestRun} />;
+  }
+  return <ActiveRunCard run={latestRun} />;
 }

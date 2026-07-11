@@ -3,7 +3,6 @@ import { existsSync } from "node:fs";
 import { cp, mkdir, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { enableDeterministicTts, runLocalMediaSmoke } from "./qa/usage-smoke-media.mjs";
 import {
   assertDefaultConfigSafety,
   assertReviewEvidenceRecommendsWarningAcknowledgement,
@@ -13,6 +12,7 @@ import {
   runScriptRevisionSmoke,
   runStatusSummarySmoke,
 } from "./qa/usage-smoke-flows.mjs";
+import { enableDeterministicTts, runLocalMediaSmoke } from "./qa/usage-smoke-media.mjs";
 
 const repoRoot = process.cwd();
 const pnpm = process.env.PNPM_EXECUTABLE ?? "pnpm";
@@ -137,14 +137,8 @@ try {
     expectOutput: "READY_FOR_MANUAL_PRODUCTION",
   });
   runStatusSummarySmoke({ run, pnpm, runId, assert });
-  run([pnpm, "producer", "status", "--latest"], {
-    label: "status latest",
-    expectOutput: runId,
-  });
-  run([pnpm, "producer", "list-runs"], {
-    label: "list-runs",
-    expectOutput: runId,
-  });
+  run([pnpm, "producer", "status", "--latest"], { label: "status latest", expectOutput: runId });
+  run([pnpm, "producer", "list-runs"], { label: "list-runs", expectOutput: runId });
 
   for (const artifact of requiredArtifacts) {
     await assertFile(path.join("runs", runId, artifact));

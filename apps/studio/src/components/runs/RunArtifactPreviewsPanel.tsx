@@ -1,6 +1,5 @@
 "use client";
 
-import type { StudioArtifactPreview } from "@/lib/artifactPreviews";
 import {
   artifactPreviewEmptyState,
   artifactPreviewStatusFilters,
@@ -8,6 +7,7 @@ import {
   filterArtifactPreviews,
   type ArtifactPreviewStatusFilter,
 } from "@/lib/artifactPreviewFilters";
+import type { StudioArtifactPreview } from "@/lib/artifactPreviews";
 import { buildArtifactReviewHandoff } from "@/lib/artifactReviewHandoff";
 import { artifactPreviewsIntro } from "@/lib/runEvidenceCopy";
 import type { StudioRunDetail } from "@/lib/runSummaries";
@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from "../ui/select";
 import { RunArtifactPreviewGroups } from "./RunArtifactPreviewGroups";
+import { RunDetailCard } from "./RunDetailCard";
 
 type RunArtifactPreviewsPanelProps = Readonly<{
   artifacts: StudioRunDetail["artifacts"];
@@ -60,15 +61,17 @@ export function RunArtifactPreviewsPanel({
   }
 
   return (
-    <section className='panel' aria-labelledby='artifact-heading'>
-      <h2 id='artifact-heading'>Artifact Previews</h2>
-      <p>
-        Read-only excerpts grouped by operator review phase. Use CLI commands to change workflow
-        state.
-      </p>
-      <p>{artifactPreviewsIntro(evidenceStatus)}</p>
-      <div className='artifact-preview-toolbar' aria-label='Artifact preview filters'>
-        <label className='artifact-preview-search'>
+    <RunDetailCard
+      headingId='artifact-heading'
+      title='Artifact Previews'
+      description='Read-only excerpts grouped by operator review phase. Use Studio action rails when available, with CLI/core fallback for recovery.'
+    >
+      <p className='text-muted-foreground text-sm'>{artifactPreviewsIntro(evidenceStatus)}</p>
+      <div
+        className='bg-muted/10 grid gap-3 rounded-lg p-3 md:grid-cols-[minmax(0,1fr)_minmax(12rem,15rem)_auto] md:items-end'
+        aria-label='Artifact preview filters'
+      >
+        <label className='text-muted-foreground grid min-w-0 gap-2 text-xs font-semibold'>
           Search artifacts
           <Input
             placeholder='path, label, phase, review action'
@@ -76,7 +79,7 @@ export function RunArtifactPreviewsPanel({
             onChange={(event) => setQuery(event.target.value)}
           />
         </label>
-        <div className='artifact-preview-select'>
+        <div className='grid min-w-0 gap-2'>
           <Label htmlFor='artifact-status-filter'>Availability</Label>
           <Select
             value={status}
@@ -106,55 +109,62 @@ export function RunArtifactPreviewsPanel({
         >
           Reset artifacts
         </Button>
-        <output className='artifact-preview-counts' aria-label='Artifact preview result summary'>
+        <output
+          className='flex flex-wrap gap-2 md:col-span-3'
+          aria-label='Artifact preview result summary'
+        >
           <Badge variant='secondary'>{filteredArtifacts.length} shown</Badge>
           <Badge variant='outline'>{counts.available} available</Badge>
           {counts.missing > 0 ? <Badge variant='outline'>{counts.missing} missing</Badge> : null}
         </output>
       </div>
-      <section className='artifact-review-handoff' aria-label='Artifact review handoff milestones'>
-        <div className='artifact-review-handoff-heading'>
+      <section
+        className='bg-muted/10 grid gap-3 rounded-lg p-3'
+        aria-label='Artifact review handoff milestones'
+      >
+        <div className='flex flex-wrap items-start justify-between gap-3'>
           <div>
-            <h3>Review handoff path</h3>
-            <p>
+            <h3 className='text-sm font-semibold'>Review handoff path</h3>
+            <p className='text-muted-foreground mt-1 text-sm'>
               {reviewHandoff.availableCount}/{reviewHandoff.totalCount} review milestones are
               available as local artifacts.
             </p>
           </div>
           {reviewHandoff.nextFocus ? (
-            <span className='status-pill small pending'>next: {reviewHandoff.nextFocus.label}</span>
+            <Badge variant='outline'>next: {reviewHandoff.nextFocus.label}</Badge>
           ) : (
-            <span className='status-pill small done'>all review docs available</span>
+            <Badge variant='secondary'>all review docs available</Badge>
           )}
         </div>
-        <ol className='artifact-review-milestones'>
+        <ol className='grid gap-2 md:grid-cols-2'>
           {reviewHandoff.milestones.map((milestone) => (
-            <li key={milestone.path}>
-              <span
-                className={
-                  milestone.available ? "status-pill small done" : "status-pill small pending"
-                }
+            <li className='bg-background/45 grid gap-1 rounded-lg p-3' key={milestone.path}>
+              <Badge
+                className='justify-self-start'
+                variant={milestone.available ? "secondary" : "outline"}
               >
                 {milestone.available ? "available" : "pending"}
-              </span>
-              <strong>{milestone.label}</strong>
-              <small>{milestone.path}</small>
+              </Badge>
+              <strong className='text-sm'>{milestone.label}</strong>
+              <small className='text-muted-foreground text-xs break-all'>{milestone.path}</small>
             </li>
           ))}
         </ol>
       </section>
       {filteredArtifacts.length === 0 ? (
         <section
-          className='artifact-preview-empty'
+          className='bg-muted/10 rounded-lg p-4'
           aria-labelledby='artifact-preview-empty-heading'
         >
-          <h3 id='artifact-preview-empty-heading'>{emptyState.heading}</h3>
-          <p>{emptyState.message}</p>
+          <h3 id='artifact-preview-empty-heading' className='text-sm font-semibold'>
+            {emptyState.heading}
+          </h3>
+          <p className='text-muted-foreground mt-1 text-sm'>{emptyState.message}</p>
         </section>
       ) : (
         <RunArtifactPreviewGroups artifactGroups={artifactGroups} />
       )}
-    </section>
+    </RunDetailCard>
   );
 }
 

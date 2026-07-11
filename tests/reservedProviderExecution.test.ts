@@ -1,12 +1,12 @@
 import { writeFile } from "node:fs/promises";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { defaultConfig } from "../src/config/config";
-import { readCostEvents } from "../src/costs/costLedger";
-import { executeReservedProviderOperation } from "../src/costs/reservedProviderExecution";
-import { readCostReservationSummaries } from "../src/costs/costReservationStore";
-import { defaultStagePricing } from "../src/costs/pricing";
 import { readLedger } from "../src/core/ledger";
 import { createRun } from "../src/core/runStore";
+import { readCostEvents } from "../src/costs/costLedger";
+import { readCostReservationSummaries } from "../src/costs/costReservationStore";
+import { defaultStagePricing } from "../src/costs/pricing";
+import { executeReservedProviderOperation } from "../src/costs/reservedProviderExecution";
 import { sha256 } from "../src/utils/hash";
 import { useTempProject } from "./helpers";
 import { prepareReadyPaidRun, reservedAdapter } from "./paidRun";
@@ -216,10 +216,7 @@ describe("reserved provider execution", () => {
           new Promise((resolve) => {
             signal.addEventListener("abort", () => {
               observedAbort = true;
-              resolve({
-                kind: "definitely-not-sent",
-                reason: "cancelled-before-send",
-              });
+              resolve({ kind: "definitely-not-sent", reason: "cancelled-before-send" });
             });
           }),
       ),

@@ -1,12 +1,12 @@
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import path from "node:path";
 import type { StudioMutationActionId } from "../../../../src/studio/actionServiceMetadata";
+import { writeTemporaryInputFile } from "./studioCliMutationTempFile";
+import { isStaticCliAction, staticCliCommand } from "./studioCliStaticCommands";
 import {
   parseAnalyticsImportPayload,
   parseChannelHandoffDecisionPayload,
   parseEmptyPayload,
   parseIdeaApprovalPayload,
+  parseLocalModelCandidateEvalPayload,
   parsePackageArtifactRevisionPayload,
   parseRenderDecisionPayload,
   parseRunOnlyPayload,
@@ -25,6 +25,8 @@ export const studioCliMutationActionIds = [
   "evidence.run",
   "idea.approve",
   "ideas.run",
+  "model-eval-candidates.run",
+  "model-eval.run",
   "package.run",
   "package-artifact.revise",
   "readiness.run",
@@ -56,6 +58,8 @@ type RunOnlyCliActionId = Exclude<
   | "doctor.run"
   | "idea.approve"
   | "ideas.run"
+  | "model-eval.run"
+  | "model-eval-candidates.run"
   | "package-artifact.revise"
   | "render.decide"
   | "script.approve"
@@ -78,6 +82,10 @@ export async function cliArgsForAction(
   actionId: StudioCliMutationActionId,
   payload: unknown,
 ): Promise<StudioPreparedCliArgs> {
+  if (isStaticCliAction(actionId)) {
+    parseEmptyPayload(payload);
+    return prepared([...staticCliCommand(actionId), "--json"]);
+  }
   if (actionId === "analytics.import") {
     const input = parseAnalyticsImportPayload(payload);
     const temp = await writeTemporaryInputFile(
@@ -87,21 +95,19 @@ export async function cliArgsForAction(
     );
     return prepared(["analytics", "import", "--file", temp.filePath, "--json"], temp.cleanup);
   }
-  if (actionId === "analytics.report") {
-    parseEmptyPayload(payload);
-    return prepared(["analytics", "report", "--json"]);
-  }
-  if (actionId === "doctor.run") {
-    parseEmptyPayload(payload);
-    return prepared(["doctor", "--json"]);
-  }
   if (actionId === "idea.approve") {
     const input = parseIdeaApprovalPayload(payload);
     return prepared(["approve", "idea", "--run", input.runId, "--idea", input.ideaId, "--json"]);
   }
-  if (actionId === "ideas.run") {
-    parseEmptyPayload(payload);
-    return prepared(["ideas", "--json"]);
+  if (actionId === "model-eval-candidates.run") {
+    const input = parseLocalModelCandidateEvalPayload(payload);
+    return prepared([
+      "eval",
+      "local-model-candidates",
+      ...input.candidates.flatMap((candidate) => ["--candidate", candidate]),
+      ...(input.includeLocalGguf ? ["--include-local-gguf"] : []),
+      "--json",
+    ]);
   }
   if (actionId === "script.approve") {
     const input = parseScriptApprovalPayload(payload);
@@ -236,21 +242,4 @@ function analyticsImportTempFileName(sourceFileName: string, format: "csv" | "js
   return sourceFileName.toLowerCase().endsWith(extension)
     ? sourceFileName
     : `${sourceFileName}${extension}`;
-}
-
-async function writeTemporaryInputFile(
-  content: string,
-  directoryPrefix: string,
-  fileName: string,
-): Promise<{
-  cleanup: () => Promise<void>;
-  filePath: string;
-}> {
-  const directory = await mkdtemp(path.join(tmpdir(), directoryPrefix));
-  const filePath = path.join(directory, fileName);
-  await writeFile(filePath, content, { encoding: "utf8", mode: 0o600 });
-  return {
-    cleanup: () => rm(directory, { force: true, recursive: true }),
-    filePath,
-  };
 }

@@ -5,6 +5,20 @@ import {
 } from "../apps/studio/src/lib/runPrimaryAction";
 
 describe("Studio run primary action", () => {
+  it("does not promote global ideas generation as a run-bound web action", () => {
+    const action = buildStudioRunPrimaryAction(
+      runPrimaryActionFixture({ nextRecommendedCommand: "pnpm producer ideas", state: "NEW" }),
+    );
+
+    expect(action).toMatchObject({
+      command: null,
+      label: "No run-bound action",
+      mode: "complete",
+      routePath: null,
+      tone: "attention",
+    });
+  });
+
   it("promotes no-extra-input stage actions to inline web controls", () => {
     const action = buildStudioRunPrimaryAction(
       runPrimaryActionFixture({
@@ -99,10 +113,7 @@ describe("Studio run primary action", () => {
           nextAction: "Manual channel handoff decision is recorded.",
         },
         nextRecommendedCommand: null,
-        renderDecision: {
-          kind: "present",
-          nextAction: "Local render decision is recorded.",
-        },
+        renderDecision: { kind: "present", nextAction: "Local render decision is recorded." },
       }),
     );
 

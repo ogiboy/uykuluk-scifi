@@ -3,12 +3,7 @@ import type { PromptKey } from "./definitions.js";
 
 export type { PromptKey } from "./definitions.js";
 
-export type PromptProvenance = {
-  key: PromptKey;
-  hash: string;
-  artifact: string;
-  source?: string;
-};
+export type PromptProvenance = { key: PromptKey; hash: string; artifact: string; source?: string };
 
 /**
  * Creates a provenance metadata object for a prompt.
@@ -22,10 +17,5 @@ export function createPromptProvenance(
   artifact: string,
   source: string,
 ): PromptProvenance {
-  return {
-    key,
-    hash: sha256(prompt),
-    artifact,
-    source,
-  };
+  return { key, hash: sha256(prompt), artifact, source };
 }

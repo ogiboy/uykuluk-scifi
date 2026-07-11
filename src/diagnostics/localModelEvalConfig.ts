@@ -13,10 +13,7 @@ export type LocalModelEvalLlmOverrides = Partial<
   >
 >;
 
-export type LocalModelEvalConfigResult = {
-  appliedOverrides: string[];
-  config: ProducerConfig;
-};
+export type LocalModelEvalConfigResult = { appliedOverrides: string[]; config: ProducerConfig };
 
 /**
  * Applies one-run local model evaluation overrides without mutating the loaded project config.
@@ -44,10 +41,7 @@ export function applyLocalModelEvalOverrides(
       ...config,
       providers: {
         ...config.providers,
-        llm: {
-          ...config.providers.llm,
-          ...withoutUndefined(overrides),
-        },
+        llm: { ...config.providers.llm, ...withoutUndefined(overrides) },
       },
     },
   };

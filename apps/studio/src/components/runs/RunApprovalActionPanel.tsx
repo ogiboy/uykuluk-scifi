@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,14 +12,15 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import type { StudioRunDetail } from "@/lib/runSummaries";
+import { buildStudioActionPreflight } from "@/lib/studioActionPreflight";
 import {
   approvalActionForRun,
   approvalCommandForRun,
   approvalFormReady,
   approvalPayload,
 } from "@/lib/studioApprovalAction";
-import { buildStudioActionPreflight } from "@/lib/studioActionPreflight";
 import { useStudioGuardedActionSubmit } from "@/lib/useStudioGuardedActionSubmit";
+import { useState } from "react";
 import { StudioMutationResultPanel } from "../studio/StudioMutationResultPanel";
 import { RunActionPreflightPanel } from "./RunActionPreflightPanel";
 import { RunApprovalConfirmationDialog } from "./RunApprovalConfirmationDialog";
@@ -41,9 +41,7 @@ type RunApprovalActionPanelProps = Readonly<{
   >;
 }>;
 
-type FormSubmitEvent = Readonly<{
-  preventDefault: () => void;
-}>;
+type FormSubmitEvent = Readonly<{ preventDefault: () => void }>;
 
 /**
  * Renders guarded Studio approval forms for local workflow approval gates.
@@ -105,7 +103,7 @@ export function RunApprovalActionPanel({ run }: RunApprovalActionPanelProps) {
           <CardDescription>{config.description}</CardDescription>
         </CardHeader>
         <CardContent className='space-y-5'>
-          <p className='text-sm text-muted-foreground'>
+          <p className='text-muted-foreground text-sm'>
             This guarded Studio action uses the same CLI/core approval gate as the copy-paste
             command.
           </p>
@@ -119,7 +117,7 @@ export function RunApprovalActionPanel({ run }: RunApprovalActionPanelProps) {
               />
             ) : null}
             {config.actionId === "script.approve" ? (
-              <Label className='items-start gap-3 rounded-lg border bg-card p-3 text-sm leading-6'>
+              <Label className='bg-card items-start gap-3 rounded-lg border p-3 text-sm leading-6'>
                 <Checkbox
                   aria-label='Acknowledge non-blocking script review warnings'
                   checked={acknowledgeWarnings}
@@ -139,7 +137,7 @@ export function RunApprovalActionPanel({ run }: RunApprovalActionPanelProps) {
         </CardContent>
         {cliEquivalent ? (
           <CardFooter>
-            <code className='max-w-full break-all rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground'>
+            <code className='bg-muted text-muted-foreground max-w-full rounded-md px-2 py-1 text-xs break-all'>
               CLI equivalent: {cliEquivalent}
             </code>
           </CardFooter>

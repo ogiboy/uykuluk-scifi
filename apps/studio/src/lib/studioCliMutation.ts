@@ -5,18 +5,22 @@ import { fileURLToPath } from "node:url";
 import { ZodError } from "zod";
 import { projectRoot } from "./projectRoot";
 import { cliArgsForAction, type StudioCliMutationActionId } from "./studioCliMutationArgs";
+import {
+  appendBoundedStudioCliOutput,
+  studioCliHttpStatus,
+  studioCliResultStatus,
+  type StudioCliTerminationReason,
+} from "./studioCliProcessLimits";
 import { validateStudioMutationRequest } from "./studioMutationSecurity";
+import { captureStudioUnexpectedError } from "./studioObservability";
 
 export type { StudioCliMutationActionId } from "./studioCliMutationArgs";
 
-type CliResult = Readonly<{
-  stderr: string;
-  stdout: string;
-  status: number;
-}>;
+type CliResult = Readonly<{ stderr: string; stdout: string; status: number }>;
 
 const studioCliTimeoutMs = 20 * 60 * 1000;
 const studioCliKillGraceMs = 5_000;
+const studioCliOutputLimitChars = 128_000;
 
 /**
  * Runs a guarded Studio mutation through the canonical producer CLI.
@@ -48,21 +52,26 @@ export async function runStudioCliMutationRoute(
     const cli = await cliArgsForAction(actionId, payload);
     const result = await runProducerCliWithCleanup(cli.args, cli.cleanup);
     if (result.status !== 0) {
-      return jsonError(cliErrorMessage(result.stderr), 409, parseCliJsonOrNull(result.stdout));
+      return jsonError(
+        cliErrorMessage(result.stderr),
+        studioCliHttpStatus(result.status),
+        parseCliJsonOrNull(result.stdout),
+      );
     }
     return Response.json(
-      {
-        actionId,
-        record: parseCliJson(result.stdout),
-        status: "ok",
-      },
+      { actionId, record: parseCliJson(result.stdout), status: "ok" },
       { headers: noStoreHeaders() },
     );
   } catch (error) {
     if (error instanceof ZodError) {
       return jsonError(`Studio ${actionId} request is invalid.`, 400);
     }
-    return jsonError(error instanceof Error ? error.message : `Studio ${actionId} failed.`, 500);
+    captureStudioUnexpectedError(error, {
+      actionId,
+      boundary: "route-mutation",
+      routePath: new URL(request.url).pathname,
+    });
+    return jsonError(`Studio ${actionId} failed unexpectedly.`, 500);
   }
 }
 
@@ -79,11 +88,7 @@ async function runProducerCliWithCleanup(
 
 function jsonError(message: string, status: number, record: unknown = null): Response {
   return Response.json(
-    {
-      message,
-      ...(record ? { record } : {}),
-      status: "error",
-    },
+    { message, ...(record ? { record } : {}), status: "error" },
     { headers: noStoreHeaders(), status },
   );
 }
@@ -98,38 +103,53 @@ function runProducerCli(args: readonly string[]): Promise<CliResult> {
     const child = spawn(
       path.join(sourceRoot, "node_modules", ".bin", "tsx"),
       [path.join(sourceRoot, "src", "cli.ts"), ...args],
-      {
-        cwd: projectRoot(),
-        env: process.env,
-        shell: false,
-        windowsHide: true,
-      },
+      { cwd: projectRoot(), env: process.env, shell: false, windowsHide: true },
     );
     let settled = false;
-    let timedOut = false;
     let stdout = "";
     let stderr = "";
+    let terminationReason: StudioCliTerminationReason = null;
     let forceKillTimer: ReturnType<typeof setTimeout> | null = null;
-    const timeout = setTimeout(() => {
-      timedOut = true;
-      stderr = appendStderr(
-        stderr,
-        `Studio mutation CLI exceeded ${studioCliTimeoutMs}ms and was terminated.`,
-      );
+    const terminate = (
+      reason: Exclude<StudioCliTerminationReason, null>,
+      message: string,
+    ): void => {
+      if (terminationReason) {
+        return;
+      }
+      terminationReason = reason;
+      stderr = appendStderr(stderr, message);
       child.kill("SIGTERM");
       forceKillTimer = setTimeout(() => {
         child.kill("SIGKILL");
       }, studioCliKillGraceMs);
+    };
+    const timeout = setTimeout(() => {
+      terminate(
+        "timeout",
+        `Studio mutation CLI exceeded ${studioCliTimeoutMs}ms and was terminated.`,
+      );
     }, studioCliTimeoutMs);
     child.stdin?.end();
     child.stdout.setEncoding("utf8");
     child.stderr.setEncoding("utf8");
-    child.stdout.on("data", (chunk: string) => {
-      stdout += chunk;
-    });
-    child.stderr.on("data", (chunk: string) => {
-      stderr += chunk;
-    });
+    const appendOutput = (channel: "stderr" | "stdout", chunk: string): void => {
+      const current = channel === "stdout" ? stdout : stderr;
+      const limited = appendBoundedStudioCliOutput(current, chunk, studioCliOutputLimitChars);
+      if (limited.exceeded) {
+        terminate(
+          "output-limit",
+          "Studio mutation output exceeded safety limits and command was terminated.",
+        );
+      }
+      if (channel === "stdout") {
+        stdout = limited.value;
+      } else {
+        stderr = limited.value;
+      }
+    };
+    child.stdout.on("data", (chunk: string) => appendOutput("stdout", chunk));
+    child.stderr.on("data", (chunk: string) => appendOutput("stderr", chunk));
     child.on("error", (error) => {
       if (settled) return;
       settled = true;
@@ -140,7 +160,7 @@ function runProducerCli(args: readonly string[]): Promise<CliResult> {
       if (settled) return;
       settled = true;
       clearStudioCliTimers(timeout, forceKillTimer);
-      resolve({ stderr, stdout, status: timedOut ? 124 : (code ?? 1) });
+      resolve({ stderr, stdout, status: studioCliResultStatus(terminationReason, code) });
     });
   });
 }

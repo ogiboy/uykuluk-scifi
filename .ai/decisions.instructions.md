@@ -94,6 +94,8 @@ Constraints:
   hosted credentials.
 - Do not treat any local model as production-ready until it passes a controlled UykulukSciFi idea
   and script evaluation against the existing blockers and operator quality expectations.
+- Keep Ollama and `llama.cpp` base URLs on credential-free loopback origins. LAN/hosted endpoints
+  belong to a future explicit provider adapter and security review.
 
 ### CLI/core remains the workflow source of truth
 
@@ -120,6 +122,19 @@ Reason: This project is safety-sensitive even though it produces media rather th
 workflows, QA checklists, checkpoints, findings, and role guidance should be reviewable development
 artifacts so future agent work does not silently weaken approval gates or evidence quality. Runtime
 code must not require `.ai/` files to execute.
+
+### Studio observability is optional and never workflow authority
+
+Reason: Runtime error capture helps diagnose the primary web control surface, but telemetry must not
+become an approval, readiness, evidence, route-security, or availability dependency.
+
+Constraints:
+
+- Sentry stays disabled when no DSN is configured; local Studio operation remains complete.
+- Capture only unexpected Next.js and guarded-route boundary failures. Do not attach request bodies,
+  artifact contents, prompt text, provider output, credentials, or approval evidence.
+- Source-map upload credentials are build-time secrets outside Git.
+- Telemetry failure must never retry a mutation, alter producer state, or weaken CLI/core guards.
 
 ### Project-local capability routing is the agent tool authority
 

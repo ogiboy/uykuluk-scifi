@@ -51,13 +51,7 @@ export function buildStudioRunPrimaryAction(
     };
   }
   if (workbench.primary.command) {
-    return {
-      ...workbench.primary,
-      mode: "command",
-    };
+    return { ...workbench.primary, mode: "command" };
   }
-  return {
-    ...workbench.primary,
-    mode: "complete",
-  };
+  return { ...workbench.primary, mode: "complete" };
 }

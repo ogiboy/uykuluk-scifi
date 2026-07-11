@@ -1,5 +1,5 @@
-import { SafeExitError } from "./errors.js";
 import { isValidArtifactRelativePath } from "./artifactPathRules.js";
+import { SafeExitError } from "./errors.js";
 import { runPath } from "./runPaths.js";
 
 export { isValidArtifactRelativePath } from "./artifactPathRules.js";

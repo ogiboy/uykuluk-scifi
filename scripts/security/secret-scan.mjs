@@ -43,9 +43,7 @@ function trackedFiles() {
   const output = execFileSync(
     gitExecutable,
     ["ls-files", "--cached", "--others", "--exclude-standard"],
-    {
-      encoding: "utf8",
-    },
+    { encoding: "utf8" },
   );
   return output
     .split("\n")

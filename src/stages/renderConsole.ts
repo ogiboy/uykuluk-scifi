@@ -1,9 +1,9 @@
+import { renderDecisionCommandTemplates } from "./renderDecisionCommands.js";
 import {
   draftRenderManifestPath,
   draftRenderReviewPath,
   type DraftRenderManifest,
 } from "./renderEvidence.js";
-import { renderDecisionCommandTemplates } from "./renderDecisionCommands.js";
 
 /**
  * Formats the operator-facing console handoff after a local draft render completes.

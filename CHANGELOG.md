@@ -9,7 +9,28 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Features
+
+- add optional privacy-minimal Sentry capture for Studio error boundaries.
+- add guarded Studio local model candidate evaluation action.
+- block repeated idea titles using compact runtime idea history.
+- surface runtime idea history on a read-only Studio page.
+- show a v1 workflow control matrix on the Studio actions page.
+- show a route-level guarded action overview on the Studio actions page.
+
+### Styles
+
+- soften Studio run review nested surfaces and command blocks.
+- simplify the Studio home page into a compact control desk, home shortcuts rail, and route index.
+
+### Fixes
+
+- harden local Studio session issuance and distinguish CLI timeout from output-limit failures.
+- align guarded Studio control copy, mutation snapshots, and shadcn button behavior.
+- constrain local provider endpoints, encode idea-history prompt data, and add Studio security
+  headers.
+- keep Studio browser smoke independent of local run state and skip Sentry build uploads when upload
+  credentials are absent.
 
 ## v0.78.4 (2026-07-09)
 

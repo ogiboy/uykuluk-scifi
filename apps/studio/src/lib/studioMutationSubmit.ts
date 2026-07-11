@@ -6,6 +6,7 @@ import {
   summarizeStudioMutationRecord,
   type StudioMutationRecordSummary,
 } from "./studioMutationResultSummary";
+import { captureStudioUnexpectedError } from "./studioObservability";
 
 export type StudioMutationSubmitResult = Readonly<
   | {
@@ -17,6 +18,8 @@ export type StudioMutationSubmitResult = Readonly<
   | { kind: "error"; message: string; status?: number }
   | { kind: "success"; recordSummary: StudioMutationRecordSummary | null }
 >;
+
+export const studioMutationFetchTimeoutMs = 30_000;
 
 /**
  * Posts a guarded same-origin Studio mutation request with a local session proof.
@@ -39,11 +42,32 @@ export async function submitStudioJsonMutation(input: {
       message: error instanceof Error ? error.message : "Studio local session failed.",
     };
   }
-  const response = await fetch(input.routePath, {
-    body: JSON.stringify(input.body),
-    headers,
-    method: "POST",
-  });
+  let body: string;
+  try {
+    body = JSON.stringify(input.body);
+  } catch {
+    return { kind: "error", message: "Studio action payload is not valid JSON." };
+  }
+  let response: Response;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), studioMutationFetchTimeoutMs);
+  try {
+    response = await fetch(input.routePath, {
+      body,
+      headers,
+      method: "POST",
+      signal: controller.signal,
+    });
+  } catch (error) {
+    captureStudioUnexpectedError(error, {
+      actionId: input.actionId,
+      boundary: "client-mutation",
+      routePath: input.routePath,
+    });
+    return { kind: "error", message: input.fallbackError };
+  } finally {
+    clearTimeout(timeout);
+  }
   const payload = (await response.json().catch(() => null)) as {
     message?: string;
     record?: unknown;

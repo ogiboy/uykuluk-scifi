@@ -13,12 +13,14 @@ describe("producer doctor llama.cpp provider", () => {
 
   it("passes when the configured llama.cpp model is served", async () => {
     await useLlamaCppConfig();
-    const fetchMock = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({ data: [{ id: "Mistral-7B-Instruct-v0.3.Q4_K_M.gguf" }] }), {
-        status: 200,
-        headers: { "content-type": "application/json" },
-      }),
-    );
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ data: [{ id: "Mistral-7B-Instruct-v0.3.Q4_K_M.gguf" }] }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        }),
+      );
     vi.stubGlobal("fetch", fetchMock);
 
     const report = await runDoctor();

@@ -1,11 +1,8 @@
-import { CopyableCommand } from "./CopyableCommand";
-import { StartIdeasActionPanel } from "./StartIdeasActionPanel";
-import { NO_RUNS_NEXT_COMMAND } from "@/lib/runSummaryCopy";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { StartIdeasReadinessSummary } from "@/lib/startIdeasReadiness";
+import { StartIdeasActionPanel } from "./StartIdeasActionPanel";
 
-type EmptyRunCardProps = Readonly<{
-  readiness: StartIdeasReadinessSummary;
-}>;
+type EmptyRunCardProps = Readonly<{ readiness: StartIdeasReadinessSummary }>;
 
 /**
  * Renders the first-run empty state with guarded local idea generation.
@@ -15,17 +12,19 @@ type EmptyRunCardProps = Readonly<{
  */
 export function EmptyRunCard({ readiness }: EmptyRunCardProps) {
   return (
-    <article className='active-run-card'>
-      <h3>No local runs yet</h3>
-      <p>
-        Start with a safe local idea run. Studio will show the persisted run queue, evidence,
-        readiness, and guarded approval actions once CLI/core creates the run.
-      </p>
-      <div className='operator-command-block'>
-        <strong>Next safe action</strong>
-        <CopyableCommand command={NO_RUNS_NEXT_COMMAND} label='Next safe action' />
-      </div>
-      <StartIdeasActionPanel readiness={readiness} />
-    </article>
+    <Card>
+      <CardHeader>
+        <CardTitle>
+          <h3>No local runs yet</h3>
+        </CardTitle>
+        <CardDescription>
+          Start with a safe local idea run. Studio will show the persisted run queue, evidence,
+          readiness, and guarded approval actions once CLI/core creates the run.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <StartIdeasActionPanel readiness={readiness} />
+      </CardContent>
+    </Card>
   );
 }

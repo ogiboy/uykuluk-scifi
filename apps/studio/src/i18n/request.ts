@@ -8,9 +8,5 @@ export default getRequestConfig(async () => {
   const cookieStore = await cookies();
   const locale = normalizeStudioLocale(cookieStore.get(STUDIO_LOCALE_COOKIE)?.value);
 
-  return {
-    locale,
-    messages: STUDIO_MESSAGES[locale],
-    timeZone: "UTC",
-  };
+  return { locale, messages: STUDIO_MESSAGES[locale], timeZone: "UTC" };
 });

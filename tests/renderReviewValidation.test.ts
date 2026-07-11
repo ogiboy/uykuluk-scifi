@@ -46,19 +46,14 @@ describe("draft render review validation", () => {
     await writeFile(
       manifestPath,
       `${JSON.stringify(
-        {
-          ...manifest,
-          ffmpeg: { ...manifest.ffmpeg, reviewCommand: "echo unsafe" },
-        },
+        { ...manifest, ffmpeg: { ...manifest.ffmpeg, reviewCommand: "echo unsafe" } },
         null,
         2,
       )}\n`,
       "utf8",
     );
 
-    const evidence = (await generateEvidenceBundle(runId)) as {
-      draftRender: DraftRenderEvidence;
-    };
+    const evidence = (await generateEvidenceBundle(runId)) as { draftRender: DraftRenderEvidence };
     expect(evidence.draftRender).toMatchObject({
       message: expect.stringContaining("review command"),
       status: "block",

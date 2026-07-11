@@ -11,11 +11,7 @@ export const runReviewTabValues = [
 
 export type RunReviewTab = (typeof runReviewTabValues)[number];
 
-export type RunReviewTabFocus = Readonly<{
-  detail: string;
-  label: string;
-  tab: RunReviewTab;
-}>;
+export type RunReviewTabFocus = Readonly<{ detail: string; label: string; tab: RunReviewTab }>;
 
 export type RunReviewSearchParams = Readonly<Record<string, string | string[] | undefined>>;
 

@@ -1,6 +1,6 @@
-import { productionPackageManifestPath } from "./productionPackageIntegrity.js";
 import type { FinalReviewBundle } from "./finalReviewBundleContracts.js";
 import { acceptedFinalReviewNextSafeAction } from "./finalReviewBundleValidation.js";
+import { productionPackageManifestPath } from "./productionPackageIntegrity.js";
 
 type FinalReviewArtifact = FinalReviewBundle["artifacts"][number];
 type FinalReviewArtifactSpec = readonly [

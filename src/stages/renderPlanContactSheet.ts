@@ -1,12 +1,12 @@
 import { bulletList, table } from "../utils/markdown.js";
 import { renderOperatorDecisionSection } from "./operatorReviewMarkdown.js";
-import { AssetProvenance, RenderPlan } from "./renderPlanSchemas.js";
 import {
   renderVisualRhythmReview,
   summarizeRenderPlanReview,
   type RenderPlanBookendReview,
   type RenderPlanSceneAssetReview,
 } from "./renderPlanReviewSummary.js";
+import { AssetProvenance, RenderPlan } from "./renderPlanSchemas.js";
 
 /**
  * Builds a Markdown contact sheet for a storyboard render plan.

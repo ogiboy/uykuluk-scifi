@@ -1,5 +1,5 @@
-import path from "node:path";
 import { chmod, mkdir, readFile, writeFile } from "node:fs/promises";
+import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { defaultConfig } from "../src/config/config";
 import { listRuns } from "../src/core/runStore";
@@ -89,12 +89,14 @@ describe("producer doctor", () => {
 
   it("blocks when the configured Ollama model is not installed", async () => {
     await useOllamaConfig();
-    const fetchMock = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({ models: [{ name: "llama3.2:3b" }] }), {
-        status: 200,
-        headers: { "content-type": "application/json" },
-      }),
-    );
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ models: [{ name: "llama3.2:3b" }] }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        }),
+      );
     vi.stubGlobal("fetch", fetchMock);
 
     const report = await runDoctor();
@@ -114,12 +116,14 @@ describe("producer doctor", () => {
     await useOllamaConfig();
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue(
-        new Response("local-secret-response", {
-          status: 500,
-          statusText: "Internal Server Error",
-        }),
-      ),
+      vi
+        .fn()
+        .mockResolvedValue(
+          new Response("local-secret-response", {
+            status: 500,
+            statusText: "Internal Server Error",
+          }),
+        ),
     );
 
     const report = await runDoctor();
@@ -188,11 +192,7 @@ describe("producer doctor", () => {
           ...defaultConfig,
           providers: {
             ...defaultConfig.providers,
-            youtube: {
-              enabled: true,
-              allowPrivateUpload: true,
-              allowPublicPublish: true,
-            },
+            youtube: { enabled: true, allowPrivateUpload: true, allowPublicPublish: true },
           },
           safeguards: {
             ...defaultConfig.safeguards,
@@ -225,10 +225,7 @@ async function useOllamaConfig(): Promise<void> {
         ...defaultConfig,
         providers: {
           ...defaultConfig.providers,
-          llm: {
-            ...defaultConfig.providers.llm,
-            mode: "ollama",
-          },
+          llm: { ...defaultConfig.providers.llm, mode: "ollama" },
         },
       },
       null,

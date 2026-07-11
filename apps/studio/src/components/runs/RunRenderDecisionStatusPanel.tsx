@@ -1,3 +1,9 @@
+import {
+  RunDetailCard,
+  RunDetailStatusBadge,
+  RunMetadataList,
+  type RunMetadataItem,
+} from "@/components/runs/RunDetailCard";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 
 type RunRenderDecisionStatusPanelProps = Readonly<{
@@ -12,48 +18,54 @@ type RunRenderDecisionStatusPanelProps = Readonly<{
 export function RunRenderDecisionStatusPanel({
   renderDecision,
 }: RunRenderDecisionStatusPanelProps) {
+  const metadataItems =
+    renderDecision.kind === "present" ? renderDecisionMetadataItems(renderDecision) : [];
+
   return (
-    <section className='panel' aria-labelledby='render-decision-status-heading'>
-      <h2 id='render-decision-status-heading'>Render Decision Status</h2>
-      <p>
-        <span className={renderDecisionStatusClassName(renderDecision.kind)}>
+    <RunDetailCard
+      headingId='render-decision-status-heading'
+      title='Render Decision Status'
+      description='Read-only display. Use the Studio decision rail when available, or the CLI/core fallback for recovery.'
+    >
+      <p className='flex flex-wrap items-center gap-2'>
+        <RunDetailStatusBadge tone={renderDecisionStatusTone(renderDecision.kind)}>
           {renderDecision.kind}
-        </span>{" "}
-        {renderDecision.message}
+        </RunDetailStatusBadge>
+        <span>{renderDecision.message}</span>
       </p>
-      {renderDecision.kind === "present" ? (
-        <dl className='run-metadata'>
-          <div>
-            <dt>Decision</dt>
-            <dd>{renderDecision.decision.decision}</dd>
-          </div>
-          <div>
-            <dt>Reviewed by</dt>
-            <dd>{renderDecision.decision.reviewedBy}</dd>
-          </div>
-          <div>
-            <dt>Created</dt>
-            <dd>{renderDecision.decision.createdAt}</dd>
-          </div>
-        </dl>
-      ) : null}
+      {metadataItems.length > 0 ? <RunMetadataList items={metadataItems} /> : null}
       {renderDecision.nextAction ? (
-        <p className='artifact-action'>Next action: {renderDecision.nextAction}</p>
+        <p className='rounded-lg bg-amber-500/10 p-3 text-sm text-amber-900 dark:text-amber-100'>
+          Next action: {renderDecision.nextAction}
+        </p>
       ) : null}
       {renderDecision.kind === "present" ? (
-        <p className='artifact-action'>Review command: {renderDecision.reviewCommand}</p>
+        <p className='bg-muted/10 text-muted-foreground rounded-lg p-3 font-mono text-xs break-all'>
+          Review command: {renderDecision.reviewCommand}
+        </p>
       ) : null}
-      <p>Read-only display. Use the CLI to record or repair local render decisions.</p>
-    </section>
+    </RunDetailCard>
   );
 }
 
-function renderDecisionStatusClassName(status: StudioRunDetail["renderDecision"]["kind"]): string {
+function renderDecisionStatusTone(
+  status: StudioRunDetail["renderDecision"]["kind"],
+): "blocked" | "success" | "warning" {
   if (status === "present") {
-    return "status-pill small";
+    return "success";
   }
   if (status === "missing") {
-    return "status-pill small warning";
+    return "warning";
   }
-  return "status-pill small blocked";
+  return "blocked";
+}
+
+function renderDecisionMetadataItems(
+  renderDecision: Extract<StudioRunDetail["renderDecision"], { kind: "present" }>,
+): RunMetadataItem[] {
+  return [
+    { label: "Decision", value: renderDecision.decision.decision },
+    { label: "Reviewed by", value: renderDecision.decision.reviewedBy },
+    { label: "Created", value: renderDecision.decision.createdAt },
+  ];
 }

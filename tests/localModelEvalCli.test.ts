@@ -1,6 +1,6 @@
-import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { useTempProject } from "./helpers";
 
@@ -86,9 +86,7 @@ describe("producer local-model eval CLI", () => {
     expect(result.stderr).toContain("Local model candidate eval needs more candidates.");
     expect(JSON.parse(result.stdout) as unknown).toMatchObject({
       passed: false,
-      operatorGuidance: expect.objectContaining({
-        decision: "try-more-candidates",
-      }),
+      operatorGuidance: expect.objectContaining({ decision: "try-more-candidates" }),
       recommendedCandidate: null,
     });
   });
@@ -123,14 +121,43 @@ describe("producer local-model eval CLI", () => {
 });
 
 function runCli(args: string[]): { status: number | null; stderr: string; stdout: string } {
+  const nodeOptions = (process.env.NODE_OPTIONS ?? "")
+    .split(/\s+/)
+    .map((option) => option.trim())
+    .filter(Boolean)
+    .filter((option) => !option.toLowerCase().startsWith("--inspect"));
+
   const result = spawnSync(
     path.join(repoRoot, "node_modules", ".bin", "tsx"),
     [path.join(repoRoot, "src", "cli.ts"), ...args],
-    { cwd: process.cwd(), encoding: "utf8" },
+    {
+      cwd: process.cwd(),
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        NODE_OPTIONS: nodeOptions.length > 0 ? nodeOptions.join(" ") : undefined,
+      },
+    },
   );
-  return {
-    status: result.status,
-    stderr: result.stderr.toString(),
-    stdout: result.stdout.toString(),
-  };
+  const rawStderr = result.stderr.toString();
+  const sanitizedStderr = rawStderr
+    .split(/\r?\n/)
+    .filter((line) => !isNodeInspectorNoise(line))
+    .join("\n")
+    .trim();
+  return { status: result.status, stderr: sanitizedStderr, stdout: result.stdout.toString() };
+}
+
+function isNodeInspectorNoise(line: string): boolean {
+  const normalized = line
+    .replaceAll(String.fromCharCode(27), "")
+    .replace(/\[[0-9;]*[a-zA-Z]/g, "")
+    .trim()
+    .toLowerCase();
+  return (
+    normalized === "debugger attached." ||
+    normalized === "waiting for the debugger to disconnect..." ||
+    normalized.startsWith("debugger listening on ws://") ||
+    normalized === "for help, see: https://nodejs.org/learn/getting-started/debugging"
+  );
 }

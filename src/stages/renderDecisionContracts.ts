@@ -29,10 +29,7 @@ export const renderDecisionRecordSchema = z.strictObject({
   }),
   nextSafeAction: z.string().min(1),
   notes: z.string().min(1),
-  renderApproval: z.strictObject({
-    approvalId: z.string().min(1),
-    approvedRef: digestSchema,
-  }),
+  renderApproval: z.strictObject({ approvalId: z.string().min(1), approvedRef: digestSchema }),
   reviewedBy: z.string().min(1),
   runId: z.string().min(1),
   schemaVersion: z.literal(1),

@@ -12,16 +12,10 @@ export type StudioRenderPlanReviewActionRun = Pick<
   StudioRunDetail,
   "nextRecommendedCommand" | "runId" | "state"
 > &
-  Readonly<{
-    artifacts: readonly Pick<StudioArtifactPreview, "exists" | "path">[];
-  }>;
+  Readonly<{ artifacts: readonly Pick<StudioArtifactPreview, "exists" | "path">[] }>;
 
 export type StudioArtifactReviewAction = StudioStageActionConfig &
-  Readonly<{
-    command: string;
-    details: string;
-    eyebrow: string;
-  }>;
+  Readonly<{ command: string; details: string; eyebrow: string }>;
 
 type ArtifactReviewDefinition = Readonly<{
   actionId: Extract<StudioStageActionId, "render.review" | "render-plan.review" | "voice.review">;

@@ -1,6 +1,5 @@
 "use client";
 
-import { useId, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import { buildStudioActionPreflight } from "@/lib/studioActionPreflight";
 import { useStudioGuardedActionSubmit } from "@/lib/useStudioGuardedActionSubmit";
+import { useId, useState } from "react";
 import { StudioMutationResultPanel } from "../studio/StudioMutationResultPanel";
 import { RunActionPreflightPanel } from "./RunActionPreflightPanel";
 import {
@@ -20,9 +20,7 @@ import {
   type ChannelHandoffDecisionValue,
 } from "./RunChannelHandoffDecisionSelector";
 
-type RunChannelHandoffDecisionActionPanelProps = Readonly<{
-  run: StudioRunDetail;
-}>;
+type RunChannelHandoffDecisionActionPanelProps = Readonly<{ run: StudioRunDetail }>;
 
 /**
  * Renders the guarded Studio form for recording one manual channel-handoff decision.
@@ -59,10 +57,7 @@ export function RunChannelHandoffDecisionActionPanel({
     return null;
   }
 
-  const preflight = buildStudioActionPreflight({
-    actionId: "channel-handoff.decide",
-    run,
-  });
+  const preflight = buildStudioActionPreflight({ actionId: "channel-handoff.decide", run });
   const candidateRequired = decision === "accepted-for-manual-channel-prep";
   const trimmedCandidateId = thumbnailCandidateId.trim();
   const formReady =
@@ -109,7 +104,7 @@ export function RunChannelHandoffDecisionActionPanel({
         </CardTitle>
       </CardHeader>
       <CardContent className='space-y-6'>
-        <p className='text-sm text-muted-foreground'>
+        <p className='text-muted-foreground text-sm'>
           This guarded Studio action writes the same local decision evidence as the CLI. It does not
           upload media, schedule a video, or approve public publish.
         </p>
@@ -126,7 +121,7 @@ export function RunChannelHandoffDecisionActionPanel({
               value={thumbnailCandidateId}
               onChange={(event) => setThumbnailCandidateId(event.target.value)}
             />
-            <p className='text-xs text-muted-foreground'>
+            <p className='text-muted-foreground text-xs'>
               Recommended candidate: {recommendedCandidateId}. Required only for accepted channel
               prep.
             </p>
@@ -173,7 +168,7 @@ export function RunChannelHandoffDecisionActionPanel({
       <CardContent className='space-y-3'>
         <StudioMutationResultPanel state={state} />
         {run.channelHandoffDecision.nextAction ? (
-          <p className='rounded-md border bg-background px-3 py-2 font-mono text-xs'>
+          <p className='bg-background rounded-md border px-3 py-2 font-mono text-xs'>
             CLI equivalent: {run.channelHandoffDecision.nextAction}
           </p>
         ) : null}

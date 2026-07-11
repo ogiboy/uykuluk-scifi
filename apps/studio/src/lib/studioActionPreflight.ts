@@ -133,11 +133,7 @@ function readinessItem(run: StudioActionPreflightRun): StudioActionPreflightItem
       status: "done",
     };
   }
-  return {
-    detail: run.readinessMessage,
-    label: "Readiness",
-    status: "attention",
-  };
+  return { detail: run.readinessMessage, label: "Readiness", status: "attention" };
 }
 
 function blockedActionItem(run: StudioActionPreflightRun): StudioActionPreflightItem {

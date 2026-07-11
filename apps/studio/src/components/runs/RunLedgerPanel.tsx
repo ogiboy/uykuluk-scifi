@@ -1,9 +1,8 @@
+import { RunDetailCard } from "@/components/runs/RunDetailCard";
+import { Badge } from "@/components/ui/badge";
 import { formatApprovalLedgerItem } from "@/lib/runLedgerCopy";
 
-type RunLedgerPanelProps = Readonly<{
-  approvals: readonly unknown[];
-  warnings: readonly string[];
-}>;
+type RunLedgerPanelProps = Readonly<{ approvals: readonly unknown[]; warnings: readonly string[] }>;
 
 /**
  * Renders the approval ledger and warning list for a run.
@@ -13,35 +12,61 @@ type RunLedgerPanelProps = Readonly<{
  */
 export function RunLedgerPanel({ approvals, warnings }: RunLedgerPanelProps) {
   return (
-    <section className='panel' aria-labelledby='run-ledger-heading'>
-      <h2 id='run-ledger-heading'>Approval Ledger And Warnings</h2>
-      <p>
-        Read-only persisted operator evidence. Studio does not approve, acknowledge, or clear
-        warnings.
-      </p>
+    <RunDetailCard
+      headingId='run-ledger-heading'
+      title='Approval Ledger And Warnings'
+      description='Read-only persisted operator evidence. Studio does not approve, acknowledge, or clear warnings.'
+    >
+      <div className='grid gap-3'>
+        <div className='flex flex-wrap items-center gap-2'>
+          <h3 className='text-sm font-semibold'>Approvals</h3>
+          <Badge variant={approvals.length > 0 ? "secondary" : "outline"}>
+            {approvals.length} recorded
+          </Badge>
+        </div>
+        {approvals.length > 0 ? (
+          <ul className='grid gap-2'>
+            {approvals.map((approval, index) => (
+              <li
+                className='bg-muted/10 text-muted-foreground rounded-lg p-3 text-sm'
+                key={approvalKey(approval, index)}
+              >
+                {formatApprovalLedgerItem(approval, index)}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className='bg-muted/10 text-muted-foreground rounded-lg p-3 text-sm'>
+            No approvals recorded.
+          </p>
+        )}
+      </div>
 
-      <h3>Approvals</h3>
-      {approvals.length > 0 ? (
-        <ul>
-          {approvals.map((approval, index) => (
-            <li key={approvalKey(approval, index)}>{formatApprovalLedgerItem(approval, index)}</li>
-          ))}
-        </ul>
-      ) : (
-        <p>No approvals recorded.</p>
-      )}
-
-      <h3>Warnings</h3>
-      {warnings.length > 0 ? (
-        <ul>
-          {warnings.map((warning, index) => (
-            <li key={`warning-${index}-${warning}`}>{warning}</li>
-          ))}
-        </ul>
-      ) : (
-        <p>No warnings recorded.</p>
-      )}
-    </section>
+      <div className='grid gap-3'>
+        <div className='flex flex-wrap items-center gap-2'>
+          <h3 className='text-sm font-semibold'>Warnings</h3>
+          <Badge variant={warnings.length > 0 ? "destructive" : "outline"}>
+            {warnings.length} recorded
+          </Badge>
+        </div>
+        {warnings.length > 0 ? (
+          <ul className='grid gap-2'>
+            {warnings.map((warning, index) => (
+              <li
+                className='rounded-lg bg-amber-500/10 p-3 text-sm text-amber-900 dark:text-amber-100'
+                key={`warning-${index}-${warning}`}
+              >
+                {warning}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className='bg-muted/10 text-muted-foreground rounded-lg p-3 text-sm'>
+            No warnings recorded.
+          </p>
+        )}
+      </div>
+    </RunDetailCard>
   );
 }
 

@@ -1,10 +1,6 @@
 import { runReviewHref, type RunReviewTab } from "./runReviewNavigation";
 
-type MutationReviewTarget = Readonly<{
-  fragment?: string;
-  label: string;
-  tab: RunReviewTab;
-}>;
+type MutationReviewTarget = Readonly<{ fragment?: string; label: string; tab: RunReviewTab }>;
 
 const mutationReviewTargets: Readonly<Record<string, MutationReviewTarget>> = {
   "analytics.import": target("progress", "Open affected run"),

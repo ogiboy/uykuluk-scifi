@@ -10,21 +10,26 @@ const localReviewPayloadShape = {
   runId: runIdSchema,
 } as const;
 
-const ideaApprovalPayloadSchema = z.strictObject({
-  ideaId: z.string().min(1),
-  runId: runIdSchema,
-});
+const ideaApprovalPayloadSchema = z.strictObject({ ideaId: z.string().min(1), runId: runIdSchema });
 
 const scriptApprovalPayloadSchema = z.strictObject({
   acknowledgeWarnings: z.boolean().default(false),
   runId: runIdSchema,
 });
 
-const runOnlyPayloadSchema = z.strictObject({
-  runId: runIdSchema,
-});
+const runOnlyPayloadSchema = z.strictObject({ runId: runIdSchema });
 
 const emptyPayloadSchema = z.strictObject({});
+const localModelCandidateNameSchema = z.string().trim().min(1).max(240);
+const localModelCandidateEvalPayloadSchema = z
+  .strictObject({
+    candidates: z.array(localModelCandidateNameSchema).max(12).default([]),
+    includeLocalGguf: z.boolean().default(false),
+  })
+  .refine((input) => input.includeLocalGguf || input.candidates.length > 0, {
+    message: "Candidate evaluation requires at least one model name or local GGUF discovery.",
+    path: ["candidates"],
+  });
 
 const revisionContentSchema = z.string().min(1).max(200_000);
 const analyticsImportContentSchema = z.string().min(1).max(1_000_000);
@@ -115,6 +120,12 @@ export function parseRunOnlyPayload(payload: unknown): z.infer<typeof runOnlyPay
 
 export function parseEmptyPayload(payload: unknown): z.infer<typeof emptyPayloadSchema> {
   return emptyPayloadSchema.parse(payload);
+}
+
+export function parseLocalModelCandidateEvalPayload(
+  payload: unknown,
+): z.infer<typeof localModelCandidateEvalPayloadSchema> {
+  return localModelCandidateEvalPayloadSchema.parse(payload);
 }
 
 export function parseRenderDecisionPayload(

@@ -90,12 +90,7 @@ describe("run filesystem symlink containment", () => {
     await symlink(outside, target, "file");
 
     await expect(
-      appendLedgerEvent({
-        runId: run.runId,
-        type: "WARNING",
-        stage: "test",
-        message: "blocked",
-      }),
+      appendLedgerEvent({ runId: run.runId, type: "WARNING", stage: "test", message: "blocked" }),
     ).rejects.toThrow(/symbolic link|symlink/i);
     expect(await readFile(outside, "utf8")).toBe("sentinel\n");
   });
@@ -105,12 +100,7 @@ describe("run filesystem symlink containment", () => {
       name: "core",
       target: ledgerPath,
       append: async (runId: string) =>
-        appendLedgerEvent({
-          runId,
-          type: "WARNING",
-          stage: "test",
-          message: "blocked",
-        }),
+        appendLedgerEvent({ runId, type: "WARNING", stage: "test", message: "blocked" }),
     },
     {
       name: "cost",
@@ -163,10 +153,7 @@ describe("run filesystem symlink containment", () => {
 
     expect(() => reservationLockPath()).toThrow(/symbolic link|symlink/i);
     await expect(
-      withCostReservationLock(async () => "unreachable", {
-        timeoutMs: 20,
-        retryMs: 5,
-      }),
+      withCostReservationLock(async () => "unreachable", { timeoutMs: 20, retryMs: 5 }),
     ).rejects.toThrow(/symbolic link|symlink/i);
   });
 

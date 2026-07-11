@@ -25,26 +25,15 @@ describe("Piper provider evidence", () => {
     await writeFile(modelPath, modelContent, "utf8");
     await writeFile(configPath, configContent, "utf8");
 
-    const provider = await readPiperProviderEvidence({
-      binary: "piper",
-      configPath,
-      modelPath,
-    });
+    const provider = await readPiperProviderEvidence({ binary: "piper", configPath, modelPath });
     const markdown = renderVoiceoverReviewMarkdown({
       schemaVersion: 1,
       runId: "run_piper_provenance",
       createdAt: "2026-06-25T13:00:00.000Z",
       mode: "local-piper",
       quality: "local-piper",
-      source: {
-        path: "production/voiceover.txt",
-        sha256: sha256("voiceover"),
-        wordCount: 12,
-      },
-      renderPlan: {
-        path: "production/render_plan.json",
-        digest: sha256("render-plan"),
-      },
+      source: { path: "production/voiceover.txt", sha256: sha256("voiceover"), wordCount: 12 },
+      renderPlan: { path: "production/render_plan.json", digest: sha256("render-plan") },
       output: {
         path: "production/audio/voiceover.wav",
         sha256: sha256("audio"),
@@ -72,10 +61,7 @@ describe("Piper provider evidence", () => {
 
   it("fails closed when local Piper model evidence is unavailable", async () => {
     await expect(
-      readPiperProviderEvidence({
-        binary: "piper",
-        modelPath: path.join(tempDir, "missing.onnx"),
-      }),
+      readPiperProviderEvidence({ binary: "piper", modelPath: path.join(tempDir, "missing.onnx") }),
     ).rejects.toThrow(/Piper model is missing/);
   });
 

@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 export type StudioLastMutationResultKind = "blocked" | "error" | "success";
 
 export type StudioLastMutationResult = Readonly<{
@@ -17,6 +19,30 @@ export const studioLastMutationResultEventName = "uykuluk:studio-last-mutation-r
 const storageKey = "uykuluk:studio:last-mutation-result:v1";
 const maxFactCount = 8;
 const maxTextLength = 240;
+const boundedRequiredStringSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .transform((value) => value.slice(0, maxTextLength));
+const boundedOptionalStringSchema = z
+  .union([z.string(), z.null()])
+  .transform((value) => boundedString(value));
+const studioLastMutationResultSchema = z.strictObject({
+  actionId: boundedRequiredStringSchema,
+  facts: z.array(z.unknown()).transform((facts) =>
+    facts
+      .map((fact) => boundedString(fact))
+      .filter(isString)
+      .slice(0, maxFactCount),
+  ),
+  kind: z.enum(["blocked", "error", "success"]),
+  message: boundedRequiredStringSchema,
+  recordedAtIso: z.iso.datetime(),
+  refreshedPersistedState: z.boolean(),
+  routePath: boundedRequiredStringSchema,
+  runId: boundedOptionalStringSchema,
+  status: z.int().min(100).max(599).optional(),
+});
 
 /**
  * Reads the latest same-tab Studio mutation result from session storage.
@@ -62,10 +88,13 @@ export function writeStudioLastMutationResult(result: StudioLastMutationResult):
   if (!storage) {
     return;
   }
-  const normalized = normalizeStudioLastMutationResult(result);
+  const normalized = studioLastMutationResultSchema.safeParse(result);
+  if (!normalized.success) {
+    return;
+  }
   try {
-    storage.setItem(storageKey, JSON.stringify(normalized));
-    dispatchStudioLastMutationResult(normalized);
+    storage.setItem(storageKey, JSON.stringify(normalized.data));
+    dispatchStudioLastMutationResult(normalized.data);
   } catch {
     // UI notice persistence must never break the guarded action path.
   }
@@ -88,47 +117,8 @@ export function clearStudioLastMutationResult(): void {
 }
 
 export function parseStudioLastMutationResult(value: unknown): StudioLastMutationResult | null {
-  if (!isRecord(value)) {
-    return null;
-  }
-  const kind = mutationKind(value.kind);
-  const actionId = boundedString(value.actionId);
-  const routePath = boundedString(value.routePath);
-  const message = boundedString(value.message);
-  const recordedAtIso = boundedString(value.recordedAtIso);
-  if (!kind || !actionId || !routePath || !message || !recordedAtIso) {
-    return null;
-  }
-  return normalizeStudioLastMutationResult({
-    actionId,
-    facts: Array.isArray(value.facts) ? value.facts.filter(isString) : [],
-    kind,
-    message,
-    recordedAtIso,
-    refreshedPersistedState: value.refreshedPersistedState === true,
-    routePath,
-    runId: boundedString(value.runId),
-    status: finiteStatus(value.status),
-  });
-}
-
-function normalizeStudioLastMutationResult(
-  result: StudioLastMutationResult,
-): StudioLastMutationResult {
-  return {
-    actionId: boundedString(result.actionId) ?? "unknown",
-    facts: result.facts
-      .map((fact) => boundedString(fact))
-      .filter(isString)
-      .slice(0, maxFactCount),
-    kind: result.kind,
-    message: boundedString(result.message) ?? "Studio action finished.",
-    recordedAtIso: boundedString(result.recordedAtIso) ?? new Date().toISOString(),
-    refreshedPersistedState: result.refreshedPersistedState,
-    routePath: boundedString(result.routePath) ?? "unknown",
-    runId: boundedString(result.runId),
-    status: finiteStatus(result.status),
-  };
+  const parsed = studioLastMutationResultSchema.safeParse(value);
+  return parsed.success ? parsed.data : null;
 }
 
 function dispatchStudioLastMutationResult(result: StudioLastMutationResult | null): void {
@@ -147,26 +137,12 @@ function safeSessionStorage(): Storage | null {
   }
 }
 
-function mutationKind(value: unknown): StudioLastMutationResultKind | null {
-  return value === "blocked" || value === "error" || value === "success" ? value : null;
-}
-
-function finiteStatus(value: unknown): number | undefined {
-  return typeof value === "number" && Number.isInteger(value) && value >= 100 && value <= 599
-    ? value
-    : undefined;
-}
-
 function boundedString(value: unknown): string | null {
   if (typeof value !== "string") {
     return null;
   }
   const trimmed = value.trim();
   return trimmed ? trimmed.slice(0, maxTextLength) : null;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function isString(value: string | null): value is string {

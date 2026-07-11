@@ -60,15 +60,7 @@ describe("Studio channel handoff decision action route", () => {
 
   it("rejects unsafe or malformed Studio mutation requests before core execution", async () => {
     await expectRouteError(studioJsonRequest({}, { actionHeader: "" }), 403);
-    await expectRouteError(
-      studioJsonRequest(
-        {},
-        {
-          origin: "https://attacker.example",
-        },
-      ),
-      403,
-    );
+    await expectRouteError(studioJsonRequest({}, { origin: "https://attacker.example" }), 403);
     await expectRouteError(
       new Request("http://localhost:3000/actions/decide-channel-handoff", {
         body: "decision=accepted-for-manual-channel-prep",

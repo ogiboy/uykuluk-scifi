@@ -49,11 +49,5 @@ export function useStudioStageActionSubmit(
     });
   }
 
-  return {
-    action,
-    confirmationOpen,
-    setConfirmationOpen,
-    state,
-    submitStageAction,
-  };
+  return { action, confirmationOpen, setConfirmationOpen, state, submitStageAction };
 }

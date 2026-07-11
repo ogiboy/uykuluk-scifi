@@ -36,12 +36,7 @@ export const renderPlanSchema = z.strictObject({
     aspectRatio: z.literal("16:9"),
     draftRenderer: z.literal("ffmpeg-local-draft"),
   }),
-  bookends: z
-    .strictObject({
-      intro: renderBookendSchema,
-      outro: renderBookendSchema,
-    })
-    .optional(),
+  bookends: z.strictObject({ intro: renderBookendSchema, outro: renderBookendSchema }).optional(),
   scenes: z.array(
     z.strictObject({
       sceneIndex: z.int().positive(),

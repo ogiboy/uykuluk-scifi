@@ -38,10 +38,7 @@ describe("Studio run summary table copy", () => {
             },
             nextSafeAction: "Revise the draft.",
             notes: "Needs another subtitle pass.",
-            renderApproval: {
-              approvalId: "approval_render_fixture",
-              approvedRef: "b".repeat(64),
-            },
+            renderApproval: { approvalId: "approval_render_fixture", approvedRef: "b".repeat(64) },
             reviewedBy: "operator",
             runId: "run_202606280001_decision",
             schemaVersion: 1,
@@ -167,10 +164,7 @@ describe("Studio run summary table copy", () => {
               templatePath: "assets/thumbnails/thumbnail_template_01_left_1280x720.jpg",
               templateSha256: "b".repeat(64),
             },
-            youtube: {
-              metadataPath: "production/youtube_metadata.json",
-              title: "Fixture title",
-            },
+            youtube: { metadataPath: "production/youtube_metadata.json", title: "Fixture title" },
           },
           kind: "present",
           message: "Channel handoff decision recorded: accepted-for-manual-channel-prep.",

@@ -162,11 +162,7 @@ function readinessCheck(input: {
         nextAction: input.nextAction.replaceAll("<run_id>", input.runId),
         status: input.status,
       }
-    : {
-        message: input.message,
-        name: input.name,
-        status: input.status,
-      };
+    : { message: input.message, name: input.name, status: input.status };
 }
 
 /**

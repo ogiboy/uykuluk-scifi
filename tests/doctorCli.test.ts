@@ -1,6 +1,6 @@
-import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { writeFile } from "node:fs/promises";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { defaultConfig } from "../src/config/config";
 import { useTempProject } from "./helpers";
@@ -31,11 +31,7 @@ describe("producer doctor CLI", () => {
           ...defaultConfig,
           providers: {
             ...defaultConfig.providers,
-            youtube: {
-              enabled: true,
-              allowPrivateUpload: true,
-              allowPublicPublish: true,
-            },
+            youtube: { enabled: true, allowPrivateUpload: true, allowPublicPublish: true },
           },
           safeguards: {
             ...defaultConfig.safeguards,

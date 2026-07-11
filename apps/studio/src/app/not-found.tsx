@@ -1,4 +1,7 @@
-import { StudioRouteBoundaryCard } from "@/components/studio/StudioRouteBoundaryCard";
+import {
+  StudioRouteBoundaryCard,
+  StudioRouteBoundaryHeader,
+} from "@/components/studio/StudioRouteBoundaryCard";
 import { StudioShell } from "@/components/studio/StudioShell";
 import { studioNotFoundCopy } from "@/lib/studioRouteBoundaryCopy";
 
@@ -10,13 +13,7 @@ import { studioNotFoundCopy } from "@/lib/studioRouteBoundaryCopy";
 export default function StudioNotFoundPage() {
   return (
     <StudioShell>
-      <header className='studio-header'>
-        <div>
-          <p className='eyebrow'>{studioNotFoundCopy.eyebrow}</p>
-          <h1>{studioNotFoundCopy.heading}</h1>
-        </div>
-        <span className='status-pill blocked'>{studioNotFoundCopy.status}</span>
-      </header>
+      <StudioRouteBoundaryHeader copy={studioNotFoundCopy} />
 
       <StudioRouteBoundaryCard
         description={studioNotFoundCopy.description}

@@ -97,7 +97,7 @@ export function buildStudioRunReviewBrief(run: BriefInput): StudioRunReviewBrief
     primaryAction: nextAction(run),
     severity: "review",
     summary:
-      "Continue through the next safe CLI/core action. Studio summarizes local state but does not infer approval from files.",
+      "Continue through the next safe Studio action or CLI/core fallback. Studio summarizes local state but does not infer approval from files.",
     title: "Follow the next safe action",
   };
 }

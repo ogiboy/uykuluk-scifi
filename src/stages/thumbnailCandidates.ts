@@ -122,11 +122,7 @@ async function thumbnailAssetRef(role: string, relativePath: string): Promise<As
     throw new SafeExitError(`Thumbnail asset must live under assets/thumbnails/: ${relativePath}`);
   }
   const bytes = await readFile(path.join(process.cwd(), relativePath));
-  return {
-    role,
-    path: relativePath,
-    digest: createHash("sha256").update(bytes).digest("hex"),
-  };
+  return { role, path: relativePath, digest: createHash("sha256").update(bytes).digest("hex") };
 }
 
 function matchingOverlay(

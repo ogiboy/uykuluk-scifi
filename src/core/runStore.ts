@@ -1,12 +1,12 @@
 import { readdir } from "node:fs/promises";
-import { appendLedgerEvent } from "./ledger.js";
-import { RunRecord, RunState, runRecordSchema } from "./state.js";
-import { invariant, SafeExitError } from "./errors.js";
 import { ensureDir, pathExists } from "../utils/fs.js";
 import { readJsonFile, writeJsonFile } from "../utils/json.js";
 import { createId, nowIso } from "../utils/time.js";
-import { isValidRunId, runDir, runsDir, statePath } from "./runPaths.js";
 import { validateArtifactRelativePath } from "./artifactPaths.js";
+import { invariant, SafeExitError } from "./errors.js";
+import { appendLedgerEvent } from "./ledger.js";
+import { isValidRunId, runDir, runsDir, statePath } from "./runPaths.js";
+import { RunRecord, runRecordSchema, RunState } from "./state.js";
 
 export {
   isValidRunId,
@@ -37,12 +37,7 @@ export async function createRun(): Promise<RunRecord> {
   };
   await ensureDir(runDir(runId));
   await writeJsonFile(statePath(runId), record);
-  await appendLedgerEvent({
-    runId,
-    type: "RUN_CREATED",
-    stage: "init",
-    message: "Run created.",
-  });
+  await appendLedgerEvent({ runId, type: "RUN_CREATED", stage: "init", message: "Run created." });
   return record;
 }
 
@@ -75,12 +70,7 @@ export async function loadRun(runId: string): Promise<RunRecord> {
  * @param record - The run record to save
  */
 export async function saveRun(record: RunRecord): Promise<void> {
-  const updated = validateRunArtifacts(
-    runRecordSchema.parse({
-      ...record,
-      updatedAt: nowIso(),
-    }),
-  );
+  const updated = validateRunArtifacts(runRecordSchema.parse({ ...record, updatedAt: nowIso() }));
   await writeJsonFile(statePath(record.runId), updated);
 }
 
@@ -98,11 +88,7 @@ export async function setRunState(
   stage: string,
 ): Promise<RunRecord> {
   const previousState = record.state;
-  const updated: RunRecord = {
-    ...record,
-    state: nextState,
-    updatedAt: nowIso(),
-  };
+  const updated: RunRecord = { ...record, state: nextState, updatedAt: nowIso() };
   await saveRun(updated);
   await appendLedgerEvent({
     runId: record.runId,

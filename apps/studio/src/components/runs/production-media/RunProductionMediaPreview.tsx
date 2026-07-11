@@ -1,5 +1,5 @@
+import type { ProductionMediaStatus } from "@/lib/runEvidenceCopy";
 import { studioCaptionArtifactUrl } from "@/lib/studioMediaArtifacts";
-import type { ProductionMediaStatus } from "../../../../../src/stages/statusMediaSummary";
 
 type RunProductionMediaPreviewProps = Readonly<{
   artifact: ProductionMediaStatus;
@@ -15,13 +15,13 @@ export function RunProductionMediaPreview({
   const captionUrl = studioCaptionArtifactUrl(runId);
   if (artifact.evidenceKey === "voiceoverAudio") {
     return (
-      <div className='production-media-preview'>
-        <audio controls preload='metadata' src={mediaUrl}>
+      <div className='bg-muted/10 grid gap-3 rounded-lg p-3'>
+        <audio className='w-full' controls preload='metadata' src={mediaUrl}>
           <track default kind='captions' label='Türkçe altyazı' src={captionUrl} srcLang='tr' />
           <a href={mediaUrl}>Open voiceover audio</a>
         </audio>
         <ProductionMediaReviewLinks artifact={artifact} mediaUrl={mediaUrl} />
-        <p>
+        <p className='text-muted-foreground text-sm'>
           Browser playback is local review only; evidence and approval gates remain authoritative.
         </p>
       </div>
@@ -29,13 +29,20 @@ export function RunProductionMediaPreview({
   }
   if (artifact.evidenceKey === "draftRender") {
     return (
-      <div className='production-media-preview'>
-        <video controls preload='metadata' src={mediaUrl}>
+      <div className='bg-muted/10 grid gap-3 rounded-lg p-3'>
+        <video
+          className='bg-background w-full rounded-md'
+          controls
+          preload='metadata'
+          src={mediaUrl}
+        >
           <track default kind='captions' label='Türkçe altyazı' src={captionUrl} srcLang='tr' />
           <a href={mediaUrl}>Open draft render video</a>
         </video>
         <ProductionMediaReviewLinks artifact={artifact} mediaUrl={mediaUrl} />
-        <p>Playback does not approve upload, schedule, public publish, or final channel handoff.</p>
+        <p className='text-muted-foreground text-sm'>
+          Playback does not approve upload, schedule, public publish, or final channel handoff.
+        </p>
       </div>
     );
   }
@@ -47,11 +54,20 @@ function ProductionMediaReviewLinks({
   mediaUrl,
 }: Readonly<{ artifact: ProductionMediaStatus; mediaUrl: string }>) {
   return (
-    <div className='production-media-actions' aria-label={`${artifact.label} local media actions`}>
-      <a href={mediaUrl} target='_blank' rel='noreferrer'>
+    <div className='flex flex-wrap gap-2' aria-label={`${artifact.label} local media actions`}>
+      <a
+        className='bg-muted/20 hover:bg-accent hover:text-accent-foreground rounded-md px-3 py-1.5 text-sm font-medium'
+        href={mediaUrl}
+        target='_blank'
+        rel='noreferrer'
+      >
         Open in browser
       </a>
-      <a href={mediaUrl} download={mediaDownloadName(artifact.artifactPath)}>
+      <a
+        className='bg-muted/20 hover:bg-accent hover:text-accent-foreground rounded-md px-3 py-1.5 text-sm font-medium'
+        href={mediaUrl}
+        download={mediaDownloadName(artifact.artifactPath)}
+      >
         Download review copy
       </a>
     </div>

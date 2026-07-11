@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { renderMediaProbeSchema, type RenderMediaProbe } from "./renderProbe.js";
 import { assetRefSchema, digestSchema } from "./renderPlanSchemas.js";
+import { renderMediaProbeSchema, type RenderMediaProbe } from "./renderProbe.js";
 
 export const draftRenderPath = "production/render/draft.mp4";
 export const draftRenderManifestPath = "production/render/render_manifest.json";
@@ -37,9 +37,7 @@ const renderTimelineItemSchema = z
   })
   .refine(
     (item) => item.segment === "intro" || item.segment === "outro" || item.sceneIndex !== undefined,
-    {
-      message: "Scene timeline items must include a scene index.",
-    },
+    { message: "Scene timeline items must include a scene index." },
   );
 const ffmpegTimelineInputSchema = z.strictObject({
   segment: z.enum(["intro", "scene", "outro"]),

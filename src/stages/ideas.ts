@@ -1,17 +1,24 @@
-import type { ProducerConfig } from "../config/schema.js";
 import { loadConfig } from "../config/config.js";
-import { SafeExitError } from "../core/errors.js";
+import type { ProducerConfig } from "../config/schema.js";
 import { writeRunJson, writeRunText } from "../core/artifacts.js";
+import { SafeExitError } from "../core/errors.js";
+import { appendLedgerEvent } from "../core/ledger.js";
 import { createRun, setRunState } from "../core/runStore.js";
 import { assertTransition } from "../core/transitions.js";
-import { appendLedgerEvent } from "../core/ledger.js";
 import { defaultStagePricing } from "../costs/pricing.js";
-import { enforceBudget } from "../safeguards/budgetGuard.js";
-import { createLlmProvider } from "../providers/index.js";
-import type { GenerateTextResult, LlmProvider } from "../providers/llmProvider.js";
 import { createPromptProvenance } from "../prompts/provenance.js";
 import { renderIdeasPrompt, type RenderedPrompt } from "../prompts/templates.js";
+import { createLlmProvider } from "../providers/index.js";
+import type { GenerateTextResult, LlmProvider } from "../providers/llmProvider.js";
+import { enforceBudget } from "../safeguards/budgetGuard.js";
 import { persistIdeaGenerationFailure } from "./ideaFailureDiagnostics.js";
+import {
+  historicalIdeaTitleIssue,
+  ideaHistoryEvidence,
+  ideaHistoryPromptBlock,
+  readIdeaHistory,
+  type IdeaHistoryEntry,
+} from "./ideaHistory.js";
 import { ideasValidationSummary, renderIdeaRepairPrompt } from "./ideaRepairPrompt.js";
 import { parseIdeasProviderPayload } from "./providerPayloads.js";
 import { ideasResponseFormat } from "./providerResponseFormats.js";
@@ -35,11 +42,7 @@ type IdeaGenerationOutcome = {
   result: GenerateTextResult;
 };
 
-const noIdeaRepair: IdeaRepairEvidence = {
-  attempted: false,
-  attempts: 0,
-  validationErrors: [],
-};
+const noIdeaRepair: IdeaRepairEvidence = { attempted: false, attempts: 0, validationErrors: [] };
 const maxIdeaRepairAttempts = 2;
 
 /**
@@ -63,9 +66,12 @@ export async function runIdeas(): Promise<{ runId: string; ideas: VideoIdea[] }>
       estimatedUsd,
       recordCostEvent: false,
     });
-    const prompt = await renderIdeasPrompt();
+    const ideaHistory = await readIdeaHistory({ excludeRunId: run.runId });
+    const promptContext = ideaHistoryPromptBlock(ideaHistory);
+    const prompt = await renderIdeasPrompt(promptContext ? [promptContext] : []);
     const generation = await generateIdeasWithRepair({
       config,
+      ideaHistory,
       prompt,
       provider,
       runId: run.runId,
@@ -82,6 +88,7 @@ export async function runIdeas(): Promise<{ runId: string; ideas: VideoIdea[] }>
       durationMs: generation.result.durationMs,
     });
     run = await writeRunJson(run, "ideas", "ideas.json", {
+      history: ideaHistoryEvidence(ideaHistory),
       ideas: generation.ideas,
       prompt: createPromptProvenance(prompt.key, prompt.text, "ideas.json", prompt.source),
       repair: repairEvidenceWithPrompt(prompt.key, generation),
@@ -103,6 +110,7 @@ export async function runIdeas(): Promise<{ runId: string; ideas: VideoIdea[] }>
 
 async function generateIdeasWithRepair(input: {
   config: ProducerConfig;
+  ideaHistory: readonly IdeaHistoryEntry[];
   prompt: RenderedPrompt;
   provider: LlmProvider;
   runId: string;
@@ -114,8 +122,13 @@ async function generateIdeasWithRepair(input: {
     const result = await requestIdeas(input.provider, input.config, promptText);
     results.push(result);
     try {
+      const ideas = parseIdeasProviderPayload(result.text);
+      const historyIssue = historicalIdeaTitleIssue(ideas, input.ideaHistory);
+      if (historyIssue) {
+        throw new SafeExitError(`Invalid ideas provider response: ${historyIssue}`);
+      }
       return {
-        ideas: parseIdeasProviderPayload(result.text),
+        ideas,
         repairPromptText: validationErrors.length ? promptText : undefined,
         repair: repairEvidence(validationErrors),
         result: combineProviderResults(results),

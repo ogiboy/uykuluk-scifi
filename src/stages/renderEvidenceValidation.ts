@@ -18,10 +18,7 @@ import { buildFfmpegReviewArgs } from "./renderFfmpegPlan.js";
 import { readRenderPlanEvidence } from "./renderPlan.js";
 import { readVoiceoverAudioEvidence } from "./voiceoverEvidence.js";
 
-export type ValidatedDraftRenderManifest = {
-  digest: string;
-  manifest: DraftRenderManifest;
-};
+export type ValidatedDraftRenderManifest = { digest: string; manifest: DraftRenderManifest };
 
 export type DraftRenderValidationResult =
   | { status: "missing"; requiredArtifacts: readonly string[] }
@@ -62,10 +59,7 @@ export async function readDraftRenderValidation(
     return { status: "missing", requiredArtifacts: draftRenderArtifactPaths };
   }
   try {
-    return {
-      status: "pass",
-      ...(await readValidatedDraftRenderManifest(run)),
-    };
+    return { status: "pass", ...(await readValidatedDraftRenderManifest(run)) };
   } catch (error) {
     return {
       status: "block",

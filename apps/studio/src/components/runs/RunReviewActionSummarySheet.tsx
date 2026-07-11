@@ -1,7 +1,6 @@
 "use client";
 
-import { ShieldCheckIcon } from "lucide-react";
-import { CopyableCommand } from "@/components/studio/CopyableCommand";
+import { CliFallbackCommand } from "@/components/studio/CliFallbackCommand";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,8 +12,9 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { getNextSafeCommand } from "@/lib/runSummaryCopy";
 import type { StudioRunDetail } from "@/lib/runSummaries";
+import { getNextSafeCommand } from "@/lib/runSummaryCopy";
+import { ShieldCheckIcon } from "lucide-react";
 import { RunPrimaryActionPanel } from "./RunPrimaryActionPanel";
 
 type RunReviewActionSummarySheetProps = Readonly<{
@@ -43,12 +43,12 @@ type RunReviewActionSummarySheetProps = Readonly<{
  */
 export function RunReviewActionSummarySheet({ run }: RunReviewActionSummarySheetProps) {
   return (
-    <div className='run-mobile-action-sheet'>
+    <div className='block min-[901px]:hidden'>
       <Sheet>
         <SheetTrigger asChild>
           <Button type='button'>Open action summary</Button>
         </SheetTrigger>
-        <SheetContent className='run-action-sheet-content'>
+        <SheetContent className='w-[min(92vw,440px)] overflow-y-auto'>
           <SheetHeader>
             <SheetTitle>Run action summary</SheetTitle>
             <SheetDescription>
@@ -57,7 +57,7 @@ export function RunReviewActionSummarySheet({ run }: RunReviewActionSummarySheet
             </SheetDescription>
           </SheetHeader>
 
-          <div className='run-action-sheet-body'>
+          <div className='grid gap-3 px-4 pb-4'>
             <Alert variant={run.blockedActionCount > 0 ? "destructive" : "default"}>
               <ShieldCheckIcon />
               <AlertTitle>
@@ -70,7 +70,7 @@ export function RunReviewActionSummarySheet({ run }: RunReviewActionSummarySheet
               </AlertDescription>
             </Alert>
 
-            <div className='run-action-sheet-badges'>
+            <div className='grid justify-items-start gap-3'>
               <Badge variant='secondary'>State: {run.state}</Badge>
               <Badge variant='outline'>Readiness: {run.readinessStatus}</Badge>
               <Badge variant='outline'>Evidence: {run.evidenceStatus}</Badge>
@@ -79,32 +79,51 @@ export function RunReviewActionSummarySheet({ run }: RunReviewActionSummarySheet
               </Badge>
             </div>
 
-            <div className='operator-command-block'>
-              <strong>Next safe action</strong>
-              <CopyableCommand command={getNextSafeCommand(run)} label='Next safe action' />
+            <div className='bg-muted/15 ring-border/5 flex flex-wrap items-center justify-between gap-3 rounded-lg p-4 ring-1'>
+              <div className='grid gap-1 text-sm'>
+                <strong>CLI/core fallback</strong>
+                <span className='text-muted-foreground'>
+                  Reveal only when you need terminal recovery or audit copy.
+                </span>
+              </div>
+              <CliFallbackCommand
+                align='start'
+                command={getNextSafeCommand(run)}
+                label='Next safe action'
+              />
             </div>
 
             <RunPrimaryActionPanel compact run={run} />
 
             {run.blockedActions.length > 0 ? (
-              <div className='run-action-sheet-blockers'>
+              <div className='grid gap-3'>
                 <strong>Blocking evidence</strong>
-                <ul>
+                <ul className='text-muted-foreground grid gap-2 pl-5'>
                   {run.blockedActions.slice(0, 4).map((action, index) => (
                     <li key={`mobile-blocker-${index}-${action}`}>{action}</li>
                   ))}
                 </ul>
               </div>
             ) : (
-              <p className='artifact-description'>
+              <p className='text-muted-foreground text-sm'>
                 No blocked actions are projected from the current evidence bundle.
               </p>
             )}
 
             {run.evidenceNextAction ? (
-              <p className='artifact-action'>Evidence action: {run.evidenceNextAction}</p>
+              <div className='bg-muted/15 ring-border/5 flex flex-wrap items-center justify-between gap-3 rounded-lg p-3 ring-1'>
+                <p className='text-muted-foreground text-sm'>
+                  Evidence action is available as a CLI/core fallback.
+                </p>
+                <CliFallbackCommand
+                  align='start'
+                  command={run.evidenceNextAction}
+                  label='Evidence action'
+                  triggerLabel='Show evidence fallback'
+                />
+              </div>
             ) : (
-              <p className='artifact-description'>{run.evidenceMessage}</p>
+              <p className='text-muted-foreground text-sm'>{run.evidenceMessage}</p>
             )}
           </div>
         </SheetContent>

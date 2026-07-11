@@ -1,15 +1,16 @@
+import { ArtifactPreview } from "@/components/studio/ArtifactPreview";
+import { CliFallbackCommand } from "@/components/studio/CliFallbackCommand";
+import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import type {
   StudioDoctorCheckSummary,
   StudioDoctorOverview,
   StudioDoctorStatus,
 } from "@/lib/doctorOverview";
-import { CopyableCommand } from "@/components/studio/CopyableCommand";
-import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
 import { DoctorRunActionPanel } from "./DoctorRunActionPanel";
 
-type DoctorOverviewViewProps = Readonly<{
-  overview: StudioDoctorOverview;
-}>;
+type DoctorOverviewViewProps = Readonly<{ overview: StudioDoctorOverview }>;
 
 /**
  * Renders the read-only producer doctor diagnostics overview.
@@ -19,62 +20,104 @@ type DoctorOverviewViewProps = Readonly<{
  */
 export function DoctorOverviewView({ overview }: DoctorOverviewViewProps) {
   return (
-    <div className='analytics-detail-grid'>
-      <section className='panel' aria-labelledby='doctor-overview-heading'>
-        <h2 id='doctor-overview-heading'>Doctor Overview</h2>
-        <MetricGrid
-          metrics={[
-            { label: "Status", value: overview.status },
-            { label: "Checks", value: formatStudioInteger(overview.checkCount) },
-            { label: "Passing", value: formatStudioInteger(overview.passCount) },
-            { label: "Warnings", value: formatStudioInteger(overview.warnCount) },
-            { label: "Blocks", value: formatStudioInteger(overview.blockCount) },
-            { label: "Generated", value: overview.createdAt ?? "not generated" },
-            {
-              label: "Duration",
-              value: overview.durationMs === null ? "not generated" : `${overview.durationMs} ms`,
-            },
-            { label: "Source", value: overview.jsonPath },
-          ]}
-        />
+    <div className='grid gap-4 lg:grid-cols-2'>
+      <section aria-labelledby='doctor-overview-heading'>
+        <Card>
+          <CardHeader>
+            <h2 className='text-xl font-semibold tracking-tight' id='doctor-overview-heading'>
+              Doctor Overview
+            </h2>
+          </CardHeader>
+          <CardContent>
+            <MetricGrid
+              metrics={[
+                { label: "Status", value: overview.status },
+                { label: "Checks", value: formatStudioInteger(overview.checkCount) },
+                { label: "Passing", value: formatStudioInteger(overview.passCount) },
+                { label: "Warnings", value: formatStudioInteger(overview.warnCount) },
+                { label: "Blocks", value: formatStudioInteger(overview.blockCount) },
+                { label: "Generated", value: overview.createdAt ?? "not generated" },
+                {
+                  label: "Duration",
+                  value:
+                    overview.durationMs === null ? "not generated" : `${overview.durationMs} ms`,
+                },
+                { label: "Source", value: overview.jsonPath },
+              ]}
+            />
+          </CardContent>
+        </Card>
       </section>
 
-      <section className='panel' aria-labelledby='doctor-action-heading'>
-        <h2 id='doctor-action-heading'>Next Safe Action</h2>
-        <DoctorRunActionPanel />
-        <CopyableCommand command={overview.nextAction} label='Doctor command' />
-        <p>
-          Studio can refresh local doctor artifacts through the guarded CLI route. It does not edit
-          config, start providers, download models, upload media, publish content, or mutate run
-          workflow state outside the canonical doctor command.
-        </p>
-        {overview.error ? <p className='blocked'>{overview.error}</p> : null}
+      <section aria-labelledby='doctor-action-heading'>
+        <Card>
+          <CardHeader>
+            <h2 className='text-xl font-semibold tracking-tight' id='doctor-action-heading'>
+              Next Safe Action
+            </h2>
+          </CardHeader>
+          <CardContent className='space-y-4'>
+            <DoctorRunActionPanel />
+            <CliFallbackCommand
+              align='start'
+              command={overview.nextAction}
+              label='Doctor command'
+              triggerLabel='Show doctor fallback'
+            />
+            <p className='text-muted-foreground text-sm'>
+              Studio can refresh local doctor artifacts through the guarded CLI route. It does not
+              edit config, start providers, download models, upload media, publish content, or
+              mutate run workflow state outside the canonical doctor command.
+            </p>
+            {overview.error ? <p className='text-destructive text-sm'>{overview.error}</p> : null}
+          </CardContent>
+        </Card>
       </section>
 
-      <section className='panel' aria-labelledby='doctor-checks-heading'>
-        <h2 id='doctor-checks-heading'>Doctor Checks</h2>
-        {overview.checks.length > 0 ? (
-          <ul className='artifact-preview-list'>
-            {overview.checks.map((check, index) => (
-              <DoctorCheckCard check={check} key={`${check.name}-${index}`} />
-            ))}
-          </ul>
-        ) : (
-          <p>Run doctor from Studio or CLI to generate local diagnostics.</p>
-        )}
+      <section aria-labelledby='doctor-checks-heading'>
+        <Card>
+          <CardHeader>
+            <h2 className='text-xl font-semibold tracking-tight' id='doctor-checks-heading'>
+              Doctor Checks
+            </h2>
+          </CardHeader>
+          <CardContent>
+            {overview.checks.length > 0 ? (
+              <ul className='grid gap-3'>
+                {overview.checks.map((check, index) => (
+                  <DoctorCheckCard check={check} key={`${check.name}-${index}`} />
+                ))}
+              </ul>
+            ) : (
+              <p className='text-muted-foreground text-sm'>
+                Run doctor from Studio or CLI to generate local diagnostics.
+              </p>
+            )}
+          </CardContent>
+        </Card>
       </section>
 
-      <section className='panel' aria-labelledby='doctor-report-heading'>
-        <h2 id='doctor-report-heading'>Report Preview</h2>
-        <p className='artifact-meta'>
-          {overview.markdownPath}
-          {overview.reportPreviewTruncated ? " · preview truncated" : ""}
-        </p>
-        {overview.reportPreview ? (
-          <pre className='artifact-preview'>{overview.reportPreview}</pre>
-        ) : (
-          <p>Run doctor from Studio or CLI to refresh the local Markdown report artifact.</p>
-        )}
+      <section aria-labelledby='doctor-report-heading'>
+        <Card>
+          <CardHeader>
+            <h2 className='text-xl font-semibold tracking-tight' id='doctor-report-heading'>
+              Report Preview
+            </h2>
+          </CardHeader>
+          <CardContent className='space-y-3'>
+            <p className='text-muted-foreground text-xs'>
+              {overview.markdownPath}
+              {overview.reportPreviewTruncated ? " · preview truncated" : ""}
+            </p>
+            {overview.reportPreview ? (
+              <ArtifactPreview>{overview.reportPreview}</ArtifactPreview>
+            ) : (
+              <p className='text-muted-foreground text-sm'>
+                Run doctor from Studio or CLI to refresh the local Markdown report artifact.
+              </p>
+            )}
+          </CardContent>
+        </Card>
       </section>
     </div>
   );
@@ -88,39 +131,42 @@ export function DoctorOverviewView({ overview }: DoctorOverviewViewProps) {
  */
 function DoctorCheckCard({ check }: Readonly<{ check: StudioDoctorCheckSummary }>) {
   return (
-    <li className='artifact-preview-card'>
-      <div className='artifact-preview-header'>
-        <div>
+    <li className='bg-muted/20 grid gap-3 rounded-lg p-3'>
+      <div className='grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start'>
+        <div className='min-w-0 space-y-1'>
           <strong>{check.name}</strong>
-          <span>{check.message}</span>
+          <span className='text-muted-foreground block text-sm'>{check.message}</span>
         </div>
-        <span className={doctorStatusClassName(check.status)}>{check.status}</span>
+        <Badge variant={doctorStatusBadgeVariant(check.status)}>{check.status}</Badge>
       </div>
-      {check.nextAction ? <p className='artifact-action'>{check.nextAction}</p> : null}
+      {check.nextAction ? (
+        <p className='bg-background/55 text-muted-foreground rounded-lg p-3 text-sm'>
+          {check.nextAction}
+        </p>
+      ) : null}
     </li>
   );
 }
 
 /**
- * Selects the status pill class for a doctor check.
+ * Selects the shadcn badge variant for a doctor check.
  *
  * @param status - The doctor check status.
- * @returns A CSS class list for the status pill.
+ * @returns The badge variant for the status.
  */
-function doctorStatusClassName(
+function doctorStatusBadgeVariant(
   status: StudioDoctorStatus | StudioDoctorCheckSummary["status"],
-): string {
+): "destructive" | "secondary" {
   switch (status) {
     case "block":
     case "blocked":
     case "invalid":
-      return "status-pill small blocked";
+      return "destructive";
     case "warn":
     case "warning":
-      return "status-pill small";
     case "missing":
     case "pass":
     case "passing":
-      return "status-pill small";
+      return "secondary";
   }
 }

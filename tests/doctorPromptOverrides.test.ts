@@ -9,9 +9,7 @@ describe("producer doctor prompt override diagnostics", () => {
 
   it("passes configured local prompt overrides", async () => {
     await writeFile("prompts/local/planner.md", "Local planner prompt.\n", "utf8");
-    await writePromptOverrideConfig({
-      ideas: "prompts/local/planner.md",
-    });
+    await writePromptOverrideConfig({ ideas: "prompts/local/planner.md" });
 
     const report = await runDoctor();
 

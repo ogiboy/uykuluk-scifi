@@ -1,9 +1,9 @@
 import { Command } from "commander";
+import type { ApprovalRecord } from "../core/state.js";
 import { approvePaidGenerationCost } from "../stages/approveCost.js";
 import { approveIdea } from "../stages/approveIdea.js";
 import { approveRender } from "../stages/approveRender.js";
 import { approveScript } from "../stages/approveScript.js";
-import type { ApprovalRecord } from "../core/state.js";
 
 type AsyncActionWrapper = <T extends unknown[]>(
   handler: (...args: T) => Promise<void>,

@@ -23,21 +23,13 @@ describe("production package provider payload parsing", () => {
         JSON.stringify({
           popup_cards: ["card"],
           lower_thirds: ["lower"],
-          youtube: {
-            title: "title",
-            description: "description",
-            tags: ["tag"],
-          },
+          youtube: { title: "title", description: "description", tags: ["tag"] },
         }),
       ),
     ).toEqual({
       popupCards: ["card"],
       lowerThirds: ["lower"],
-      youtube: {
-        title: "title",
-        description: "description",
-        tags: ["tag"],
-      },
+      youtube: { title: "title", description: "description", tags: ["tag"] },
     });
   });
 

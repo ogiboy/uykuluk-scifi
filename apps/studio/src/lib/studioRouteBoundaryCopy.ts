@@ -6,7 +6,7 @@ export type StudioRouteBoundaryCopy = Readonly<{
   primaryActionLabel?: string;
   recoveryHeadingId: string;
   recoveryTitle: string;
-  status: string;
+  status: "No action taken" | "Request blocked" | "Session required";
 }>;
 
 /**

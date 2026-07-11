@@ -1,16 +1,11 @@
 import { SafeExitError } from "../core/errors.js";
 import { listRuns } from "../core/runStore.js";
 
-type RunIdRecord = {
-  runId: string;
-};
+type RunIdRecord = { runId: string };
 
 type ListRunRecords = () => Promise<RunIdRecord[]>;
 
-export type StatusRunSelectorOptions = {
-  latest?: boolean;
-  run?: string;
-};
+export type StatusRunSelectorOptions = { latest?: boolean; run?: string };
 
 export async function resolveStatusRunId(
   options: StatusRunSelectorOptions,

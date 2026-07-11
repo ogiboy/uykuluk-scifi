@@ -3,7 +3,7 @@ import { homeActionQueueSummaryItems } from "../apps/studio/src/lib/homeActionQu
 import type { StudioActionWorkbenchRun } from "../apps/studio/src/lib/studioActionWorkbench";
 
 describe("Studio home action queue summary", () => {
-  it("summarizes guarded web, blocked CLI, CLI-only, and complete runs", () => {
+  it("summarizes guarded web, blocked CLI, review, CLI-only, and complete runs", () => {
     const items = homeActionQueueSummaryItems([
       actionRunFixture({ state: "READY_FOR_MANUAL_PRODUCTION" }),
       actionRunFixture({
@@ -15,11 +15,9 @@ describe("Studio home action queue summary", () => {
         nextRecommendedCommand: "Inspect archived output manually.",
         state: "ARCHIVED",
       }),
+      actionRunFixture({ nextRecommendedCommand: "pnpm producer ideas", state: "NEW" }),
       actionRunFixture({
-        renderDecision: {
-          kind: "present",
-          nextAction: "Local draft-render decision is recorded.",
-        },
+        renderDecision: { kind: "present", nextAction: "Local draft-render decision is recorded." },
         state: "RENDERED",
       }),
     ]);
@@ -28,6 +26,7 @@ describe("Studio home action queue summary", () => {
       blockedCli: 1,
       cliOnly: 1,
       complete: 1,
+      needsReview: 1,
       webAction: 1,
     });
     expect(items).toContainEqual(

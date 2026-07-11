@@ -25,7 +25,10 @@ export function RunReviewSectionTabs({ run }: RunReviewSectionTabsProps) {
   const activeWorkflowCount = run.blockedActionCount || currentWorkflowSteps.length;
 
   return (
-    <TabsList className='review-section-tabs' aria-label='Run review sections'>
+    <TabsList
+      className='bg-background/90 ring-border/10 sticky top-0 z-10 h-auto min-h-13 w-full flex-wrap gap-2 rounded-lg p-2 ring-1 backdrop-blur'
+      aria-label='Run review sections'
+    >
       <RunReviewTab value='progress' label='Progress' status={formatCount(activeWorkflowCount)} />
       <RunReviewTab
         value='media'
@@ -45,9 +48,12 @@ function RunReviewTab({
   value,
 }: Readonly<{ label: string; status: string; value: string }>) {
   return (
-    <TabsTrigger value={value}>
-      <span className='review-section-tab-label'>{label}</span>
-      <Badge className='review-section-tab-status' variant='outline'>
+    <TabsTrigger
+      className='min-h-8 flex-[1_1_8.75rem] rounded-full border px-3 py-2 text-xs'
+      value={value}
+    >
+      <span className='min-w-0'>{label}</span>
+      <Badge className='max-w-30 truncate' variant='outline'>
         {status}
       </Badge>
     </TabsTrigger>

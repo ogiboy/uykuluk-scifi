@@ -1,15 +1,16 @@
-import {
-  blockedActionsEmptyMessage,
-  blockedActionsIntro,
-  shouldShowEvidenceRemediation,
-} from "@/lib/runEvidenceCopy";
-import type { StudioRunDetail } from "@/lib/runSummaries";
+import { RunDetailCard } from "@/components/runs/RunDetailCard";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import {
+  blockedActionsEmptyMessage,
+  blockedActionsIntro,
+  shouldShowEvidenceRemediation,
+} from "@/lib/runEvidenceCopy";
+import type { StudioRunDetail } from "@/lib/runSummaries";
 
 type RunBlockedActionsPanelProps = Readonly<{
   blockedActions: readonly string[];
@@ -33,29 +34,38 @@ export function RunBlockedActionsPanel({
   evidenceStatus,
 }: RunBlockedActionsPanelProps) {
   return (
-    <section className='panel' aria-labelledby='blocked-actions-heading'>
-      <h2 id='blocked-actions-heading'>Blocked Actions</h2>
-      <p>{blockedActionsIntro(evidenceStatus)}</p>
+    <RunDetailCard
+      headingId='blocked-actions-heading'
+      title='Blocked Actions'
+      description={blockedActionsIntro(evidenceStatus)}
+    >
       {evidenceStatus === "available" && blockedActions.length > 0 ? (
-        <Accordion className='run-blocker-accordion' type='single' collapsible>
-          <AccordionItem value='blocked-actions'>
+        <Accordion className='bg-muted/10 rounded-lg px-3' type='single' collapsible>
+          <AccordionItem className='border-0' value='blocked-actions'>
             <AccordionTrigger>{blockedActions.length} blocked action(s)</AccordionTrigger>
             <AccordionContent>
-              <ul>
+              <ul className='text-muted-foreground grid gap-2 pb-2 text-sm'>
                 {blockedActions.map((action, index) => (
-                  <li key={`blocked-action-${index}-${action}`}>{action}</li>
+                  <li
+                    className='bg-background/45 rounded-md p-2'
+                    key={`blocked-action-${index}-${action}`}
+                  >
+                    {action}
+                  </li>
                 ))}
               </ul>
             </AccordionContent>
           </AccordionItem>
         </Accordion>
       ) : (
-        <p>{blockedActionsEmptyMessage(evidenceStatus)}</p>
+        <p className='bg-muted/10 text-muted-foreground rounded-lg p-3 text-sm'>
+          {blockedActionsEmptyMessage(evidenceStatus)}
+        </p>
       )}
       {shouldShowEvidenceRemediation(evidenceStatus) ? (
         <EvidenceRemediation message={evidenceMessage} nextAction={evidenceNextAction} />
       ) : null}
-    </section>
+    </RunDetailCard>
   );
 }
 
@@ -70,9 +80,9 @@ function EvidenceRemediation({
   nextAction,
 }: Readonly<{ message: string; nextAction?: string }>) {
   return (
-    <>
+    <div className='grid gap-2 rounded-lg bg-amber-500/10 p-3 text-sm text-amber-900 dark:text-amber-100'>
       <p>Evidence: {message}</p>
-      {nextAction ? <p className='artifact-action'>Evidence action: {nextAction}</p> : null}
-    </>
+      {nextAction ? <p>Evidence action: {nextAction}</p> : null}
+    </div>
   );
 }

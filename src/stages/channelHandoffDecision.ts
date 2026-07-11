@@ -8,8 +8,6 @@ import { sha256 } from "../utils/hash.js";
 import { bulletList, table } from "../utils/markdown.js";
 import { nowIso } from "../utils/time.js";
 import { channelHandoffJsonPath } from "./channelHandoffContracts.js";
-import { readChannelHandoffStatus } from "./channelHandoffStatus.js";
-import { readFinalReviewBundleStatus } from "./finalReviewBundleStatus.js";
 import {
   channelHandoffDecisionInputSchema,
   channelHandoffDecisionJsonPath,
@@ -19,6 +17,8 @@ import {
   type ChannelHandoffDecisionRecord,
   type SelectedThumbnailCandidate,
 } from "./channelHandoffDecisionContracts.js";
+import { readChannelHandoffStatus } from "./channelHandoffStatus.js";
+import { readFinalReviewBundleStatus } from "./finalReviewBundleStatus.js";
 import {
   thumbnailCandidatePackSchema,
   thumbnailCandidatesJsonPath,

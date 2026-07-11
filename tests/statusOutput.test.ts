@@ -161,11 +161,7 @@ describe("operator status output", () => {
 
   it("recommends idea approval before evidence exists", async () => {
     const run = await createRun();
-    await saveRun({
-      ...run,
-      artifacts: ["ideas.json"],
-      state: "IDEAS_GENERATED",
-    });
+    await saveRun({ ...run, artifacts: ["ideas.json"], state: "IDEAS_GENERATED" });
 
     const output = formatRunStatus(await readRunStatus(run.runId));
 

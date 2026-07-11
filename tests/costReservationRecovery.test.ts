@@ -2,6 +2,7 @@ import { writeFile } from "node:fs/promises";
 import { afterEach, describe, expect, it } from "vitest";
 import { defaultConfig } from "../src/config/config";
 import { artifactPath } from "../src/core/artifacts";
+import { loadRun } from "../src/core/runStore";
 import { readCostEvents } from "../src/costs/costLedger";
 import { beginCostReservationExecution } from "../src/costs/costReservationExecutionState";
 import {
@@ -15,7 +16,6 @@ import {
   readCostReservationSummaries,
 } from "../src/costs/costReservationStore";
 import { defaultStagePricing } from "../src/costs/pricing";
-import { loadRun } from "../src/core/runStore";
 import { approvePaidGenerationCost } from "../src/stages/approveCost";
 import { approveIdea } from "../src/stages/approveIdea";
 import { approveScript } from "../src/stages/approveScript";
@@ -81,10 +81,7 @@ describe("cost reservation recovery", () => {
       costReservations: Array<{ reservationId: string; status: string }>;
     }>(artifactPath(runId, "evidence_bundle.json"));
     expect(evidence.costReservations).toContainEqual(
-      expect.objectContaining({
-        reservationId: reservation.reservationId,
-        status: "SETTLED",
-      }),
+      expect.objectContaining({ reservationId: reservation.reservationId, status: "SETTLED" }),
     );
   });
 

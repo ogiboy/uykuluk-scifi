@@ -121,10 +121,7 @@ function blockingCheck(
   result: GenerateTextResult,
   message: string,
 ): LocalModelEvalCheck {
-  return {
-    ...passingCheck(name, prompt, result, message),
-    status: "block",
-  };
+  return { ...passingCheck(name, prompt, result, message), status: "block" };
 }
 
 function countWords(text: string): number {

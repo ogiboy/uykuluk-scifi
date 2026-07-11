@@ -1,4 +1,7 @@
-import { StudioRouteBoundaryCard } from "@/components/studio/StudioRouteBoundaryCard";
+import {
+  StudioRouteBoundaryCard,
+  StudioRouteBoundaryHeader,
+} from "@/components/studio/StudioRouteBoundaryCard";
 import { StudioShell } from "@/components/studio/StudioShell";
 import { runDetailNotFoundCopy } from "@/lib/studioRouteBoundaryCopy";
 
@@ -10,13 +13,7 @@ import { runDetailNotFoundCopy } from "@/lib/studioRouteBoundaryCopy";
 export default function RunDetailNotFoundPage() {
   return (
     <StudioShell>
-      <header className='studio-header'>
-        <div>
-          <p className='eyebrow'>{runDetailNotFoundCopy.eyebrow}</p>
-          <h1>{runDetailNotFoundCopy.heading}</h1>
-        </div>
-        <span className='status-pill blocked'>{runDetailNotFoundCopy.status}</span>
-      </header>
+      <StudioRouteBoundaryHeader copy={runDetailNotFoundCopy} />
 
       <StudioRouteBoundaryCard
         description={runDetailNotFoundCopy.description}

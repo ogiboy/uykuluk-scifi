@@ -1,15 +1,13 @@
+import { CopyableCommand } from "@/components/studio/CopyableCommand";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CopyableCommand } from "@/components/studio/CopyableCommand";
+import type { StudioRunDetail } from "@/lib/runSummaries";
 import {
   buildStudioActionWorkbench,
   type StudioActionWorkbenchTone,
 } from "@/lib/studioActionWorkbench";
-import type { StudioRunDetail } from "@/lib/runSummaries";
 
-type RunActionWorkbenchPanelProps = Readonly<{
-  run: StudioRunDetail;
-}>;
+type RunActionWorkbenchPanelProps = Readonly<{ run: StudioRunDetail }>;
 
 /**
  * Renders the primary operator action summary for the run detail rail.
@@ -22,9 +20,9 @@ export function RunActionWorkbenchPanel({ run }: RunActionWorkbenchPanelProps) {
   return (
     <section aria-labelledby='action-workbench-heading'>
       <Card>
-        <CardHeader className='gap-4 sm:grid-cols-[1fr_auto]'>
+        <CardHeader className='grid gap-4 sm:grid-cols-[1fr_auto]'>
           <div className='space-y-2'>
-            <p className='text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground'>
+            <p className='text-muted-foreground text-xs font-semibold tracking-[0.28em] uppercase'>
               Action workbench
             </p>
             <CardTitle id='action-workbench-heading'>{workbench.primary.label}</CardTitle>
@@ -37,29 +35,29 @@ export function RunActionWorkbenchPanel({ run }: RunActionWorkbenchPanelProps) {
           </Badge>
         </CardHeader>
         <CardContent className='space-y-5'>
-          <p className='text-sm text-muted-foreground'>{workbench.primary.description}</p>
+          <p className='text-muted-foreground text-sm'>{workbench.primary.description}</p>
 
           {workbench.primary.routePath ? (
-            <code className='block max-w-full break-all rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground'>
+            <code className='bg-muted text-muted-foreground block max-w-full rounded-md px-2 py-1 text-xs break-all'>
               Guarded route: {workbench.primary.routePath}
             </code>
           ) : null}
 
           {workbench.primary.command ? (
-            <div className='space-y-2 rounded-lg border bg-muted/20 p-3'>
+            <div className='bg-muted/10 space-y-2 rounded-lg p-3'>
               <strong className='text-sm'>CLI equivalent</strong>
               <CopyableCommand command={workbench.primary.command} label='Action command' />
             </div>
           ) : (
-            <p className='text-sm text-muted-foreground'>
+            <p className='text-muted-foreground text-sm'>
               No command is recommended by the current persisted run state.
             </p>
           )}
 
           <dl className='grid gap-3 text-sm sm:grid-cols-2'>
             {workbench.boundaries.map((boundary) => (
-              <div className='space-y-1 rounded-lg border bg-card p-3' key={boundary.label}>
-                <dt className='font-medium text-muted-foreground'>{boundary.label}</dt>
+              <div className='bg-muted/10 space-y-1 rounded-lg p-3' key={boundary.label}>
+                <dt className='text-muted-foreground font-medium'>{boundary.label}</dt>
                 <dd>{boundary.detail}</dd>
               </div>
             ))}
