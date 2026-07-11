@@ -29,8 +29,8 @@ future generated release notes can be inserted predictably.
 - align guarded Studio control copy, mutation snapshots, and shadcn button behavior.
 - constrain local provider endpoints, encode idea-history prompt data, and add Studio security
   headers.
-- keep Studio browser smoke independent of local run state and skip Sentry build uploads when
-  upload credentials are absent.
+- keep Studio browser smoke independent of local run state and skip Sentry build uploads when upload
+  credentials are absent.
 
 ## v0.78.4 (2026-07-09)
 
