@@ -18,7 +18,7 @@ function readCompilerVersion(command) {
   });
 
   if (result.status !== 0) {
-    const detail = result.stderr.trim() || result.error?.message || "unknown error";
+    const detail = result.stderr?.trim() || result.error?.message || "unknown error";
     throw new Error(`Unable to run ${command}: ${detail}`);
   }
 
