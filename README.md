@@ -31,7 +31,7 @@ Next.js Producer Studio is an operator surface over the same local contracts, wi
 approval/review mutations only where route security and service contracts are implemented. The
 system generates ideas, scripts, reviews, production packages, render plans, local voiceover, local
 draft renders, cost estimates, evidence bundles, and readiness diagnostics. It does not upload or
-publish to YouTube in the MVP.
+publish to YouTube in v1.
 
 ## Product Direction
 
@@ -42,7 +42,8 @@ visually consistent UykulukSciFi drafts.
 Near-term value is reliable draft production first: turn approved ideas into reviewable script,
 metadata, subtitle, scene, render-plan, local voiceover, draft render, and evidence packages that
 can become weekly videos. Private upload, analytics feedback, and public/scheduled publish remain
-separate future phases with their own approval, cost, readiness, and evidence boundaries.
+separate boundaries: manual analytics import/reporting is available now, while YouTube API access,
+private upload, and public/scheduled publish remain future gated work.
 
 ## Primary Journey
 
@@ -60,8 +61,16 @@ doctor
   -> review voice
   -> approve render
   -> local FFmpeg draft render
-  -> future private upload review
+  -> review render / decide render
+  -> final review bundle
+  -> manual channel handoff / decide channel handoff
 ```
+
+If a local draft is not accepted, `producer revise render` archives its MP4, manifest, decision, and
+derived evidence under a versioned revision path, invalidates the stale render approval, and returns
+the run to the explicit render-approval gate. Studio exposes the same normal rejected-draft action
+through its guarded local route. No state file editing is required; explicitly attributed
+invalid-evidence recovery remains a CLI-only diagnostic path.
 
 Every expensive, irreversible, or publishing-adjacent step stays blocked until the matching
 configuration, approval, and evidence contracts exist. `.ai/` remains development guidance and
@@ -82,7 +91,8 @@ agent-tracking state only; runtime code must not require it.
 - Optional Sentry error reporting at Next.js and guarded Studio mutation boundaries. It is disabled
   without a DSN and never attaches request bodies, artifact contents, prompts, provider output,
   credentials, or approval evidence; telemetry never controls workflow state.
-- Mock-first provider layer with Ollama and local `llama.cpp` adapters.
+- Mock-first provider layer with Ollama and local `llama.cpp` adapters, plus managed
+  `pnpm model:start` / `pnpm model:stop` commands for the ignored llama.cpp model configuration.
 - Ollama and `llama.cpp` base URLs are restricted to credential-free loopback HTTP(S) origins;
   hosted or LAN providers require a future separately reviewed adapter contract.
 - Project-level `producer doctor` diagnostics for config, mock/Ollama/llama.cpp readiness, local
@@ -105,17 +115,21 @@ agent-tracking state only; runtime code must not require it.
   render-plan scenes for contact-sheet review and local draft-render burn-in.
 - Production package generation derives `production/voiceover.txt` and `production/subtitles.srt`
   from `Anlatıcı:` lines only; `Görsel:` directions stay in scene visual prompts for render
-  planning. Subtitles are wrapped into timed cues for local draft-review readability.
+  planning. The script/package path enforces a 1,100-word spoken-narration floor for the 8-12 minute
+  target, while subtitles are wrapped into timed cues for local draft-review readability.
 - Disabled-by-default local voiceover generation with deterministic reference WAV output,
   production-readiness warnings, operator review Markdown, and an optional Piper binary/model-path
-  adapter.
+  adapter. Piper output is peak-normalized deterministically and records the source peak, target,
+  and applied gain in voiceover evidence.
 - Approval-gated local FFmpeg draft render that writes a review MP4, manifest, operator review
   Markdown, YouTube chapter draft, and `ffprobe` media-validation evidence from the current render
   plan, intro/outro source cards or source-frame sequences, scene-timed background plates, voiceover
   audio, subtitles, lower-third, popup-card text, waveform, watermark overlays, source-frame
   counts/cadence, and voiceover mode/quality/candidate classification surfaced in evidence/readiness
   summaries, plus a stable read-only FFmpeg review command for the final draft artifact in the
-  manifest, evidence JSON, and review Markdown.
+  manifest, evidence JSON, and review Markdown. Intro/outro are outside the voiceover/subtitle
+  window, source SRT timing is linearly bound to the actual local-audio duration, scene overlays are
+  hidden from bookends, and rejected drafts can be archived for a fresh exact approval.
 - Local final review bundle generation that revalidates the render plan, voiceover, draft render,
   and any recorded render decision, then writes `production/review_bundle.json` and
   `production/review_bundle.md` as the operator's local handoff index. It does not approve upload or
@@ -149,7 +163,7 @@ agent-tracking state only; runtime code must not require it.
 
 ```text
 .
-├── apps/studio/              # Next.js Producer Studio shell
+├── apps/studio/              # Next.js operator shell; lib helpers grouped by domain
 ├── assets/                   # Committed production visual assets and manifest docs
 ├── prompts/defaults/         # Runtime prompt defaults used by provider-backed stages
 ├── scripts/
@@ -163,7 +177,7 @@ agent-tracking state only; runtime code must not require it.
 │   ├── costs/                # Token and cost estimation
 │   ├── providers/            # Mock and local LLM adapters
 │   ├── safeguards/           # Approval, budget, content, asset, publish guards
-│   ├── stages/               # Workflow stages
+│   ├── stages/               # Stable workflow entrypoints plus domain helper folders
 │   ├── utils/                # Small shared helpers
 │   └── youtube/              # Disabled upload/publish boundary
 ├── tests/                    # Vitest coverage for workflow and guards
@@ -290,7 +304,7 @@ pnpm producer doctor --json
 If your shell cannot find `pnpm` or `node`, restore Node 22/Corepack first. The repository declares
 `pnpm@11.9.0` and `node >=22`.
 
-## CLI MVP Workflow
+## CLI v1 Workflow
 
 ```bash
 pnpm producer doctor
@@ -332,6 +346,9 @@ pnpm producer render --run <run_id> --json
 pnpm producer decide render --run <run_id> --decision accepted-for-local-review --notes "<operator notes>" --reviewed-by operator
 pnpm producer decide render --run <run_id> --decision needs-revision --notes "<operator notes>" --reviewed-by operator
 pnpm producer decide render --run <run_id> --decision rejected --notes "<operator notes>" --reviewed-by operator
+pnpm producer revise render --run <run_id> [--json]
+# If the current manifest/decision is invalid after a contract upgrade:
+pnpm producer revise render --run <run_id> --reason "<reason>" --reviewed-by operator [--json]
 pnpm producer review render-decision --run <run_id>
 pnpm producer review render-decision --run <run_id> --json
 pnpm producer review-bundle --run <run_id>
@@ -648,11 +665,20 @@ Useful local `llama.cpp` settings for an OpenAI-compatible `llama-server`:
 }
 ```
 
-Example local server command:
+Start the configured model in a dedicated terminal and stop it from another terminal when local
+generation is finished:
 
 ```bash
-llama-server --model models/llm/Mistral-7B-Instruct-v0.3.Q4_K_M.gguf --ctx-size 8192 --port 8080
+pnpm model:start
+pnpm model:stop
 ```
+
+The managed helper reads ignored `producer.config.json`, requires `providers.llm.mode` to be
+`llama.cpp`, verifies the configured GGUF exists, preserves the configured model name as the served
+alias, binds the configured loopback host/port, defaults to an 8192-token context with one parallel
+slot, and records an ignored PID under `diagnostics/`. `LLAMA_CPP_SERVER_BINARY` and
+`LLAMA_CPP_CTX_SIZE` are optional local overrides. A direct `llama-server` command remains valid for
+manual experiments, but it is not managed by `pnpm model:stop`.
 
 The adapter is local-only, uses `/v1/models` for doctor diagnostics and `/v1/chat/completions` for
 generation, and does not require hosted API credentials. Model quality is still an evaluation
@@ -697,7 +723,8 @@ their separate gates.
 
 `producer render` requires `ffmpeg` on `PATH` unless called through a test harness with an explicit
 binary. The draft render is a local review artifact and may be regenerated after approval; its
-manifest records intro/outro source-card segments, scene timing, overlay roles, and the voiceover
+manifest records separate intro, voiceover-backed scene, and outro windows; source SRT duration and
+the deterministic subtitle-clock scale; scene-scoped overlay roles; and the voiceover
 mode/quality/candidate classification bound to the approval. It also stores the actual execution
 arguments that used an atomic temporary output and a separate read-only FFmpeg review command that
 decodes the final draft artifact to `null` for operator inspection; the same trusted command is
@@ -713,6 +740,13 @@ the final operator checklist, shows that review command, includes a timestamped 
 decision command templates, links the bound `production/render/youtube_chapters.md` chapter draft,
 and labels deterministic-reference audio renders as local timing drafts. It does not upload,
 schedule, or publish anything.
+
+When a reviewed draft needs replacement, first record `needs-revision` or `rejected`, then run
+`producer revise render --run <run_id>`. The revision command archives the active draft and its
+decision/evidence, removes the stale render approval, and requires evidence/readiness plus a fresh
+`producer approve render`. If a contract upgrade makes the current decision/manifest unreadable, the
+same command requires explicit `--reason` and `--reviewed-by` attribution and still verifies the
+persisted MP4 hash and active approval binding before recovery.
 
 `producer review-bundle --run <run_id>` creates a local final review handoff after a draft render
 exists. The bundle revalidates the current render-plan, voiceover, draft-render, and render-decision

@@ -4,6 +4,9 @@
 
 - TypeScript CLI project.
 - Mock-first provider layer with Ollama and local OpenAI-compatible `llama.cpp` adapters.
+- Managed `pnpm model:start` / `pnpm model:stop` commands read ignored llama.cpp config, validate the
+  configured GGUF, preserve the served-model alias, bind the configured loopback endpoint, use one
+  parallel slot, and keep the PID under ignored diagnostics.
 - Typed runtime loading of tracked `prompts/defaults/` product prompt defaults plus explicit ignored
   `prompts/local/*.md` overrides for ideas, scripts, and production packages, with prompt
   key/source/hash provenance.
@@ -66,7 +69,9 @@
   `production/audio/voiceover.meta.json`, and `production/audio/voiceover_review.md`.
   `deterministic-local` is a timing/reference adapter; `local-piper` shells out to a configured
   local Piper binary and ignored model path. Local Piper metadata, evidence, and review Markdown now
-  record the model/config SHA-256 digests used for the generated WAV. The review Markdown includes
+  record the model/config SHA-256 digests used for the generated WAV. Piper PCM16 output is
+  deterministically peak-normalized to -1 dBFS before hashing/persistence and records source peak,
+  target peak, and applied gain. The review Markdown includes
   an explicit listen-before-render decision boundary, render-approval scope, and exact next safe
   commands. Evidence, readiness, status, and blocked-action summaries mark deterministic-local WAVs
   as timing/reference only until reviewed local Piper audio exists. Next-action guidance explicitly
@@ -82,26 +87,21 @@
 - `producer doctor` diagnostics persist next-action fields in JSON and Markdown for prompt override
   path/content problems, disabled TTS, deterministic reference audio, valid local Piper config, and
   local Piper remediation.
-- Approval-gated local FFmpeg draft render. `producer approve render` records approval for the exact
-  current render-plan digest, voiceover digest, and voiceover classification, then `producer render`
-  requires `RENDER_APPROVED` before writing `production/render/draft.mp4`,
-  `production/render/render_manifest.json`, `production/render/draft_review.md`, and manifest-bound
-  `production/render/youtube_chapters.*` artifacts. The draft render builds an FFmpeg concat
-  timeline from render-plan intro/outro bookends and scenes, expands committed intro/outro
-  source-frame sequences into FFmpeg inputs when enough review time exists, composes lower-third,
-  scene-timed popup-card text, waveform, and watermark overlays when available, records the exact
-  intro-to-outro timeline, source-frame counts/cadence, overlay roles/placements, render approval
-  ID/reference, voiceover classification, actual temporary-output FFmpeg execution args, and
-  read-only FFmpeg review command for the final draft artifact in the manifest, evidence, and
-  readiness summaries, validates the output with `ffprobe` media evidence, and writes an
-  operator-readable final local review checklist with a timestamped review map. The non-JSON CLI
-  handoff and read-only `producer review render` command point to the MP4, manifest, review
-  document, local-only next action, and copy-pasteable `producer decide render` command templates
-  for one durable local operator decision, with deterministic-reference audio labeled as a local
-  timing draft. CLI status, evidence Markdown, and the read-only Studio production-media panel
-  surface the same review command only when current draft-render evidence passes, and rendered runs
-  use the read-only review command as their next safe action with upload/public-scheduled publish
-  still disabled.
+- Approval-gated local FFmpeg draft render. Exact render-plan, voiceover digest, and voice
+  classification approval is required before writing the MP4, schema-v8 manifest, review, and
+  manifest-bound chapter artifacts. The concat timeline uses bookends, scenes, and available source
+  frames; audio/subtitles stay outside bookends, SRT timing maps to actual voice duration, and
+  lower-third/waveform/popup overlays stay scene-scoped. Sample popup copy is masked before plain
+  wrapped runtime text is drawn. The manifest records timing, cadence, overlay placement, approval,
+  execution/review commands, and `ffprobe` evidence. CLI, evidence, and Studio expose local review
+  and durable decision guidance only when current render evidence passes; upload and public or
+  scheduled publish remain disabled.
+- `producer revise render` closes the fail-closed recovery loop after `needs-revision` or `rejected`:
+  it archives the current MP4, manifest, decision, evidence, and readiness under
+  `revisions/render/<revision_id>/`, invalidates the stale render approval, transitions back to
+  `READY_FOR_MANUAL_PRODUCTION`, and requires a fresh exact approval. If current render evidence is
+  unreadable after a contract upgrade, explicit reason/reviewer attribution plus the persisted MP4
+  hash and active approval binding are required before the same archival recovery is allowed.
 - Provider-backed idea and production-package stages schema-validate and normalize common local
   model JSON variants before artifact writes, while rejecting malformed or English operator-facing
   payloads fail-closed.
@@ -110,38 +110,22 @@
 - `llama.cpp` provider config supports a local OpenAI-compatible `llama-server` base URL,
   `/v1/models` doctor diagnostics, `/v1/chat/completions` generation, bounded request timeouts, and
   JSON/JSON schema response-format forwarding without hosted API credentials.
-- `producer eval local-model` runs small local-provider idea/script parser-contract checks and
-  writes ignored `diagnostics/local_model_eval.json` and Markdown reports with hashes,
-  token/duration metadata, applied one-run CLI override names, and no raw provider output. Eval-only
-  overrides can compare local Ollama/`llama.cpp` candidates without mutating `producer.config.json`.
-  Eval requests use temperature `0` for repeatable candidate comparisons.
-  `producer eval local-model-candidates` runs the same checks for repeated `--candidate` model names
-  and writes ignored `diagnostics/local_model_candidates_eval.json` and Markdown reports with a
-  deterministic recommendation and next operator command only when a candidate passes all
-  parser-contract checks. `--include-local-gguf` discovers ignored `models/llm/*.gguf` files as
-  candidate ids without mutating project config. Mixed candidate comparisons that include a
-  recommended passing candidate are useful operator evidence and do not fail the CLI process;
-  comparisons with no passing candidate still exit non-zero. Studio reports mixed comparisons with a
-  recommended passing candidate as `recommended` rather than fully blocked. In `llama.cpp` mode,
-  candidate evaluation first checks `/v1/models`; candidates not currently served by the local
-  server are blocked without generation, and provider responses that report a different served model
-  than requested fail closed. A 2026-06-28 qwen3:8b run stayed fail-closed on non-slot-specific idea
-  `fit` explanations while its script-section sample parsed.
+- Local-model evaluation runs deterministic idea/script parser-contract checks and writes ignored
+  JSON/Markdown reports with hashes, duration/token metadata, one-run overrides, and no raw provider
+  output. Candidate comparison can discover ignored GGUF files, recommends only candidates passing
+  all checks, treats a passing mixed result as useful evidence, and exits non-zero when none pass.
+  `llama.cpp` candidates must be actively served and provider-reported model identity must match;
+  config is never mutated. Studio can refresh and read these reports without starting servers,
+  downloading models, calling hosted APIs, or weakening parser gates.
 - Studio reads ignored local model evaluation JSON/Markdown artifacts on home and `/eval`, including
   missing, malformed, schema-invalid, passing, and blocked reports. A guarded action refreshes the
   canonical CLI evaluation without editing providers, starting servers, downloading models, calling hosted APIs, or weakening parser gates.
-- Script generation uses bounded hook/context/development/outro provider calls, writes
-  `script.sections.json` draft and expansion-chunk receipts, and assembles `script.md` only after
-  all sections pass blocking quality checks.
-- Script expansion prompts include the previous expansion chunks from the same section so local
-  models have explicit context to continue from rather than repeating section-level sentence loops.
-- Script generation now runs up to three bounded long-form continuation passes when the assembled
-  script remains below the 1500-word review floor. Continuations extend the existing
-  `Sinematik Gelişme` section, add `continuation` receipts to `script.sections.json`, and are
-  included in prompt provenance, token totals, cost recording, and blocker checks.
-- If bounded continuation passes still leave the assembled provider draft below the 1500-word floor,
-  script generation now fails closed before script artifacts are written and persists a safe
-  diagnostic message without raw provider text.
+- Script generation uses bounded section calls and continuation passes, carries accepted expansion
+  context forward, and writes `script.sections.json` receipts before assembling `script.md`. Up to
+  three continuations target at least 1,100 spoken narration words for an 8-12 minute draft;
+  directions do not count. Prompt provenance, token/cost totals, retries, and blockers include every
+  pass. Remaining shortfall fails closed before final script artifacts and persists only safe
+  diagnostics.
 - Script continuation parsing remains JSON-first but accepts bounded raw Turkish continuation text
   from local models when the response has complete sentences and exact Turkish production labels.
 - Script review and generation now block malformed Turkish production labels, unaccented production
@@ -249,8 +233,9 @@
 - Studio run detail shows guarded approval, workflow-stage/review/revision, render-decision, and
   channel-handoff decision routes over CLI/core evidence contracts. Home can start ideas, and
   home/queue can run no-extra-input workflow-stage actions only when CLI/core recommends them.
-  Guarded action panels show compact producer record summaries after completion. Upload/publish stay
-  disabled.
+  A non-accepted draft's canonical `revise render` next command maps to a guarded Studio route;
+  explicitly attributed invalid-evidence recovery remains CLI-only. Guarded action panels show
+  compact producer record summaries after completion. Upload/publish stay disabled.
 - Readiness diagnostics that strictly parse and revalidate persisted cost quotes, live hard budgets,
   complete production-package integrity, and exact paid-generation cost approval when required.
 - Blocked and warning `producer readiness` checks print and persist next-action guidance for common
@@ -356,12 +341,9 @@
   publish, or causal claim is introduced. `producer analytics report` refreshes the ignored Markdown
   report and CSV template; Studio marks report previews as missing, stale, or current by dataset
   timestamp and source digest.
-- Roadmap and `.ai` guidance now include future Next.js Producer Studio, prompt editing, revision
-  tracking, design direction, development preferences, versioning expectations, and Computer Use QA
-  boundaries.
-- Roadmap and `.ai` guidance now prioritize a channel-specific production loop: Render Plan +
-  Contact Sheet MVP first, then local TTS, FFmpeg draft render, Studio read-only review, and manual
-  analytics feedback.
+- Roadmap and `.ai` guidance prioritize Production Loop Validation: repeat real local episodes,
+  reduce operator/media friction, keep Studio on guarded CLI/core contracts, and use manual analytics
+  before optional YouTube integrations. Prompt editing and richer production revisions remain later.
 - CodeRabbit is configured to auto-suggest and auto-assign `ogiboy` for PR review.
 - Local SonarQube configuration targets project `uykuluk-scifi`; manual SonarCloud scans target
   `ogiboy_uykuluk-scifi`.
@@ -404,9 +386,14 @@ pnpm producer render --run <run_id> [--json]
 pnpm producer decide render --run <run_id> --decision accepted-for-local-review --notes "<operator notes>" --reviewed-by operator [--json]
 pnpm producer decide render --run <run_id> --decision needs-revision --notes "<operator notes>" --reviewed-by operator [--json]
 pnpm producer decide render --run <run_id> --decision rejected --notes "<operator notes>" --reviewed-by operator [--json]
+pnpm producer revise render --run <run_id> [--json]
+pnpm producer revise render --run <run_id> --reason "<reason>" --reviewed-by operator [--json] # invalid-evidence recovery only
 pnpm producer review render-decision --run <run_id> [--json]
 pnpm producer review-bundle --run <run_id> [--json]
 pnpm producer channel-handoff --run <run_id> [--json]
+pnpm producer decide channel-handoff --run <run_id> --decision accepted-for-manual-channel-prep --thumbnail-candidate <candidate_id> --notes "<operator notes>" --reviewed-by operator [--json]
+pnpm model:start
+pnpm model:stop
 pnpm producer analytics import --file <path> [--json]
 pnpm producer analytics report [--json]
 pnpm producer upload private --run <run_id>
@@ -436,15 +423,17 @@ Corepack/PATH before treating failures as product failures.
 
 - Ollama and `llama.cpp` doctor checks verify local server reachability and configured model
   inventory, but live local-model QA is environment-dependent and not part of CI. Historical qwen3
-  runs proved the safety architecture but not production-quality output. Qwen should stay a
-  regression target while Mistral/Gemma/Turkish GGUF candidates are evaluated through the same
-  approval, JSON, repetition, Turkish-label, word-floor, and operator-quality gates before any model
-  becomes the recommended local default.
+  runs proved the safety architecture but not production-quality output. A live Gemma 3 12B GGUF
+  run completed the full idea-to-manual-handoff loop after bounded script continuation and
+  attributable operator revisions; that is useful workstation evidence, not proof that every draft
+  is production-ready or that operator review can be removed. Qwen stays a regression target while
+  candidates continue through the same approval, JSON, repetition, Turkish-label, spoken-word, and
+  operator-quality gates.
 - Ollama and `llama.cpp` configuration accepts only credential-free loopback HTTP(S) origins, preventing local adapters from silently becoming arbitrary outbound endpoints; hosted or LAN provider support needs a separately reviewed adapter boundary.
 - No paid provider adapter is implemented. Exact cost quote approval remains separate from spend
   authorization. The execution boundary is ready for a future approved adapter, but no SDK,
   credential, network integration, or CLI mutation exposes it.
-- Current local-only Studio combines read/review pages and grouped artifact metadata with guarded mutations backed by canonical CLI/core contracts. Route security covers page reads, short-lived session proof, same-origin actions, and disabled upload/publish; generation and local render run only through guarded contracts.
+- Current local-only Studio combines read/review pages and grouped artifact metadata with guarded mutations backed by canonical CLI/core contracts. Stage and Studio-lib roots retain stable public entrypoints while domain helpers live in named subfolders. Route security covers page reads, short-lived session proof, same-origin actions, and disabled upload/publish; generation and local render run only through guarded contracts.
 - Optional Sentry captures unexpected Next.js and Studio mutation-boundary failures without request bodies or artifact contents. Without a DSN it is disabled
   and never affects workflow state, approvals, readiness, evidence, or route authorization.
 - Local prompt overrides are implemented as explicit ignored `prompts/local/*.md` paths configured
@@ -462,9 +451,11 @@ Corepack/PATH before treating failures as product failures.
   upload, or publish. Deterministic-local evidence is timing proof only; production voice quality
   still requires operator listening.
 - FFmpeg draft render creates a local review MP4 from intro/outro source cards or frames,
-  scene-timed plates, subtitles, overlays, voiceover audio, manifest/source-frame evidence, a stable
-  read-only review command, and an operator checklist. Reusable intro/outro MP4 clips and broader
-  visual polish remain follow-up work.
+  scene-timed plates, audio-bound subtitles, scene-scoped overlays, voiceover audio,
+  manifest/source-frame/timing evidence, a stable read-only review command, and an operator
+  checklist. Rejected drafts have a durable archive/reapproval recovery path. Reusable intro/outro
+  MP4 clips, richer background variety, exact word-level TTS alignment, and broader visual polish
+  remain follow-up work.
 - Upload/publish are disabled scaffolds; manual/Studio analytics are local-only; richer APIs are not
   implemented.
 - Run-path containment blocks pre-existing symlinks; hostile concurrent replacement remains a local

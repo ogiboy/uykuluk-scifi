@@ -122,6 +122,11 @@ when present. The draft FFmpeg renderer can expand those committed frames into l
 bookend inputs for review MP4s. These frame sources remain tracked inputs, not generated run output
 or upload approval.
 
+The current popup-card PNG is a styled sample/template asset with placeholder copy. During local
+draft rendering, the scene-scoped popup filter masks that placeholder content before drawing plain,
+wrapped run-specific text; the card, lower-third, and waveform are hidden from intro/outro. Editable
+or blank layered popup-card sources remain preferable for final channel production.
+
 The manual channel handoff derives `production/thumbnail_candidates.*` from tracked
 `thumbnails/thumbnail_template_*` and matching `thumbnail_text_safe_overlay_*` files. These are
 review candidates only; they do not generate images, upload media, or approve publishing.
@@ -133,4 +138,4 @@ review candidates only; they do not generate images, upload media, or approve pu
   outside the local draft renderer.
 - Font files and license notes for recurring title, thumbnail, lower-third, and subtitle typography.
 - Additional series-specific background plates once recurring episode categories are defined.
-- Storyboard/contact-sheet refinements after the MVP markdown contact sheet is used on real runs.
+- Storyboard/contact-sheet refinements based on repeated real-run review evidence.
