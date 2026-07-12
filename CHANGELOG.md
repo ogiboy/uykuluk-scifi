@@ -11,6 +11,12 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.80.1 (2026-07-12)
+
+### Chores
+
+- bump @types/node from 25.9.5 to 26.1.1 (d5bfefe)
+
 ## v0.80.0 (2026-07-12)
 
 ### Features
