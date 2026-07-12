@@ -48,3 +48,8 @@ ruvector.db
 
 /.understand-anything/
 .agents/
+
+.env*
+.flaskenv*
+!.env.project
+!.env.vault
