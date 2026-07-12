@@ -1,5 +1,5 @@
+import { readStudioMediaArtifact } from "../../../../../lib/artifacts/studioMediaArtifacts";
 import { projectRoot } from "../../../../../lib/projectRoot";
-import { readStudioMediaArtifact } from "../../../../../lib/studioMediaArtifacts";
 
 type RunMediaRouteContext = Readonly<{
   params: Promise<{ artifactPath: string[]; runId: string }>;

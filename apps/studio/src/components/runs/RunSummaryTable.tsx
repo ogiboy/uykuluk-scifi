@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { RunQueueDensity } from "@/lib/runQueueWorkbench";
+import type { RunQueueDensity } from "@/lib/runs/runQueueWorkbench";
 import type { StudioRunSummary } from "@/lib/runSummaries";
 import {
   getCoreRowModel,

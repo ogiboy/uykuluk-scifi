@@ -1,4 +1,4 @@
-import type { ChannelHandoffStatus } from "../stages/channelHandoffStatus.js";
+import type { ChannelHandoffStatus } from "../stages/channel/channelHandoffStatus.js";
 
 /**
  * Summarizes manual channel-handoff status for operator desk compact rows.

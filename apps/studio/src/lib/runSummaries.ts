@@ -1,34 +1,42 @@
 import path from "node:path";
-import type { RenderDecisionCommandTemplate } from "../../../../src/stages/renderDecisionCommands";
-import type { RunDiagnosticSummary } from "../../../../src/stages/runDiagnosticSummaryContracts";
-import { evidenceBlockedActionMessages } from "../../../../src/stages/statusBlockedActions";
+import type { RunDiagnosticSummary } from "../../../../src/stages/diagnostics/runDiagnosticSummaryContracts";
+import type { RenderDecisionCommandTemplate } from "../../../../src/stages/render/renderDecisionCommands";
+import { evidenceBlockedActionMessages } from "../../../../src/stages/status/statusBlockedActions";
 import {
   productionMediaStatus,
   type ProductionMediaStatus,
-} from "../../../../src/stages/statusMediaSummary";
-import type { StatusWorkflowStep } from "../../../../src/stages/statusWorkflow";
-import { readReviewArtifactPreviews, type StudioArtifactPreview } from "./artifactPreviews";
-import type { StudioChannelHandoffDecisionSummary } from "./channelHandoffDecisionSummaries";
-import type { StudioChannelHandoffSummary } from "./channelHandoffSummaries";
-import type { StudioEvidenceSummary } from "./evidenceSummaries";
-import type { StudioFinalReviewBundleSummary } from "./finalReviewBundleSummaries";
-import { readStudioGeneratedIdeas, type StudioGeneratedIdea } from "./ideaSummaries";
+} from "../../../../src/stages/status/statusMediaSummary";
+import type { StatusWorkflowStep } from "../../../../src/stages/status/statusWorkflow";
+import {
+  readReviewArtifactPreviews,
+  type StudioArtifactPreview,
+} from "./artifacts/artifactPreviews";
 import { projectRoot } from "./projectRoot";
+import type { StudioChannelHandoffDecisionSummary } from "./runs/channelHandoffDecisionSummaries";
+import type { StudioChannelHandoffSummary } from "./runs/channelHandoffSummaries";
+import type { StudioEvidenceSummary } from "./runs/evidenceSummaries";
+import type { StudioFinalReviewBundleSummary } from "./runs/finalReviewBundleSummaries";
+import { readStudioGeneratedIdeas, type StudioGeneratedIdea } from "./runs/ideaSummaries";
 import {
   type ReadinessSnapshot,
   type StudioReadinessCheck,
   type StudioReadinessSummary,
-} from "./readinessSummaries";
-import type { StudioRenderDecisionSummary } from "./renderDecisionSummaries";
-import { readStudioRevisionSources, type StudioRevisionSources } from "./revisionSources";
+} from "./runs/readinessSummaries";
+import type { StudioRenderDecisionSummary } from "./runs/renderDecisionSummaries";
+import { readStudioRevisionSources, type StudioRevisionSources } from "./runs/revisionSources";
 import {
   studioNextRecommendedCommand,
   studioRenderDecisionCommands,
   studioWorkflowProgress,
-} from "./runDecisionProjection";
-import type { RunRecord, StudioRunState } from "./runRecordTypes";
-import { isRunId, readRunRecord, readStudioRunDiagnostics, safeReaddir } from "./runSummaryFiles";
-import { loadRunSummaryInputs } from "./runSummaryInputs";
+} from "./runs/runDecisionProjection";
+import type { RunRecord, StudioRunState } from "./runs/runRecordTypes";
+import {
+  isRunId,
+  readRunRecord,
+  readStudioRunDiagnostics,
+  safeReaddir,
+} from "./runs/runSummaryFiles";
+import { loadRunSummaryInputs } from "./runs/runSummaryInputs";
 
 export type StudioRunSummary = {
   approvalCount: number;

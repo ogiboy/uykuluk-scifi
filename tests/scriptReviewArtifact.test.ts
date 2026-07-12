@@ -56,4 +56,33 @@ describe("script review artifact", () => {
     expect(markdown).toContain("Resolve blocking review findings before script approval.");
     expect(markdown).not.toContain("pnpm producer approve script");
   });
+
+  it("requires acknowledgement when script metadata identifies fact-check claims", async () => {
+    const { runId, ideas } = await runIdeas();
+    await approveIdea(runId, ideas[0].id);
+    await generateScript(runId);
+    await writeFile(
+      artifactPath(runId, "script.md"),
+      [
+        "# Europa Ölçümü",
+        "",
+        "Anlatıcı: Europa okyanusu hakkında bu gözlem kesin kanıt değildir.",
+        "Görsel: Ham veri ve alternatif açıklamalar yan yana görünür.",
+        "UykulukSciFi'de yeniden buluşalım.",
+      ].join("\n"),
+      "utf8",
+    );
+
+    const review = await reviewScript(runId);
+
+    expect(review.warnings).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: "claims_require_fact_check",
+          details: { claimCount: "1" },
+          severity: "warning",
+        }),
+      ]),
+    );
+  });
 });

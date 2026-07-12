@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildStudioActionPreflight } from "../apps/studio/src/lib/studioActionPreflight";
+import { buildStudioActionPreflight } from "../apps/studio/src/lib/actions/studioActionPreflight";
 
 describe("Studio action preflight", () => {
   it("surfaces selected idea payload and disabled upload boundary for guarded approvals", () => {

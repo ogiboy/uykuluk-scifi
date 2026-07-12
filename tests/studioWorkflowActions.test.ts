@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { getStudioActionServiceStatus } from "../apps/studio/src/lib/actionServiceStatus";
-import { studioWorkflowActionSteps } from "../apps/studio/src/lib/studioWorkflowActions";
+import { studioWorkflowActionSteps } from "../apps/studio/src/lib/actions/studioWorkflowActions";
 
 describe("Studio workflow action matrix", () => {
   it("orders guarded web controls by the v1 production workflow", () => {

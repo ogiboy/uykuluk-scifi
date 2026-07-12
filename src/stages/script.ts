@@ -11,27 +11,33 @@ import { createLlmProvider } from "../providers/index.js";
 import { requireApproval, requireState } from "../safeguards/approvalGuard.js";
 import { enforceBudget } from "../safeguards/budgetGuard.js";
 import { reviewScriptContent } from "../safeguards/contentGuard.js";
-import { scriptContentBlockerError } from "./scriptContentRetry.js";
-import { applyLongFormContinuations, assertLongFormWordFloor } from "./scriptContinuation.js";
-import { persistScriptGenerationFailure } from "./scriptFailureDiagnostics.js";
-import { extractClaims, extractVisualBeats } from "./scriptMetaExtractors.js";
+import { countSpokenNarrationWords } from "../utils/scriptProductionText.js";
+import { scriptContentBlockerError } from "./script/scriptContentRetry.js";
+import {
+  applyLongFormContinuations,
+  assertLongFormWordFloor,
+} from "./script/scriptContinuation.js";
+import { persistScriptGenerationFailure } from "./script/scriptFailureDiagnostics.js";
+import { extractClaims, extractVisualBeats } from "./script/scriptMetaExtractors.js";
 import {
   generateScriptSections,
   receiptDurationMs,
   receiptInputTokens,
   receiptOutputTokens,
   sectionProviderCallCount,
-} from "./scriptSectionGeneration.js";
+} from "./script/scriptSectionGeneration.js";
 import {
   assembleScriptFromSections,
   scriptSectionExpansionChunks,
   scriptSectionPlans,
-} from "./scriptSections.js";
+  type ScriptSectionReceipt,
+} from "./script/scriptSections.js";
 import { ScriptMeta, VideoIdea } from "./types.js";
 
 export async function generateScript(runId: string): Promise<ScriptMeta> {
   const config = await loadConfig();
   let run = await loadRun(runId);
+  let generationReceipts: ScriptSectionReceipt[] = [];
   await requireState(run, "IDEA_APPROVED", "script");
   await requireApproval(run, "idea", "script");
   assertTransition(run.state, "SCRIPT_GENERATED");
@@ -59,6 +65,7 @@ export async function generateScript(runId: string): Promise<ScriptMeta> {
       config,
       provider,
     });
+    generationReceipts = sectionReceipts;
     await applyLongFormContinuations({
       basePrompt: prompt.text,
       config,
@@ -75,9 +82,11 @@ export async function generateScript(runId: string): Promise<ScriptMeta> {
       throw scriptContentBlockerError("assembled script provider response", assembledBlockers);
     }
     const wordCount = script.trim().split(/\s+/).filter(Boolean).length;
+    const narrationWordCount = countSpokenNarrationWords(script);
     const meta: ScriptMeta = {
-      estimatedDuration: `${Math.max(1, Math.round(wordCount / 135))}-${Math.max(2, Math.round(wordCount / 115))} dakika`,
+      estimatedDuration: `${Math.max(1, Math.round(narrationWordCount / 135))}-${Math.max(2, Math.round(narrationWordCount / 115))} dakika`,
       wordCount,
+      narrationWordCount,
       tone: config.channel.defaultTone,
       claimsRequiringFactCheck: extractClaims(script),
       possibleVisualBeats: extractVisualBeats(script),
@@ -121,7 +130,7 @@ export async function generateScript(runId: string): Promise<ScriptMeta> {
     await setRunState(run, "SCRIPT_GENERATED", "script");
     return meta;
   } catch (error) {
-    run = await persistScriptGenerationFailure(run, config, error);
+    run = await persistScriptGenerationFailure(run, config, error, generationReceipts);
     await appendLedgerEvent({
       runId: run.runId,
       type: "ERROR",

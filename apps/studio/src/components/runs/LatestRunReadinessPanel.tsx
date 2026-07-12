@@ -2,13 +2,13 @@ import { CliFallbackCommand } from "@/components/studio/CliFallbackCommand";
 import { formatStudioInteger, MetricGrid } from "@/components/studio/MetricGrid";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { runReviewHrefFromSummary } from "@/lib/runReviewNavigation";
-import type { StudioRunSummary } from "@/lib/runSummaries";
+import { runReviewHrefFromSummary } from "@/lib/runs/runReviewNavigation";
 import {
   formatRunRenderDecision,
   formatRunReviewCounts,
   getNextSafeCommand,
-} from "@/lib/runSummaryCopy";
+} from "@/lib/runs/runSummaryCopy";
+import type { StudioRunSummary } from "@/lib/runSummaries";
 import type { Route } from "next";
 import Link from "next/link";
 

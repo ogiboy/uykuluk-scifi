@@ -8,9 +8,9 @@ import { StudioMutationSessionPanel } from "@/components/studio/StudioMutationSe
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { StudioActionServiceStatus } from "@/lib/actionServiceStatus";
-import { homeActionQueueSummaryItems } from "@/lib/homeActionQueueSummary";
+import { homeActionQueueSummaryItems } from "@/lib/actions/homeActionQueueSummary";
+import type { startIdeasReadinessFromDoctor } from "@/lib/actions/startIdeasReadiness";
 import type { StudioRunSummary } from "@/lib/runSummaries";
-import type { startIdeasReadinessFromDoctor } from "@/lib/startIdeasReadiness";
 
 type StartIdeasReadiness = ReturnType<typeof startIdeasReadinessFromDoctor>;
 

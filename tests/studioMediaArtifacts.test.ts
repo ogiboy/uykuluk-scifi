@@ -6,7 +6,7 @@ import {
   srtToWebVtt,
   studioCaptionArtifactUrl,
   studioMediaArtifactUrl,
-} from "../apps/studio/src/lib/studioMediaArtifacts";
+} from "../apps/studio/src/lib/artifacts/studioMediaArtifacts";
 import { artifactPath } from "../src/core/artifacts";
 import { createRun, saveRun } from "../src/core/runStore";
 import { useTempProject } from "./helpers";

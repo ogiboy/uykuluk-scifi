@@ -62,6 +62,12 @@ describe("Studio mutation service contracts", () => {
           coreModule: "src/stages/renderDecision.ts",
         }),
         expect.objectContaining({
+          actionId: "render.revise",
+          availability: "ready-for-cli",
+          coreExport: "reviseRender",
+          coreModule: "src/revisions/renderRevision.ts",
+        }),
+        expect.objectContaining({
           actionId: "render-plan.run",
           availability: "ready-for-cli",
           coreExport: "generateRenderPlan",
@@ -206,6 +212,9 @@ describe("Studio mutation service contracts", () => {
     expect(parseStudioMutationRequest("render-plan.run", { runId: "run_operator_review" })).toEqual(
       { runId: "run_operator_review" },
     );
+    expect(parseStudioMutationRequest("render.revise", { runId: "run_operator_review" })).toEqual({
+      runId: "run_operator_review",
+    });
     expect(parseStudioMutationRequest("ideas.run", {})).toEqual({});
     expect(() => parseStudioMutationRequest("ideas.run", { runId: "run_operator_review" })).toThrow(
       /Unrecognized key/,

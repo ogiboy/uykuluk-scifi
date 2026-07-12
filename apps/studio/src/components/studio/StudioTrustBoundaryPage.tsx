@@ -1,4 +1,4 @@
-import type { StudioRouteBoundaryCopy } from "@/lib/studioRouteBoundaryCopy";
+import type { StudioRouteBoundaryCopy } from "@/lib/routing/studioRouteBoundaryCopy";
 import {
   defaultStudioRouteBoundaryActions,
   StudioRouteBoundaryCard,

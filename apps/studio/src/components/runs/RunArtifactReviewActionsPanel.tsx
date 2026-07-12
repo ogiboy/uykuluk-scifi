@@ -13,8 +13,8 @@ import {
   artifactReviewActionsForRun,
   type StudioArtifactReviewAction,
   type StudioRenderPlanReviewActionRun,
-} from "@/lib/renderPlanReviewAction";
-import { useStudioGuardedActionSubmit } from "@/lib/useStudioGuardedActionSubmit";
+} from "@/lib/actions/renderPlanReviewAction";
+import { useStudioGuardedActionSubmit } from "@/lib/mutations/useStudioGuardedActionSubmit";
 import { useState } from "react";
 import { StudioMutationResultPanel } from "../studio/StudioMutationResultPanel";
 import { RunStageActionConfirmationDialog } from "./RunStageActionConfirmationDialog";

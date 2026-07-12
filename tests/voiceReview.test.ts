@@ -7,8 +7,8 @@ import { artifactPath } from "../src/core/artifacts";
 import { createRun, loadRun, saveRun } from "../src/core/runStore";
 import { readRenderPlanEvidence } from "../src/stages/renderPlan";
 import { formatVoiceoverReviewConsole, reviewVoiceover } from "../src/stages/reviewVoiceover";
-import type { VoiceoverAudioMeta } from "../src/stages/voiceoverEvidence";
-import { renderVoiceoverReviewMarkdown } from "../src/stages/voiceoverReviewMarkdown";
+import type { VoiceoverAudioMeta } from "../src/stages/voice/voiceoverEvidence";
+import { renderVoiceoverReviewMarkdown } from "../src/stages/voice/voiceoverReviewMarkdown";
 import { useTempProject } from "./helpers";
 import { prepareReadyRunWithoutVoiceover, prepareVoiceoverReadyRun } from "./renderPipelineHelpers";
 

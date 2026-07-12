@@ -2,7 +2,7 @@ import type {
   StudioPromptEntry,
   StudioPromptInventory,
   StudioPromptStatus,
-} from "@/lib/promptInventoryTypes";
+} from "@/lib/catalogs/promptInventoryTypes";
 import { Badge } from "../ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 

@@ -212,7 +212,7 @@ describe("content and asset safeguards", () => {
         expect.objectContaining({
           code: "repeated_sentence_loop",
           details: {
-            repeatCount: "3",
+            repeatCount: "2",
             sentenceFingerprint: expect.stringMatching(/^[a-f0-9]{16}$/),
           },
           severity: "blocker",

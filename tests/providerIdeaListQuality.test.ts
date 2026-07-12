@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { parseIdeasProviderPayload } from "../src/stages/providerPayloads";
+import { ideaListEditorialWarnings } from "../src/stages/provider/providerIdeaListQuality";
+import { parseIdeasProviderPayload } from "../src/stages/provider/providerPayloads";
 
 const validIdea = {
   id: "idea_001",
@@ -59,58 +60,72 @@ describe("provider idea list quality", () => {
     ).toThrow(/title motif/i);
   });
 
-  it("rejects repeated fit sentence frames across otherwise distinct ideas", () => {
-    expect(() =>
-      parseIdeasProviderPayload(
-        JSON.stringify([
-          {
-            ...validIdea,
-            fit: "Buzaltı haritası üzerine bilimsel bir yaklaşımla sakin bir keşif vadeder.",
-          },
-          {
-            ...validIdea,
-            id: "idea_002",
-            title: "Lav Belleği",
-            premise: "Lav katmanlarında ölçülen düzenin kesin kanıt olmadığını varsayalım.",
-            fit: "Lav belleği üzerine bilimsel bir yaklaşımla görsel bir araştırma vadeder.",
-          },
-          {
-            ...validIdea,
-            id: "idea_003",
-            title: "Nötrino Gecikmesi",
-            premise: "Geciken sinyalin doğal gürültü olabileceği dikkatle incelenir.",
-            fit: "Nötrino gecikmesi üzerine bilimsel bir yaklaşımla temkinli bir merak vadeder.",
-          },
-        ]),
-      ),
-    ).toThrow(/Fit explanations reuse a repeated sentence frame/);
+  it("reports repeated fit sentence frames as editorial warnings", () => {
+    const ideas = parseIdeasProviderPayload(
+      JSON.stringify([
+        {
+          ...validIdea,
+          fit: "Buzaltı haritası üzerine bilimsel bir yaklaşımla sakin bir keşif vadeder.",
+        },
+        {
+          ...validIdea,
+          id: "idea_002",
+          title: "Lav Belleği",
+          premise: "Lav katmanlarında ölçülen düzenin kesin kanıt olmadığını varsayalım.",
+          fit: "Lav belleği üzerine bilimsel bir yaklaşımla görsel bir araştırma vadeder.",
+        },
+        {
+          ...validIdea,
+          id: "idea_003",
+          title: "Nötrino Gecikmesi",
+          premise: "Geciken sinyalin doğal gürültü olabileceği dikkatle incelenir.",
+          fit: "Nötrino gecikmesi üzerine bilimsel bir yaklaşımla temkinli bir merak vadeder.",
+        },
+      ]),
+    );
+
+    expect(ideaListEditorialWarnings(ideas)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: "repeated_fit_frame",
+          message: expect.stringContaining("Fit explanations reuse a repeated sentence frame"),
+        }),
+      ]),
+    );
   });
 
-  it("rejects repeated generic fit boilerplate across repaired local-model ideas", () => {
-    expect(() =>
-      parseIdeasProviderPayload(
-        JSON.stringify([
-          {
-            ...validIdea,
-            fit: "Buzaltı haritası, buzaltı okyanuslarının bilimsel sorularını sakin görsellere bağlar.",
-          },
-          {
-            ...validIdea,
-            id: "idea_002",
-            title: "Lav Belleği",
-            premise: "Lav katmanlarında ölçülen düzenin kesin kanıt olmadığını varsayalım.",
-            fit: "Lav belleği, ötegezegen jeolojisinin bilimsel sorularını temkinli biçimde işler.",
-          },
-          {
-            ...validIdea,
-            id: "idea_003",
-            title: "Nötrino Gecikmesi",
-            premise: "Geciken sinyalin doğal gürültü olabileceği dikkatle incelenir.",
-            fit: "Nötrino gecikmesi, zaman gecikmeli sinyallerin bilimsel sorularını görünür kılar.",
-          },
-        ]),
-      ),
-    ).toThrow(/generic "bilimsel soruları" boilerplate/i);
+  it("reports repeated generic fit boilerplate as an editorial warning", () => {
+    const ideas = parseIdeasProviderPayload(
+      JSON.stringify([
+        {
+          ...validIdea,
+          fit: "Buzaltı haritası, buzaltı okyanuslarının bilimsel sorularını sakin görsellere bağlar.",
+        },
+        {
+          ...validIdea,
+          id: "idea_002",
+          title: "Lav Belleği",
+          premise: "Lav katmanlarında ölçülen düzenin kesin kanıt olmadığını varsayalım.",
+          fit: "Lav belleği, ötegezegen jeolojisinin bilimsel sorularını temkinli biçimde işler.",
+        },
+        {
+          ...validIdea,
+          id: "idea_003",
+          title: "Nötrino Gecikmesi",
+          premise: "Geciken sinyalin doğal gürültü olabileceği dikkatle incelenir.",
+          fit: "Nötrino gecikmesi, zaman gecikmeli sinyallerin bilimsel sorularını görünür kılar.",
+        },
+      ]),
+    );
+
+    expect(ideaListEditorialWarnings(ideas)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: "generic_fit_boilerplate",
+          message: expect.stringMatching(/generic "bilimsel soruları" boilerplate/i),
+        }),
+      ]),
+    );
   });
 
   it("rejects repeated premise frames across otherwise non-identical local-model ideas", () => {

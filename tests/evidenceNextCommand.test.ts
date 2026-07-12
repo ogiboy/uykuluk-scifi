@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { artifactPath } from "../src/core/artifacts";
 import { approveIdea } from "../src/stages/approveIdea";
 import { generateEvidenceBundle } from "../src/stages/evidence";
-import { evidenceNextCommand } from "../src/stages/evidenceNextCommand";
+import { evidenceNextCommand } from "../src/stages/evidence/evidenceNextCommand";
 import { runIdeas } from "../src/stages/ideas";
 import { reviewScript } from "../src/stages/reviewScript";
 import { generateScript } from "../src/stages/script";

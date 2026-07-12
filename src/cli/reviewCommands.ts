@@ -1,5 +1,5 @@
 import type { Command } from "commander";
-import { formatRenderDraftConsole } from "../stages/renderConsole.js";
+import { formatRenderDraftConsole } from "../stages/render/renderConsole.js";
 import { reviewDraftRender } from "../stages/reviewRender.js";
 import {
   formatRenderDecisionReviewConsole,

@@ -9,11 +9,11 @@ import {
   readStudioLastMutationResultSnapshot,
   studioLastMutationResultEventName,
   type StudioLastMutationResult,
-} from "@/lib/studioLastMutationResult";
+} from "@/lib/mutations/studioLastMutationResult";
 import {
   studioMutationResultHref,
   studioMutationResultLinkLabel,
-} from "@/lib/studioMutationResultNavigation";
+} from "@/lib/mutations/studioMutationResultNavigation";
 import type { Route } from "next";
 import Link from "next/link";
 import { useMemo, useSyncExternalStore } from "react";

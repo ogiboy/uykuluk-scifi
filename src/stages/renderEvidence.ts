@@ -3,16 +3,16 @@ import {
   draftRenderPath,
   draftRenderReviewPath,
   type DraftRenderEvidence,
-} from "./renderEvidenceContracts.js";
-import { readDraftRenderValidation } from "./renderEvidenceValidation.js";
+} from "./render/renderEvidenceContracts.js";
+import { readDraftRenderValidation } from "./render/renderEvidenceValidation.js";
 import {
   sourceFrameCadence,
   sourceFrameCount,
   sourceFrameSegments,
-} from "./renderTimelineSummary.js";
+} from "./render/renderTimelineSummary.js";
 
-export * from "./renderEvidenceContracts.js";
-export * from "./renderEvidenceValidation.js";
+export * from "./render/renderEvidenceContracts.js";
+export * from "./render/renderEvidenceValidation.js";
 
 /**
  * Reads and validates draft render evidence for a run.
@@ -33,7 +33,7 @@ export async function readDraftRenderEvidence(run: RunRecord): Promise<DraftRend
     bytes: manifest.output.bytes,
     durationSeconds: manifest.output.durationSeconds,
     overlayRoles: manifest.composition.overlays.map((overlay) => overlay.role),
-    timelineSegments: manifest.timeline.map((item) => item.segment ?? "scene"),
+    timelineSegments: manifest.timeline.map((item) => item.segment),
     sourceFrameCount: sourceFrameCount(manifest.timeline),
     sourceFrameSegments: sourceFrameSegments(manifest.timeline),
     sourceFrameCadence: sourceFrameCadence(manifest.ffmpegTimelineInputs),

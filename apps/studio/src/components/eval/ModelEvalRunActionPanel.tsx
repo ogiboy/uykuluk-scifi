@@ -12,7 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useStudioGuardedActionSubmit } from "@/lib/useStudioGuardedActionSubmit";
+import { useStudioGuardedActionSubmit } from "@/lib/mutations/useStudioGuardedActionSubmit";
 
 /**
  * Renders the guarded Studio action that refreshes single-model local eval evidence.

@@ -7,8 +7,8 @@ import {
   StudioRouteBoundaryHeader,
 } from "@/components/studio/StudioRouteBoundaryCard";
 import { Button } from "@/components/ui/button";
-import { captureStudioUnexpectedError } from "@/lib/studioObservability";
-import { studioErrorCopy } from "@/lib/studioRouteBoundaryCopy";
+import { captureStudioUnexpectedError } from "@/lib/observability/studioObservability";
+import { studioErrorCopy } from "@/lib/routing/studioRouteBoundaryCopy";
 
 type StudioRouteErrorPageProps = Readonly<{
   error: Error & { digest?: string };

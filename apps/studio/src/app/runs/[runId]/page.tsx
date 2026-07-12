@@ -6,9 +6,9 @@ import {
   defaultRunReviewTab,
   runReviewTabFromSearchParams,
   type RunReviewSearchParams,
-} from "@/lib/runReviewNavigation";
+} from "@/lib/runs/runReviewNavigation";
+import { isRunId } from "@/lib/runs/runSummaryFiles";
 import { getStudioRunDetail } from "@/lib/runSummaries";
-import { isRunId } from "@/lib/runSummaryFiles";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 

@@ -1,14 +1,14 @@
 import { Command } from "commander";
+import { channelHandoffMarkdownPath } from "../stages/channel/channelHandoffContracts.js";
 import { createChannelHandoff } from "../stages/channelHandoff.js";
-import { channelHandoffMarkdownPath } from "../stages/channelHandoffContracts.js";
 import { estimateCost } from "../stages/estimate.js";
 import { generateEvidenceBundle } from "../stages/evidence.js";
+import { finalReviewBundleMarkdownPath } from "../stages/finalReview/finalReviewBundleContracts.js";
 import { createFinalReviewBundle } from "../stages/finalReviewBundle.js";
-import { finalReviewBundleMarkdownPath } from "../stages/finalReviewBundleContracts.js";
 import { runIdeas } from "../stages/ideas.js";
 import { generateProductionPackage } from "../stages/productionPackage.js";
+import { renderPlanArtifactPaths, type RenderPlan } from "../stages/render/renderPlanSchemas.js";
 import { generateRenderPlan } from "../stages/renderPlan.js";
-import { renderPlanArtifactPaths, type RenderPlan } from "../stages/renderPlanSchemas.js";
 import { generateScript } from "../stages/script.js";
 
 type Wrap = <T extends unknown[]>(handler: (...args: T) => Promise<void>) => (...args: T) => void;

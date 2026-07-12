@@ -12,8 +12,11 @@ import {
   productionPackageManifestPath,
   providerEvidenceFromManifest,
   verifyProductionPackage,
-} from "../stages/productionPackageIntegrity.js";
-import { productionSceneSchema, renderPlanArtifactPaths } from "../stages/renderPlanSchemas.js";
+} from "../stages/production/productionPackageIntegrity.js";
+import {
+  productionSceneSchema,
+  renderPlanArtifactPaths,
+} from "../stages/render/renderPlanSchemas.js";
 import { sha256 } from "../utils/hash.js";
 import { createId, nowIso } from "../utils/time.js";
 

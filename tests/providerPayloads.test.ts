@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseIdeasProviderPayload } from "../src/stages/providerPayloads";
+import { parseIdeasProviderPayload } from "../src/stages/provider/providerPayloads";
 
 const validIdea = {
   id: "idea_001",

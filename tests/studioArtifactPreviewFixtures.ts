@@ -1,4 +1,4 @@
-import type { StudioArtifactPreview } from "../apps/studio/src/lib/artifactPreviews";
+import type { StudioArtifactPreview } from "../apps/studio/src/lib/artifacts/artifactPreviews";
 
 export function studioArtifactPreview(
   overrides: Partial<StudioArtifactPreview>,

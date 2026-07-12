@@ -19,7 +19,21 @@ export function generateHistoryAwareMockIdeasText(prompt: string, model: string)
   if (model === "mock-repeat-history-ideas") {
     return generateMockIdeasText();
   }
+  if (model === "mock-idea-editorial-warning") {
+    return generateEditorialFitWarningIdeasText();
+  }
   return generateMockIdeasText(nextMockIdeaVariant(prompt));
+}
+
+function generateEditorialFitWarningIdeasText(): string {
+  const ideas = mockIdeas(0);
+  const sharedFrame = "UykulukSciFi için bilimsel ihtiyat taşıyan sakin bir keşif vadeder";
+  return JSON.stringify({
+    ideas: ideas.map((idea, index) => ({
+      ...idea,
+      fit: index < 3 ? `${idea.title}, ${sharedFrame}.` : idea.fit,
+    })),
+  });
 }
 
 export function generateInvalidDuplicateIdeasText(): string {

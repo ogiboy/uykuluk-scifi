@@ -1,4 +1,4 @@
-import { buildDraftRenderTimeline } from "../src/stages/renderFfmpegPlan";
+import { buildDraftRenderTimeline } from "../src/stages/render/renderFfmpegPlan";
 
 /**
  * Creates a two-scene render plan fixture.

@@ -1,5 +1,5 @@
+import { buildStudioActionWorkbench } from "@/lib/actions/studioActionWorkbench";
 import type { StudioRunSummary } from "@/lib/runSummaries";
-import { buildStudioActionWorkbench } from "@/lib/studioActionWorkbench";
 
 export type OperatorAction = ReturnType<typeof buildStudioActionWorkbench>["primary"];
 

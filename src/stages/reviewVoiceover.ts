@@ -1,12 +1,12 @@
 import { SafeExitError } from "../core/errors.js";
 import { loadRun } from "../core/runStore.js";
-import { readVoiceoverAudioEvidence } from "./voiceoverEvidence.js";
+import { readVoiceoverAudioEvidence } from "./voice/voiceoverEvidence.js";
 import {
   voiceoverLocalPlaybackPath,
   voiceoverRenderApprovalCommand,
   voiceoverRenderApprovalScope,
   type VoiceoverRenderApprovalScope,
-} from "./voiceoverReviewCommands.js";
+} from "./voice/voiceoverReviewCommands.js";
 
 type PassingVoiceoverEvidence = Extract<
   Awaited<ReturnType<typeof readVoiceoverAudioEvidence>>,

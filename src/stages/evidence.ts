@@ -12,14 +12,14 @@ import { PromptProvenance } from "../prompts/provenance.js";
 import { pathExists } from "../utils/fs.js";
 import { readJsonFile } from "../utils/json.js";
 import { nowIso } from "../utils/time.js";
-import { evidenceBlockedActions } from "./evidenceBlockedActions.js";
-import { renderEvidenceMarkdown } from "./evidenceMarkdown.js";
-import { evidenceNextCommand, materializeRunCommand } from "./evidenceNextCommand.js";
-import { readProductionPackageIntegrityEvidence } from "./productionPackageIntegrity.js";
+import { evidenceBlockedActions } from "./evidence/evidenceBlockedActions.js";
+import { renderEvidenceMarkdown } from "./evidence/evidenceMarkdown.js";
+import { evidenceNextCommand, materializeRunCommand } from "./evidence/evidenceNextCommand.js";
+import { readProductionPackageIntegrityEvidence } from "./production/productionPackageIntegrity.js";
 import { readDraftRenderEvidence } from "./renderEvidence.js";
 import { readRenderPlanEvidence } from "./renderPlan.js";
-import { readScriptReviewEvidence } from "./scriptReviewEvidence.js";
-import { readVoiceoverAudioEvidence } from "./voiceoverEvidence.js";
+import { readScriptReviewEvidence } from "./script/scriptReviewEvidence.js";
+import { readVoiceoverAudioEvidence } from "./voice/voiceoverEvidence.js";
 
 /**
  * Generates and persists an evidence bundle for a run.

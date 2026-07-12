@@ -5,10 +5,10 @@ import { ApprovalRecord } from "../core/state.js";
 import { assertTransition } from "../core/transitions.js";
 import { requireState } from "../safeguards/approvalGuard.js";
 import { createId, nowIso } from "../utils/time.js";
-import { verifyProductionPackage } from "./productionPackageIntegrity.js";
-import { renderApprovalRef } from "./renderApproval.js";
+import { verifyProductionPackage } from "./production/productionPackageIntegrity.js";
+import { renderApprovalRef } from "./render/renderApproval.js";
 import { readRenderPlanEvidence } from "./renderPlan.js";
-import { readVoiceoverAudioEvidence } from "./voiceoverEvidence.js";
+import { readVoiceoverAudioEvidence } from "./voice/voiceoverEvidence.js";
 
 /**
  * Approves render for a run after required production evidence is verified.

@@ -1,5 +1,5 @@
-import type { ProductionMediaStatus } from "@/lib/runEvidenceCopy";
-import { studioCaptionArtifactUrl } from "@/lib/studioMediaArtifacts";
+import { studioCaptionArtifactUrl } from "@/lib/artifacts/studioMediaArtifacts";
+import type { ProductionMediaStatus } from "@/lib/runs/runEvidenceCopy";
 
 type RunProductionMediaPreviewProps = Readonly<{
   artifact: ProductionMediaStatus;

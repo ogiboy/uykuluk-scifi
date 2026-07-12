@@ -12,11 +12,11 @@ import {
   channelHandoffMarkdownPath,
   channelHandoffSchema,
   youtubeMetadataSchema,
-} from "./channelHandoffContracts.js";
-import { renderChannelHandoffMarkdown } from "./channelHandoffMarkdown.js";
-import { finalReviewBundleJsonPath } from "./finalReviewBundleContracts.js";
-import { readFinalReviewBundleStatus } from "./finalReviewBundleStatus.js";
-import { verifyProductionPackage } from "./productionPackageIntegrity.js";
+} from "./channel/channelHandoffContracts.js";
+import { renderChannelHandoffMarkdown } from "./channel/channelHandoffMarkdown.js";
+import { finalReviewBundleJsonPath } from "./finalReview/finalReviewBundleContracts.js";
+import { readFinalReviewBundleStatus } from "./finalReview/finalReviewBundleStatus.js";
+import { verifyProductionPackage } from "./production/productionPackageIntegrity.js";
 import {
   buildThumbnailCandidatePack,
   renderThumbnailCandidateMarkdown,
@@ -29,8 +29,8 @@ export {
   channelHandoffMarkdownPath,
   channelHandoffSchema,
   type ChannelHandoff,
-} from "./channelHandoffContracts.js";
-export { renderChannelHandoffMarkdown } from "./channelHandoffMarkdown.js";
+} from "./channel/channelHandoffContracts.js";
+export { renderChannelHandoffMarkdown } from "./channel/channelHandoffMarkdown.js";
 
 /**
  * Creates a local manual channel handoff package from an accepted final review bundle.

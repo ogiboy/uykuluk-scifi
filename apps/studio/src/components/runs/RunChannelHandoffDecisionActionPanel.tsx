@@ -5,9 +5,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { buildStudioActionPreflight } from "@/lib/actions/studioActionPreflight";
+import { useStudioGuardedActionSubmit } from "@/lib/mutations/useStudioGuardedActionSubmit";
 import type { StudioRunDetail } from "@/lib/runSummaries";
-import { buildStudioActionPreflight } from "@/lib/studioActionPreflight";
-import { useStudioGuardedActionSubmit } from "@/lib/useStudioGuardedActionSubmit";
 import { useId, useState } from "react";
 import { StudioMutationResultPanel } from "../studio/StudioMutationResultPanel";
 import { RunActionPreflightPanel } from "./RunActionPreflightPanel";

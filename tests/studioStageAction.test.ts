@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   stageActionForRun,
   studioStageActionConfigs,
-} from "../apps/studio/src/lib/studioStageAction";
+} from "../apps/studio/src/lib/actions/studioStageAction";
 
 describe("Studio stage action mapping", () => {
   it("keeps every stage action id mapped once", () => {
@@ -14,6 +14,7 @@ describe("Studio stage action mapping", () => {
         "script.run",
         "render-plan.run",
         "render.review",
+        "render.revise",
         "channel-handoff.run",
       ]),
     );
@@ -47,5 +48,15 @@ describe("Studio stage action mapping", () => {
         state: "RENDER_APPROVED",
       }),
     ).toBeNull();
+  });
+
+  it("maps the canonical rejected-draft recovery command to its guarded route", () => {
+    expect(
+      stageActionForRun({
+        nextRecommendedCommand: "pnpm producer revise render --run run_review",
+        runId: "run_review",
+        state: "RENDERED",
+      }),
+    ).toMatchObject({ actionId: "render.revise", routePath: "/actions/revise-render" });
   });
 });

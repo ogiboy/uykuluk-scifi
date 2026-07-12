@@ -4,7 +4,7 @@ import {
   actionSurface,
   filterServiceContractGroups,
   serviceContractGroups,
-} from "../apps/studio/src/lib/serviceContractPanel";
+} from "../apps/studio/src/lib/actions/serviceContractPanel";
 
 describe("Studio service contract panel helpers", () => {
   it("filters action contracts by query and availability", () => {

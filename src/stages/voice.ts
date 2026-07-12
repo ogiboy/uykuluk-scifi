@@ -1,6 +1,6 @@
 import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
-import { readFile, rm } from "node:fs/promises";
+import { readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { loadConfig } from "../config/config.js";
 import {
@@ -16,24 +16,30 @@ import { loadRun, saveRun } from "../core/runStore.js";
 import { requireApproval, requireState } from "../safeguards/approvalGuard.js";
 import { ensureDir } from "../utils/fs.js";
 import { nowIso } from "../utils/time.js";
-import { readPiperProviderEvidence } from "./piperProviderEvidence.js";
-import { verifyProductionPackage } from "./productionPackageIntegrity.js";
+import { verifyProductionPackage } from "./production/productionPackageIntegrity.js";
 import { readRenderPlanEvidence } from "./renderPlan.js";
-import { readWavInfo, wavFromPcm16 } from "./voiceWav.js";
+import { readPiperProviderEvidence } from "./voice/piperProviderEvidence.js";
+import {
+  normalizePcm16WavPeak,
+  readWavInfo,
+  wavFromPcm16,
+  type WavPeakNormalizationEvidence,
+} from "./voice/voiceWav.js";
 import {
   VoiceoverAudioMeta,
   voiceoverAudioMetaPath,
   voiceoverAudioMetaSchema,
   voiceoverAudioPath,
   voiceoverAudioReviewPath,
-} from "./voiceoverEvidence.js";
-import { renderVoiceoverReviewMarkdown } from "./voiceoverReviewMarkdown.js";
+} from "./voice/voiceoverEvidence.js";
+import { renderVoiceoverReviewMarkdown } from "./voice/voiceoverReviewMarkdown.js";
 
 type SynthesizedAudio = {
   buffer: Buffer;
   channels: number;
   durationSeconds: number;
   provider?: NonNullable<VoiceoverAudioMeta["provider"]>;
+  processing?: { peakNormalization: WavPeakNormalizationEvidence };
   quality: VoiceoverAudioMeta["quality"];
   sampleRateHz: number;
 };
@@ -110,6 +116,7 @@ export async function generateVoiceoverAudio(runId: string): Promise<VoiceoverAu
       channels: audio.channels,
     },
     provider: audio.provider,
+    processing: audio.processing,
   });
   run = await writeRunJson(run, "voice", voiceoverAudioMetaPath, meta);
   run = await writeRunText(
@@ -169,13 +176,18 @@ async function synthesizePiperAudio(options: {
     args.push("--config", provider.configPath);
   }
   await runPiper(options.binary, args, options.text);
-  const buffer = await readFile(output);
-  const wav = readWavInfo(buffer);
+  const sourceBuffer = await readFile(output);
+  const normalized = normalizePcm16WavPeak(sourceBuffer);
+  if (normalized.evidence.applied) {
+    await writeFile(output, normalized.buffer);
+  }
+  const wav = readWavInfo(normalized.buffer);
   return {
-    buffer,
+    buffer: normalized.buffer,
     channels: wav.channels,
     durationSeconds: wav.durationSeconds,
     provider,
+    processing: { peakNormalization: normalized.evidence },
     quality: "local-piper",
     sampleRateHz: wav.sampleRateHz,
   };

@@ -1,6 +1,6 @@
-import type { RenderDecisionStatus } from "../stages/renderDecisionStatus.js";
+import type { RenderDecisionStatus } from "../stages/render/renderDecisionStatus.js";
 import type { RunStatusSummary } from "../stages/status.js";
-import type { ProductionMediaStatus } from "../stages/statusMedia.js";
+import type { ProductionMediaStatus } from "../stages/status/statusMedia.js";
 
 export type OperatorDeskCommand = { command: string; label: string };
 

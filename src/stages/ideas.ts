@@ -11,22 +11,27 @@ import { renderIdeasPrompt, type RenderedPrompt } from "../prompts/templates.js"
 import { createLlmProvider } from "../providers/index.js";
 import type { GenerateTextResult, LlmProvider } from "../providers/llmProvider.js";
 import { enforceBudget } from "../safeguards/budgetGuard.js";
-import { persistIdeaGenerationFailure } from "./ideaFailureDiagnostics.js";
+import { recordIdeaEditorialWarnings } from "./idea/ideaEditorialWarnings.js";
+import { persistIdeaGenerationFailure } from "./idea/ideaFailureDiagnostics.js";
 import {
   historicalIdeaTitleIssue,
   ideaHistoryEvidence,
   ideaHistoryPromptBlock,
   readIdeaHistory,
   type IdeaHistoryEntry,
-} from "./ideaHistory.js";
-import { ideasValidationSummary, renderIdeaRepairPrompt } from "./ideaRepairPrompt.js";
-import { parseIdeasProviderPayload } from "./providerPayloads.js";
-import { ideasResponseFormat } from "./providerResponseFormats.js";
+} from "./idea/ideaHistory.js";
+import { ideasValidationSummary, renderIdeaRepairPrompt } from "./idea/ideaRepairPrompt.js";
+import {
+  ideaListEditorialWarnings,
+  type IdeaListEditorialWarning,
+} from "./provider/providerIdeaListQuality.js";
+import { parseIdeasProviderPayload } from "./provider/providerPayloads.js";
+import { ideasResponseFormat } from "./provider/providerResponseFormats.js";
 import { VideoIdea } from "./types.js";
 
-export { renderIdeaRepairPrompt } from "./ideaRepairPrompt.js";
+export { renderIdeaRepairPrompt } from "./idea/ideaRepairPrompt.js";
 
-const ideaRepairPromptSource = "src/stages/ideaRepairPrompt.ts";
+const ideaRepairPromptSource = "src/stages/idea/ideaRepairPrompt.ts";
 
 type IdeaRepairEvidence = {
   attempted: boolean;
@@ -37,6 +42,7 @@ type IdeaRepairEvidence = {
 
 type IdeaGenerationOutcome = {
   ideas: VideoIdea[];
+  qualityWarnings: IdeaListEditorialWarning[];
   repairPromptText?: string;
   repair: IdeaRepairEvidence;
   result: GenerateTextResult;
@@ -87,9 +93,11 @@ export async function runIdeas(): Promise<{ runId: string; ideas: VideoIdea[] }>
       outputTokens: generation.result.outputTokensApprox,
       durationMs: generation.result.durationMs,
     });
+    run = await recordIdeaEditorialWarnings(run, generation.qualityWarnings);
     run = await writeRunJson(run, "ideas", "ideas.json", {
       history: ideaHistoryEvidence(ideaHistory),
       ideas: generation.ideas,
+      qualityWarnings: generation.qualityWarnings,
       prompt: createPromptProvenance(prompt.key, prompt.text, "ideas.json", prompt.source),
       repair: repairEvidenceWithPrompt(prompt.key, generation),
     });
@@ -129,6 +137,7 @@ async function generateIdeasWithRepair(input: {
       }
       return {
         ideas,
+        qualityWarnings: ideaListEditorialWarnings(ideas),
         repairPromptText: validationErrors.length ? promptText : undefined,
         repair: repairEvidence(validationErrors),
         result: combineProviderResults(results),

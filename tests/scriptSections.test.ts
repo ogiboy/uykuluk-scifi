@@ -4,10 +4,11 @@ import { defaultConfig } from "../src/config/config";
 import { artifactPath } from "../src/core/artifacts";
 import { loadRun } from "../src/core/runStore";
 import { reviewScriptContent } from "../src/safeguards/contentGuard";
+import { scriptLongFormWordFloor } from "../src/safeguards/scriptLengthContract";
 import { approveIdea } from "../src/stages/approveIdea";
 import { runIdeas } from "../src/stages/ideas";
 import { generateScript } from "../src/stages/script";
-import { scriptContinuationTokenCap } from "../src/stages/scriptContinuation";
+import { scriptContinuationTokenCap } from "../src/stages/script/scriptContinuation";
 import {
   parseScriptSectionProviderPayload,
   renderScriptSectionExpansionPrompt,
@@ -18,7 +19,7 @@ import {
   scriptSectionResponseFormat,
   sectionExpansionTokenCap,
   sectionTokenCap,
-} from "../src/stages/scriptSections";
+} from "../src/stages/script/scriptSections";
 import { useTempProject } from "./helpers";
 
 describe("sectional script generation", () => {
@@ -47,7 +48,7 @@ describe("sectional script generation", () => {
       }>;
     };
     expect(meta.sectionCount).toBe(4);
-    expect(meta.wordCount).toBeGreaterThanOrEqual(1500);
+    expect(meta.narrationWordCount).toBeGreaterThanOrEqual(scriptLongFormWordFloor);
     expect(sections.sectionCount).toBe(4);
     expect(sections.providerCallCount).toBe(17);
     expect(sections.sections).toHaveLength(17);
@@ -130,7 +131,7 @@ describe("sectional script generation", () => {
       (section) => section.pass === "continuation",
     );
 
-    expect(meta.wordCount).toBeGreaterThanOrEqual(1500);
+    expect(meta.narrationWordCount).toBeGreaterThanOrEqual(scriptLongFormWordFloor);
     expect(sections.providerCallCount).toBeGreaterThanOrEqual(17);
     expect(continuationReceipts.length).toBeGreaterThanOrEqual(1);
     expect(continuationReceipts.length).toBeLessThanOrEqual(3);
@@ -146,7 +147,7 @@ describe("sectional script generation", () => {
     const basePrompt = [
       "SCRIPT_MARKDOWN",
       "Target an 8-12 minute local draft.",
-      "Prefer 1,500+ total script words for local model drafts.",
+      "Produce at least 1,100 spoken narration words for local model drafts.",
       "## Approved Idea",
       '{"title":"Deneme"}',
     ].join("\n\n");
@@ -161,7 +162,7 @@ describe("sectional script generation", () => {
     expect(prompt).toContain("SCRIPT_SECTION_JSON");
     expect(prompt).toContain("## Approved Idea");
     expect(prompt).not.toContain("Target an 8-12 minute local draft");
-    expect(prompt).not.toContain("1,500+ total script words");
+    expect(prompt).not.toContain("1,100 spoken narration words");
     expect(prompt).toContain("50-90 kelime");
     expect(prompt).toContain("Tek paragraf");
     expect(prompt).toContain('"text"');
@@ -176,8 +177,10 @@ describe("sectional script generation", () => {
     expect(expansionPrompt).toContain("1200 characters");
     expect(expansionPrompt).toContain("Each sentence must add a new concrete beat");
     expect(expansionPrompt).toContain("replace repeated structures with new images or decisions");
+    expect(expansionPrompt).toContain("The draft remains in the final script");
     expect(expansionPrompt).toContain("Exact label checklist");
-    expect(expansionPrompt).toContain("Only `Anlatıcı:` and `Görsel:` are valid labels");
+    expect(expansionPrompt).toContain("Only Anlatıcı: and Görsel: are valid labels");
+    expect(expansionPrompt).toContain("without backticks");
     expect(expansionPrompt).toContain("Do not append compliance checklists");
     expect(expansionPrompt).not.toContain("Target an 8-12 minute local draft");
     expect(scriptSectionResponseFormat.properties.text).toMatchObject({ maxLength: 750 });
@@ -187,8 +190,8 @@ describe("sectional script generation", () => {
   });
 
   it("keeps continuation token caps within the configured script cap", () => {
-    expect(scriptContinuationTokenCap(900)).toBe(700);
-    expect(scriptContinuationTokenCap(3_200)).toBe(700);
+    expect(scriptContinuationTokenCap(900)).toBe(900);
+    expect(scriptContinuationTokenCap(3_200)).toBe(1000);
     expect(sectionExpansionTokenCap(3_200)).toBeLessThanOrEqual(3_200);
   });
 

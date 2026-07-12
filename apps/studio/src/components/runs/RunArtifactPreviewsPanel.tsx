@@ -6,10 +6,10 @@ import {
   countArtifactPreviewStatuses,
   filterArtifactPreviews,
   type ArtifactPreviewStatusFilter,
-} from "@/lib/artifactPreviewFilters";
-import type { StudioArtifactPreview } from "@/lib/artifactPreviews";
-import { buildArtifactReviewHandoff } from "@/lib/artifactReviewHandoff";
-import { artifactPreviewsIntro } from "@/lib/runEvidenceCopy";
+} from "@/lib/artifacts/artifactPreviewFilters";
+import type { StudioArtifactPreview } from "@/lib/artifacts/artifactPreviews";
+import { buildArtifactReviewHandoff } from "@/lib/artifacts/artifactReviewHandoff";
+import { artifactPreviewsIntro } from "@/lib/runs/runEvidenceCopy";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import { applyEnumSelectValue } from "@/lib/utils";
 import { useMemo, useState } from "react";

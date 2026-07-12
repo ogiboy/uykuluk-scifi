@@ -6,7 +6,7 @@ import {
   renderScriptSectionPrompt,
   scriptSectionPlans,
   scriptSectionResponseFormat,
-} from "../stages/scriptSections.js";
+} from "../stages/script/scriptSections.js";
 import { sha256 } from "../utils/hash.js";
 import type { LocalModelEvalCheck } from "./localModelEval.js";
 import { renderScriptEvalBasePrompt } from "./localModelEvalPrompts.js";

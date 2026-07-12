@@ -6,7 +6,7 @@ import {
   type StudioControlLoopItem,
   type StudioControlLoopRun,
   type StudioControlLoopTone,
-} from "@/lib/studioControlLoop";
+} from "@/lib/actions/studioControlLoop";
 import { cn } from "@/lib/utils";
 
 type RunGuidedControlLoopPanelProps = Readonly<{ compact?: boolean; run: StudioControlLoopRun }>;

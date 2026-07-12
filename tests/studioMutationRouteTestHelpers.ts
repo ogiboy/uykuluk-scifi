@@ -2,7 +2,7 @@ import {
   studioActionHeaderName,
   studioSessionCookieName,
   studioSessionHeaderName,
-} from "../apps/studio/src/lib/studioMutationSecurity";
+} from "../apps/studio/src/lib/mutations/studioMutationSecurity";
 
 export type StudioMutationRequestOptions = Readonly<{
   actionHeader?: string;

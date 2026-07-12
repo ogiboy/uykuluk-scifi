@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   studioMutationResultHref,
   studioMutationResultLinkLabel,
-} from "../apps/studio/src/lib/studioMutationResultNavigation";
+} from "../apps/studio/src/lib/mutations/studioMutationResultNavigation";
 
 describe("Studio mutation result navigation", () => {
   it("opens newly-created idea runs on the guarded decision rail", () => {
@@ -16,6 +16,10 @@ describe("Studio mutation result navigation", () => {
     expect(studioMutationResultHref("run_media", "voice.run")).toBe("/runs/run_media?tab=media");
     expect(studioMutationResultHref("run_media", "render.run")).toBe("/runs/run_media?tab=media");
     expect(studioMutationResultLinkLabel("render.run")).toBe("Open draft render review");
+    expect(studioMutationResultHref("run_media", "render.revise")).toBe(
+      "/runs/run_media?tab=media#review-decision",
+    );
+    expect(studioMutationResultLinkLabel("render.revise")).toBe("Open archived draft recovery");
   });
 
   it("opens review decisions and manual handoff evidence on the handoff tab", () => {
