@@ -3,8 +3,8 @@ import path from "node:path";
 import { z } from "zod";
 
 import { projectRoot } from "./projectRoot";
-import { studioRunFilePath } from "./runFilePaths";
-import { isRunId, readRunRecord, safeReaddir } from "./runSummaryFiles";
+import { studioRunFilePath } from "./runs/runFilePaths";
+import { isRunId, readRunRecord, safeReaddir } from "./runs/runSummaryFiles";
 
 const studioIdeaHistoryItemSchema = z.object({
   id: z.string().min(1),

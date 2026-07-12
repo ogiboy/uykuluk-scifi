@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildStudioActionWorkbench,
   type StudioActionWorkbenchRun,
-} from "../apps/studio/src/lib/studioActionWorkbench";
+} from "../apps/studio/src/lib/actions/studioActionWorkbench";
 
 describe("Studio action workbench review priorities", () => {
   it("prioritizes render-plan review over estimate when review artifacts exist", () => {

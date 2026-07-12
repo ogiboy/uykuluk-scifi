@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import type { StudioActionServiceStatus } from "@/lib/actionServiceStatus";
-import { homeActionQueueSummaryItems } from "@/lib/homeActionQueueSummary";
+import { homeActionQueueSummaryItems } from "@/lib/actions/homeActionQueueSummary";
 import type { StudioRunSummary } from "@/lib/runSummaries";
 
 type StudioActionOverviewPanelProps = Readonly<{

@@ -2,7 +2,7 @@
 
 import { StudioMutationResultPanel } from "@/components/studio/StudioMutationResultPanel";
 import { Button } from "@/components/ui/button";
-import { useStudioGuardedActionSubmit } from "@/lib/useStudioGuardedActionSubmit";
+import { useStudioGuardedActionSubmit } from "@/lib/mutations/useStudioGuardedActionSubmit";
 
 type AnalyticsReportActionPanelProps = Readonly<{ compact?: boolean; showResult?: boolean }>;
 

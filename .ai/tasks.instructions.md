@@ -77,6 +77,21 @@
 
 ## Next
 
+- Treat Production Loop Validation as the active product milestone. Repeat the complete documented
+  idea-to-manual-handoff workflow on real episodes and record operator/media friction; do not add a
+  new platform surface unless the run exposes a concrete blocker.
+- Keep the live local-model result honest: Gemma 3 12B on managed llama.cpp completed one real
+  long-form run, but still required bounded continuation and attributable script/package review.
+  Preserve Qwen failures as regression evidence and keep local model QA outside CI.
+- Keep `producer revise render` as the only supported backtrack from a non-accepted or invalid
+  `RENDERED` draft. Preserve archived MP4/manifest/decision evidence, invalidate the old render
+  approval, and require regenerated evidence/readiness plus a fresh exact approval; never instruct
+  operators to edit `state.json`.
+- Maintain the guarded Studio `render.revise` route for normal non-accepted drafts. Attributed
+  invalid-evidence recovery and richer manual handoff review remain CLI fallback until a dedicated
+  typed form is added through the same route-security/service-contract boundary. CLI/core remains
+  authoritative.
+
 - Harden the Render Plan + Contact Sheet MVP with operator review refinements only where real use
   exposes gaps; the current contact sheet already includes review gates, safe next commands, visual
   rhythm checks, timing ranges, asset role counts, background reuse, revision guidance, and blocked
@@ -112,7 +127,11 @@
   chapter draft, thumbnail candidates, and final-review digest. `producer decide channel-handoff`
   records the selected thumbnail/manual channel-prep decision, and status/operator desk/Studio
   surface the durable local decision without calling YouTube APIs or granting upload/publish
-  approval.
+  approval. Manifest v8 now keeps bookends outside voiceover/subtitle timing, records deterministic
+  source-SRT-to-audio scaling, scopes overlays to scenes, masks sample popup copy before drawing
+  wrapped runtime text, validates probe/manifest duration agreement, and supports rejected-draft
+  archival/reapproval. Remaining work is complete-episode pronunciation/sync review, broader visual
+  variety, editable/licensed overlay sources, and minimum-publishable-draft criteria.
 - Use `producer eval local-model` before more Qwen-specific tuning. Compare configured local
   candidates through the same idea/script gates, receipt evidence, JSON compliance, repetition
   checks, Turkish label discipline, and operator quality review. Prefer eval-only CLI overrides for

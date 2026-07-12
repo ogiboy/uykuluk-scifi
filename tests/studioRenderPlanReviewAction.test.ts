@@ -6,7 +6,7 @@ import {
   renderPlanReviewCommand,
   type StudioRenderPlanReviewActionRun,
   voiceoverReviewCommand,
-} from "../apps/studio/src/lib/renderPlanReviewAction";
+} from "../apps/studio/src/lib/actions/renderPlanReviewAction";
 
 describe("Studio render-plan review action", () => {
   it("surfaces review when all render-plan handoff artifacts exist", () => {

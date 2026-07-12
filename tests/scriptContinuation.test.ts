@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
+  continuationTarget,
   parseScriptContinuationProviderPayload,
   renderScriptContinuationPrompt,
   scriptContinuationResponseFormat,
   scriptContinuationTokenCap,
-} from "../src/stages/scriptContinuation";
-import { scriptContinuationMaxLength } from "../src/stages/scriptContinuationParsing";
+} from "../src/stages/script/scriptContinuation";
+import { scriptContinuationMaxLength } from "../src/stages/script/scriptContinuationParsing";
 
 describe("script continuation parsing", () => {
   it("accepts raw Turkish continuation text when a local model ignores the JSON wrapper", () => {
@@ -127,7 +128,7 @@ describe("script continuation parsing", () => {
   });
 
   it("keeps continuation length safety in the parser instead of Ollama grammar schema", () => {
-    expect(scriptContinuationMaxLength).toBe(2400);
+    expect(scriptContinuationMaxLength).toBe(3600);
     expect(scriptContinuationResponseFormat.properties.text).toEqual({
       type: "string",
       minLength: 1,
@@ -141,8 +142,20 @@ describe("script continuation parsing", () => {
       { chunk: { index: 2, focus: "scientific caution" }, missingWords: 180 },
     );
 
-    expect(prompt).toContain("Target length: 150-220 Turkish words.");
-    expect(prompt).toContain("Hard limit: 2400 characters.");
-    expect(scriptContinuationTokenCap(3200)).toBe(700);
+    expect(prompt).toContain("Target length: 220-280 Turkish spoken narration words");
+    expect(prompt).toContain("visual directions do not count toward the floor");
+    expect(prompt).toContain("Hard limit: 3600 characters.");
+    expect(prompt).toContain("at least 10 should be Anlatıcı: sentences");
+    expect(scriptContinuationTokenCap(3200)).toBe(1000);
+    expect(continuationTarget(900, 1)).toEqual({
+      minimumWords: 405,
+      maximumWords: 465,
+      maximumCharacters: 3600,
+    });
+    expect(continuationTarget(500, 3)).toEqual({
+      minimumWords: 420,
+      maximumWords: 480,
+      maximumCharacters: 3600,
+    });
   });
 });

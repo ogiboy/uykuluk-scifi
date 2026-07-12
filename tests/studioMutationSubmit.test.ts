@@ -2,15 +2,15 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   clearCachedStudioMutationSession,
   readStudioMutationSessionSnapshot,
-} from "../apps/studio/src/lib/studioMutationClient";
+} from "../apps/studio/src/lib/mutations/studioMutationClient";
 import {
   studioMutationFetchTimeoutMs,
   submitStudioJsonMutation,
-} from "../apps/studio/src/lib/studioMutationSubmit";
+} from "../apps/studio/src/lib/mutations/studioMutationSubmit";
 
 const captureExceptionMock = vi.hoisted(() => vi.fn());
 
-vi.mock("../apps/studio/src/lib/studioObservability", () => ({
+vi.mock("../apps/studio/src/lib/observability/studioObservability", () => ({
   captureStudioUnexpectedError: captureExceptionMock,
 }));
 

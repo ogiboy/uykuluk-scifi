@@ -1,4 +1,4 @@
-import type { ChannelHandoffDecisionStatus } from "../stages/channelHandoffDecisionStatus.js";
+import type { ChannelHandoffDecisionStatus } from "../stages/channel/channelHandoffDecisionStatus.js";
 
 /**
  * Summarizes the manual channel-handoff decision for compact operator desk surfaces.

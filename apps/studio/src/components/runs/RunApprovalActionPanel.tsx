@@ -11,15 +11,15 @@ import {
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import type { StudioRunDetail } from "@/lib/runSummaries";
-import { buildStudioActionPreflight } from "@/lib/studioActionPreflight";
+import { buildStudioActionPreflight } from "@/lib/actions/studioActionPreflight";
 import {
   approvalActionForRun,
   approvalCommandForRun,
   approvalFormReady,
   approvalPayload,
-} from "@/lib/studioApprovalAction";
-import { useStudioGuardedActionSubmit } from "@/lib/useStudioGuardedActionSubmit";
+} from "@/lib/actions/studioApprovalAction";
+import { useStudioGuardedActionSubmit } from "@/lib/mutations/useStudioGuardedActionSubmit";
+import type { StudioRunDetail } from "@/lib/runSummaries";
 import { useState } from "react";
 import { StudioMutationResultPanel } from "../studio/StudioMutationResultPanel";
 import { RunActionPreflightPanel } from "./RunActionPreflightPanel";

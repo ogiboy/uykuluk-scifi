@@ -80,6 +80,39 @@ Constraints:
 - Future paid providers must use the approved reservation/execution boundary.
 - Deterministic local render should be useful before paid/generative video providers are considered.
 
+### Draft timing follows the actual voiceover, not estimated package timing
+
+Reason: Real Piper/FFmpeg validation showed that treating voiceover duration as total video duration
+cuts bookends and that package SRT estimates can drift from generated audio. A technically decodable
+MP4 is not sufficient operator proof when audio, subtitles, and visuals use different clocks.
+
+Constraints:
+
+- The complete draft duration is intro + voiceover-backed scene window + outro unless an explicit
+  short-review cap applies.
+- Voiceover and subtitles begin after intro and end before outro.
+- V1 linearly maps source SRT duration onto actual local-audio duration because Piper provides no
+  word timestamps; the scale is persisted and still requires operator listening/watching.
+- Lower-third, waveform, and popup-card overlays are scene-scoped; bookends remain clean except for
+  the watermark.
+- Manifest and `ffprobe` durations must agree within a bounded tolerance.
+
+### Non-accepted renders are archived before reapproval
+
+Reason: A strict forward-only state machine left operators with no safe recovery after a real draft
+failed visual review. Manual `state.json` editing or silent overwrite would destroy evidence and
+weaken approval meaning.
+
+Constraints:
+
+- `needs-revision` or `rejected` decisions allow `producer revise render` to archive the canonical
+  draft, manifest, decision, evidence, and readiness under a versioned revision path.
+- The previous render approval is invalidated and the run returns to
+  `READY_FOR_MANUAL_PRODUCTION`; a fresh explicit approval is always required.
+- Contract-upgrade recovery without a readable decision requires explicit reason/reviewer
+  attribution and must still verify the persisted MP4 digest and active approval binding.
+- Accepted drafts cannot use the revision path.
+
 ### Local model runtime is separate from model quality
 
 Reason: Ollama/Qwen testing proved the safety guards work, but also showed inconsistent Turkish
@@ -97,17 +130,31 @@ Constraints:
 - Keep Ollama and `llama.cpp` base URLs on credential-free loopback origins. LAN/hosted endpoints
   belong to a future explicit provider adapter and security review.
 
+### Managed llama.cpp lifecycle reads ignored operator config
+
+Reason: Repeated manual `llama-server` commands caused model alias, port, and context drift between
+doctor, provider calls, and real runs.
+
+Constraints:
+
+- `pnpm model:start` reads ignored `producer.config.json`, validates the GGUF, serves the configured
+  alias on the configured loopback endpoint, and uses one parallel slot by default.
+- `pnpm model:stop` stops only the PID created by the managed helper.
+- Downloaded models, PID files, and provider config remain ignored local state.
+- Server lifecycle helpers never download models, change config, call hosted APIs, or weaken model
+  mismatch checks.
+
 ### CLI/core remains the workflow source of truth
 
 Reason: The first reliable surface is the strict state machine, ledger, artifact, and approval
 model. A future web dashboard should make these contracts easier to operate, not become a second
 runtime.
 
-### Next.js is the preferred future dashboard stack
+### Next.js is the operator Studio stack
 
-Reason: The operator workflow will be easier through a local browser UI with run lists, artifact
-previews, approval dialogs, readiness panels, and evidence browsing. Next.js App Router is a good
-fit once the core contracts are stable.
+Reason: The operator workflow is easier through a local browser UI with run lists, artifact
+previews, approval dialogs, readiness panels, and evidence browsing. Next.js App Router now hosts
+that surface while CLI/core remains authoritative.
 
 Constraints:
 

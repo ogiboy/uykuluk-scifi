@@ -3,33 +3,40 @@ import type { RunRecord } from "../core/state.js";
 import {
   readChannelHandoffDecisionStatus,
   type ChannelHandoffDecisionStatus,
-} from "./channelHandoffDecisionStatus.js";
-import { readChannelHandoffStatus, type ChannelHandoffStatus } from "./channelHandoffStatus.js";
+} from "./channel/channelHandoffDecisionStatus.js";
+import {
+  readChannelHandoffStatus,
+  type ChannelHandoffStatus,
+} from "./channel/channelHandoffStatus.js";
+import { readRunDiagnosticSummaries } from "./diagnostics/runDiagnosticSummaries.js";
+import type { RunDiagnosticSummary } from "./diagnostics/runDiagnosticSummaryContracts.js";
 import {
   readFinalReviewBundleStatus,
   type FinalReviewBundleStatus,
-} from "./finalReviewBundleStatus.js";
-import { readRenderDecisionStatus, type RenderDecisionStatus } from "./renderDecisionStatus.js";
-import { readRunDiagnosticSummaries } from "./runDiagnosticSummaries.js";
-import type { RunDiagnosticSummary } from "./runDiagnosticSummaryContracts.js";
-import { evidenceBlockedActionMessages } from "./statusBlockedActions.js";
-import { formatChannelHandoffStatus } from "./statusChannelHandoff.js";
-import { formatDiagnostics } from "./statusDiagnostics.js";
-import { readEvidenceStatus, type EvidenceReadResult } from "./statusEvidence.js";
-import { formatFinalReviewBundleStatus } from "./statusFinalReviewBundle.js";
-import { formatApprovalLedger, formatWarningDetails } from "./statusLedger.js";
+} from "./finalReview/finalReviewBundleStatus.js";
+import {
+  readRenderDecisionStatus,
+  type RenderDecisionStatus,
+} from "./render/renderDecisionStatus.js";
+import { evidenceBlockedActionMessages } from "./status/statusBlockedActions.js";
+import { formatChannelHandoffStatus } from "./status/statusChannelHandoff.js";
+import { formatChannelHandoffDecisionStatus } from "./status/statusChannelHandoffDecision.js";
+import { formatDiagnostics } from "./status/statusDiagnostics.js";
+import { readEvidenceStatus, type EvidenceReadResult } from "./status/statusEvidence.js";
+import { formatFinalReviewBundleStatus } from "./status/statusFinalReviewBundle.js";
+import { formatApprovalLedger, formatWarningDetails } from "./status/statusLedger.js";
 import {
   formatProductionMediaStatus,
   productionMediaReviewAction,
   productionMediaStatus,
   type ProductionMediaStatus,
-} from "./statusMedia.js";
-import { statusNextRecommendedCommand } from "./statusNextRecommended.js";
+} from "./status/statusMedia.js";
+import { statusNextRecommendedCommand } from "./status/statusNextRecommended.js";
 import {
   formatStatusReadiness,
   readStatusReadiness,
   type StatusReadinessSummary,
-} from "./statusReadiness.js";
+} from "./status/statusReadiness.js";
 
 export type RunStatusSummary = {
   approvalCount: number;
@@ -55,7 +62,7 @@ export type RunStatusSummary = {
 /**
  * Loads a run and compiles a combined status summary.
  *
- * The summary includes evidence, diagnostics, readiness, render decision state, media status, and the next recommended command.
+ * Includes evidence, diagnostics, readiness, decisions, media, and the next safe command.
  *
  * @param runId - The run identifier
  * @returns The combined status summary for the run
@@ -107,8 +114,7 @@ export async function readRunStatus(runId: string): Promise<RunStatusSummary> {
 /**
  * Renders a run status summary as a multiline operator report.
  *
- * The report includes run metadata, evidence status, readiness, render decision details,
- * blocked actions, diagnostics, production media, and recent artifacts.
+ * Includes run metadata, evidence, readiness, decisions, blockers, diagnostics, and media.
  *
  * @param status - The run status summary to format
  * @returns A newline-delimited report
@@ -141,28 +147,6 @@ export function formatRunStatus(status: RunStatusSummary): string {
       ? status.recentArtifacts.map((artifact) => `- ${artifact}`)
       : ["- none"]),
   ].join("\n");
-}
-
-function formatChannelHandoffDecisionStatus(decision: ChannelHandoffDecisionStatus): string[] {
-  if (decision.kind === "missing") {
-    return decision.nextAction
-      ? [
-          "Channel handoff decision: missing",
-          `Channel handoff decision next action: ${decision.nextAction}`,
-        ]
-      : ["Channel handoff decision: not applicable"];
-  }
-  if (decision.kind === "present") {
-    return [
-      `Channel handoff decision: ${decision.decision.decision} by ${decision.decision.reviewedBy}`,
-      `Channel handoff decision artifact: ${decision.reviewPath}`,
-      `Channel handoff decision next action: ${decision.nextAction}`,
-    ];
-  }
-  return [
-    `Channel handoff decision: ${decision.kind} (${decision.message})`,
-    `Channel handoff decision next action: ${decision.nextAction}`,
-  ];
 }
 
 /**

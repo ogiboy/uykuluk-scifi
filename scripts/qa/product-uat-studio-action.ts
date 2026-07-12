@@ -1,10 +1,10 @@
 import { POST } from "../../apps/studio/src/app/actions/decide-render/route";
 import { GET as issueStudioSession } from "../../apps/studio/src/app/actions/session/route";
-import { getStudioRunDetail } from "../../apps/studio/src/lib/runSummaries";
 import {
   studioActionHeaderName,
   studioSessionHeaderName,
-} from "../../apps/studio/src/lib/studioMutationSecurity";
+} from "../../apps/studio/src/lib/mutations/studioMutationSecurity";
+import { getStudioRunDetail } from "../../apps/studio/src/lib/runSummaries";
 
 const runId = process.argv[2];
 
@@ -26,6 +26,7 @@ const response = await POST(
       [studioSessionHeaderName]: session.token,
       "content-type": "application/json",
       cookie: session.cookie,
+      host: "localhost:3000",
       origin: "http://localhost:3000",
     },
     method: "POST",
@@ -67,7 +68,7 @@ console.log("Studio render-decision action UAT passed.");
 async function studioSessionCookie(): Promise<{ cookie: string; token: string }> {
   const response = await issueStudioSession(
     new Request("http://localhost:3000/actions/session", {
-      headers: { origin: "http://localhost:3000" },
+      headers: { host: "localhost:3000", origin: "http://localhost:3000" },
       method: "GET",
     }),
   );

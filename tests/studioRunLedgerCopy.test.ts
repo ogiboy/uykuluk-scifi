@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatApprovalLedgerItem } from "../apps/studio/src/lib/runLedgerCopy";
+import { formatApprovalLedgerItem } from "../apps/studio/src/lib/runs/runLedgerCopy";
 
 describe("Studio run ledger copy", () => {
   it("formats persisted approval ledger entries for operator review", () => {

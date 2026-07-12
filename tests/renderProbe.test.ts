@@ -1,7 +1,7 @@
 import { chmod, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { probeDraftRender } from "../src/stages/renderProbe";
+import { probeDraftRender } from "../src/stages/render/renderProbe";
 import { useTempProject } from "./helpers";
 
 let fakeFfprobeIndex = 0;

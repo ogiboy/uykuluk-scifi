@@ -9,9 +9,9 @@ import {
 } from "@/components/studio/control-desk/StudioControlRails";
 import { buttonVariants } from "@/components/ui/button";
 import type { StudioActionServiceStatus } from "@/lib/actionServiceStatus";
+import { startIdeasReadinessFromDoctor } from "@/lib/actions/startIdeasReadiness";
 import type { StudioDoctorOverview } from "@/lib/doctorOverview";
 import type { StudioRunSummary } from "@/lib/runSummaries";
-import { startIdeasReadinessFromDoctor } from "@/lib/startIdeasReadiness";
 
 type StudioControlDeskProps = Readonly<{
   actionStatus: StudioActionServiceStatus;

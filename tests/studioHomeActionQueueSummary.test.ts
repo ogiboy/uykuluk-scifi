@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { homeActionQueueSummaryItems } from "../apps/studio/src/lib/homeActionQueueSummary";
-import type { StudioActionWorkbenchRun } from "../apps/studio/src/lib/studioActionWorkbench";
+import { homeActionQueueSummaryItems } from "../apps/studio/src/lib/actions/homeActionQueueSummary";
+import type { StudioActionWorkbenchRun } from "../apps/studio/src/lib/actions/studioActionWorkbench";
 
 describe("Studio home action queue summary", () => {
   it("summarizes guarded web, blocked CLI, review, CLI-only, and complete runs", () => {

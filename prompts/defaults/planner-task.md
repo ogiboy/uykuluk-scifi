@@ -15,6 +15,8 @@ Requirements:
 - Use `targetDuration` values like `8-12 dakika`, `9-11 dakika`, or `10-12 dakika`.
 - Make `fit` a short Turkish sentence explaining why the idea fits UykulukSciFi; do not return
   `low`, `medium`, or `high` for `fit`.
+- The only channel name is `UykulukSciFi`. Never describe a topic, title, lane, object, or place as
+  a channel.
 - Make every `fit` explanation specific to that idea's title, lane, visual promise, and scientific
   caution. Do not reuse the same `fit` sentence frame across ideas.
 - Do not repeat four-word sentence frames across three or more `fit` explanations; each `fit` must

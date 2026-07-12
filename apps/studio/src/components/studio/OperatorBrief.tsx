@@ -7,12 +7,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   operatorBriefControlForAction,
   operatorBriefToneLabel,
-} from "@/lib/operatorBriefPresentation";
-import { buildStudioRunPrimaryAction } from "@/lib/runPrimaryAction";
-import { runReviewHrefFromSummary } from "@/lib/runReviewNavigation";
+} from "@/lib/actions/operatorBriefPresentation";
+import type { StartIdeasReadinessSummary } from "@/lib/actions/startIdeasReadiness";
+import { buildStudioRunPrimaryAction } from "@/lib/runs/runPrimaryAction";
+import { runReviewHrefFromSummary } from "@/lib/runs/runReviewNavigation";
+import { NO_RUNS_NEXT_COMMAND } from "@/lib/runs/runSummaryCopy";
 import type { StudioRunSummary } from "@/lib/runSummaries";
-import { NO_RUNS_NEXT_COMMAND } from "@/lib/runSummaryCopy";
-import type { StartIdeasReadinessSummary } from "@/lib/startIdeasReadiness";
 import type { Route } from "next";
 import Link from "next/link";
 

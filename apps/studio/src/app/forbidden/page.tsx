@@ -1,5 +1,5 @@
 import { StudioTrustBoundaryPage } from "@/components/studio/StudioTrustBoundaryPage";
-import { studioForbiddenCopy } from "@/lib/studioRouteBoundaryCopy";
+import { studioForbiddenCopy } from "@/lib/routing/studioRouteBoundaryCopy";
 
 /**
  * Renders a stable Studio forbidden boundary route.

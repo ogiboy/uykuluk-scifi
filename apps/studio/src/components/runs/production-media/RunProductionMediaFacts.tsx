@@ -1,4 +1,4 @@
-import type { ProductionMediaStatus } from "@/lib/runEvidenceCopy";
+import type { ProductionMediaStatus } from "@/lib/runs/runEvidenceCopy";
 
 type RunProductionMediaFactsProps = Readonly<{ artifact: ProductionMediaStatus }>;
 

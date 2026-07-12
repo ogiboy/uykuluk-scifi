@@ -16,8 +16,8 @@
   "scripts": {
     "producer": "tsx src/cli.ts",
     "studio": "pnpm --filter @uykulukscifi/studio dev",
-    "model:start": "llama-server -m ./models/llm/gemma-3-4b-it.Q4_K_M.gguf --port 8087",
-    "model:stop": "pkill -f 'llama-server -m ./models/llm/gemma-3-4b-it.Q4_K_M.gguf --port 8087'",
+    "model:start": "tsx scripts/model/llama-cpp-server.ts start",
+    "model:stop": "tsx scripts/model/llama-cpp-server.ts stop",
     "studio:build": "pnpm --filter @uykulukscifi/studio build",
     "studio:lint": "pnpm --filter @uykulukscifi/studio lint",
     "studio:start": "pnpm --filter @uykulukscifi/studio start",

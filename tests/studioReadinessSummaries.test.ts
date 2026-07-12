@@ -1,6 +1,6 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
-import { readStudioReadinessSnapshot } from "../apps/studio/src/lib/readinessSummaries";
+import { readStudioReadinessSnapshot } from "../apps/studio/src/lib/runs/readinessSummaries";
 import { getStudioRunDetail, listStudioRuns } from "../apps/studio/src/lib/runSummaries";
 import { artifactPath } from "../src/core/artifacts";
 import { createRun } from "../src/core/runStore";

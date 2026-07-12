@@ -7,7 +7,7 @@ import {
   readStudioMutationSessionSnapshot,
   refreshStudioMutationSession,
   type StudioMutationSessionSnapshot,
-} from "@/lib/studioMutationClient";
+} from "@/lib/mutations/studioMutationClient";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 

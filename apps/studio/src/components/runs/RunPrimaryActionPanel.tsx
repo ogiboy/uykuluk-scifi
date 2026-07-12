@@ -8,7 +8,7 @@ import {
   buildStudioRunPrimaryAction,
   type StudioRunPrimaryAction,
   type StudioRunPrimaryActionRun,
-} from "@/lib/runPrimaryAction";
+} from "@/lib/runs/runPrimaryAction";
 import { useId } from "react";
 import { CopyableCommand } from "../studio/CopyableCommand";
 import { RunQuickStageActionButton } from "./RunQuickStageActionButton";

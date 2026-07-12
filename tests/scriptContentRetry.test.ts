@@ -4,7 +4,7 @@ import type {
   GenerateTextResult,
   LlmProvider,
 } from "../src/providers/llmProvider";
-import { generateScriptContentWithBlockerRetry } from "../src/stages/scriptContentRetry";
+import { generateScriptContentWithBlockerRetry } from "../src/stages/script/scriptContentRetry";
 
 describe("script content retry", () => {
   it("retries safe contract parse failures without persisting raw provider text", async () => {

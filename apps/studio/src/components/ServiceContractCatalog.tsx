@@ -25,7 +25,7 @@ import {
   serviceBoundaryCopy,
   type ServiceContractAvailabilityFilter,
   type ServiceContractGroup,
-} from "@/lib/serviceContractPanel";
+} from "@/lib/actions/serviceContractPanel";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 

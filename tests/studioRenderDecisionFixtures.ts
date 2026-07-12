@@ -1,18 +1,18 @@
 import { writeFile } from "node:fs/promises";
 import { artifactPath } from "../src/core/artifacts";
 import { loadRun, saveRun } from "../src/core/runStore";
-import { finalReviewNextSafeAction } from "../src/stages/finalReviewBundleContent";
+import { finalReviewNextSafeAction } from "../src/stages/finalReview/finalReviewBundleContent";
 import {
   finalReviewBundleJsonPath,
   finalReviewBundleMarkdownPath,
   type FinalReviewBundle,
-} from "../src/stages/finalReviewBundleContracts";
-import { renderDecisionNextSafeAction } from "../src/stages/renderDecision";
+} from "../src/stages/finalReview/finalReviewBundleContracts";
 import {
   renderDecisionJsonPath,
   renderDecisionMarkdownPath,
-} from "../src/stages/renderDecisionCommands";
-import type { RenderDecisionRecord } from "../src/stages/renderDecisionContracts";
+} from "../src/stages/render/renderDecisionCommands";
+import type { RenderDecisionRecord } from "../src/stages/render/renderDecisionContracts";
+import { renderDecisionNextSafeAction } from "../src/stages/renderDecision";
 
 /**
  * Writes a Studio-valid render decision artifact for a rendered fixture run.

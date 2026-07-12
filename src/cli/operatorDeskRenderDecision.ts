@@ -1,4 +1,4 @@
-import type { RenderDecisionStatus } from "../stages/renderDecisionStatus.js";
+import type { RenderDecisionStatus } from "../stages/render/renderDecisionStatus.js";
 
 /**
  * Summarizes a render decision for display.

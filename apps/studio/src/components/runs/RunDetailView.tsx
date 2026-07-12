@@ -1,5 +1,5 @@
 import { TabsContent } from "@/components/ui/tabs";
-import { defaultRunReviewTab, type RunReviewTab } from "@/lib/runReviewNavigation";
+import { defaultRunReviewTab, type RunReviewTab } from "@/lib/runs/runReviewNavigation";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import { RunProductionMediaPanel } from "./production-media/RunProductionMediaPanel";
 import { RunArtifactPreviewsPanel } from "./RunArtifactPreviewsPanel";

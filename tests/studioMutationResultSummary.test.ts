@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { summarizeStudioMutationRecord } from "../apps/studio/src/lib/studioMutationResultSummary";
+import { summarizeStudioMutationRecord } from "../apps/studio/src/lib/mutations/studioMutationResultSummary";
 
 describe("Studio mutation result summaries", () => {
   it("formats primitive state, identity, count, and next-action facts", () => {
@@ -8,6 +8,7 @@ describe("Studio mutation result summaries", () => {
         artifacts: ["script.md", "reviews/script_review.json"],
         decision: "needs-revision",
         invalidatedArtifacts: ["reviews/script_review.json"],
+        refreshedArtifacts: ["script.meta.json"],
         nextSafeAction: "pnpm producer evidence --run run_summary",
         nextState: "SCRIPT_GENERATED",
         previousState: "SCRIPT_REVIEWED",
@@ -20,6 +21,7 @@ describe("Studio mutation result summaries", () => {
         "Decision: needs-revision",
         "Artifacts: 2",
         "Invalidated: 1",
+        "Refreshed: 1",
         "Next action: pnpm producer evidence --run run_summary",
       ],
       runId: "run_summary",

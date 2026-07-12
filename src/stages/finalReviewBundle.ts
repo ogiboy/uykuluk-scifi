@@ -8,16 +8,16 @@ import {
   finalReviewNextSafeAction,
   finalReviewStatus,
   finalReviewSummary,
-} from "./finalReviewBundleContent.js";
+} from "./finalReview/finalReviewBundleContent.js";
 import {
   finalReviewBundleJsonPath,
   finalReviewBundleMarkdownPath,
   finalReviewBundleSchema,
   type FinalReviewBundle,
-} from "./finalReviewBundleContracts.js";
-import { renderFinalReviewBundleMarkdown } from "./finalReviewBundleMarkdown.js";
-import { renderDecisionCommandTemplates } from "./renderDecisionCommands.js";
-import { readRenderDecisionStatus } from "./renderDecisionStatus.js";
+} from "./finalReview/finalReviewBundleContracts.js";
+import { renderFinalReviewBundleMarkdown } from "./finalReview/finalReviewBundleMarkdown.js";
+import { renderDecisionCommandTemplates } from "./render/renderDecisionCommands.js";
+import { readRenderDecisionStatus } from "./render/renderDecisionStatus.js";
 import { reviewDraftRender } from "./reviewRender.js";
 import { reviewRenderPlan } from "./reviewRenderPlan.js";
 import { reviewVoiceover } from "./reviewVoiceover.js";
@@ -27,8 +27,8 @@ export {
   finalReviewBundleMarkdownPath,
   finalReviewBundleSchema,
   type FinalReviewBundle,
-} from "./finalReviewBundleContracts.js";
-export { renderFinalReviewBundleMarkdown } from "./finalReviewBundleMarkdown.js";
+} from "./finalReview/finalReviewBundleContracts.js";
+export { renderFinalReviewBundleMarkdown } from "./finalReview/finalReviewBundleMarkdown.js";
 
 /**
  * Creates the local final review handoff bundle for a rendered run.

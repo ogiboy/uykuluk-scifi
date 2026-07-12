@@ -19,9 +19,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { runReviewHrefFromSummary } from "@/lib/runReviewNavigation";
+import { runReviewHrefFromSummary } from "@/lib/runs/runReviewNavigation";
+import { getNextSafeCommand } from "@/lib/runs/runSummaryCopy";
 import type { StudioRunSummary } from "@/lib/runSummaries";
-import { getNextSafeCommand } from "@/lib/runSummaryCopy";
 import { CopyIcon, ExternalLinkIcon, SearchIcon, TerminalIcon } from "lucide-react";
 import type { Route } from "next";
 import { useRouter } from "next/navigation";

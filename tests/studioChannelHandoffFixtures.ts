@@ -7,15 +7,15 @@ import {
   channelHandoffMarkdownPath,
   channelHandoffSchema,
   type ChannelHandoff,
-} from "../src/stages/channelHandoffContracts";
+} from "../src/stages/channel/channelHandoffContracts";
+import { renderChannelHandoffMarkdown } from "../src/stages/channel/channelHandoffMarkdown";
 import {
   channelHandoffDecisionJsonPath,
   channelHandoffDecisionMarkdownPath,
   renderChannelHandoffDecisionMarkdown,
   type ChannelHandoffDecisionRecord,
 } from "../src/stages/channelHandoffDecision";
-import { renderChannelHandoffMarkdown } from "../src/stages/channelHandoffMarkdown";
-import { finalReviewBundleJsonPath } from "../src/stages/finalReviewBundleContracts";
+import { finalReviewBundleJsonPath } from "../src/stages/finalReview/finalReviewBundleContracts";
 import {
   thumbnailCandidatesJsonPath,
   thumbnailCandidatesMarkdownPath,

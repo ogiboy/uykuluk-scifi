@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useStudioGuardedActionSubmit } from "@/lib/useStudioGuardedActionSubmit";
+import { useStudioGuardedActionSubmit } from "@/lib/mutations/useStudioGuardedActionSubmit";
 import { useState } from "react";
 import { StudioMutationResultPanel } from "../studio/StudioMutationResultPanel";
 

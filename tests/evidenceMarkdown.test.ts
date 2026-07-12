@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   renderEvidenceMarkdown,
   type EvidenceMarkdownBundle,
-} from "../src/stages/evidenceMarkdown";
+} from "../src/stages/evidence/evidenceMarkdown";
 
 describe("evidence Markdown media summary", () => {
   it("summarizes blocked production media evidence", () => {

@@ -1,6 +1,9 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
-import { readRunRecord, readStudioRunDiagnostics } from "../apps/studio/src/lib/runSummaryFiles";
+import {
+  readRunRecord,
+  readStudioRunDiagnostics,
+} from "../apps/studio/src/lib/runs/runSummaryFiles";
 import { useTempProject } from "./helpers";
 
 describe("Studio run file reads", () => {

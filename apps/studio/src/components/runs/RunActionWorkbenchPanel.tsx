@@ -1,11 +1,11 @@
 import { CopyableCommand } from "@/components/studio/CopyableCommand";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { StudioRunDetail } from "@/lib/runSummaries";
 import {
   buildStudioActionWorkbench,
   type StudioActionWorkbenchTone,
-} from "@/lib/studioActionWorkbench";
+} from "@/lib/actions/studioActionWorkbench";
+import type { StudioRunDetail } from "@/lib/runSummaries";
 
 type RunActionWorkbenchPanelProps = Readonly<{ run: StudioRunDetail }>;
 

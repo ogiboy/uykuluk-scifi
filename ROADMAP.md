@@ -20,6 +20,29 @@ Durable strategy:
 - learn from published performance through manual imports before YouTube Analytics API work;
 - keep public/scheduled publish out of scope until a separate risk review.
 
+## Current Milestone - Production Loop Validation
+
+Status: active.
+
+The deterministic production foundation is no longer only scaffold. A real local `llama.cpp`/Gemma 3
+12B -> reviewed script -> production package -> Piper voice -> FFmpeg render -> operator decision ->
+manual channel handoff run has completed without upload or publish. That run also proved the
+revision loop by rejecting and archiving faulty drafts before fresh approval.
+
+The next product question is operational, not architectural: can the same documented workflow
+produce the next channel episode without source edits or hidden state repair? Work in this milestone
+should prioritize:
+
+- repeatable real-episode runs and operator friction notes;
+- audio/pronunciation and subtitle-sync review on complete episodes;
+- stronger visual variety and editable/licensed production assets;
+- Studio parity for the remaining attributed invalid-evidence recovery and final handoff review UX;
+- a concise minimum-publishable-draft checklist in the final review handoff;
+- manual analytics feedback from published episodes before any YouTube API integration.
+
+Do not add more paid-provider, queue, public-publish, or generic agent infrastructure unless a real
+episode run proves it is the blocking dependency.
+
 ## Phase A - Safe Core Stabilization
 
 Status: mostly implemented; maintain and simplify.
@@ -52,17 +75,17 @@ infrastructure:
 
 ## Phase B - Real Production Loop
 
-Status: next active phase.
+Status: implemented foundation; active real-episode validation and polish.
 
 Goal: turn an approved script/package into a complete local video draft package that can be reviewed
 without upload or public publish.
 
-First concrete slice: **Render Plan + Contact Sheet MVP**.
+First completed concrete slice: **Render Plan + Contact Sheet MVP**.
 
 Status: implemented for deterministic CLI artifact generation; keep hardening evidence/readiness and
 operator review wording as later polish.
 
-Planned artifacts:
+Implemented artifacts:
 
 - `production/render_plan.json` - deterministic mapping from approved production package, scenes,
   subtitles, popup cards, and existing visual assets to an FFmpeg-ready draft plan;
@@ -79,7 +102,7 @@ Constraints:
 - evidence/readiness should surface render-plan presence and blockers only after the artifact
   contract exists.
 
-Next Real Production Loop slices:
+Remaining Real Production Loop work:
 
 - harden local TTS with continued Piper voice QA and better operator guidance; current foundation
   writes deterministic reference WAV metadata and an operator audio review checklist, can call a
@@ -95,8 +118,18 @@ Next Real Production Loop slices:
   approving upload or publish. A manual channel handoff package can then bind the accepted final
   review, draft MP4, subtitles, YouTube metadata draft, chapter draft, and tracked thumbnail
   candidates into a local checklist without calling YouTube APIs or approving upload/publish.
+  Current manifest v8 keeps bookends outside the voiceover/subtitle window, records linear
+  source-SRT-to-Piper timing, scopes overlays to scene windows, validates total duration with
+  `ffprobe`, and supports durable rejected-draft archival plus fresh exact render approval;
   `producer doctor` also warns when local FFmpeg/ffprobe tools are unavailable before operators
   reach render execution;
+- repeat the complete production loop on additional real episodes and fix only reproducible operator
+  or media-quality blockers. A run is not validated merely because mock UAT passes;
+- keep the implemented guarded Studio route for normal rejected-draft revision aligned with
+  CLI/core; add attributed invalid-evidence recovery and stronger final handoff review UX only
+  through the same route-security contracts;
+- improve the tracked visual pack so 8-12 minute drafts use more than a small rotating background
+  set, and replace sample/template overlay text with editable production sources where practical;
 - define separate private-upload approval only after local final review is reliable.
 
 ## Phase C - Operator Studio
@@ -185,7 +218,8 @@ Allowed only after the local production loop is useful:
 - YouTube Analytics API;
 - idea-only scheduler;
 - prompt override UI;
-- subtitle, scene, popup card, thumbnail, and metadata revision contracts;
+- richer late-stage subtitle, scene, popup-card, thumbnail, and metadata editing/revision UX; the
+  initial attributable package-artifact and render-revision contracts already exist;
 - thumbnail A/B planning;
 - paid image/video/TTS providers through the existing approved reservation/execution boundary;
 - Shorts repurposing.

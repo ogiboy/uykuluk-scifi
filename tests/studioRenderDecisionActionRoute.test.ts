@@ -5,10 +5,10 @@ import {
   studioActionHeaderName,
   studioSessionCookieName,
   studioSessionHeaderName,
-} from "../apps/studio/src/lib/studioMutationSecurity";
+} from "../apps/studio/src/lib/mutations/studioMutationSecurity";
 import { artifactPath } from "../src/core/artifacts";
 import { loadRun } from "../src/core/runStore";
-import { renderDecisionJsonPath } from "../src/stages/renderDecisionCommands";
+import { renderDecisionJsonPath } from "../src/stages/render/renderDecisionCommands";
 import { useTempProject } from "./helpers";
 import { renderLocalDraft } from "./renderPipelineHelpers";
 import {

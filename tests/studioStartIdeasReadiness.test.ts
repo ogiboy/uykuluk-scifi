@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { startIdeasReadinessFromDoctor } from "../apps/studio/src/lib/startIdeasReadiness";
+import { startIdeasReadinessFromDoctor } from "../apps/studio/src/lib/actions/startIdeasReadiness";
 
 describe("Studio start ideas readiness", () => {
   it("keeps passing doctor output as guidance without creating a web-side gate", () => {

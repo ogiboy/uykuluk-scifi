@@ -1,6 +1,6 @@
 import type { StudioMutationActionId } from "../../../../src/studio/actionServiceMetadata";
-import { routeFindings } from "./routeSecurityFindings";
-import type { StudioCliMutationActionId } from "./studioCliMutationArgs";
+import type { StudioCliMutationActionId } from "./mutations/studioCliMutationArgs";
+import { routeFindings } from "./routing/routeSecurityFindings";
 
 export type StudioRouteMethod = "DELETE" | "GET" | "PATCH" | "POST" | "PUT";
 export type StudioRouteRisk =
@@ -102,6 +102,7 @@ export const enabledStudioActionRoutes = [
   action("voice.review", "/actions/review-voice", "workflow", "local-mutation", true),
   action("render.run", "/actions/run-render", "workflow", "local-mutation", true),
   action("render.review", "/actions/review-render", "workflow", "local-mutation", true),
+  action("render.revise", "/actions/revise-render", "render", "local-mutation", true),
   action("review-bundle.run", "/actions/run-review-bundle", "workflow", "local-mutation", true),
   action("channel-handoff.run", "/actions/run-channel-handoff", "workflow", "local-mutation", true),
 ] as const satisfies readonly StudioRouteSecurityContract[];

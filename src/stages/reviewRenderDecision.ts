@@ -1,8 +1,11 @@
 import { SafeExitError } from "../core/errors.js";
 import { loadRun } from "../core/runStore.js";
-import { renderDecisionJsonPath, renderDecisionMarkdownPath } from "./renderDecisionCommands.js";
-import type { RenderDecisionRecord } from "./renderDecisionContracts.js";
-import { readRenderDecisionStatus } from "./renderDecisionStatus.js";
+import {
+  renderDecisionJsonPath,
+  renderDecisionMarkdownPath,
+} from "./render/renderDecisionCommands.js";
+import type { RenderDecisionRecord } from "./render/renderDecisionContracts.js";
+import { readRenderDecisionStatus } from "./render/renderDecisionStatus.js";
 
 export type RenderDecisionReviewHandoff = {
   blockedActions: string[];

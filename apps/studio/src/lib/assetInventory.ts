@@ -1,7 +1,7 @@
 import { readdir } from "node:fs/promises";
 import path from "node:path";
 import { checkAssets } from "../../../../src/safeguards/assetGuard";
-import { formatProjectPath, readStudioProducerConfig } from "./assetInventoryConfig";
+import { formatProjectPath, readStudioProducerConfig } from "./assets/assetInventoryConfig";
 import {
   ASSET_CATEGORY_DEFINITIONS,
   type AssetCategoryDefinition,
@@ -9,14 +9,14 @@ import {
   type StudioAssetCategoryStatus,
   type StudioAssetConfig,
   type StudioAssetInventory,
-} from "./assetInventoryDefinitions";
+} from "./assets/assetInventoryDefinitions";
 import { projectRoot } from "./projectRoot";
 
 export type {
   StudioAssetCategory,
   StudioAssetCategoryStatus,
   StudioAssetInventory,
-} from "./assetInventoryDefinitions";
+} from "./assets/assetInventoryDefinitions";
 
 /**
  * Builds an inventory of the studio asset configuration and directory contents.
