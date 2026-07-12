@@ -9,7 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Build
+
+- adopt the native TypeScript 7 compiler for root and Studio type checking while retaining the
+  official TypeScript 6 compatibility API for parser-based tooling.
 
 ## v0.80.2 (2026-07-12)
 

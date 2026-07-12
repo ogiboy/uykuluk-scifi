@@ -14,6 +14,8 @@
 - Keep content and asset guard coverage aligned with the operator checklist.
 - Keep `apps/studio` thin until shared service contracts exist.
 - Keep first-push repo hygiene files and GitHub workflows passing.
+- Keep native TypeScript 7 and TypeScript 6 compatibility checks passing; remove the compatibility
+  lane only after parser-based tooling officially supports the TypeScript 7 JavaScript API.
 - Keep direct provider/publish guard coverage and CI dependency audit passing.
 - Keep release planning, changelog, package version, and stable git tag automation passing on
   `main`; feature branches should not manually bump `package.json`.

@@ -584,11 +584,14 @@ Focused gates:
 
 ```bash
 pnpm lint
+pnpm qa:typescript
 pnpm typecheck
+pnpm typecheck:compat
 pnpm build
 pnpm build:smoke
 pnpm test
 pnpm studio:typecheck
+pnpm studio:typecheck:compat
 pnpm studio:build
 pnpm qa:product
 pnpm qa:browser
@@ -599,6 +602,11 @@ pnpm changelog:check
 pnpm release:check
 pnpm format:check
 ```
+
+Type checking uses the native TypeScript 7 compiler through `tsc`. The `typescript` JavaScript API
+remains on the official TypeScript 6 compatibility package so ESLint and other parser-based tools
+stay within their supported range; `tsc6` and the two `*:compat` commands verify that compatibility
+lane. `pnpm qa:typescript` fails when either compiler alias drifts to the wrong major version.
 
 ## Agent Capability Routing
 

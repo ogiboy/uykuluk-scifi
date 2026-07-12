@@ -295,3 +295,19 @@ watermark, and lower-third/subtitle assets, and render work should consume asset
 Reason: Automated review is useful when it reinforces the real risks: approval bypass, missing
 evidence, hidden costs, route safety, default publish locks, and operator UX. Style-only suggestions
 should stay secondary.
+
+### TypeScript 7 compilation and TypeScript 6 tooling compatibility remain separate
+
+Reason: The native TypeScript 7 compiler materially improves typecheck performance, while the
+current parser ecosystem still depends on the TypeScript 6 JavaScript API and fails at runtime when
+forced onto TypeScript 7.
+
+Constraints:
+
+- Root and Studio `tsc` commands use the official native TypeScript 7 package.
+- The `typescript` package name resolves to the official TypeScript 6 compatibility package for
+  ESLint, Prettier plugins, Next.js tooling, and other JavaScript API consumers.
+- Keep `tsc6` compatibility checks and the compiler-major QA gate until parser tooling officially
+  supports the TypeScript 7 API; peer-warning suppression is not a substitute for runtime support.
+- Studio typechecks refresh generated route types and remove stale development validators before
+  compiling; generated `.next` files are never patched as source.
