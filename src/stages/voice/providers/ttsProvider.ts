@@ -1,6 +1,12 @@
-export type TtsMode = "deterministic-local" | "local-piper";
+export type TtsMode = "deterministic-local" | "local-piper" | "elevenlabs";
 
-export type TtsQuality = "deterministic-local-reference" | "local-piper";
+export type TtsQuality = "deterministic-local-reference" | "local-piper" | "elevenlabs";
+
+export type TtsCharacterAlignment = {
+  characters: string[];
+  characterStartTimesSeconds: number[];
+  characterEndTimesSeconds: number[];
+};
 
 export type TtsProviderEvidence = {
   binary?: string;
@@ -8,12 +14,17 @@ export type TtsProviderEvidence = {
   modelSha256?: string;
   configPath?: string;
   configSha256?: string;
+  service?: "elevenlabs";
+  modelId?: string;
+  voiceId?: string;
+  outputFormat?: string;
 };
 
 export type TtsSynthesisInput = { runId: string; text: string };
 
 export type TtsSynthesisResult = {
   buffer: Buffer;
+  alignment?: TtsCharacterAlignment;
   channels: number;
   durationSeconds: number;
   outputAlreadyPersisted: boolean;

@@ -32,11 +32,11 @@ export function readWavInfo(buffer: Buffer): {
   sampleRateHz: number;
 } {
   if (!hasRiffWaveHeader(buffer)) {
-    throw new SafeExitError("Piper output is not a WAV RIFF file.");
+    throw new SafeExitError("Voice output is not a WAV RIFF file.");
   }
   const info = scanWavChunks(buffer);
   if (info.channels <= 0 || info.sampleRateHz <= 0 || info.byteRate <= 0 || info.dataBytes <= 0) {
-    throw new SafeExitError("Piper output WAV metadata is incomplete.");
+    throw new SafeExitError("Voice output WAV metadata is incomplete.");
   }
   return {
     channels: info.channels,
@@ -50,11 +50,11 @@ export function normalizePcm16WavPeak(
   targetPeakDbfs = -1,
 ): { buffer: Buffer; evidence: WavPeakNormalizationEvidence } {
   if (!hasRiffWaveHeader(buffer)) {
-    throw new SafeExitError("Piper output is not a WAV RIFF file.");
+    throw new SafeExitError("Voice output is not a WAV RIFF file.");
   }
   const info = scanWavChunks(buffer);
   if (info.audioFormat !== 1 || info.bitsPerSample !== 16 || info.dataBytes <= 0) {
-    throw new SafeExitError("Piper peak normalization requires PCM 16-bit WAV audio.");
+    throw new SafeExitError("Voice peak normalization requires PCM 16-bit WAV audio.");
   }
 
   const dataEnd = Math.min(buffer.length, info.dataOffset + info.dataBytes);
