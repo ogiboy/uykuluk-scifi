@@ -3,7 +3,7 @@ import {
   StudioRouteBoundaryHeader,
 } from "@/components/studio/StudioRouteBoundaryCard";
 import { StudioShell } from "@/components/studio/StudioShell";
-import { runDetailNotFoundCopy } from "@/lib/studioRouteBoundaryCopy";
+import { runDetailNotFoundCopy } from "@/lib/routing/studioRouteBoundaryCopy";
 
 /**
  * Renders the run-detail not-found boundary.

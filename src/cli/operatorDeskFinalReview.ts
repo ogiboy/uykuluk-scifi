@@ -1,4 +1,4 @@
-import type { FinalReviewBundleStatus } from "../stages/finalReviewBundleStatus.js";
+import type { FinalReviewBundleStatus } from "../stages/finalReview/finalReviewBundleStatus.js";
 
 /**
  * Summarizes final-review bundle status for operator desk compact rows.

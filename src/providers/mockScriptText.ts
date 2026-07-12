@@ -80,7 +80,6 @@ function malformedLabelExpansionJson(): string {
 type MockScriptSectionId = "hook" | "context" | "development" | "outro";
 const shortExpansionModels: ReadonlySet<string> = new Set([
   "mock-invalid-continuation-json",
-  "mock-repeated-continuation-then-repair",
   "mock-underfilled-continuations",
 ]);
 
@@ -93,12 +92,12 @@ const draftSectionTexts: Record<MockScriptSectionId, string[]> = {
   development: [
     "Anlatıcı: Yalnız bir sonda, buzun altına gönderdiği düşük frekanslı yankılarda düzenli bir titreşim fark eder.",
     "Görsel: Kamera çatlak buz çizgilerinden mavi karanlığa inerken, mineral bulutları ağır çekimde dağılır.",
-    "Ritim bir mesaj olmayabilir; jeolojik bir süreç, gelgit etkisi ya da cihaz hatası olabilir.",
+    "Anlatıcı: Ritim bir mesaj olmayabilir; jeolojik bir süreç, gelgit etkisi ya da cihaz hatası olabilir.",
   ],
   hook: [
     "Anlatıcı: Bazı gezegenler vardır; dışarıdan bakıldığında sadece sessizlik gibi görünür.",
     "Görsel: Kalın buz kabuğu, uzak bir yıldızın soluk ışığını geri yansıtır.",
-    "Bu açılışta soru basittir: Sessizlik gerçekten boşluk mudur, yoksa dinlemeyi bilmediğimiz bir ritim mi saklar?",
+    "Anlatıcı: Bu açılışta soru basittir: Sessizlik gerçekten boşluk mudur, yoksa dinlemeyi bilmediğimiz bir ritim mi saklar?",
   ],
   outro: [
     "Anlatıcı: Belki orada canlı yoktur; belki yalnızca kimya, basınç ve zaman vardır.",

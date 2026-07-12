@@ -20,10 +20,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import type { StudioPackageRevisionSource } from "@/lib/revisionSources";
+import { isStudioPackageArtifactRevisionState } from "@/lib/actions/studioRevisionEligibility";
+import { useStudioGuardedActionSubmit } from "@/lib/mutations/useStudioGuardedActionSubmit";
+import type { StudioPackageRevisionSource } from "@/lib/runs/revisionSources";
 import type { StudioRunDetail } from "@/lib/runSummaries";
-import { isStudioPackageArtifactRevisionState } from "@/lib/studioRevisionEligibility";
-import { useStudioGuardedActionSubmit } from "@/lib/useStudioGuardedActionSubmit";
 import { useState } from "react";
 import { StudioMutationResultPanel } from "../studio/StudioMutationResultPanel";
 import { RunRevisionConfirmationDialog } from "./RunRevisionConfirmationDialog";

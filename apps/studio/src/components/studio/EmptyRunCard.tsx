@@ -1,5 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import type { StartIdeasReadinessSummary } from "@/lib/startIdeasReadiness";
+import type { StartIdeasReadinessSummary } from "@/lib/actions/startIdeasReadiness";
 import { StartIdeasActionPanel } from "./StartIdeasActionPanel";
 
 type EmptyRunCardProps = Readonly<{ readiness: StartIdeasReadinessSummary }>;

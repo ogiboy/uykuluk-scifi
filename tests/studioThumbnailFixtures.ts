@@ -1,7 +1,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { artifactPath } from "../src/core/artifacts";
-import type { ChannelHandoff } from "../src/stages/channelHandoffContracts";
+import type { ChannelHandoff } from "../src/stages/channel/channelHandoffContracts";
 import {
   buildThumbnailCandidatePack,
   renderThumbnailCandidateMarkdown,

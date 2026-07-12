@@ -1,6 +1,9 @@
-import type { RunDiagnosticSummary } from "../stages/runDiagnosticSummaryContracts.js";
-import { formatStatusReadiness, type StatusReadinessSummary } from "../stages/statusReadiness.js";
-import type { StatusWorkflowStep } from "../stages/statusWorkflow.js";
+import type { RunDiagnosticSummary } from "../stages/diagnostics/runDiagnosticSummaryContracts.js";
+import {
+  formatStatusReadiness,
+  type StatusReadinessSummary,
+} from "../stages/status/statusReadiness.js";
+import type { StatusWorkflowStep } from "../stages/status/statusWorkflow.js";
 
 /**
  * Formats readiness diagnostics for the operator desk.

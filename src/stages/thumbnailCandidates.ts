@@ -7,14 +7,14 @@ import {
   thumbnailCandidatePackSchema,
   type AssetRef,
   type ThumbnailCandidatePack,
-} from "./thumbnailCandidateContracts.js";
+} from "./thumbnail/thumbnailCandidateContracts.js";
 
 export {
   thumbnailCandidatePackSchema,
   thumbnailCandidatesJsonPath,
   thumbnailCandidatesMarkdownPath,
-} from "./thumbnailCandidateContracts.js";
-export type { AssetRef, ThumbnailCandidatePack } from "./thumbnailCandidateContracts.js";
+} from "./thumbnail/thumbnailCandidateContracts.js";
+export type { AssetRef, ThumbnailCandidatePack } from "./thumbnail/thumbnailCandidateContracts.js";
 
 /**
  * Builds local thumbnail candidates from tracked thumbnail assets.

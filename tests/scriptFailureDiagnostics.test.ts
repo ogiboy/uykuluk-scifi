@@ -92,7 +92,7 @@ describe("script generation failure diagnostics", () => {
     expect(diagnostics.message).toContain(
       "Invalid script section expansion chunk 1 provider response for hook",
     );
-    expect(diagnostics.message).toContain("repeated_sentence_loop(repeatCount=3;");
+    expect(diagnostics.message).toContain("repeated_sentence_loop(repeatCount=2;");
     expect(diagnostics.message).toContain("after 2 retries");
     expect(diagnostics.message).toContain("sentenceFingerprint=");
     expect(diagnostics.message).not.toContain(

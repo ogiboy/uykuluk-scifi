@@ -11,7 +11,7 @@ import { generateEvidenceBundle } from "../src/stages/evidence";
 import { runIdeas } from "../src/stages/ideas";
 import { generateProductionPackage } from "../src/stages/productionPackage";
 import { runReadiness } from "../src/stages/readiness";
-import { formatReadinessConsole } from "../src/stages/readinessConsole";
+import { formatReadinessConsole } from "../src/stages/readiness/readinessConsole";
 import { generateRenderPlan } from "../src/stages/renderPlan";
 import { reviewScript } from "../src/stages/reviewScript";
 import { generateScript } from "../src/stages/script";

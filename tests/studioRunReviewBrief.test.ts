@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { buildStudioRunReviewBrief } from "../apps/studio/src/lib/runReviewBrief";
+import { buildStudioRunReviewBrief } from "../apps/studio/src/lib/runs/runReviewBrief";
 import {
   privateUploadDisabledBlockedAction,
   publicPublishDisabledBlockedAction,
-} from "../src/stages/evidenceBlockedActions";
+} from "../src/stages/evidence/evidenceBlockedActions";
 import {
   acceptedRenderDecision,
   channelHandoffDecisionFixture,

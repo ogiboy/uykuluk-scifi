@@ -1,8 +1,8 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { readReviewArtifactPreviews } from "../apps/studio/src/lib/artifactPreviews";
-import { studioRunFilePath } from "../apps/studio/src/lib/runFilePaths";
+import { readReviewArtifactPreviews } from "../apps/studio/src/lib/artifacts/artifactPreviews";
+import { studioRunFilePath } from "../apps/studio/src/lib/runs/runFilePaths";
 import { useTempProject } from "./helpers";
 
 describe("Studio run file paths", () => {

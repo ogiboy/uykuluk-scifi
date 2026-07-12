@@ -10,8 +10,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { homeActionQueueSummaryItems } from "@/lib/homeActionQueueSummary";
-import { runReviewHrefFromSummary } from "@/lib/runReviewNavigation";
+import { homeActionQueueSummaryItems } from "@/lib/actions/homeActionQueueSummary";
+import { runReviewHrefFromSummary } from "@/lib/runs/runReviewNavigation";
 import type { StudioRunSummary } from "@/lib/runSummaries";
 import type { Route } from "next";
 import Link from "next/link";

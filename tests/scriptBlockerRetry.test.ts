@@ -82,7 +82,7 @@ describe("script blocker retry", () => {
       (section) => section.pass === "continuation" && section.blockerRetry,
     );
 
-    expect(sections.providerCallCount).toBe(20);
+    expect(sections.providerCallCount).toBe(18);
     expect(retriedContinuation?.blockerRetry).toMatchObject({
       attemptCount: 2,
       blockers: expect.stringContaining("repeated_sentence_loop"),

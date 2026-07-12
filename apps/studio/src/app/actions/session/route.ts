@@ -1,5 +1,5 @@
-import { isTrustedStudioBrowserRequest } from "../../../lib/studioMutationSecurity";
-import { createStudioMutationSession } from "../../../lib/studioMutationSession";
+import { isTrustedStudioBrowserRequest } from "../../../lib/mutations/studioMutationSecurity";
+import { createStudioMutationSession } from "../../../lib/mutations/studioMutationSession";
 
 /**
  * Issues a short-lived local Studio mutation session for same-origin guarded actions.

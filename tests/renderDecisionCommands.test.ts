@@ -5,7 +5,7 @@ import {
   renderDecisionMarkdownPath,
   renderDecisionNextAction,
   renderDecisionReviewCommand,
-} from "../src/stages/renderDecisionCommands";
+} from "../src/stages/render/renderDecisionCommands";
 
 describe("render decision command templates", () => {
   it("builds bundle-safe local decision command templates", () => {

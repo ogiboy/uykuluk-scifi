@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { isStudioRevisionState } from "@/lib/actions/studioRevisionEligibility";
 import type { StudioRunDetail } from "@/lib/runSummaries";
-import { isStudioRevisionState } from "@/lib/studioRevisionEligibility";
 import { RunPackageArtifactRevisionActionPanel } from "./RunPackageArtifactRevisionActionPanel";
 import { RunScriptRevisionActionPanel } from "./RunScriptRevisionActionPanel";
 

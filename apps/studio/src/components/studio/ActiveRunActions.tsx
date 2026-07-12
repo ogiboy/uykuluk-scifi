@@ -18,9 +18,9 @@ import {
   PopoverTitle,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { runReviewHrefFromSummary } from "@/lib/runReviewNavigation";
+import { runReviewHrefFromSummary } from "@/lib/runs/runReviewNavigation";
+import { getNextSafeCommand } from "@/lib/runs/runSummaryCopy";
 import type { StudioRunSummary } from "@/lib/runSummaries";
-import { getNextSafeCommand } from "@/lib/runSummaryCopy";
 import type { Route } from "next";
 import Link from "next/link";
 

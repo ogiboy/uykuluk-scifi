@@ -11,6 +11,47 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.80.0 (2026-07-12)
+
+### Features
+
+- add managed llama.cpp start/stop commands backed by ignored local provider config and served-model
+  alias validation.
+- complete a real local Gemma/Piper/FFmpeg production-loop validation with durable operator and
+  manual channel-handoff decisions.
+- add attributable render revision recovery that archives rejected or invalid-evidence drafts,
+  invalidates stale render approval, and requires fresh approval before rerendering.
+- expose normal rejected-draft render revision through the guarded Studio action contract and route.
+- bind draft render timing to actual voiceover duration, persist SRT timing scale, and scope
+  subtitles and overlays to the scene window while keeping bookends clean.
+- peak-normalize Piper PCM16 output with persisted processing evidence.
+
+### Fixes
+
+- accept equivalent leading-`./` llama.cpp model paths while preserving fail-closed mismatch checks.
+- keep idea repair lanes compatible with persisted title history and reject topic-as-channel fit
+  copy.
+- align the script and package duration floor with 1,100 spoken narration words for the 8-12 minute
+  local draft target.
+- block exact two-copy script loops and surface quantitative or unsupported extraterrestrial claims
+  during script review.
+- normalize markdown-formatted production labels and require acknowledgement of extracted fact-check
+  claims.
+- refresh content-derived script metadata and snapshot before/after metadata during attributable
+  script revisions.
+- keep fallback scene prompts on complete word boundaries instead of truncating visual copy
+  mid-word.
+- prevent intro/outro truncation, subtitle drift into outro, global scene-overlay leakage, popup
+  Markdown leakage, and escaped newline text in real FFmpeg drafts.
+- block invented production-package character names and obvious English YouTube tags before
+  artifacts are accepted.
+
+### Refactoring
+
+- keep public workflow stage entrypoints stable while grouping stage helpers by production domain.
+- group Studio run, action, mutation, artifact, routing, and observability helpers behind its
+  page-facing lib entrypoints.
+
 ## v0.79.0 (2026-07-11)
 
 ### Features

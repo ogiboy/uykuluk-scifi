@@ -4,7 +4,7 @@ import {
   getStudioActionServiceStatus,
   type StudioActionServiceStatus,
 } from "@/lib/actionServiceStatus";
-import { serviceContractGroups } from "@/lib/serviceContractPanel";
+import { serviceContractGroups } from "@/lib/actions/serviceContractPanel";
 
 type ServiceContractPanelProps = Readonly<{ status?: StudioActionServiceStatus }>;
 

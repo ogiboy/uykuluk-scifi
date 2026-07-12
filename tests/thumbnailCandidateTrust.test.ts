@@ -1,8 +1,8 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import type { ThumbnailCandidatePack } from "../src/stages/thumbnailCandidateContracts";
-import { thumbnailAssetStaleReason } from "../src/stages/thumbnailCandidateTrust";
+import type { ThumbnailCandidatePack } from "../src/stages/thumbnail/thumbnailCandidateContracts";
+import { thumbnailAssetStaleReason } from "../src/stages/thumbnail/thumbnailCandidateTrust";
 import { sha256 } from "../src/utils/hash";
 import { useTempProject } from "./helpers";
 

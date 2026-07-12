@@ -4,16 +4,16 @@ import {
   readStudioMutationSessionSnapshot,
   refreshStudioMutationSession,
   studioMutationJsonHeaders,
-} from "../apps/studio/src/lib/studioMutationClient";
+} from "../apps/studio/src/lib/mutations/studioMutationClient";
 import {
   studioActionHeaderName,
   studioSessionCookieName,
   studioSessionHeaderName,
-} from "../apps/studio/src/lib/studioMutationSecurity";
+} from "../apps/studio/src/lib/mutations/studioMutationSecurity";
 import {
   createStudioMutationSession,
   studioSessionMaxAgeSeconds,
-} from "../apps/studio/src/lib/studioMutationSession";
+} from "../apps/studio/src/lib/mutations/studioMutationSession";
 
 describe("Studio local mutation sessions", () => {
   afterEach(() => {

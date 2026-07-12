@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useStudioGuardedActionSubmit } from "@/lib/useStudioGuardedActionSubmit";
+import { useStudioGuardedActionSubmit } from "@/lib/mutations/useStudioGuardedActionSubmit";
 import type { ChangeEvent } from "react";
 import { useState } from "react";
 import { AnalyticsReportActionPanel } from "./AnalyticsReportActionPanel";

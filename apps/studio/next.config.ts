@@ -7,12 +7,14 @@ import { fileURLToPath } from "node:url";
 const workspaceRoot = dirname(fileURLToPath(import.meta.url));
 const repoRoot = dirname(dirname(workspaceRoot));
 
-const stageSourceAliases = [
-  "finalReviewBundleContracts",
-  "productionPackagePaths",
-  "renderPlanSchemas",
-  "statusMediaFacts",
-] as const;
+const stageSourceAliases = {
+  "../production/productionPackagePaths.js": "production/productionPackagePaths",
+  "../render/renderPlanSchemas.js": "render/renderPlanSchemas",
+  "./finalReviewBundleContracts.js": "finalReview/finalReviewBundleContracts",
+  "./productionPackagePaths.js": "production/productionPackagePaths",
+  "./renderPlanSchemas.js": "render/renderPlanSchemas",
+  "./statusMediaFacts.js": "status/statusMediaFacts",
+} as const;
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: ["127.0.0.1", "localhost"],
@@ -49,7 +51,10 @@ const nextConfig: NextConfig = {
       },
     ],
     resolveAlias: Object.fromEntries(
-      stageSourceAliases.map((name) => [`./${name}.js`, `../../src/stages/${name}.ts`]),
+      Object.entries(stageSourceAliases).map(([specifier, source]) => [
+        specifier,
+        `../../src/stages/${source}.ts`,
+      ]),
     ),
     root: repoRoot,
   },

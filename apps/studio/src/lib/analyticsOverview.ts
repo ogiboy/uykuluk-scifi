@@ -14,8 +14,12 @@ import {
   summarizeAnalyticsDataQuality,
   type StudioAnalyticsDataQuality,
   type StudioAnalyticsReportStatus,
-} from "./analyticsQuality";
-import { ArtifactJsonParseError, parseArtifactJson, readOptionalText } from "./localArtifactReads";
+} from "./analytics/analyticsQuality";
+import {
+  ArtifactJsonParseError,
+  parseArtifactJson,
+  readOptionalText,
+} from "./artifacts/localArtifactReads";
 import { projectRoot } from "./projectRoot";
 
 const REPORT_PREVIEW_LIMIT = 3_000;

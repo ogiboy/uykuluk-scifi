@@ -5,7 +5,7 @@ import {
   studioWorkflowActionSteps,
   type StudioWorkflowAction,
   type StudioWorkflowActionStatus,
-} from "@/lib/studioWorkflowActions";
+} from "@/lib/actions/studioWorkflowActions";
 
 type StudioWorkflowMatrixPanelProps = Readonly<{ status: StudioActionServiceStatus }>;
 

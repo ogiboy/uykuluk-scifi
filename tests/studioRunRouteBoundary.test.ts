@@ -6,7 +6,7 @@ import {
   studioForbiddenCopy,
   studioNotFoundCopy,
   studioUnauthorizedCopy,
-} from "../apps/studio/src/lib/studioRouteBoundaryCopy";
+} from "../apps/studio/src/lib/routing/studioRouteBoundaryCopy";
 
 describe("Studio run route boundaries", () => {
   it("keeps global route boundaries fail-closed and non-mutating", () => {

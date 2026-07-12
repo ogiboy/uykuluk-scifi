@@ -1,10 +1,10 @@
 import { writeFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
-import { readStudioRenderDecisionSummary } from "../apps/studio/src/lib/renderDecisionSummaries";
+import { readStudioRenderDecisionSummary } from "../apps/studio/src/lib/runs/renderDecisionSummaries";
 import { getStudioRunDetail } from "../apps/studio/src/lib/runSummaries";
 import { artifactPath } from "../src/core/artifacts";
 import { loadRun, saveRun } from "../src/core/runStore";
-import { renderDecisionJsonPath } from "../src/stages/renderDecisionCommands";
+import { renderDecisionJsonPath } from "../src/stages/render/renderDecisionCommands";
 import { useTempProject } from "./helpers";
 import {
   writeStudioFinalReviewBundle,

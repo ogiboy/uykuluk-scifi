@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildStudioControlLoop,
   type StudioControlLoopRun,
-} from "../apps/studio/src/lib/studioControlLoop";
+} from "../apps/studio/src/lib/actions/studioControlLoop";
 
 describe("Studio control loop", () => {
   it("promotes guarded web actions as the primary Studio control path", () => {

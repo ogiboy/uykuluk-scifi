@@ -3,7 +3,7 @@ import {
   artifactPreviewEmptyState,
   countArtifactPreviewStatuses,
   filterArtifactPreviews,
-} from "../apps/studio/src/lib/artifactPreviewFilters";
+} from "../apps/studio/src/lib/artifacts/artifactPreviewFilters";
 import { studioArtifactPreview } from "./studioArtifactPreviewFixtures";
 
 describe("Studio artifact preview filters", () => {

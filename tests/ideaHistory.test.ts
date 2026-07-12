@@ -10,7 +10,7 @@ import {
   historicalIdeaTitleIssue,
   ideaHistoryPromptBlock,
   readIdeaHistory,
-} from "../src/stages/ideaHistory";
+} from "../src/stages/idea/ideaHistory";
 import { runIdeas } from "../src/stages/ideas";
 import type { VideoIdea } from "../src/stages/types";
 import { pathExists } from "../src/utils/fs";

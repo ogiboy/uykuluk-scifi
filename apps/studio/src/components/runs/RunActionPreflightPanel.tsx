@@ -1,5 +1,8 @@
 import { Badge } from "@/components/ui/badge";
-import type { StudioActionPreflight, StudioActionPreflightItem } from "@/lib/studioActionPreflight";
+import type {
+  StudioActionPreflight,
+  StudioActionPreflightItem,
+} from "@/lib/actions/studioActionPreflight";
 
 type RunActionPreflightPanelProps = Readonly<{ preflight: StudioActionPreflight }>;
 

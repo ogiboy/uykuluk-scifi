@@ -13,7 +13,7 @@ import { generateRenderPlan } from "../src/stages/renderPlan";
 import { reviewScript } from "../src/stages/reviewScript";
 import { generateScript } from "../src/stages/script";
 import { generateVoiceoverAudio } from "../src/stages/voice";
-import { voiceoverAudioMetaSchema } from "../src/stages/voiceoverEvidence";
+import { voiceoverAudioMetaSchema } from "../src/stages/voice/voiceoverEvidence";
 import { pathExists } from "../src/utils/fs";
 import { readJsonFile } from "../src/utils/json";
 import { useTempProject } from "./helpers";

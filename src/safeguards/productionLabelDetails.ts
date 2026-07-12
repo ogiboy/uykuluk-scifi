@@ -1,15 +1,33 @@
 export type MalformedProductionLabelDetails = {
   labelFamily: "narration" | "visual";
-  labelIssue: "misspelled_variant" | "unaccented_variant" | "unknown_related_label";
+  labelIssue:
+    "markdown_formatted" | "misspelled_variant" | "unaccented_variant" | "unknown_related_label";
 };
+
+export type AmbiguousVisualDirectionDetails = { sentenceCount: string };
 
 const allowedProductionLabels = new Set(["anlatıcı", "görsel"]);
 const unaccentedProductionLabels = new Set(["anlatici", "gorsel"]);
 const misspelledProductionLabels = new Set(["anlatı", "anlatyıcı"]);
+const relatedNarrationLabels = new Set([
+  "anlatı",
+  "anlatıcı",
+  "anlatici",
+  "anlatım",
+  "anlatim",
+  "anlatyıcı",
+]);
 
 export function malformedProductionLabelDetails(
   script: string,
 ): MalformedProductionLabelDetails | undefined {
+  const markdownFormatted = /`(Anlatıcı|Görsel):`/u.exec(script);
+  if (markdownFormatted) {
+    return {
+      labelFamily: markdownFormatted[1] === "Anlatıcı" ? "narration" : "visual",
+      labelIssue: "markdown_formatted",
+    };
+  }
   const labelPattern = /\b(\p{L}+)\s*[:-]/gu;
   let match: RegExpExecArray | null;
   while ((match = labelPattern.exec(script)) !== null) {
@@ -19,6 +37,29 @@ export function malformedProductionLabelDetails(
     }
   }
   return undefined;
+}
+
+export function ambiguousVisualDirectionDetails(
+  script: string,
+): AmbiguousVisualDirectionDetails | undefined {
+  const labelPattern = /\b(Anlatıcı|Görsel):\s*/gu;
+  const matches = [...script.matchAll(labelPattern)];
+  for (const [index, match] of matches.entries()) {
+    if (match[1] !== "Görsel") {
+      continue;
+    }
+    const start = (match.index ?? 0) + match[0].length;
+    const end = matches[index + 1]?.index ?? script.length;
+    const sentenceCount = countCompleteSentences(script.slice(start, end));
+    if (sentenceCount > 1) {
+      return { sentenceCount: String(sentenceCount) };
+    }
+  }
+  return undefined;
+}
+
+function countCompleteSentences(text: string): number {
+  return [...text.matchAll(/[.!?…](?=\s|$)/gu)].length;
 }
 
 function classifyProductionLabel(
@@ -37,10 +78,15 @@ function classifyProductionLabel(
 }
 
 function labelFamilyFor(label: string): MalformedProductionLabelDetails["labelFamily"] | undefined {
-  if (label.startsWith("anlat")) {
+  if (relatedNarrationLabels.has(label)) {
     return "narration";
   }
-  if (label.startsWith("gör") || label.startsWith("gor")) {
+  if (
+    label.startsWith("görsel") ||
+    label.startsWith("gorsel") ||
+    label.startsWith("görüntü") ||
+    label.startsWith("goruntu")
+  ) {
     return "visual";
   }
   return undefined;

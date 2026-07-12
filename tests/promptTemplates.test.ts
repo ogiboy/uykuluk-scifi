@@ -9,7 +9,7 @@ import { runIdeas } from "../src/stages/ideas";
 import { generateProductionPackage } from "../src/stages/productionPackage";
 import { reviewScript } from "../src/stages/reviewScript";
 import { generateScript } from "../src/stages/script";
-import { renderScriptSectionPrompt, scriptSectionPlans } from "../src/stages/scriptSections";
+import { renderScriptSectionPrompt, scriptSectionPlans } from "../src/stages/script/scriptSections";
 import { pathExists } from "../src/utils/fs";
 import { sha256 } from "../src/utils/hash";
 import { readJsonFile } from "../src/utils/json";
@@ -27,6 +27,7 @@ describe("runtime prompt defaults", () => {
     expect(plannerTemplate).toContain(
       "Do not use `Uyku`, `Yıldız`, `Karanlık`, `Mesaj`, or `Gezegen`",
     );
+    expect(plannerTemplate).toContain("The only channel name is `UykulukSciFi`");
   });
 
   it("keeps script section prompts anchored to exact Turkish production labels", () => {
@@ -35,7 +36,8 @@ describe("runtime prompt defaults", () => {
       scriptSectionPlans[0],
     );
 
-    expect(prompt).toContain("Spell production labels exactly as `Anlatıcı:` and `Görsel:`");
+    expect(prompt).toContain("Spell production labels exactly as Anlatıcı: and Görsel:");
+    expect(prompt).toContain("without backticks");
     expect(prompt).toContain("Forbidden label variants");
     expect(prompt).toContain("`Anlatyıcı:`");
     expect(prompt).toContain("`Gorsel:`");

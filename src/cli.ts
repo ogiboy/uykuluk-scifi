@@ -16,12 +16,12 @@ import { listRuns, loadRun } from "./core/runStore.js";
 import { formatDoctorConsole, runDoctor } from "./diagnostics/doctor.js";
 import { publishSchedulePlaceholder, uploadPrivatePlaceholder } from "./stages/disabled.js";
 import { runReadiness } from "./stages/readiness.js";
-import { formatReadinessConsole } from "./stages/readinessConsole.js";
+import { formatReadinessConsole } from "./stages/readiness/readinessConsole.js";
 import { renderDraft } from "./stages/render.js";
-import { formatRenderDraftConsole } from "./stages/renderConsole.js";
+import { formatRenderDraftConsole } from "./stages/render/renderConsole.js";
 import { formatRunStatus, readRunStatus } from "./stages/status.js";
 import { generateVoiceoverAudio } from "./stages/voice.js";
-import { formatVoiceoverGeneratedConsole } from "./stages/voiceConsole.js";
+import { formatVoiceoverGeneratedConsole } from "./stages/voice/voiceConsole.js";
 
 const program = new Command();
 

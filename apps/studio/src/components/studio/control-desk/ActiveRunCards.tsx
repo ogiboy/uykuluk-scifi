@@ -12,9 +12,9 @@ import { MetricGrid, formatStudioInteger } from "@/components/studio/MetricGrid"
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { runReviewHrefFromSummary } from "@/lib/runReviewNavigation";
+import { runReviewHrefFromSummary } from "@/lib/runs/runReviewNavigation";
+import { formatRunRenderDecision, formatRunReviewCounts } from "@/lib/runs/runSummaryCopy";
 import type { StudioRunSummary } from "@/lib/runSummaries";
-import { formatRunRenderDecision, formatRunReviewCounts } from "@/lib/runSummaryCopy";
 
 export function ActiveRunSnapshot({ run }: Readonly<{ run: StudioRunSummary }>) {
   const reviewHref = runReviewHrefFromSummary(run, "review-decision");

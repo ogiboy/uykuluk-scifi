@@ -2,15 +2,15 @@ import { CopyableCommand } from "@/components/studio/CopyableCommand";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { studioMediaArtifactUrl } from "@/lib/artifacts/studioMediaArtifacts";
 import {
   productionMediaIntro,
   productionMediaReviewAction,
   productionMediaReviewSummary,
   shouldShowEvidenceRemediation,
   type ProductionMediaStatus,
-} from "@/lib/runEvidenceCopy";
+} from "@/lib/runs/runEvidenceCopy";
 import type { StudioRunDetail } from "@/lib/runSummaries";
-import { studioMediaArtifactUrl } from "@/lib/studioMediaArtifacts";
 import { RunDetailCard } from "../RunDetailCard";
 import { RunProductionMediaFacts } from "./RunProductionMediaFacts";
 import { RunProductionMediaPreview } from "./RunProductionMediaPreview";

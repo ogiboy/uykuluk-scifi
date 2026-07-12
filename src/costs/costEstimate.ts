@@ -5,7 +5,7 @@ import { artifactPath } from "../core/artifacts.js";
 import { SafeExitError } from "../core/errors.js";
 import { RunRecord } from "../core/state.js";
 import { checkBudget } from "../safeguards/budgetGuard.js";
-import { verifyProductionPackage } from "../stages/productionPackageIntegrity.js";
+import { verifyProductionPackage } from "../stages/production/productionPackageIntegrity.js";
 import { sha256 } from "../utils/hash.js";
 import { nowIso } from "../utils/time.js";
 import { renderCostEstimateMarkdown } from "./costEstimatePresentation.js";

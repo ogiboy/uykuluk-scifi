@@ -3,7 +3,7 @@ import {
   appendBoundedStudioCliOutput,
   studioCliHttpStatus,
   studioCliResultStatus,
-} from "../apps/studio/src/lib/studioCliProcessLimits";
+} from "../apps/studio/src/lib/mutations/studioCliProcessLimits";
 
 describe("Studio CLI process limits", () => {
   it("retains output up to the configured limit without silently dropping its prefix", () => {

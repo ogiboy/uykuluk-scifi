@@ -3,7 +3,7 @@ import {
   StudioRouteBoundaryHeader,
 } from "@/components/studio/StudioRouteBoundaryCard";
 import { StudioShell } from "@/components/studio/StudioShell";
-import { studioNotFoundCopy } from "@/lib/studioRouteBoundaryCopy";
+import { studioNotFoundCopy } from "@/lib/routing/studioRouteBoundaryCopy";
 
 /**
  * Renders the Studio route-level not-found boundary.

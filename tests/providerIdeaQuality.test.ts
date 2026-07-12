@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { parseIdeasProviderPayload } from "../src/stages/providerPayloads";
+import { ideaListEditorialWarnings } from "../src/stages/provider/providerIdeaListQuality";
+import { parseIdeasProviderPayload } from "../src/stages/provider/providerPayloads";
 
 const validIdea = {
   id: "idea_001",
@@ -51,20 +52,40 @@ describe("provider idea quality", () => {
     ).toThrow(/repeats the same sentence/i);
   });
 
-  it("rejects repeated fit explanations across a local-model idea slate", () => {
+  it("rejects fit copy that mistakes a topic for the channel", () => {
     expect(() =>
       parseIdeasProviderPayload(
         JSON.stringify([
-          validIdea,
           {
             ...validIdea,
-            id: "idea_002",
-            title: "Lav Kütüphanesi",
-            premise: "Genç bir jeolog, lav izlerinin kesin kanıt olmadığını varsayalım.",
-            fit: validIdea.fit,
+            fit: "Ötegezegen Jeolojisi kanalını doğrudan ele alan sakin bir anlatı sunar.",
           },
         ]),
       ),
-    ).toThrow(/slot-specific and distinct/i);
+    ).toThrow(/Only UykulukSciFi may be described as the channel/i);
+  });
+
+  it("reports repeated fit explanations for operator review", () => {
+    const ideas = parseIdeasProviderPayload(
+      JSON.stringify([
+        validIdea,
+        {
+          ...validIdea,
+          id: "idea_002",
+          title: "Lav Kütüphanesi",
+          premise: "Genç bir jeolog, lav izlerinin kesin kanıt olmadığını varsayalım.",
+          fit: validIdea.fit,
+        },
+      ]),
+    );
+
+    expect(ideaListEditorialWarnings(ideas)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: "duplicate_fit",
+          message: expect.stringContaining("slot-specific and distinct"),
+        }),
+      ]),
+    );
   });
 });

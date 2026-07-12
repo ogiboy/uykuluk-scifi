@@ -7,8 +7,8 @@ import {
   productionMediaReviewAction,
   productionMediaReviewSummary,
   shouldShowEvidenceRemediation,
-} from "../apps/studio/src/lib/runEvidenceCopy";
-import type { ProductionMediaStatus } from "../src/stages/statusMediaSummary";
+} from "../apps/studio/src/lib/runs/runEvidenceCopy";
+import type { ProductionMediaStatus } from "../src/stages/status/statusMediaSummary";
 
 describe("Studio run evidence copy", () => {
   it("allows no-blocker copy only when evidence is current", () => {

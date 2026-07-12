@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildStudioRunPrimaryAction,
   type StudioRunPrimaryActionRun,
-} from "../apps/studio/src/lib/runPrimaryAction";
+} from "../apps/studio/src/lib/runs/runPrimaryAction";
 
 describe("Studio run primary action", () => {
   it("does not promote global ideas generation as a run-bound web action", () => {

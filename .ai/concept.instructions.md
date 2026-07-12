@@ -7,12 +7,15 @@ Its durable product promise is to help the channel regularly produce original, s
 careful, visually consistent YouTube draft packages. It is channel-specific production software, not
 a generic AI video platform.
 
-The production loop should become:
+The production loop is:
 
 - produce a safe draft package;
 - review and approve with durable evidence;
-- create local voice/render artifacts when those gates exist;
-- review/publish manually, with future private-upload gates only after explicit implementation;
+- create local voice/render artifacts only after their gates;
+- reject/archive/reapprove local drafts without editing persisted state by hand;
+- prepare a manual channel handoff while upload and publish remain disabled;
+- publish manually outside the product, with future private-upload gates only after explicit
+  implementation;
 - learn from operator-provided performance data before the next idea/script cycle.
 
 The product should feel like:

@@ -6,7 +6,7 @@ import { reviewScriptContent } from "../src/safeguards/contentGuard";
 import { approveIdea } from "../src/stages/approveIdea";
 import { runIdeas } from "../src/stages/ideas";
 import { generateScript } from "../src/stages/script";
-import { parseScriptSectionProviderPayloadWithRepair } from "../src/stages/scriptSections";
+import { parseScriptSectionProviderPayloadWithRepair } from "../src/stages/script/scriptSections";
 import { useTempProject } from "./helpers";
 
 describe("script label repair", () => {
@@ -19,6 +19,8 @@ describe("script label repair", () => {
           "Anlatici: Ekip ölçümü kesin kanıt saymadan önce yeniden dener.",
           "Gorsel: Ekranda ham veri, cihaz hatası ve doğal süreç kartları görünür.",
           "Anlatyıcı: Böylece sahne aceleci bir keşif değil, dikkatli bir soru olarak kalır.",
+          "`Anlatıcı:` Ekip son ölçümü operatör notuna ekler.",
+          "`Görsel:` Panelde üç temkinli olasılık yan yana görünür.",
         ].join(" "),
       }),
     );
@@ -28,11 +30,13 @@ describe("script label repair", () => {
         "Anlatıcı: Ekip ölçümü kesin kanıt saymadan önce yeniden dener.",
         "Görsel: Ekranda ham veri, cihaz hatası ve doğal süreç kartları görünür.",
         "Anlatıcı: Böylece sahne aceleci bir keşif değil, dikkatli bir soru olarak kalır.",
+        "Anlatıcı: Ekip son ölçümü operatör notuna ekler.",
+        "Görsel: Panelde üç temkinli olasılık yan yana görünür.",
       ].join(" "),
     );
     expect(result.labelRepair).toEqual({
-      count: 3,
-      variants: ["Anlatici:", "Anlatyıcı:", "Gorsel:"],
+      count: 5,
+      variants: ["`Anlatıcı:`", "`Görsel:`", "Anlatici:", "Anlatyıcı:", "Gorsel:"],
     });
   });
 

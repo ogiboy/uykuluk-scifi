@@ -2,7 +2,11 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { ZodError } from "zod";
 import { doctorReportSchema, type DoctorCheck } from "../../../../src/diagnostics/doctorSchema";
-import { ArtifactJsonParseError, parseArtifactJson, readOptionalText } from "./localArtifactReads";
+import {
+  ArtifactJsonParseError,
+  parseArtifactJson,
+  readOptionalText,
+} from "./artifacts/localArtifactReads";
 import { projectRoot } from "./projectRoot";
 
 const DOCTOR_JSON_PATH = "diagnostics/doctor.json";

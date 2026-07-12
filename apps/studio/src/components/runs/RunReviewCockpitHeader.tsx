@@ -4,10 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import {
   buildStudioRunReviewBrief,
   type StudioRunReviewBriefCheckpoint,
-} from "@/lib/runReviewBrief";
-import { runReviewTabFocus } from "@/lib/runReviewNavigation";
+} from "@/lib/runs/runReviewBrief";
+import { runReviewTabFocus } from "@/lib/runs/runReviewNavigation";
+import { getNextSafeCommand } from "@/lib/runs/runSummaryCopy";
 import type { StudioRunDetail } from "@/lib/runSummaries";
-import { getNextSafeCommand } from "@/lib/runSummaryCopy";
 import { RunPrimaryActionPanel } from "./RunPrimaryActionPanel";
 
 type RunReviewCockpitHeaderProps = Readonly<{ run: StudioRunDetail }>;

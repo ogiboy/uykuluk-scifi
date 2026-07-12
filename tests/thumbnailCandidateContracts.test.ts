@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { thumbnailCandidatePackSchema } from "../src/stages/thumbnailCandidateContracts";
+import { thumbnailCandidatePackSchema } from "../src/stages/thumbnail/thumbnailCandidateContracts";
 
 describe("thumbnail candidate contracts", () => {
   it("rejects packs whose recommended candidate id is not present", () => {

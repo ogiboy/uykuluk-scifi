@@ -2,11 +2,11 @@ import { writeFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { artifactPath } from "../src/core/artifacts";
 import { loadRun, saveRun } from "../src/core/runStore";
+import { readFinalReviewBundleStatus } from "../src/stages/finalReview/finalReviewBundleStatus";
 import {
   createFinalReviewBundle,
   finalReviewBundleJsonPath,
 } from "../src/stages/finalReviewBundle";
-import { readFinalReviewBundleStatus } from "../src/stages/finalReviewBundleStatus";
 import { recordRenderDecision, renderDecisionArtifactPaths } from "../src/stages/renderDecision";
 import { useTempProject } from "./helpers";
 import { renderLocalDraft } from "./renderPipelineHelpers";

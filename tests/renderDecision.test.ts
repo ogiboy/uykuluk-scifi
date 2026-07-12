@@ -5,12 +5,12 @@ import { describe, expect, it } from "vitest";
 import { artifactPath } from "../src/core/artifacts";
 import { readLedger } from "../src/core/ledger";
 import { createRun, loadRun } from "../src/core/runStore";
+import { readRenderDecisionStatus } from "../src/stages/render/renderDecisionStatus";
 import {
   recordRenderDecision,
   renderDecisionArtifactPaths,
   type RenderDecisionRecord,
 } from "../src/stages/renderDecision";
-import { readRenderDecisionStatus } from "../src/stages/renderDecisionStatus";
 import { formatRunStatus, readRunStatus } from "../src/stages/status";
 import { useTempProject } from "./helpers";
 import { renderLocalDraft } from "./renderPipelineHelpers";

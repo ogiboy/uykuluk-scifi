@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { StudioArtifactPreview } from "../apps/studio/src/lib/artifactPreviews";
-import { buildArtifactReviewHandoff } from "../apps/studio/src/lib/artifactReviewHandoff";
+import type { StudioArtifactPreview } from "../apps/studio/src/lib/artifacts/artifactPreviews";
+import { buildArtifactReviewHandoff } from "../apps/studio/src/lib/artifacts/artifactReviewHandoff";
 import { studioArtifactPreview } from "./studioArtifactPreviewFixtures";
 
 describe("Studio artifact review handoff", () => {

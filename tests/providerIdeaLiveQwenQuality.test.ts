@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { parseIdeasProviderPayload } from "../src/stages/providerPayloads";
+import { ideaListEditorialWarnings } from "../src/stages/provider/providerIdeaListQuality";
+import { parseIdeasProviderPayload } from "../src/stages/provider/providerPayloads";
 
 const baseIdea = {
   id: "idea_001",
@@ -28,23 +29,23 @@ describe("live qwen idea quality regressions", () => {
   });
 
   it("rejects repeated generic exploration phrasing seen in repaired qwen fits", () => {
-    expect(() =>
-      parseIdeasProviderPayload(
-        JSON.stringify([
-          {
-            ...baseIdea,
-            fit: "UykulukSciFi bu arşivin bilinmeyen sınırlarını incelemeyi öngörür.",
-          },
-          {
-            ...baseIdea,
-            id: "idea_002",
-            title: "Lav Kütüphanesi",
-            premise: "Lav çizgilerinin doğal süreç olabileceğini dikkatle sorgular.",
-            fit: "UykulukSciFi lav belleğinin bilinmeyen amaçlarını incelemeyi öngörür.",
-          },
-        ]),
-      ),
-    ).toThrow(/generic "incelemeyi öngörmek" boilerplate/i);
+    const ideas = parseIdeasProviderPayload(
+      JSON.stringify([
+        { ...baseIdea, fit: "UykulukSciFi bu arşivin bilinmeyen sınırlarını incelemeyi öngörür." },
+        {
+          ...baseIdea,
+          id: "idea_002",
+          title: "Lav Kütüphanesi",
+          premise: "Lav çizgilerinin doğal süreç olabileceğini dikkatle sorgular.",
+          fit: "UykulukSciFi lav belleğinin bilinmeyen amaçlarını incelemeyi öngörür.",
+        },
+      ]),
+    );
+
+    expect(ideaListEditorialWarnings(ideas)).toContainEqual({
+      code: "generic_fit_boilerplate",
+      message: expect.stringMatching(/generic "incelemeyi öngörmek" boilerplate/i),
+    });
   });
 
   it("rejects repeated weak journey and clue boilerplate from live qwen ideas", () => {

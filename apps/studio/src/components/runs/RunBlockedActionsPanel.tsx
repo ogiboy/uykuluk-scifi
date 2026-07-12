@@ -9,7 +9,7 @@ import {
   blockedActionsEmptyMessage,
   blockedActionsIntro,
   shouldShowEvidenceRemediation,
-} from "@/lib/runEvidenceCopy";
+} from "@/lib/runs/runEvidenceCopy";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 
 type RunBlockedActionsPanelProps = Readonly<{

@@ -5,17 +5,18 @@ import { loadRun, saveRun } from "../core/runStore.js";
 import { pathExists } from "../utils/fs.js";
 import { bulletList, table } from "../utils/markdown.js";
 import { nowIso } from "../utils/time.js";
-import { finalReviewBundleCommand } from "./finalReviewBundleContracts.js";
+import { finalReviewBundleCommand } from "./finalReview/finalReviewBundleContracts.js";
 import {
   renderDecisionJsonPath,
   renderDecisionMarkdownPath,
+  renderRevisionCommand,
   type RenderDecision,
-} from "./renderDecisionCommands.js";
+} from "./render/renderDecisionCommands.js";
 import {
   renderDecisionInputSchema,
   type RenderDecisionInput,
   type RenderDecisionRecord,
-} from "./renderDecisionContracts.js";
+} from "./render/renderDecisionContracts.js";
 import { reviewDraftRender } from "./reviewRender.js";
 
 export {
@@ -23,12 +24,15 @@ export {
   renderDecisionMarkdownPath,
   renderDecisionValues,
   type RenderDecision,
-} from "./renderDecisionCommands.js";
+} from "./render/renderDecisionCommands.js";
 export {
   renderDecisionInputSchema,
   renderDecisionRecordSchema,
-} from "./renderDecisionContracts.js";
-export type { RenderDecisionInput, RenderDecisionRecord } from "./renderDecisionContracts.js";
+} from "./render/renderDecisionContracts.js";
+export type {
+  RenderDecisionInput,
+  RenderDecisionRecord,
+} from "./render/renderDecisionContracts.js";
 
 /**
  * Records an operator render decision after reviewing the local draft render.
@@ -162,9 +166,9 @@ export function renderDecisionNextSafeAction(decision: RenderDecision, runId: st
     return `Create the local final review handoff with ${finalReviewBundleCommand(runId)}. Upload remains disabled until a future private-upload approval/config path exists.`;
   }
   if (decision === "needs-revision") {
-    return "Revise package, render plan, voiceover, subtitles, or assets; then regenerate evidence/readiness and render a new local draft.";
+    return `Archive this draft with ${renderRevisionCommand(runId)}, apply the required local corrections, regenerate evidence/readiness, and obtain a fresh render approval.`;
   }
-  return "Do not use this draft. Revise upstream artifacts before any new render approval.";
+  return `Do not use this draft. Archive it with ${renderRevisionCommand(runId)} before any fresh render approval.`;
 }
 
 /**

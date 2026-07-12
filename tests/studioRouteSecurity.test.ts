@@ -10,7 +10,6 @@ import {
 } from "../apps/studio/src/lib/routeSecurity";
 
 const appRoot = path.join(process.cwd(), "apps/studio/src/app");
-
 describe("Studio route security contract", () => {
   it("keeps App Router route boundary files explicit and covered", async () => {
     await expect(discoverBoundaryFiles(appRoot)).resolves.toEqual(
@@ -65,6 +64,7 @@ describe("Studio route security contract", () => {
         "actions/review-script/route.ts",
         "actions/review-voice/route.ts",
         "actions/revise-package-artifact/route.ts",
+        "actions/revise-render/route.ts",
         "actions/revise-script/route.ts",
         "actions/run-channel-handoff/route.ts",
         "actions/run-doctor/route.ts",

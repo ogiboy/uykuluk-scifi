@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { captureStudioUnexpectedError } from "@/lib/studioObservability";
+import { captureStudioUnexpectedError } from "@/lib/observability/studioObservability";
 import { useEffect } from "react";
 
 type StudioGlobalErrorProps = Readonly<{ error: Error & { digest?: string }; reset: () => void }>;

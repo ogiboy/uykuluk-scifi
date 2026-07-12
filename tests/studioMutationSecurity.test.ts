@@ -4,7 +4,7 @@ import {
   studioSessionCookieName,
   studioSessionHeaderName,
   validateStudioMutationRequest,
-} from "../apps/studio/src/lib/studioMutationSecurity";
+} from "../apps/studio/src/lib/mutations/studioMutationSecurity";
 
 const token = "test_session_token_1234567890ABCDEFGH";
 

@@ -42,7 +42,7 @@ describe("producer render CLI", () => {
 
     expect(result.status).toBe(0);
     expect(JSON.parse(result.stdout) as unknown).toMatchObject({
-      schemaVersion: 7,
+      schemaVersion: 8,
       runId,
       chapterDraft: {
         jsonPath: "production/render/youtube_chapters.json",

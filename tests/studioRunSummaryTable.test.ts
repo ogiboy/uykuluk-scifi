@@ -4,7 +4,7 @@ import {
   formatRunFinalReviewBundle,
   formatRunRenderDecision,
   formatRunReviewCounts,
-} from "../apps/studio/src/lib/runSummaryCopy";
+} from "../apps/studio/src/lib/runs/runSummaryCopy";
 
 describe("Studio run summary table copy", () => {
   it("formats approval, warning, and artifact counts for the run index", () => {

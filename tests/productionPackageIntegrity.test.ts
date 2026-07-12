@@ -1,7 +1,9 @@
 import { readFile, rm, writeFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { artifactPath } from "../src/core/artifacts";
+import { readLedger } from "../src/core/ledger";
 import { loadRun } from "../src/core/runStore";
+import { reviseScript } from "../src/revisions/scriptRevision";
 import { approveIdea } from "../src/stages/approveIdea";
 import { approveScript } from "../src/stages/approveScript";
 import { estimateCost } from "../src/stages/estimate";
@@ -103,6 +105,30 @@ describe("production package integrity", () => {
 
     await expect(estimateCost(runId)).rejects.toThrow(/approved script|production package/i);
     expect((await loadRun(runId)).state).toBe("PRODUCTION_PACKAGE_GENERATED");
+  });
+
+  it("blocks package generation before provider work when spoken narration is too short", async () => {
+    const { runId, ideas } = await runIdeas();
+    await approveIdea(runId, ideas[0].id);
+    await generateScript(runId);
+    await reviewScript(runId);
+    await approveScript(runId, { acknowledgeWarnings: true });
+    await reviseScript({
+      runId,
+      content: "# Kısa Taslak\n\nAnlatıcı: Bu kısa anlatım üretim süresi için yeterli değildir.\n",
+      reason: "Test spoken narration guard",
+      editor: "test",
+    });
+    await reviewScript(runId);
+    await approveScript(runId, { acknowledgeWarnings: true });
+
+    await expect(generateProductionPackage(runId)).rejects.toThrow(/spoken narration.*floor/i);
+    expect((await loadRun(runId)).state).toBe("SCRIPT_APPROVED");
+    expect(await readLedger(runId)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ type: "GUARD_BLOCKED", stage: "package" }),
+      ]),
+    );
   });
 
   it("reports package tampering in the evidence bundle", async () => {
