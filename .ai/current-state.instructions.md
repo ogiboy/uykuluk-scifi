@@ -81,13 +81,12 @@
   `timing-draft-only` or `production-voice-candidate`, while Studio production-media rows surface
   the same review command, render approval command, and approval scope without adding a web
   mutation.
-- The disabled-by-default ElevenLabs adapter is integrated behind exact quote approval,
-  reservation, durable execution claim, timeout, one-shot dispatch, settlement/reconciliation, and
-  redacted diagnostics. Its production default is `eleven_v3` with Turkish language code, 24 kHz
-  WAV output, bounded long-form chunking, stitched PCM/alignment evidence, provider request-id
-  hashing, and raw provider character-cost reconciliation. No live paid synthesis has run. Voice
-  catalog/previews and durable operator voice/model selection are the next active slice; full
-  synthesis must not use an unreviewed implicit voice.
+- The disabled ElevenLabs adapter is behind exact quote approval, reservation, one-shot dispatch,
+  settlement/reconciliation, and redacted diagnostics. The `eleven_v3` Turkish path supports bounded
+  long-form 24 kHz WAV/alignment stitching and provider-cost reconciliation. `producer
+  voice-candidates` now persists a redacted voices/model/subscription snapshot without synthesis;
+  free-tier voices stay preview-only. Preview download and durable selection are next, and full
+  synthesis must not use an implicit voice. No live paid synthesis has run.
 - `pnpm tts:piper:setup` downloads the pinned CPU-friendly Turkish
   `speaches-ai/piper-tr_TR-fahrettin-medium` model into ignored `models/` and prints the matching
   local config override for `local-piper`.
@@ -448,10 +447,8 @@ Corepack/PATH before treating failures as product failures.
   in `producer.config.json` and recorded in prompt provenance. Prompt editing UI and prompt revision
   history remain future work; tracked defaults stay read-only runtime inputs. Locale infrastructure
   is ready, but full translation catalogs and a language selector are intentionally deferred.
-- Guarded persistent settings and prompt-profile editing have an approved command-boundary design
-  but are not implemented yet. Saves must become visible immediately and affect the next command;
-  in-flight operations retain their starting config/prompt snapshot. Studio listener ports and
-  build-time environment settings require a controlled restart, and secrets remain env-only.
+- Approved settings/prompt editing is not implemented. Saves affect the next command; in-flight
+  work stays pinned; listener/build-time settings restart; secrets stay env-only.
 - Initial package artifact revision contracts cover subtitles, scenes, popup-card package Markdown,
   and YouTube metadata. They are limited to `PRODUCTION_PACKAGE_GENERATED`, refresh the manifest,
   and invalidate stale evidence/readiness/render-plan artifacts; richer per-field editing UX and

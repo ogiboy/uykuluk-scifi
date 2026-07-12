@@ -323,6 +323,8 @@ pnpm producer approve script --run <run_id> --acknowledge-warnings # when review
 pnpm producer approve script --run <run_id> --acknowledge-warnings --json
 pnpm producer package --run <run_id>
 pnpm producer package --run <run_id> --json
+pnpm producer voice-candidates --run <run_id> # ElevenLabs metadata only; no speech synthesis
+pnpm producer voice-candidates --run <run_id> --json
 pnpm producer render-plan --run <run_id>
 pnpm producer render-plan --run <run_id> --json
 pnpm producer review render-plan --run <run_id>
@@ -721,6 +723,14 @@ voiceover evidence, including the explicit render approval command and whether t
 for a local timing draft or for a reviewed production voice candidate. Studio production-media rows
 show the same read-only playback path, review command, approval command, and approval scope without
 adding a web mutation.
+
+When ElevenLabs TTS is explicitly enabled, `producer voice-candidates --run <run_id>` performs only
+bounded read-only voice/model/subscription catalog requests after production-package generation. It
+writes a redacted `production/audio/voice_candidates.json` projection with candidate/model/pricing
+digests, preview availability, Turkish verification, and subscription/license classification; raw
+preview URLs, API keys, provider request IDs, and provider bodies are not persisted. Free-tier
+candidates remain `preview-only`. Preview download, durable selection, and production synthesis
+binding are separate subsequent gates; this command never generates speech or approves cost.
 
 `producer review render-plan --run <run_id>` prints a read-only render-plan/contact-sheet handoff
 from validated render-plan evidence. It points operators to `production/storyboard_contact_sheet.md`
