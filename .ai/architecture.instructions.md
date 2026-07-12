@@ -15,6 +15,10 @@ Primary contracts:
 - `src/diagnostics/` owns project-level, read-only operator diagnostics; it must not mutate run
   state or imply workflow approval.
 - `src/prompts/` owns runtime prompt provenance metadata shared by stages and evidence.
+- `src/config/` owns current config defaults, schema parsing, project config loading, and
+  initialization. The approved next settings slice will extend this owner with shared path
+  resolution, strict versioned documents, command-boundary snapshots, atomic revisions, and
+  redacted evidence; Studio will not write config JSON directly.
 - `src/revisions/` owns attributable artifact edits, snapshots, stale-evidence invalidation, and
   revision ledger events.
 - `src/costs/` owns cost event persistence, local budget calculations, reservation/settlement, and
@@ -97,6 +101,11 @@ metadata, CSRF protection, durable evidence writes, and an explicit approval tar
 uses read-only page surfaces plus guarded local mutation routes backed by shared CLI/core contracts.
 Studio must not own workflow state, duplicate the state machine, or bypass CLI/core guards; service
 contracts do not by themselves enable web mutations.
+
+The approved, not-yet-implemented settings/prompt contract follows the same boundary: a save will
+refresh the Studio projection and apply to the next command, while the current command keeps one
+immutable, redacted config/prompt snapshot. Listener ports and build-time environment settings are
+restart-required, and secret values remain outside config and Studio responses.
 
 ## Anti-Goals
 

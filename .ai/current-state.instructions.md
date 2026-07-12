@@ -81,6 +81,13 @@
   `timing-draft-only` or `production-voice-candidate`, while Studio production-media rows surface
   the same review command, render approval command, and approval scope without adding a web
   mutation.
+- The disabled-by-default ElevenLabs adapter is integrated behind exact quote approval,
+  reservation, durable execution claim, timeout, one-shot dispatch, settlement/reconciliation, and
+  redacted diagnostics. Its production default is `eleven_v3` with Turkish language code, 24 kHz
+  WAV output, bounded long-form chunking, stitched PCM/alignment evidence, provider request-id
+  hashing, and raw provider character-cost reconciliation. No live paid synthesis has run. Voice
+  catalog/previews and durable operator voice/model selection are the next active slice; full
+  synthesis must not use an unreviewed implicit voice.
 - `pnpm tts:piper:setup` downloads the pinned CPU-friendly Turkish
   `speaches-ai/piper-tr_TR-fahrettin-medium` model into ignored `models/` and prints the matching
   local config override for `local-piper`.
@@ -430,9 +437,10 @@ Corepack/PATH before treating failures as product failures.
   candidates continue through the same approval, JSON, repetition, Turkish-label, spoken-word, and
   operator-quality gates.
 - Ollama and `llama.cpp` configuration accepts only credential-free loopback HTTP(S) origins, preventing local adapters from silently becoming arbitrary outbound endpoints; hosted or LAN provider support needs a separately reviewed adapter boundary.
-- No paid provider adapter is implemented. Exact cost quote approval remains separate from spend
-  authorization. The execution boundary is ready for a future approved adapter, but no SDK,
-  credential, network integration, or CLI mutation exposes it.
+- ElevenLabs is the only approved hosted production provider currently implemented. It remains
+  disabled without explicit config, server-only credentials, exact quote approval, reservation,
+  and operator-triggered synthesis; no live paid call has run. No hosted visual provider, upload,
+  or public/scheduled publish adapter is enabled.
 - Current local-only Studio combines read/review pages and grouped artifact metadata with guarded mutations backed by canonical CLI/core contracts. Stage and Studio-lib roots retain stable public entrypoints while domain helpers live in named subfolders. Route security covers page reads, short-lived session proof, same-origin actions, and disabled upload/publish; generation and local render run only through guarded contracts.
 - Optional Sentry captures unexpected Next.js and Studio mutation-boundary failures without request bodies or artifact contents. Without a DSN it is disabled
   and never affects workflow state, approvals, readiness, evidence, or route authorization.
@@ -440,6 +448,10 @@ Corepack/PATH before treating failures as product failures.
   in `producer.config.json` and recorded in prompt provenance. Prompt editing UI and prompt revision
   history remain future work; tracked defaults stay read-only runtime inputs. Locale infrastructure
   is ready, but full translation catalogs and a language selector are intentionally deferred.
+- Guarded persistent settings and prompt-profile editing have an approved command-boundary design
+  but are not implemented yet. Saves must become visible immediately and affect the next command;
+  in-flight operations retain their starting config/prompt snapshot. Studio listener ports and
+  build-time environment settings require a controlled restart, and secrets remain env-only.
 - Initial package artifact revision contracts cover subtitles, scenes, popup-card package Markdown,
   and YouTube metadata. They are limited to `PRODUCTION_PACKAGE_GENERATED`, refresh the manifest,
   and invalidate stale evidence/readiness/render-plan artifacts; richer per-field editing UX and
