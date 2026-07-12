@@ -4,7 +4,7 @@ import {
   parseStudioLastMutationResult,
   readStudioLastMutationResult,
   writeStudioLastMutationResult,
-} from "../apps/studio/src/lib/studioLastMutationResult";
+} from "../apps/studio/src/lib/mutations/studioLastMutationResult";
 
 describe("Studio last mutation result", () => {
   afterEach(() => {

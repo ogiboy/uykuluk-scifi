@@ -7,7 +7,11 @@ import {
   type LocalModelCandidateEvalReportPersisted,
   type LocalModelEvalReportPersisted,
 } from "../../../../src/diagnostics/localModelEvalSchema";
-import { ArtifactJsonParseError, parseArtifactJson, readOptionalText } from "./localArtifactReads";
+import {
+  ArtifactJsonParseError,
+  parseArtifactJson,
+  readOptionalText,
+} from "./artifacts/localArtifactReads";
 import type {
   StudioCandidateEvalSummary,
   StudioCandidateModelSummary,
@@ -15,7 +19,7 @@ import type {
   StudioModelEvalOverview,
   StudioModelEvalStatus,
   StudioSingleModelEvalSummary,
-} from "./modelEvalOverviewTypes";
+} from "./catalogs/modelEvalOverviewTypes";
 import { projectRoot } from "./projectRoot";
 
 export type {
@@ -25,7 +29,7 @@ export type {
   StudioModelEvalOverview,
   StudioModelEvalStatus,
   StudioSingleModelEvalSummary,
-} from "./modelEvalOverviewTypes";
+} from "./catalogs/modelEvalOverviewTypes";
 
 const SINGLE_JSON_PATH = "diagnostics/local_model_eval.json";
 const SINGLE_MARKDOWN_PATH = "diagnostics/local_model_eval.md";

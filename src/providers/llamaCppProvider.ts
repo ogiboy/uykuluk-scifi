@@ -69,7 +69,9 @@ export class LlamaCppProvider implements LlmProvider {
       const servedModels = Array.from(
         new Set((payload.data ?? []).map((model) => model.id).filter(isString)),
       );
-      const available = servedModels.includes(this.defaultModel);
+      const available = servedModels.some((servedModel) =>
+        modelIdentifiersMatch(servedModel, this.defaultModel),
+      );
       return {
         available,
         baseUrl: displayBaseUrl,
@@ -140,14 +142,14 @@ export class LlamaCppProvider implements LlmProvider {
       throw new Error("llama.cpp provider error.");
     }
     const servedModel = raw.model ?? model;
-    if (servedModel !== model) {
+    if (!modelIdentifiersMatch(servedModel, model)) {
       throw new Error("llama.cpp served model mismatch.");
     }
     const text = raw.choices?.[0]?.message?.content ?? raw.choices?.[0]?.text ?? "";
     return {
       text,
       provider: "llama.cpp",
-      model: servedModel,
+      model,
       inputTokensApprox:
         raw.usage?.prompt_tokens ?? approximateTokens(`${input.system ?? ""}\n${input.prompt}`),
       outputTokensApprox: raw.usage?.completion_tokens ?? approximateTokens(text),
@@ -195,6 +197,14 @@ function servedModelsMessage(defaultModel: string, servedModels: string[]): stri
 
 function withoutTrailingSlash(value: string): string {
   return value.endsWith("/") ? value.slice(0, -1) : value;
+}
+
+function modelIdentifiersMatch(servedModel: string, requestedModel: string): boolean {
+  return normalizeModelIdentifier(servedModel) === normalizeModelIdentifier(requestedModel);
+}
+
+function normalizeModelIdentifier(value: string): string {
+  return value.startsWith("./") ? value.slice(2) : value;
 }
 
 function displaySafeBaseUrl(value: string): string {

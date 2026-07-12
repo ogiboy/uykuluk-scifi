@@ -1,8 +1,8 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { useStudioStageActionSubmit } from "@/lib/mutations/useStudioStageActionSubmit";
 import type { StudioRunDetail } from "@/lib/runSummaries";
-import { useStudioStageActionSubmit } from "@/lib/useStudioStageActionSubmit";
 import { useId } from "react";
 import { StudioMutationResultPanel } from "../studio/StudioMutationResultPanel";
 import { RunStageActionConfirmationDialog } from "./RunStageActionConfirmationDialog";

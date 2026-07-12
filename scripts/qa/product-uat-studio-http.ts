@@ -2,7 +2,7 @@ import { GET as issueStudioSession } from "../../apps/studio/src/app/actions/ses
 import {
   studioActionHeaderName,
   studioSessionHeaderName,
-} from "../../apps/studio/src/lib/studioMutationSecurity";
+} from "../../apps/studio/src/lib/mutations/studioMutationSecurity";
 
 const baseUrl = "http://localhost:3000";
 
@@ -32,6 +32,7 @@ export function studioJsonRequest(
       [studioSessionHeaderName]: session.token,
       "content-type": "application/json",
       cookie: session.cookie,
+      host: "localhost:3000",
       origin: baseUrl,
     },
     method: "POST",
@@ -47,7 +48,7 @@ export function studioJsonRequest(
 export async function studioSessionCookie(assert: StudioUatAssert): Promise<StudioUatSession> {
   const response = await issueStudioSession(
     new Request("http://localhost:3000/actions/session", {
-      headers: { origin: "http://localhost:3000" },
+      headers: { host: "localhost:3000", origin: "http://localhost:3000" },
       method: "GET",
     }),
   );

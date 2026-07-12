@@ -5,7 +5,6 @@ import path from "node:path";
 
 /**
  * Copies the repository into an isolated ignored workdir.
- *
  * @param {Object} options - Workspace options.
  * @param {string} options.repoRoot - Source repository root.
  * @param {string} options.workdir - Destination workdir.
@@ -35,7 +34,6 @@ export async function prepareWorkspace({ repoRoot, workdir }) {
 
 /**
  * Checks whether a source path is local-only state that must not enter UAT clean copies.
- *
  * @param {string} relative - Path relative to the source repository root.
  * @returns {boolean} Whether the path should be skipped.
  */
@@ -96,11 +94,16 @@ export async function createFakeMediaTools({ workdir }) {
     ffprobe,
     [
       "#!/usr/bin/env node",
+      'import { readFileSync } from "node:fs";',
+      "const media = readFileSync(process.argv.at(-1), 'utf8');",
+      "const args = media.split('\\n');",
+      "const durationIndex = args.lastIndexOf('-t');",
+      "const duration = durationIndex >= 0 ? args[durationIndex + 1] : '8.000000';",
       "console.log(JSON.stringify({",
-      "  format: { duration: '8.000000', format_name: 'mov,mp4,m4a,3gp,3g2,mj2' },",
+      "  format: { duration, format_name: 'mov,mp4,m4a,3gp,3g2,mj2' },",
       "  streams: [",
-      "    { codec_type: 'video', codec_name: 'h264', width: 1280, height: 720, duration: '8.000000' },",
-      "    { codec_type: 'audio', codec_name: 'aac', sample_rate: '48000', channels: 2, duration: '8.000000' }",
+      "    { codec_type: 'video', codec_name: 'h264', width: 1280, height: 720, duration },",
+      "    { codec_type: 'audio', codec_name: 'aac', sample_rate: '48000', channels: 2, duration }",
       "  ]",
       "}));",
     ].join("\n"),

@@ -2,11 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
   countStudioRunQueueFilters,
   filterStudioRunQueue,
-} from "../apps/studio/src/lib/runQueueFilters";
+} from "../apps/studio/src/lib/runs/runQueueFilters";
 import {
   applyRunQueueWorkbenchControls,
   runQueueEmptyState,
-} from "../apps/studio/src/lib/runQueueWorkbench";
+} from "../apps/studio/src/lib/runs/runQueueWorkbench";
 import type { StudioRunSummary } from "../apps/studio/src/lib/runSummaries";
 
 describe("Studio run queue filters", () => {

@@ -16,6 +16,7 @@ export type VideoIdea = {
 export type ScriptMeta = {
   estimatedDuration: string;
   wordCount: number;
+  narrationWordCount: number;
   tone: string;
   claimsRequiringFactCheck: string[];
   possibleVisualBeats: string[];

@@ -3,9 +3,9 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { getStudioRunDetail } from "../apps/studio/src/lib/runSummaries";
 import { artifactPath } from "../src/core/artifacts";
-import { channelHandoffJsonPath } from "../src/stages/channelHandoffContracts";
+import { channelHandoffJsonPath } from "../src/stages/channel/channelHandoffContracts";
 import { channelHandoffDecisionJsonPath } from "../src/stages/channelHandoffDecision";
-import type { StatusWorkflowStep } from "../src/stages/statusWorkflow";
+import type { StatusWorkflowStep } from "../src/stages/status/statusWorkflow";
 import { useTempProject } from "./helpers";
 import {
   writeStudioChannelHandoff,

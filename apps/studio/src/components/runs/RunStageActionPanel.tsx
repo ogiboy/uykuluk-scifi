@@ -9,8 +9,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useStudioStageActionSubmit } from "@/lib/mutations/useStudioStageActionSubmit";
 import type { StudioRunDetail } from "@/lib/runSummaries";
-import { useStudioStageActionSubmit } from "@/lib/useStudioStageActionSubmit";
 import { StudioMutationResultPanel } from "../studio/StudioMutationResultPanel";
 import { RunStageActionConfirmationDialog } from "./RunStageActionConfirmationDialog";
 

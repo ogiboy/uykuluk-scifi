@@ -48,7 +48,7 @@ describe("draft render", () => {
       artifactPath(runId, "production/render/render_manifest.json"),
     );
     const draftRenderArtifactPath = artifactPath(runId, "production/render/draft.mp4");
-    expect(manifest.schemaVersion).toBe(7);
+    expect(manifest.schemaVersion).toBe(8);
     expect(manifest.renderApproval).toEqual({ approvalId: approval.approvalId, approvedRef });
     expect(manifest.output).toMatchObject({
       path: "production/render/draft.mp4",
@@ -89,6 +89,17 @@ describe("draft render", () => {
         { path: "assets/outro/frames/outro_frame_00.jpg" },
         { path: "assets/outro/frames/outro_frame_01.jpg" },
       ],
+    });
+    expect(manifest.timing).toEqual({
+      introDurationSeconds: 2,
+      sceneAudioDurationSeconds: 3,
+      outroDurationSeconds: 3,
+      totalDurationSeconds: 8,
+    });
+    expect(manifest.subtitleTiming).toMatchObject({
+      sceneDurationSeconds: 3,
+      sourceDurationSeconds: expect.any(Number),
+      timeScale: expect.any(Number),
     });
     expect(manifest.ffmpegTimelineInputs).toMatchObject([
       {
@@ -136,6 +147,11 @@ describe("draft render", () => {
     });
     expect(manifest.ffmpeg.args.join("\n")).toContain("production/audio/voiceover.wav");
     expect(manifest.ffmpeg.args.join("\n")).toContain("production/subtitles.srt");
+    expect(manifest.ffmpeg.args.join("\n")).toContain("adelay=2000:all=1");
+    expect(manifest.ffmpeg.args.join("\n")).toContain("[subtitleTimeline]split=3");
+    expect(manifest.ffmpeg.args.join("\n")).toContain("[subtitleSceneSource]trim=start=2:end=5");
+    expect(manifest.ffmpeg.args.join("\n")).toContain("overlay=0:H-h:enable='between(t\\,2\\,5)'");
+    expect(manifest.ffmpeg.args).toContain("[a]");
     expect(manifest.ffmpeg.args.join("\n")).toContain(
       "assets/backgrounds/plate_test_1920x1080.jpg",
     );
@@ -205,6 +221,9 @@ describe("draft render", () => {
     expect(review).toContain(draftRenderArtifactPath);
     expect(review).toContain("atomic temporary output");
     expect(review).toContain("## Media Probe");
+    expect(review).toContain("## Timing Alignment");
+    expect(review).toContain("Subtitle clock scale");
+    expect(review).toContain(`pnpm producer revise render --run ${runId}`);
     expect(review).toContain("## Render Approval");
     expect(review).toContain("## Timestamped Review Map");
     expect(review).toContain("## YouTube Chapter Draft");

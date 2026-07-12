@@ -3,20 +3,20 @@ import {
   buildProductionScenesFromScript,
   buildWrappedSrt,
   renderVoiceoverText,
-} from "../src/stages/productionPackageScript";
+} from "../src/stages/production/productionPackageScript";
+import { countSpokenNarrationWords } from "../src/utils/scriptProductionText";
 
 describe("production package script extraction", () => {
   it("keeps visual directions out of voiceover and subtitles", () => {
-    const scenes = buildProductionScenesFromScript(
-      [
-        "# Sessiz Sinyal",
-        "",
-        "Anlatıcı: İlk ölçüm kesin kanıt gibi sunulmadan sakin biçimde yeniden dinlenir.",
-        "Görsel: Kontrol odasında üç veri çizgisi yavaşça üst üste biner.",
-        "Anlatıcı: İkinci ölçüm, doğal süreç ve cihaz hatası ihtimallerini yan yana tutar.",
-        "Görsel: Buz yüzeyinde dar bir ışık çizgisi belirir.",
-      ].join("\n"),
-    );
+    const script = [
+      "# Sessiz Sinyal",
+      "",
+      "Anlatıcı: İlk ölçüm kesin kanıt gibi sunulmadan sakin biçimde yeniden dinlenir.",
+      "Görsel: Kontrol odasında üç veri çizgisi yavaşça üst üste biner.",
+      "Anlatıcı: İkinci ölçüm, doğal süreç ve cihaz hatası ihtimallerini yan yana tutar.",
+      "Görsel: Buz yüzeyinde dar bir ışık çizgisi belirir.",
+    ].join("\n");
+    const scenes = buildProductionScenesFromScript(script);
 
     expect(renderVoiceoverText(scenes)).toBe(
       [
@@ -43,6 +43,9 @@ describe("production package script extraction", () => {
     expect(srt).not.toContain("Görsel:");
     expect(srt).not.toContain("Kontrol odasında");
     expect(subtitleTextLines(srt).every((line) => line.length <= 46)).toBe(true);
+    expect(countSpokenNarrationWords(script)).toBe(
+      renderVoiceoverText(scenes).split(/\s+/u).filter(Boolean).length,
+    );
   });
 
   it("wraps long narration into multiple readable cues", () => {
@@ -59,6 +62,14 @@ describe("production package script extraction", () => {
     expect(srt.split("\n\n").length).toBeGreaterThan(1);
     expect(textLines.length).toBeGreaterThan(2);
     expect(textLines.every((line) => line.length <= 46)).toBe(true);
+  });
+
+  it("bounds fallback visual prompts at a complete word", () => {
+    const narration = `${"tamkelime ".repeat(30)}son.`;
+    const [scene] = buildProductionScenesFromScript(`Anlatıcı: ${narration}`);
+
+    expect(scene.visualPrompt).toMatch(/tamkelime…$/u);
+    expect(scene.visualPrompt).not.toMatch(/tamkeli…$/u);
   });
 });
 

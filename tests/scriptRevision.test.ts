@@ -36,6 +36,11 @@ describe("script revisions", () => {
     });
 
     const run = await loadRun(runId);
+    const refreshedMeta = await readJsonFile<{
+      estimatedDuration: string;
+      narrationWordCount: number;
+      wordCount: number;
+    }>(artifactPath(runId, "script.meta.json"));
     expect(run.state).toBe("SCRIPT_GENERATED");
     expect(run.approvals.some((item) => item.target === "script")).toBe(false);
     expect(run.artifacts.some((item) => item.startsWith("reviews/"))).toBe(false);
@@ -48,16 +53,23 @@ describe("script revisions", () => {
       previousState: "SCRIPT_APPROVED",
       nextState: "SCRIPT_GENERATED",
       invalidatedApprovalIds: [approval.approvalId],
+      refreshedArtifacts: ["script.meta.json"],
     });
     expect(revision.beforeHash).not.toBe(revision.afterHash);
 
     const revisionDir = `revisions/script/${revision.revisionId}`;
     expect(await readFile(artifactPath(runId, `${revisionDir}/before.md`), "utf8")).toBe(before);
     expect(await readFile(artifactPath(runId, `${revisionDir}/after.md`), "utf8")).toBe(revised);
+    expect(await pathExists(artifactPath(runId, `${revisionDir}/before.meta.json`))).toBe(true);
+    expect(await pathExists(artifactPath(runId, `${revisionDir}/after.meta.json`))).toBe(true);
     expect(await readJsonFile(artifactPath(runId, `${revisionDir}/revision.json`))).toEqual(
       revision,
     );
     expect(await readFile(artifactPath(runId, "script.md"), "utf8")).toBe(revised);
+    expect(refreshedMeta.wordCount).toBe(revised.trim().split(/\s+/u).filter(Boolean).length);
+    expect(refreshedMeta.narrationWordCount).toBeGreaterThan(0);
+    expect(refreshedMeta.narrationWordCount).toBeLessThanOrEqual(refreshedMeta.wordCount);
+    expect(refreshedMeta.estimatedDuration).toMatch(/^\d+-\d+ dakika$/u);
     expect(
       (await readLedger(runId)).some(
         (event) =>

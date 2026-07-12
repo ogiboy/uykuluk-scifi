@@ -7,6 +7,7 @@ import { requireState } from "../safeguards/approvalGuard.js";
 import { reviewScriptContent } from "../safeguards/contentGuard.js";
 import { sha256 } from "../utils/hash.js";
 import { bulletList } from "../utils/markdown.js";
+import { extractClaims } from "./script/scriptMetaExtractors.js";
 
 type ScriptReviewWarnings = ReturnType<typeof reviewScriptContent>;
 export type ScriptReview = {
@@ -29,6 +30,7 @@ export async function reviewScript(runId: string): Promise<ScriptReview> {
   try {
     const script = await readFile(artifactPath(run.runId, "script.md"), "utf8");
     const warnings = reviewScriptContent(script);
+    appendFactCheckWarning(warnings, extractClaims(script).length);
     const review: ScriptReview = {
       runId: run.runId,
       scriptHash: sha256(script),
@@ -72,6 +74,21 @@ export async function reviewScript(runId: string): Promise<ScriptReview> {
     });
     throw error;
   }
+}
+
+function appendFactCheckWarning(warnings: ScriptReviewWarnings, claimCount: number): void {
+  if (
+    claimCount === 0 ||
+    warnings.some((warning) => warning.code === "claims_require_fact_check")
+  ) {
+    return;
+  }
+  warnings.push({
+    code: "claims_require_fact_check",
+    details: { claimCount: String(claimCount) },
+    severity: "warning",
+    message: "Script metadata identifies claims that require fact-check review before production.",
+  });
 }
 
 function scriptReviewNextApprovalStep(warnings: ScriptReviewWarnings): string {

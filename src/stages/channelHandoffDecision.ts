@@ -7,7 +7,7 @@ import { pathExists } from "../utils/fs.js";
 import { sha256 } from "../utils/hash.js";
 import { bulletList, table } from "../utils/markdown.js";
 import { nowIso } from "../utils/time.js";
-import { channelHandoffJsonPath } from "./channelHandoffContracts.js";
+import { channelHandoffJsonPath } from "./channel/channelHandoffContracts.js";
 import {
   channelHandoffDecisionInputSchema,
   channelHandoffDecisionJsonPath,
@@ -16,13 +16,13 @@ import {
   type ChannelHandoffDecisionInput,
   type ChannelHandoffDecisionRecord,
   type SelectedThumbnailCandidate,
-} from "./channelHandoffDecisionContracts.js";
-import { readChannelHandoffStatus } from "./channelHandoffStatus.js";
-import { readFinalReviewBundleStatus } from "./finalReviewBundleStatus.js";
+} from "./channel/channelHandoffDecisionContracts.js";
+import { readChannelHandoffStatus } from "./channel/channelHandoffStatus.js";
+import { readFinalReviewBundleStatus } from "./finalReview/finalReviewBundleStatus.js";
 import {
   thumbnailCandidatePackSchema,
   thumbnailCandidatesJsonPath,
-} from "./thumbnailCandidateContracts.js";
+} from "./thumbnail/thumbnailCandidateContracts.js";
 
 export {
   channelHandoffDecisionInputSchema,
@@ -33,7 +33,7 @@ export {
   type ChannelHandoffDecision,
   type ChannelHandoffDecisionInput,
   type ChannelHandoffDecisionRecord,
-} from "./channelHandoffDecisionContracts.js";
+} from "./channel/channelHandoffDecisionContracts.js";
 
 export async function recordChannelHandoffDecision(
   input: ChannelHandoffDecisionInput,

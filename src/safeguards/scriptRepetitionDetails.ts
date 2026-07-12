@@ -2,7 +2,7 @@ import { sha256 } from "../utils/hash.js";
 
 export type RepeatedSentenceLoopDetails = { repeatCount: string; sentenceFingerprint: string };
 
-const repeatedSentenceThreshold = 3;
+const repeatedSentenceThreshold = 2;
 
 export function repeatedSentenceLoopDetails(
   script: string,

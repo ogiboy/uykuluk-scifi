@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { createRun, saveRun } from "../src/core/runStore";
 import { formatRunStatus, readRunStatus } from "../src/stages/status";
-import { formatApprovalLedger, formatWarningDetails } from "../src/stages/statusLedger";
+import { formatApprovalLedger, formatWarningDetails } from "../src/stages/status/statusLedger";
 import { useTempProject } from "./helpers";
 
 describe("operator status approval and warning details", () => {

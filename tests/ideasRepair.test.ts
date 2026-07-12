@@ -54,12 +54,13 @@ describe("idea provider retry and repair", () => {
     expect(prompt).toContain(
       "If validation feedback names a repeated motif, that motif is forbidden",
     );
-    expect(prompt).toContain("Forced diversity slots");
-    expect(prompt).toContain("Return the eight ideas in this exact slot order");
-    expect(prompt).toContain("Buzaltı Haritası");
-    expect(prompt).toContain("Paslı Android Mezarlığı");
-    expect(prompt).toContain("Nötrino Gecikmesi");
-    expect(prompt).toContain("Sonda Günlüğü");
+    expect(prompt).toContain("Diversity lane pool");
+    expect(prompt).toContain("Choose exactly eight distinct lanes from this pool");
+    expect(prompt).toContain("ışıksız başıboş dünya iklimi");
+    expect(prompt).toContain("Ay lav tüneli yerleşimi");
+    expect(prompt).toContain("Invent a fresh two-to-five-word Turkish title");
+    expect(prompt).toContain("merely generated");
+    expect(prompt).not.toContain("title anchor:");
     expect(prompt).toContain(
       "Do not repeat four-word sentence frames across three or more `fit` explanations",
     );
@@ -70,12 +71,36 @@ describe("idea provider retry and repair", () => {
     expect(prompt).toContain("Do not repeat weak action boilerplate");
     expect(prompt).toContain("Do not reuse weak journey or clue boilerplate");
     expect(prompt).toContain("Do not use English scientific leftovers");
-    expect(prompt).toContain("buzaltı okyanusu anomalisi");
-    expect(prompt).toContain("insan-sonrası arkeoloji");
+    expect(prompt).toContain("yapay zekâ belleği etiği");
+    expect(prompt).toContain("uzak koloniler arası iletişim gecikmesi");
     expect(prompt).toContain("no five-word phrase may appear in three or more premises");
+    expect(prompt).toContain("8 distinct selected lanes");
     expect(prompt).toContain("no repeated fit frame");
     expect(prompt).toContain("no repeated unknown-species boilerplate");
     expect(prompt).toContain("no repeated weak journey/clue/action boilerplate");
+  });
+
+  it("does not force a title that validation has already marked as historical", () => {
+    const prompt = ideasStage.renderIdeaRepairPrompt(
+      "IDEAS_JSON\n## Recent UykulukSciFi Idea History\nGenerated: Buzaltı Haritası",
+      'Invalid ideas provider response: ideas.0.title: Repeats previously generated idea "Buzaltı Haritası" from run_history; generate a genuinely different title and premise.',
+    );
+
+    expect(prompt).toContain("Buzaltı Haritası");
+    expect(prompt).toContain("Every title listed in Recent UykulukSciFi Idea History");
+    expect(prompt).not.toContain("title anchor: Buzaltı Haritası");
+    expect(prompt).not.toContain("Use its slot title anchor");
+  });
+
+  it("removes a history-conflicting lane from bounded repair choices", () => {
+    const prompt = ideasStage.renderIdeaRepairPrompt(
+      "IDEAS_JSON\nbase planner contract",
+      'Invalid ideas provider response: ideas.0.title: Repeats previously generated idea "Kuyrukluyıldız Arşivi\'nin Sessizliği" from run_history; generate a genuinely different title and premise.',
+    );
+
+    expect(prompt).toContain("1 history-conflicting lane(s) were removed");
+    expect(prompt).not.toContain("- kuyrukluyıldız arşivi");
+    expect(prompt).toContain("- yörünge yaşam alanı ekolojisi");
   });
 
   it("retries one invalid local-model idea slate with validation feedback", async () => {
@@ -103,7 +128,7 @@ describe("idea provider retry and repair", () => {
         key: "ideas",
         artifact: "ideas.json",
         hash: expect.stringMatching(/^[a-f0-9]{64}$/),
-        source: "src/stages/ideaRepairPrompt.ts",
+        source: "src/stages/idea/ideaRepairPrompt.ts",
       },
       validationErrors: [expect.stringMatching(/Invalid ideas provider response/i)],
     });
@@ -141,7 +166,7 @@ describe("idea provider retry and repair", () => {
         key: "ideas",
         artifact: "ideas.json",
         hash: expect.stringMatching(/^[a-f0-9]{64}$/),
-        source: "src/stages/ideaRepairPrompt.ts",
+        source: "src/stages/idea/ideaRepairPrompt.ts",
       },
       validationErrors: [
         expect.stringMatching(/Ideas must be meaningfully distinct/i),

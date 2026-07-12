@@ -7,11 +7,11 @@ import { readCostEstimate, validateCurrentCostEstimate } from "../costs/costEsti
 import { checkAssets } from "../safeguards/assetGuard.js";
 import { pathExists } from "../utils/fs.js";
 import { generateEvidenceBundle } from "./evidence.js";
-import { renderReadinessMarkdown } from "./readinessMarkdown.js";
-import { productionPackageIntegrityCheck } from "./readinessProductionPackage.js";
-import { draftRenderReadinessCheck } from "./readinessRenderDraft.js";
-import { renderPlanReadinessCheck } from "./readinessRenderPlan.js";
-import { voiceoverReadinessCheck } from "./readinessVoiceover.js";
+import { renderReadinessMarkdown } from "./readiness/readinessMarkdown.js";
+import { productionPackageIntegrityCheck } from "./readiness/readinessProductionPackage.js";
+import { draftRenderReadinessCheck } from "./readiness/readinessRenderDraft.js";
+import { renderPlanReadinessCheck } from "./readiness/readinessRenderPlan.js";
+import { voiceoverReadinessCheck } from "./readiness/readinessVoiceover.js";
 
 export type ReadinessCheck = {
   name: string;

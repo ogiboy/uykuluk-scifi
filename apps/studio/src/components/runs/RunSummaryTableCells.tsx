@@ -1,13 +1,13 @@
 import { Badge } from "@/components/ui/badge";
-import { runReviewHrefFromSummary } from "@/lib/runReviewNavigation";
-import type { StudioRunSummary } from "@/lib/runSummaries";
+import { runReviewHrefFromSummary } from "@/lib/runs/runReviewNavigation";
 import {
   formatRunChannelHandoff,
   formatRunChannelHandoffDecision,
   formatRunFinalReviewBundle,
   formatRunRenderDecision,
   formatRunReviewCounts,
-} from "@/lib/runSummaryCopy";
+} from "@/lib/runs/runSummaryCopy";
+import type { StudioRunSummary } from "@/lib/runSummaries";
 import type { Route } from "next";
 import Link from "next/link";
 import {

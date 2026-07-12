@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Slider } from "@/components/ui/slider";
-import { type RunQueueDensity, runQueueDensityValues } from "@/lib/runQueueWorkbench";
+import { type RunQueueDensity, runQueueDensityValues } from "@/lib/runs/runQueueWorkbench";
 
 export const maxBlockedActionSliderValue = 5;
 

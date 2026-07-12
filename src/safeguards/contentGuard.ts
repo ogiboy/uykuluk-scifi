@@ -1,10 +1,19 @@
+import { countSpokenNarrationWords } from "../utils/scriptProductionText.js";
 import {
   containsLiteralModelEscapes,
   containsProviderArtifactMetadata,
   containsRepeatedWordStutter,
 } from "./modelArtifactText.js";
 import { containsModelMetaCommentary } from "./modelMetaCommentary.js";
-import { malformedProductionLabelDetails } from "./productionLabelDetails.js";
+import {
+  ambiguousVisualDirectionDetails,
+  malformedProductionLabelDetails,
+} from "./productionLabelDetails.js";
+import {
+  appendScienceWarnings,
+  appendStyleWarnings,
+  type ScriptReviewWarning,
+} from "./scriptEditorialWarnings.js";
 import {
   scriptLongFormUpperWarning,
   scriptLongFormWordFloor,
@@ -12,12 +21,7 @@ import {
 } from "./scriptLengthContract.js";
 import { repeatedSentenceLoopDetails } from "./scriptRepetitionDetails.js";
 
-export type ScriptReviewWarning = {
-  code: string;
-  details?: Record<string, string>;
-  severity: "info" | "warning" | "blocker";
-  message: string;
-};
+export type { ScriptReviewWarning } from "./scriptEditorialWarnings.js";
 
 /**
  * Validates a script against quality, safety, and style guidelines.
@@ -38,7 +42,7 @@ export function reviewScriptContent(script: string): ScriptReviewWarning[] {
     .map((line) => line.trim())
     .find(Boolean);
   appendBlockingScriptWarnings(warnings, trimmed);
-  appendLengthWarnings(warnings, words.length);
+  appendLengthWarnings(warnings, script, words.length);
   appendTitleWarnings(warnings, title);
   appendScienceWarnings(warnings, script);
   appendStyleWarnings(warnings, script);
@@ -100,6 +104,16 @@ function appendBlockingScriptWarnings(warnings: ScriptReviewWarning[], script: s
       message: "Script contains malformed Turkish production labels; regenerate before review.",
     });
   }
+  const visualDirectionDetails = ambiguousVisualDirectionDetails(script);
+  if (visualDirectionDetails) {
+    warnings.push({
+      code: "ambiguous_visual_direction",
+      details: visualDirectionDetails,
+      severity: "blocker",
+      message:
+        "A visual direction contains multiple sentences and can hide narration from TTS; label each following sentence explicitly.",
+    });
+  }
   const repeatedLoopDetails = repeatedSentenceLoopDetails(script);
   if (repeatedLoopDetails) {
     warnings.push({
@@ -109,21 +123,34 @@ function appendBlockingScriptWarnings(warnings: ScriptReviewWarning[], script: s
       message: "Script repeats the same sentence loop; regenerate before review.",
     });
   }
+  if (containsUnsupportedExtraterrestrialCertainty(script)) {
+    warnings.push({
+      code: "unsupported_extraterrestrial_certainty",
+      severity: "blocker",
+      message:
+        "Script presents extraterrestrial life as demonstrated fact; reframe it as speculation or remove the claim.",
+    });
+  }
 }
 
-function appendLengthWarnings(warnings: ScriptReviewWarning[], wordCount: number): void {
-  if (wordCount < scriptLongFormWordFloor) {
+function appendLengthWarnings(
+  warnings: ScriptReviewWarning[],
+  script: string,
+  totalWordCount: number,
+): void {
+  const narrationWordCount = countSpokenNarrationWords(script);
+  if (narrationWordCount < scriptLongFormWordFloor) {
     warnings.push({
       code: "too_short",
       severity: "warning",
-      message: `Script is short for the ${scriptTargetDurationLabel} (${wordCount}/${scriptLongFormWordFloor} words).`,
+      message: `Spoken narration is short for the ${scriptTargetDurationLabel} (${narrationWordCount}/${scriptLongFormWordFloor} words).`,
     });
   }
-  if (wordCount > scriptLongFormUpperWarning) {
+  if (totalWordCount > scriptLongFormUpperWarning) {
     warnings.push({
       code: "too_long",
       severity: "warning",
-      message: `Script may be too long for the ${scriptTargetDurationLabel} (${wordCount}/${scriptLongFormUpperWarning} words).`,
+      message: `Script may be too long for the ${scriptTargetDurationLabel} (${totalWordCount}/${scriptLongFormUpperWarning} words).`,
     });
   }
 }
@@ -147,92 +174,6 @@ function hasClickbaitTitle(title: string): boolean {
   );
 }
 
-function appendScienceWarnings(warnings: ScriptReviewWarning[], script: string): void {
-  const certaintyMatchCount = countRegexMatches(
-    script,
-    /\b(kesin|kanıtlandı|kanitlandi|asla|mutlaka|tartışmasız|tartismasiz)\b/gi,
-  );
-  if (certaintyMatchCount > 3) {
-    warnings.push({
-      code: "misleading_certainty",
-      severity: "warning",
-      message:
-        "Script uses repeated certainty language; scientific speculation should stay cautious.",
-    });
-  }
-  const scienceClaimCount = countRegexMatches(
-    script,
-    /\b(bilim|kanıt|kanit|araştırma|arastirma|gözlem|gozlem|veri|teori|hipotez)\b/gi,
-  );
-  if (scienceClaimCount > 10) {
-    warnings.push({
-      code: "claims_require_fact_check",
-      severity: "warning",
-      message:
-        "Script contains many science-adjacent claims; collect fact-check notes before production.",
-    });
-  }
-  if (
-    /\b(felaket|yok oluş|yok olus|katliam|savaş|savas)\b/i.test(script) &&
-    !/\b(sorumlu|ihtiyat|dikkatli|bağlam|baglam)\b/i.test(script)
-  ) {
-    warnings.push({
-      code: "responsible_framing_missing",
-      severity: "warning",
-      message: "Disaster or violent framing needs responsible wording.",
-    });
-  }
-}
-
-function appendStyleWarnings(warnings: ScriptReviewWarning[], script: string): void {
-  if (!/\b(abone|yorum|sonraki|yeniden buluşalım|yeniden bulusalim|UykulukSciFi)\b/i.test(script)) {
-    warnings.push({
-      code: "missing_outro",
-      severity: "warning",
-      message: "Script may be missing an outro or call to action.",
-    });
-  }
-  const introHookPattern = /\?|vardir|vardır|hayal|sessiz|uzak|bazi|bazı/i;
-  if (introHookPattern.exec(introNarrationWindow(script)) === null) {
-    warnings.push({
-      code: "missing_intro_hook",
-      severity: "warning",
-      message: "Opening hook is weak or missing.",
-    });
-  }
-  if (/\b(Star Wars|Star Trek|Dune|Alien|Blade Runner)\b/gi.test(script)) {
-    warnings.push({
-      code: "copyright_trademark_heavy",
-      severity: "warning",
-      message: "Script references protected fictional properties; avoid trademark-heavy framing.",
-    });
-  }
-  if (!/\b(sakin|sinematik|bilimkurgu|bilimsel|ihtiyat|olasılık|olasilik)\b/i.test(script)) {
-    warnings.push({
-      code: "style_mismatch",
-      severity: "warning",
-      message: "Script may not match the calm, cinematic, careful UykulukSciFi style.",
-    });
-  }
-}
-
-function countRegexMatches(text: string, pattern: RegExp): number {
-  let count = 0;
-  while (pattern.exec(text) !== null) {
-    count += 1;
-  }
-  return count;
-}
-
-function introNarrationWindow(script: string): string {
-  return script
-    .split("\n")
-    .map((line) => line.trim())
-    .filter((line) => line && !line.startsWith("#"))
-    .slice(0, 4)
-    .join(" ");
-}
-
 function looksTruncated(script: string): boolean {
   const nonEmptyLines = script
     .split("\n")
@@ -249,4 +190,8 @@ function containsEnglishProductionText(script: string): boolean {
   return /\b(?:Narration|Narrator|Cut to|screen fades|camera lingers|ambient soundscape|research laboratory|close-up)\b/i.test(
     script,
   );
+}
+
+function containsUnsupportedExtraterrestrialCertainty(script: string): boolean {
+  return /\binsanlığın\s+evrende\s+yalnız\s+olmadığını[^.!?]{0,160}\bgöster\p{L}*/iu.test(script);
 }

@@ -12,9 +12,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { isStudioScriptRevisionState } from "@/lib/actions/studioRevisionEligibility";
+import { useStudioGuardedActionSubmit } from "@/lib/mutations/useStudioGuardedActionSubmit";
 import type { StudioRunDetail } from "@/lib/runSummaries";
-import { isStudioScriptRevisionState } from "@/lib/studioRevisionEligibility";
-import { useStudioGuardedActionSubmit } from "@/lib/useStudioGuardedActionSubmit";
 import { useState } from "react";
 import { StudioMutationResultPanel } from "../studio/StudioMutationResultPanel";
 import { RunRevisionConfirmationDialog } from "./RunRevisionConfirmationDialog";

@@ -1,6 +1,6 @@
 import { RunDetailCard } from "@/components/runs/RunDetailCard";
 import { Badge } from "@/components/ui/badge";
-import { formatApprovalLedgerItem } from "@/lib/runLedgerCopy";
+import { formatApprovalLedgerItem } from "@/lib/runs/runLedgerCopy";
 
 type RunLedgerPanelProps = Readonly<{ approvals: readonly unknown[]; warnings: readonly string[] }>;
 

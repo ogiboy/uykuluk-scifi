@@ -1,11 +1,14 @@
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
-import { hasHttpStatus, studioMutationRecoveryCopy } from "@/lib/studioMutationRecoveryCopy";
+import {
+  hasHttpStatus,
+  studioMutationRecoveryCopy,
+} from "@/lib/mutations/studioMutationRecoveryCopy";
 import {
   studioMutationResultHref,
   studioMutationResultLinkLabel,
-} from "@/lib/studioMutationResultNavigation";
-import type { StudioGuardedActionSubmitState } from "@/lib/useStudioGuardedActionSubmit";
+} from "@/lib/mutations/studioMutationResultNavigation";
+import type { StudioGuardedActionSubmitState } from "@/lib/mutations/useStudioGuardedActionSubmit";
 import { cn } from "@/lib/utils";
 import type { Route } from "next";
 import Link from "next/link";

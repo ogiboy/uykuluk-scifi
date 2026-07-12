@@ -13,7 +13,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import type { StudioRunDetail } from "@/lib/runSummaries";
-import { getNextSafeCommand } from "@/lib/runSummaryCopy";
+import { getNextSafeCommand } from "@/lib/runs/runSummaryCopy";
 import { ShieldCheckIcon } from "lucide-react";
 import { RunPrimaryActionPanel } from "./RunPrimaryActionPanel";
 

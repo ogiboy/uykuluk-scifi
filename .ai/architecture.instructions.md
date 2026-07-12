@@ -7,8 +7,9 @@ The project is a TypeScript, local-first, CLI-first producer workflow.
 Primary contracts:
 
 - `src/core/` owns run state, allowed transitions, artifact writes, ledgers, and safe errors.
-- `src/stages/` owns workflow stages: ideas, approvals, script generation, review, production
-  package, estimate, evidence, readiness, and disabled placeholders.
+- `src/stages/` owns workflow stage entrypoints for ideas, approvals, script generation, review,
+  production package, estimate, evidence, readiness, and disabled placeholders. Domain helper
+  folders stay internal to those stable entrypoints.
 - `src/safeguards/` owns approval, budget, content, asset, and publish guards.
 - `src/providers/` owns LLM adapters for mock, Ollama, and local OpenAI-compatible `llama.cpp`.
 - `src/diagnostics/` owns project-level, read-only operator diagnostics; it must not mutate run
@@ -32,9 +33,9 @@ Primary contracts:
 The CLI/core state machine is the source of truth. Future web surfaces must read and mutate the same
 typed contracts rather than copying stage logic into frontend route handlers.
 
-## Future Real Production Loop Ownership
+## Real Production Loop Ownership
 
-The next product phase should extend the existing CLI/core flow toward a local video draft package:
+The implemented CLI/core flow owns the local video draft package:
 
 - render planning belongs in the workflow stages and consumes the approved production package,
   scene/subtitle metadata, and tracked asset inventory;
@@ -46,9 +47,15 @@ The next product phase should extend the existing CLI/core flow toward a local v
   Piper remains an optional local binary/model-path adapter with ignored models;
 - FFmpeg render is owned by the workflow stages and runs only after render planning, exact render
   approval, voiceover evidence, production-package integrity, and local artifact checks. Draft
-  render manifests must record the exact intro-to-outro timeline and overlay composition used for
-  the local review MP4, while `production/render/draft_review.md` carries the operator final review
-  checklist;
+  render manifests record separate intro, voiceover-backed scene, outro, total, and subtitle-clock
+  timing plus the exact overlay composition used for the local review MP4, while
+  `production/render/draft_review.md` carries the operator final review checklist;
+- Stage internals live in domain folders such as `render/`, `script/`, `voice/`, `evidence/`, and
+  `status/`; public workflow entrypoints such as `render.ts`, `script.ts`, `voice.ts`, and
+  `reviewScript.ts` remain at the stage boundary;
+- render retry/recovery belongs in `src/revisions/`: a non-accepted or explicitly attributed
+  invalid-evidence draft is archived with its downstream evidence, its render approval is removed,
+  and the canonical state machine returns to `READY_FOR_MANUAL_PRODUCTION` before any new approval;
 - analytics import/reporting consumes operator-provided CSV/JSON files, writes ignored local
   analytics artifacts, and links records back to runs when `runId` is present.
 - local LLM runtime selection belongs in `src/providers/` and diagnostics. Model quality remains an
@@ -61,6 +68,10 @@ ledger, approval, evidence, readiness, asset, and cost patterns already owned by
 ## Next.js Studio
 
 The frontend lives under `apps/studio` as a local Next.js App Router app.
+
+`apps/studio/src/lib` keeps page-facing data services and security entrypoints at its root. Run,
+action, mutation, artifact, asset, routing, catalog, and observability helpers live in matching
+domain folders and must not become a second workflow layer.
 
 It should provide:
 
@@ -90,7 +101,7 @@ contracts do not by themselves enable web mutations.
 ## Anti-Goals
 
 - No cloud-first dashboard requirement.
-- No database in the MVP unless file-backed persistence becomes insufficient.
+- No database in v1 unless file-backed persistence becomes demonstrably insufficient.
 - No autonomous publish path.
 - No paid generation path before approval and cost gates are proven.
 - No mutating frontend implementation before shared service contracts and route security rules are

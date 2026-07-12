@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { StudioStageActionConfig } from "@/lib/studioStageAction";
+import type { StudioStageActionConfig } from "@/lib/actions/studioStageAction";
 
 type RunStageActionConfirmationDialogProps = Readonly<{
   action: StudioStageActionConfig;

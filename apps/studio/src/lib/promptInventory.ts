@@ -9,11 +9,11 @@ import {
 } from "../../../../src/prompts/definitions";
 import { isValidPromptOverridePath } from "../../../../src/prompts/pathRules";
 import { sha256 } from "../../../../src/utils/hash";
-import { formatProjectPath, resolveProducerConfigPath } from "./assetInventoryConfig";
+import { formatProjectPath, resolveProducerConfigPath } from "./assets/assetInventoryConfig";
+import type { StudioPromptEntry, StudioPromptInventory } from "./catalogs/promptInventoryTypes";
 import { projectRoot } from "./projectRoot";
-import type { StudioPromptEntry, StudioPromptInventory } from "./promptInventoryTypes";
 
-export type { StudioPromptEntry, StudioPromptInventory } from "./promptInventoryTypes";
+export type { StudioPromptEntry, StudioPromptInventory } from "./catalogs/promptInventoryTypes";
 
 type PromptConfigReadResult = {
   overrides: Partial<Record<PromptOverrideConfigKey, string>>;

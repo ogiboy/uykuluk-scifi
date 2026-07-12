@@ -10,8 +10,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { StartIdeasReadinessSummary } from "@/lib/startIdeasReadiness";
-import { useStudioGuardedActionSubmit } from "@/lib/useStudioGuardedActionSubmit";
+import type { StartIdeasReadinessSummary } from "@/lib/actions/startIdeasReadiness";
+import { useStudioGuardedActionSubmit } from "@/lib/mutations/useStudioGuardedActionSubmit";
 import { useState } from "react";
 import { StudioMutationResultPanel } from "./StudioMutationResultPanel";
 

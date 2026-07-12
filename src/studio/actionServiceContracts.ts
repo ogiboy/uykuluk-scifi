@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { isValidRunId } from "../core/runId.js";
-import { channelHandoffDecisionValues } from "../stages/channelHandoffDecisionContracts.js";
-import { renderDecisionValues } from "../stages/renderDecisionCommands.js";
+import { channelHandoffDecisionValues } from "../stages/channel/channelHandoffDecisionContracts.js";
+import { renderDecisionValues } from "../stages/render/renderDecisionCommands.js";
 import {
   studioMutationServiceMetadata,
   type StudioMutationActionId,
@@ -114,6 +114,7 @@ type StudioActionRequestById = {
   "render.approve": z.infer<typeof runOnlyRequestSchema>;
   "render.decide": z.infer<typeof renderDecisionRequestSchema>;
   "render.review": z.infer<typeof runOnlyRequestSchema>;
+  "render.revise": z.infer<typeof runOnlyRequestSchema>;
   "render.run": z.infer<typeof runOnlyRequestSchema>;
   "render-plan.review": z.infer<typeof runOnlyRequestSchema>;
   "render-plan.run": z.infer<typeof runOnlyRequestSchema>;
@@ -147,6 +148,7 @@ export const studioMutationRequestSchemaByAction = {
   "render.approve": runOnlyRequestSchema,
   "render.decide": renderDecisionRequestSchema,
   "render.review": runOnlyRequestSchema,
+  "render.revise": runOnlyRequestSchema,
   "render.run": runOnlyRequestSchema,
   "render-plan.review": runOnlyRequestSchema,
   "render-plan.run": runOnlyRequestSchema,

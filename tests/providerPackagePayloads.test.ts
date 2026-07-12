@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   parseProductionPackageProviderPayload,
   stripProviderThinking,
-} from "../src/stages/providerPayloads";
+} from "../src/stages/provider/providerPayloads";
 
 describe("production package provider payload parsing", () => {
   it("rejects malformed production-package payloads before artifact rendering", () => {

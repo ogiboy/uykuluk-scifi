@@ -5,7 +5,7 @@ import {
   runReviewPathWithTab,
   runReviewTabFromSearchParams,
   type RunReviewTab,
-} from "@/lib/runReviewNavigation";
+} from "@/lib/runs/runReviewNavigation";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { ReactNode } from "react";
 

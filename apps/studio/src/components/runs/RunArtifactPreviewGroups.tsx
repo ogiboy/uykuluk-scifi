@@ -1,4 +1,4 @@
-import type { StudioArtifactPreview } from "@/lib/artifactPreviews";
+import type { StudioArtifactPreview } from "@/lib/artifacts/artifactPreviews";
 import { cn } from "@/lib/utils";
 import { Badge } from "../ui/badge";
 

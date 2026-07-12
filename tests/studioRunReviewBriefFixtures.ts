@@ -1,4 +1,4 @@
-import { buildStudioRunReviewBrief } from "../apps/studio/src/lib/runReviewBrief";
+import { buildStudioRunReviewBrief } from "../apps/studio/src/lib/runs/runReviewBrief";
 import type { StudioRunDetail } from "../apps/studio/src/lib/runSummaries";
 
 type FinalReviewBundleFixture = Extract<

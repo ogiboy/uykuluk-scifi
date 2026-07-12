@@ -12,10 +12,10 @@ import { nowIso } from "../utils/time.js";
 import {
   productionPackageManifestPath,
   verifyProductionPackage,
-} from "./productionPackageIntegrity.js";
-import { readProductionPackagePopupCards } from "./productionPackageMarkdown.js";
-import { selectRenderAssets, uniqueAssets } from "./renderPlanAssets.js";
-import { renderContactSheet } from "./renderPlanContactSheet.js";
+} from "./production/productionPackageIntegrity.js";
+import { readProductionPackagePopupCards } from "./production/productionPackageMarkdown.js";
+import { selectRenderAssets, uniqueAssets } from "./render/renderPlanAssets.js";
+import { renderContactSheet } from "./render/renderPlanContactSheet.js";
 import {
   AssetProvenance,
   assetProvenanceSchema,
@@ -24,7 +24,7 @@ import {
   RenderPlan,
   renderPlanArtifactPaths,
   renderPlanSchema,
-} from "./renderPlanSchemas.js";
+} from "./render/renderPlanSchemas.js";
 import { ProductionScene } from "./types.js";
 
 const renderPlanAllowedStates: ReadonlySet<RunState> = new Set([

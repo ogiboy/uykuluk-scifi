@@ -4,9 +4,9 @@ import { StudioCommandPalette } from "@/components/studio/StudioCommandPalette";
 import { StudioPageHeader } from "@/components/studio/StudioPageHeader";
 import { StudioShell } from "@/components/studio/StudioShell";
 import { Badge } from "@/components/ui/badge";
+import { startIdeasReadinessFromDoctor } from "@/lib/actions/startIdeasReadiness";
 import { getStudioDoctorOverview } from "@/lib/doctorOverview";
 import { listStudioRuns } from "@/lib/runSummaries";
-import { startIdeasReadinessFromDoctor } from "@/lib/startIdeasReadiness";
 
 export default async function RunsPage() {
   const [doctorOverview, runs] = await Promise.all([getStudioDoctorOverview(), listStudioRuns()]);

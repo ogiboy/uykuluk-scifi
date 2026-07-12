@@ -1,10 +1,10 @@
-import type { StudioRunSummary } from "@/lib/runSummaries";
 import {
   formatRunChannelHandoff,
   formatRunChannelHandoffDecision,
   formatRunFinalReviewBundle,
   formatRunRenderDecision,
-} from "@/lib/runSummaryCopy";
+} from "@/lib/runs/runSummaryCopy";
+import type { StudioRunSummary } from "@/lib/runSummaries";
 import type { ColumnDef } from "@tanstack/react-table";
 import { operatorActionForRun, operatorActionSearchText } from "./runSummaryOperatorAction";
 import { RunSummaryRowActions } from "./RunSummaryRowActions";

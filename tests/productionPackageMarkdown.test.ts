@@ -1,6 +1,6 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
-import { readProductionPackagePopupCards } from "../src/stages/productionPackageMarkdown";
+import { readProductionPackagePopupCards } from "../src/stages/production/productionPackageMarkdown";
 import { useTempProject } from "./helpers";
 
 describe("production package markdown helpers", () => {

@@ -1,6 +1,6 @@
 import { RunDetailCard } from "@/components/runs/RunDetailCard";
 import { Badge } from "@/components/ui/badge";
-import type { StatusWorkflowStep } from "../../../../../src/stages/statusWorkflow";
+import type { StatusWorkflowStep } from "../../../../../src/stages/status/statusWorkflow";
 
 type RunWorkflowProgressPanelProps = Readonly<{ workflowProgress: StatusWorkflowStep[] }>;
 

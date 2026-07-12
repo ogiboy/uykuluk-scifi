@@ -11,21 +11,24 @@ import { renderProductionPackagePrompt } from "../prompts/templates.js";
 import { createLlmProvider } from "../providers/index.js";
 import { requireApproval, requireState } from "../safeguards/approvalGuard.js";
 import { enforceBudget } from "../safeguards/budgetGuard.js";
+import { scriptLongFormWordFloor } from "../safeguards/scriptLengthContract.js";
 import { sha256 } from "../utils/hash.js";
+import { countSpokenNarrationWords } from "../utils/scriptProductionText.js";
 import {
   createProductionPackageManifest,
   type ProductionPackageManifest,
-} from "./productionPackageIntegrity.js";
+} from "./production/productionPackageIntegrity.js";
+import { assertProductionPackageProviderQuality } from "./production/productionPackageProviderQuality.js";
 import {
   buildProductionScenesFromScript,
   buildWrappedSrt,
   renderVoiceoverText,
-} from "./productionPackageScript.js";
+} from "./production/productionPackageScript.js";
 import {
   PackageProviderPayload,
   parseProductionPackageProviderPayload,
-} from "./providerPayloads.js";
-import { productionPackageResponseFormat } from "./providerResponseFormats.js";
+} from "./provider/providerPayloads.js";
+import { productionPackageResponseFormat } from "./provider/providerResponseFormats.js";
 import { ProductionScene } from "./types.js";
 
 /**
@@ -59,6 +62,19 @@ export async function generateProductionPackage(runId: string): Promise<Producti
       });
       throw new SafeExitError("Blocked: script changed after approval.");
     }
+    const narrationWordCount = countSpokenNarrationWords(script);
+    if (narrationWordCount < scriptLongFormWordFloor) {
+      await appendLedgerEvent({
+        runId: run.runId,
+        type: "GUARD_BLOCKED",
+        stage: "package",
+        message: "Approved script spoken narration is below the production duration floor.",
+        data: { narrationWordCount, requiredNarrationWordCount: scriptLongFormWordFloor },
+      });
+      throw new SafeExitError(
+        `Blocked: approved script spoken narration is below the production floor (${narrationWordCount}/${scriptLongFormWordFloor} words); revise and re-approve the script before packaging.`,
+      );
+    }
     const estimatedUsd = defaultStagePricing.package.estimatedUsd;
     await enforceBudget({
       run,
@@ -77,6 +93,7 @@ export async function generateProductionPackage(runId: string): Promise<Producti
       prompt: prompt.text,
     });
     const providerPayload = parseProductionPackageProviderPayload(result.text);
+    assertProductionPackageProviderQuality(providerPayload, script);
     const scenes = buildProductionScenesFromScript(script);
     const voiceover = renderVoiceoverText(scenes);
     const subtitles = buildWrappedSrt(scenes);

@@ -4,7 +4,7 @@ export const studioMutationActionIds = [
   "channel-handoff.decide", "analytics.import", "analytics.report", "doctor.run", "ideas.run",
   "model-eval.run", "model-eval-candidates.run", "script.run", "script.review", "script.revise", "package.run",
   "package-artifact.revise", "render-plan.run", "render-plan.review", "estimate.run", "evidence.run", "readiness.run",
-  "voice.run", "voice.review", "render.run", "render.review", "review-bundle.run",
+  "voice.run", "voice.review", "render.run", "render.review", "render.revise", "review-bundle.run",
   "channel-handoff.run", "upload.private", "publish.schedule",
 ] as const;
 export type StudioMutationActionId = (typeof studioMutationActionIds)[number];
@@ -56,6 +56,7 @@ const studioMutationServiceRows = [
   ["voice.review", readyForCli, "pnpm producer review voice --run <run_id>", "reviewVoiceover", "src/stages/reviewVoiceover.ts", "Open the local voiceover review handoff for timing and quality checks."],
   ["render.run", readyForCli, "pnpm producer render --run <run_id>", "renderDraft", "src/stages/render.ts", "Generate a local FFmpeg draft render after explicit render approval."],
   ["render.review", readyForCli, "pnpm producer review render --run <run_id>", "reviewDraftRender", "src/stages/reviewRender.ts", "Open the local draft-render review handoff without uploading or publishing."],
+  ["render.revise", readyForCli, "pnpm producer revise render --run <run_id>", "reviseRender", "src/revisions/renderRevision.ts", "Archive a non-accepted local draft, invalidate render approval, and return to the guarded render workflow."],
   ["review-bundle.run", readyForCli, "pnpm producer review-bundle --run <run_id>", "createFinalReviewBundle", "src/stages/finalReviewBundle.ts", "Create the local final review bundle after an accepted draft-render decision."],
   ["channel-handoff.run", readyForCli, "pnpm producer channel-handoff --run <run_id>", "createChannelHandoff", "src/stages/channelHandoff.ts", "Create the manual channel handoff package while upload remains disabled."],
   ["upload.private", disabledExternal, "pnpm producer upload private --run <run_id>", "runPrivateUploadPlaceholder", "src/youtube/uploadDisabled.ts", "Future private-upload action; disabled until upload approval/config exist."],

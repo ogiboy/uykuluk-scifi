@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { studioMutationRecoveryCopy } from "../apps/studio/src/lib/studioMutationRecoveryCopy";
+import { studioMutationRecoveryCopy } from "../apps/studio/src/lib/mutations/studioMutationRecoveryCopy";
 
 describe("Studio mutation result panel copy", () => {
   it("routes local-session failures to the unauthorized recovery boundary", () => {

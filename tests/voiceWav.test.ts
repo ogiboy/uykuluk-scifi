@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { readWavInfo, wavFromPcm16 } from "../src/stages/voiceWav";
+import { normalizePcm16WavPeak, readWavInfo, wavFromPcm16 } from "../src/stages/voice/voiceWav";
 
 describe("voice WAV helpers", () => {
   it("reads RIFF WAV metadata from generated PCM audio", () => {
@@ -18,5 +18,29 @@ describe("voice WAV helpers", () => {
     headerOnly.write("RIFF", 0, "ascii");
     headerOnly.write("WAVE", 8, "ascii");
     expect(() => readWavInfo(headerOnly)).toThrow(/metadata is incomplete/i);
+  });
+
+  it("adds deterministic peak headroom to PCM16 Piper audio", () => {
+    const pcm = Buffer.alloc(8);
+    pcm.writeInt16LE(32_767, 0);
+    pcm.writeInt16LE(-32_767, 2);
+    pcm.writeInt16LE(10_000, 4);
+    pcm.writeInt16LE(-10_000, 6);
+    const source = wavFromPcm16(pcm, 16_000, 1);
+
+    const normalized = normalizePcm16WavPeak(source, -1);
+
+    expect(normalized.evidence).toMatchObject({
+      applied: true,
+      sourcePeakDbfs: 0,
+      targetPeakDbfs: -1,
+    });
+    expect(normalized.evidence.gainDb).toBeCloseTo(-1, 2);
+    expect(Math.abs(normalized.buffer.readInt16LE(44))).toBeLessThanOrEqual(29_205);
+    expect(readWavInfo(normalized.buffer)).toEqual({
+      channels: 1,
+      durationSeconds: 4 / 16_000,
+      sampleRateHz: 16_000,
+    });
   });
 });

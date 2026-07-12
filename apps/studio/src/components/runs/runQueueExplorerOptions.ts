@@ -1,5 +1,5 @@
-import type { RunQueueFilter } from "@/lib/runQueueFilters";
-import type { RunQueueDensity, RunQueueSort } from "@/lib/runQueueWorkbench";
+import type { RunQueueFilter } from "@/lib/runs/runQueueFilters";
+import type { RunQueueDensity, RunQueueSort } from "@/lib/runs/runQueueWorkbench";
 
 export const filterLabels = {
   all: "All",

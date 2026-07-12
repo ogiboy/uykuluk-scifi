@@ -7,7 +7,7 @@ import {
   runReviewPathWithTab,
   runReviewTabFocus,
   runReviewTabFromSearchParams,
-} from "../apps/studio/src/lib/runReviewNavigation";
+} from "../apps/studio/src/lib/runs/runReviewNavigation";
 import { acceptedRenderDecision, runBriefFixture } from "./studioRunReviewBriefFixtures";
 
 type SummaryNavigationFixture = Parameters<typeof defaultRunReviewTabFromSummary>[0];

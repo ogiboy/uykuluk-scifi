@@ -10,13 +10,28 @@ import { requireApproval, requireState } from "../safeguards/approvalGuard.js";
 import { ensureDir } from "../utils/fs.js";
 import { shellCommand } from "../utils/shell.js";
 import { nowIso } from "../utils/time.js";
-import { verifyProductionPackage } from "./productionPackageIntegrity.js";
-import { renderApprovalRef } from "./renderApproval.js";
+import { verifyProductionPackage } from "./production/productionPackageIntegrity.js";
+import { renderApprovalRef } from "./render/renderApproval.js";
 import {
   buildDraftRenderChapterDraft,
   renderDraftRenderChaptersMarkdown,
-} from "./renderChapters.js";
-import { buildDraftRenderComposition } from "./renderComposition.js";
+} from "./render/renderChapters.js";
+import { buildDraftRenderComposition } from "./render/renderComposition.js";
+import {
+  buildDraftRenderTimeline,
+  buildFfmpegArgs,
+  buildFfmpegReviewArgs,
+  buildFfmpegTimelineInputs,
+  draftRenderTargetDuration,
+  summarizeDraftRenderTimeline,
+} from "./render/renderFfmpegPlan.js";
+import { RenderPlan, renderPlanSchema } from "./render/renderPlanSchemas.js";
+import { probeDraftRender } from "./render/renderProbe.js";
+import { renderDraftReviewMarkdown } from "./render/renderReviewMarkdown.js";
+import {
+  buildDraftSubtitleTiming,
+  parseSrtDurationSeconds,
+} from "./render/renderSubtitleTiming.js";
 import {
   DraftRenderManifest,
   draftRenderChaptersJsonPath,
@@ -26,20 +41,10 @@ import {
   draftRenderPath,
   draftRenderReviewPath,
 } from "./renderEvidence.js";
-import {
-  buildDraftRenderTimeline,
-  buildFfmpegArgs,
-  buildFfmpegReviewArgs,
-  buildFfmpegTimelineInputs,
-  clampRenderDuration,
-} from "./renderFfmpegPlan.js";
 import { readRenderPlanEvidence } from "./renderPlan.js";
-import { RenderPlan, renderPlanSchema } from "./renderPlanSchemas.js";
-import { probeDraftRender } from "./renderProbe.js";
-import { renderDraftReviewMarkdown } from "./renderReviewMarkdown.js";
-import { readVoiceoverAudioEvidence, voiceoverAudioPath } from "./voiceoverEvidence.js";
+import { readVoiceoverAudioEvidence, voiceoverAudioPath } from "./voice/voiceoverEvidence.js";
 
-export { buildDraftRenderTimeline, buildFfmpegArgs } from "./renderFfmpegPlan.js";
+export { buildDraftRenderTimeline, buildFfmpegArgs } from "./render/renderFfmpegPlan.js";
 
 export type RenderDraftOptions = {
   ffmpegBinary?: string;
@@ -85,11 +90,19 @@ export async function renderDraft(
     }
 
     const renderPlan = await readRenderPlan(run.runId);
-    const durationSeconds = clampRenderDuration(
+    const durationSeconds = draftRenderTargetDuration(
+      renderPlan,
       voiceoverAudio.durationSeconds,
       options.maxDurationSeconds,
     );
     const timeline = buildDraftRenderTimeline(renderPlan, durationSeconds);
+    const timing = summarizeDraftRenderTimeline(timeline);
+    const subtitleTiming = buildDraftSubtitleTiming(
+      parseSrtDurationSeconds(
+        await readFile(artifactPath(run.runId, "production/subtitles.srt"), "utf8"),
+      ),
+      timing.sceneAudioDurationSeconds,
+    );
     const ffmpegTimelineInputs = buildFfmpegTimelineInputs(timeline);
     const composition = buildDraftRenderComposition(renderPlan);
     const output = artifactPath(run.runId, draftRenderPath);
@@ -105,6 +118,7 @@ export async function renderDraft(
       timeline,
       composition,
       durationSeconds,
+      subtitleTiming,
     });
     const reviewArgs = buildFfmpegReviewArgs(output);
     await runFfmpeg(ffmpegBinary, args);
@@ -116,12 +130,15 @@ export async function renderDraft(
       throw new SafeExitError("Draft render requires ffprobe media validation.");
     }
     const mediaProbe = await probeDraftRender(options.ffprobeBinary ?? "ffprobe", temporaryOutput);
+    if (Math.abs(mediaProbe.durationSeconds - timing.totalDurationSeconds) > 0.1) {
+      throw new SafeExitError("FFprobe duration does not match the planned draft timeline.");
+    }
     await rename(temporaryOutput, output);
     temporaryOutput = undefined;
     const outputBytes = await readFile(output);
     run = await recordRunArtifact(run, "render", draftRenderPath);
     const manifestBase = {
-      schemaVersion: 7,
+      schemaVersion: 8,
       runId: run.runId,
       createdAt: nowIso(),
       renderPlan: { path: "production/render_plan.json", digest: renderPlanEvidence.digest },
@@ -134,6 +151,8 @@ export async function renderDraft(
       },
       renderApproval: { approvalId: approval.approvalId, approvedRef: currentApprovalRef },
       timeline,
+      timing,
+      subtitleTiming,
       ffmpegTimelineInputs,
       composition: {
         overlays: composition.overlays.map((overlay) => ({
@@ -148,7 +167,7 @@ export async function renderDraft(
         path: draftRenderPath,
         sha256: createHash("sha256").update(outputBytes).digest("hex"),
         bytes: outputBytes.byteLength,
-        durationSeconds,
+        durationSeconds: timing.totalDurationSeconds,
       },
       ffmpeg: {
         binary: ffmpegBinary,

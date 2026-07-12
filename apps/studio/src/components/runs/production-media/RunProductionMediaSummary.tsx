@@ -1,4 +1,4 @@
-import type { ProductionMediaReviewSummary } from "@/lib/runEvidenceCopy";
+import type { ProductionMediaReviewSummary } from "@/lib/runs/runEvidenceCopy";
 
 type RunProductionMediaSummaryProps = Readonly<{ summary: ProductionMediaReviewSummary }>;
 
