@@ -70,7 +70,7 @@ describe("producer doctor TTS diagnostics", () => {
       const report = await runDoctor();
       expect(report.checks.find((check) => check.name === "TTS provider")).toMatchObject({
         status: "pass",
-        message: expect.stringContaining("eleven_multilingual_v2"),
+        message: expect.stringContaining("eleven_v3"),
         nextAction: expect.stringContaining("cost quote"),
       });
     } finally {

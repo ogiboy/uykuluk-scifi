@@ -35,7 +35,15 @@ export function readWavInfo(buffer: Buffer): {
     throw new SafeExitError("Voice output is not a WAV RIFF file.");
   }
   const info = scanWavChunks(buffer);
-  if (info.channels <= 0 || info.sampleRateHz <= 0 || info.byteRate <= 0 || info.dataBytes <= 0) {
+  if (
+    info.channels <= 0 ||
+    info.sampleRateHz <= 0 ||
+    info.byteRate <= 0 ||
+    info.blockAlign !== info.channels * 2 ||
+    info.byteRate !== info.sampleRateHz * info.blockAlign ||
+    info.dataBytes <= 0 ||
+    info.dataOffset + info.dataBytes > buffer.length
+  ) {
     throw new SafeExitError("Voice output WAV metadata is incomplete.");
   }
   return {
@@ -43,6 +51,45 @@ export function readWavInfo(buffer: Buffer): {
     durationSeconds: info.dataBytes / info.byteRate,
     sampleRateHz: info.sampleRateHz,
   };
+}
+
+/** Concatenates compatible PCM16 WAV payloads into one canonical WAV container. */
+export function concatenatePcm16Wavs(buffers: readonly Buffer[]): Buffer {
+  if (buffers.length === 0) {
+    throw new SafeExitError("Voice WAV stitching requires at least one audio chunk.");
+  }
+  const chunks = buffers.map((buffer) => {
+    if (!hasRiffWaveHeader(buffer)) {
+      throw new SafeExitError("Voice output is not a WAV RIFF file.");
+    }
+    const info = scanWavChunks(buffer);
+    if (
+      info.audioFormat !== 1 ||
+      info.bitsPerSample !== 16 ||
+      info.blockAlign !== info.channels * 2 ||
+      info.byteRate !== info.sampleRateHz * info.blockAlign ||
+      info.dataBytes <= 0 ||
+      info.dataOffset + info.dataBytes > buffer.length
+    ) {
+      throw new SafeExitError("Voice WAV stitching requires PCM 16-bit audio chunks.");
+    }
+    return { info, pcm: buffer.subarray(info.dataOffset, info.dataOffset + info.dataBytes) };
+  });
+  const first = chunks[0].info;
+  for (const chunk of chunks.slice(1)) {
+    if (
+      chunk.info.channels !== first.channels ||
+      chunk.info.sampleRateHz !== first.sampleRateHz ||
+      chunk.info.bitsPerSample !== first.bitsPerSample
+    ) {
+      throw new SafeExitError("Voice WAV chunks use incompatible audio formats.");
+    }
+  }
+  return wavFromPcm16(
+    Buffer.concat(chunks.map((chunk) => chunk.pcm)),
+    first.sampleRateHz,
+    first.channels,
+  );
 }
 
 export function normalizePcm16WavPeak(
@@ -102,6 +149,7 @@ function hasRiffWaveHeader(buffer: Buffer): boolean {
 function scanWavChunks(buffer: Buffer): {
   audioFormat: number;
   bitsPerSample: number;
+  blockAlign: number;
   byteRate: number;
   channels: number;
   dataBytes: number;
@@ -111,6 +159,7 @@ function scanWavChunks(buffer: Buffer): {
   const info = {
     audioFormat: 0,
     bitsPerSample: 0,
+    blockAlign: 0,
     byteRate: 0,
     channels: 0,
     dataBytes: 0,
@@ -126,6 +175,7 @@ function scanWavChunks(buffer: Buffer): {
       info.channels = buffer.readUInt16LE(dataOffset + 2);
       info.sampleRateHz = buffer.readUInt32LE(dataOffset + 4);
       info.byteRate = buffer.readUInt32LE(dataOffset + 8);
+      info.blockAlign = buffer.readUInt16LE(dataOffset + 12);
       info.bitsPerSample = buffer.readUInt16LE(dataOffset + 14);
     } else if (chunkId === "data") {
       info.dataBytes = chunkSize;

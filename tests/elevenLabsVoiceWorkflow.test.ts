@@ -36,15 +36,29 @@ describe("ElevenLabs voice workflow", () => {
 
   beforeEach(() => {
     process.env.ELEVENLABS_API_KEY = "secret-workflow-test-key";
-    sdk.convertWithTimestamps.mockImplementation(async (_voiceId, request) => {
+    sdk.convertWithTimestamps.mockImplementation((_voiceId, request) => {
       const characters = Array.from(request.text as string);
       return {
-        audioBase64: fixtureWav().toString("base64"),
-        alignment: {
-          characters,
-          characterStartTimesSeconds: characters.map((_, index) => index * 0.001),
-          characterEndTimesSeconds: characters.map((_, index) => (index + 1) * 0.001),
-        },
+        withRawResponse: async () => ({
+          data: {
+            audioBase64: fixtureWav().toString("base64"),
+            alignment: {
+              characters,
+              characterStartTimesSeconds: characters.map(
+                (_, index) => (index / characters.length) * 0.9,
+              ),
+              characterEndTimesSeconds: characters.map(
+                (_, index) => ((index + 1) / characters.length) * 0.9,
+              ),
+            },
+          },
+          rawResponse: {
+            headers: new Headers({
+              "character-cost": String(characters.length),
+              "request-id": "workflow-request-id",
+            }),
+          },
+        }),
       };
     });
   });
@@ -58,7 +72,7 @@ describe("ElevenLabs voice workflow", () => {
     const quote = (await readCostEstimate(runId)).estimate;
     expect(quote.stages.find((stage) => stage.stage === "tts")).toMatchObject({
       provider: "elevenlabs",
-      model: "eleven_multilingual_v2",
+      model: "eleven_v3",
       enabled: true,
       estimatedUsd: expect.any(Number),
     });
@@ -78,7 +92,7 @@ describe("ElevenLabs voice workflow", () => {
       },
       provider: {
         service: "elevenlabs",
-        modelId: "eleven_multilingual_v2",
+        modelId: "eleven_v3",
         voiceId: "voice_workflow_test",
         outputFormat: "wav_24000",
       },
@@ -98,7 +112,7 @@ describe("ElevenLabs voice workflow", () => {
         }),
       ]),
     );
-    expect(sdk.convertWithTimestamps).toHaveBeenCalledTimes(1);
+    expect(sdk.convertWithTimestamps).toHaveBeenCalledTimes(2);
 
     const persisted = await Promise.all(
       [
@@ -136,7 +150,7 @@ async function configureElevenLabs(): Promise<void> {
             pronunciationReplacements: { JWST: "James Webb Uzay Teleskobu" },
             elevenLabs: {
               voiceId: "voice_workflow_test",
-              modelId: "eleven_multilingual_v2",
+              modelId: "eleven_v3",
               outputFormat: "wav_24000",
               timeoutMs: 30_000,
               maxRetries: 0,

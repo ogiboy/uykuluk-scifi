@@ -19,6 +19,10 @@ export function createTtsProvider(config: ProducerConfig["providers"]["tts"]): T
   return new ElevenLabsTtsProvider({
     voiceId: config.elevenLabs.voiceId ?? "",
     modelId: config.elevenLabs.modelId,
+    languageCode: config.elevenLabs.languageCode,
+    applyTextNormalization: config.elevenLabs.applyTextNormalization,
+    seed: config.elevenLabs.seed,
+    maxCharactersPerRequest: config.elevenLabs.maxCharactersPerRequest,
     outputFormat: config.elevenLabs.outputFormat,
     timeoutMs: config.elevenLabs.timeoutMs,
     maxRetries: config.elevenLabs.maxRetries,
