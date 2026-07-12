@@ -28,6 +28,18 @@ and make scene-specific visuals first-class without adding ComfyUI or enabling p
 - Render plans persist scene `visualPrompt` values but rotate static background assets; no visual
   provider consumes those prompts yet.
 - Worktree was clean at workstream start.
+- Completed commits:
+  - `49e56ca1 chore(env): track encrypted dotenv vaults`
+  - `3e972d75 refactor(voice): establish tts provider boundary`
+  - `5084e166 feat(voice): add inspectable tts text preparation`
+  - `5496633e feat(voice): add reserved ElevenLabs adapter`
+  - `367a809f feat(voice): integrate approval-gated ElevenLabs synthesis`
+- ElevenLabs now has server-only credential diagnostics, dynamic prepared-character pricing,
+  exact provider/model cost binding, reservation/settlement execution, WAV validation, character
+  alignment artifacts, redacted provenance, and tamper detection. No live paid call has run.
+- Focused verification after integration: 71 tests passed across voice, cost, reservation, doctor,
+  readiness, status, and render gates; TS 7 and TS 6 typechecks passed; modularity and secret scan
+  passed; dependency audit reported no known vulnerabilities.
 
 ## Decisions
 
@@ -43,17 +55,24 @@ and make scene-specific visuals first-class without adding ComfyUI or enabling p
 
 ## Remaining Work
 
-1. Extract the TTS provider contract while preserving deterministic/Piper behavior.
-2. Add local text preparation and audio processing evidence.
-3. Add ElevenLabs preview/synthesis/timing and exact cost execution.
-4. Add scene-specific visual plan/manifest/review contracts without ComfyUI.
-5. Bind approved media digests into render and expose the guided Studio flow.
-6. Update roadmap/current-state docs and complete PR-level gates.
+1. Add ElevenLabs voice preview candidates and durable operator selection before full synthesis.
+2. Convert character alignment into a separate aligned SRT artifact and bind it into render approval.
+3. Add scene-specific visual plan/manifest/review contracts without ComfyUI.
+4. Select one hosted image provider through a bounded UykulukSciFi scene bake-off, then add its
+   disabled-by-default reserved adapter.
+5. Bind approved voice, aligned subtitles, and visual-manifest digests into render and expose the
+   guided Studio flow.
+6. Add deterministic motion/audio mastering and final thumbnail rendering.
+7. Add private-only YouTube upload after local final review is reliable; keep public/scheduled
+   publish disabled.
+8. Update roadmap/current-state docs and complete PR-level gates.
 
 ## Blockers And Risks
 
 - A hosted visual provider has not been selected; do not guess one or create provider sprawl.
 - ElevenLabs TTS has no documented idempotency key; application operation IDs and reservation
   recovery must prevent blind duplicate generation.
+- A settled provider call followed by a process crash before final artifact persistence still needs
+  an explicit durable recovery/spool design; retries remain fail-closed meanwhile.
 - Long-form subtitle alignment and chunk stitching need deterministic fixtures before live smoke.
 - Heavy tests and concurrent agents can overload the local machine; keep heavy work sequential.
