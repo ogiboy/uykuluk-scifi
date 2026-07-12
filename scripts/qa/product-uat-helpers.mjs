@@ -5,7 +5,6 @@ import path from "node:path";
 
 /**
  * Copies the repository into an isolated ignored workdir.
- *
  * @param {Object} options - Workspace options.
  * @param {string} options.repoRoot - Source repository root.
  * @param {string} options.workdir - Destination workdir.
@@ -35,7 +34,6 @@ export async function prepareWorkspace({ repoRoot, workdir }) {
 
 /**
  * Checks whether a source path is local-only state that must not enter UAT clean copies.
- *
  * @param {string} relative - Path relative to the source repository root.
  * @returns {boolean} Whether the path should be skipped.
  */
