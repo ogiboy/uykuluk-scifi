@@ -9,6 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
+_No unreleased changes yet._
+
+## v0.80.3 (2026-07-12)
+
 ### Build
 
 - adopt the native TypeScript 7 compiler for root and Studio type checking while retaining the
