@@ -8,7 +8,9 @@
     "build": "next build",
     "start": "next start --hostname 127.0.0.1 --port 3000",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typegen": "node scripts/prepare-typecheck.mjs && next typegen",
+    "typecheck": "pnpm typegen && tsc --noEmit",
+    "typecheck:compat": "pnpm typegen && tsc6 --noEmit"
   },
   "dependencies": {
     "@radix-ui/react-tabs": "^1.1.17",
@@ -30,6 +32,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@typescript/native": "npm:typescript@^7.0.2",
     "@types/node": "^26.1.1",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
@@ -41,6 +44,6 @@
     "prettier": "^3.9.5",
     "prettier-plugin-tailwindcss": "^0.8.0",
     "tailwindcss": "^4.3.2",
-    "typescript": "^6.0.3"
+    "typescript": "npm:@typescript/typescript6@^6.0.2"
   }
 }
