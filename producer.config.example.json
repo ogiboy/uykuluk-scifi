@@ -20,7 +20,8 @@
       "mode": "local-piper",
       "piperBinary": "piper",
       "piperModelPath": "models/piper/tr_TR/fahrettin-medium/model.onnx",
-      "piperConfigPath": "models/piper/tr_TR/fahrettin-medium/model.onnx.json"
+      "piperConfigPath": "models/piper/tr_TR/fahrettin-medium/model.onnx.json",
+      "pronunciationReplacements": {}
     },
     "imageGeneration": { "enabled": false, "requiresApproval": true },
     "youtube": { "enabled": false, "allowPrivateUpload": false, "allowPublicPublish": false }

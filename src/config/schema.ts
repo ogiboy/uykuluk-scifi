@@ -42,6 +42,7 @@ export const producerConfigSchema = z.object({
       piperBinary: z.string().min(1).optional(),
       piperModelPath: z.string().min(1).optional(),
       piperConfigPath: z.string().min(1).optional(),
+      pronunciationReplacements: z.record(z.string().min(1), z.string().min(1)).default({}),
     }),
     imageGeneration: z.object({ enabled: z.boolean(), requiresApproval: z.boolean() }),
     youtube: z.object({

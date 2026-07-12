@@ -23,6 +23,11 @@ import {
   voiceoverAudioPath,
   voiceoverAudioReviewPath,
 } from "./voice/voiceoverEvidence.js";
+import {
+  prepareVoiceoverText,
+  voiceoverPreparationPath,
+  voiceoverPreparedTextPath,
+} from "./voice/voiceoverPreparation.js";
 import { renderVoiceoverReviewMarkdown } from "./voice/voiceoverReviewMarkdown.js";
 
 export async function generateVoiceoverAudio(runId: string): Promise<VoiceoverAudioMeta> {
@@ -62,8 +67,16 @@ export async function generateVoiceoverAudio(runId: string): Promise<VoiceoverAu
     throw new SafeExitError("Voice/TTS requires non-empty production/voiceover.txt.");
   }
 
+  const preparation = prepareVoiceoverText({
+    runId: run.runId,
+    sourceText: voiceover,
+    pronunciationReplacements: config.providers.tts.pronunciationReplacements,
+  });
   const provider = createTtsProvider(config.providers.tts);
-  const audio = await provider.synthesize({ runId: run.runId, text: voiceover });
+  const audio = await provider.synthesize({ runId: run.runId, text: preparation.text });
+
+  run = await writeRunText(run, "voice", voiceoverPreparedTextPath, preparation.text);
+  run = await writeRunJson(run, "voice", voiceoverPreparationPath, preparation.evidence);
 
   if (audio.outputAlreadyPersisted) {
     run = await recordRunArtifact(run, "voice", voiceoverAudioPath);
@@ -78,7 +91,16 @@ export async function generateVoiceoverAudio(runId: string): Promise<VoiceoverAu
     createdAt: nowIso(),
     mode: provider.mode,
     quality: audio.quality,
-    source,
+    source: {
+      ...source,
+      preparation: {
+        path: voiceoverPreparedTextPath,
+        sha256: preparation.evidence.output.sha256,
+        metadataPath: voiceoverPreparationPath,
+        metadataSha256: createHash("sha256").update(preparation.evidenceText, "utf8").digest("hex"),
+        replacementsApplied: preparation.evidence.replacements.length,
+      },
+    },
     renderPlan: { path: "production/render_plan.json", digest: renderPlan.digest },
     output: {
       path: voiceoverAudioPath,

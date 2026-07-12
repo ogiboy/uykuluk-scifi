@@ -23,7 +23,12 @@ export const defaultConfig: ProducerConfig = {
       requestTimeoutMs: 120_000,
       maxOutputTokens: { ideas: 3000, script: 3200, productionPackage: 2000 },
     },
-    tts: { enabled: false, mode: "local-piper", piperBinary: "piper" },
+    tts: {
+      enabled: false,
+      mode: "local-piper",
+      piperBinary: "piper",
+      pronunciationReplacements: {},
+    },
     imageGeneration: { enabled: false, requiresApproval: true },
     youtube: { enabled: false, allowPrivateUpload: false, allowPublicPublish: false },
   },

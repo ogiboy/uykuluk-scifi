@@ -9,6 +9,11 @@ import { readJsonFile } from "../../utils/json.js";
 import { digestSchema } from "../render/renderPlanSchemas.js";
 import { readRenderPlanEvidence } from "../renderPlan.js";
 import { voiceoverAudioPath } from "./voiceoverPaths.js";
+import {
+  voiceoverPreparationPath,
+  voiceoverPreparationSchema,
+  voiceoverPreparedTextPath,
+} from "./voiceoverPreparation.js";
 import { voiceoverLocalPlaybackPath } from "./voiceoverReviewCommands.js";
 
 export { voiceoverAudioPath } from "./voiceoverPaths.js";
@@ -31,6 +36,15 @@ export const voiceoverAudioMetaSchema = z
       path: z.literal("production/voiceover.txt"),
       sha256: digestSchema,
       wordCount: z.int().positive(),
+      preparation: z
+        .strictObject({
+          path: z.literal(voiceoverPreparedTextPath),
+          sha256: digestSchema,
+          metadataPath: z.literal(voiceoverPreparationPath),
+          metadataSha256: digestSchema,
+          replacementsApplied: z.int().nonnegative(),
+        })
+        .optional(),
     }),
     renderPlan: z.strictObject({
       path: z.literal("production/render_plan.json"),
@@ -146,6 +160,7 @@ export async function readVoiceoverAudioEvidence(run: RunRecord): Promise<Voiceo
     if (digest !== meta.output.sha256) {
       throw new SafeExitError("Voiceover audio digest does not match metadata.");
     }
+    await assertVoiceoverSource(run, meta);
     const renderPlan = await readRenderPlanEvidence(run);
     if (renderPlan.status !== "pass" || renderPlan.digest !== meta.renderPlan.digest) {
       throw new SafeExitError("Voiceover audio was generated from a stale or missing render plan.");
@@ -169,6 +184,53 @@ export async function readVoiceoverAudioEvidence(run: RunRecord): Promise<Voiceo
       path: voiceoverAudioPath,
       message: error instanceof Error ? error.message : String(error),
     };
+  }
+}
+
+async function assertVoiceoverSource(run: RunRecord, meta: VoiceoverAudioMeta): Promise<void> {
+  const sourceText = await readFile(artifactPath(run.runId, meta.source.path), "utf8");
+  if (createHash("sha256").update(sourceText, "utf8").digest("hex") !== meta.source.sha256) {
+    throw new SafeExitError("Voiceover source text digest does not match metadata.");
+  }
+  if (!meta.source.preparation) {
+    return;
+  }
+  for (const relativePath of [meta.source.preparation.path, meta.source.preparation.metadataPath]) {
+    if (!run.artifacts.includes(relativePath)) {
+      throw new SafeExitError(`Voiceover preparation artifact is not registered: ${relativePath}.`);
+    }
+    if (!(await pathExists(artifactPath(run.runId, relativePath)))) {
+      throw new SafeExitError(`Voiceover preparation artifact is missing: ${relativePath}.`);
+    }
+  }
+  const preparedText = await readFile(
+    artifactPath(run.runId, meta.source.preparation.path),
+    "utf8",
+  );
+  if (
+    createHash("sha256").update(preparedText, "utf8").digest("hex") !==
+    meta.source.preparation.sha256
+  ) {
+    throw new SafeExitError("Prepared voiceover text digest does not match metadata.");
+  }
+  const preparationText = await readFile(
+    artifactPath(run.runId, meta.source.preparation.metadataPath),
+    "utf8",
+  );
+  if (
+    createHash("sha256").update(preparationText, "utf8").digest("hex") !==
+    meta.source.preparation.metadataSha256
+  ) {
+    throw new SafeExitError("Voiceover preparation metadata digest does not match voice metadata.");
+  }
+  const preparation = voiceoverPreparationSchema.parse(JSON.parse(preparationText) as unknown);
+  if (
+    preparation.runId !== run.runId ||
+    preparation.source.sha256 !== meta.source.sha256 ||
+    preparation.output.sha256 !== meta.source.preparation.sha256 ||
+    preparation.replacements.length !== meta.source.preparation.replacementsApplied
+  ) {
+    throw new SafeExitError("Voiceover preparation evidence does not match voice metadata.");
   }
 }
 
