@@ -11,13 +11,20 @@ import {
 import { SafeExitError } from "../core/errors.js";
 import { appendLedgerEvent } from "../core/ledger.js";
 import { loadRun, saveRun } from "../core/runStore.js";
+import { executeReservedProviderOperation } from "../costs/reservedProviderExecution.js";
 import { requireApproval, requireState } from "../safeguards/approvalGuard.js";
 import { nowIso } from "../utils/time.js";
 import { verifyProductionPackage } from "./production/productionPackageIntegrity.js";
 import { readRenderPlanEvidence } from "./renderPlan.js";
 import { createTtsProvider } from "./voice/providers/createTtsProvider.js";
+import type {
+  TtsProvider,
+  TtsSynthesisInput,
+  TtsSynthesisResult,
+} from "./voice/providers/ttsProvider.js";
 import {
   VoiceoverAudioMeta,
+  voiceoverAlignmentPath,
   voiceoverAudioMetaPath,
   voiceoverAudioMetaSchema,
   voiceoverAudioPath,
@@ -73,7 +80,14 @@ export async function generateVoiceoverAudio(runId: string): Promise<VoiceoverAu
     pronunciationReplacements: config.providers.tts.pronunciationReplacements,
   });
   const provider = createTtsProvider(config.providers.tts);
-  const audio = await provider.synthesize({ runId: run.runId, text: preparation.text });
+  const synthesisInput = { runId: run.runId, text: preparation.text };
+  const audio = await synthesizeVoiceover(provider, synthesisInput, {
+    timeoutMs: config.providers.tts.elevenLabs.timeoutMs,
+    operationBinding: {
+      preparationDigest: preparation.evidence.output.sha256,
+      providerMode: provider.mode,
+    },
+  });
 
   run = await writeRunText(run, "voice", voiceoverPreparedTextPath, preparation.text);
   run = await writeRunJson(run, "voice", voiceoverPreparationPath, preparation.evidence);
@@ -82,6 +96,19 @@ export async function generateVoiceoverAudio(runId: string): Promise<VoiceoverAu
     run = await recordRunArtifact(run, "voice", voiceoverAudioPath);
   } else {
     run = await writeRunBinary(run, "voice", voiceoverAudioPath, audio.buffer);
+  }
+
+  const alignment = audio.alignment
+    ? {
+        path: voiceoverAlignmentPath,
+        sha256: createHash("sha256")
+          .update(`${JSON.stringify(audio.alignment, null, 2)}\n`, "utf8")
+          .digest("hex"),
+        characterCount: audio.alignment.characters.length,
+      }
+    : undefined;
+  if (audio.alignment) {
+    run = await writeRunJson(run, "voice", voiceoverAlignmentPath, audio.alignment);
   }
 
   const digest = createHash("sha256").update(audio.buffer).digest("hex");
@@ -112,6 +139,7 @@ export async function generateVoiceoverAudio(runId: string): Promise<VoiceoverAu
     },
     provider: audio.provider,
     processing: audio.processing,
+    alignment,
   });
   run = await writeRunJson(run, "voice", voiceoverAudioMetaPath, meta);
   run = await writeRunText(
@@ -122,6 +150,48 @@ export async function generateVoiceoverAudio(runId: string): Promise<VoiceoverAu
   );
   await saveRun(run);
   return meta;
+}
+
+async function synthesizeVoiceover(
+  provider: TtsProvider,
+  input: TtsSynthesisInput,
+  options: {
+    timeoutMs: number;
+    operationBinding: { preparationDigest: string; providerMode: string };
+  },
+): Promise<TtsSynthesisResult> {
+  if (provider.executionPolicy === "local") {
+    return provider.synthesize(input);
+  }
+  provider.assertReady();
+  const operationId = `tts_${createHash("sha256")
+    .update(
+      JSON.stringify({
+        runId: input.runId,
+        textDigest: createHash("sha256").update(input.text, "utf8").digest("hex"),
+        ...options.operationBinding,
+      }),
+      "utf8",
+    )
+    .digest("hex")}`;
+  const result = await executeReservedProviderOperation({
+    runId: input.runId,
+    stage: "tts",
+    operationId,
+    timeoutMs: options.timeoutMs,
+    adapter: provider.createReservedAdapter(input),
+  });
+  if (result.status === "completed") {
+    return result.value;
+  }
+  if (result.status === "definitely-not-sent") {
+    throw new SafeExitError(
+      "ElevenLabs TTS was not sent; repair provider configuration and create a fresh cost quote before retrying.",
+    );
+  }
+  throw new SafeExitError(
+    "ElevenLabs TTS reservation requires reconciliation before retry; automatic duplicate generation is blocked.",
+  );
 }
 
 function countWords(value: string): number {

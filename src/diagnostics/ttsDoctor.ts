@@ -33,8 +33,37 @@ export async function ttsProviderCheck(config: ProducerConfig | undefined): Prom
       nextAction: "Use local-piper only after voice quality review is needed.",
     };
   }
+  if (tts.mode === "elevenlabs") {
+    return elevenLabsDiagnostic(tts);
+  }
 
   return piperDiagnostic(tts);
+}
+
+function elevenLabsDiagnostic(tts: ProducerConfig["providers"]["tts"]): DoctorCheck {
+  const findings: string[] = [];
+  if (!tts.elevenLabs.voiceId) {
+    findings.push("ElevenLabs voice id missing");
+  }
+  if (!process.env.ELEVENLABS_API_KEY?.trim()) {
+    findings.push("ELEVENLABS_API_KEY missing from the server environment");
+  }
+  if (findings.length > 0) {
+    return {
+      name: "TTS provider",
+      status: "block",
+      message: `${findings.join("; ")}. ElevenLabs remains blocked before cost reservation.`,
+      nextAction:
+        "Configure providers.tts.elevenLabs.voiceId and server-side ELEVENLABS_API_KEY, then rerun pnpm producer doctor.",
+    };
+  }
+  return {
+    name: "TTS provider",
+    status: "pass",
+    message: `ElevenLabs is configured with ${tts.elevenLabs.modelId} and a server-side credential.`,
+    nextAction:
+      "Generate and approve the exact cost quote before running ElevenLabs voice synthesis.",
+  };
 }
 
 async function piperDiagnostic(tts: ProducerConfig["providers"]["tts"]): Promise<DoctorCheck> {

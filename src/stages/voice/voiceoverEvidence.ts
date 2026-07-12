@@ -8,17 +8,19 @@ import { pathExists } from "../../utils/fs.js";
 import { readJsonFile } from "../../utils/json.js";
 import { digestSchema } from "../render/renderPlanSchemas.js";
 import { readRenderPlanEvidence } from "../renderPlan.js";
-import { voiceoverAudioPath } from "./voiceoverPaths.js";
 import {
-  voiceoverPreparationPath,
-  voiceoverPreparationSchema,
-  voiceoverPreparedTextPath,
-} from "./voiceoverPreparation.js";
+  assertVoiceoverAlignment,
+  assertVoiceoverArtifacts,
+  assertVoiceoverSource,
+} from "./voiceoverEvidenceValidation.js";
+import { voiceoverAudioPath } from "./voiceoverPaths.js";
+import { voiceoverPreparationPath, voiceoverPreparedTextPath } from "./voiceoverPreparation.js";
 import { voiceoverLocalPlaybackPath } from "./voiceoverReviewCommands.js";
 
 export { voiceoverAudioPath } from "./voiceoverPaths.js";
 export const voiceoverAudioMetaPath = "production/audio/voiceover.meta.json";
 export const voiceoverAudioReviewPath = "production/audio/voiceover_review.md";
+export const voiceoverAlignmentPath = "production/audio/alignment.json";
 export const voiceoverAudioArtifactPaths = [
   voiceoverAudioPath,
   voiceoverAudioMetaPath,
@@ -30,8 +32,8 @@ export const voiceoverAudioMetaSchema = z
     schemaVersion: z.literal(1),
     runId: z.string().min(1),
     createdAt: z.iso.datetime(),
-    mode: z.enum(["deterministic-local", "local-piper"]),
-    quality: z.enum(["deterministic-local-reference", "local-piper"]),
+    mode: z.enum(["deterministic-local", "local-piper", "elevenlabs"]),
+    quality: z.enum(["deterministic-local-reference", "local-piper", "elevenlabs"]),
     source: z.strictObject({
       path: z.literal("production/voiceover.txt"),
       sha256: digestSchema,
@@ -65,6 +67,10 @@ export const voiceoverAudioMetaSchema = z
         modelSha256: digestSchema.optional(),
         configPath: z.string().min(1).optional(),
         configSha256: digestSchema.optional(),
+        service: z.literal("elevenlabs").optional(),
+        modelId: z.string().min(1).optional(),
+        voiceId: z.string().min(1).optional(),
+        outputFormat: z.string().min(1).optional(),
       })
       .optional(),
     processing: z
@@ -77,8 +83,41 @@ export const voiceoverAudioMetaSchema = z
         }),
       })
       .optional(),
+    alignment: z
+      .strictObject({
+        path: z.literal(voiceoverAlignmentPath),
+        sha256: digestSchema,
+        characterCount: z.int().positive(),
+      })
+      .optional(),
   })
   .superRefine((meta, context) => {
+    if (meta.mode === "elevenlabs") {
+      if (meta.quality !== "elevenlabs") {
+        context.addIssue({
+          code: "custom",
+          message: "ElevenLabs voiceover metadata requires ElevenLabs quality.",
+          path: ["quality"],
+        });
+      }
+      if (!meta.alignment) {
+        context.addIssue({
+          code: "custom",
+          message: "ElevenLabs voiceover metadata requires character alignment evidence.",
+          path: ["alignment"],
+        });
+      }
+      for (const field of ["service", "modelId", "voiceId", "outputFormat"] as const) {
+        if (!meta.provider?.[field]) {
+          context.addIssue({
+            code: "custom",
+            message: `ElevenLabs voiceover metadata requires provider.${field}.`,
+            path: ["provider", field],
+          });
+        }
+      }
+      return;
+    }
     if (meta.mode !== "local-piper") {
       return;
     }
@@ -121,6 +160,7 @@ export type VoiceoverAudioEvidence =
       localPlaybackPath: string;
       mode: VoiceoverAudioMeta["mode"];
       productionVoiceCandidate: boolean;
+      alignmentPath?: string;
       provider?: NonNullable<VoiceoverAudioMeta["provider"]>;
       quality: VoiceoverAudioMeta["quality"];
       reviewPath: string;
@@ -148,7 +188,7 @@ export async function readVoiceoverAudioEvidence(run: RunRecord): Promise<Voiceo
   }
 
   try {
-    await assertVoiceoverArtifacts(run);
+    await assertVoiceoverArtifacts(run, voiceoverAudioArtifactPaths);
     const meta = voiceoverAudioMetaSchema.parse(
       await readJsonFile(artifactPath(run.runId, voiceoverAudioMetaPath)),
     );
@@ -161,6 +201,7 @@ export async function readVoiceoverAudioEvidence(run: RunRecord): Promise<Voiceo
       throw new SafeExitError("Voiceover audio digest does not match metadata.");
     }
     await assertVoiceoverSource(run, meta);
+    await assertVoiceoverAlignment(run, meta);
     const renderPlan = await readRenderPlanEvidence(run);
     if (renderPlan.status !== "pass" || renderPlan.digest !== meta.renderPlan.digest) {
       throw new SafeExitError("Voiceover audio was generated from a stale or missing render plan.");
@@ -172,7 +213,8 @@ export async function readVoiceoverAudioEvidence(run: RunRecord): Promise<Voiceo
       durationSeconds: meta.output.durationSeconds,
       localPlaybackPath: voiceoverLocalPlaybackPath(run.runId),
       mode: meta.mode,
-      productionVoiceCandidate: meta.quality === "local-piper",
+      productionVoiceCandidate: meta.quality !== "deterministic-local-reference",
+      alignmentPath: meta.alignment?.path,
       provider: meta.provider,
       quality: meta.quality,
       reviewPath: voiceoverAudioReviewPath,
@@ -184,63 +226,5 @@ export async function readVoiceoverAudioEvidence(run: RunRecord): Promise<Voiceo
       path: voiceoverAudioPath,
       message: error instanceof Error ? error.message : String(error),
     };
-  }
-}
-
-async function assertVoiceoverSource(run: RunRecord, meta: VoiceoverAudioMeta): Promise<void> {
-  const sourceText = await readFile(artifactPath(run.runId, meta.source.path), "utf8");
-  if (createHash("sha256").update(sourceText, "utf8").digest("hex") !== meta.source.sha256) {
-    throw new SafeExitError("Voiceover source text digest does not match metadata.");
-  }
-  if (!meta.source.preparation) {
-    return;
-  }
-  for (const relativePath of [meta.source.preparation.path, meta.source.preparation.metadataPath]) {
-    if (!run.artifacts.includes(relativePath)) {
-      throw new SafeExitError(`Voiceover preparation artifact is not registered: ${relativePath}.`);
-    }
-    if (!(await pathExists(artifactPath(run.runId, relativePath)))) {
-      throw new SafeExitError(`Voiceover preparation artifact is missing: ${relativePath}.`);
-    }
-  }
-  const preparedText = await readFile(
-    artifactPath(run.runId, meta.source.preparation.path),
-    "utf8",
-  );
-  if (
-    createHash("sha256").update(preparedText, "utf8").digest("hex") !==
-    meta.source.preparation.sha256
-  ) {
-    throw new SafeExitError("Prepared voiceover text digest does not match metadata.");
-  }
-  const preparationText = await readFile(
-    artifactPath(run.runId, meta.source.preparation.metadataPath),
-    "utf8",
-  );
-  if (
-    createHash("sha256").update(preparationText, "utf8").digest("hex") !==
-    meta.source.preparation.metadataSha256
-  ) {
-    throw new SafeExitError("Voiceover preparation metadata digest does not match voice metadata.");
-  }
-  const preparation = voiceoverPreparationSchema.parse(JSON.parse(preparationText) as unknown);
-  if (
-    preparation.runId !== run.runId ||
-    preparation.source.sha256 !== meta.source.sha256 ||
-    preparation.output.sha256 !== meta.source.preparation.sha256 ||
-    preparation.replacements.length !== meta.source.preparation.replacementsApplied
-  ) {
-    throw new SafeExitError("Voiceover preparation evidence does not match voice metadata.");
-  }
-}
-
-async function assertVoiceoverArtifacts(run: RunRecord): Promise<void> {
-  for (const relativePath of voiceoverAudioArtifactPaths) {
-    if (!run.artifacts.includes(relativePath)) {
-      throw new SafeExitError(`Voiceover artifact is not registered: ${relativePath}.`);
-    }
-    if (!(await pathExists(artifactPath(run.runId, relativePath)))) {
-      throw new SafeExitError(`Voiceover artifact is missing: ${relativePath}.`);
-    }
   }
 }

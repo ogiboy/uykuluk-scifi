@@ -84,7 +84,9 @@ describe("evidence next command", () => {
         ttsEnabled: false,
         voiceoverAudio: { status: "block" },
       }),
-    ).toBe("Enable local TTS in producer.config.json, then pnpm producer voice --run <run_id>");
+    ).toBe(
+      "Enable a TTS provider in producer.config.json, then pnpm producer voice --run <run_id>",
+    );
   });
 
   it("recommends voiceover regeneration when voiceover evidence is blocked and TTS is enabled", () => {

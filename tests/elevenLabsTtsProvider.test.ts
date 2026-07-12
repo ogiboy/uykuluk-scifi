@@ -1,8 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import {
-  ElevenLabsTtsProvider,
-  estimateElevenLabsTtsUsd,
-} from "../src/stages/voice/providers/elevenLabsTtsProvider";
+import { estimateElevenLabsTtsUsd } from "../src/costs/elevenLabsPricing";
+import { ElevenLabsTtsProvider } from "../src/stages/voice/providers/elevenLabsTtsProvider";
 import { wavFromPcm16 } from "../src/stages/voice/voiceWav";
 
 const baseConfig = {

@@ -21,8 +21,12 @@ const renderCompositionOverlaySchema = z.strictObject({
   digest: digestSchema,
   placement: z.string().min(1),
 });
-const voiceoverModeSchema = z.enum(["deterministic-local", "local-piper"]);
-const voiceoverQualitySchema = z.enum(["deterministic-local-reference", "local-piper"]);
+const voiceoverModeSchema = z.enum(["deterministic-local", "local-piper", "elevenlabs"]);
+const voiceoverQualitySchema = z.enum([
+  "deterministic-local-reference",
+  "local-piper",
+  "elevenlabs",
+]);
 const renderApprovalSchema = z.strictObject({
   approvalId: z.string().min(1),
   approvedRef: digestSchema,

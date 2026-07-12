@@ -1,10 +1,11 @@
 import { createHash } from "node:crypto";
 import { wavFromPcm16 } from "../voiceWav.js";
-import type { TtsProvider, TtsSynthesisResult } from "./ttsProvider.js";
+import type { LocalTtsProvider, TtsSynthesisResult } from "./ttsProvider.js";
 
 /** Timing-only deterministic audio provider used by tests and local previews. */
-export class DeterministicReferenceTtsProvider implements TtsProvider {
+export class DeterministicReferenceTtsProvider implements LocalTtsProvider {
   readonly mode = "deterministic-local" as const;
+  readonly executionPolicy = "local" as const;
 
   async synthesize(input: { text: string }): Promise<TtsSynthesisResult> {
     const sampleRateHz = 16_000;

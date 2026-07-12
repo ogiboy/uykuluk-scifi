@@ -1,3 +1,5 @@
+import type { ReservedProviderAdapter } from "../../../costs/reservedProviderExecution.js";
+
 export type TtsMode = "deterministic-local" | "local-piper" | "elevenlabs";
 
 export type TtsQuality = "deterministic-local-reference" | "local-piper" | "elevenlabs";
@@ -41,8 +43,19 @@ export type TtsSynthesisResult = {
   sampleRateHz: number;
 };
 
-/** Synthesizes one voiceover through a configured TTS engine. */
-export interface TtsProvider {
+/** Synthesizes one voiceover without a paid-provider reservation. */
+export interface LocalTtsProvider {
   readonly mode: TtsMode;
+  readonly executionPolicy: "local";
   synthesize(input: TtsSynthesisInput): Promise<TtsSynthesisResult>;
 }
+
+/** Exposes a paid TTS call only through the exact reservation execution boundary. */
+export interface ReservedTtsProvider {
+  readonly mode: TtsMode;
+  readonly executionPolicy: "reserved-paid";
+  assertReady(): void;
+  createReservedAdapter(input: TtsSynthesisInput): ReservedProviderAdapter<TtsSynthesisResult>;
+}
+
+export type TtsProvider = LocalTtsProvider | ReservedTtsProvider;

@@ -1,10 +1,12 @@
 import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
 import { z } from "zod";
 import { SafeExitError } from "../../../core/errors.js";
+import { estimateElevenLabsTtsUsd } from "../../../costs/elevenLabsPricing.js";
 import { usdToMicros } from "../../../costs/money.js";
 import { type ReservedProviderAdapter } from "../../../costs/reservedProviderExecution.js";
 import { normalizePcm16WavPeak, readWavInfo } from "../voiceWav.js";
 import type {
+  ReservedTtsProvider,
   TtsCharacterAlignment,
   TtsSynthesisInput,
   TtsSynthesisResult,
@@ -82,8 +84,9 @@ type ElevenLabsTtsProviderOptions = {
 };
 
 /** Approval-reserved ElevenLabs adapter. It never exposes or persists the API key. */
-export class ElevenLabsTtsProvider {
+export class ElevenLabsTtsProvider implements ReservedTtsProvider {
   readonly mode = "elevenlabs" as const;
+  readonly executionPolicy = "reserved-paid" as const;
 
   private readonly readApiKey: () => string | undefined;
   private readonly createClient: (apiKey: string) => TimingClient;
@@ -167,13 +170,6 @@ export class ElevenLabsTtsProvider {
       },
     };
   }
-}
-
-export function estimateElevenLabsTtsUsd(text: string, usdPerThousandCharacters: number): number {
-  if (!Number.isFinite(usdPerThousandCharacters) || usdPerThousandCharacters <= 0) {
-    throw new SafeExitError("ElevenLabs TTS character pricing must be a positive USD amount.");
-  }
-  return usdToMicros((text.length / 1_000) * usdPerThousandCharacters) / 1_000_000;
 }
 
 function parseAlignment(alignment: TtsCharacterAlignment | undefined): TtsCharacterAlignment {

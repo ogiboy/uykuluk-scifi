@@ -7,13 +7,14 @@ import { ensureDir } from "../../../utils/fs.js";
 import { readPiperProviderEvidence } from "../piperProviderEvidence.js";
 import { voiceoverAudioPath } from "../voiceoverPaths.js";
 import { normalizePcm16WavPeak, readWavInfo } from "../voiceWav.js";
-import type { TtsProvider, TtsSynthesisInput, TtsSynthesisResult } from "./ttsProvider.js";
+import type { LocalTtsProvider, TtsSynthesisInput, TtsSynthesisResult } from "./ttsProvider.js";
 
 export type PiperTtsProviderConfig = { binary: string; configPath?: string; modelPath?: string };
 
 /** Local Piper adapter. The final output remains inside the canonical run artifact path. */
-export class PiperTtsProvider implements TtsProvider {
+export class PiperTtsProvider implements LocalTtsProvider {
   readonly mode = "local-piper" as const;
+  readonly executionPolicy = "local" as const;
 
   constructor(private readonly config: PiperTtsProviderConfig) {}
 

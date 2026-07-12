@@ -48,6 +48,13 @@ export function renderVoiceoverReviewMarkdown(meta: VoiceoverAudioMeta): string 
       [
         [meta.source.path, meta.source.sha256],
         ["Source word count", String(meta.source.wordCount)],
+        ...(meta.source.preparation
+          ? [
+              [meta.source.preparation.path, meta.source.preparation.sha256],
+              ["Pronunciation replacements", String(meta.source.preparation.replacementsApplied)],
+            ]
+          : []),
+        ...(meta.alignment ? [[meta.alignment.path, meta.alignment.sha256]] : []),
         [meta.renderPlan.path, meta.renderPlan.digest],
       ],
     ),
@@ -113,7 +120,7 @@ function renderVoiceoverDecision(meta: VoiceoverAudioMeta): string[] {
  */
 function renderApprovalNextStep(meta: VoiceoverAudioMeta): string {
   const command = voiceoverRenderApprovalCommand(meta.runId);
-  if (meta.mode === "local-piper") {
+  if (meta.quality !== "deterministic-local-reference") {
     return `Run \`${command}\` only after audio and render-plan review both pass.`;
   }
   return `Run \`${command}\` only for a local timing draft after deterministic reference audio and render-plan review both pass.`;
@@ -132,14 +139,17 @@ function providerSection(meta: VoiceoverAudioMeta): string[] {
 
   return [
     "",
-    "## Local TTS Provider Provenance",
+    "## TTS Provider Provenance",
     "",
     table(
       ["Provider input", "Value"],
       [
+        ["Service", meta.provider.service ?? "local-piper"],
         ["Binary", meta.provider.binary ?? "n/a"],
-        ["Piper model", meta.provider.modelPath ?? "n/a"],
-        ["Piper model SHA-256", meta.provider.modelSha256 ?? "n/a"],
+        ["Model", meta.provider.modelId ?? meta.provider.modelPath ?? "n/a"],
+        ["Model SHA-256", meta.provider.modelSha256 ?? "n/a"],
+        ["Voice ID", meta.provider.voiceId ?? "n/a"],
+        ["Output format", meta.provider.outputFormat ?? "n/a"],
         ["Piper config", meta.provider.configPath ?? "n/a"],
         ["Piper config SHA-256", meta.provider.configSha256 ?? "n/a"],
       ],
@@ -167,9 +177,12 @@ function modeSpecificChecklistItem(meta: VoiceoverAudioMeta): string {
   if (meta.mode === "deterministic-local") {
     return "Deterministic reference audio is for timing only; do not treat it as production voice quality.";
   }
+  if (meta.mode === "elevenlabs") {
+    return "ElevenLabs audio and character alignment must be manually reviewed before render approval.";
+  }
   return "Local Piper audio must be manually reviewed for voice quality before render approval.";
 }
 
 function renderApprovalScope(meta: VoiceoverAudioMeta): string {
-  return voiceoverRenderApprovalScope(meta.quality === "local-piper");
+  return voiceoverRenderApprovalScope(meta.quality !== "deterministic-local-reference");
 }

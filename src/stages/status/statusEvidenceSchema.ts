@@ -72,9 +72,9 @@ const voiceoverPassSchema = z.looseObject({
   digest: digestSchema,
   durationSeconds: z.number().positive(),
   localPlaybackPath: z.string().min(1),
-  mode: z.enum(["deterministic-local", "local-piper"]),
+  mode: z.enum(["deterministic-local", "local-piper", "elevenlabs"]),
   productionVoiceCandidate: z.boolean(),
-  quality: z.enum(["deterministic-local-reference", "local-piper"]),
+  quality: z.enum(["deterministic-local-reference", "local-piper", "elevenlabs"]),
   reviewPath: z.string().min(1),
   sourceWordCount: z.int().positive(),
 });
@@ -93,9 +93,9 @@ const draftRenderPassSchema = z.looseObject({
   reviewPath: z.string().min(1),
   reviewChecklist: z.array(z.string()),
   ffmpegReviewCommand: z.string().min(1),
-  voiceoverMode: z.enum(["deterministic-local", "local-piper"]),
+  voiceoverMode: z.enum(["deterministic-local", "local-piper", "elevenlabs"]),
   voiceoverProductionVoiceCandidate: z.boolean(),
-  voiceoverQuality: z.enum(["deterministic-local-reference", "local-piper"]),
+  voiceoverQuality: z.enum(["deterministic-local-reference", "local-piper", "elevenlabs"]),
   renderApproval: z.strictObject({ approvalId: z.string().min(1), approvedRef: digestSchema }),
   mediaProbe: mediaProbeSchema,
 });

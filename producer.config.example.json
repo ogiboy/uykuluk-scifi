@@ -21,7 +21,14 @@
       "piperBinary": "piper",
       "piperModelPath": "models/piper/tr_TR/fahrettin-medium/model.onnx",
       "piperConfigPath": "models/piper/tr_TR/fahrettin-medium/model.onnx.json",
-      "pronunciationReplacements": {}
+      "pronunciationReplacements": {},
+      "elevenLabs": {
+        "modelId": "eleven_multilingual_v2",
+        "outputFormat": "wav_24000",
+        "timeoutMs": 120000,
+        "maxRetries": 1,
+        "usdPerThousandCharacters": 0.1
+      }
     },
     "imageGeneration": { "enabled": false, "requiresApproval": true },
     "youtube": { "enabled": false, "allowPrivateUpload": false, "allowPublicPublish": false }

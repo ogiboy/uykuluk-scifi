@@ -9,7 +9,7 @@ import { verifyProductionPackage } from "../stages/production/productionPackageI
 import { sha256 } from "../utils/hash.js";
 import { nowIso } from "../utils/time.js";
 import { renderCostEstimateMarkdown } from "./costEstimatePresentation.js";
-import { defaultStagePricing, StagePricing } from "./pricing.js";
+import { quoteCostStages } from "./costQuoteStages.js";
 
 const budgetSnapshotSchema = z.strictObject({
   perVideoUsd: z.number().nonnegative(),
@@ -52,7 +52,7 @@ export async function buildCostEstimate(
   run: RunRecord,
   config: ProducerConfig,
 ): Promise<CostEstimate> {
-  const stages = quoteStages(config);
+  const stages = await quoteCostStages(run, config);
   const estimatedStageCost = stages.reduce(
     (sum, stage) => sum + (stage.enabled ? stage.estimatedUsd : 0),
     0,
@@ -111,7 +111,7 @@ export async function validateCurrentCostEstimate(
   estimate: CostEstimate,
 ): Promise<string[]> {
   const reasons = await validateCostEstimateIntegrity(run, config, estimate);
-  const currentStages = quoteStages(config);
+  const currentStages = await quoteCostStages(run, config);
   const currentTotal = currentStages.reduce(
     (sum, stage) => sum + (stage.enabled ? stage.estimatedUsd : 0),
     0,
@@ -155,7 +155,7 @@ export async function validateCostEstimateIntegrity(
   config: ProducerConfig,
   estimate: CostEstimate,
 ): Promise<string[]> {
-  const currentStages = quoteStages(config);
+  const currentStages = await quoteCostStages(run, config);
   const reasons: string[] = [];
   if (estimate.runId !== run.runId) {
     reasons.push("Cost estimate belongs to a different run.");
@@ -189,27 +189,6 @@ export async function validateCostEstimateIntegrity(
     reasons.push("Quoted total no longer matches current enabled stage pricing.");
   }
   return reasons;
-}
-
-function quoteStages(config: ProducerConfig): Array<StagePricing & { enabled: boolean }> {
-  return Object.values(defaultStagePricing).map((pricing) => ({
-    ...pricing,
-    enabled: isStageEnabled(pricing.stage, config),
-  }));
-}
-
-function isStageEnabled(stage: string, config: ProducerConfig): boolean {
-  switch (stage) {
-    case "tts":
-      return config.providers.tts.enabled;
-    case "imageGeneration":
-    case "videoGeneration":
-      return config.providers.imageGeneration.enabled;
-    case "upload":
-      return config.providers.youtube.enabled;
-    default:
-      return true;
-  }
 }
 
 function relevantConfigDigest(config: ProducerConfig): string {

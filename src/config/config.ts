@@ -28,6 +28,13 @@ export const defaultConfig: ProducerConfig = {
       mode: "local-piper",
       piperBinary: "piper",
       pronunciationReplacements: {},
+      elevenLabs: {
+        modelId: "eleven_multilingual_v2",
+        outputFormat: "wav_24000",
+        timeoutMs: 120_000,
+        maxRetries: 1,
+        usdPerThousandCharacters: 0.1,
+      },
     },
     imageGeneration: { enabled: false, requiresApproval: true },
     youtube: { enabled: false, allowPrivateUpload: false, allowPublicPublish: false },

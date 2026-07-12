@@ -14,7 +14,7 @@ export async function voiceoverReadinessCheck(run: RunRecord): Promise<Readiness
   if (evidence.status === "pass") {
     const referenceOnly =
       evidence.productionVoiceCandidate === false
-        ? " This is timing/reference audio only; use reviewed local Piper audio before final production voice."
+        ? " This is timing/reference audio only; use a reviewed production-quality voice before final production."
         : "";
     return {
       name: "voiceover audio available",
@@ -31,7 +31,7 @@ export async function voiceoverReadinessCheck(run: RunRecord): Promise<Readiness
       message: "Voiceover audio is not generated yet; generate it before FFmpeg render work.",
       nextAction: config.providers.tts.enabled
         ? `pnpm producer voice --run ${run.runId}`
-        : `Enable local TTS in producer.config.json, then pnpm producer voice --run ${run.runId}`,
+        : `Enable a TTS provider in producer.config.json, then pnpm producer voice --run ${run.runId}`,
     };
   }
   return {
@@ -53,5 +53,5 @@ async function voiceoverNextAction(run: RunRecord): Promise<string> {
   if (config.providers.tts.enabled) {
     return `pnpm producer voice --run ${run.runId}`;
   }
-  return `Enable local TTS in producer.config.json, then pnpm producer voice --run ${run.runId}`;
+  return `Enable a TTS provider in producer.config.json, then pnpm producer voice --run ${run.runId}`;
 }

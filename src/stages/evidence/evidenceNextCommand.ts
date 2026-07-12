@@ -158,12 +158,12 @@ function manualProductionNextCommand(
   if (voiceoverAudio?.status === "block") {
     return ttsEnabled
       ? "pnpm producer voice --run <run_id>"
-      : "Enable local TTS in producer.config.json, then pnpm producer voice --run <run_id>";
+      : "Enable a TTS provider in producer.config.json, then pnpm producer voice --run <run_id>";
   }
   if (ttsEnabled) {
     return "pnpm producer voice --run <run_id>";
   }
-  return "Manual production review. Enable local TTS before draft render.";
+  return "Manual production review. Enable a TTS provider before draft render.";
 }
 
 /**

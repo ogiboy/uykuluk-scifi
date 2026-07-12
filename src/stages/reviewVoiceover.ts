@@ -112,7 +112,7 @@ function voiceoverReviewBlockedActions(evidence: PassingVoiceoverEvidence): stri
   ];
   if (!evidence.productionVoiceCandidate) {
     actions.unshift(
-      "Final production voice remains blocked until reviewed local Piper audio exists.",
+      "Final production voice remains blocked until a reviewed production-quality voice exists.",
     );
   }
   return actions;

@@ -36,7 +36,7 @@ describe("voiceover review handoff", () => {
     });
     expect(handoff.blockedActions).toEqual(
       expect.arrayContaining([
-        "Final production voice remains blocked until reviewed local Piper audio exists.",
+        "Final production voice remains blocked until a reviewed production-quality voice exists.",
         "Private upload, scheduled publish, and public publish remain disabled.",
       ]),
     );

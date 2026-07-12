@@ -48,6 +48,35 @@ describe("producer doctor TTS diagnostics", () => {
     expect(ttsCheck?.message).toContain("Piper config missing");
     expect(markdown).toContain("copy the printed providers.tts override");
   });
+
+  it("blocks ElevenLabs before reservation when the server credential is missing", async () => {
+    delete process.env.ELEVENLABS_API_KEY;
+    await writeElevenLabsConfig("voice_doctor_test");
+
+    const report = await runDoctor();
+
+    expect(report.checks.find((check) => check.name === "TTS provider")).toMatchObject({
+      status: "block",
+      message: expect.stringContaining("ELEVENLABS_API_KEY"),
+      nextAction: expect.stringContaining("server-side ELEVENLABS_API_KEY"),
+    });
+  });
+
+  it("passes local ElevenLabs diagnostics without making a remote request", async () => {
+    process.env.ELEVENLABS_API_KEY = "doctor-test-key";
+    await writeElevenLabsConfig("voice_doctor_test");
+
+    try {
+      const report = await runDoctor();
+      expect(report.checks.find((check) => check.name === "TTS provider")).toMatchObject({
+        status: "pass",
+        message: expect.stringContaining("eleven_multilingual_v2"),
+        nextAction: expect.stringContaining("cost quote"),
+      });
+    } finally {
+      delete process.env.ELEVENLABS_API_KEY;
+    }
+  });
 });
 
 async function writePiperConfig(tts: {
@@ -63,6 +92,29 @@ async function writePiperConfig(tts: {
         providers: {
           ...defaultConfig.providers,
           tts: { ...defaultConfig.providers.tts, enabled: true, mode: "local-piper", ...tts },
+        },
+      },
+      null,
+      2,
+    )}\n`,
+    "utf8",
+  );
+}
+
+async function writeElevenLabsConfig(voiceId: string): Promise<void> {
+  await writeFile(
+    "producer.config.json",
+    `${JSON.stringify(
+      {
+        ...defaultConfig,
+        providers: {
+          ...defaultConfig.providers,
+          tts: {
+            ...defaultConfig.providers.tts,
+            enabled: true,
+            mode: "elevenlabs",
+            elevenLabs: { ...defaultConfig.providers.tts.elevenLabs, voiceId },
+          },
         },
       },
       null,

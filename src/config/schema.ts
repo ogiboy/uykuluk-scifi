@@ -1,5 +1,40 @@
 import { z } from "zod";
 
+const elevenLabsOutputFormatSchema = z.enum([
+  "wav_16000",
+  "wav_22050",
+  "wav_24000",
+  "wav_32000",
+  "wav_44100",
+  "wav_48000",
+]);
+
+const elevenLabsTtsConfigSchema = z
+  .object({
+    voiceId: z.string().min(1).optional(),
+    modelId: z.string().min(1).default("eleven_multilingual_v2"),
+    outputFormat: elevenLabsOutputFormatSchema.default("wav_24000"),
+    timeoutMs: z.int().positive().max(600_000).default(120_000),
+    maxRetries: z.int().nonnegative().max(5).default(1),
+    usdPerThousandCharacters: z.number().positive().default(0.1),
+    voiceSettings: z
+      .strictObject({
+        stability: z.number().min(0).max(1).optional(),
+        similarityBoost: z.number().min(0).max(1).optional(),
+        style: z.number().min(0).max(1).optional(),
+        useSpeakerBoost: z.boolean().optional(),
+        speed: z.number().min(0.7).max(1.2).optional(),
+      })
+      .optional(),
+  })
+  .default({
+    modelId: "eleven_multilingual_v2",
+    outputFormat: "wav_24000",
+    timeoutMs: 120_000,
+    maxRetries: 1,
+    usdPerThousandCharacters: 0.1,
+  });
+
 export const localProviderBaseUrlSchema = z
   .url()
   .refine(isLocalProviderBaseUrl, {
@@ -38,11 +73,12 @@ export const producerConfigSchema = z.object({
     }),
     tts: z.object({
       enabled: z.boolean(),
-      mode: z.enum(["deterministic-local", "local-piper"]),
+      mode: z.enum(["deterministic-local", "local-piper", "elevenlabs"]),
       piperBinary: z.string().min(1).optional(),
       piperModelPath: z.string().min(1).optional(),
       piperConfigPath: z.string().min(1).optional(),
       pronunciationReplacements: z.record(z.string().min(1), z.string().min(1)).default({}),
+      elevenLabs: elevenLabsTtsConfigSchema,
     }),
     imageGeneration: z.object({ enabled: z.boolean(), requiresApproval: z.boolean() }),
     youtube: z.object({
