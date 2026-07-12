@@ -274,8 +274,8 @@
   release validation, version planning, release application, annotated tag creation, atomic push,
   and failed-tag cleanup wiring.
 - CodeRabbit, GitHub Actions, CodeQL, Dependabot, SonarQube, Prettier, ESLint,
-  eslint-config-prettier, Vitest, Playwright, TypeScript, modularity, secret-scan, changelog, and
-  release hygiene gates.
+  eslint-config-prettier, Vitest, Playwright, native TypeScript 7 plus TypeScript 6 parser
+  compatibility, modularity, secret-scan, changelog, and release hygiene gates.
 - Studio has Tailwind CSS v4, shadcn-style config/primitives, Radix Tabs, lucide icons, GSAP, and
   `next/font` wired for the initial shell.
 - Studio has a type-safe `next-intl` request/provider foundation with English and Turkish locale
