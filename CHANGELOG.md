@@ -11,6 +11,17 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.80.2 (2026-07-12)
+
+### Fixes
+
+- reconcile dependency lockfile (965574c)
+- keep TypeScript within parser support (e77deb7)
+
+### Chores
+
+- bump the tooling group across 1 directory with 3 updates (add3dd2)
+
 ## v0.80.1 (2026-07-12)
 
 ### Chores
