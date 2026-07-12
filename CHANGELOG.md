@@ -9,6 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
+_No unreleased changes yet._
+
+## v0.80.0 (2026-07-12)
+
 ### Features
 
 - add managed llama.cpp start/stop commands backed by ignored local provider config and served-model
