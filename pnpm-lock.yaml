@@ -4726,11 +4726,6 @@ packages:
     engines: {node: '>=14'}
     hasBin: true
 
-  prettier@3.9.5:
-    resolution: {integrity: sha512-/FVl766LpUfB5vXgCYOYa0MeV/441Ia99AeICQIQFTY/Nw0roZwULcXpku5i1/m5kt/baz+s4Zogspd839HSMg==}
-    engines: {node: '>=14'}
-    hasBin: true
-
   progress@2.0.3:
     resolution: {integrity: sha512-7PiHtLll5LdnKIMw100I+8xJXR5gW2QwWYkT6iJva0bXitZKa/XMrSbdmg3r2Xnaidz9Qumd0VPaMrZlF9V9sA==}
     engines: {node: '>=0.4.0'}
@@ -10148,8 +10143,6 @@ snapshots:
       prettier-plugin-organize-imports: 4.3.0(prettier@3.9.5)(typescript@6.0.3)
 
   prettier@3.8.1: {}
-
-  prettier@3.9.5: {}
 
   prettier@3.9.5: {}
 
