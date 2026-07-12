@@ -61,7 +61,7 @@
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.61.1",
     "@sonar/scan": "^4.3.8",
-    "@types/node": "^25.9.5",
+    "@types/node": "^26.1.1",
     "@types/react": "^19.2.17",
     "@u3u/prettier-config": "^5.2.0",
     "@vitest/coverage-v8": "^4.1.10",
