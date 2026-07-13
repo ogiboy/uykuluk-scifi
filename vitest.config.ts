@@ -8,5 +8,6 @@ export default defineConfig({
     include: ["tests/**/*.test.ts"],
     pool: "forks",
     setupFiles: ["tests/setup/networkGuard.ts"],
+    ...(process.env.CI ? { hookTimeout: 15_000, maxWorkers: 2, testTimeout: 15_000 } : {}),
   },
 });
