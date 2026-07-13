@@ -20,9 +20,21 @@ const mediaRequiredArtifacts = [
  * @param {string} workdir - Workspace directory containing `producer.config.json`.
  */
 export async function enableDeterministicTts({ workdir }) {
+  await setDeterministicTtsEnabled({ workdir, enabled: true });
+}
+
+/**
+ * Temporarily disables deterministic local text-to-speech without changing its selected mode.
+ * @param {string} workdir - Workspace directory containing `producer.config.json`.
+ */
+export async function disableDeterministicTts({ workdir }) {
+  await setDeterministicTtsEnabled({ workdir, enabled: false });
+}
+
+async function setDeterministicTtsEnabled({ workdir, enabled }) {
   const target = path.join(workdir, "producer.config.json");
   const config = JSON.parse(await readFile(target, "utf8"));
-  config.providers.tts = { enabled: true, mode: "deterministic-local" };
+  config.providers.tts = { enabled, mode: "deterministic-local" };
   await writeFile(target, `${JSON.stringify(config, null, 2)}\n`, "utf8");
 }
 

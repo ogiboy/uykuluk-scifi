@@ -4,6 +4,7 @@ import type {
   CostReservationStatus,
   CostReservationSummary,
 } from "./costReservationContracts.js";
+import type { ProviderRequestEvidence } from "./providerRequestEvidence.js";
 
 type LifecycleEvent = Exclude<CostReservationEvent, { type: "RESERVED" }>;
 
@@ -185,7 +186,7 @@ function applyReasonEvent(
     type: "UNCERTAIN" | "RELEASED" | "RECONCILED_RELEASED";
     createdAt: string;
     providerRequestIdHash?: string;
-    requestEvidence?: CostReservationSummary["requestEvidence"];
+    requestEvidence?: ProviderRequestEvidence;
     reason: string;
   },
 ): CostReservationSummary {
