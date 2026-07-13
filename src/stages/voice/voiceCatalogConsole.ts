@@ -74,5 +74,5 @@ export function formatVoiceSelectionConsole(selection: VoiceSelection): string {
  * @returns The path with the matching audio extension replaced by `.json`
  */
 function voicePreviewEvidenceLabel(audioPath: string, format: "mp3" | "wav"): string {
-  return audioPath.replace(new RegExp(`\\.${format}$`, "u"), ".json");
+  return audioPath.replace(new RegExp(String.raw`\.${format}$`, "u"), ".json");
 }

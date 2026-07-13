@@ -77,7 +77,8 @@ export function boundedOptional(value: string | undefined, maxLength: number): s
 export function hasUnsafeControlCharacters(value: string | undefined): boolean {
   if (!value) return false;
   for (let index = 0; index < value.length; index += 1) {
-    if (isControlCharacterCode(value.charCodeAt(index))) return true;
+    const characterCode = value.codePointAt(index);
+    if (characterCode !== undefined && isControlCharacterCode(characterCode)) return true;
   }
   return false;
 }
@@ -91,8 +92,14 @@ export function hasUnsafeControlCharacters(value: string | undefined): boolean {
 export function hasUnsafeNotesControlCharacters(value: string | undefined): boolean {
   if (!value) return false;
   for (let index = 0; index < value.length; index += 1) {
-    const characterCode = value.charCodeAt(index);
-    if (isControlCharacterCode(characterCode) && !isNotesWhitespaceCode(characterCode)) return true;
+    const characterCode = value.codePointAt(index);
+    if (
+      characterCode !== undefined &&
+      isControlCharacterCode(characterCode) &&
+      !isNotesWhitespaceCode(characterCode)
+    ) {
+      return true;
+    }
   }
   return false;
 }

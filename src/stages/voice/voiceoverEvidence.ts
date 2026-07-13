@@ -15,6 +15,7 @@ import {
   assertVoiceoverArtifacts,
   assertVoiceoverSource,
 } from "./voiceoverEvidenceValidation.js";
+import { refineVoiceoverMeta } from "./voiceoverMetaRefinement.js";
 import { voiceoverAudioPath } from "./voiceoverPaths.js";
 import { voiceoverPreparationPath, voiceoverPreparedTextPath } from "./voiceoverPreparation.js";
 import { voiceoverLocalPlaybackPath } from "./voiceoverReviewCommands.js";
@@ -94,83 +95,7 @@ export const voiceoverAudioMetaSchema = z
       })
       .optional(),
   })
-  .superRefine((meta, context) => {
-    if (meta.mode === "elevenlabs") {
-      if (meta.quality !== "elevenlabs") {
-        context.addIssue({
-          code: "custom",
-          message: "ElevenLabs voiceover metadata requires ElevenLabs quality.",
-          path: ["quality"],
-        });
-      }
-      if (!meta.alignment) {
-        context.addIssue({
-          code: "custom",
-          message: "ElevenLabs voiceover metadata requires character alignment evidence.",
-          path: ["alignment"],
-        });
-      }
-      if (!meta.source.preparation) {
-        context.addIssue({
-          code: "custom",
-          message: "ElevenLabs voiceover metadata requires prepared-text evidence.",
-          path: ["source", "preparation"],
-        });
-      }
-      if (!meta.paidExecution) {
-        context.addIssue({
-          code: "custom",
-          message: "ElevenLabs voiceover metadata requires exact paid execution evidence.",
-          path: ["paidExecution"],
-        });
-      }
-      for (const field of ["service", "modelId", "voiceId", "outputFormat"] as const) {
-        if (!meta.provider?.[field]) {
-          context.addIssue({
-            code: "custom",
-            message: `ElevenLabs voiceover metadata requires provider.${field}.`,
-            path: ["provider", field],
-          });
-        }
-      }
-      return;
-    }
-    if (meta.paidExecution) {
-      context.addIssue({
-        code: "custom",
-        message: "Local voiceover metadata cannot claim paid execution evidence.",
-        path: ["paidExecution"],
-      });
-    }
-    if (meta.mode !== "local-piper") {
-      return;
-    }
-    if (!meta.provider) {
-      context.addIssue({
-        code: "custom",
-        message: "Local Piper voiceover metadata requires provider provenance.",
-        path: ["provider"],
-      });
-      return;
-    }
-    for (const field of ["modelPath", "modelSha256"] as const) {
-      if (!meta.provider[field]) {
-        context.addIssue({
-          code: "custom",
-          message: `Local Piper voiceover metadata requires provider.${field}.`,
-          path: ["provider", field],
-        });
-      }
-    }
-    if (meta.provider.configPath && !meta.provider.configSha256) {
-      context.addIssue({
-        code: "custom",
-        message:
-          "Local Piper voiceover metadata requires provider.configSha256 when configPath is present.",
-        path: ["provider", "configSha256"],
-      });
-    }
-  });
+  .superRefine(refineVoiceoverMeta);
 
 export type VoiceoverAudioMeta = z.infer<typeof voiceoverAudioMetaSchema>;
 

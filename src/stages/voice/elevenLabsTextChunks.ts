@@ -43,7 +43,7 @@ function preferredBreak(text: string, start: number, hardEnd: number): number {
   const minimumOffset = Math.floor(window.length * 0.6);
   const candidates = [
     lastBoundaryEnd(window, /\n\n/g),
-    lastBoundaryEnd(window, /[.!?…][\s\n]+/g),
+    lastBoundaryEnd(window, /[.!?…]\s+/g),
     lastBoundaryEnd(window, /\n/g),
     lastBoundaryEnd(window, /\s+/g),
   ];

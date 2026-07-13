@@ -58,7 +58,7 @@ export class ElevenLabsVoicePreviewProvider implements VoicePreviewProvider {
         { languageCode: input.languageCode, modelId: input.modelId },
         input.subscription,
       );
-      if (!normalized || normalized.metadataDigest !== input.candidate.metadataDigest) {
+      if (normalized?.metadataDigest !== input.candidate.metadataDigest) {
         throw new SafeExitError("ElevenLabs voice metadata changed after catalog generation.");
       }
       const preview = resolveVoicePreview(response.data, {

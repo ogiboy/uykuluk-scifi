@@ -119,9 +119,7 @@ async function runPiper(
         settle(resolve);
         return;
       }
-      settle(() =>
-        reject(new SafeExitError(`Piper exited with code ${code}: ${stderr.trim()}`)),
-      );
+      settle(() => reject(new SafeExitError(`Piper exited with code ${code}: ${stderr.trim()}`)));
     });
     child.stdin.end(input.endsWith("\n") ? input : `${input}\n`);
   });
