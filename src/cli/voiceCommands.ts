@@ -1,4 +1,5 @@
 import type { Command } from "commander";
+import { reviseVoiceSelection } from "../revisions/voiceSelectionRevision.js";
 import {
   formatVoiceCandidatesConsole,
   formatVoicePreviewConsole,
@@ -75,5 +76,30 @@ export function registerVoiceCommands(program: Command, wrap: Wrap): void {
           );
         },
       ),
+    );
+
+  program
+    .command("voice-reselect")
+    .requiredOption("--run <run_id>")
+    .requiredOption("--reviewed-by <operator>")
+    .requiredOption("--reason <reason>")
+    .option("--json", "Print the archived pre-spend recovery evidence JSON.")
+    .description(
+      "Archive unspent voice quote/approval evidence and reopen the run for exact reselection.",
+    )
+    .action(
+      wrap(async (options: { json?: boolean; reason: string; reviewedBy: string; run: string }) => {
+        const revision = await reviseVoiceSelection({
+          runId: options.run,
+          reason: options.reason,
+          reviewedBy: options.reviewedBy,
+        });
+        if (options.json) {
+          console.log(JSON.stringify(revision, null, 2));
+          return;
+        }
+        console.log(`Voice reselection recovery recorded: ${revision.revisionId}`);
+        console.log("The prior quote and cost approval are archived; select and quote again.");
+      }),
     );
 }

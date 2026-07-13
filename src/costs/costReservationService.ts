@@ -15,7 +15,16 @@ import {
   readAllCostReservationSummaries,
 } from "./costReservationStore.js";
 import { microsToUsd } from "./money.js";
-export { reconcileCostReservation, settleCostReservation } from "./costSettlementService.js";
+import {
+  type ProviderAdapterIdentity,
+  providerAdapterIdentitiesMatch,
+} from "./providerAdapterIdentity.js";
+import type { ProviderRequestEvidence } from "./providerRequestEvidence.js";
+export {
+  reconcileCostReservation,
+  recordCostReservationExecutionResult,
+  settleCostReservation,
+} from "./costSettlementService.js";
 
 /**
  * Creates or returns a cost reservation for an approved quote line.
@@ -29,18 +38,15 @@ export async function reserveApprovedCost(input: {
   runId: string;
   stage: string;
   operationId: string;
-  adapterIdentity: { provider: string; model?: string };
+  adapterIdentity: ProviderAdapterIdentity;
 }): Promise<CostReservationSummary> {
   requireReservationText(input.stage, "stage");
   requireReservationText(input.operationId, "operation id");
   return withCostReservationLock(async () => {
     const context = await loadApprovedQuoteLine(input.runId, input.stage);
-    if (
-      input.adapterIdentity.provider !== context.provider ||
-      input.adapterIdentity.model !== context.model
-    ) {
+    if (!providerAdapterIdentitiesMatch(input.adapterIdentity, context)) {
       throw new SafeExitError(
-        `Blocked: adapter provider/model does not match the approved quote for ${input.stage}.`,
+        `Blocked: adapter provider/model/binding does not match the approved quote for ${input.stage}.`,
       );
     }
     const all = await readAllCostReservationSummaries();
@@ -56,7 +62,10 @@ export async function reserveApprovedCost(input: {
         sameOperation.runId === input.runId &&
         sameOperation.stage === input.stage &&
         sameOperation.approvalId === context.approvalId &&
-        sameOperation.quoteDigest === context.quoteDigest
+        sameOperation.quoteDigest === context.quoteDigest &&
+        sameOperation.provider === context.provider &&
+        sameOperation.model === context.model &&
+        sameOperation.bindingDigest === context.bindingDigest
       ) {
         return sameOperation;
       }
@@ -99,6 +108,8 @@ export async function reserveApprovedCost(input: {
       stage: input.stage,
       provider: context.provider,
       model: context.model,
+      ...(context.bindingDigest ? { bindingDigest: context.bindingDigest } : {}),
+      ...(context.bindingSummary ? { bindingSummary: context.bindingSummary } : {}),
       maxUsdMicros: context.maxUsdMicros,
       createdAt: nowIso(),
     });
@@ -107,7 +118,12 @@ export async function reserveApprovedCost(input: {
       type: "COST_RESERVED",
       stage: input.stage,
       message: "Approved cost quote line reserved.",
-      data: { reservationId, operationId: input.operationId, maxUsdMicros: context.maxUsdMicros },
+      data: {
+        reservationId,
+        operationId: input.operationId,
+        ...(context.bindingDigest ? { bindingDigest: context.bindingDigest } : {}),
+        maxUsdMicros: context.maxUsdMicros,
+      },
     });
     return requireReservation(input.runId, reservationId);
   });
@@ -162,6 +178,7 @@ export async function markCostReservationUncertain(input: {
   reservationId: string;
   reason: string;
   providerRequestIdHash?: string;
+  requestEvidence?: ProviderRequestEvidence;
 }): Promise<CostReservationSummary> {
   requireReservationText(input.reason, "uncertain outcome reason");
   return withCostReservationLock(async () => {
@@ -172,7 +189,12 @@ export async function markCostReservationUncertain(input: {
     if (!["RESERVED", "EXECUTION_STARTED"].includes(reservation.status)) {
       throw new SafeExitError(`Cannot mark reservation uncertain from ${reservation.status}.`);
     }
-    await appendUncertainEvent(reservation, input.reason, input.providerRequestIdHash);
+    await appendUncertainEvent(
+      reservation,
+      input.reason,
+      input.providerRequestIdHash,
+      input.requestEvidence,
+    );
     return requireReservation(input.runId, input.reservationId);
   });
 }

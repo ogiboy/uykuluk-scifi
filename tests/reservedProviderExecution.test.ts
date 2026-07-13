@@ -174,6 +174,14 @@ describe("reserved provider execution", () => {
         kind: "unknown",
         reason: "transport",
         providerRequestId: "request_unknown",
+        requestEvidence: [
+          {
+            requestIndex: 0,
+            inputDigest: sha256("provider-input"),
+            requestIdHash: sha256("request_unknown"),
+            reportedUnits: 7,
+          },
+        ],
       })),
     });
 
@@ -181,6 +189,14 @@ describe("reserved provider execution", () => {
     expect(result.reservation).toMatchObject({
       status: "UNCERTAIN",
       providerRequestIdHash: sha256("request_unknown"),
+      requestEvidence: [
+        {
+          requestIndex: 0,
+          inputDigest: sha256("provider-input"),
+          requestIdHash: sha256("request_unknown"),
+          reportedUnits: 7,
+        },
+      ],
     });
   });
 

@@ -7,7 +7,7 @@ import type { CostEstimate } from "./costEstimate.js";
  * @returns A markdown string containing the cost estimate.
  */
 export function renderCostEstimateMarkdown(estimate: CostEstimate): string {
-  return [
+  const sections = [
     "# Cost Estimate",
     "",
     table(
@@ -32,5 +32,29 @@ export function renderCostEstimateMarkdown(estimate: CostEstimate): string {
     estimate.blockedReasons.length
       ? estimate.blockedReasons.map((item) => `- ${item}`).join("\n")
       : "- None",
-  ].join("\n");
+  ];
+  const boundStages = estimate.stages.filter((stage) => stage.bindingDigest);
+  if (boundStages.length > 0) {
+    sections.push(
+      "",
+      "## Execution Bindings",
+      "",
+      ...boundStages.map((stage) => `- ${stage.stage}: \`${stage.bindingDigest}\``),
+    );
+    for (const stage of boundStages) {
+      if (!stage.bindingSummary) continue;
+      sections.push(
+        "",
+        `### ${stage.stage} selected voice`,
+        "",
+        `- Selection digest: \`${stage.bindingSummary.selectionDigest}\``,
+        `- Voice ID: \`${stage.bindingSummary.voiceId}\``,
+        `- Model ID: \`${stage.bindingSummary.modelId}\``,
+        `- Pricing digest: \`${stage.bindingSummary.pricingDigest}\``,
+        `- Expected discounted rate: ${stage.bindingSummary.expectedUsdPerThousandCharacters.toFixed(6)} USD / 1K characters`,
+        `- Approved maximum rate: ${stage.bindingSummary.maximumUsdPerThousandCharacters.toFixed(6)} USD / 1K characters`,
+      );
+    }
+  }
+  return sections.join("\n");
 }

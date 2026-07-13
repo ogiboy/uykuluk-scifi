@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { estimateElevenLabsTtsUsd } from "../src/costs/elevenLabsPricing";
+import { stitchElevenLabsAlignments } from "../src/stages/voice/elevenLabsAlignment";
 import { ElevenLabsTtsProvider } from "../src/stages/voice/providers/elevenLabsTtsProvider";
 import {
   baseElevenLabsTtsConfig,
@@ -60,7 +61,7 @@ describe("ElevenLabs TTS provider", () => {
     );
   });
 
-  it("chunks long v3 narration and stitches request context, WAV audio, and alignment", async () => {
+  it("chunks long v3 narration and stitches WAV audio and alignment without request stitching", async () => {
     const convertWithTimestamps = vi.fn(async (input: { text: string }) => {
       const index = convertWithTimestamps.mock.calls.length - 1;
       const characters = Array.from(input.text);
@@ -97,15 +98,19 @@ describe("ElevenLabs TTS provider", () => {
     expect(outcome.value.alignment?.characters.join("")).toBe(text);
     expect(outcome.value.alignment?.characterStartTimesSeconds.at(-1)).toBeGreaterThan(1);
     expect(convertWithTimestamps).toHaveBeenCalledTimes(2);
-    expect(convertWithTimestamps.mock.calls[0][0]).toMatchObject({
-      nextText: expect.any(String),
-      previousRequestIds: undefined,
-      seed: 42,
-    });
-    expect(convertWithTimestamps.mock.calls[1][0]).toMatchObject({
-      previousRequestIds: ["request_0"],
-      seed: 43,
-    });
+    expect(convertWithTimestamps.mock.calls[0][0]).toMatchObject({ seed: 42 });
+    expect(convertWithTimestamps.mock.calls[1][0]).toMatchObject({ seed: 43 });
+    for (const [request] of convertWithTimestamps.mock.calls) {
+      expect(request).not.toHaveProperty("previousRequestIds");
+      expect(request).not.toHaveProperty("previousText");
+      expect(request).not.toHaveProperty("nextText");
+    }
+  });
+
+  it("rejects mismatched alignment and audio chunk counts", () => {
+    expect(() => stitchElevenLabsAlignments([], [fixtureWav()])).toThrow(
+      /alignment\/audio chunk count mismatch/i,
+    );
   });
 
   it("estimates character pricing in stable USD micro-units", () => {

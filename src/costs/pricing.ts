@@ -1,7 +1,11 @@
+import type { CostBindingSummary } from "./costBindingSummary.js";
+
 export type StagePricing = {
   stage: string;
   provider: string;
   model?: string;
+  bindingDigest?: string;
+  bindingSummary?: CostBindingSummary;
   estimatedUsd: number;
 };
 

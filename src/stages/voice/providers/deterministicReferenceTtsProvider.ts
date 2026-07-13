@@ -1,6 +1,9 @@
 import { createHash } from "node:crypto";
+import { SafeExitError } from "../../../core/errors.js";
 import { wavFromPcm16 } from "../voiceWav.js";
 import type { LocalTtsProvider, TtsSynthesisResult } from "./ttsProvider.js";
+
+const maximumReferenceDurationSeconds = 20 * 60;
 
 /** Timing-only deterministic audio provider used by tests and local previews. */
 export class DeterministicReferenceTtsProvider implements LocalTtsProvider {
@@ -10,7 +13,12 @@ export class DeterministicReferenceTtsProvider implements LocalTtsProvider {
   async synthesize(input: { text: string }): Promise<TtsSynthesisResult> {
     const sampleRateHz = 16_000;
     const wordCount = countWords(input.text);
-    const durationSeconds = Math.max(1, Math.min(45, Math.ceil(wordCount / 2.4)));
+    const durationSeconds = Math.max(1, Math.ceil(wordCount / 2.4));
+    if (durationSeconds > maximumReferenceDurationSeconds) {
+      throw new SafeExitError(
+        "Deterministic reference narration exceeds the supported 20-minute duration.",
+      );
+    }
     const sampleCount = sampleRateHz * durationSeconds;
     const pcm = Buffer.alloc(sampleCount * 2);
     const seed = createHash("sha256").update(input.text, "utf8").digest();

@@ -52,6 +52,11 @@ export function stitchElevenLabsAlignments(
   alignments: readonly TtsCharacterAlignment[],
   audioChunks: readonly Buffer[],
 ): TtsCharacterAlignment {
+  if (alignments.length !== audioChunks.length) {
+    throw new SafeExitError(
+      `ElevenLabs alignment/audio chunk count mismatch: received ${alignments.length} alignments for ${audioChunks.length} audio chunks.`,
+    );
+  }
   const stitched: TtsCharacterAlignment = {
     characters: [],
     characterStartTimesSeconds: [],

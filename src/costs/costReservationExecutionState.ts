@@ -4,14 +4,16 @@ import { createId, nowIso } from "../utils/time.js";
 import { requireReservation } from "./costReservationContext.js";
 import { withCostReservationLock } from "./costReservationLock.js";
 import { appendCostReservationEvent, CostReservationSummary } from "./costReservationStore.js";
-
-type AdapterIdentity = { provider: string; model?: string };
+import {
+  type ProviderAdapterIdentity,
+  providerAdapterIdentitiesMatch,
+} from "./providerAdapterIdentity.js";
 
 /** Atomically claims one matching reservation for a single callback invocation. */
 export async function beginCostReservationExecution(input: {
   runId: string;
   reservationId: string;
-  adapterIdentity: AdapterIdentity;
+  adapterIdentity: ProviderAdapterIdentity;
 }): Promise<{ reservation: CostReservationSummary; started: boolean }> {
   return withCostReservationLock(async () => {
     const reservation = await requireReservation(input.runId, input.reservationId);
@@ -24,6 +26,9 @@ export async function beginCostReservationExecution(input: {
       reservationId: input.reservationId,
       runId: input.runId,
       type: "EXECUTION_STARTED",
+      provider: reservation.provider,
+      ...(reservation.model ? { model: reservation.model } : {}),
+      ...(reservation.bindingDigest ? { bindingDigest: reservation.bindingDigest } : {}),
       createdAt: nowIso(),
     });
     await appendLedgerEvent({
@@ -36,6 +41,7 @@ export async function beginCostReservationExecution(input: {
         operationId: reservation.operationId,
         provider: reservation.provider,
         model: reservation.model,
+        ...(reservation.bindingDigest ? { bindingDigest: reservation.bindingDigest } : {}),
       },
     });
     return {
@@ -49,7 +55,7 @@ export async function beginCostReservationExecution(input: {
 export async function releaseDefinitelyNotSentExecution(input: {
   runId: string;
   reservationId: string;
-  adapterIdentity: AdapterIdentity;
+  adapterIdentity: ProviderAdapterIdentity;
   reason: "adapter-validation" | "cancelled-before-send" | "connection-not-opened";
 }): Promise<CostReservationSummary> {
   return withCostReservationLock(async () => {
@@ -83,10 +89,10 @@ export async function releaseDefinitelyNotSentExecution(input: {
 
 function requireMatchingAdapter(
   reservation: CostReservationSummary,
-  adapter: AdapterIdentity,
+  adapter: ProviderAdapterIdentity,
   action: string,
 ): void {
-  if (reservation.provider !== adapter.provider || reservation.model !== adapter.model) {
+  if (!providerAdapterIdentitiesMatch(reservation, adapter)) {
     throw new SafeExitError(`Blocked: ${action} adapter does not match the reservation.`);
   }
 }

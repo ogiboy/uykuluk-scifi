@@ -25,6 +25,7 @@ export async function settleCostReservation(input: {
   outputTokens?: number;
   durationMs?: number;
   providerRequestIdHash?: string;
+  resultEvidenceDigest?: string;
 }): Promise<CostReservationSummary> {
   return withCostReservationLock(async () => {
     let reservation = await requireReservation(input.runId, input.reservationId);
@@ -34,6 +35,9 @@ export async function settleCostReservation(input: {
       }
       if (reservation.providerRequestIdHash !== input.providerRequestIdHash) {
         throw new SafeExitError("Settled provider request id hash does not match the retry.");
+      }
+      if (reservation.resultEvidenceDigest !== input.resultEvidenceDigest) {
+        throw new SafeExitError("Settled result evidence digest does not match the retry.");
       }
       return reservation;
     }
@@ -46,34 +50,18 @@ export async function settleCostReservation(input: {
     if (reservation.status === "RESERVED") {
       throw new SafeExitError("Reservation must be claimed before provider settlement.");
     }
-    if (input.actualUsdMicros > reservation.maxUsdMicros) {
-      await appendUncertainEvent(
-        reservation,
-        `Actual charge ${input.actualUsdMicros} micros exceeds approved cap ${reservation.maxUsdMicros}.`,
-        input.providerRequestIdHash,
-      );
-      throw new SafeExitError(
-        "Actual provider charge exceeds the approved cap; outcome is uncertain.",
-      );
-    }
-    if (reservation.status === "EXECUTION_STARTED") {
-      await appendCostReservationEvent({
-        eventId: createId("reservation_event"),
-        reservationId: input.reservationId,
-        runId: input.runId,
-        type: "SETTLEMENT_PENDING",
-        actualUsdMicros: input.actualUsdMicros,
-        providerRequestIdHash: input.providerRequestIdHash,
-        createdAt: nowIso(),
-      });
-      reservation = await requireReservation(input.runId, input.reservationId);
-    }
+    reservation = await advanceReservationToSettlementPending(reservation, input);
     if (reservation.actualUsdMicros !== input.actualUsdMicros) {
       throw new SafeExitError("Pending settlement amount does not match the retry.");
     }
     if (reservation.providerRequestIdHash !== input.providerRequestIdHash) {
       throw new SafeExitError(
         "Pending settlement provider request id hash does not match the retry.",
+      );
+    }
+    if (reservation.resultEvidenceDigest !== input.resultEvidenceDigest) {
+      throw new SafeExitError(
+        "Pending settlement result evidence digest does not match the retry.",
       );
     }
     await ensureReservationCostEvent(reservation, input);
@@ -84,6 +72,7 @@ export async function settleCostReservation(input: {
       type: "SETTLED",
       actualUsdMicros: input.actualUsdMicros,
       providerRequestIdHash: input.providerRequestIdHash,
+      resultEvidenceDigest: input.resultEvidenceDigest,
       createdAt: nowIso(),
     });
     await appendLedgerEvent({
@@ -95,10 +84,76 @@ export async function settleCostReservation(input: {
         reservationId: input.reservationId,
         actualUsdMicros: input.actualUsdMicros,
         providerRequestIdHash: input.providerRequestIdHash,
+        resultEvidenceDigest: input.resultEvidenceDigest,
       },
     });
     return requireReservation(input.runId, input.reservationId);
   });
+}
+
+/** Durably journals a provider-success result before final cost settlement can begin. */
+export async function recordCostReservationExecutionResult(input: {
+  runId: string;
+  reservationId: string;
+  actualUsdMicros: number;
+  providerRequestIdHash?: string;
+  resultEvidenceDigest: string;
+}): Promise<CostReservationSummary> {
+  return withCostReservationLock(async () => {
+    const reservation = await requireReservation(input.runId, input.reservationId);
+    if (reservation.status === "SETTLEMENT_PENDING" || reservation.status === "SETTLED") {
+      if (
+        reservation.actualUsdMicros !== input.actualUsdMicros ||
+        reservation.providerRequestIdHash !== input.providerRequestIdHash ||
+        reservation.resultEvidenceDigest !== input.resultEvidenceDigest
+      ) {
+        throw new SafeExitError(
+          "Committed provider result does not match the reservation journal.",
+        );
+      }
+      return reservation;
+    }
+    if (reservation.status !== "EXECUTION_STARTED") {
+      throw new SafeExitError(
+        `Cannot commit provider result from reservation state ${reservation.status}.`,
+      );
+    }
+    return advanceReservationToSettlementPending(reservation, input);
+  });
+}
+
+async function advanceReservationToSettlementPending(
+  reservation: CostReservationSummary,
+  input: {
+    runId: string;
+    reservationId: string;
+    actualUsdMicros: number;
+    providerRequestIdHash?: string;
+    resultEvidenceDigest?: string;
+  },
+): Promise<CostReservationSummary> {
+  if (input.actualUsdMicros > reservation.maxUsdMicros) {
+    await appendUncertainEvent(
+      reservation,
+      `Actual charge ${input.actualUsdMicros} micros exceeds approved cap ${reservation.maxUsdMicros}.`,
+      input.providerRequestIdHash,
+    );
+    throw new SafeExitError(
+      "Actual provider charge exceeds the approved cap; outcome is uncertain.",
+    );
+  }
+  if (reservation.status !== "EXECUTION_STARTED") return reservation;
+  await appendCostReservationEvent({
+    eventId: createId("reservation_event"),
+    reservationId: input.reservationId,
+    runId: input.runId,
+    type: "SETTLEMENT_PENDING",
+    actualUsdMicros: input.actualUsdMicros,
+    providerRequestIdHash: input.providerRequestIdHash,
+    resultEvidenceDigest: input.resultEvidenceDigest,
+    createdAt: nowIso(),
+  });
+  return requireReservation(input.runId, input.reservationId);
 }
 
 /**

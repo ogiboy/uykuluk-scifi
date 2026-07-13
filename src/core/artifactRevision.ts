@@ -32,6 +32,21 @@ export async function registeredArtifactRevision(
   return sha256(JSON.stringify(entries));
 }
 
+/** Reads one optional artifact while requiring filesystem presence to match run registration. */
+export async function readRegisteredArtifactBytes(
+  run: RunRecord,
+  relativePath: string,
+): Promise<Buffer | undefined> {
+  const target = artifactPath(run.runId, relativePath);
+  const bytes = await readContainedArtifact(target);
+  if (run.artifacts.includes(relativePath) !== (bytes !== undefined)) {
+    throw new SafeExitError(
+      `Run artifact registration does not match local evidence: ${relativePath}.`,
+    );
+  }
+  return bytes;
+}
+
 async function readContainedArtifact(target: string): Promise<Buffer | undefined> {
   let handle;
   try {

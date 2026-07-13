@@ -1,3 +1,4 @@
+import { rm } from "node:fs/promises";
 import { loadConfig } from "../config/config.js";
 import { registerRunArtifactPath } from "../core/artifactRegistration.js";
 import { artifactPath } from "../core/artifacts.js";
@@ -114,30 +115,48 @@ export async function generateVoicePreview(
     ...evidenceInput,
     previewDigest: canonicalVoiceEvidenceDigest(evidenceInput),
   });
-  await writeBinaryFile(artifactPath(runId, outputPath), result.audio);
-  await writeJsonFile(artifactPath(runId, evidencePath), evidence);
-  await mutateRun(runId, async (current) => {
-    await requireState(current, "PRODUCTION_PACKAGE_GENERATED", "voice-preview");
-    const currentPackage = await verifyProductionPackage(current);
-    if (currentPackage.digest !== packageSnapshot.digest) {
-      throw new SafeExitError(
-        "Production package changed while the voice preview request was in flight.",
-      );
-    }
-    const currentCatalog = await readVoiceCandidatesWithPath(runId);
-    requireCurrentVoiceCatalog(currentCatalog.catalog);
-    if (
-      currentCatalog.path !== catalogRecord.path ||
-      currentCatalog.catalog.catalogDigest !== catalog.catalogDigest
-    ) {
-      throw new SafeExitError("Voice catalog changed while the preview request was in flight.");
-    }
-    if ((await voicePreviewDependencyRevision(current, safeVoiceId)) !== startingPreviewRevision) {
-      throw new SafeExitError("Voice preview evidence changed while the request was in flight.");
-    }
-    const withAudio = registerRunArtifactPath(current, outputPath);
-    return { run: registerRunArtifactPath(withAudio, evidencePath), value: undefined };
-  });
+  const outputArtifactPath = artifactPath(runId, outputPath);
+  const evidenceArtifactPath = artifactPath(runId, evidencePath);
+  try {
+    await writeBinaryFile(outputArtifactPath, result.audio);
+    await writeJsonFile(evidenceArtifactPath, evidence);
+    await mutateRun(runId, async (current) => {
+      await requireState(current, "PRODUCTION_PACKAGE_GENERATED", "voice-preview");
+      const currentPackage = await verifyProductionPackage(current);
+      if (currentPackage.digest !== packageSnapshot.digest) {
+        throw new SafeExitError(
+          "Production package changed while the voice preview request was in flight.",
+        );
+      }
+      const currentCatalog = await readVoiceCandidatesWithPath(runId);
+      requireCurrentVoiceCatalog(currentCatalog.catalog);
+      if (
+        currentCatalog.path !== catalogRecord.path ||
+        currentCatalog.catalog.catalogDigest !== catalog.catalogDigest
+      ) {
+        throw new SafeExitError("Voice catalog changed while the preview request was in flight.");
+      }
+      if (
+        (await voicePreviewDependencyRevision(current, safeVoiceId)) !== startingPreviewRevision
+      ) {
+        throw new SafeExitError("Voice preview evidence changed while the request was in flight.");
+      }
+      const withAudio = registerRunArtifactPath(current, outputPath);
+      return { run: registerRunArtifactPath(withAudio, evidencePath), value: undefined };
+    });
+  } catch (error) {
+    await Promise.all([
+      rm(outputArtifactPath, { force: true }),
+      rm(evidenceArtifactPath, { force: true }),
+    ]);
+    return recordVoicePreviewFailure({
+      runId,
+      voiceId: safeVoiceId,
+      error,
+      packageDigest: packageSnapshot.digest,
+      startingRevision: startingPreviewRevision,
+    });
+  }
   await appendVoicePreviewArtifactWritten(runId, outputPath);
   await appendVoicePreviewArtifactWritten(runId, evidencePath);
   await appendLedgerEvent({

@@ -3,6 +3,12 @@ import { z } from "zod";
 import { SafeExitError } from "../core/errors.js";
 import { isValidRunId, runPath, runsDir } from "../core/runStore.js";
 import { ensureDir, pathExists } from "../utils/fs.js";
+import { costBindingSummarySchema, type CostBindingSummary } from "./costBindingSummary.js";
+import { executionBindingDigestSchema } from "./providerAdapterIdentity.js";
+import {
+  providerRequestEvidenceSchema,
+  type ProviderRequestEvidence,
+} from "./providerRequestEvidence.js";
 
 const providerRequestIdHashSchema = z.string().regex(/^[a-f0-9]{64}$/);
 
@@ -21,23 +27,30 @@ const reservedEventSchema = reservationBaseSchema.extend({
   stage: z.string().min(1),
   provider: z.string().min(1),
   model: z.string().min(1).optional(),
+  bindingDigest: executionBindingDigestSchema.optional(),
+  bindingSummary: costBindingSummarySchema.optional(),
   maxUsdMicros: z.int().nonnegative(),
 });
 
 const executionStartedEventSchema = reservationBaseSchema.extend({
   type: z.literal("EXECUTION_STARTED"),
+  provider: z.string().min(1).optional(),
+  model: z.string().min(1).optional(),
+  bindingDigest: executionBindingDigestSchema.optional(),
 });
 
 const settlementEventSchema = reservationBaseSchema.extend({
   type: z.enum(["SETTLEMENT_PENDING", "SETTLED"]),
   actualUsdMicros: z.int().nonnegative(),
   providerRequestIdHash: providerRequestIdHashSchema.optional(),
+  resultEvidenceDigest: executionBindingDigestSchema.optional(),
 });
 
 const reasonEventSchema = reservationBaseSchema.extend({
   type: z.enum(["RELEASED", "UNCERTAIN", "RECONCILED_RELEASED"]),
   reason: z.string().min(1),
   providerRequestIdHash: providerRequestIdHashSchema.optional(),
+  requestEvidence: providerRequestEvidenceSchema.optional(),
 });
 
 const reconciledSettledEventSchema = reservationBaseSchema.extend({
@@ -67,11 +80,15 @@ export type CostReservationSummary = {
   stage: string;
   provider: string;
   model?: string;
+  bindingDigest?: string;
+  bindingSummary?: CostBindingSummary;
   maxUsdMicros: number;
   status: CostReservationStatus;
   actualUsdMicros?: number;
   executionStartedAt?: string;
   providerRequestIdHash?: string;
+  requestEvidence?: ProviderRequestEvidence;
+  resultEvidenceDigest?: string;
   reason?: string;
   reservedAt: string;
   updatedAt: string;
@@ -166,6 +183,8 @@ function summarizeCostReservationEvents(events: CostReservationEvent[]): CostRes
         stage: event.stage,
         provider: event.provider,
         model: event.model,
+        ...(event.bindingDigest ? { bindingDigest: event.bindingDigest } : {}),
+        ...(event.bindingSummary ? { bindingSummary: event.bindingSummary } : {}),
         maxUsdMicros: event.maxUsdMicros,
         status: "RESERVED",
         reservedAt: event.createdAt,
@@ -200,6 +219,13 @@ function applyReservationEvent(
     );
   }
   if (event.type === "EXECUTION_STARTED") {
+    if (
+      (event.provider !== undefined && event.provider !== current.provider) ||
+      (event.model !== undefined && event.model !== current.model) ||
+      event.bindingDigest !== current.bindingDigest
+    ) {
+      throw new SafeExitError("Cost execution-start identity does not match its reservation.");
+    }
     return {
       ...current,
       status: "EXECUTION_STARTED",
@@ -213,6 +239,7 @@ function applyReservationEvent(
       status: "SETTLEMENT_PENDING",
       actualUsdMicros: event.actualUsdMicros,
       providerRequestIdHash: event.providerRequestIdHash ?? current.providerRequestIdHash,
+      resultEvidenceDigest: event.resultEvidenceDigest ?? current.resultEvidenceDigest,
       updatedAt: event.createdAt,
     };
   }
@@ -224,6 +251,9 @@ function applyReservationEvent(
       providerRequestIdHash:
         ("providerRequestIdHash" in event ? event.providerRequestIdHash : undefined) ??
         current.providerRequestIdHash,
+      resultEvidenceDigest:
+        ("resultEvidenceDigest" in event ? event.resultEvidenceDigest : undefined) ??
+        current.resultEvidenceDigest,
       reason: "reason" in event ? event.reason : current.reason,
       updatedAt: event.createdAt,
     };
@@ -237,6 +267,7 @@ function applyReservationEvent(
       ...current,
       status: event.type === "UNCERTAIN" ? "UNCERTAIN" : "RELEASED",
       providerRequestIdHash: event.providerRequestIdHash ?? current.providerRequestIdHash,
+      requestEvidence: event.requestEvidence ?? current.requestEvidence,
       reason: event.reason,
       updatedAt: event.createdAt,
     };

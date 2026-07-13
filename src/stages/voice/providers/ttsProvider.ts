@@ -31,6 +31,18 @@ export type TtsSynthesisResult = {
   durationSeconds: number;
   outputAlreadyPersisted: boolean;
   provider?: TtsProviderEvidence;
+  providerBilling?: {
+    source: "provider-reported-credits-approved-tariff-derived-usd";
+    billableCredits: number;
+    baseUsdPerThousandBillableCredits: number;
+    derivedUsdMicros: number;
+  };
+  providerRequests?: Array<{
+    chunkIndex: number;
+    textDigest: string;
+    requestIdHash?: string;
+    reportedBillableCredits: number;
+  }>;
   processing?: {
     peakNormalization: {
       applied: boolean;

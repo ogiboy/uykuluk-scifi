@@ -7,6 +7,7 @@ import type { TtsSynthesisResult } from "../src/stages/voice/providers/ttsProvid
 import { wavFromPcm16 } from "../src/stages/voice/voiceWav";
 
 export const baseElevenLabsTtsConfig: ElevenLabsTtsProviderConfig = {
+  bindingDigest: "d".repeat(64),
   voiceId: "voice_test",
   modelId: "eleven_v3",
   languageCode: "tr",
@@ -16,7 +17,8 @@ export const baseElevenLabsTtsConfig: ElevenLabsTtsProviderConfig = {
   outputFormat: "wav_24000",
   timeoutMs: 30_000,
   maxRetries: 0,
-  usdPerThousandCharacters: 0.1,
+  maximumUsdPerThousandCharacters: 0.1,
+  billedCreditUsdPerThousandCharacters: 0.1,
 };
 
 export async function executeElevenLabsAdapter(
@@ -31,6 +33,7 @@ export async function executeElevenLabsAdapter(
       operationId: "operation_test",
       provider: "elevenlabs",
       model: baseElevenLabsTtsConfig.modelId,
+      bindingDigest: baseElevenLabsTtsConfig.bindingDigest,
       maxUsdMicros,
       signal: new AbortController().signal,
     });

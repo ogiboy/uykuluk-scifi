@@ -8,6 +8,8 @@ import { pathExists } from "../../utils/fs.js";
 import { readJsonFile } from "../../utils/json.js";
 import { digestSchema } from "../render/renderPlanSchemas.js";
 import { readRenderPlanEvidence } from "../renderPlan.js";
+import { paidVoiceExecutionEvidenceSchema } from "./voiceExecutionEvidence.js";
+import { assertPaidVoiceExecutionEvidence } from "./voiceExecutionEvidenceValidation.js";
 import {
   assertVoiceoverAlignment,
   assertVoiceoverArtifacts,
@@ -73,6 +75,7 @@ export const voiceoverAudioMetaSchema = z
         outputFormat: z.string().min(1).optional(),
       })
       .optional(),
+    paidExecution: paidVoiceExecutionEvidenceSchema.optional(),
     processing: z
       .strictObject({
         peakNormalization: z.strictObject({
@@ -107,6 +110,20 @@ export const voiceoverAudioMetaSchema = z
           path: ["alignment"],
         });
       }
+      if (!meta.source.preparation) {
+        context.addIssue({
+          code: "custom",
+          message: "ElevenLabs voiceover metadata requires prepared-text evidence.",
+          path: ["source", "preparation"],
+        });
+      }
+      if (!meta.paidExecution) {
+        context.addIssue({
+          code: "custom",
+          message: "ElevenLabs voiceover metadata requires exact paid execution evidence.",
+          path: ["paidExecution"],
+        });
+      }
       for (const field of ["service", "modelId", "voiceId", "outputFormat"] as const) {
         if (!meta.provider?.[field]) {
           context.addIssue({
@@ -117,6 +134,13 @@ export const voiceoverAudioMetaSchema = z
         }
       }
       return;
+    }
+    if (meta.paidExecution) {
+      context.addIssue({
+        code: "custom",
+        message: "Local voiceover metadata cannot claim paid execution evidence.",
+        path: ["paidExecution"],
+      });
     }
     if (meta.mode !== "local-piper") {
       return;
@@ -202,6 +226,7 @@ export async function readVoiceoverAudioEvidence(run: RunRecord): Promise<Voiceo
     }
     await assertVoiceoverSource(run, meta);
     await assertVoiceoverAlignment(run, meta);
+    await assertPaidVoiceExecutionEvidence(run, meta);
     const renderPlan = await readRenderPlanEvidence(run);
     if (renderPlan.status !== "pass" || renderPlan.digest !== meta.renderPlan.digest) {
       throw new SafeExitError("Voiceover audio was generated from a stale or missing render plan.");

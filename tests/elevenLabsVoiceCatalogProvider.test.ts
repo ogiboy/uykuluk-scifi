@@ -57,6 +57,7 @@ describe("ElevenLabs voice catalog provider", () => {
         characterCostMultiplier: 1,
         costDiscountMultiplier: 1,
         effectiveUsdPerThousandCharacters: 0.1,
+        maximumUsdPerThousandCharacters: 0.1,
       },
       subscription: { tier: "free", productionUseStatus: "blocked-free-tier" },
     });

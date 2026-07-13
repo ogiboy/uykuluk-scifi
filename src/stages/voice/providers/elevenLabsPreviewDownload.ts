@@ -133,6 +133,7 @@ function mpegFrameBytes(audio: Buffer, offset: number): number | undefined {
   const second = audio[offset + 1];
   const third = audio[offset + 2];
   if (first !== 0xff || (second & 0xe0) !== 0xe0) return undefined;
+  // MPEG header bits: version 3/2/0 mean MPEG-1/2/2.5; layer 3/2/1 mean Layer I/II/III.
   const version = (second >> 3) & 0x03;
   const layer = (second >> 1) & 0x03;
   const bitrateIndex = (third >> 4) & 0x0f;

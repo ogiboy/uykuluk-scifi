@@ -10,11 +10,13 @@ import { generateScript } from "../src/stages/script";
 import type { VoiceCandidates } from "../src/stages/voice/catalog/voiceCatalogContracts";
 import { normalizeVoiceCatalog } from "../src/stages/voice/catalog/voiceCatalogNormalization";
 import type {
+  CatalogModel,
   CatalogSubscription,
   CatalogVoice,
   VoiceCatalogProvider,
   VoicePreviewProvider,
 } from "../src/stages/voice/catalog/voiceCatalogProvider";
+import type { VoiceExecutionMetadataProvider } from "../src/stages/voice/voiceExecutionPreflight";
 import { sha256 } from "../src/utils/hash";
 import { playableMp3Bytes } from "./voicePreviewTestAudio";
 
@@ -54,7 +56,11 @@ export async function preparePackagedRun(): Promise<string> {
 }
 
 export function successfulCatalogProvider(
-  overrides: { subscription?: CatalogSubscription; voices?: CatalogVoice[] } = {},
+  overrides: {
+    models?: CatalogModel[];
+    subscription?: CatalogSubscription;
+    voices?: CatalogVoice[];
+  } = {},
 ): VoiceCatalogProvider {
   return {
     provider: "elevenlabs",
@@ -63,7 +69,7 @@ export function successfulCatalogProvider(
       return normalizeVoiceCatalog({
         request: input,
         requestIds: ["provider-request-id"],
-        models: [
+        models: overrides.models ?? [
           {
             modelId: "eleven_v3",
             canDoTextToSpeech: true,
@@ -124,6 +130,17 @@ export function successfulPreviewProvider(catalog: VoiceCandidates): VoicePrevie
         voiceMetadataDigest: candidate.metadataDigest,
       };
     },
+  };
+}
+
+export function successfulExecutionMetadataProvider(
+  overrides: Parameters<typeof successfulCatalogProvider>[0] = {},
+): VoiceExecutionMetadataProvider {
+  const provider = successfulCatalogProvider(overrides);
+  return {
+    provider: "elevenlabs",
+    assertReady: () => provider.assertReady(),
+    fetchSnapshot: ({ voiceId: _voiceId, ...request }) => provider.fetchCatalog(request),
   };
 }
 

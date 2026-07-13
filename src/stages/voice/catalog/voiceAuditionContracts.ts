@@ -67,7 +67,6 @@ export const voicePreviewEvidenceSchema = z.strictObject({
     ]),
     sha256: sha256Schema,
     bytes: z
-      .number()
       .int()
       .positive()
       .max(5 * 1024 * 1024),
@@ -123,11 +122,11 @@ export const voiceSelectionSchema = z.strictObject({
     modelId: providerIdentifierSchema,
     metadataDigest: sha256Schema,
     languageCode: z.literal("tr"),
-    maximumTextLengthPerRequest: z.number().int().positive().max(100_000),
+    maximumTextLengthPerRequest: z.int().positive().max(100_000),
   }),
   synthesis: z.strictObject({
     outputFormat: terminalSafeString(64),
-    maxCharactersPerRequest: z.number().int().positive().max(100_000),
+    maxCharactersPerRequest: z.int().positive().max(100_000),
     voiceSettingsDigest: sha256Schema,
   }),
   pricing: pricingSnapshotSchema,

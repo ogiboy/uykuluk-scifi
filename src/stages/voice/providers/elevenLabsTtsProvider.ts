@@ -1,7 +1,9 @@
 import { SafeExitError } from "../../../core/errors.js";
 import { estimateElevenLabsTtsUsd } from "../../../costs/elevenLabsPricing.js";
-import { usdToMicros } from "../../../costs/money.js";
+import { usdToMicrosCeil } from "../../../costs/money.js";
+import type { ProviderRequestEvidence } from "../../../costs/providerRequestEvidence.js";
 import { type ReservedProviderAdapter } from "../../../costs/reservedProviderExecution.js";
+import { sha256 } from "../../../utils/hash.js";
 import {
   elevenLabsContextText,
   parseElevenLabsAlignment,
@@ -50,6 +52,9 @@ export class ElevenLabsTtsProvider implements ReservedTtsProvider {
 
   /** Fails before cost reservation when credentials or provider configuration are unsafe. */
   assertReady(): void {
+    if (!/^[a-f0-9]{64}$/.test(this.config.bindingDigest)) {
+      throw new SafeExitError("ElevenLabs TTS requires an exact execution binding digest.");
+    }
     if (!this.config.voiceId.trim()) {
       throw new SafeExitError("ElevenLabs TTS requires a configured voice id.");
     }
@@ -77,28 +82,41 @@ export class ElevenLabsTtsProvider implements ReservedTtsProvider {
   }
 
   estimateUsd(text: string): number {
-    return estimateElevenLabsTtsUsd(text, this.config.usdPerThousandCharacters);
+    return estimateElevenLabsTtsUsd(text, this.config.maximumUsdPerThousandCharacters);
   }
 
   createReservedAdapter(input: TtsSynthesisInput): ReservedProviderAdapter<TtsSynthesisResult> {
-    const estimatedUsdMicros = usdToMicros(this.estimateUsd(input.text));
+    const estimatedUsdMicros = usdToMicrosCeil(this.estimateUsd(input.text));
     return {
       provider: "elevenlabs",
       model: this.config.modelId,
+      bindingDigest: this.config.bindingDigest,
       execute: async (context) => {
         const apiKey = this.readApiKey()?.trim();
-        if (!apiKey || estimatedUsdMicros > context.maxUsdMicros) {
+        if (
+          !apiKey ||
+          estimatedUsdMicros > context.maxUsdMicros ||
+          context.bindingDigest !== this.config.bindingDigest
+        ) {
           return { kind: "definitely-not-sent", reason: "adapter-validation" };
         }
         let lastProviderRequestId: string | undefined;
+        const requestEvidence: ProviderRequestEvidence = [];
         try {
           const client = this.createClient(apiKey);
           const chunks = splitElevenLabsText(input.text, this.config.maxCharactersPerRequest);
           const audioChunks: Buffer[] = [];
           const alignments: TtsCharacterAlignment[] = [];
           const requestIds: string[] = [];
+          const requestDiagnostics: NonNullable<TtsSynthesisResult["providerRequests"]> = [];
           let characterCost = 0;
           for (const [index, text] of chunks.entries()) {
+            const requestStitching = requestStitchingFor(
+              this.config.modelId,
+              chunks,
+              index,
+              requestIds,
+            );
             const response = await client.convertWithTimestamps({
               voiceId: this.config.voiceId,
               text,
@@ -106,12 +124,7 @@ export class ElevenLabsTtsProvider implements ReservedTtsProvider {
               languageCode: this.config.languageCode,
               applyTextNormalization: this.config.applyTextNormalization,
               seed: (this.config.seed + index) % 4_294_967_296,
-              previousRequestIds: requestIds.length > 0 ? requestIds.slice(-3) : undefined,
-              previousText:
-                requestIds.length === 0
-                  ? elevenLabsContextText(chunks[index - 1], "end")
-                  : undefined,
-              nextText: elevenLabsContextText(chunks[index + 1], "start"),
+              ...requestStitching,
               outputFormat: this.config.outputFormat,
               voiceSettings: this.config.voiceSettings,
               signal: context.signal,
@@ -119,11 +132,21 @@ export class ElevenLabsTtsProvider implements ReservedTtsProvider {
               maxRetries: this.config.maxRetries,
             });
             lastProviderRequestId = response.requestId ?? lastProviderRequestId;
-            if (!Number.isInteger(response.characterCost) || (response.characterCost ?? -1) < 0) {
+            const redactedRequest = {
+              requestIndex: index,
+              inputDigest: sha256(text),
+              ...(response.requestId ? { requestIdHash: sha256(response.requestId) } : {}),
+            };
+            if (
+              typeof response.characterCost !== "number" ||
+              !Number.isFinite(response.characterCost) ||
+              response.characterCost < 0
+            ) {
               return {
                 kind: "unknown",
                 reason: "indeterminate",
                 providerRequestId: response.requestId,
+                requestEvidence: [...requestEvidence, redactedRequest],
               };
             }
             const sourceBuffer = Buffer.from(response.audioBase64, "base64");
@@ -136,20 +159,30 @@ export class ElevenLabsTtsProvider implements ReservedTtsProvider {
               ),
             );
             characterCost += response.characterCost ?? 0;
+            requestDiagnostics.push({
+              chunkIndex: index,
+              textDigest: redactedRequest.inputDigest,
+              ...(redactedRequest.requestIdHash
+                ? { requestIdHash: redactedRequest.requestIdHash }
+                : {}),
+              reportedBillableCredits: response.characterCost,
+            });
+            requestEvidence.push({ ...redactedRequest, reportedUnits: response.characterCost });
             if (response.requestId) requestIds.push(response.requestId);
           }
           const stitched = concatenatePcm16Wavs(audioChunks);
           const alignment = stitchElevenLabsAlignments(alignments, audioChunks);
           const normalized = normalizePcm16WavPeak(stitched);
           const wav = readWavInfo(normalized.buffer);
-          const actualUsdMicros = usdToMicros(
-            (characterCost / 1_000) * this.config.usdPerThousandCharacters,
+          const actualUsdMicros = usdToMicrosCeil(
+            (characterCost / 1_000) * this.config.billedCreditUsdPerThousandCharacters,
           );
           if (actualUsdMicros > context.maxUsdMicros) {
             return {
               kind: "unknown",
               reason: "indeterminate",
               providerRequestId: lastProviderRequestId,
+              requestEvidence,
             };
           }
           return {
@@ -166,6 +199,13 @@ export class ElevenLabsTtsProvider implements ReservedTtsProvider {
                 voiceId: this.config.voiceId,
                 outputFormat: this.config.outputFormat,
               },
+              providerBilling: {
+                source: "provider-reported-credits-approved-tariff-derived-usd",
+                billableCredits: characterCost,
+                baseUsdPerThousandBillableCredits: this.config.billedCreditUsdPerThousandCharacters,
+                derivedUsdMicros: actualUsdMicros,
+              },
+              providerRequests: requestDiagnostics,
               processing: { peakNormalization: normalized.evidence },
               quality: "elevenlabs",
               sampleRateHz: wav.sampleRateHz,
@@ -178,9 +218,31 @@ export class ElevenLabsTtsProvider implements ReservedTtsProvider {
             kind: "unknown",
             reason: context.signal.aborted ? "timeout" : "provider-error",
             providerRequestId: lastProviderRequestId,
+            ...(requestEvidence.length > 0 ? { requestEvidence } : {}),
           };
         }
       },
     };
   }
+}
+
+function requestStitchingFor(
+  modelId: string,
+  chunks: readonly string[],
+  index: number,
+  requestIds: readonly string[],
+): Pick<
+  Parameters<ElevenLabsTimingClient["convertWithTimestamps"]>[0],
+  "previousRequestIds" | "previousText" | "nextText"
+> {
+  if (modelId === "eleven_v3") return {};
+  let previousText: string | undefined;
+  if (requestIds.length === 0) {
+    previousText = elevenLabsContextText(chunks[index - 1], "end");
+  }
+  return {
+    previousRequestIds: requestIds.length > 0 ? requestIds.slice(-3) : undefined,
+    previousText,
+    nextText: elevenLabsContextText(chunks[index + 1], "start"),
+  };
 }

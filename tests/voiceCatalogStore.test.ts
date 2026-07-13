@@ -48,6 +48,10 @@ describe("voice catalog evidence store", () => {
           catalog.pricing.baseUsdPerThousandCharacters *
           catalog.pricing.characterCostMultiplier *
           catalog.pricing.costDiscountMultiplier;
+        catalog.pricing.maximumUsdPerThousandCharacters =
+          catalog.pricing.baseUsdPerThousandCharacters *
+          catalog.pricing.characterCostMultiplier *
+          Math.max(1, catalog.pricing.costDiscountMultiplier);
       }
       const { catalogDigest: _ignored, ...unsigned } = catalog;
       catalog.catalogDigest = canonicalVoiceEvidenceDigest(unsigned);

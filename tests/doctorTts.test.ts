@@ -1,11 +1,21 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { defaultConfig } from "../src/config/config";
 import { doctorMarkdownPath, runDoctor } from "../src/diagnostics/doctor";
 import { useTempProject } from "./helpers";
 
+const initialElevenLabsApiKey = process.env.ELEVENLABS_API_KEY;
+
 describe("producer doctor TTS diagnostics", () => {
   useTempProject();
+
+  afterEach(() => {
+    if (initialElevenLabsApiKey === undefined) {
+      delete process.env.ELEVENLABS_API_KEY;
+      return;
+    }
+    process.env.ELEVENLABS_API_KEY = initialElevenLabsApiKey;
+  });
 
   it("passes local Piper diagnostics when the binary and model files are configured", async () => {
     await writePiperConfig({
@@ -66,16 +76,12 @@ describe("producer doctor TTS diagnostics", () => {
     process.env.ELEVENLABS_API_KEY = "doctor-test-key";
     await writeElevenLabsConfig("voice_doctor_test");
 
-    try {
-      const report = await runDoctor();
-      expect(report.checks.find((check) => check.name === "TTS provider")).toMatchObject({
-        status: "pass",
-        message: expect.stringContaining("eleven_v3"),
-        nextAction: expect.stringContaining("cost quote"),
-      });
-    } finally {
-      delete process.env.ELEVENLABS_API_KEY;
-    }
+    const report = await runDoctor();
+    expect(report.checks.find((check) => check.name === "TTS provider")).toMatchObject({
+      status: "pass",
+      message: expect.stringContaining("eleven_v3"),
+      nextAction: expect.stringContaining("cost quote"),
+    });
   });
 });
 

@@ -21,6 +21,20 @@ export function usdToMicros(usd: number): number {
   return micros;
 }
 
+/** Converts an approved or accounted USD cap without rounding any fractional micro down. */
+export function usdToMicrosCeil(usd: number): number {
+  if (!Number.isFinite(usd) || usd < 0) {
+    throw new SafeExitError(`Invalid USD amount: ${usd}.`);
+  }
+  const scaled = usd * USD_MICROS;
+  const floatingPointNoise = Number.EPSILON * Math.max(1, Math.abs(scaled)) * 8;
+  const micros = Math.ceil(scaled - floatingPointNoise);
+  if (!Number.isSafeInteger(micros)) {
+    throw new SafeExitError(`USD amount is outside the supported range: ${usd}.`);
+  }
+  return micros;
+}
+
 /**
  * Converts a USD amount from micros to dollars.
  *

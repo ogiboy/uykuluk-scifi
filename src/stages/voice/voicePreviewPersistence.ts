@@ -1,3 +1,4 @@
+import { rm } from "node:fs/promises";
 import { registerRunArtifactPath } from "../../core/artifactRegistration.js";
 import { registeredArtifactSetRevision } from "../../core/artifactRevision.js";
 import { artifactPath } from "../../core/artifacts.js";
@@ -41,7 +42,9 @@ export async function recordVoicePreviewFailure(input: {
     }
     return { run: registerRunArtifactPath(current, failurePath), value: false };
   });
-  if (!mutation.value) {
+  if (mutation.value) {
+    await rm(artifactPath(input.runId, failurePath), { force: true });
+  } else {
     await appendVoicePreviewArtifactWritten(input.runId, failurePath);
   }
   await appendLedgerEvent({

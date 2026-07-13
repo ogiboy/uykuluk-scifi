@@ -3,6 +3,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { generateVoiceCandidates } from "../src/stages/voiceCandidates";
 import { generateVoicePreview } from "../src/stages/voicePreview";
+import { prepareApprovedSelectedVoiceRun } from "./elevenLabsVoiceWorkflowFixtures";
 import { useTempProject } from "./helpers";
 import {
   configureElevenLabs,
@@ -44,6 +45,31 @@ describe("producer voice selection CLI", () => {
       selectedBy: "cli-operator",
       voice: { voiceId, productionEligibility: { status: "preview-only" } },
       selectionDigest: expect.stringMatching(/^[a-f0-9]{64}$/),
+    });
+  });
+
+  it("prints parseable pre-spend reselection recovery evidence", async () => {
+    const { runId } = await prepareApprovedSelectedVoiceRun();
+
+    const result = runCli([
+      "voice-reselect",
+      "--run",
+      runId,
+      "--reviewed-by",
+      "cli-voice-director",
+      "--reason",
+      "voice rejected before synthesis",
+      "--json",
+    ]);
+
+    expect(result.status).toBe(0);
+    expect(result.stderr).toBe("");
+    expect(JSON.parse(result.stdout) as unknown).toMatchObject({
+      schemaVersion: 1,
+      runId,
+      reviewedBy: "cli-voice-director",
+      nextState: "PRODUCTION_PACKAGE_GENERATED",
+      previousSelection: { digest: expect.stringMatching(/^[a-f0-9]{64}$/) },
     });
   });
 });

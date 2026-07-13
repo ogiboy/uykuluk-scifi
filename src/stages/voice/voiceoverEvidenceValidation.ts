@@ -8,7 +8,7 @@ import { pathExists } from "../../utils/fs.js";
 import type { VoiceoverAudioMeta } from "./voiceoverEvidence.js";
 import { voiceoverPreparationSchema } from "./voiceoverPreparation.js";
 
-const persistedAlignmentSchema = z
+export const persistedAlignmentSchema = z
   .strictObject({
     characters: z.array(z.string()).min(1),
     characterStartTimesSeconds: z.array(z.number().nonnegative()).min(1),

@@ -60,6 +60,10 @@ export function normalizeVoiceCatalog(input: NormalizeCatalogInput): VoiceCatalo
     costDiscountMultiplier,
     effectiveUsdPerThousandCharacters:
       input.request.usdPerThousandCharacters * characterCostMultiplier * costDiscountMultiplier,
+    maximumUsdPerThousandCharacters:
+      input.request.usdPerThousandCharacters *
+      characterCostMultiplier *
+      Math.max(1, costDiscountMultiplier),
     exactness: "standard-voice-only" as const,
   };
   const modelSnapshotBase = {

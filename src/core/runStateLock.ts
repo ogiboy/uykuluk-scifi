@@ -6,6 +6,11 @@ import { runPath } from "./runPaths.js";
 
 const lockSettings = { timeoutMs: 5_000, retryMs: 20, staleMs: 30_000, hardStaleMs: 5 * 60_000 };
 
+interface RunStateLockOwner {
+  pid?: number;
+  token?: string;
+}
+
 /** Serializes compare-and-save mutations for one run state file. */
 export async function withRunStateLock<T>(runId: string, task: () => Promise<T>): Promise<T> {
   const target = runPath(runId, ".state-mutation.lock");
@@ -74,11 +79,17 @@ async function reclaimStaleLock(target: string): Promise<boolean> {
   }
 }
 
-async function readLockOwner(target: string): Promise<{ pid?: number } | undefined> {
+async function readLockOwner(target: string): Promise<RunStateLockOwner | undefined> {
   try {
-    return JSON.parse(await readFile(path.join(target, "owner.json"), "utf8")) as { pid?: number };
-  } catch {
-    return undefined;
+    const owner = JSON.parse(
+      await readFile(path.join(target, "owner.json"), "utf8"),
+    ) as RunStateLockOwner;
+    return owner;
+  } catch (error) {
+    if (error instanceof SyntaxError || (error as NodeJS.ErrnoException).code === "ENOENT") {
+      return undefined;
+    }
+    throw error;
   }
 }
 
@@ -93,14 +104,8 @@ function isProcessAlive(pid: number | undefined): boolean {
 }
 
 async function releaseOwnedLock(target: string, token: string): Promise<void> {
-  try {
-    const owner = JSON.parse(await readFile(path.join(target, "owner.json"), "utf8")) as {
-      token?: string;
-    };
-    if (owner.token === token) await rm(target, { recursive: true, force: true });
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
-  }
+  const owner = await readLockOwner(target);
+  if (owner?.token === token) await rm(target, { recursive: true, force: true });
 }
 
 async function delay(ms: number): Promise<void> {

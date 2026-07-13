@@ -12,7 +12,27 @@ export const wavOutputFormatSchema = z.enum([
 
 export type ElevenLabsWavOutputFormat = z.infer<typeof wavOutputFormatSchema>;
 
+export const elevenLabsBillingEvidenceSchema = z.strictObject({
+  source: z.literal("provider-reported-credits-approved-tariff-derived-usd"),
+  billableCredits: z.number().nonnegative(),
+  baseUsdPerThousandBillableCredits: z.number().positive(),
+  derivedUsdMicros: z.int().nonnegative(),
+});
+
+export const elevenLabsRequestEvidenceSchema = z.strictObject({
+  chunkIndex: z.int().nonnegative(),
+  textDigest: z.string().regex(/^[a-f0-9]{64}$/),
+  requestIdHash: z
+    .string()
+    .regex(/^[a-f0-9]{64}$/)
+    .optional(),
+  reportedBillableCredits: z.number().nonnegative(),
+});
+
+export type ElevenLabsBillingEvidence = z.infer<typeof elevenLabsBillingEvidenceSchema>;
+
 export type ElevenLabsTtsProviderConfig = {
+  bindingDigest: string;
   voiceId: string;
   modelId: string;
   languageCode: "tr";
@@ -22,7 +42,8 @@ export type ElevenLabsTtsProviderConfig = {
   outputFormat: ElevenLabsWavOutputFormat;
   timeoutMs: number;
   maxRetries: number;
-  usdPerThousandCharacters: number;
+  maximumUsdPerThousandCharacters: number;
+  billedCreditUsdPerThousandCharacters: number;
   voiceSettings?: {
     stability?: number;
     similarityBoost?: number;
@@ -52,7 +73,7 @@ export type ElevenLabsTimingClient = {
     previousText?: string;
     nextText?: string;
     outputFormat: ElevenLabsWavOutputFormat;
-    voiceSettings?: ElevenLabsTtsProviderConfig["voiceSettings"];
+    voiceSettings: ElevenLabsTtsProviderConfig["voiceSettings"];
     signal: AbortSignal;
     timeoutMs: number;
     maxRetries: number;

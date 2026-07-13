@@ -1,7 +1,9 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { chmod, mkdir, readFile, writeFile } from "node:fs/promises";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { artifactPath } from "../src/core/artifacts";
 import { loadRun } from "../src/core/runStore";
+import { readCostReservationSummaries } from "../src/costs/costReservationStore";
 import { approveIdea } from "../src/stages/approveIdea";
 import { approveScript } from "../src/stages/approveScript";
 import { estimateCost } from "../src/stages/estimate";
@@ -13,8 +15,13 @@ import { generateRenderPlan } from "../src/stages/renderPlan";
 import { reviewScript } from "../src/stages/reviewScript";
 import { generateScript } from "../src/stages/script";
 import { generateVoiceoverAudio } from "../src/stages/voice";
+import { DeterministicReferenceTtsProvider } from "../src/stages/voice/providers/deterministicReferenceTtsProvider";
+import { PiperTtsProvider } from "../src/stages/voice/providers/piperTtsProvider";
 import { voiceoverAudioMetaSchema } from "../src/stages/voice/voiceoverEvidence";
+import { voiceoverAudioPath } from "../src/stages/voice/voiceoverPaths";
+import { wavFromPcm16 } from "../src/stages/voice/voiceWav";
 import { pathExists } from "../src/utils/fs";
+import { sha256 } from "../src/utils/hash";
 import { readJsonFile } from "../src/utils/json";
 import { useTempProject } from "./helpers";
 
@@ -153,6 +160,93 @@ describe("voiceover audio", () => {
     expect(await pathExists(artifactPath(runId, "production/audio/voiceover.wav"))).toBe(false);
   });
 
+  it("terminates a Piper process that exceeds the bounded timeout", async () => {
+    const binary = path.resolve("scripts/fake-piper-timeout-test.mjs");
+    const modelPath = path.resolve("models/piper/test/timeout-model.onnx");
+    await mkdir(path.dirname(binary), { recursive: true });
+    await mkdir(path.dirname(modelPath), { recursive: true });
+    await writeFile(modelPath, "fake local Piper timeout model", "utf8");
+    await writeFile(
+      binary,
+      `#!/usr/bin/env node
+import { writeFileSync } from "node:fs";
+const outputIndex = process.argv.indexOf("--output_file");
+writeFileSync(process.argv[outputIndex + 1], "partial output");
+process.on("SIGTERM", () => undefined);
+setInterval(() => undefined, 1_000);
+`,
+      "utf8",
+    );
+    await chmod(binary, 0o755);
+    const provider = new PiperTtsProvider({ binary, modelPath, timeoutMs: 50 });
+
+    await expect(
+      provider.synthesize({ runId: "run_piper_timeout", text: "zaman aşımı" }),
+    ).rejects.toThrow(/Piper timed out after 50ms/i);
+    expect(await pathExists(artifactPath("run_piper_timeout", voiceoverAudioPath))).toBe(false);
+  });
+
+  it("uses the full deterministic reference duration below the 20-minute limit", async () => {
+    const provider = new DeterministicReferenceTtsProvider();
+
+    const result = await provider.synthesize({ text: Array(120).fill("kelime").join(" ") });
+
+    expect(result.durationSeconds).toBe(50);
+  });
+
+  it("rejects deterministic reference narration longer than 20 minutes", async () => {
+    const provider = new DeterministicReferenceTtsProvider();
+
+    await expect(
+      provider.synthesize({ text: Array(2_881).fill("kelime").join(" ") }),
+    ).rejects.toThrow(/20-minute duration/i);
+  });
+
+  it("runs reviewed local Piper through the shared orchestrator without paid gates", async () => {
+    const piper = await enableFakePiper();
+    const runId = await prepareReadyRun({ renderPlan: true });
+
+    const meta = await generateVoiceoverAudio(runId);
+
+    expect(meta).toMatchObject({
+      mode: "local-piper",
+      quality: "local-piper",
+      provider: {
+        binary: piper.binary,
+        modelPath: piper.modelPath,
+        modelSha256: sha256("fake local Piper model"),
+        configPath: piper.configPath,
+        configSha256: sha256('{"audio":{"sample_rate":24000}}'),
+      },
+      output: {
+        path: "production/audio/voiceover.wav",
+        sha256: expect.stringMatching(/^[a-f0-9]{64}$/),
+      },
+    });
+    expect(meta.paidExecution).toBeUndefined();
+    expect(meta.alignment).toBeUndefined();
+    expect(await readCostReservationSummaries(runId)).toEqual([]);
+    const run = await loadRun(runId);
+    expect(run.artifacts.some((item) => item.includes("voice-candidates"))).toBe(false);
+    expect(run.artifacts.some((item) => item.includes("voice-selections"))).toBe(false);
+    const wav = await readFile(artifactPath(runId, "production/audio/voiceover.wav"));
+    expect(wav.subarray(0, 4).toString("ascii")).toBe("RIFF");
+    const evidence = (await generateEvidenceBundle(runId)) as {
+      voiceoverAudio: {
+        status: string;
+        mode: string;
+        productionVoiceCandidate: boolean;
+        quality: string;
+      };
+    };
+    expect(evidence.voiceoverAudio).toMatchObject({
+      status: "pass",
+      mode: "local-piper",
+      productionVoiceCandidate: true,
+      quality: "local-piper",
+    });
+  });
+
   it("rejects local Piper metadata without model provenance digests", () => {
     expect(() =>
       voiceoverAudioMetaSchema.parse({
@@ -210,6 +304,35 @@ async function preparePackagedRun(): Promise<string> {
 
 async function enableDeterministicTts(): Promise<void> {
   await configureTts({ enabled: true, mode: "deterministic-local" });
+}
+
+async function enableFakePiper(): Promise<{
+  binary: string;
+  modelPath: string;
+  configPath: string;
+}> {
+  const binary = path.resolve("scripts/fake-piper-test.mjs");
+  const modelPath = path.resolve("models/piper/test/model.onnx");
+  const configPath = path.resolve("models/piper/test/model.onnx.json");
+  const wav = wavFromPcm16(Buffer.alloc(24_000 * 2), 24_000, 1);
+  await mkdir(path.dirname(binary), { recursive: true });
+  await mkdir(path.dirname(modelPath), { recursive: true });
+  await writeFile(modelPath, "fake local Piper model", "utf8");
+  await writeFile(configPath, '{"audio":{"sample_rate":24000}}', "utf8");
+  await writeFile(
+    binary,
+    `#!/usr/bin/env node\nimport { writeFileSync } from "node:fs";\nconst outputIndex = process.argv.indexOf("--output_file");\nwriteFileSync(process.argv[outputIndex + 1], Buffer.from("${wav.toString("base64")}", "base64"));\n`,
+    "utf8",
+  );
+  await chmod(binary, 0o755);
+  await configureTts({
+    enabled: true,
+    mode: "local-piper",
+    piperBinary: binary,
+    piperModelPath: modelPath,
+    piperConfigPath: configPath,
+  });
+  return { binary, modelPath, configPath };
 }
 
 async function configureTts(

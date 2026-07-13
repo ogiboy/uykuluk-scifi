@@ -37,5 +37,7 @@ export function createOfficialElevenLabsTimingClient(apiKey: string): ElevenLabs
 }
 
 function parseCharacterCost(value: string | null): number | undefined {
-  return value !== null && /^\d+$/.test(value) ? Number(value) : undefined;
+  if (value === null || !/^\d+(?:\.\d{1,6})?$/.test(value)) return undefined;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined;
 }

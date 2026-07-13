@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 
 import { loadConfig } from "../../../config/config.js";
+import type { ProducerConfig } from "../../../config/schema.js";
 import { latestRegisteredArtifactPath } from "../../../core/artifactRegistration.js";
 import { artifactPath } from "../../../core/artifacts.js";
 import { SafeExitError } from "../../../core/errors.js";
@@ -54,6 +55,7 @@ export async function readVoiceSelectionWithPath(
 
 export async function readCurrentVoiceSelection(
   runId: string,
+  options: { config?: ProducerConfig } = {},
 ): Promise<{
   catalogPath: string;
   previewPath: string;
@@ -63,7 +65,7 @@ export async function readCurrentVoiceSelection(
   selection: VoiceSelection;
 }> {
   const startingRun = await loadRun(runId);
-  const config = await loadConfig();
+  const config = options.config ?? (await loadConfig());
   const currentSelection = await readVoiceSelectionWithPath(runId);
   const selection = currentSelection.selection;
   const currentCatalog = await readVoiceCandidatesWithPath(runId);

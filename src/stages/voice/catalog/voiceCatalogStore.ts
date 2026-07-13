@@ -133,6 +133,13 @@ function assertNestedCatalogDigests(catalog: VoiceCandidates): void {
   if (Math.abs(expectedRate - catalog.pricing.effectiveUsdPerThousandCharacters) > 1e-12) {
     throw new SafeExitError("Voice catalog pricing snapshot is internally inconsistent.");
   }
+  const expectedMaximumRate =
+    catalog.pricing.baseUsdPerThousandCharacters *
+    catalog.pricing.characterCostMultiplier *
+    Math.max(1, catalog.pricing.costDiscountMultiplier);
+  if (Math.abs(expectedMaximumRate - catalog.pricing.maximumUsdPerThousandCharacters) > 1e-12) {
+    throw new SafeExitError("Voice catalog maximum pricing snapshot is internally inconsistent.");
+  }
   const { digest: pricingDigest, ...pricingInput } = catalog.pricing;
   if (canonicalVoiceEvidenceDigest(pricingInput) !== pricingDigest) {
     throw new SafeExitError("Voice catalog pricing digest does not match its persisted content.");

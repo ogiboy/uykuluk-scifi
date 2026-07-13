@@ -11,6 +11,7 @@ import {
   readCostReservationSummaries,
 } from "./costReservationStore.js";
 import { microsToUsd, usdToMicros } from "./money.js";
+import type { ProviderRequestEvidence } from "./providerRequestEvidence.js";
 
 /**
  * Loads an approved quote line for a specified stage of a production-ready run.
@@ -51,6 +52,8 @@ export async function loadApprovedQuoteLine(runId: string, stage: string) {
     quoteDigest: digest,
     provider: quoteLine.provider,
     model: quoteLine.model,
+    ...(quoteLine.bindingDigest ? { bindingDigest: quoteLine.bindingDigest } : {}),
+    ...(quoteLine.bindingSummary ? { bindingSummary: quoteLine.bindingSummary } : {}),
     maxUsdMicros: usdToMicros(quoteLine.estimatedUsd),
   };
 }
@@ -84,6 +87,7 @@ export async function appendUncertainEvent(
   reservation: CostReservationSummary,
   reason: string,
   providerRequestIdHash?: string,
+  requestEvidence?: ProviderRequestEvidence,
 ): Promise<void> {
   await appendCostReservationEvent({
     eventId: createId("reservation_event"),
@@ -92,6 +96,7 @@ export async function appendUncertainEvent(
     type: "UNCERTAIN",
     reason,
     providerRequestIdHash,
+    requestEvidence,
     createdAt: nowIso(),
   });
   await appendLedgerEvent({
@@ -99,7 +104,12 @@ export async function appendUncertainEvent(
     type: "COST_UNCERTAIN",
     stage: reservation.stage,
     message: "Cost reservation outcome is uncertain.",
-    data: { reservationId: reservation.reservationId, reason, providerRequestIdHash },
+    data: {
+      reservationId: reservation.reservationId,
+      reason,
+      providerRequestIdHash,
+      requestEvidence,
+    },
   });
 }
 
@@ -114,6 +124,7 @@ export async function ensureReservationCostEvent(
   reservation: CostReservationSummary,
   input: {
     actualUsdMicros: number;
+    resultEvidenceDigest?: string;
     inputTokens?: number;
     outputTokens?: number;
     durationMs?: number;
@@ -128,6 +139,11 @@ export async function ensureReservationCostEvent(
         "Reservation-linked cost event amount does not match reconciliation.",
       );
     }
+    if (existing.resultEvidenceDigest !== input.resultEvidenceDigest) {
+      throw new SafeExitError(
+        "Reservation-linked cost event result evidence does not match reconciliation.",
+      );
+    }
     return;
   }
   await appendCostEvent({
@@ -135,6 +151,7 @@ export async function ensureReservationCostEvent(
     stage: reservation.stage,
     provider: reservation.provider,
     reservationId: reservation.reservationId,
+    resultEvidenceDigest: input.resultEvidenceDigest,
     model: reservation.model,
     inputTokens: input.inputTokens,
     outputTokens: input.outputTokens,

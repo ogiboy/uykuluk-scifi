@@ -11,17 +11,13 @@ import {
 import { SafeExitError } from "../core/errors.js";
 import { appendLedgerEvent } from "../core/ledger.js";
 import { loadRun, saveRun } from "../core/runStore.js";
-import { executeReservedProviderOperation } from "../costs/reservedProviderExecution.js";
 import { requireApproval, requireState } from "../safeguards/approvalGuard.js";
 import { nowIso } from "../utils/time.js";
 import { verifyProductionPackage } from "./production/productionPackageIntegrity.js";
 import { readRenderPlanEvidence } from "./renderPlan.js";
-import { createTtsProvider } from "./voice/providers/createTtsProvider.js";
-import type {
-  TtsProvider,
-  TtsSynthesisInput,
-  TtsSynthesisResult,
-} from "./voice/providers/ttsProvider.js";
+import type { VoiceExecutionMetadataProvider } from "./voice/voiceExecutionPreflight.js";
+import { prepareVoiceExecution } from "./voice/voiceExecutionPreparation.js";
+import { recoverCommittedVoiceExecution } from "./voice/voiceExecutionRecovery.js";
 import {
   VoiceoverAudioMeta,
   voiceoverAlignmentPath,
@@ -36,20 +32,18 @@ import {
   voiceoverPreparedTextPath,
 } from "./voice/voiceoverPreparation.js";
 import { renderVoiceoverReviewMarkdown } from "./voice/voiceoverReviewMarkdown.js";
+import { synthesizeVoiceover } from "./voice/voiceSynthesisExecution.js";
 
-export async function generateVoiceoverAudio(runId: string): Promise<VoiceoverAudioMeta> {
+export async function generateVoiceoverAudio(
+  runId: string,
+  options: {
+    metadataProvider?: VoiceExecutionMetadataProvider;
+    afterSynthesis?: () => Promise<void>;
+    afterResultCommitted?: () => Promise<void>;
+  } = {},
+): Promise<VoiceoverAudioMeta> {
   const config = await loadConfig();
   let run = await loadRun(runId);
-  if (!config.providers.tts.enabled) {
-    await appendLedgerEvent({
-      runId: run.runId,
-      type: "GUARD_BLOCKED",
-      stage: "voice",
-      message: "Voice/TTS is disabled until local TTS configuration is explicitly enabled.",
-    });
-    throw new SafeExitError("Voice/TTS is disabled and requires explicit local TTS configuration.");
-  }
-
   await requireState(run, "READY_FOR_MANUAL_PRODUCTION", "voice");
   await requireApproval(run, "script", "voice");
   await verifyProductionPackage(run);
@@ -74,20 +68,53 @@ export async function generateVoiceoverAudio(runId: string): Promise<VoiceoverAu
     throw new SafeExitError("Voice/TTS requires non-empty production/voiceover.txt.");
   }
 
-  const preparation = prepareVoiceoverText({
-    runId: run.runId,
-    sourceText: voiceover,
-    pronunciationReplacements: config.providers.tts.pronunciationReplacements,
-  });
-  const provider = createTtsProvider(config.providers.tts);
-  const synthesisInput = { runId: run.runId, text: preparation.text };
-  const audio = await synthesizeVoiceover(provider, synthesisInput, {
-    timeoutMs: config.providers.tts.elevenLabs.timeoutMs,
-    operationBinding: {
-      preparationDigest: preparation.evidence.output.sha256,
-      providerMode: provider.mode,
-    },
-  });
+  const recovered = await recoverCommittedVoiceExecution({ run, sourceDigest: source.sha256 });
+  let mode: VoiceoverAudioMeta["mode"];
+  let preparation: ReturnType<typeof prepareVoiceoverText>;
+  let synthesis: Awaited<ReturnType<typeof synthesizeVoiceover>>;
+  if (recovered) {
+    mode = recovered.mode;
+    preparation = recovered.preparation;
+    synthesis = recovered.synthesis;
+  } else {
+    if (!config.providers.tts.enabled) {
+      await appendLedgerEvent({
+        runId: run.runId,
+        type: "GUARD_BLOCKED",
+        stage: "voice",
+        message: "Voice/TTS is disabled until local TTS configuration is explicitly enabled.",
+      });
+      throw new SafeExitError(
+        "Voice/TTS is disabled and requires explicit local TTS configuration.",
+      );
+    }
+    preparation = prepareVoiceoverText({
+      runId: run.runId,
+      sourceText: voiceover,
+      pronunciationReplacements: config.providers.tts.pronunciationReplacements,
+    });
+    const execution = await prepareVoiceExecution({
+      runId: run.runId,
+      config,
+      preparedText: preparation.text,
+      metadataProvider: options.metadataProvider,
+    });
+    mode = execution.provider.mode;
+    synthesis = await synthesizeVoiceover(
+      execution.provider,
+      { runId: run.runId, text: preparation.text },
+      {
+        preparationDigest: preparation.evidence.output.sha256,
+        binding: execution.binding,
+        preflight: execution.preflight,
+        approvedQuote: execution.approvedQuote,
+        afterResultCommitted: options.afterResultCommitted,
+        preparation: { evidence: preparation.evidence, evidenceText: preparation.evidenceText },
+      },
+    );
+  }
+  const { audio } = synthesis;
+  await options.afterSynthesis?.();
 
   run = await writeRunText(run, "voice", voiceoverPreparedTextPath, preparation.text);
   run = await writeRunJson(run, "voice", voiceoverPreparationPath, preparation.evidence);
@@ -116,7 +143,7 @@ export async function generateVoiceoverAudio(runId: string): Promise<VoiceoverAu
     schemaVersion: 1,
     runId: run.runId,
     createdAt: nowIso(),
-    mode: provider.mode,
+    mode,
     quality: audio.quality,
     source: {
       ...source,
@@ -138,6 +165,7 @@ export async function generateVoiceoverAudio(runId: string): Promise<VoiceoverAu
       channels: audio.channels,
     },
     provider: audio.provider,
+    paidExecution: synthesis.paidExecution,
     processing: audio.processing,
     alignment,
   });
@@ -150,48 +178,6 @@ export async function generateVoiceoverAudio(runId: string): Promise<VoiceoverAu
   );
   await saveRun(run);
   return meta;
-}
-
-async function synthesizeVoiceover(
-  provider: TtsProvider,
-  input: TtsSynthesisInput,
-  options: {
-    timeoutMs: number;
-    operationBinding: { preparationDigest: string; providerMode: string };
-  },
-): Promise<TtsSynthesisResult> {
-  if (provider.executionPolicy === "local") {
-    return provider.synthesize(input);
-  }
-  provider.assertReady();
-  const operationId = `tts_${createHash("sha256")
-    .update(
-      JSON.stringify({
-        runId: input.runId,
-        textDigest: createHash("sha256").update(input.text, "utf8").digest("hex"),
-        ...options.operationBinding,
-      }),
-      "utf8",
-    )
-    .digest("hex")}`;
-  const result = await executeReservedProviderOperation({
-    runId: input.runId,
-    stage: "tts",
-    operationId,
-    timeoutMs: options.timeoutMs,
-    adapter: provider.createReservedAdapter(input),
-  });
-  if (result.status === "completed") {
-    return result.value;
-  }
-  if (result.status === "definitely-not-sent") {
-    throw new SafeExitError(
-      "ElevenLabs TTS was not sent; repair provider configuration and create a fresh cost quote before retrying.",
-    );
-  }
-  throw new SafeExitError(
-    "ElevenLabs TTS reservation requires reconciliation before retry; automatic duplicate generation is blocked.",
-  );
 }
 
 function countWords(value: string): number {

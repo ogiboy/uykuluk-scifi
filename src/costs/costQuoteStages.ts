@@ -2,8 +2,10 @@ import { readFile } from "node:fs/promises";
 import type { ProducerConfig } from "../config/schema.js";
 import { artifactPath } from "../core/artifacts.js";
 import type { RunRecord } from "../core/state.js";
+import { splitElevenLabsText } from "../stages/voice/elevenLabsTextChunks.js";
+import { buildSelectedVoiceExecutionBinding } from "../stages/voice/voiceExecutionBinding.js";
 import { prepareVoiceoverText } from "../stages/voice/voiceoverPreparation.js";
-import { estimateElevenLabsTtsUsd } from "./elevenLabsPricing.js";
+import { estimateElevenLabsMaximumTtsUsd } from "./elevenLabsPricing.js";
 import { defaultStagePricing, type StagePricing } from "./pricing.js";
 
 /** Builds enabled stage quote lines, including run-specific hosted TTS character pricing. */
@@ -24,17 +26,37 @@ export async function quoteCostStages(
     sourceText: voiceover,
     pronunciationReplacements: config.providers.tts.pronunciationReplacements,
   });
+  const binding = await buildSelectedVoiceExecutionBinding({
+    runId: run.runId,
+    config,
+    preparedText: prepared.text,
+  });
   return stages.map((stage) =>
     stage.stage === "tts"
       ? {
           stage: "tts",
           provider: "elevenlabs",
-          model: config.providers.tts.elevenLabs.modelId,
+          model: binding.model.modelId,
+          bindingDigest: binding.bindingDigest,
+          bindingSummary: {
+            kind: "selected-voice",
+            selectionDigest: binding.selection.digest,
+            voiceId: binding.voice.voiceId,
+            modelId: binding.model.modelId,
+            pricingDigest: binding.pricing.digest,
+            expectedUsdPerThousandCharacters: binding.pricing.effectiveUsdPerThousandCharacters,
+            maximumUsdPerThousandCharacters: binding.pricing.maximumUsdPerThousandCharacters,
+          },
           enabled: true,
-          estimatedUsd: estimateElevenLabsTtsUsd(
-            prepared.text,
-            config.providers.tts.elevenLabs.usdPerThousandCharacters,
-          ),
+          estimatedUsd: estimateElevenLabsMaximumTtsUsd({
+            chunkCharacterCounts: splitElevenLabsText(
+              prepared.text,
+              binding.synthesis.maxCharactersPerRequest,
+            ).map((chunk) => chunk.length),
+            baseUsdPerThousandCharacters: binding.pricing.baseUsdPerThousandCharacters,
+            characterCostMultiplier: binding.pricing.characterCostMultiplier,
+            costDiscountMultiplier: binding.pricing.costDiscountMultiplier,
+          }),
         }
       : stage,
   );

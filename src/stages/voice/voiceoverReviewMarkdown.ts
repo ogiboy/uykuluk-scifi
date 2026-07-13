@@ -150,10 +150,33 @@ function providerSection(meta: VoiceoverAudioMeta): string[] {
         ["Model SHA-256", meta.provider.modelSha256 ?? "n/a"],
         ["Voice ID", meta.provider.voiceId ?? "n/a"],
         ["Output format", meta.provider.outputFormat ?? "n/a"],
+        ...paidExecutionRows(meta),
         ["Piper config", meta.provider.configPath ?? "n/a"],
         ["Piper config SHA-256", meta.provider.configSha256 ?? "n/a"],
       ],
     ),
+  ];
+}
+
+function paidExecutionRows(meta: VoiceoverAudioMeta): string[][] {
+  const paid = meta.paidExecution;
+  if (!paid) return [];
+  return [
+    ["Execution binding", paid.bindingDigest],
+    ["Selection digest", paid.selection.digest],
+    ["Live validation", paid.liveValidation.validationDigest],
+    ["Quote digest", paid.quoteDigest],
+    ["Approval ID", paid.approvalId],
+    ["Reservation ID", paid.reservationId],
+    ["Operation ID", paid.operationId],
+    ["Result spool", paid.resultSpool.path],
+    ["Result spool digest", paid.resultSpool.digest],
+    ["Actual USD micros", String(paid.actualUsdMicros)],
+    ["Provider-reported billable credits", String(paid.billing.billableCredits)],
+    [
+      "Approved base USD / 1K billable credits",
+      paid.billing.baseUsdPerThousandBillableCredits.toFixed(6),
+    ],
   ];
 }
 

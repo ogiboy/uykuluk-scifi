@@ -8,8 +8,10 @@ import { checkBudget } from "../safeguards/budgetGuard.js";
 import { verifyProductionPackage } from "../stages/production/productionPackageIntegrity.js";
 import { sha256 } from "../utils/hash.js";
 import { nowIso } from "../utils/time.js";
+import { costBindingSummarySchema } from "./costBindingSummary.js";
 import { renderCostEstimateMarkdown } from "./costEstimatePresentation.js";
 import { quoteCostStages } from "./costQuoteStages.js";
+import { executionBindingDigestSchema } from "./providerAdapterIdentity.js";
 
 const budgetSnapshotSchema = z.strictObject({
   perVideoUsd: z.number().nonnegative(),
@@ -22,6 +24,8 @@ const quotedStageSchema = z.strictObject({
   stage: z.string().min(1),
   provider: z.string().min(1),
   model: z.string().min(1).optional(),
+  bindingDigest: executionBindingDigestSchema.optional(),
+  bindingSummary: costBindingSummarySchema.optional(),
   enabled: z.boolean(),
   estimatedUsd: z.number().nonnegative(),
 });
@@ -195,13 +199,19 @@ function relevantConfigDigest(config: ProducerConfig): string {
   return sha256(
     JSON.stringify({
       providers: {
-        tts: config.providers.tts,
+        tts: executionRelevantTtsConfig(config),
         imageGeneration: config.providers.imageGeneration,
         youtube: config.providers.youtube,
       },
       budgets: config.budgets,
     }),
   );
+}
+
+function executionRelevantTtsConfig(config: ProducerConfig) {
+  const elevenLabs = { ...config.providers.tts.elevenLabs };
+  delete elevenLabs.voiceId;
+  return { ...config.providers.tts, elevenLabs };
 }
 
 function stagesDigest(stages: CostEstimate["stages"]): string {
@@ -213,6 +223,8 @@ function canonicalStages(stages: CostEstimate["stages"]): CostEstimate["stages"]
     stage: stage.stage,
     provider: stage.provider,
     ...(stage.model ? { model: stage.model } : {}),
+    ...(stage.bindingDigest ? { bindingDigest: stage.bindingDigest } : {}),
+    ...(stage.bindingSummary ? { bindingSummary: stage.bindingSummary } : {}),
     enabled: stage.enabled,
     estimatedUsd: stage.estimatedUsd,
   }));
