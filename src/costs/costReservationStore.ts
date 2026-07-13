@@ -1,98 +1,20 @@
 import { appendFile, readFile, readdir } from "node:fs/promises";
-import { z } from "zod";
 import { SafeExitError } from "../core/errors.js";
 import { isValidRunId, runPath, runsDir } from "../core/runStore.js";
 import { ensureDir, pathExists } from "../utils/fs.js";
-import { costBindingSummarySchema, type CostBindingSummary } from "./costBindingSummary.js";
-import { executionBindingDigestSchema } from "./providerAdapterIdentity.js";
 import {
-  providerRequestEvidenceSchema,
-  type ProviderRequestEvidence,
-} from "./providerRequestEvidence.js";
+  costReservationEventSchema,
+  type CostReservationEvent,
+  type CostReservationSummary,
+} from "./costReservationContracts.js";
+import { summarizeCostReservationEvents } from "./costReservationReplay.js";
 
-const providerRequestIdHashSchema = z.string().regex(/^[a-f0-9]{64}$/);
-
-const reservationBaseSchema = z.strictObject({
-  eventId: z.string().min(1),
-  reservationId: z.string().min(1),
-  runId: z.string().min(1),
-  createdAt: z.iso.datetime(),
-});
-
-const reservedEventSchema = reservationBaseSchema.extend({
-  type: z.literal("RESERVED"),
-  operationId: z.string().min(1),
-  approvalId: z.string().min(1),
-  quoteDigest: z.string().regex(/^[a-f0-9]{64}$/),
-  stage: z.string().min(1),
-  provider: z.string().min(1),
-  model: z.string().min(1).optional(),
-  bindingDigest: executionBindingDigestSchema.optional(),
-  bindingSummary: costBindingSummarySchema.optional(),
-  maxUsdMicros: z.int().nonnegative(),
-});
-
-const executionStartedEventSchema = reservationBaseSchema.extend({
-  type: z.literal("EXECUTION_STARTED"),
-  provider: z.string().min(1).optional(),
-  model: z.string().min(1).optional(),
-  bindingDigest: executionBindingDigestSchema.optional(),
-});
-
-const settlementEventSchema = reservationBaseSchema.extend({
-  type: z.enum(["SETTLEMENT_PENDING", "SETTLED"]),
-  actualUsdMicros: z.int().nonnegative(),
-  providerRequestIdHash: providerRequestIdHashSchema.optional(),
-  resultEvidenceDigest: executionBindingDigestSchema.optional(),
-});
-
-const reasonEventSchema = reservationBaseSchema.extend({
-  type: z.enum(["RELEASED", "UNCERTAIN", "RECONCILED_RELEASED"]),
-  reason: z.string().min(1),
-  providerRequestIdHash: providerRequestIdHashSchema.optional(),
-  requestEvidence: providerRequestEvidenceSchema.optional(),
-});
-
-const reconciledSettledEventSchema = reservationBaseSchema.extend({
-  type: z.literal("RECONCILED_SETTLED"),
-  actualUsdMicros: z.int().nonnegative(),
-  reason: z.string().min(1),
-});
-
-export const costReservationEventSchema = z.discriminatedUnion("type", [
-  reservedEventSchema,
-  executionStartedEventSchema,
-  settlementEventSchema,
-  reasonEventSchema,
-  reconciledSettledEventSchema,
-]);
-
-export type CostReservationEvent = z.infer<typeof costReservationEventSchema>;
-export type CostReservationStatus =
-  "RESERVED" | "EXECUTION_STARTED" | "SETTLEMENT_PENDING" | "SETTLED" | "RELEASED" | "UNCERTAIN";
-
-export type CostReservationSummary = {
-  reservationId: string;
-  runId: string;
-  operationId: string;
-  approvalId: string;
-  quoteDigest: string;
-  stage: string;
-  provider: string;
-  model?: string;
-  bindingDigest?: string;
-  bindingSummary?: CostBindingSummary;
-  maxUsdMicros: number;
-  status: CostReservationStatus;
-  actualUsdMicros?: number;
-  executionStartedAt?: string;
-  providerRequestIdHash?: string;
-  requestEvidence?: ProviderRequestEvidence;
-  resultEvidenceDigest?: string;
-  reason?: string;
-  reservedAt: string;
-  updatedAt: string;
-};
+export { costReservationEventSchema } from "./costReservationContracts.js";
+export type {
+  CostReservationEvent,
+  CostReservationStatus,
+  CostReservationSummary,
+} from "./costReservationContracts.js";
 
 /** Returns the validated run's reservation ledger path. */
 export function costReservationLedgerPath(runId: string): string {
@@ -160,131 +82,4 @@ export function isActiveCostReservation(summary: CostReservationSummary): boolea
   return ["RESERVED", "EXECUTION_STARTED", "SETTLEMENT_PENDING", "UNCERTAIN"].includes(
     summary.status,
   );
-}
-
-/**
- * Replays cost reservation events into their current summaries.
- *
- * @param events - The events to process in ledger order.
- * @returns The aggregated reservation summaries in their insertion order.
- */
-function summarizeCostReservationEvents(events: CostReservationEvent[]): CostReservationSummary[] {
-  const summaries = new Map<string, CostReservationSummary>();
-  const eventIds = new Set<string>();
-  for (const event of events) {
-    if (eventIds.has(event.eventId)) {
-      throw new SafeExitError(`Duplicate cost reservation event id: ${event.eventId}.`);
-    }
-    eventIds.add(event.eventId);
-    if (event.type === "RESERVED") {
-      if (summaries.has(event.reservationId)) {
-        throw new SafeExitError(`Duplicate reservation event: ${event.reservationId}.`);
-      }
-      summaries.set(event.reservationId, {
-        reservationId: event.reservationId,
-        runId: event.runId,
-        operationId: event.operationId,
-        approvalId: event.approvalId,
-        quoteDigest: event.quoteDigest,
-        stage: event.stage,
-        provider: event.provider,
-        model: event.model,
-        ...(event.bindingDigest ? { bindingDigest: event.bindingDigest } : {}),
-        ...(event.bindingSummary ? { bindingSummary: event.bindingSummary } : {}),
-        maxUsdMicros: event.maxUsdMicros,
-        status: "RESERVED",
-        reservedAt: event.createdAt,
-        updatedAt: event.createdAt,
-      });
-      continue;
-    }
-    const current = summaries.get(event.reservationId);
-    if (current?.runId !== event.runId) {
-      throw new SafeExitError(`Reservation event has no matching reserve: ${event.reservationId}.`);
-    }
-    summaries.set(event.reservationId, applyReservationEvent(current, event));
-  }
-  return [...summaries.values()];
-}
-
-/**
- * Applies a valid lifecycle event to a cost reservation summary.
- *
- * @param current - The reservation summary before applying the event
- * @param event - The lifecycle event to apply
- * @returns The updated reservation summary
- * @throws `SafeExitError` if the transition is invalid, event identity does not match, or the event type is unsupported
- */
-function applyReservationEvent(
-  current: CostReservationSummary,
-  event: Exclude<CostReservationEvent, { type: "RESERVED" }>,
-): CostReservationSummary {
-  const allowed: Record<CostReservationStatus, CostReservationEvent["type"][]> = {
-    RESERVED: ["EXECUTION_STARTED", "RELEASED", "UNCERTAIN"],
-    EXECUTION_STARTED: ["SETTLEMENT_PENDING", "RELEASED", "UNCERTAIN"],
-    SETTLEMENT_PENDING: ["SETTLED"],
-    UNCERTAIN: ["RECONCILED_SETTLED", "RECONCILED_RELEASED"],
-    SETTLED: [],
-    RELEASED: [],
-  };
-  if (!allowed[current.status].includes(event.type)) {
-    throw new SafeExitError(
-      `Invalid cost reservation transition: ${current.status} -> ${event.type}.`,
-    );
-  }
-  if (event.type === "EXECUTION_STARTED") {
-    if (
-      (event.provider !== undefined && event.provider !== current.provider) ||
-      (event.model !== undefined && event.model !== current.model) ||
-      event.bindingDigest !== current.bindingDigest
-    ) {
-      throw new SafeExitError("Cost execution-start identity does not match its reservation.");
-    }
-    return {
-      ...current,
-      status: "EXECUTION_STARTED",
-      executionStartedAt: event.createdAt,
-      updatedAt: event.createdAt,
-    };
-  }
-  if (event.type === "SETTLEMENT_PENDING") {
-    return {
-      ...current,
-      status: "SETTLEMENT_PENDING",
-      actualUsdMicros: event.actualUsdMicros,
-      providerRequestIdHash: event.providerRequestIdHash ?? current.providerRequestIdHash,
-      resultEvidenceDigest: event.resultEvidenceDigest ?? current.resultEvidenceDigest,
-      updatedAt: event.createdAt,
-    };
-  }
-  if (event.type === "SETTLED" || event.type === "RECONCILED_SETTLED") {
-    return {
-      ...current,
-      status: "SETTLED",
-      actualUsdMicros: event.actualUsdMicros,
-      providerRequestIdHash:
-        ("providerRequestIdHash" in event ? event.providerRequestIdHash : undefined) ??
-        current.providerRequestIdHash,
-      resultEvidenceDigest:
-        ("resultEvidenceDigest" in event ? event.resultEvidenceDigest : undefined) ??
-        current.resultEvidenceDigest,
-      reason: "reason" in event ? event.reason : current.reason,
-      updatedAt: event.createdAt,
-    };
-  }
-  if (
-    event.type === "UNCERTAIN" ||
-    event.type === "RELEASED" ||
-    event.type === "RECONCILED_RELEASED"
-  ) {
-    return {
-      ...current,
-      status: event.type === "UNCERTAIN" ? "UNCERTAIN" : "RELEASED",
-      providerRequestIdHash: event.providerRequestIdHash ?? current.providerRequestIdHash,
-      requestEvidence: event.requestEvidence ?? current.requestEvidence,
-      reason: event.reason,
-      updatedAt: event.createdAt,
-    };
-  }
-  throw new SafeExitError(`Unsupported cost reservation event: ${event.type}.`);
 }
