@@ -36,6 +36,8 @@ and make scene-specific visuals first-class without adding ComfyUI or enabling p
   - `367a809f feat(voice): integrate approval-gated ElevenLabs synthesis`
   - `97ee13e6 chore(env): prepare ElevenLabs local credentials`
   - `0dfa07d7 feat(voice): support long-form Eleven v3 synthesis`
+  - `2dea4aaa docs(roadmap): plan controlled production settings`
+  - `179fac2f feat(voice): add redacted ElevenLabs candidate catalog`
 - ElevenLabs now has server-only credential diagnostics, dynamic prepared-character pricing,
   exact provider/model cost binding, reservation/settlement execution, WAV validation, character
   alignment artifacts, redacted provenance, and tamper detection. No live paid call has run.
@@ -50,6 +52,24 @@ and make scene-specific visuals first-class without adding ComfyUI or enabling p
 - Operator-created ignored `producer.config.json` uses `eleven_v3`; local `.env` files contain the
   configured server-only key. Tracked `.env.vault` and `apps/studio/.env.vault` ciphertext changes
   are operator-owned and must not be staged without explicit intent.
+- `producer voice-candidates` now performs bounded read-only account-voice/model/subscription calls
+  after package generation and persists only normalized hashes/classifications. A live read-only
+  smoke on 2026-07-12 returned 21 preview-capable voices, including 2 Turkish-verified candidates;
+  no raw URL or request ID survived serialization, and all voices were correctly `preview-only` on
+  the current free subscription. No TTS request ran.
+- Catalog-slice verification: 94 focused voice/cost/reservation/readiness tests, TS 7 and TS 6,
+  targeted ESLint, modularity, formatting, and secret scan passed. The live model reported Turkish
+  TTS support, 5,000 characters/request, no Speaker Boost, and 1x model/discount multipliers.
+- The next local audition slice now adds canonical digest verification, model-exact Turkish ranking,
+  free-form metadata redaction, bounded operation deadlines, conflicting-duplicate rejection,
+  account/tier checks, redirect-free 5 MiB preview download, tamper-checked local evidence,
+  attributable selection, prior-selection archive, and explicit paid-tier production-rights
+  confirmation. No preview URL can enter through CLI input and no synthesis call occurs.
+- Audition-slice verification passes 62 focused tests across catalog/provider/download, stage/store
+  tamper and concurrency cases, and CLI selection; TypeScript 7/6, targeted ESLint, Prettier,
+  modularity, secret scan, and diff-check also pass. Spec and code-quality reviews approved the
+  contract/store/persistence split after dot-segment, legacy-failure scoping, and trimmed-input
+  negative cases were added. No live TTS request ran.
 
 ## Decisions
 
@@ -69,8 +89,8 @@ and make scene-specific visuals first-class without adding ComfyUI or enabling p
 
 ## Remaining Work
 
-1. Add ElevenLabs voice/model catalog, preview candidates, durable operator selection, and exact
-   quote binding before full synthesis.
+1. Bind the implemented exact voice selection into quote, approval, reservation, operation id, and
+   full synthesis; bounded preview and durable selection are complete.
 2. Convert character alignment into a separate aligned SRT artifact and bind it into render approval.
 3. Implement the approved versioned config/prompt-profile design and guarded Studio surfaces, then
    add the idempotent one-command local bootstrap.

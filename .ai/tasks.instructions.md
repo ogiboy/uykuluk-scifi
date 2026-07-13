@@ -79,11 +79,11 @@
 
 ## Next
 
-- Complete ElevenLabs voice discovery before additional hosted-media work: fetch a redacted
-  voices/models catalog, expose only review-safe preview metadata/audio, persist one explicit
-  voice/model selection with compatibility and pricing evidence, and bind that exact selection into
-  the production quote and synthesis inputs. Preserve deterministic-local and Piper operation when
-  credentials are absent; do not run paid provider calls in CI.
+- Complete ElevenLabs production binding before additional hosted-media work. Redacted catalog,
+  bounded local preview, tamper-checked evidence, and attributable voice/model selection are now
+  implemented. Bind the exact selection digest into quote, approval, reservation, operation id,
+  synthesis inputs, final timing evidence, and cost reconciliation. Preserve deterministic-local
+  and Piper operation when credentials are absent; do not run paid provider calls in CI.
 - Implement the approved guarded settings contract in core/CLI before Studio: strict versioned
   config parsing, shared path resolution, atomic revisions, optimistic concurrency, redacted
   history/rollback, command-boundary immutable snapshots, and exact quote/approval invalidation.

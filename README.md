@@ -325,6 +325,11 @@ pnpm producer package --run <run_id>
 pnpm producer package --run <run_id> --json
 pnpm producer voice-candidates --run <run_id> # ElevenLabs metadata only; no speech synthesis
 pnpm producer voice-candidates --run <run_id> --json
+pnpm producer voice-preview --run <run_id> --voice <voice_id> # bounded provider preview -> local file
+pnpm producer voice-preview --run <run_id> --voice <voice_id> --json
+pnpm producer voice-select --run <run_id> --voice <voice_id> --reviewed-by <operator> --notes "<audition notes>"
+pnpm producer voice-select --run <run_id> --voice <voice_id> --reviewed-by <operator> --notes "<audition notes>" --json
+# Paid tiers additionally require --confirm-production-rights.
 pnpm producer render-plan --run <run_id>
 pnpm producer render-plan --run <run_id> --json
 pnpm producer review render-plan --run <run_id>
@@ -726,11 +731,27 @@ adding a web mutation.
 
 When ElevenLabs TTS is explicitly enabled, `producer voice-candidates --run <run_id>` performs only
 bounded read-only voice/model/subscription catalog requests after production-package generation. It
-writes a redacted `production/audio/voice_candidates.json` projection with candidate/model/pricing
-digests, preview availability, Turkish verification, and subscription/license classification; raw
+writes an append-only redacted `production/audio/voice-candidates/*.json` artifact with
+candidate/model/pricing digests, preview availability, Turkish verification, and
+subscription/license classification; raw
 preview URLs, API keys, provider request IDs, and provider bodies are not persisted. Free-tier
-candidates remain `preview-only`. Preview download, durable selection, and production synthesis
-binding are separate subsequent gates; this command never generates speech or approves cost.
+candidates remain `preview-only`; this command never downloads audio, synthesizes speech, or
+approves cost.
+
+`producer voice-preview` accepts only a persisted candidate id, refetches that exact provider
+record, and rejects metadata drift. It never accepts a URL from CLI or Studio. Downloads are HTTPS
+only, redirect-free, limited to approved ElevenLabs/public-bucket hosts, capped at 5 MiB and 30
+seconds, and identified by MP3/WAV magic bytes rather than provider content type. The local audio
+and JSON evidence contain hashes and source classes only; raw URLs, keys, headers, and request ids
+are not persisted. A failed refresh supersedes preceding active preview evidence; archived bytes
+remain audit-only and cannot be selected by file existence.
+
+`producer voice-select` then binds the current catalog, exact candidate metadata, local preview
+bytes/evidence, model, pricing, subscription, output format, chunk cap, and voice-settings digest to
+an operator name and required review notes. A valid prior selection is archived before replacement.
+Free-tier selection remains explicitly `preview-only`; paid-tier selection requires
+`--confirm-production-rights`. Selection does not synthesize speech or approve cost. Exact
+selection-bound quote/reservation/synthesis is the next gate.
 
 `producer review render-plan --run <run_id>` prints a read-only render-plan/contact-sheet handoff
 from validated render-plan evidence. It points operators to `production/storyboard_contact_sheet.md`

@@ -13,11 +13,15 @@ export function boundedList(
   limit: number,
   maxLength: number,
 ): string[] {
-  return Array.from(
-    new Set((values ?? []).map((value) => boundedOptional(value, maxLength)).filter(Boolean)),
-  )
-    .sort()
-    .slice(0, limit) as string[];
+  const normalizedValues = Array.from(
+    new Set(
+      (values ?? [])
+        .map((value) => boundedOptional(value, maxLength))
+        .filter((value): value is string => Boolean(value)),
+    ),
+  );
+  normalizedValues.sort((left, right) => left.localeCompare(right));
+  return normalizedValues.slice(0, limit);
 }
 
 export function boundedRequired(value: string, maxLength: number, label: string): string {
@@ -30,7 +34,34 @@ export function boundedRequired(value: string, maxLength: number, label: string)
 
 export function boundedOptional(value: string | undefined, maxLength: number): string | undefined {
   const normalized = value?.trim();
-  return normalized ? normalized.slice(0, maxLength) : undefined;
+  return normalized && !hasUnsafeControlCharacters(normalized)
+    ? normalized.slice(0, maxLength)
+    : undefined;
+}
+
+export function hasUnsafeControlCharacters(value: string | undefined): boolean {
+  if (!value) return false;
+  for (let index = 0; index < value.length; index += 1) {
+    if (isControlCharacterCode(value.charCodeAt(index))) return true;
+  }
+  return false;
+}
+
+export function hasUnsafeNotesControlCharacters(value: string | undefined): boolean {
+  if (!value) return false;
+  for (let index = 0; index < value.length; index += 1) {
+    const characterCode = value.charCodeAt(index);
+    if (isControlCharacterCode(characterCode) && !isNotesWhitespaceCode(characterCode)) return true;
+  }
+  return false;
+}
+
+function isControlCharacterCode(characterCode: number): boolean {
+  return characterCode <= 0x1f || (characterCode >= 0x7f && characterCode <= 0x9f);
+}
+
+function isNotesWhitespaceCode(characterCode: number): boolean {
+  return characterCode === 0x09 || characterCode === 0x0a || characterCode === 0x0d;
 }
 
 export function requirePositiveRate(value: number | undefined, label: string): number {

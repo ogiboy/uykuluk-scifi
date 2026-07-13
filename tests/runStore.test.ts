@@ -40,6 +40,18 @@ describe("run store integrity", () => {
     await expect(loadRun(run.runId)).resolves.toMatchObject({ runId: run.runId, state: "NEW" });
   });
 
+  it("rejects a stale concurrent save instead of overwriting the newer run record", async () => {
+    const created = await createRun();
+    const first = await loadRun(created.runId);
+    const stale = await loadRun(created.runId);
+    await saveRun({ ...first, warnings: ["first-writer"] });
+
+    await expect(saveRun({ ...stale, warnings: ["stale-writer"] })).rejects.toThrow(
+      "Run state changed",
+    );
+    await expect(loadRun(created.runId)).resolves.toMatchObject({ warnings: ["first-writer"] });
+  });
+
   it("rejects state whose embedded run id does not match its directory", async () => {
     const run = await createRun();
     await writeFile(

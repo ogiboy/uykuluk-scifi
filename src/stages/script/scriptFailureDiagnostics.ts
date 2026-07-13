@@ -42,8 +42,7 @@ export async function persistScriptGenerationFailure(
         createdAt: nowIso(),
       },
     );
-    await saveRun(updated);
-    return updated;
+    return await saveRun(updated);
   } catch {
     return run;
   }

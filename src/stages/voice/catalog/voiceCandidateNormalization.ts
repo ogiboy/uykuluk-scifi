@@ -1,10 +1,12 @@
 import { sha256 } from "../../../utils/hash.js";
 import type { VoiceCandidate } from "./voiceCatalogContracts.js";
+import { canonicalVoiceEvidenceDigest } from "./voiceCatalogDigest.js";
 import type { CatalogVoice, VoiceCatalogRequest } from "./voiceCatalogProvider.js";
 import {
   boundedList,
   boundedOptional,
   boundedRequired,
+  hasUnsafeControlCharacters,
   nonnegativeIntegerValue,
   nonnegativeNumber,
   normalizeLabels,
@@ -12,10 +14,20 @@ import {
 
 export function normalizeVoiceCandidate(
   voice: CatalogVoice,
-  request: VoiceCatalogRequest,
-  subscriptionTier: string,
+  request: Pick<VoiceCatalogRequest, "languageCode" | "modelId">,
+  subscription: { tier: string; status: string; hasOpenInvoices: boolean },
 ): VoiceCandidate | null {
   if (!/^[A-Za-z0-9._-]{1,128}$/.test(voice.voiceId)) return null;
+  if (
+    [
+      voice.name,
+      voice.category,
+      voice.description,
+      ...Object.entries(voice.labels ?? {}).flat(),
+    ].some(hasUnsafeControlCharacters)
+  ) {
+    return null;
+  }
   const verifiedLanguages = (voice.verifiedLanguages ?? [])
     .slice(0, 32)
     .map((language) => ({
@@ -36,8 +48,8 @@ export function normalizeVoiceCandidate(
           [right.language, right.modelId, right.locale ?? "", right.accent ?? ""].join("\0"),
         ),
     );
-  const preferredPreview = preferredPreviewUrl(voice, request);
-  const sourceClass = classifyPreview(preferredPreview.url);
+  const preferredPreview = resolveVoicePreview(voice, request);
+  const sourceClass = preferredPreview.sourceClass;
   const candidateBase = {
     voiceId: voice.voiceId,
     name: boundedOptional(voice.name, 120) ?? "Unnamed voice",
@@ -67,11 +79,11 @@ export function normalizeVoiceCandidate(
   };
   const productionEligibility = candidateEligibility({
     candidate: candidateBase,
-    subscriptionTier,
+    subscription,
     request,
   });
   const digestBase = { ...candidateBase, productionEligibility };
-  return { ...digestBase, metadataDigest: sha256(JSON.stringify(digestBase)) };
+  return { ...digestBase, metadataDigest: canonicalVoiceEvidenceDigest(digestBase) };
 }
 
 function normalizeSharing(sharing: NonNullable<CatalogVoice["sharing"]>) {
@@ -94,8 +106,8 @@ function normalizeSharing(sharing: NonNullable<CatalogVoice["sharing"]>) {
 
 function candidateEligibility(input: {
   candidate: Omit<VoiceCandidate, "metadataDigest" | "productionEligibility">;
-  subscriptionTier: string;
-  request: VoiceCatalogRequest;
+  subscription: { tier: string; status: string; hasOpenInvoices: boolean };
+  request: Pick<VoiceCatalogRequest, "languageCode" | "modelId">;
 }): VoiceCandidate["productionEligibility"] {
   const reasons: string[] = [];
   if (!input.candidate.preview.available) {
@@ -115,12 +127,18 @@ function candidateEligibility(input: {
   }
   if (
     input.candidate.availableForTiers.length > 0 &&
-    !input.candidate.availableForTiers.includes(input.subscriptionTier)
+    !input.candidate.availableForTiers.includes(input.subscription.tier)
   ) {
     reasons.push("The current subscription tier is not listed for this voice.");
   }
+  if (input.subscription.hasOpenInvoices) {
+    reasons.push("The provider reports open invoices on the current subscription.");
+  }
+  if (!isUsableSubscriptionStatus(input.subscription.status)) {
+    reasons.push("The provider reports an inactive or unsupported subscription status.");
+  }
   if (reasons.length > 0) return { status: "blocked", reasons };
-  if (input.subscriptionTier.trim().toLowerCase() === "free") {
+  if (input.subscription.tier.trim().toLowerCase() === "free") {
     return {
       status: "preview-only",
       reasons: ["Free-tier output is not eligible for this production publishing workflow."],
@@ -128,7 +146,9 @@ function candidateEligibility(input: {
   }
   if (
     !input.candidate.verifiedLanguages.some(
-      (language) => language.language === input.request.languageCode,
+      (language) =>
+        language.language === input.request.languageCode &&
+        language.modelId === input.request.modelId,
     )
   ) {
     return {
@@ -136,13 +156,26 @@ function candidateEligibility(input: {
       reasons: ["Voice lacks Turkish-specific verification; pronunciation review is required."],
     };
   }
-  return { status: "eligible", reasons: [] };
+  return {
+    status: "review-required",
+    reasons: [
+      "Operator confirmation of production usage rights is required before paid synthesis.",
+    ],
+  };
 }
 
-function preferredPreviewUrl(
+function isUsableSubscriptionStatus(value: string): boolean {
+  return ["active", "trialing", "free"].includes(value.trim().toLowerCase());
+}
+
+export function resolveVoicePreview(
   voice: CatalogVoice,
-  request: VoiceCatalogRequest,
-): { source: VoiceCandidate["preview"]["source"]; url?: string } {
+  request: Pick<VoiceCatalogRequest, "languageCode" | "modelId">,
+): {
+  source: VoiceCandidate["preview"]["source"];
+  sourceClass: VoiceCandidate["preview"]["sourceClass"];
+  url?: string;
+} {
   const verified = voice.verifiedLanguages ?? [];
   const exact = verified.find(
     (language) =>
@@ -154,9 +187,15 @@ function preferredPreviewUrl(
     (language) => language.language === request.languageCode && language.previewUrl,
   );
   const url = exact?.previewUrl ?? languageMatch?.previewUrl;
-  if (url) return { source: "verified-language", url };
-  if (voice.previewUrl) return { source: "voice", url: voice.previewUrl };
-  return { source: "none" };
+  if (url) return { source: "verified-language", sourceClass: classifyPreview(url), url };
+  if (voice.previewUrl) {
+    return {
+      source: "voice",
+      sourceClass: classifyPreview(voice.previewUrl),
+      url: voice.previewUrl,
+    };
+  }
+  return { source: "none", sourceClass: "none" };
 }
 
 function classifyPreview(value: string | undefined): VoiceCandidate["preview"]["sourceClass"] {
@@ -183,18 +222,38 @@ function classifyPreview(value: string | undefined): VoiceCandidate["preview"]["
   }
 }
 
-export function candidateOrder(left: VoiceCandidate, right: VoiceCandidate): number {
-  return candidateRank(left) - candidateRank(right) || left.name.localeCompare(right.name, "tr");
+export function candidateOrder(
+  left: VoiceCandidate,
+  right: VoiceCandidate,
+  request: Pick<VoiceCatalogRequest, "languageCode" | "modelId">,
+): number {
+  return (
+    candidateRank(left, request) - candidateRank(right, request) ||
+    left.name.localeCompare(right.name, "tr")
+  );
 }
 
-function candidateRank(candidate: VoiceCandidate): number {
+function candidateRank(
+  candidate: VoiceCandidate,
+  request: Pick<VoiceCatalogRequest, "languageCode" | "modelId">,
+): number {
   if (
     candidate.verifiedLanguages.some(
-      (language) => language.language === "tr" && language.hasPreview,
+      (language) =>
+        language.language === request.languageCode &&
+        language.modelId === request.modelId &&
+        language.hasPreview,
     )
   ) {
     return 0;
   }
-  if (candidate.verifiedLanguages.some((language) => language.language === "tr")) return 1;
+  if (
+    candidate.verifiedLanguages.some(
+      (language) =>
+        language.language === request.languageCode && language.modelId === request.modelId,
+    )
+  ) {
+    return 1;
+  }
   return candidate.preview.available ? 2 : 3;
 }

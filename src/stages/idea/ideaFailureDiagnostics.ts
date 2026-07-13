@@ -30,8 +30,7 @@ export async function persistIdeaGenerationFailure(
       message,
       createdAt: nowIso(),
     });
-    await saveRun(updated);
-    return updated;
+    return await saveRun(updated);
   } catch {
     return run;
   }

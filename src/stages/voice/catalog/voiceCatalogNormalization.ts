@@ -7,6 +7,7 @@ import {
   type VoiceCandidate,
   type VoiceCatalogProviderResult,
 } from "./voiceCatalogContracts.js";
+import { canonicalVoiceEvidenceDigest } from "./voiceCatalogDigest.js";
 import type {
   CatalogModel,
   CatalogSubscription,
@@ -31,12 +32,12 @@ type NormalizeCatalogInput = {
 };
 
 export function normalizeVoiceCatalog(input: NormalizeCatalogInput): VoiceCatalogProviderResult {
-  const model = requireCompatibleModel(input.models, input.request);
   const subscription = normalizeSubscription(input.subscription);
+  const model = requireCompatibleModel(input.models, input.request, subscription.tier);
   const { candidates, rejectedVoiceCount } = normalizeCandidates(
     input.voices,
     input.request,
-    subscription.tier,
+    subscription,
   );
   const characterCostMultiplier = requirePositiveRate(
     model.modelRates?.characterCostMultiplier,
@@ -46,6 +47,21 @@ export function normalizeVoiceCatalog(input: NormalizeCatalogInput): VoiceCatalo
     model.modelRates?.costDiscountMultiplier ?? 1,
     "cost discount multiplier",
   );
+  const languages = Array.from(
+    new Set((model.languages ?? []).map((language) => language.languageId.trim()).filter(Boolean)),
+  );
+  languages.sort((left, right) => left.localeCompare(right));
+  const sortedCandidates = [...candidates];
+  sortedCandidates.sort((left, right) => candidateOrder(left, right, input.request));
+  const pricingBase = {
+    source: "configured-base-plus-models-api" as const,
+    baseUsdPerThousandCharacters: input.request.usdPerThousandCharacters,
+    characterCostMultiplier,
+    costDiscountMultiplier,
+    effectiveUsdPerThousandCharacters:
+      input.request.usdPerThousandCharacters * characterCostMultiplier * costDiscountMultiplier,
+    exactness: "standard-voice-only" as const,
+  };
   const modelSnapshotBase = {
     modelId: model.modelId,
     ...(boundedOptional(model.name, 120) ? { name: boundedOptional(model.name, 120) } : {}),
@@ -62,18 +78,14 @@ export function normalizeVoiceCatalog(input: NormalizeCatalogInput): VoiceCatalo
     ...(positiveInteger(model.maxCharactersRequestSubscribedUser)
       ? { maxCharactersRequestSubscribedUser: model.maxCharactersRequestSubscribedUser }
       : {}),
-    languages: Array.from(
-      new Set(
-        (model.languages ?? []).map((language) => language.languageId.trim()).filter(Boolean),
-      ),
-    ).sort(),
+    languages,
     ...(boundedOptional(model.concurrencyGroup, 120)
       ? { concurrencyGroup: boundedOptional(model.concurrencyGroup, 120) }
       : {}),
   };
   const modelSnapshot = {
     ...modelSnapshotBase,
-    metadataDigest: sha256(JSON.stringify(modelSnapshotBase)),
+    metadataDigest: canonicalVoiceEvidenceDigest(modelSnapshotBase),
   };
 
   return voiceCatalogProviderResultSchema.parse({
@@ -86,31 +98,32 @@ export function normalizeVoiceCatalog(input: NormalizeCatalogInput): VoiceCatalo
     rejectedVoiceCount,
     subscription,
     model: modelSnapshot,
-    pricing: {
-      source: "configured-base-plus-models-api",
-      baseUsdPerThousandCharacters: input.request.usdPerThousandCharacters,
-      characterCostMultiplier,
-      costDiscountMultiplier,
-      effectiveUsdPerThousandCharacters:
-        input.request.usdPerThousandCharacters * characterCostMultiplier * costDiscountMultiplier,
-      exactness: "standard-voice-only",
-    },
-    candidates: candidates.sort(candidateOrder).slice(0, input.request.maxCandidates),
+    pricing: { ...pricingBase, digest: canonicalVoiceEvidenceDigest(pricingBase) },
+    candidates: sortedCandidates.slice(0, input.request.maxCandidates),
   });
 }
 
 function normalizeCandidates(
   voices: CatalogVoice[],
   request: VoiceCatalogRequest,
-  subscriptionTier: string,
+  subscription: { tier: string; status: string; hasOpenInvoices: boolean },
 ): { candidates: VoiceCandidate[]; rejectedVoiceCount: number } {
   const candidates: VoiceCandidate[] = [];
-  const seen = new Set<string>();
+  const seen = new Map<string, string>();
   let rejectedVoiceCount = 0;
   for (const voice of voices) {
-    if (seen.has(voice.voiceId)) continue;
-    seen.add(voice.voiceId);
-    const candidate = normalizeVoiceCandidate(voice, request, subscriptionTier);
+    const rawDigest = canonicalVoiceEvidenceDigest(voice);
+    const previousDigest = seen.get(voice.voiceId);
+    if (previousDigest) {
+      if (previousDigest !== rawDigest) {
+        throw new SafeExitError(
+          "ElevenLabs returned conflicting metadata for a duplicate voice id.",
+        );
+      }
+      continue;
+    }
+    seen.set(voice.voiceId, rawDigest);
+    const candidate = normalizeVoiceCandidate(voice, request, subscription);
     if (candidate) candidates.push(candidate);
     else rejectedVoiceCount += 1;
   }
@@ -120,6 +133,7 @@ function normalizeCandidates(
 function requireCompatibleModel(
   models: CatalogModel[],
   request: VoiceCatalogRequest,
+  subscriptionTier: string,
 ): CatalogModel {
   const model = models.find((candidate) => candidate.modelId === request.modelId);
   if (!model) {
@@ -145,6 +159,18 @@ function requireCompatibleModel(
       "Configured ElevenLabs request length exceeds the current model limit.",
     );
   }
+  const tierLimit =
+    subscriptionTier.trim().toLowerCase() === "free"
+      ? model.maxCharactersRequestFreeUser
+      : model.maxCharactersRequestSubscribedUser;
+  if (tierLimit !== undefined) {
+    const safeTierLimit = requirePositiveInteger(tierLimit, "subscription request length");
+    if (configuredLimit > safeTierLimit) {
+      throw new SafeExitError(
+        "Configured ElevenLabs request length exceeds the current subscription limit.",
+      );
+    }
+  }
   requirePositiveRate(model.modelRates?.characterCostMultiplier, "character cost multiplier");
   requirePositiveRate(model.modelRates?.costDiscountMultiplier ?? 1, "cost discount multiplier");
   return model;
@@ -165,5 +191,5 @@ function normalizeSubscription(subscription: CatalogSubscription) {
         ? ("blocked-free-tier" as const)
         : ("operator-rights-required" as const),
   };
-  return { ...base, digest: sha256(JSON.stringify(base)) };
+  return { ...base, digest: canonicalVoiceEvidenceDigest(base) };
 }

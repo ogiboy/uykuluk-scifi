@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
-import type {
-  CatalogModel,
-  CatalogSubscription,
-  CatalogVoice,
-  ElevenLabsCatalogClient,
-} from "../src/stages/voice/catalog/voiceCatalogProvider";
 import { ElevenLabsVoiceCatalogProvider } from "../src/stages/voice/providers/elevenLabsVoiceCatalogProvider";
+import {
+  fakeCatalogClient as fakeClient,
+  catalogModel as model,
+  voiceCatalogRequest as request,
+  catalogSubscription as subscription,
+  catalogVoice as voice,
+} from "./elevenLabsVoiceCatalogFixtures";
 
 describe("ElevenLabs voice catalog provider", () => {
   it("normalizes bounded candidates and keeps provider URLs, request IDs, and keys redacted", async () => {
@@ -86,7 +87,7 @@ describe("ElevenLabs voice catalog provider", () => {
       ],
     });
     const provider = new ElevenLabsVoiceCatalogProvider({
-      readApiKey: () => "configured",
+      readApiKey: () => "test-api-key-1234567890",
       createClient: () => client,
     });
 
@@ -106,7 +107,7 @@ describe("ElevenLabs voice catalog provider", () => {
       models: [model({ canDoTextToSpeech: false, languages: [{ languageId: "en" }] })],
     });
     const provider = new ElevenLabsVoiceCatalogProvider({
-      readApiKey: () => "configured",
+      readApiKey: () => "test-api-key-1234567890",
       createClient: () => client,
     });
 
@@ -118,7 +119,7 @@ describe("ElevenLabs voice catalog provider", () => {
   it("fails closed when configured chunking exceeds the live model limit", async () => {
     const client = fakeClient({ models: [model({ maximumTextLengthPerRequest: 4_000 })] });
     const provider = new ElevenLabsVoiceCatalogProvider({
-      readApiKey: () => "configured",
+      readApiKey: () => "test-api-key-1234567890",
       createClient: () => client,
     });
 
@@ -134,7 +135,7 @@ describe("ElevenLabs voice catalog provider", () => {
       requestId: "request-id-secret",
     });
     const malformedProvider = new ElevenLabsVoiceCatalogProvider({
-      readApiKey: () => "configured",
+      readApiKey: () => "test-api-key-1234567890",
       createClient: () => malformed,
     });
     await expect(malformedProvider.fetchCatalog(request())).rejects.toThrow(
@@ -146,7 +147,7 @@ describe("ElevenLabs voice catalog provider", () => {
       throw new Error("upstream xi-api-key=must-not-leak");
     };
     const leakingProvider = new ElevenLabsVoiceCatalogProvider({
-      readApiKey: () => "configured",
+      readApiKey: () => "test-api-key-1234567890",
       createClient: () => leaking,
     });
     const failure = await leakingProvider.fetchCatalog(request()).catch((error: unknown) => error);
@@ -155,79 +156,3 @@ describe("ElevenLabs voice catalog provider", () => {
     expect((failure as Error).message).not.toContain("must-not-leak");
   });
 });
-
-function request() {
-  return {
-    languageCode: "tr" as const,
-    maxCandidates: 24,
-    maxCharactersPerRequest: 4_500,
-    modelId: "eleven_v3",
-    usdPerThousandCharacters: 0.1,
-  };
-}
-
-function fakeClient(
-  overrides: {
-    models?: CatalogModel[];
-    subscription?: CatalogSubscription;
-    voices?: CatalogVoice[];
-  } = {},
-): ElevenLabsCatalogClient {
-  return {
-    async listModels() {
-      return { data: overrides.models ?? [model()], requestId: "request-id-secret-model" };
-    },
-    async getSubscription() {
-      return {
-        data: overrides.subscription ?? subscription(),
-        requestId: "request-id-secret-subscription",
-      };
-    },
-    async searchVoices() {
-      return {
-        data: { voices: overrides.voices ?? [], hasMore: false },
-        requestId: "request-id-secret-voices",
-      };
-    },
-  };
-}
-
-function voice(overrides: Partial<CatalogVoice> = {}): CatalogVoice {
-  return {
-    voiceId: "voice_default",
-    name: "Default Voice",
-    category: "premade",
-    labels: { accent: "neutral" },
-    previewUrl: "https://storage.googleapis.com/eleven-public-prod/default.mp3",
-    verifiedLanguages: [],
-    ...overrides,
-  };
-}
-
-function model(overrides: Partial<CatalogModel> = {}): CatalogModel {
-  return {
-    modelId: "eleven_v3",
-    name: "Eleven v3",
-    canDoTextToSpeech: true,
-    canUseStyle: true,
-    canUseSpeakerBoost: false,
-    maximumTextLengthPerRequest: 5_000,
-    maxCharactersRequestFreeUser: 5_000,
-    maxCharactersRequestSubscribedUser: 5_000,
-    languages: [{ languageId: "tr" }, { languageId: "en" }],
-    modelRates: { characterCostMultiplier: 1, costDiscountMultiplier: 1 },
-    ...overrides,
-  };
-}
-
-function subscription(overrides: Partial<CatalogSubscription> = {}): CatalogSubscription {
-  return {
-    tier: "free",
-    status: "active",
-    characterCount: 0,
-    characterLimit: 10_000,
-    currency: "usd",
-    hasOpenInvoices: false,
-    ...overrides,
-  };
-}
