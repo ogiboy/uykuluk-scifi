@@ -28,8 +28,8 @@ runs/*
 /diagnostics/
 /analytics/
 # Local model downloads and smoke configs are machine-specific.
-/models/llm/
-/models/piper/
+/models/llm/*.gguf
+/models/piper/*/*
 /models/piper-smoke.config.json
 /prompts/local/*
 !/prompts/local/.gitkeep
