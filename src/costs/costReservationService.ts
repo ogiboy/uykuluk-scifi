@@ -27,12 +27,10 @@ export {
 } from "./costSettlementService.js";
 
 /**
- * Creates or returns a cost reservation for an approved quote line.
+ * Creates a cost reservation for an approved quote line or reuses an existing matching reservation.
  *
- * If a reservation with the same operation ID already exists with matching run, stage, approval, and quote digest, returns the existing reservation. Otherwise, validates budget constraints and records a new reservation in both the cost reservation and ledger stores.
- *
- * @returns The cost reservation summary.
- * @throws SafeExitError if the operation ID is already bound to different bindings, if the approved quote line is already consumed, if budget validation fails, or if stage or operation ID is empty.
+ * @returns The created or existing cost reservation summary.
+ * @throws SafeExitError If the adapter identity does not match the approved quote, the operation ID is bound to different details, the quote line was already consumed, budget validation fails, or `stage` or `operationId` is empty.
  */
 export async function reserveApprovedCost(input: {
   runId: string;
@@ -169,9 +167,12 @@ export async function releaseCostReservation(input: {
 }
 
 /**
- * Marks a cost reservation as uncertain.
+ * Records that a cost reservation has an uncertain outcome.
  *
- * @returns The updated reservation summary
+ * @param reason - Explanation for the uncertain outcome
+ * @param providerRequestIdHash - Optional hash identifying the provider request
+ * @param requestEvidence - Optional evidence about the provider request
+ * @returns The reservation summary with an uncertain status
  */
 export async function markCostReservationUncertain(input: {
   runId: string;

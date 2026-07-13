@@ -31,6 +31,13 @@ const downstreamArtifacts = [
   "diagnostics/readiness.md",
 ] as const;
 
+/**
+ * Archives voice-selection artifacts and downstream evidence for a revision.
+ *
+ * @param input - Run state, revision directory, and stage used to record archived artifacts
+ * @returns The updated run state, selected source paths, and metadata for archived artifacts and their source bytes
+ * @throws `SafeExitError` If archived evidence does not match its source
+ */
 export async function archiveVoiceSelectionRevisionSources(input: {
   run: RunRecord;
   revisionDir: string;
@@ -73,6 +80,14 @@ export async function archiveVoiceSelectionRevisionSources(input: {
   return { run, sourceArtifacts, archivedArtifacts, archivedSources };
 }
 
+/**
+ * Removes the specified voice-selection artifacts from the run state.
+ *
+ * @param run - The run whose artifacts are removed
+ * @param stage - The run stage associated with the artifacts
+ * @param sourceArtifacts - The artifact paths to remove
+ * @returns The updated run state
+ */
 export async function removeVoiceSelectionRevisionSources(
   run: RunRecord,
   stage: string,
@@ -85,6 +100,13 @@ export async function removeVoiceSelectionRevisionSources(
   return nextRun;
 }
 
+/**
+ * Restores archived voice-selection sources to their original artifact locations and removes the revision directory.
+ *
+ * @param runId - The run identifier associated with the artifacts
+ * @param revisionDir - The revision directory to remove after restoration
+ * @param archivedSources - Archived sources and their original locations
+ */
 export async function restoreVoiceSelectionRevisionSources(
   runId: string,
   revisionDir: string,
@@ -100,6 +122,14 @@ export async function restoreVoiceSelectionRevisionSources(
   );
 }
 
+/**
+ * Verifies the paths, sizes, and SHA-256 digests of archived voice-selection artifacts.
+ *
+ * @param run - The run containing the archived artifacts
+ * @param revisionDir - The revision directory containing the archive
+ * @param archivedArtifacts - Expected metadata for the archived artifacts
+ * @throws `SafeExitError` if an archive path, size, or digest does not match
+ */
 export async function verifyVoiceSelectionRevisionArchives(
   run: RunRecord,
   revisionDir: string,

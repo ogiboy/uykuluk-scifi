@@ -10,7 +10,13 @@ export const providerAdapterIdentitySchema = z.strictObject({
 
 export type ProviderAdapterIdentity = z.infer<typeof providerAdapterIdentitySchema>;
 
-/** Compares every field that identifies an approved provider execution. */
+/**
+ * Determines whether two provider adapter identities match.
+ *
+ * @param left - The first provider adapter identity
+ * @param right - The second provider adapter identity
+ * @returns `true` if all identity fields match, `false` otherwise.
+ */
 export function providerAdapterIdentitiesMatch(
   left: ProviderAdapterIdentity,
   right: ProviderAdapterIdentity,

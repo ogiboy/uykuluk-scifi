@@ -11,6 +11,12 @@ import { selectVoice } from "../stages/voiceSelection.js";
 
 type Wrap = <T extends unknown[]>(handler: (...args: T) => Promise<void>) => (...args: T) => void;
 
+/**
+ * Registers voice candidate, preview, selection, and reselection commands on a Commander program.
+ *
+ * @param program - The Commander program to extend
+ * @param wrap - The wrapper used to adapt asynchronous command handlers
+ */
 export function registerVoiceCommands(program: Command, wrap: Wrap): void {
   program
     .command("voice-candidates")

@@ -11,7 +11,13 @@ interface RunStateLockOwner {
   token?: string;
 }
 
-/** Serializes compare-and-save mutations for one run state file. */
+/**
+ * Serializes state mutations for a run.
+ *
+ * @param runId - Identifier of the run whose state is being mutated
+ * @param task - Mutation to execute while the run's state lock is held
+ * @returns The result produced by `task`
+ */
 export async function withRunStateLock<T>(runId: string, task: () => Promise<T>): Promise<T> {
   const target = runPath(runId, ".state-mutation.lock");
   const token = randomUUID();
@@ -31,6 +37,12 @@ export async function withRunStateLock<T>(runId: string, task: () => Promise<T>)
   }
 }
 
+/**
+ * Acquires the run state mutation lock at the specified path.
+ *
+ * @param target - The lock directory path
+ * @param token - The token identifying the lock owner
+ */
 async function acquireLock(target: string, token: string): Promise<void> {
   const startedAt = Date.now();
   while (true) {
@@ -58,6 +70,13 @@ async function acquireLock(target: string, token: string): Promise<void> {
   }
 }
 
+/**
+ * Reclaims a stale run state mutation lock.
+ *
+ * @param target - The lock directory path to inspect and reclaim
+ * @returns `true` if the lock was reclaimed or is unavailable due to a filesystem race, `false` if it remains active
+ * @throws `SafeExitError` If the lock path is symbolic or is not a directory
+ */
 async function reclaimStaleLock(target: string): Promise<boolean> {
   try {
     const info = await lstat(target);
@@ -79,6 +98,12 @@ async function reclaimStaleLock(target: string): Promise<boolean> {
   }
 }
 
+/**
+ * Reads the recorded owner information for a run-state lock.
+ *
+ * @param target - The lock directory path
+ * @returns The parsed lock owner, or `undefined` if the owner file is missing or contains invalid JSON
+ */
 async function readLockOwner(target: string): Promise<RunStateLockOwner | undefined> {
   try {
     const owner = JSON.parse(
@@ -93,6 +118,12 @@ async function readLockOwner(target: string): Promise<RunStateLockOwner | undefi
   }
 }
 
+/**
+ * Determines whether a process identifier appears to refer to a running process.
+ *
+ * @param pid - The process identifier to check.
+ * @returns `true` if the process appears to be alive, `false` otherwise.
+ */
 function isProcessAlive(pid: number | undefined): boolean {
   if (typeof pid !== "number" || !Number.isSafeInteger(pid) || pid <= 0) return false;
   try {
@@ -103,11 +134,22 @@ function isProcessAlive(pid: number | undefined): boolean {
   }
 }
 
+/**
+ * Releases the lock at the specified path when it is owned by the provided token.
+ *
+ * @param target - The lock directory path
+ * @param token - The ownership token to verify
+ */
 async function releaseOwnedLock(target: string, token: string): Promise<void> {
   const owner = await readLockOwner(target);
   if (owner?.token === token) await rm(target, { recursive: true, force: true });
 }
 
+/**
+ * Waits for the specified duration.
+ *
+ * @param ms - The delay duration in milliseconds
+ */
 async function delay(ms: number): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, ms));
 }

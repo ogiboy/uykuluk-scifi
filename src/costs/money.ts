@@ -21,7 +21,13 @@ export function usdToMicros(usd: number): number {
   return micros;
 }
 
-/** Converts an approved or accounted USD cap without rounding any fractional micro down. */
+/**
+ * Converts a non-negative USD cap to integer micro-units, rounding fractional micro-units upward.
+ *
+ * @param usd - The USD amount to convert
+ * @returns The amount in micro-units
+ * @throws SafeExitError If `usd` is invalid or the result is outside the safe integer range
+ */
 export function usdToMicrosCeil(usd: number): number {
   if (!Number.isFinite(usd) || usd < 0) {
     throw new SafeExitError(`Invalid USD amount: ${usd}.`);

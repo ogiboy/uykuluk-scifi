@@ -162,6 +162,12 @@ export function isActiveCostReservation(summary: CostReservationSummary): boolea
   );
 }
 
+/**
+ * Replays cost reservation events into their current summaries.
+ *
+ * @param events - The events to process in ledger order.
+ * @returns The aggregated reservation summaries in their insertion order.
+ */
 function summarizeCostReservationEvents(events: CostReservationEvent[]): CostReservationSummary[] {
   const summaries = new Map<string, CostReservationSummary>();
   const eventIds = new Set<string>();
@@ -201,6 +207,14 @@ function summarizeCostReservationEvents(events: CostReservationEvent[]): CostRes
   return [...summaries.values()];
 }
 
+/**
+ * Applies a valid lifecycle event to a cost reservation summary.
+ *
+ * @param current - The reservation summary before applying the event
+ * @param event - The lifecycle event to apply
+ * @returns The updated reservation summary
+ * @throws `SafeExitError` if the transition is invalid, event identity does not match, or the event type is unsupported
+ */
 function applyReservationEvent(
   current: CostReservationSummary,
   event: Exclude<CostReservationEvent, { type: "RESERVED" }>,

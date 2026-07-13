@@ -121,7 +121,13 @@ export type LoadedVoiceExecutionSpool = {
   audio: TtsSynthesisResult;
 };
 
-/** Commits provider output locally before the generic cost layer can settle the paid call. */
+/**
+ * Persists validated voice execution artifacts and their integrity metadata, then loads the committed spool.
+ *
+ * @param input - Execution data, preparation evidence, approved quote, preflight receipt, cost, and provider output to persist.
+ * @returns The fully validated persisted voice execution spool.
+ * @throws SafeExitError If preparation, preflight, audio, alignment, or provider evidence is inconsistent.
+ */
 export async function persistVoiceExecutionSpool(input: {
   runId: string;
   operationId: string;
@@ -322,6 +328,15 @@ function requireMatchingRequestEvidence(
   }
 }
 
+/**
+ * Validates persisted preparation content and its execution binding against a voice execution spool.
+ *
+ * @param spool - The voice execution spool containing expected preparation metadata.
+ * @param preparation - The parsed preparation evidence to validate.
+ * @param preparedText - The persisted prepared text.
+ * @param evidenceText - The persisted canonical preparation evidence.
+ * @throws SafeExitError If the preparation content, metadata, or binding does not match the spool.
+ */
 function requireMatchingSpoolPreparation(
   spool: VoiceExecutionSpool,
   preparation: VoiceoverPreparation,
@@ -361,6 +376,12 @@ export async function loadVoiceExecutionSpoolForOperation(
   });
 }
 
+/**
+ * Validates and returns the execution binding selected by a voice execution spool.
+ *
+ * @param spool - The voice execution spool whose binding and preparation digest must match
+ * @returns The validated selected voice execution binding
+ */
 function requireSelectedSpoolBinding(spool: VoiceExecutionSpool): SelectedVoiceExecutionBinding {
   const binding = requireSelectedVoiceExecutionBinding(spool.binding);
   if (binding.input.preparedTextDigest !== spool.preparationDigest) {
@@ -369,6 +390,13 @@ function requireSelectedSpoolBinding(spool: VoiceExecutionSpool): SelectedVoiceE
   return binding;
 }
 
+/**
+ * Validates that a synthesized voice result matches its execution binding and recorded cost.
+ *
+ * @param audio - The synthesized voice result to validate
+ * @param binding - The execution binding the result must match
+ * @param actualUsdMicros - The recorded cost in millionths of a US dollar
+ */
 function requireSpoolableAudio(
   audio: TtsSynthesisResult,
   binding: SelectedVoiceExecutionBinding,
@@ -390,6 +418,12 @@ function requireSpoolableAudio(
   }
 }
 
+/**
+ * Computes the SHA-256 digest of binary data.
+ *
+ * @param value - The data to hash
+ * @returns The digest as a lowercase hexadecimal string
+ */
 function sha256Buffer(value: Uint8Array): string {
   return createHash("sha256").update(value).digest("hex");
 }

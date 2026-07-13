@@ -76,11 +76,24 @@ export class ElevenLabsVoiceExecutionMetadataProvider implements VoiceExecutionM
   }
 }
 
+/**
+ * Adds a valid upstream request identifier to a collection.
+ *
+ * @param target - The collection receiving the request identifier
+ * @param value - The request identifier to trim and collect
+ */
 function collectRequestId(target: string[], value: string | undefined): void {
   const normalized = value?.trim();
   if (normalized && normalized.length <= 256) target.push(normalized);
 }
 
+/**
+ * Runs a task with a bounded deadline and aborts it when the deadline expires or execution finishes.
+ *
+ * @param timeoutMs - The maximum duration allowed for the task in milliseconds
+ * @param task - The asynchronous operation to run with an abort signal
+ * @returns The task's result
+ */
 async function withDeadline<T>(
   timeoutMs: number,
   task: (abortSignal: AbortSignal) => Promise<T>,

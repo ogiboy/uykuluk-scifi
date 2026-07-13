@@ -8,7 +8,13 @@ import { prepareVoiceoverText } from "../stages/voice/voiceoverPreparation.js";
 import { estimateElevenLabsMaximumTtsUsd } from "./elevenLabsPricing.js";
 import { defaultStagePricing, type StagePricing } from "./pricing.js";
 
-/** Builds enabled stage quote lines, including run-specific hosted TTS character pricing. */
+/**
+ * Builds stage pricing entries with provider-based enablement and optional run-specific ElevenLabs TTS pricing.
+ *
+ * @param run - The run whose voiceover artifact is used to estimate TTS cost
+ * @param config - Provider configuration used to determine enabled stages and TTS pricing
+ * @returns Stage pricing entries, including an estimated maximum cost for ElevenLabs TTS when configured
+ */
 export async function quoteCostStages(
   run: RunRecord,
   config: ProducerConfig,
@@ -62,6 +68,12 @@ export async function quoteCostStages(
   );
 }
 
+/**
+ * Determines whether a production stage is enabled by the provider configuration.
+ *
+ * @param stage - The stage whose enabled status to determine
+ * @returns `true` if the stage's provider is enabled or the stage has no provider-specific setting, `false` otherwise
+ */
 function isStageEnabled(stage: string, config: ProducerConfig): boolean {
   switch (stage) {
     case "tts":

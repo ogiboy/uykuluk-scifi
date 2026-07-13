@@ -23,10 +23,23 @@ import { canonicalVoiceEvidenceDigest } from "./voiceCatalogDigest.js";
 
 export const maximumVoiceCatalogAgeMs = 60 * 60 * 1_000;
 
+/**
+ * Loads the latest validated voice candidate catalog for a run.
+ *
+ * @param runId - The identifier of the run whose catalog should be loaded
+ * @returns The validated voice candidate catalog
+ */
 export async function readVoiceCandidates(runId: string): Promise<VoiceCandidates> {
   return (await readVoiceCandidatesWithPath(runId)).catalog;
 }
 
+/**
+ * Loads and validates the latest voice candidate catalog registered for a run.
+ *
+ * @param runId - The run whose voice candidate catalog should be loaded
+ * @returns The registered artifact path and validated voice candidate catalog
+ * @throws SafeExitError If no catalog is registered, the latest refresh failed, the catalog belongs to another run, or its integrity checks fail
+ */
 export async function readVoiceCandidatesWithPath(
   runId: string,
 ): Promise<{ path: string; catalog: VoiceCandidates }> {
@@ -51,6 +64,12 @@ export async function readVoiceCandidatesWithPath(
   return { path, catalog };
 }
 
+/**
+ * Ensures that a voice candidate catalog has a valid and current timestamp.
+ *
+ * @param catalog - The voice candidate catalog to validate
+ * @param nowMs - The timestamp used to evaluate catalog freshness
+ */
 export function requireCurrentVoiceCatalog(
   catalog: VoiceCandidates,
   nowMs: number = Date.now(),
@@ -64,6 +83,13 @@ export function requireCurrentVoiceCatalog(
   }
 }
 
+/**
+ * Loads validated preview evidence for a voice candidate in a run.
+ *
+ * @param runId - The run identifier
+ * @param voiceId - The voice candidate identifier
+ * @returns The validated voice preview evidence
+ */
 export async function readVoicePreviewEvidence(
   runId: string,
   voiceId: string,
@@ -71,6 +97,13 @@ export async function readVoicePreviewEvidence(
   return (await readVoicePreviewEvidenceWithPath(runId, voiceId)).evidence;
 }
 
+/**
+ * Loads and validates the latest voice preview evidence for a candidate.
+ *
+ * @param runId - The run identifier
+ * @param voiceId - The candidate voice identifier
+ * @returns The registered evidence artifact path and validated preview evidence
+ */
 export async function readVoicePreviewEvidenceWithPath(
   runId: string,
   voiceId: string,
@@ -104,10 +137,22 @@ export async function readVoicePreviewEvidenceWithPath(
   return { path, evidence };
 }
 
+/**
+ * Computes the SHA-256 digest of a byte array.
+ *
+ * @param value - The bytes to hash
+ * @returns The digest as a hexadecimal string
+ */
 export function sha256Buffer(value: Uint8Array): string {
   return createHash("sha256").update(value).digest("hex");
 }
 
+/**
+ * Validates the digests, pricing snapshots, subscription status, and candidate identifiers in a voice catalog.
+ *
+ * @param catalog - The voice catalog to validate
+ * @throws SafeExitError If any persisted digest, pricing value, subscription status, or candidate identifier is inconsistent.
+ */
 function assertNestedCatalogDigests(catalog: VoiceCandidates): void {
   const { metadataDigest: modelDigest, ...modelInput } = catalog.model;
   if (canonicalVoiceEvidenceDigest(modelInput) !== modelDigest) {
@@ -159,12 +204,25 @@ function assertNestedCatalogDigests(catalog: VoiceCandidates): void {
   }
 }
 
+/**
+ * Ensures that an artifact path is registered in the run state.
+ *
+ * @param relativePath - The artifact path to verify
+ * @throws SafeExitError if the artifact is not registered
+ */
 function requireRegisteredArtifact(run: Awaited<ReturnType<typeof loadRun>>, relativePath: string) {
   if (!run.artifacts.includes(relativePath)) {
     throw new SafeExitError(`Voice evidence is not registered in run state: ${relativePath}.`);
   }
 }
 
+/**
+ * Finds the latest registered artifact matching the supplied success or failure criteria.
+ *
+ * @param run - The loaded run whose registered artifacts are searched
+ * @param options - Matching predicates and messages for missing or failed artifacts
+ * @returns The path of the latest matching successful artifact
+ */
 function requireLatestSuccessfulArtifact(
   run: Awaited<ReturnType<typeof loadRun>>,
   options: {
@@ -185,6 +243,13 @@ function requireLatestSuccessfulArtifact(
   return latest;
 }
 
+/**
+ * Finds the latest registered voice preview evidence artifact for a candidate.
+ *
+ * @param runId - The run containing the registered artifacts
+ * @param voiceId - The candidate whose preview evidence is required
+ * @returns The relative path of the latest preview evidence artifact
+ */
 async function requireLatestVoicePreviewArtifact(
   run: Awaited<ReturnType<typeof loadRun>>,
   runId: string,
@@ -216,6 +281,12 @@ async function requireLatestVoicePreviewArtifact(
   throw new SafeExitError("No current voice preview evidence is registered for this candidate.");
 }
 
+/**
+ * Reads and validates legacy voice preview failure evidence for a run.
+ *
+ * @param runId - The run identifier whose failure evidence should be read
+ * @returns The validated legacy voice preview failure evidence
+ */
 async function readLegacyVoicePreviewFailure(runId: string) {
   try {
     return voicePreviewFailureSchema.parse(
@@ -226,6 +297,14 @@ async function readLegacyVoicePreviewFailure(runId: string) {
   }
 }
 
+/**
+ * Determines whether an audio artifact path matches the generation of a preview evidence path.
+ *
+ * @param evidencePath - The preview evidence artifact path.
+ * @param audioPath - The audio artifact path.
+ * @param format - The audio format expected for the generation.
+ * @returns `true` if `audioPath` matches `evidencePath` with its `.json` suffix replaced by the audio format suffix, `false` otherwise.
+ */
 function previewPathsShareGeneration(
   evidencePath: string,
   audioPath: string,

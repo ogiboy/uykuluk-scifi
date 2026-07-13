@@ -226,6 +226,15 @@ export class ElevenLabsTtsProvider implements ReservedTtsProvider {
   }
 }
 
+/**
+ * Determines the stitching context for an ElevenLabs text chunk request.
+ *
+ * @param modelId - The ElevenLabs model identifier.
+ * @param chunks - The text chunks being processed.
+ * @param index - The index of the current chunk.
+ * @param requestIds - Request identifiers from previously processed chunks.
+ * @returns The previous request IDs and neighboring text context used for stitching.
+ */
 function requestStitchingFor(
   modelId: string,
   chunks: readonly string[],

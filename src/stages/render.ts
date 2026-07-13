@@ -53,10 +53,10 @@ export type RenderDraftOptions = {
 };
 
 /**
- * Generates and stores a draft render for a run.
+ * Generates, validates, records, and stores a draft render for a run.
  *
  * @param runId - The run identifier.
- * @param options - Render binary and duration settings.
+ * @param options - Optional overrides for the FFmpeg and FFprobe binaries and maximum render duration.
  * @returns The draft render manifest.
  */
 export async function renderDraft(

@@ -16,6 +16,14 @@ const mpeg2BitratesKbps = {
 
 export type DownloadedVoicePreview = { audio: Buffer; format: "mp3" | "wav"; requestId?: string };
 
+/**
+ * Downloads and validates an ElevenLabs audio preview.
+ *
+ * @param previewUrl - The preview URL to download.
+ * @param sourceClass - The approved URL source boundary to enforce.
+ * @returns The downloaded audio, detected format, and optional bounded request ID.
+ * @throws SafeExitError If the URL, response, size, or audio format is invalid.
+ */
 export async function downloadElevenLabsPreview(
   previewUrl: string,
   sourceClass: "elevenlabs" | "eleven-public-prod",
@@ -47,6 +55,14 @@ export async function downloadElevenLabsPreview(
   };
 }
 
+/**
+ * Validates an ElevenLabs preview URL against the approved HTTPS boundary and source host.
+ *
+ * @param value - The preview URL to validate.
+ * @param sourceClass - The catalog source that determines the permitted host or bucket path.
+ * @returns The parsed and validated preview URL.
+ * @throws SafeExitError If the URL is invalid, uses a disallowed HTTPS configuration, or does not match the source class.
+ */
 function requireAllowedPreviewUrl(
   value: string,
   sourceClass: "elevenlabs" | "eleven-public-prod",
@@ -79,6 +95,12 @@ function requireAllowedPreviewUrl(
   return url;
 }
 
+/**
+ * Reads a preview response body into a buffer while enforcing the maximum allowed size.
+ *
+ * @param body - The response stream containing the preview data
+ * @returns The complete preview data
+ */
 async function readBoundedBody(body: ReadableStream<Uint8Array>): Promise<Buffer> {
   const reader = body.getReader();
   const chunks: Buffer[] = [];
@@ -100,6 +122,12 @@ async function readBoundedBody(body: ReadableStream<Uint8Array>): Promise<Buffer
   return Buffer.concat(chunks, bytes);
 }
 
+/**
+ * Determines whether preview audio is a recognized MP3 or WAV file.
+ *
+ * @param audio - Audio data to inspect
+ * @returns The detected audio format
+ */
 function detectPreviewFormat(audio: Buffer): "mp3" | "wav" {
   if (audio.byteLength < minimumPreviewBytes) {
     throw new SafeExitError("ElevenLabs preview response is too short to be auditable audio.");
@@ -109,6 +137,12 @@ function detectPreviewFormat(audio: Buffer): "mp3" | "wav" {
   throw new SafeExitError("ElevenLabs preview response is not recognized MP3 or WAV audio.");
 }
 
+/**
+ * Determines whether the buffer contains two consecutive playable MPEG frames.
+ *
+ * @param audio - The audio data to inspect
+ * @returns `true` if two consecutive valid MPEG frames are present, `false` otherwise
+ */
 function hasPlayableMpegFrame(audio: Buffer): boolean {
   let scanStart = 0;
   if (audio.subarray(0, 3).toString("ascii") === "ID3") {
@@ -127,6 +161,13 @@ function hasPlayableMpegFrame(audio: Buffer): boolean {
   return false;
 }
 
+/**
+ * Determines the byte length of a valid MPEG audio frame header.
+ *
+ * @param audio - The buffer containing the MPEG frame header
+ * @param offset - The byte offset at which the frame header begins
+ * @returns The calculated frame length in bytes, or `undefined` when the header is invalid
+ */
 function mpegFrameBytes(audio: Buffer, offset: number): number | undefined {
   if (offset < 0 || offset + 4 > audio.byteLength) return undefined;
   const first = audio[offset];
@@ -153,12 +194,24 @@ function mpegFrameBytes(audio: Buffer, offset: number): number | undefined {
   return Math.floor((coefficient * bitrateKbps * 1_000) / sampleRate) + padding;
 }
 
+/**
+ * Determines the sample-rate divisor for an MPEG version.
+ *
+ * @param version - The MPEG version identifier
+ * @returns `1` for MPEG-1, `2` for MPEG-2, or `4` for other versions
+ */
 function mpegSampleRateDivisor(version: number): number {
   if (version === 3) return 1;
   if (version === 2) return 2;
   return 4;
 }
 
+/**
+ * Validates whether audio has a structurally valid, auditable PCM WAV format.
+ *
+ * @param audio - The audio data to inspect
+ * @returns `true` if the data contains a valid PCM WAV structure with sufficient audio data, `false` otherwise.
+ */
 function hasPlayableWavStructure(audio: Buffer): boolean {
   if (
     audio.subarray(0, 4).toString("ascii") !== "RIFF" ||
@@ -206,6 +259,12 @@ function hasPlayableWavStructure(audio: Buffer): boolean {
   return blockAlign > 0 && hasAudioData;
 }
 
+/**
+ * Normalizes a request ID and limits its length.
+ *
+ * @param value - The request ID to normalize, or `null`
+ * @returns The trimmed request ID when non-empty and at most 256 characters; `undefined` otherwise
+ */
 function boundedRequestId(value: string | null): string | undefined {
   const normalized = value?.trim();
   return normalized && normalized.length <= 256 ? normalized : undefined;

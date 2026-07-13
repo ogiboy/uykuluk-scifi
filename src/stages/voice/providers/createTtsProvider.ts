@@ -9,7 +9,14 @@ import { ElevenLabsTtsProvider } from "./elevenLabsTtsProvider.js";
 import { PiperTtsProvider } from "./piperTtsProvider.js";
 import type { TtsProvider } from "./ttsProvider.js";
 
-/** Resolves the configured TTS engine without changing workflow or approval behavior. */
+/**
+ * Creates the TTS provider selected by the configuration.
+ *
+ * @param config - TTS provider configuration.
+ * @param binding - Selected voice binding required for ElevenLabs.
+ * @returns The configured TTS provider.
+ * @throws SafeExitError If ElevenLabs is selected without a voice binding or if the TTS mode is unsupported.
+ */
 export function createTtsProvider(
   config: ProducerConfig["providers"]["tts"],
   binding?: SelectedVoiceExecutionBinding,

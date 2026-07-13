@@ -1,6 +1,11 @@
 import type { VoicePreviewEvidence, VoiceSelection } from "./catalog/voiceAuditionContracts.js";
 import type { VoiceCandidates } from "./catalog/voiceCatalogContracts.js";
 
+/**
+ * Formats a voice candidates catalog as a multi-line console summary.
+ *
+ * @returns A newline-delimited summary of candidate counts, Turkish verification, eligibility, model, subscription, and next-step guidance.
+ */
 export function formatVoiceCandidatesConsole(catalog: VoiceCandidates): string {
   const counts = catalog.candidates.reduce(
     (result, candidate) => {
@@ -21,6 +26,12 @@ export function formatVoiceCandidatesConsole(catalog: VoiceCandidates): string {
   ].join("\n");
 }
 
+/**
+ * Formats a console summary for locally recorded voice preview evidence.
+ *
+ * @param evidence - The recorded preview evidence to summarize
+ * @returns A newline-delimited summary of the voice preview and its associated evidence
+ */
 export function formatVoicePreviewConsole(evidence: VoicePreviewEvidence): string {
   return [
     "ElevenLabs voice preview recorded for local audition.",
@@ -34,6 +45,12 @@ export function formatVoicePreviewConsole(evidence: VoicePreviewEvidence): strin
   ].join("\n");
 }
 
+/**
+ * Formats a recorded voice selection as a multi-line console summary.
+ *
+ * @param selection - The recorded voice selection and its associated model and eligibility details
+ * @returns A newline-delimited summary of the voice selection and its next safe action
+ */
 export function formatVoiceSelectionConsole(selection: VoiceSelection): string {
   return [
     "Voice selection recorded.",
@@ -49,6 +66,13 @@ export function formatVoiceSelectionConsole(selection: VoiceSelection): string {
   ].join("\n");
 }
 
+/**
+ * Derives the JSON evidence label path associated with an audio file.
+ *
+ * @param audioPath - The audio file path
+ * @param format - The audio file format whose extension is replaced
+ * @returns The path with the matching audio extension replaced by `.json`
+ */
 function voicePreviewEvidenceLabel(audioPath: string, format: "mp3" | "wav"): string {
   return audioPath.replace(new RegExp(`\\.${format}$`, "u"), ".json");
 }

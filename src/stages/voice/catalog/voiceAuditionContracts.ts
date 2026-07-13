@@ -156,6 +156,14 @@ export const voiceSelectionInputSchema = z.strictObject({
   confirmProductionRights: z.boolean().default(false),
 });
 
+/**
+ * Builds the relative path for a voice preview audio artifact.
+ *
+ * @param voiceId - The voice identifier used in the artifact directory
+ * @param artifactId - The artifact identifier used in the filename
+ * @param format - The audio format
+ * @returns The validated voice preview audio artifact path
+ */
 export function voicePreviewAudioPath(
   voiceId: string,
   artifactId: string,
@@ -164,18 +172,45 @@ export function voicePreviewAudioPath(
   return `${voicePreviewDirectory}/${voiceIdSchema.parse(voiceId)}/${filesystemSegmentSchema.parse(artifactId)}.${format}`;
 }
 
+/**
+ * Builds the relative path for a voice preview evidence artifact.
+ *
+ * @param voiceId - The voice identifier used in the artifact directory
+ * @param artifactId - The artifact identifier used in the filename
+ * @returns The validated JSON evidence artifact path
+ */
 export function voicePreviewEvidencePath(voiceId: string, artifactId: string): string {
   return `${voicePreviewDirectory}/${voiceIdSchema.parse(voiceId)}/${filesystemSegmentSchema.parse(artifactId)}.json`;
 }
 
+/**
+ * Builds the validated artifact path for a voice preview failure.
+ *
+ * @param voiceId - The identifier of the voice associated with the failure
+ * @param artifactId - The identifier of the failure artifact
+ * @returns The relative JSON path for the voice preview failure artifact
+ */
 export function voicePreviewFailureArtifactPath(voiceId: string, artifactId: string): string {
   return `${voicePreviewFailureDirectory}/${voiceIdSchema.parse(voiceId)}/${filesystemSegmentSchema.parse(artifactId)}.json`;
 }
 
+/**
+ * Builds the artifact path for a voice selection.
+ *
+ * @param artifactId - The validated artifact identifier used in the filename
+ * @returns The relative JSON artifact path
+ */
 export function voiceSelectionArtifactPath(artifactId: string): string {
   return `${voiceSelectionDirectory}/${filesystemSegmentSchema.parse(artifactId)}.json`;
 }
 
+/**
+ * Determines whether a relative path identifies voice preview evidence for a voice.
+ *
+ * @param relativePath - The relative artifact path to evaluate
+ * @param voiceId - The voice identifier associated with the artifact
+ * @returns `true` if the path identifies evidence for `voiceId`, `false` otherwise
+ */
 export function isVoicePreviewEvidenceArtifactPath(relativePath: string, voiceId: string): boolean {
   const safeVoiceId = voiceIdSchema.parse(voiceId);
   return (
@@ -185,6 +220,13 @@ export function isVoicePreviewEvidenceArtifactPath(relativePath: string, voiceId
   );
 }
 
+/**
+ * Determines whether a relative path identifies audio for the specified voice preview.
+ *
+ * @param relativePath - The relative artifact path to check
+ * @param voiceId - The voice identifier associated with the preview
+ * @returns `true` if the path is a supported voice preview audio artifact, `false` otherwise
+ */
 export function isVoicePreviewAudioArtifactPath(relativePath: string, voiceId: string): boolean {
   const safeVoiceId = voiceIdSchema.parse(voiceId);
   return (
@@ -195,6 +237,13 @@ export function isVoicePreviewAudioArtifactPath(relativePath: string, voiceId: s
   );
 }
 
+/**
+ * Determines whether a path identifies a voice preview failure artifact for a voice.
+ *
+ * @param relativePath - The relative path to evaluate
+ * @param voiceId - The voice identifier associated with the artifact
+ * @returns `true` if the path is the legacy failure path or a validated failure artifact path for `voiceId`, `false` otherwise
+ */
 export function isVoicePreviewFailureArtifactPath(relativePath: string, voiceId: string): boolean {
   const safeVoiceId = voiceIdSchema.parse(voiceId);
   return (
@@ -204,6 +253,12 @@ export function isVoicePreviewFailureArtifactPath(relativePath: string, voiceId:
   );
 }
 
+/**
+ * Determines whether a relative path identifies a voice selection artifact.
+ *
+ * @param relativePath - The relative path to evaluate.
+ * @returns `true` if the path is a supported voice selection artifact path, `false` otherwise.
+ */
 export function isVoiceSelectionArtifactPath(relativePath: string): boolean {
   return (
     relativePath === voiceSelectionPath ||

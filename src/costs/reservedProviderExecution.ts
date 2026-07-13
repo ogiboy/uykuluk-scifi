@@ -90,9 +90,10 @@ export type ReservedProviderExecutionResult<T> =
   | { status: "reconciliation-required"; reservation: CostReservationSummary };
 
 /**
- * Executes one future paid-provider callback behind exact approval, reservation, and settlement.
+ * Executes an approved provider operation with reservation tracking and outcome-specific reconciliation.
  *
- * This internal contract does not expose a CLI command or enable any paid provider.
+ * @param input - Operation identifiers, execution timeout, provider adapter, and optional post-execution callback.
+ * @returns A result indicating whether the operation completed, was definitely not sent, requires reconciliation, or was already terminal, including the associated reservation and completed value when applicable.
  */
 export async function executeReservedProviderOperation<T>(input: {
   runId: string;
@@ -164,6 +165,14 @@ export async function executeReservedProviderOperation<T>(input: {
   };
 }
 
+/**
+ * Executes a provider adapter within a time limit and normalizes its outcome.
+ *
+ * @param adapter - The provider adapter to execute.
+ * @param reservation - Reservation details supplied to the adapter.
+ * @param timeoutMs - Maximum time allowed for adapter execution.
+ * @returns The validated provider outcome, including elapsed duration for successful outcomes.
+ */
 async function invokeAdapter<T>(
   adapter: ReservedProviderAdapter<T>,
   reservation: CostReservationSummary,

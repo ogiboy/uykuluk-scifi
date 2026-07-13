@@ -31,6 +31,12 @@ type NormalizeCatalogInput = {
   requestIds: string[];
 };
 
+/**
+ * Normalizes a voice catalog for the configured subscription, model, and request.
+ *
+ * @param input - The catalog data and request configuration to normalize.
+ * @returns A validated provider result containing the normalized subscription, model, pricing, and voice candidates.
+ */
 export function normalizeVoiceCatalog(input: NormalizeCatalogInput): VoiceCatalogProviderResult {
   const subscription = normalizeSubscription(input.subscription);
   const model = requireCompatibleModel(input.models, input.request, subscription.tier);
@@ -107,6 +113,16 @@ export function normalizeVoiceCatalog(input: NormalizeCatalogInput): VoiceCatalo
   });
 }
 
+/**
+ * Normalizes catalog voices into candidates while tracking rejected entries.
+ *
+ * Duplicate voice IDs with conflicting metadata cause a `SafeExitError`.
+ *
+ * @param voices - The catalog voices to normalize
+ * @param request - The request configuration used to normalize candidates
+ * @param subscription - The subscription details used to evaluate voices
+ * @returns The normalized candidates and count of rejected voices
+ */
 function normalizeCandidates(
   voices: CatalogVoice[],
   request: VoiceCatalogRequest,
@@ -134,6 +150,14 @@ function normalizeCandidates(
   return { candidates, rejectedVoiceCount };
 }
 
+/**
+ * Validates that the configured model supports the request and subscription constraints.
+ *
+ * @param models - Available catalog models
+ * @param request - Voice synthesis request configuration
+ * @param subscriptionTier - Current subscription tier used to select request limits
+ * @returns The compatible catalog model
+ */
 function requireCompatibleModel(
   models: CatalogModel[],
   request: VoiceCatalogRequest,
@@ -180,6 +204,12 @@ function requireCompatibleModel(
   return model;
 }
 
+/**
+ * Normalizes subscription details and assigns production-use status and an evidence digest.
+ *
+ * @param subscription - The subscription details to normalize.
+ * @returns The normalized subscription with a canonical evidence digest.
+ */
 function normalizeSubscription(subscription: CatalogSubscription) {
   const base = {
     tier: boundedRequired(subscription.tier, 80, "subscription tier"),

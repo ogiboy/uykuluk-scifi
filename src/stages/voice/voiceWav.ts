@@ -26,6 +26,12 @@ export function wavFromPcm16(pcm: Buffer, sampleRateHz: number, channels: number
   return Buffer.concat([header, pcm]);
 }
 
+/**
+ * Reads channel count, duration, and sample rate from a PCM16 WAV buffer.
+ *
+ * @param buffer - The WAV audio data to inspect
+ * @returns The channel count, duration in seconds, and sample rate in hertz
+ */
 export function readWavInfo(buffer: Buffer): {
   channels: number;
   durationSeconds: number;
@@ -53,7 +59,12 @@ export function readWavInfo(buffer: Buffer): {
   };
 }
 
-/** Concatenates compatible PCM16 WAV payloads into one canonical WAV container. */
+/**
+ * Concatenates compatible PCM16 WAV chunks into a canonical WAV file.
+ *
+ * @param buffers - WAV chunks with matching channel count and sample rate
+ * @returns A canonical WAV file containing the concatenated PCM audio
+ */
 export function concatenatePcm16Wavs(buffers: readonly Buffer[]): Buffer {
   if (buffers.length === 0) {
     throw new SafeExitError("Voice WAV stitching requires at least one audio chunk.");
@@ -92,6 +103,14 @@ export function concatenatePcm16Wavs(buffers: readonly Buffer[]): Buffer {
   );
 }
 
+/**
+ * Normalizes the peak amplitude of a PCM 16-bit WAV file to the target level.
+ *
+ * @param buffer - The PCM 16-bit WAV file to normalize
+ * @param targetPeakDbfs - The desired peak level in dBFS
+ * @returns The normalized WAV buffer and evidence describing the applied gain and peak levels
+ * @throws SafeExitError If the buffer is not a RIFF WAV file or does not contain PCM 16-bit audio
+ */
 export function normalizePcm16WavPeak(
   buffer: Buffer,
   targetPeakDbfs = -1,
@@ -146,6 +165,12 @@ function hasRiffWaveHeader(buffer: Buffer): boolean {
   );
 }
 
+/**
+ * Extracts audio format metadata and the location of the PCM data chunk from a WAV buffer.
+ *
+ * @param buffer - The WAV file data to inspect.
+ * @returns The parsed format fields and data chunk size and offset; fields remain `0` when the corresponding chunks or values are unavailable.
+ */
 function scanWavChunks(buffer: Buffer): {
   audioFormat: number;
   bitsPerSample: number;

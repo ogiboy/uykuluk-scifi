@@ -18,6 +18,12 @@ net.Socket.prototype.connect = function guardedConnect(
   return Reflect.apply(nativeConnect, this, args) as net.Socket;
 } as typeof net.Socket.prototype.connect;
 
+/**
+ * Extracts the destination host from socket connection arguments.
+ *
+ * @param args - Socket connection arguments to inspect.
+ * @returns The specified host, `"localhost"` when the connection uses a port without a host, or `undefined` for unsupported argument shapes and path-based connections.
+ */
 function connectHost(args: unknown[]): string | undefined {
   const first: unknown = args[0];
   if (typeof first === "object" && first !== null) {
@@ -32,6 +38,12 @@ function connectHost(args: unknown[]): string | undefined {
   return undefined;
 }
 
+/**
+ * Validates that a host refers to an allowed loopback or local address.
+ *
+ * @param rawHost - The host name or address to validate
+ * @throws If the host is not an allowed loopback or local address
+ */
 function requireLoopbackHost(rawHost: string): void {
   const host = rawHost.replace(/^\[|\]$/g, "").toLowerCase();
   const allowed =

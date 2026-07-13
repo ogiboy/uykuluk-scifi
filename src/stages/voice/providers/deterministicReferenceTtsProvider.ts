@@ -40,6 +40,12 @@ export class DeterministicReferenceTtsProvider implements LocalTtsProvider {
   }
 }
 
+/**
+ * Counts the whitespace-separated words in a string.
+ *
+ * @param value - The string to count
+ * @returns The number of words in `value`
+ */
 function countWords(value: string): number {
   return value.trim().split(/\s+/).filter(Boolean).length;
 }

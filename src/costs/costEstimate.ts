@@ -51,7 +51,13 @@ export const costEstimateSchema = z.strictObject({
 
 export type CostEstimate = z.infer<typeof costEstimateSchema>;
 
-/** Builds a cost quote bound to current budgets, config, pricing, and package integrity. */
+/**
+ * Builds a cost estimate using the current run, configuration, budgets, pricing, and production package.
+ *
+ * @param run - The run for which to calculate the estimate
+ * @param config - The producer configuration governing costs and budgets
+ * @returns The cost estimate, including budget and approval decisions
+ */
 export async function buildCostEstimate(
   run: RunRecord,
   config: ProducerConfig,
@@ -108,7 +114,14 @@ export async function readCostEstimate(
   return { estimate, text, markdownText, digest: sha256(`${text}\0${markdownText}`) };
 }
 
-/** Returns all package, config, pricing, and live-budget reasons that make a quote stale. */
+/**
+ * Checks whether a cost estimate remains current against the run, configuration, pricing, and budget state.
+ *
+ * @param run - The production run associated with the estimate
+ * @param config - The producer configuration used for validation
+ * @param estimate - The cost estimate to validate
+ * @returns Reasons the estimate is stale or inconsistent; an empty array indicates that it remains current
+ */
 export async function validateCurrentCostEstimate(
   run: RunRecord,
   config: ProducerConfig,
@@ -153,7 +166,11 @@ export async function validateCurrentCostEstimate(
   return reasons;
 }
 
-/** Returns structural quote-integrity failures; an empty array means the quote is current. */
+/**
+ * Checks whether a cost estimate remains structurally consistent with the current run and configuration.
+ *
+ * @returns A list of integrity failure reasons; an empty array indicates that the estimate is current.
+ */
 export async function validateCostEstimateIntegrity(
   run: RunRecord,
   config: ProducerConfig,
@@ -195,6 +212,12 @@ export async function validateCostEstimateIntegrity(
   return reasons;
 }
 
+/**
+ * Computes a digest of configuration values relevant to cost estimation and execution.
+ *
+ * @param config - The producer configuration to summarize
+ * @returns A SHA-256 digest of the relevant provider and budget settings
+ */
 function relevantConfigDigest(config: ProducerConfig): string {
   return sha256(
     JSON.stringify({
@@ -208,16 +231,34 @@ function relevantConfigDigest(config: ProducerConfig): string {
   );
 }
 
+/**
+ * Creates the TTS configuration used for execution-relevant comparisons.
+ *
+ * @param config - Producer configuration containing the TTS provider settings
+ * @returns A TTS configuration with the ElevenLabs voice ID omitted
+ */
 function executionRelevantTtsConfig(config: ProducerConfig) {
   const elevenLabs = { ...config.providers.tts.elevenLabs };
   delete elevenLabs.voiceId;
   return { ...config.providers.tts, elevenLabs };
 }
 
+/**
+ * Computes a digest for a canonicalized list of quoted cost stages.
+ *
+ * @param stages - The quoted cost stages to digest
+ * @returns A SHA-256 digest of the canonicalized stages
+ */
 function stagesDigest(stages: CostEstimate["stages"]): string {
   return sha256(JSON.stringify(canonicalStages(stages)));
 }
 
+/**
+ * Normalizes quoted stages into a consistent field order and structure.
+ *
+ * @param stages - The quoted stages to canonicalize
+ * @returns Canonicalized quoted stages with optional model and binding metadata preserved
+ */
 function canonicalStages(stages: CostEstimate["stages"]): CostEstimate["stages"] {
   return stages.map((stage) => ({
     stage: stage.stage,

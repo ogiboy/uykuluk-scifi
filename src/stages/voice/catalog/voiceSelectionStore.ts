@@ -21,10 +21,23 @@ import {
   requireCurrentVoiceCatalog,
 } from "./voiceCatalogStore.js";
 
+/**
+ * Reads the persisted voice selection for a run.
+ *
+ * @param runId - The identifier of the run whose voice selection to read
+ * @returns The validated voice selection
+ */
 export async function readVoiceSelection(runId: string): Promise<VoiceSelection> {
   return (await readVoiceSelectionWithPath(runId)).selection;
 }
 
+/**
+ * Loads and validates the latest registered voice selection for a run.
+ *
+ * @param runId - The identifier of the run containing the voice selection
+ * @returns The artifact path and validated voice selection
+ * @throws SafeExitError If no selection is registered or the selection is inconsistent or invalid
+ */
 export async function readVoiceSelectionWithPath(
   runId: string,
 ): Promise<{ path: string; selection: VoiceSelection }> {
@@ -53,6 +66,13 @@ export async function readVoiceSelectionWithPath(
   return { path, selection };
 }
 
+/**
+ * Verifies the persisted voice selection against the current catalog and preview evidence.
+ *
+ * @param runId - The identifier of the run whose voice selection should be verified
+ * @param options - Optional producer configuration override
+ * @returns The verified catalog, preview evidence, selection, and their artifact paths
+ */
 export async function readCurrentVoiceSelection(
   runId: string,
   options: { config?: ProducerConfig } = {},

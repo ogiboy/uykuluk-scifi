@@ -34,6 +34,14 @@ import {
 import { renderVoiceoverReviewMarkdown } from "./voice/voiceoverReviewMarkdown.js";
 import { synthesizeVoiceover } from "./voice/voiceSynthesisExecution.js";
 
+/**
+ * Generates voiceover audio and persists its metadata and review artifacts for a run.
+ *
+ * @param runId - Identifier of the run to process
+ * @param options - Optional execution metadata provider and lifecycle callbacks
+ * @returns Metadata describing the generated voiceover audio and associated artifacts
+ * @throws SafeExitError If the render plan is invalid, the source voiceover is empty, or local TTS is disabled
+ */
 export async function generateVoiceoverAudio(
   runId: string,
   options: {
@@ -180,6 +188,12 @@ export async function generateVoiceoverAudio(
   return meta;
 }
 
+/**
+ * Counts the whitespace-delimited words in a string.
+ *
+ * @param value - The text whose words to count
+ * @returns The number of words in `value`
+ */
 function countWords(value: string): number {
   return value.trim().split(/\s+/).filter(Boolean).length;
 }

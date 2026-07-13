@@ -86,7 +86,14 @@ export function requireSelectedVoiceExecutionBinding(
   return binding;
 }
 
-/** Recomputes every text-derived field before a paid adapter can reserve or dispatch. */
+/**
+ * Verifies that prepared text matches the approved voice execution binding.
+ *
+ * @param value - The candidate voice execution binding.
+ * @param input - The prepared text and its preparation digest.
+ * @returns The validated voice execution binding.
+ * @throws SafeExitError if the prepared text, digest, character count, or chunk plan differs from the binding.
+ */
 export function requireMatchingVoiceExecutionInput(
   value: unknown,
   input: { preparedText: string; preparationDigest: string },
@@ -112,7 +119,14 @@ export function requireMatchingVoiceExecutionInput(
   return binding;
 }
 
-/** Resolves provider configuration from a verified run binding; config voiceId is never consulted. */
+/**
+ * Resolves ElevenLabs provider settings from a verified voice execution binding.
+ *
+ * @param config - The current text-to-speech provider configuration.
+ * @param value - The voice execution binding to verify.
+ * @returns ElevenLabs provider configuration derived from the binding and current voice settings.
+ * @throws SafeExitError If the binding is invalid, ElevenLabs is not enabled, or the current configuration differs from the binding.
+ */
 export function elevenLabsConfigFromBinding(
   config: ProducerConfig["providers"]["tts"],
   value: unknown,

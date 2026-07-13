@@ -39,7 +39,14 @@ import {
 
 type SelectVoiceOptions = { beforeCommit?: () => Promise<void> };
 
-/** Records an exact, attributable voice selection without synthesizing production speech. */
+/**
+ * Records an attributable voice selection from an exact catalog and preview match without synthesizing production speech.
+ *
+ * @param runId - The run receiving the voice selection artifact
+ * @param input - The voice candidate, reviewer, and production-rights confirmation details
+ * @param options - Optional hook invoked before committing the selection
+ * @returns The validated voice selection record
+ */
 export async function selectVoice(
   runId: string,
   input: VoiceSelectionInput,
@@ -177,6 +184,13 @@ export async function selectVoice(
   return selection;
 }
 
+/**
+ * Determines the revision of artifacts that can affect voice selection for a run.
+ *
+ * @param run - The run whose registered artifacts are evaluated
+ * @param voiceId - The voice whose preview artifacts are included
+ * @returns The revision identifier for the relevant registered artifacts
+ */
 async function voiceSelectionDependencyRevision(
   run: Awaited<ReturnType<typeof loadRun>>,
   voiceId: string,
@@ -193,6 +207,14 @@ async function voiceSelectionDependencyRevision(
   });
 }
 
+/**
+ * Verifies that preview evidence exactly corresponds to the current voice catalog candidate.
+ *
+ * @param catalog - The current voice candidate catalog.
+ * @param candidate - The selected candidate from the catalog.
+ * @param preview - The stored preview evidence to validate.
+ * @throws SafeExitError If the preview evidence differs from the catalog or candidate.
+ */
 function assertPreviewMatchesCatalog(
   catalog: VoiceCandidates,
   candidate: ReturnType<typeof requireCatalogCandidate>,

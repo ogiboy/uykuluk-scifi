@@ -7,7 +7,7 @@ import { readVoiceoverAudioEvidence } from "../voice/voiceoverEvidence.js";
  * Checks whether voiceover audio is available and suitable for rendering.
  *
  * @param run - The run record to inspect.
- * @returns A readiness check for voiceover audio availability.
+ * @returns A readiness check describing voiceover availability and required next action.
  */
 export async function voiceoverReadinessCheck(run: RunRecord): Promise<ReadinessCheck> {
   const evidence = await readVoiceoverAudioEvidence(run);
@@ -46,7 +46,7 @@ export async function voiceoverReadinessCheck(run: RunRecord): Promise<Readiness
  * Builds the next safe operator action for blocked voiceover evidence.
  *
  * @param run - The run record used to populate the command.
- * @returns The local TTS remediation command or configuration instruction.
+ * @returns The voiceover generation command, or an instruction to enable a TTS provider before running it.
  */
 async function voiceoverNextAction(run: RunRecord): Promise<string> {
   const config = await loadConfig();

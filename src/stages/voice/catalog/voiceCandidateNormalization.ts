@@ -12,6 +12,14 @@ import {
   normalizeLabels,
 } from "./voiceCatalogValueNormalization.js";
 
+/**
+ * Normalizes a catalog voice into a validated candidate for the requested language and model.
+ *
+ * @param voice - The catalog voice to normalize
+ * @param request - The requested language and model
+ * @param subscription - The subscriber's tier, status, and invoice state
+ * @returns A normalized voice candidate, or `null` when the voice fails validation
+ */
 export function normalizeVoiceCandidate(
   voice: CatalogVoice,
   request: Pick<VoiceCatalogRequest, "languageCode" | "modelId">,
@@ -86,6 +94,12 @@ export function normalizeVoiceCandidate(
   return { ...digestBase, metadataDigest: canonicalVoiceEvidenceDigest(digestBase) };
 }
 
+/**
+ * Normalizes sharing settings for inclusion in a voice candidate.
+ *
+ * @param sharing - The source sharing settings.
+ * @returns A normalized sharing settings object with bounded and validated values.
+ */
 function normalizeSharing(sharing: NonNullable<CatalogVoice["sharing"]>) {
   return {
     ...(boundedOptional(sharing.status, 64) ? { status: boundedOptional(sharing.status, 64) } : {}),
@@ -104,6 +118,12 @@ function normalizeSharing(sharing: NonNullable<CatalogVoice["sharing"]>) {
   };
 }
 
+/**
+ * Determines whether a voice is eligible for production use under the current subscription and request.
+ *
+ * @param input - The candidate, subscription state, and requested language and model.
+ * @returns The eligibility status and reasons, including blocking conditions, preview-only access, or required review.
+ */
 function candidateEligibility(input: {
   candidate: Omit<VoiceCandidate, "metadataDigest" | "productionEligibility">;
   subscription: { tier: string; status: string; hasOpenInvoices: boolean };
@@ -164,10 +184,23 @@ function candidateEligibility(input: {
   };
 }
 
+/**
+ * Determines whether a subscription status is supported for use.
+ *
+ * @param value - The subscription status to evaluate
+ * @returns `true` if the status is active, trialing, or free, `false` otherwise
+ */
 function isUsableSubscriptionStatus(value: string): boolean {
   return ["active", "trialing", "free"].includes(value.trim().toLowerCase());
 }
 
+/**
+ * Selects the most relevant preview URL for a language and model request.
+ *
+ * @param voice - The catalog voice containing candidate preview URLs.
+ * @param request - The requested language and model identifiers.
+ * @returns The selected preview source, classification, and URL when available.
+ */
 export function resolveVoicePreview(
   voice: CatalogVoice,
   request: Pick<VoiceCatalogRequest, "languageCode" | "modelId">,
@@ -198,6 +231,12 @@ export function resolveVoicePreview(
   return { source: "none", sourceClass: "none" };
 }
 
+/**
+ * Classifies a preview URL by its supported provider and format.
+ *
+ * @param value - The preview URL to classify
+ * @returns The preview source class, or `"none"` when no URL is provided
+ */
 function classifyPreview(value: string | undefined): VoiceCandidate["preview"]["sourceClass"] {
   if (!value) return "none";
   try {
@@ -222,6 +261,14 @@ function classifyPreview(value: string | undefined): VoiceCandidate["preview"]["
   }
 }
 
+/**
+ * Orders voice candidates by request match quality and then by name.
+ *
+ * @param left - The first candidate to compare
+ * @param right - The second candidate to compare
+ * @param request - The requested language and model
+ * @returns A negative number when `left` precedes `right`, a positive number when `right` precedes `left`, or zero when they are equivalent
+ */
 export function candidateOrder(
   left: VoiceCandidate,
   right: VoiceCandidate,
@@ -233,6 +280,12 @@ export function candidateOrder(
   );
 }
 
+/**
+ * Assigns a priority rank based on the candidate's verified language match and preview availability.
+ *
+ * @param request - The requested language and model.
+ * @returns `0` for a matching verified language with a preview, `1` for a matching verified language without a preview, `2` for another candidate with a preview, or `3` otherwise.
+ */
 function candidateRank(
   candidate: VoiceCandidate,
   request: Pick<VoiceCatalogRequest, "languageCode" | "modelId">,

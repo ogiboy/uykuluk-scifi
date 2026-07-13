@@ -136,11 +136,11 @@ function costEstimatedNextCommand(costQuote: CostQuoteNextStep): string {
 }
 
 /**
- * Selects the next manual production command.
+ * Selects the next action for manual production based on voiceover evidence and TTS availability.
  *
- * @param voiceoverAudio - Voiceover evidence used to determine whether render approval is available
- * @param ttsEnabled - Whether local TTS is enabled for generating voice output
- * @returns A command or instruction for the next manual production step
+ * @param voiceoverAudio - Voiceover evidence used to determine whether voice review or regeneration is needed
+ * @param ttsEnabled - Whether a TTS provider is enabled for generating voice output
+ * @returns The command or instruction for the next manual production step
  */
 function manualProductionNextCommand(
   voiceoverAudio: VoiceoverNextStep,

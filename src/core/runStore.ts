@@ -66,9 +66,10 @@ export async function loadRun(runId: string): Promise<RunRecord> {
 }
 
 /**
- * Persists a run record to disk, updating its timestamp to the current time.
+ * Persists a run record to disk if it has not changed since it was loaded.
  *
- * @param record - The run record to save
+ * @param record - The run record to persist
+ * @returns The persisted run record with an updated timestamp
  */
 export async function saveRun(record: RunRecord): Promise<RunRecord> {
   const validated = validateRunArtifacts(runRecordSchema.parse(record));
@@ -78,6 +79,13 @@ export async function saveRun(record: RunRecord): Promise<RunRecord> {
   });
 }
 
+/**
+ * Applies an asynchronous mutation to a run while coordinating state access and persistence.
+ *
+ * @param runId - The identifier of the run to mutate
+ * @param mutation - Produces the updated run and a caller-defined value; set `persist` to `false` to skip persistence
+ * @returns The resulting run and caller-defined mutation value
+ */
 export async function mutateRun<T>(
   runId: string,
   mutation: (current: RunRecord) => Promise<{ run: RunRecord; value: T; persist?: boolean }>,
@@ -116,6 +124,14 @@ export async function setRunState(
   return updated;
 }
 
+/**
+ * Persists a run record when it matches the currently stored version.
+ *
+ * @param record - The run record to persist
+ * @param current - The previously loaded current run record
+ * @returns The persisted run record with an updated timestamp
+ * @throws SafeExitError If the run has changed since `current` was loaded
+ */
 async function persistRunIfCurrent(record: RunRecord, current: RunRecord): Promise<RunRecord> {
   const validated = validateRunArtifacts(runRecordSchema.parse(record));
   if (validated.runId !== current.runId || validated.updatedAt !== current.updatedAt) {

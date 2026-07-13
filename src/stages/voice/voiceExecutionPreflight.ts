@@ -36,7 +36,12 @@ export const voiceExecutionPreflightReceiptSchema = z.strictObject({
 
 export type VoiceExecutionPreflightReceipt = z.infer<typeof voiceExecutionPreflightReceiptSchema>;
 
-/** Parses a live preflight receipt and verifies its canonical redacted digest. */
+/**
+ * Validates a voice execution preflight receipt and its canonical digest.
+ *
+ * @param value - The value to parse as a preflight receipt
+ * @returns The validated voice execution preflight receipt
+ */
 export function requireVoiceExecutionPreflightReceipt(
   value: unknown,
 ): VoiceExecutionPreflightReceipt {
@@ -48,7 +53,13 @@ export function requireVoiceExecutionPreflightReceipt(
   return receipt;
 }
 
-/** Verifies that a redacted live receipt authorizes this exact execution binding. */
+/**
+ * Verifies that a live preflight receipt authorizes the specified execution binding.
+ *
+ * @param value - The receipt to validate.
+ * @param binding - The approved execution binding to match.
+ * @returns The validated preflight receipt.
+ */
 export function requireMatchingVoiceExecutionPreflight(
   value: unknown,
   binding: SelectedVoiceExecutionBinding,
@@ -74,7 +85,12 @@ export function requireMatchingVoiceExecutionPreflight(
   return receipt;
 }
 
-/** Revalidates the selected voice through bounded read-only provider metadata before reservation. */
+/**
+ * Revalidates the approved voice execution binding against current provider metadata and creates a preflight receipt.
+ *
+ * @param input - The approved binding and optional metadata provider to use for revalidation.
+ * @returns A validated preflight receipt reflecting the current voice, model, pricing, and subscription metadata.
+ */
 export async function revalidateSelectedVoiceExecutionBinding(input: {
   binding: SelectedVoiceExecutionBinding;
   provider?: VoiceExecutionMetadataProvider;
@@ -144,6 +160,13 @@ export async function revalidateSelectedVoiceExecutionBinding(input: {
   });
 }
 
+/**
+ * Verifies that subscription and billing metadata remain consistent with the approved execution binding.
+ *
+ * @param binding - The approved voice execution binding.
+ * @param live - The current voice catalog metadata snapshot.
+ * @throws SafeExitError If subscription or billing metadata has changed since approval.
+ */
 function requireStableSubscription(
   binding: SelectedVoiceExecutionBinding,
   live: VoiceCatalogProviderResult,

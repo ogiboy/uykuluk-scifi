@@ -1,6 +1,13 @@
 import { SafeExitError } from "../../core/errors.js";
 
-/** Splits long narration without changing text, preferring paragraph and sentence boundaries. */
+/**
+ * Splits narration into readable chunks without changing its text.
+ *
+ * @param text - The narration to split.
+ * @param maxCharacters - The maximum length of each chunk, from 250 through 5000 characters.
+ * @returns The narration chunks in their original order.
+ * @throws SafeExitError If `text` is empty or `maxCharacters` is outside the allowed range.
+ */
 export function splitElevenLabsText(text: string, maxCharacters: number): string[] {
   if (!text) {
     throw new SafeExitError("ElevenLabs TTS requires non-empty text.");
@@ -23,6 +30,14 @@ export function splitElevenLabsText(text: string, maxCharacters: number): string
   return chunks;
 }
 
+/**
+ * Selects a readable chunk boundary within the specified text window.
+ *
+ * @param text - The text from which to select a boundary
+ * @param start - The window's starting index
+ * @param hardEnd - The window's exclusive ending index
+ * @returns The absolute index of the preferred boundary
+ */
 function preferredBreak(text: string, start: number, hardEnd: number): number {
   const window = text.slice(start, hardEnd);
   const minimumOffset = Math.floor(window.length * 0.6);
@@ -36,6 +51,13 @@ function preferredBreak(text: string, start: number, hardEnd: number): number {
   return start + (offset ?? window.length);
 }
 
+/**
+ * Finds the end position of the last match for a pattern in a string.
+ *
+ * @param value - The string to search
+ * @param pattern - The regular expression used for matching
+ * @returns The end position of the last match, or `-1` if no match is found
+ */
 function lastBoundaryEnd(value: string, pattern: RegExp): number {
   let end = -1;
   for (const match of value.matchAll(pattern)) {

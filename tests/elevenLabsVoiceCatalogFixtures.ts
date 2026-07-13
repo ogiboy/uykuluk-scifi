@@ -5,6 +5,11 @@ import type {
   ElevenLabsCatalogClient,
 } from "../src/stages/voice/catalog/voiceCatalogProvider";
 
+/**
+ * Creates the standard Turkish voice catalog request configuration.
+ *
+ * @returns The configured language, candidate limit, character limit, model, and unit price
+ */
 export function voiceCatalogRequest() {
   return {
     languageCode: "tr" as const,
@@ -15,6 +20,12 @@ export function voiceCatalogRequest() {
   };
 }
 
+/**
+ * Creates a deterministic fake ElevenLabs catalog client.
+ *
+ * @param overrides - Optional model, subscription, and voice data used by the client responses
+ * @returns A catalog client that provides fixture data with stable request IDs
+ */
 export function fakeCatalogClient(
   overrides: {
     models?: CatalogModel[];
@@ -49,6 +60,12 @@ export function fakeCatalogClient(
   };
 }
 
+/**
+ * Creates a catalog voice fixture with optional field overrides.
+ *
+ * @param overrides - Values that replace the default catalog voice fields
+ * @returns A catalog voice object
+ */
 export function catalogVoice(overrides: Partial<CatalogVoice> = {}): CatalogVoice {
   return {
     voiceId: "voice_default",
@@ -61,6 +78,12 @@ export function catalogVoice(overrides: Partial<CatalogVoice> = {}): CatalogVoic
   };
 }
 
+/**
+ * Creates a catalog model fixture with standard defaults.
+ *
+ * @param overrides - Model properties that replace the default values
+ * @returns A catalog model fixture
+ */
 export function catalogModel(overrides: Partial<CatalogModel> = {}): CatalogModel {
   return {
     modelId: "eleven_v3",
@@ -77,6 +100,12 @@ export function catalogModel(overrides: Partial<CatalogModel> = {}): CatalogMode
   };
 }
 
+/**
+ * Creates a catalog subscription fixture with default values.
+ *
+ * @param overrides - Subscription properties that replace the defaults
+ * @returns A catalog subscription fixture
+ */
 export function catalogSubscription(
   overrides: Partial<CatalogSubscription> = {},
 ): CatalogSubscription {
