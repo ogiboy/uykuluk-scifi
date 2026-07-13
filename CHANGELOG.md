@@ -9,6 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
+_No unreleased changes yet._
+
+## v0.81.0 (2026-07-13)
+
 ### Features
 
 - bind an attributable ElevenLabs voice selection through operator-visible quote approval,
