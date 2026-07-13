@@ -23,6 +23,13 @@ type ReservedTtsExecution = ReservedProviderAdapter<TtsSynthesisResult>["execute
 type ReservedTtsContext = Parameters<ReservedTtsExecution>[0];
 type ReservedTtsOutcome = Awaited<ReturnType<ReservedTtsExecution>>;
 
+/**
+ * Executes approval-reserved ElevenLabs synthesis within the caller's timeout and spend ceiling.
+ *
+ * Provider calls are chunked and return redacted request evidence. Any timeout, provider failure,
+ * indeterminate billing, or charge above the reserved maximum returns an uncertain outcome so the
+ * reservation owner can fail closed instead of treating the call as safely settled.
+ */
 export async function executeElevenLabsReservedSynthesis(input: {
   apiKey: string;
   config: ElevenLabsTtsProviderConfig;

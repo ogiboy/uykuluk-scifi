@@ -12,6 +12,12 @@ import {
 import type { VoiceExecutionSpool } from "./voiceExecutionSpoolContracts.js";
 import type { VoiceoverPreparation } from "./voiceoverPreparation.js";
 
+/**
+ * Requires persisted per-chunk request diagnostics to match the approved text binding and billing.
+ *
+ * @throws SafeExitError If chunk order, text digests, reported credits, or aggregate provider
+ * billing differ from the execution binding.
+ */
 export function requireMatchingRequestEvidence(
   audio: TtsSynthesisResult,
   binding: SelectedVoiceExecutionBinding,

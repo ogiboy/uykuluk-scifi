@@ -12,6 +12,12 @@ export type VoiceoverMetaRefinementInput = {
   alignment?: unknown;
 };
 
+/**
+ * Enforces mode-specific voice evidence before voiceover metadata can be accepted.
+ *
+ * ElevenLabs requires paid execution, alignment, prepared-text, and hosted-provider provenance;
+ * Piper requires local model provenance; deterministic-local metadata must not claim paid evidence.
+ */
 export function refineVoiceoverMeta(
   meta: VoiceoverMetaRefinementInput,
   context: RefinementCtx<VoiceoverMetaRefinementInput>,

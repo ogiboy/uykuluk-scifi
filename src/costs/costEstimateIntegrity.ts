@@ -110,6 +110,11 @@ function canonicalStages(stages: CostEstimate["stages"]): CostEstimate["stages"]
   }));
 }
 
+/**
+ * Verifies the run's current production package and returns its canonical digest.
+ *
+ * @throws SafeExitError When package artifacts are missing, stale, or fail integrity validation.
+ */
 export async function currentProductionPackageDigest(run: RunRecord): Promise<string> {
   return (await verifyProductionPackage(run)).digest;
 }
