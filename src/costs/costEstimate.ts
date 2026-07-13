@@ -1,58 +1,36 @@
 import { readFile } from "node:fs/promises";
-import { z } from "zod";
 import { ProducerConfig } from "../config/schema.js";
 import { artifactPath } from "../core/artifacts.js";
 import { SafeExitError } from "../core/errors.js";
 import { RunRecord } from "../core/state.js";
 import { checkBudget } from "../safeguards/budgetGuard.js";
-import { verifyProductionPackage } from "../stages/production/productionPackageIntegrity.js";
 import { sha256 } from "../utils/hash.js";
 import { nowIso } from "../utils/time.js";
+import { costEstimateSchema, type CostEstimate } from "./costEstimateContracts.js";
+import {
+  currentProductionPackageDigest,
+  relevantConfigDigest,
+  stagesDigest,
+  validateCostEstimateIntegrity,
+} from "./costEstimateIntegrity.js";
 import { renderCostEstimateMarkdown } from "./costEstimatePresentation.js";
-import { defaultStagePricing, StagePricing } from "./pricing.js";
+import { quoteCostStages } from "./costQuoteStages.js";
 
-const budgetSnapshotSchema = z.strictObject({
-  perVideoUsd: z.number().nonnegative(),
-  dailyUsd: z.number().nonnegative(),
-  weeklyUsd: z.number().nonnegative(),
-  requireApprovalAboveUsd: z.number().nonnegative(),
-});
+export { costEstimateSchema } from "./costEstimateContracts.js";
+export type { CostEstimate } from "./costEstimateContracts.js";
 
-const quotedStageSchema = z.strictObject({
-  stage: z.string().min(1),
-  provider: z.string().min(1),
-  model: z.string().min(1).optional(),
-  enabled: z.boolean(),
-  estimatedUsd: z.number().nonnegative(),
-});
-
-export const costEstimateSchema = z.strictObject({
-  schemaVersion: z.literal(1),
-  runId: z.string().min(1),
-  generatedAt: z.iso.datetime(),
-  currency: z.literal("USD"),
-  stages: z.array(quotedStageSchema),
-  estimatedStageCost: z.number().nonnegative(),
-  cumulativeEstimatedRunCost: z.number().nonnegative(),
-  budgets: budgetSnapshotSchema,
-  budgetAllowed: z.boolean(),
-  approvalRequired: z.boolean(),
-  hardBlockedReasons: z.array(z.string()),
-  nextStepAllowed: z.boolean(),
-  blockedReasons: z.array(z.string()),
-  productionPackageDigest: z.string().regex(/^[a-f0-9]{64}$/),
-  configDigest: z.string().regex(/^[a-f0-9]{64}$/),
-  pricingDigest: z.string().regex(/^[a-f0-9]{64}$/),
-});
-
-export type CostEstimate = z.infer<typeof costEstimateSchema>;
-
-/** Builds a cost quote bound to current budgets, config, pricing, and package integrity. */
+/**
+ * Builds a cost estimate using the current run, configuration, budgets, pricing, and production package.
+ *
+ * @param run - The run for which to calculate the estimate
+ * @param config - The producer configuration governing costs and budgets
+ * @returns The cost estimate, including budget and approval decisions
+ */
 export async function buildCostEstimate(
   run: RunRecord,
   config: ProducerConfig,
 ): Promise<CostEstimate> {
-  const stages = quoteStages(config);
+  const stages = await quoteCostStages(run, config);
   const estimatedStageCost = stages.reduce(
     (sum, stage) => sum + (stage.enabled ? stage.estimatedUsd : 0),
     0,
@@ -104,14 +82,21 @@ export async function readCostEstimate(
   return { estimate, text, markdownText, digest: sha256(`${text}\0${markdownText}`) };
 }
 
-/** Returns all package, config, pricing, and live-budget reasons that make a quote stale. */
+/**
+ * Checks whether a cost estimate remains current against the run, configuration, pricing, and budget state.
+ *
+ * @param run - The production run associated with the estimate
+ * @param config - The producer configuration used for validation
+ * @param estimate - The cost estimate to validate
+ * @returns Reasons the estimate is stale or inconsistent; an empty array indicates that it remains current
+ */
 export async function validateCurrentCostEstimate(
   run: RunRecord,
   config: ProducerConfig,
   estimate: CostEstimate,
 ): Promise<string[]> {
   const reasons = await validateCostEstimateIntegrity(run, config, estimate);
-  const currentStages = quoteStages(config);
+  const currentStages = await quoteCostStages(run, config);
   const currentTotal = currentStages.reduce(
     (sum, stage) => sum + (stage.enabled ? stage.estimatedUsd : 0),
     0,
@@ -149,96 +134,9 @@ export async function validateCurrentCostEstimate(
   return reasons;
 }
 
-/** Returns structural quote-integrity failures; an empty array means the quote is current. */
-export async function validateCostEstimateIntegrity(
-  run: RunRecord,
-  config: ProducerConfig,
-  estimate: CostEstimate,
-): Promise<string[]> {
-  const currentStages = quoteStages(config);
-  const reasons: string[] = [];
-  if (estimate.runId !== run.runId) {
-    reasons.push("Cost estimate belongs to a different run.");
-  }
-  if (estimate.productionPackageDigest !== (await currentProductionPackageDigest(run))) {
-    reasons.push("Production package changed after the cost estimate.");
-  }
-  if (estimate.configDigest !== relevantConfigDigest(config)) {
-    reasons.push("Relevant provider or budget config changed after the cost estimate.");
-  }
-  if (estimate.pricingDigest !== stagesDigest(estimate.stages)) {
-    reasons.push("Quoted stage details do not match the quote pricing digest.");
-  }
-  if (estimate.pricingDigest !== stagesDigest(currentStages)) {
-    reasons.push("Stage pricing changed after the cost estimate.");
-  }
-  if (
-    JSON.stringify(canonicalStages(estimate.stages)) !==
-    JSON.stringify(canonicalStages(currentStages))
-  ) {
-    reasons.push("Quoted stages no longer match current enabled stage pricing.");
-  }
-  if (JSON.stringify(estimate.budgets) !== JSON.stringify(config.budgets)) {
-    reasons.push("Quoted budget snapshot no longer matches current budgets.");
-  }
-  const currentTotal = currentStages.reduce(
-    (sum, stage) => sum + (stage.enabled ? stage.estimatedUsd : 0),
-    0,
-  );
-  if (estimate.estimatedStageCost !== currentTotal) {
-    reasons.push("Quoted total no longer matches current enabled stage pricing.");
-  }
-  return reasons;
-}
-
-function quoteStages(config: ProducerConfig): Array<StagePricing & { enabled: boolean }> {
-  return Object.values(defaultStagePricing).map((pricing) => ({
-    ...pricing,
-    enabled: isStageEnabled(pricing.stage, config),
-  }));
-}
-
-function isStageEnabled(stage: string, config: ProducerConfig): boolean {
-  switch (stage) {
-    case "tts":
-      return config.providers.tts.enabled;
-    case "imageGeneration":
-    case "videoGeneration":
-      return config.providers.imageGeneration.enabled;
-    case "upload":
-      return config.providers.youtube.enabled;
-    default:
-      return true;
-  }
-}
-
-function relevantConfigDigest(config: ProducerConfig): string {
-  return sha256(
-    JSON.stringify({
-      providers: {
-        tts: config.providers.tts,
-        imageGeneration: config.providers.imageGeneration,
-        youtube: config.providers.youtube,
-      },
-      budgets: config.budgets,
-    }),
-  );
-}
-
-function stagesDigest(stages: CostEstimate["stages"]): string {
-  return sha256(JSON.stringify(canonicalStages(stages)));
-}
-
-function canonicalStages(stages: CostEstimate["stages"]): CostEstimate["stages"] {
-  return stages.map((stage) => ({
-    stage: stage.stage,
-    provider: stage.provider,
-    ...(stage.model ? { model: stage.model } : {}),
-    enabled: stage.enabled,
-    estimatedUsd: stage.estimatedUsd,
-  }));
-}
-
-async function currentProductionPackageDigest(run: RunRecord): Promise<string> {
-  return (await verifyProductionPackage(run)).digest;
-}
+/**
+ * Checks whether a cost estimate remains structurally consistent with the current run and configuration.
+ *
+ * @returns A list of integrity failure reasons; an empty array indicates that the estimate is current.
+ */
+export { validateCostEstimateIntegrity } from "./costEstimateIntegrity.js";

@@ -4,14 +4,20 @@ import { createId, nowIso } from "../utils/time.js";
 import { requireReservation } from "./costReservationContext.js";
 import { withCostReservationLock } from "./costReservationLock.js";
 import { appendCostReservationEvent, CostReservationSummary } from "./costReservationStore.js";
+import {
+  type ProviderAdapterIdentity,
+  providerAdapterIdentitiesMatch,
+} from "./providerAdapterIdentity.js";
 
-type AdapterIdentity = { provider: string; model?: string };
-
-/** Atomically claims one matching reservation for a single callback invocation. */
+/**
+ * Attempts to start execution for a matching reserved cost reservation.
+ *
+ * @returns The current reservation and whether execution was started.
+ */
 export async function beginCostReservationExecution(input: {
   runId: string;
   reservationId: string;
-  adapterIdentity: AdapterIdentity;
+  adapterIdentity: ProviderAdapterIdentity;
 }): Promise<{ reservation: CostReservationSummary; started: boolean }> {
   return withCostReservationLock(async () => {
     const reservation = await requireReservation(input.runId, input.reservationId);
@@ -24,6 +30,9 @@ export async function beginCostReservationExecution(input: {
       reservationId: input.reservationId,
       runId: input.runId,
       type: "EXECUTION_STARTED",
+      provider: reservation.provider,
+      ...(reservation.model ? { model: reservation.model } : {}),
+      ...(reservation.bindingDigest ? { bindingDigest: reservation.bindingDigest } : {}),
       createdAt: nowIso(),
     });
     await appendLedgerEvent({
@@ -36,6 +45,7 @@ export async function beginCostReservationExecution(input: {
         operationId: reservation.operationId,
         provider: reservation.provider,
         model: reservation.model,
+        ...(reservation.bindingDigest ? { bindingDigest: reservation.bindingDigest } : {}),
       },
     });
     return {
@@ -45,11 +55,17 @@ export async function beginCostReservationExecution(input: {
   });
 }
 
-/** Releases a claimed callback only when the matching adapter proves no request was submitted. */
+/**
+ * Releases an execution reservation after the provider adapter confirms that no request was submitted.
+ *
+ * @param input - Identifies the reservation, adapter, and confirmed reason for non-submission.
+ * @returns The updated cost reservation summary.
+ * @throws SafeExitError If the reservation is not in execution or the adapter does not match the reservation.
+ */
 export async function releaseDefinitelyNotSentExecution(input: {
   runId: string;
   reservationId: string;
-  adapterIdentity: AdapterIdentity;
+  adapterIdentity: ProviderAdapterIdentity;
   reason: "adapter-validation" | "cancelled-before-send" | "connection-not-opened";
 }): Promise<CostReservationSummary> {
   return withCostReservationLock(async () => {
@@ -81,12 +97,20 @@ export async function releaseDefinitelyNotSentExecution(input: {
   });
 }
 
+/**
+ * Verifies that an adapter matches the reservation identity for the requested action.
+ *
+ * @param reservation - The reservation to validate against.
+ * @param adapter - The provider adapter identity to compare with the reservation.
+ * @param action - The action name included in the rejection message.
+ * @throws SafeExitError If the adapter does not match the reservation.
+ */
 function requireMatchingAdapter(
   reservation: CostReservationSummary,
-  adapter: AdapterIdentity,
+  adapter: ProviderAdapterIdentity,
   action: string,
 ): void {
-  if (reservation.provider !== adapter.provider || reservation.model !== adapter.model) {
+  if (!providerAdapterIdentitiesMatch(reservation, adapter)) {
     throw new SafeExitError(`Blocked: ${action} adapter does not match the reservation.`);
   }
 }

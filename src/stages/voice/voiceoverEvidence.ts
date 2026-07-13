@@ -8,12 +8,22 @@ import { pathExists } from "../../utils/fs.js";
 import { readJsonFile } from "../../utils/json.js";
 import { digestSchema } from "../render/renderPlanSchemas.js";
 import { readRenderPlanEvidence } from "../renderPlan.js";
+import { paidVoiceExecutionEvidenceSchema } from "./voiceExecutionEvidence.js";
+import { assertPaidVoiceExecutionEvidence } from "./voiceExecutionEvidenceValidation.js";
+import {
+  assertVoiceoverAlignment,
+  assertVoiceoverArtifacts,
+  assertVoiceoverSource,
+} from "./voiceoverEvidenceValidation.js";
+import { refineVoiceoverMeta } from "./voiceoverMetaRefinement.js";
 import { voiceoverAudioPath } from "./voiceoverPaths.js";
+import { voiceoverPreparationPath, voiceoverPreparedTextPath } from "./voiceoverPreparation.js";
 import { voiceoverLocalPlaybackPath } from "./voiceoverReviewCommands.js";
 
 export { voiceoverAudioPath } from "./voiceoverPaths.js";
 export const voiceoverAudioMetaPath = "production/audio/voiceover.meta.json";
 export const voiceoverAudioReviewPath = "production/audio/voiceover_review.md";
+export const voiceoverAlignmentPath = "production/audio/alignment.json";
 export const voiceoverAudioArtifactPaths = [
   voiceoverAudioPath,
   voiceoverAudioMetaPath,
@@ -25,12 +35,21 @@ export const voiceoverAudioMetaSchema = z
     schemaVersion: z.literal(1),
     runId: z.string().min(1),
     createdAt: z.iso.datetime(),
-    mode: z.enum(["deterministic-local", "local-piper"]),
-    quality: z.enum(["deterministic-local-reference", "local-piper"]),
+    mode: z.enum(["deterministic-local", "local-piper", "elevenlabs"]),
+    quality: z.enum(["deterministic-local-reference", "local-piper", "elevenlabs"]),
     source: z.strictObject({
       path: z.literal("production/voiceover.txt"),
       sha256: digestSchema,
       wordCount: z.int().positive(),
+      preparation: z
+        .strictObject({
+          path: z.literal(voiceoverPreparedTextPath),
+          sha256: digestSchema,
+          metadataPath: z.literal(voiceoverPreparationPath),
+          metadataSha256: digestSchema,
+          replacementsApplied: z.int().nonnegative(),
+        })
+        .optional(),
     }),
     renderPlan: z.strictObject({
       path: z.literal("production/render_plan.json"),
@@ -51,8 +70,13 @@ export const voiceoverAudioMetaSchema = z
         modelSha256: digestSchema.optional(),
         configPath: z.string().min(1).optional(),
         configSha256: digestSchema.optional(),
+        service: z.literal("elevenlabs").optional(),
+        modelId: z.string().min(1).optional(),
+        voiceId: z.string().min(1).optional(),
+        outputFormat: z.string().min(1).optional(),
       })
       .optional(),
+    paidExecution: paidVoiceExecutionEvidenceSchema.optional(),
     processing: z
       .strictObject({
         peakNormalization: z.strictObject({
@@ -63,37 +87,15 @@ export const voiceoverAudioMetaSchema = z
         }),
       })
       .optional(),
+    alignment: z
+      .strictObject({
+        path: z.literal(voiceoverAlignmentPath),
+        sha256: digestSchema,
+        characterCount: z.int().positive(),
+      })
+      .optional(),
   })
-  .superRefine((meta, context) => {
-    if (meta.mode !== "local-piper") {
-      return;
-    }
-    if (!meta.provider) {
-      context.addIssue({
-        code: "custom",
-        message: "Local Piper voiceover metadata requires provider provenance.",
-        path: ["provider"],
-      });
-      return;
-    }
-    for (const field of ["modelPath", "modelSha256"] as const) {
-      if (!meta.provider[field]) {
-        context.addIssue({
-          code: "custom",
-          message: `Local Piper voiceover metadata requires provider.${field}.`,
-          path: ["provider", field],
-        });
-      }
-    }
-    if (meta.provider.configPath && !meta.provider.configSha256) {
-      context.addIssue({
-        code: "custom",
-        message:
-          "Local Piper voiceover metadata requires provider.configSha256 when configPath is present.",
-        path: ["provider", "configSha256"],
-      });
-    }
-  });
+  .superRefine(refineVoiceoverMeta);
 
 export type VoiceoverAudioMeta = z.infer<typeof voiceoverAudioMetaSchema>;
 
@@ -107,6 +109,7 @@ export type VoiceoverAudioEvidence =
       localPlaybackPath: string;
       mode: VoiceoverAudioMeta["mode"];
       productionVoiceCandidate: boolean;
+      alignmentPath?: string;
       provider?: NonNullable<VoiceoverAudioMeta["provider"]>;
       quality: VoiceoverAudioMeta["quality"];
       reviewPath: string;
@@ -134,7 +137,7 @@ export async function readVoiceoverAudioEvidence(run: RunRecord): Promise<Voiceo
   }
 
   try {
-    await assertVoiceoverArtifacts(run);
+    await assertVoiceoverArtifacts(run, voiceoverAudioArtifactPaths);
     const meta = voiceoverAudioMetaSchema.parse(
       await readJsonFile(artifactPath(run.runId, voiceoverAudioMetaPath)),
     );
@@ -146,6 +149,9 @@ export async function readVoiceoverAudioEvidence(run: RunRecord): Promise<Voiceo
     if (digest !== meta.output.sha256) {
       throw new SafeExitError("Voiceover audio digest does not match metadata.");
     }
+    await assertVoiceoverSource(run, meta);
+    await assertVoiceoverAlignment(run, meta);
+    await assertPaidVoiceExecutionEvidence(run, meta);
     const renderPlan = await readRenderPlanEvidence(run);
     if (renderPlan.status !== "pass" || renderPlan.digest !== meta.renderPlan.digest) {
       throw new SafeExitError("Voiceover audio was generated from a stale or missing render plan.");
@@ -157,7 +163,8 @@ export async function readVoiceoverAudioEvidence(run: RunRecord): Promise<Voiceo
       durationSeconds: meta.output.durationSeconds,
       localPlaybackPath: voiceoverLocalPlaybackPath(run.runId),
       mode: meta.mode,
-      productionVoiceCandidate: meta.quality === "local-piper",
+      productionVoiceCandidate: meta.quality !== "deterministic-local-reference",
+      alignmentPath: meta.alignment?.path,
       provider: meta.provider,
       quality: meta.quality,
       reviewPath: voiceoverAudioReviewPath,
@@ -169,16 +176,5 @@ export async function readVoiceoverAudioEvidence(run: RunRecord): Promise<Voiceo
       path: voiceoverAudioPath,
       message: error instanceof Error ? error.message : String(error),
     };
-  }
-}
-
-async function assertVoiceoverArtifacts(run: RunRecord): Promise<void> {
-  for (const relativePath of voiceoverAudioArtifactPaths) {
-    if (!run.artifacts.includes(relativePath)) {
-      throw new SafeExitError(`Voiceover artifact is not registered: ${relativePath}.`);
-    }
-    if (!(await pathExists(artifactPath(run.runId, relativePath)))) {
-      throw new SafeExitError(`Voiceover artifact is missing: ${relativePath}.`);
-    }
   }
 }

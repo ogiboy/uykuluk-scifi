@@ -1,5 +1,58 @@
 import { z } from "zod";
 
+const elevenLabsOutputFormatSchema = z.enum([
+  "wav_16000",
+  "wav_22050",
+  "wav_24000",
+  "wav_32000",
+  "wav_44100",
+  "wav_48000",
+]);
+
+const elevenLabsTtsConfigSchema = z
+  .object({
+    voiceId: z.string().min(1).optional(),
+    modelId: z.string().min(1).default("eleven_v3"),
+    languageCode: z.literal("tr").default("tr"),
+    applyTextNormalization: z.enum(["auto", "on", "off"]).default("auto"),
+    seed: z.int().nonnegative().max(4_294_967_295).default(42),
+    maxCharactersPerRequest: z.int().min(250).max(5_000).default(4_500),
+    outputFormat: elevenLabsOutputFormatSchema.default("wav_24000"),
+    timeoutMs: z.int().positive().max(600_000).default(300_000),
+    maxRetries: z.literal(0).default(0),
+    usdPerThousandCharacters: z.number().positive().default(0.1),
+    voiceSettings: z
+      .strictObject({
+        stability: z.number().min(0).max(1).optional(),
+        similarityBoost: z.number().min(0).max(1).optional(),
+        style: z.number().min(0).max(1).optional(),
+        useSpeakerBoost: z.boolean().optional(),
+        speed: z.number().min(0.7).max(1.2).optional(),
+      })
+      .default({ stability: 0.5, similarityBoost: 0.75, style: 0, speed: 1 }),
+  })
+  .default({
+    modelId: "eleven_v3",
+    languageCode: "tr",
+    applyTextNormalization: "auto",
+    seed: 42,
+    maxCharactersPerRequest: 4_500,
+    outputFormat: "wav_24000",
+    timeoutMs: 300_000,
+    maxRetries: 0,
+    usdPerThousandCharacters: 0.1,
+    voiceSettings: { stability: 0.5, similarityBoost: 0.75, style: 0, speed: 1 },
+  })
+  .superRefine((config, context) => {
+    if (config.modelId === "eleven_v3" && config.voiceSettings.useSpeakerBoost !== undefined) {
+      context.addIssue({
+        code: "custom",
+        message: "Eleven v3 does not support Speaker Boost.",
+        path: ["voiceSettings", "useSpeakerBoost"],
+      });
+    }
+  });
+
 export const localProviderBaseUrlSchema = z
   .url()
   .refine(isLocalProviderBaseUrl, {
@@ -38,10 +91,12 @@ export const producerConfigSchema = z.object({
     }),
     tts: z.object({
       enabled: z.boolean(),
-      mode: z.enum(["deterministic-local", "local-piper"]),
+      mode: z.enum(["deterministic-local", "local-piper", "elevenlabs"]),
       piperBinary: z.string().min(1).optional(),
       piperModelPath: z.string().min(1).optional(),
       piperConfigPath: z.string().min(1).optional(),
+      pronunciationReplacements: z.record(z.string().min(1), z.string().min(1)).default({}),
+      elevenLabs: elevenLabsTtsConfigSchema,
     }),
     imageGeneration: z.object({ enabled: z.boolean(), requiresApproval: z.boolean() }),
     youtube: z.object({

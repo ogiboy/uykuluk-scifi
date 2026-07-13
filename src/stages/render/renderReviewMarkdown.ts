@@ -45,7 +45,7 @@ export function renderDraftReviewMarkdown(manifest: DraftRenderManifest): string
       ],
     ),
     "",
-    "The subtitle clock is linearly mapped onto the validated voiceover-backed scene window because local Piper does not provide word-level timestamps. Confirm synchronization by listening and watching; intro/outro remain outside the subtitle window.",
+    "The current draft renderer linearly maps the source SRT clock onto the validated voiceover-backed scene window. Confirm synchronization by listening and watching; intro/outro remain outside the subtitle window. Provider alignment evidence, when available, remains separate until aligned-SRT render binding is approved.",
     "",
   ];
   sections.push(

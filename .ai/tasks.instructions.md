@@ -79,7 +79,23 @@
 
 ## Next
 
-- Treat Production Loop Validation as the active product milestone. Repeat the complete documented
+- Build aligned SRT from the completed ElevenLabs character-timing evidence. Preserve the raw
+  alignment artifact, add deterministic Turkish word/cue grouping with readability bounds, bind the
+  aligned subtitle digest into voice/render evidence, and keep deterministic-local/Piper fallback
+  subtitle behavior explicit. Do not run paid provider calls in CI.
+- Implement the approved guarded settings contract in core/CLI before Studio: strict versioned
+  config parsing, shared path resolution, atomic revisions, optimistic concurrency, redacted
+  history/rollback, command-boundary immutable snapshots, and exact quote/approval invalidation.
+  Then expose safe fields through shared Studio contracts with negative route tests; secrets remain
+  status-only and listener/build-time settings are restart-required.
+- Implement prompt profiles through the existing runtime prompt owner: tracked genre presets,
+  immutable ignored local revisions, diff/preview, attributed save/rollback, and exact run snapshots.
+  Add a run-scoped editable idea brief to `ideas.run`; saving a prompt must remain separate from
+  generation and approval.
+- Add one idempotent local bootstrap command with plain/ANSI progress for Node/pnpm preflight,
+  frozen install, build, init, doctor, and Studio start. Do not require Docker, silently install
+  global tools, or claim success after a failed prerequisite.
+- Treat Production Quality & Controlled Distribution as the active product milestone. Repeat the complete documented
   idea-to-manual-handoff workflow on real episodes and record operator/media friction; do not add a
   new platform surface unless the run exposes a concrete blocker.
 - Keep the live local-model result honest: Gemma 3 12B on managed llama.cpp completed one real
@@ -170,9 +186,10 @@
 - Keep Studio read-only artifact previews useful as new artifact types are added. Current previews
   include operator-phase grouping, media-specific metadata, and per-artifact review wording while
   keeping the surface non-mutating.
-- Keep Studio read-only prompt inventory and `/prompts` route aligned with prompt defaults and local
-  override safety. Prompt source/status visibility is allowed; editing, diff approval, rollback,
-  provider calls, and prompt revision history remain future work.
+- Keep Studio prompt inventory and `/prompts` route aligned with prompt defaults and local override
+  safety while evolving it through the approved guarded editor contract. Editing, diff review,
+  attributed save, and rollback must call CLI/core; the page must never call providers, rewrite
+  active runs, or infer approval from a saved prompt.
 - Keep Studio local model evaluation summaries aligned with ignored `diagnostics/local_model_eval.*`
   and `diagnostics/local_model_candidates_eval.*` artifacts. Explicit guarded evaluation actions may
   call the canonical local CLI evaluation, but must not edit provider config, start/download models,
@@ -204,10 +221,10 @@
   guarded idea-run and workflow-stage/review actions, bounded script/package-artifact revision
   actions, guarded manual analytics actions, the guarded local render-decision and channel-handoff
   decision evidence writes, plus disabled upload/publish actions.
-- Keep local prompt overrides safe before adding a prompt editor. Tracked `prompts/defaults/`
-  runtime defaults, typed keys, source paths, and prompt hashes are implemented; ignored
-  `prompts/local/*.md` overrides are now explicit `producer.config.json` inputs and must remain
-  provenance-recorded, local-only, and fail-closed outside `.ai/`.
+- Keep local prompt overrides safe while adding the approved prompt editor. Tracked
+  `prompts/defaults/` runtime defaults, typed keys, source paths, and prompt hashes are implemented;
+  ignored `prompts/local/*.md` revisions must remain provenance-recorded, local-only, bounded to the
+  prompt root, and fail-closed outside it.
 - Keep package artifact revision events safe. `producer revise package-artifact` now supports
   bounded edits to subtitles, scenes, popup-card package Markdown, and YouTube metadata only while
   the run is still `PRODUCTION_PACKAGE_GENERATED`; it snapshots before/after content, refreshes the

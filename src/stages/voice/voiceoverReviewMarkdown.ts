@@ -48,6 +48,13 @@ export function renderVoiceoverReviewMarkdown(meta: VoiceoverAudioMeta): string 
       [
         [meta.source.path, meta.source.sha256],
         ["Source word count", String(meta.source.wordCount)],
+        ...(meta.source.preparation
+          ? [
+              [meta.source.preparation.path, meta.source.preparation.sha256],
+              ["Pronunciation replacements", String(meta.source.preparation.replacementsApplied)],
+            ]
+          : []),
+        ...(meta.alignment ? [[meta.alignment.path, meta.alignment.sha256]] : []),
         [meta.renderPlan.path, meta.renderPlan.digest],
       ],
     ),
@@ -106,14 +113,14 @@ function renderVoiceoverDecision(meta: VoiceoverAudioMeta): string[] {
 }
 
 /**
- * Builds the render-approval guidance for the current voiceover mode.
+ * Builds the render-approval instruction for the voiceover quality.
  *
- * @param meta - Voiceover review metadata used to choose the safest approval wording.
- * @returns The operator-facing render approval guidance.
+ * @param meta - Voiceover review metadata used to determine the approval requirements.
+ * @returns The operator-facing render approval instruction.
  */
 function renderApprovalNextStep(meta: VoiceoverAudioMeta): string {
   const command = voiceoverRenderApprovalCommand(meta.runId);
-  if (meta.mode === "local-piper") {
+  if (meta.quality !== "deterministic-local-reference") {
     return `Run \`${command}\` only after audio and render-plan review both pass.`;
   }
   return `Run \`${command}\` only for a local timing draft after deterministic reference audio and render-plan review both pass.`;
@@ -132,18 +139,50 @@ function providerSection(meta: VoiceoverAudioMeta): string[] {
 
   return [
     "",
-    "## Local TTS Provider Provenance",
+    "## TTS Provider Provenance",
     "",
     table(
       ["Provider input", "Value"],
       [
+        ["Service", meta.provider.service ?? "local-piper"],
         ["Binary", meta.provider.binary ?? "n/a"],
-        ["Piper model", meta.provider.modelPath ?? "n/a"],
-        ["Piper model SHA-256", meta.provider.modelSha256 ?? "n/a"],
+        ["Model", meta.provider.modelId ?? meta.provider.modelPath ?? "n/a"],
+        ["Model SHA-256", meta.provider.modelSha256 ?? "n/a"],
+        ["Voice ID", meta.provider.voiceId ?? "n/a"],
+        ["Output format", meta.provider.outputFormat ?? "n/a"],
+        ...paidExecutionRows(meta),
         ["Piper config", meta.provider.configPath ?? "n/a"],
         ["Piper config SHA-256", meta.provider.configSha256 ?? "n/a"],
       ],
     ),
+  ];
+}
+
+/**
+ * Builds table rows describing paid provider execution provenance.
+ *
+ * @param meta - Voiceover metadata containing optional paid execution details
+ * @returns Paid execution provenance rows, or an empty array when no paid execution is recorded
+ */
+function paidExecutionRows(meta: VoiceoverAudioMeta): string[][] {
+  const paid = meta.paidExecution;
+  if (!paid) return [];
+  return [
+    ["Execution binding", paid.bindingDigest],
+    ["Selection digest", paid.selection.digest],
+    ["Live validation", paid.liveValidation.validationDigest],
+    ["Quote digest", paid.quoteDigest],
+    ["Approval ID", paid.approvalId],
+    ["Reservation ID", paid.reservationId],
+    ["Operation ID", paid.operationId],
+    ["Result spool", paid.resultSpool.path],
+    ["Result spool digest", paid.resultSpool.digest],
+    ["Actual USD micros", String(paid.actualUsdMicros)],
+    ["Provider-reported billable credits", String(paid.billing.billableCredits)],
+    [
+      "Approved base USD / 1K billable credits",
+      paid.billing.baseUsdPerThousandBillableCredits.toFixed(6),
+    ],
   ];
 }
 
@@ -163,13 +202,28 @@ function reviewChecklist(meta: VoiceoverAudioMeta): string[] {
   ];
 }
 
+/**
+ * Creates the mode-specific checklist item for voiceover review.
+ *
+ * @param meta - Voiceover metadata containing the audio mode
+ * @returns The checklist instruction for reviewing the selected voiceover mode
+ */
 function modeSpecificChecklistItem(meta: VoiceoverAudioMeta): string {
   if (meta.mode === "deterministic-local") {
     return "Deterministic reference audio is for timing only; do not treat it as production voice quality.";
   }
+  if (meta.mode === "elevenlabs") {
+    return "ElevenLabs audio and character alignment must be manually reviewed before render approval.";
+  }
   return "Local Piper audio must be manually reviewed for voice quality before render approval.";
 }
 
+/**
+ * Determines the scope of render approval for the voiceover artifact.
+ *
+ * @param meta - Voiceover metadata containing the quality classification
+ * @returns The render approval scope text
+ */
 function renderApprovalScope(meta: VoiceoverAudioMeta): string {
-  return voiceoverRenderApprovalScope(meta.quality === "local-piper");
+  return voiceoverRenderApprovalScope(meta.quality !== "deterministic-local-reference");
 }

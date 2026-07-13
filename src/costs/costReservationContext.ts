@@ -11,14 +11,15 @@ import {
   readCostReservationSummaries,
 } from "./costReservationStore.js";
 import { microsToUsd, usdToMicros } from "./money.js";
+import type { ProviderRequestEvidence } from "./providerRequestEvidence.js";
 
 /**
  * Loads an approved quote line for a specified stage of a production-ready run.
  *
- * @param runId - The run identifier
- * @param stage - The stage to retrieve the quote line for
- * @returns An object containing the run, config, approval ID, cost estimate digest, provider, model, and maximum cost in micros
- * @throws If the run is not production-ready, the cost estimate is stale, no matching approval exists, or the quote line is missing or disabled
+ * @param runId - The production run identifier
+ * @param stage - The stage whose quote line to load
+ * @returns The run, configuration, approval ID, quote digest, provider, model, optional binding details, and maximum cost in micros
+ * @throws SafeExitError If the run is not ready, the quote is stale, approval is missing, or the quote line is unavailable or disabled
  */
 export async function loadApprovedQuoteLine(runId: string, stage: string) {
   const run = await loadRun(runId);
@@ -51,6 +52,8 @@ export async function loadApprovedQuoteLine(runId: string, stage: string) {
     quoteDigest: digest,
     provider: quoteLine.provider,
     model: quoteLine.model,
+    ...(quoteLine.bindingDigest ? { bindingDigest: quoteLine.bindingDigest } : {}),
+    ...(quoteLine.bindingSummary ? { bindingSummary: quoteLine.bindingSummary } : {}),
     maxUsdMicros: usdToMicros(quoteLine.estimatedUsd),
   };
 }
@@ -75,15 +78,18 @@ export async function requireReservation(
 }
 
 /**
- * Marks a cost reservation outcome as uncertain and records the reason.
+ * Marks a cost reservation outcome as uncertain and records supporting request details.
  *
  * @param reservation - The cost reservation to mark as uncertain
- * @param reason - The reason why the cost outcome is uncertain
+ * @param reason - The reason the cost outcome is uncertain
+ * @param providerRequestIdHash - Optional hash identifying the provider request
+ * @param requestEvidence - Optional evidence about the provider request
  */
 export async function appendUncertainEvent(
   reservation: CostReservationSummary,
   reason: string,
   providerRequestIdHash?: string,
+  requestEvidence?: ProviderRequestEvidence,
 ): Promise<void> {
   await appendCostReservationEvent({
     eventId: createId("reservation_event"),
@@ -92,6 +98,7 @@ export async function appendUncertainEvent(
     type: "UNCERTAIN",
     reason,
     providerRequestIdHash,
+    requestEvidence,
     createdAt: nowIso(),
   });
   await appendLedgerEvent({
@@ -99,21 +106,28 @@ export async function appendUncertainEvent(
     type: "COST_UNCERTAIN",
     stage: reservation.stage,
     message: "Cost reservation outcome is uncertain.",
-    data: { reservationId: reservation.reservationId, reason, providerRequestIdHash },
+    data: {
+      reservationId: reservation.reservationId,
+      reason,
+      providerRequestIdHash,
+      requestEvidence,
+    },
   });
 }
 
 /**
- * Ensures a cost event is recorded for the reservation with consistent cost amounts.
+ * Records the reconciled cost for a reservation and verifies existing records for consistency.
  *
- * If a cost event already exists, validates that the reconciled actual cost matches the provided amount. If they differ, throws an error. Otherwise, appends a new cost event with the provided cost and operational metrics.
+ * Existing records must match both the reconciled cost and result evidence digest. Otherwise,
+ * a new cost event is recorded with the provided usage metrics.
  *
- * @throws If an existing cost event does not match the provided actual cost.
+ * @throws If an existing cost event's amount or result evidence digest differs from the input.
  */
 export async function ensureReservationCostEvent(
   reservation: CostReservationSummary,
   input: {
     actualUsdMicros: number;
+    resultEvidenceDigest?: string;
     inputTokens?: number;
     outputTokens?: number;
     durationMs?: number;
@@ -128,6 +142,11 @@ export async function ensureReservationCostEvent(
         "Reservation-linked cost event amount does not match reconciliation.",
       );
     }
+    if (existing.resultEvidenceDigest !== input.resultEvidenceDigest) {
+      throw new SafeExitError(
+        "Reservation-linked cost event result evidence does not match reconciliation.",
+      );
+    }
     return;
   }
   await appendCostEvent({
@@ -135,6 +154,7 @@ export async function ensureReservationCostEvent(
     stage: reservation.stage,
     provider: reservation.provider,
     reservationId: reservation.reservationId,
+    resultEvidenceDigest: input.resultEvidenceDigest,
     model: reservation.model,
     inputTokens: input.inputTokens,
     outputTokens: input.outputTokens,

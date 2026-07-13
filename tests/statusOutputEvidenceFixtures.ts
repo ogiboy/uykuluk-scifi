@@ -1,8 +1,14 @@
 import { studioEvidenceFixture } from "./studioRunFixtures";
 
+/**
+ * Builds evidence for a production run that is ready for manual production review.
+ *
+ * @param runId - The production run identifier
+ * @returns Evidence describing the manual production status and blocked actions
+ */
 export function manualProductionEvidence(runId: string): Record<string, unknown> {
   return studioEvidenceFixture(runId, "READY_FOR_MANUAL_PRODUCTION", {
-    nextRecommendedCommand: "Manual production review. Enable local TTS before draft render.",
+    nextRecommendedCommand: "Manual production review. Enable a TTS provider before draft render.",
     blockedActions: [
       "Render plan not generated; run pnpm producer render-plan --run <run_id> before TTS/render work.",
       "TTS disabled until configured and approved.",

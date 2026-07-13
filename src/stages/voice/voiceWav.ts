@@ -26,17 +26,31 @@ export function wavFromPcm16(pcm: Buffer, sampleRateHz: number, channels: number
   return Buffer.concat([header, pcm]);
 }
 
+/**
+ * Reads channel count, duration, and sample rate from a PCM16 WAV buffer.
+ *
+ * @param buffer - The WAV audio data to inspect
+ * @returns The channel count, duration in seconds, and sample rate in hertz
+ */
 export function readWavInfo(buffer: Buffer): {
   channels: number;
   durationSeconds: number;
   sampleRateHz: number;
 } {
   if (!hasRiffWaveHeader(buffer)) {
-    throw new SafeExitError("Piper output is not a WAV RIFF file.");
+    throw new SafeExitError("Voice output is not a WAV RIFF file.");
   }
   const info = scanWavChunks(buffer);
-  if (info.channels <= 0 || info.sampleRateHz <= 0 || info.byteRate <= 0 || info.dataBytes <= 0) {
-    throw new SafeExitError("Piper output WAV metadata is incomplete.");
+  if (
+    info.channels <= 0 ||
+    info.sampleRateHz <= 0 ||
+    info.byteRate <= 0 ||
+    info.blockAlign !== info.channels * 2 ||
+    info.byteRate !== info.sampleRateHz * info.blockAlign ||
+    info.dataBytes <= 0 ||
+    info.dataOffset + info.dataBytes > buffer.length
+  ) {
+    throw new SafeExitError("Voice output WAV metadata is incomplete.");
   }
   return {
     channels: info.channels,
@@ -45,16 +59,68 @@ export function readWavInfo(buffer: Buffer): {
   };
 }
 
+/**
+ * Concatenates compatible PCM16 WAV chunks into a canonical WAV file.
+ *
+ * @param buffers - WAV chunks with matching channel count and sample rate
+ * @returns A canonical WAV file containing the concatenated PCM audio
+ */
+export function concatenatePcm16Wavs(buffers: readonly Buffer[]): Buffer {
+  if (buffers.length === 0) {
+    throw new SafeExitError("Voice WAV stitching requires at least one audio chunk.");
+  }
+  const chunks = buffers.map((buffer) => {
+    if (!hasRiffWaveHeader(buffer)) {
+      throw new SafeExitError("Voice output is not a WAV RIFF file.");
+    }
+    const info = scanWavChunks(buffer);
+    if (
+      info.audioFormat !== 1 ||
+      info.bitsPerSample !== 16 ||
+      info.blockAlign !== info.channels * 2 ||
+      info.byteRate !== info.sampleRateHz * info.blockAlign ||
+      info.dataBytes <= 0 ||
+      info.dataOffset + info.dataBytes > buffer.length
+    ) {
+      throw new SafeExitError("Voice WAV stitching requires PCM 16-bit audio chunks.");
+    }
+    return { info, pcm: buffer.subarray(info.dataOffset, info.dataOffset + info.dataBytes) };
+  });
+  const first = chunks[0].info;
+  for (const chunk of chunks.slice(1)) {
+    if (
+      chunk.info.channels !== first.channels ||
+      chunk.info.sampleRateHz !== first.sampleRateHz ||
+      chunk.info.bitsPerSample !== first.bitsPerSample
+    ) {
+      throw new SafeExitError("Voice WAV chunks use incompatible audio formats.");
+    }
+  }
+  return wavFromPcm16(
+    Buffer.concat(chunks.map((chunk) => chunk.pcm)),
+    first.sampleRateHz,
+    first.channels,
+  );
+}
+
+/**
+ * Normalizes the peak amplitude of a PCM 16-bit WAV file to the target level.
+ *
+ * @param buffer - The PCM 16-bit WAV file to normalize
+ * @param targetPeakDbfs - The desired peak level in dBFS
+ * @returns The normalized WAV buffer and evidence describing the applied gain and peak levels
+ * @throws SafeExitError If the buffer is not a RIFF WAV file or does not contain PCM 16-bit audio
+ */
 export function normalizePcm16WavPeak(
   buffer: Buffer,
   targetPeakDbfs = -1,
 ): { buffer: Buffer; evidence: WavPeakNormalizationEvidence } {
   if (!hasRiffWaveHeader(buffer)) {
-    throw new SafeExitError("Piper output is not a WAV RIFF file.");
+    throw new SafeExitError("Voice output is not a WAV RIFF file.");
   }
   const info = scanWavChunks(buffer);
   if (info.audioFormat !== 1 || info.bitsPerSample !== 16 || info.dataBytes <= 0) {
-    throw new SafeExitError("Piper peak normalization requires PCM 16-bit WAV audio.");
+    throw new SafeExitError("Voice peak normalization requires PCM 16-bit WAV audio.");
   }
 
   const dataEnd = Math.min(buffer.length, info.dataOffset + info.dataBytes);
@@ -99,9 +165,16 @@ function hasRiffWaveHeader(buffer: Buffer): boolean {
   );
 }
 
+/**
+ * Extracts audio format metadata and the location of the PCM data chunk from a WAV buffer.
+ *
+ * @param buffer - The WAV file data to inspect.
+ * @returns The parsed format fields and data chunk size and offset; fields remain `0` when the corresponding chunks or values are unavailable.
+ */
 function scanWavChunks(buffer: Buffer): {
   audioFormat: number;
   bitsPerSample: number;
+  blockAlign: number;
   byteRate: number;
   channels: number;
   dataBytes: number;
@@ -111,6 +184,7 @@ function scanWavChunks(buffer: Buffer): {
   const info = {
     audioFormat: 0,
     bitsPerSample: 0,
+    blockAlign: 0,
     byteRate: 0,
     channels: 0,
     dataBytes: 0,
@@ -126,6 +200,7 @@ function scanWavChunks(buffer: Buffer): {
       info.channels = buffer.readUInt16LE(dataOffset + 2);
       info.sampleRateHz = buffer.readUInt32LE(dataOffset + 4);
       info.byteRate = buffer.readUInt32LE(dataOffset + 8);
+      info.blockAlign = buffer.readUInt16LE(dataOffset + 12);
       info.bitsPerSample = buffer.readUInt16LE(dataOffset + 14);
     } else if (chunkId === "data") {
       info.dataBytes = chunkSize;

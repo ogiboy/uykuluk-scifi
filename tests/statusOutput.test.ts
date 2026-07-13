@@ -53,7 +53,7 @@ describe("operator status output", () => {
     );
     expect(output).toContain("- TTS disabled until configured and approved.");
     expect(output).toContain(
-      "Next safe action: Manual production review. Enable local TTS before draft render.",
+      "Next safe action: Manual production review. Enable a TTS provider before draft render.",
     );
     expect(output).toContain("Production media:");
     expect(output).toContain("- Render plan: pass");

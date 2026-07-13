@@ -10,7 +10,9 @@ import { registerReviewCommands } from "./cli/reviewCommands.js";
 import { registerRevisionCommands } from "./cli/revisionCommands.js";
 import { resolveStatusRunId } from "./cli/statusRunSelector.js";
 import { readCliVersion } from "./cli/version.js";
+import { registerVoiceCommands } from "./cli/voiceCommands.js";
 import { initProject } from "./config/config.js";
+import { loadLocalEnvironmentFiles } from "./config/localEnvironment.js";
 import { SafeExitError } from "./core/errors.js";
 import { listRuns, loadRun } from "./core/runStore.js";
 import { formatDoctorConsole, runDoctor } from "./diagnostics/doctor.js";
@@ -22,6 +24,8 @@ import { formatRenderDraftConsole } from "./stages/render/renderConsole.js";
 import { formatRunStatus, readRunStatus } from "./stages/status.js";
 import { generateVoiceoverAudio } from "./stages/voice.js";
 import { formatVoiceoverGeneratedConsole } from "./stages/voice/voiceConsole.js";
+
+loadLocalEnvironmentFiles();
 
 const program = new Command();
 
@@ -61,6 +65,7 @@ registerEvaluationCommands(program, wrap);
 registerGenerationCommands(program, wrap);
 registerOperatorDeskCommand(program, wrap);
 registerReviewCommands(program, wrap);
+registerVoiceCommands(program, wrap);
 
 registerRevisionCommands(program, wrap);
 

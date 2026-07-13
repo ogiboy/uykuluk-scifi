@@ -1,6 +1,6 @@
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { artifactPath } from "../src/core/artifacts";
@@ -36,7 +36,7 @@ describe("voiceover review handoff", () => {
     });
     expect(handoff.blockedActions).toEqual(
       expect.arrayContaining([
-        "Final production voice remains blocked until reviewed local Piper audio exists.",
+        "Final production voice remains blocked until a reviewed production-quality voice exists.",
         "Private upload, scheduled publish, and public publish remain disabled.",
       ]),
     );
@@ -139,6 +139,7 @@ async function writeLocalPiperVoiceover(runId: string): Promise<void> {
 
   const audio = Buffer.from("RIFF local piper fixture WAVE");
   const sha256 = createHash("sha256").update(audio).digest("hex");
+  const sourceText = await readFile(artifactPath(runId, "production/voiceover.txt"), "utf8");
   const meta: VoiceoverAudioMeta = {
     createdAt: "2026-06-30T12:00:00.000Z",
     mode: "local-piper",
@@ -161,7 +162,11 @@ async function writeLocalPiperVoiceover(runId: string): Promise<void> {
     renderPlan: { digest: renderPlan.digest, path: "production/render_plan.json" },
     runId,
     schemaVersion: 1,
-    source: { path: "production/voiceover.txt", sha256: "b".repeat(64), wordCount: 42 },
+    source: {
+      path: "production/voiceover.txt",
+      sha256: createHash("sha256").update(sourceText, "utf8").digest("hex"),
+      wordCount: sourceText.trim().split(/\s+/).filter(Boolean).length,
+    },
   };
 
   await mkdir(path.dirname(artifactPath(runId, "production/audio/voiceover.wav")), {

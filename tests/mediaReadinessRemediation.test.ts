@@ -64,7 +64,7 @@ describe("media readiness remediation", () => {
       readiness.checks.find((check) => check.name === "voiceover audio available"),
     ).toMatchObject({
       status: "block",
-      nextAction: `Enable local TTS in producer.config.json, then pnpm producer voice --run ${runId}`,
+      nextAction: `Enable a TTS provider in producer.config.json, then pnpm producer voice --run ${runId}`,
     });
   });
 

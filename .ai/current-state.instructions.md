@@ -81,6 +81,9 @@
   `timing-draft-only` or `production-voice-candidate`, while Studio production-media rows surface
   the same review command, render approval command, and approval scope without adding a web
   mutation.
+- ElevenLabs v3 voice discovery, selection, approval binding, execution recovery, reconciliation,
+  and fail-closed revision behavior are documented in
+  [the focused current-state note](current-state/elevenlabs-voice.instructions.md).
 - `pnpm tts:piper:setup` downloads the pinned CPU-friendly Turkish
   `speaches-ai/piper-tr_TR-fahrettin-medium` model into ignored `models/` and prints the matching
   local config override for `local-piper`.
@@ -430,16 +433,18 @@ Corepack/PATH before treating failures as product failures.
   candidates continue through the same approval, JSON, repetition, Turkish-label, spoken-word, and
   operator-quality gates.
 - Ollama and `llama.cpp` configuration accepts only credential-free loopback HTTP(S) origins, preventing local adapters from silently becoming arbitrary outbound endpoints; hosted or LAN provider support needs a separately reviewed adapter boundary.
-- No paid provider adapter is implemented. Exact cost quote approval remains separate from spend
-  authorization. The execution boundary is ready for a future approved adapter, but no SDK,
-  credential, network integration, or CLI mutation exposes it.
+- ElevenLabs is the only approved hosted production provider currently implemented. It remains
+  disabled without explicit config, server-only credentials, exact quote approval, reservation,
+  and operator-triggered synthesis; no live paid call has run. No hosted visual provider, upload,
+  or public/scheduled publish adapter is enabled.
 - Current local-only Studio combines read/review pages and grouped artifact metadata with guarded mutations backed by canonical CLI/core contracts. Stage and Studio-lib roots retain stable public entrypoints while domain helpers live in named subfolders. Route security covers page reads, short-lived session proof, same-origin actions, and disabled upload/publish; generation and local render run only through guarded contracts.
-- Optional Sentry captures unexpected Next.js and Studio mutation-boundary failures without request bodies or artifact contents. Without a DSN it is disabled
-  and never affects workflow state, approvals, readiness, evidence, or route authorization.
-- Local prompt overrides are implemented as explicit ignored `prompts/local/*.md` paths configured
-  in `producer.config.json` and recorded in prompt provenance. Prompt editing UI and prompt revision
-  history remain future work; tracked defaults stay read-only runtime inputs. Locale infrastructure
-  is ready, but full translation catalogs and a language selector are intentionally deferred.
+- Optional Sentry captures unexpected Next.js and Studio mutation-boundary failures without request
+  bodies/artifacts; without a DSN it is disabled and never affects workflow or authorization.
+- Local prompt overrides are ignored `prompts/local/*.md` paths configured in
+  `producer.config.json` and recorded in provenance. Prompt editing/revision UI remains future work;
+  tracked defaults stay read-only. Full translation catalogs and a language selector are deferred.
+- Approved settings/prompt editing is not implemented. Saves affect the next command; in-flight
+  work stays pinned; listener/build-time settings restart; secrets stay env-only.
 - Initial package artifact revision contracts cover subtitles, scenes, popup-card package Markdown,
   and YouTube metadata. They are limited to `PRODUCTION_PACKAGE_GENERATED`, refresh the manifest,
   and invalidate stale evidence/readiness/render-plan artifacts; richer per-field editing UX and
@@ -450,12 +455,9 @@ Corepack/PATH before treating failures as product failures.
   provenance, and review Markdown. It does not commit voice models, approve render execution,
   upload, or publish. Deterministic-local evidence is timing proof only; production voice quality
   still requires operator listening.
-- FFmpeg draft render creates a local review MP4 from intro/outro source cards or frames,
-  scene-timed plates, audio-bound subtitles, scene-scoped overlays, voiceover audio,
-  manifest/source-frame/timing evidence, a stable read-only review command, and an operator
-  checklist. Rejected drafts have a durable archive/reapproval recovery path. Reusable intro/outro
-  MP4 clips, richer background variety, exact word-level TTS alignment, and broader visual polish
-  remain follow-up work.
+- FFmpeg draft render creates a local review MP4 from intro/outro sources, scene-timed plates,
+  audio-bound subtitles, overlays, voiceover, evidence, a read-only review command, and checklist.
+  Rejected drafts archive safely; reusable clips, exact TTS alignment, and polish remain follow-up.
 - Upload/publish are disabled scaffolds; manual/Studio analytics are local-only; richer APIs are not
   implemented.
 - Run-path containment blocks pre-existing symlinks; hostile concurrent replacement remains a local

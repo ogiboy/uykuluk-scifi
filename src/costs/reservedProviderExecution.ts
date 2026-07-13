@@ -10,13 +10,17 @@ import {
   settleCostReservation,
 } from "./costReservationService.js";
 import { CostReservationSummary } from "./costReservationStore.js";
+import {
+  providerAdapterIdentitySchema,
+  type ProviderAdapterIdentity,
+} from "./providerAdapterIdentity.js";
+import {
+  providerRequestEvidenceSchema,
+  type ProviderRequestEvidence,
+} from "./providerRequestEvidence.js";
 
 const timeoutSchema = z.int().positive().max(600_000);
 const providerRequestIdSchema = z.string().min(1).max(256);
-const providerIdentitySchema = z.strictObject({
-  provider: z.string().min(1),
-  model: z.string().min(1).optional(),
-});
 const providerOutcomeSchema = z.discriminatedUnion("kind", [
   z.strictObject({
     kind: z.literal("success"),
@@ -26,6 +30,10 @@ const providerOutcomeSchema = z.discriminatedUnion("kind", [
     outputTokens: z.int().nonnegative().optional(),
     durationMs: z.int().nonnegative().optional(),
     providerRequestId: providerRequestIdSchema.optional(),
+    resultEvidenceDigest: z
+      .string()
+      .regex(/^[a-f0-9]{64}$/)
+      .optional(),
   }),
   z.strictObject({
     kind: z.literal("definitely-not-sent"),
@@ -35,6 +43,7 @@ const providerOutcomeSchema = z.discriminatedUnion("kind", [
     kind: z.literal("unknown"),
     reason: z.enum(["timeout", "transport", "provider-error", "indeterminate"]),
     providerRequestId: providerRequestIdSchema.optional(),
+    requestEvidence: providerRequestEvidenceSchema.optional(),
   }),
 ]);
 
@@ -43,6 +52,7 @@ export type ReservedProviderCallContext = {
   operationId: string;
   provider: string;
   model?: string;
+  bindingDigest?: string;
   maxUsdMicros: number;
   signal: AbortSignal;
 };
@@ -56,6 +66,7 @@ export type ReservedProviderOutcome<T> =
       outputTokens?: number;
       durationMs?: number;
       providerRequestId?: string;
+      resultEvidenceDigest?: string;
     }
   | {
       kind: "definitely-not-sent";
@@ -65,11 +76,10 @@ export type ReservedProviderOutcome<T> =
       kind: "unknown";
       reason: "timeout" | "transport" | "provider-error" | "indeterminate";
       providerRequestId?: string;
+      requestEvidence?: ProviderRequestEvidence;
     };
 
-export type ReservedProviderAdapter<T> = {
-  provider: string;
-  model?: string;
+export type ReservedProviderAdapter<T> = ProviderAdapterIdentity & {
   execute(context: ReservedProviderCallContext): Promise<ReservedProviderOutcome<T>>;
 };
 
@@ -80,9 +90,10 @@ export type ReservedProviderExecutionResult<T> =
   | { status: "reconciliation-required"; reservation: CostReservationSummary };
 
 /**
- * Executes one future paid-provider callback behind exact approval, reservation, and settlement.
+ * Executes an approved provider operation with reservation tracking and outcome-specific reconciliation.
  *
- * This internal contract does not expose a CLI command or enable any paid provider.
+ * @param input - Operation identifiers, execution timeout, provider adapter, and optional post-execution callback.
+ * @returns A result indicating whether the operation completed, was definitely not sent, requires reconciliation, or was already terminal, including the associated reservation and completed value when applicable.
  */
 export async function executeReservedProviderOperation<T>(input: {
   runId: string;
@@ -90,11 +101,13 @@ export async function executeReservedProviderOperation<T>(input: {
   operationId: string;
   timeoutMs: number;
   adapter: ReservedProviderAdapter<T>;
+  afterSuccessfulExecutionCommitted?: () => Promise<void>;
 }): Promise<ReservedProviderExecutionResult<T>> {
   const timeoutMs = timeoutSchema.parse(input.timeoutMs);
-  const adapterIdentity = providerIdentitySchema.parse({
+  const adapterIdentity = providerAdapterIdentitySchema.parse({
     provider: input.adapter.provider,
     model: input.adapter.model,
+    ...(input.adapter.bindingDigest ? { bindingDigest: input.adapter.bindingDigest } : {}),
   });
   const reservation = await reserveApprovedCost({
     runId: input.runId,
@@ -131,9 +144,11 @@ export async function executeReservedProviderOperation<T>(input: {
         reservationId: reservation.reservationId,
         reason: `Provider execution outcome is unknown (${outcome.reason}).`,
         providerRequestIdHash: hashProviderRequestId(outcome.providerRequestId),
+        requestEvidence: outcome.requestEvidence,
       }),
     };
   }
+  await input.afterSuccessfulExecutionCommitted?.();
   return {
     status: "completed",
     value: outcome.value as T,
@@ -145,10 +160,19 @@ export async function executeReservedProviderOperation<T>(input: {
       outputTokens: outcome.outputTokens,
       durationMs: outcome.durationMs,
       providerRequestIdHash: hashProviderRequestId(outcome.providerRequestId),
+      resultEvidenceDigest: outcome.resultEvidenceDigest,
     }),
   };
 }
 
+/**
+ * Executes a provider adapter within a time limit and normalizes its outcome.
+ *
+ * @param adapter - The provider adapter to execute.
+ * @param reservation - Reservation details supplied to the adapter.
+ * @param timeoutMs - Maximum time allowed for adapter execution.
+ * @returns The validated provider outcome, including elapsed duration for successful outcomes.
+ */
 async function invokeAdapter<T>(
   adapter: ReservedProviderAdapter<T>,
   reservation: CostReservationSummary,
@@ -165,6 +189,7 @@ async function invokeAdapter<T>(
         operationId: reservation.operationId,
         provider: reservation.provider,
         model: reservation.model,
+        ...(reservation.bindingDigest ? { bindingDigest: reservation.bindingDigest } : {}),
         maxUsdMicros: reservation.maxUsdMicros,
         signal: controller.signal,
       }),

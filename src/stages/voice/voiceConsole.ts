@@ -17,7 +17,7 @@ export function formatVoiceoverGeneratedConsole(meta: VoiceoverAudioMeta): strin
     `Mode: ${meta.mode}`,
     `Quality: ${meta.quality}`,
     `Duration: ${Math.round(meta.output.durationSeconds)}s`,
-    `Production voice candidate: ${String(meta.quality === "local-piper")}`,
+    `Production voice candidate: ${String(meta.quality !== "deterministic-local-reference")}`,
     `Next safe action: pnpm producer review voice --run ${meta.runId}`,
   ].join("\n");
 }

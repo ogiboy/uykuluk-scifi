@@ -105,6 +105,12 @@ function voiceoverReviewNextAction(
   return `${reviewPrefix}; approve render only for a local timing draft with ${renderApprovalCommand}`;
 }
 
+/**
+ * Lists actions that remain blocked for the reviewed voiceover.
+ *
+ * @param evidence - Passed voiceover evidence used to determine whether final production voice remains blocked
+ * @returns Explanations of the actions that are still unavailable
+ */
 function voiceoverReviewBlockedActions(evidence: PassingVoiceoverEvidence): string[] {
   const actions = [
     "Render execution still requires explicit render approval for the current render plan and voiceover audio.",
@@ -112,7 +118,7 @@ function voiceoverReviewBlockedActions(evidence: PassingVoiceoverEvidence): stri
   ];
   if (!evidence.productionVoiceCandidate) {
     actions.unshift(
-      "Final production voice remains blocked until reviewed local Piper audio exists.",
+      "Final production voice remains blocked until a reviewed production-quality voice exists.",
     );
   }
   return actions;

@@ -42,7 +42,7 @@ export function renderDraftDecision(manifest: DraftRenderManifest): string[] {
   const timingDraftNextStep = manifest.voiceoverAudio.productionVoiceCandidate
     ? []
     : [
-        "Regenerate voiceover with reviewed local Piper audio before final production voice review.",
+        "Regenerate voiceover with a reviewed production-quality provider before final production voice review.",
       ];
   return renderOperatorDecisionSection({
     reviewGates: [
@@ -64,7 +64,7 @@ export function renderDraftDecision(manifest: DraftRenderManifest): string[] {
     blockedActions: [
       "Private upload remains disabled until a separate future upload approval and configuration exist.",
       "Scheduled/public publish remains disabled and requires a separate future risk review.",
-      "Paid/generative media providers remain outside the deterministic local render path.",
+      "Any additional paid-provider generation remains separately cost-approved and evidence-bound.",
     ],
   });
 }

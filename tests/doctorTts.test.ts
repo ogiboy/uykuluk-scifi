@@ -1,11 +1,21 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { defaultConfig } from "../src/config/config";
 import { doctorMarkdownPath, runDoctor } from "../src/diagnostics/doctor";
 import { useTempProject } from "./helpers";
 
+const initialElevenLabsApiKey = process.env.ELEVENLABS_API_KEY;
+
 describe("producer doctor TTS diagnostics", () => {
   useTempProject();
+
+  afterEach(() => {
+    if (initialElevenLabsApiKey === undefined) {
+      delete process.env.ELEVENLABS_API_KEY;
+      return;
+    }
+    process.env.ELEVENLABS_API_KEY = initialElevenLabsApiKey;
+  });
 
   it("passes local Piper diagnostics when the binary and model files are configured", async () => {
     await writePiperConfig({
@@ -48,6 +58,31 @@ describe("producer doctor TTS diagnostics", () => {
     expect(ttsCheck?.message).toContain("Piper config missing");
     expect(markdown).toContain("copy the printed providers.tts override");
   });
+
+  it("blocks ElevenLabs before reservation when the server credential is missing", async () => {
+    delete process.env.ELEVENLABS_API_KEY;
+    await writeElevenLabsConfig("voice_doctor_test");
+
+    const report = await runDoctor();
+
+    expect(report.checks.find((check) => check.name === "TTS provider")).toMatchObject({
+      status: "block",
+      message: expect.stringContaining("ELEVENLABS_API_KEY"),
+      nextAction: expect.stringContaining("server-side ELEVENLABS_API_KEY"),
+    });
+  });
+
+  it("passes local ElevenLabs diagnostics without making a remote request", async () => {
+    process.env.ELEVENLABS_API_KEY = "doctor-test-key";
+    await writeElevenLabsConfig("voice_doctor_test");
+
+    const report = await runDoctor();
+    expect(report.checks.find((check) => check.name === "TTS provider")).toMatchObject({
+      status: "pass",
+      message: expect.stringContaining("eleven_v3"),
+      nextAction: expect.stringContaining("cost quote"),
+    });
+  });
 });
 
 async function writePiperConfig(tts: {
@@ -63,6 +98,29 @@ async function writePiperConfig(tts: {
         providers: {
           ...defaultConfig.providers,
           tts: { ...defaultConfig.providers.tts, enabled: true, mode: "local-piper", ...tts },
+        },
+      },
+      null,
+      2,
+    )}\n`,
+    "utf8",
+  );
+}
+
+async function writeElevenLabsConfig(voiceId: string): Promise<void> {
+  await writeFile(
+    "producer.config.json",
+    `${JSON.stringify(
+      {
+        ...defaultConfig,
+        providers: {
+          ...defaultConfig.providers,
+          tts: {
+            ...defaultConfig.providers.tts,
+            enabled: true,
+            mode: "elevenlabs",
+            elevenLabs: { ...defaultConfig.providers.tts.elevenLabs, voiceId },
+          },
         },
       },
       null,

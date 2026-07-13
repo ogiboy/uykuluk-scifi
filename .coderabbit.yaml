@@ -77,6 +77,7 @@ reviews:
     - "!**/*.webp"
     - "!**/*.mp4"
     - "!**/*.mov"
+    - "!**/.env.vault"
     - "src/**"
     - "apps/studio/**"
     - "tests/**"
@@ -185,7 +186,13 @@ reviews:
         name: "No secrets or tokens"
         instructions:
           "Fail if changed files include API keys, auth tokens, private keys, session cookies,
-          realistic secret-looking placeholders, or provider credentials."
+          realistic secret-looking placeholders, provider credentials, DOTENV_KEY, plaintext .env,
+          .env.me, or .env.keys content. Encrypted DOTENV_VAULT ciphertext and its non-secret vault
+          metadata in .env.vault are allowed and must not be reported as decryption credentials."
+
+  finishing_touches:
+    docstrings:
+      enabled: true
 
   tools:
     eslint:
@@ -237,3 +244,41 @@ code_generation:
           "Prefer deterministic Vitest tests with mock providers, no live network calls by default,
           and explicit assertions for approval gates, cost ledgers, evidence bundles, and disabled
           publish behavior."
+  docstrings:
+    language: "en-US"
+    path_instructions:
+      - path: "src/**/*.ts"
+        instructions: |
+          Use TSDoc only for exported or non-obvious TypeScript contracts. Document approval and
+          cost gates, evidence ownership, failure behavior, side effects, and operator-visible
+          outcomes. Add @param, @returns, or @throws only when applicable; add @example only when it
+          materially clarifies a public API. Do not document simple private helpers.
+      - path: "apps/studio/**/*.ts"
+        instructions: |
+          Document non-obvious server services, guarded mutation boundaries, and shared operator
+          workflow contracts. Skip simple React components, route wrappers, and obvious helpers.
+      - path: "apps/studio/**/*.tsx"
+        instructions: |
+          Document only complex operator-workflow behavior or exported contracts whose safety and
+          state semantics are not evident from types. Skip simple React components and presentation
+          helpers.
+      - path: "tests/**/*.ts"
+        instructions: |
+          Do not add docstrings to individual describe or it blocks. Document only shared fixtures,
+          reusable test helpers, or non-obvious regression harness behavior.
+      - path: "scripts/**/*.ts"
+        instructions: |
+          Document exported or non-obvious script entry points with CLI arguments, filesystem or
+          network side effects, cleanup behavior, and exit/failure semantics.
+      - path: "scripts/**/*.js"
+        instructions: |
+          Document non-obvious script entry points with CLI arguments, side effects, cleanup, and
+          exit/failure semantics; skip obvious local helpers.
+      - path: "scripts/**/*.mjs"
+        instructions: |
+          Document non-obvious script entry points with CLI arguments, side effects, cleanup, and
+          exit/failure semantics; skip obvious local helpers.
+      - path: "scripts/**/*.cjs"
+        instructions: |
+          Document non-obvious script entry points with CLI arguments, side effects, cleanup, and
+          exit/failure semantics; skip obvious local helpers.

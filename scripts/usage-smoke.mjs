@@ -12,7 +12,11 @@ import {
   runScriptRevisionSmoke,
   runStatusSummarySmoke,
 } from "./qa/usage-smoke-flows.mjs";
-import { enableDeterministicTts, runLocalMediaSmoke } from "./qa/usage-smoke-media.mjs";
+import {
+  disableDeterministicTts,
+  enableDeterministicTts,
+  runLocalMediaSmoke,
+} from "./qa/usage-smoke-media.mjs";
 
 const repoRoot = process.cwd();
 const pnpm = process.env.PNPM_EXECUTABLE ?? "pnpm";
@@ -115,11 +119,6 @@ try {
   });
   run([pnpm, "producer", "package", "--run", runId], { label: "package" });
   run([pnpm, "producer", "render-plan", "--run", runId], { label: "render plan" });
-  run([pnpm, "producer", "voice", "--run", runId], {
-    label: "voice disabled",
-    expectFailure: true,
-    expectOutput: "Voice/TTS is disabled",
-  });
   await enableDeterministicTts({ workdir });
   run([pnpm, "producer", "estimate", "--run", runId], { label: "estimate" });
   run([pnpm, "producer", "approve", "cost", "--run", runId], {
@@ -135,6 +134,16 @@ try {
   run([pnpm, "producer", "status", "--run", runId], {
     label: "status",
     expectOutput: "READY_FOR_MANUAL_PRODUCTION",
+  });
+  await disableDeterministicTts({ workdir });
+  run([pnpm, "producer", "voice", "--run", runId], {
+    label: "voice disabled",
+    expectFailure: true,
+    expectOutput: "Voice/TTS is disabled",
+  });
+  await enableDeterministicTts({ workdir });
+  run([pnpm, "producer", "evidence", "--run", runId], {
+    label: "evidence after deterministic voice enablement",
   });
   runStatusSummarySmoke({ run, pnpm, runId, assert });
   run([pnpm, "producer", "status", "--latest"], { label: "status latest", expectOutput: runId });

@@ -52,8 +52,8 @@ describe("Piper provider evidence", () => {
       configPath,
       configSha256: sha256(configContent),
     });
-    expect(markdown).toContain("## Local TTS Provider Provenance");
-    expect(markdown).toContain("Piper model SHA-256");
+    expect(markdown).toContain("## TTS Provider Provenance");
+    expect(markdown).toContain("Model SHA-256");
     expect(markdown).toContain(sha256(modelContent));
     expect(markdown).toContain("Piper config SHA-256");
     expect(markdown).toContain(sha256(configContent));

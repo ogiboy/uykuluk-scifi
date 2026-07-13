@@ -97,6 +97,7 @@ export type CostEvent = {
   stage: string;
   provider: string;
   reservationId?: string;
+  resultEvidenceDigest?: string;
   model?: string;
   inputTokens?: number;
   outputTokens?: number;
@@ -111,6 +112,10 @@ export const costEventSchema = z.strictObject({
   stage: z.string().min(1),
   provider: z.string().min(1),
   reservationId: z.string().min(1).optional(),
+  resultEvidenceDigest: z
+    .string()
+    .regex(/^[a-f0-9]{64}$/)
+    .optional(),
   model: z.string().min(1).optional(),
   inputTokens: z.int().nonnegative().optional(),
   outputTokens: z.int().nonnegative().optional(),

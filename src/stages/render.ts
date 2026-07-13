@@ -5,7 +5,7 @@ import path from "node:path";
 import { artifactPath, recordRunArtifact, writeRunJson, writeRunText } from "../core/artifacts.js";
 import { SafeExitError } from "../core/errors.js";
 import { appendLedgerEvent } from "../core/ledger.js";
-import { loadRun, saveRun, setRunState } from "../core/runStore.js";
+import { loadRun, setRunState } from "../core/runStore.js";
 import { requireApproval, requireState } from "../safeguards/approvalGuard.js";
 import { ensureDir } from "../utils/fs.js";
 import { shellCommand } from "../utils/shell.js";
@@ -53,10 +53,10 @@ export type RenderDraftOptions = {
 };
 
 /**
- * Generates and stores a draft render for a run.
+ * Generates, validates, records, and stores a draft render for a run.
  *
  * @param runId - The run identifier.
- * @param options - Render binary and duration settings.
+ * @param options - Optional overrides for the FFmpeg and FFprobe binaries and maximum render duration.
  * @returns The draft render manifest.
  */
 export async function renderDraft(
@@ -205,7 +205,6 @@ export async function renderDraft(
       draftRenderReviewPath,
       renderDraftReviewMarkdown(manifest),
     );
-    await saveRun(run);
     await setRunState(run, "RENDERED", "render");
     return manifest;
   } catch (error) {

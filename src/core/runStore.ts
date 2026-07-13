@@ -6,6 +6,7 @@ import { validateArtifactRelativePath } from "./artifactPaths.js";
 import { invariant, SafeExitError } from "./errors.js";
 import { appendLedgerEvent } from "./ledger.js";
 import { isValidRunId, runDir, runsDir, statePath } from "./runPaths.js";
+import { withRunStateLock } from "./runStateLock.js";
 import { RunRecord, runRecordSchema, RunState } from "./state.js";
 
 export {
@@ -65,13 +66,37 @@ export async function loadRun(runId: string): Promise<RunRecord> {
 }
 
 /**
- * Persists a run record to disk, updating its timestamp to the current time.
+ * Persists a run record to disk if it has not changed since it was loaded.
  *
- * @param record - The run record to save
+ * @param record - The run record to persist
+ * @returns The persisted run record with an updated timestamp
  */
-export async function saveRun(record: RunRecord): Promise<void> {
-  const updated = validateRunArtifacts(runRecordSchema.parse({ ...record, updatedAt: nowIso() }));
-  await writeJsonFile(statePath(record.runId), updated);
+export async function saveRun(record: RunRecord): Promise<RunRecord> {
+  const validated = validateRunArtifacts(runRecordSchema.parse(record));
+  return withRunStateLock(validated.runId, async () => {
+    const current = await loadRun(validated.runId);
+    return persistRunIfCurrent(validated, current);
+  });
+}
+
+/**
+ * Applies an asynchronous mutation to a run while coordinating state access and persistence.
+ *
+ * @param runId - The identifier of the run to mutate
+ * @param mutation - Produces the updated run and a caller-defined value; set `persist` to `false` to skip persistence
+ * @returns The resulting run and caller-defined mutation value
+ */
+export async function mutateRun<T>(
+  runId: string,
+  mutation: (current: RunRecord) => Promise<{ run: RunRecord; value: T; persist?: boolean }>,
+): Promise<{ run: RunRecord; value: T }> {
+  return withRunStateLock(runId, async () => {
+    const current = await loadRun(runId);
+    const result = await mutation(current);
+    if (result.persist === false) return { run: current, value: result.value };
+    const saved = await persistRunIfCurrent(result.run, current);
+    return { run: saved, value: result.value };
+  });
 }
 
 /**
@@ -88,8 +113,7 @@ export async function setRunState(
   stage: string,
 ): Promise<RunRecord> {
   const previousState = record.state;
-  const updated: RunRecord = { ...record, state: nextState, updatedAt: nowIso() };
-  await saveRun(updated);
+  const updated = await saveRun({ ...record, state: nextState });
   await appendLedgerEvent({
     runId: record.runId,
     type: "STATE_CHANGED",
@@ -97,6 +121,30 @@ export async function setRunState(
     message: `State changed from ${previousState} to ${nextState}.`,
     data: { previousState, nextState },
   });
+  return updated;
+}
+
+/**
+ * Persists a run record when it matches the currently stored version.
+ *
+ * @param record - The run record to persist
+ * @param current - The previously loaded current run record
+ * @returns The persisted run record with an updated timestamp
+ * @throws SafeExitError If the run has changed since `current` was loaded
+ */
+async function persistRunIfCurrent(record: RunRecord, current: RunRecord): Promise<RunRecord> {
+  const validated = validateRunArtifacts(runRecordSchema.parse(record));
+  if (validated.runId !== current.runId || validated.updatedAt !== current.updatedAt) {
+    throw new SafeExitError(
+      "Run state changed during this operation; reload the run before retrying.",
+    );
+  }
+  const previousMs = Date.parse(current.updatedAt);
+  const nextMs = Math.max(Date.now(), Number.isFinite(previousMs) ? previousMs + 1 : Date.now());
+  const updated = validateRunArtifacts(
+    runRecordSchema.parse({ ...validated, updatedAt: new Date(nextMs).toISOString() }),
+  );
+  await writeJsonFile(statePath(updated.runId), updated);
   return updated;
 }
 

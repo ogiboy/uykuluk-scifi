@@ -7,10 +7,13 @@ import { receiptDurationMs, sectionProviderCallCount } from "./scriptSectionGene
 import type { ScriptSectionReceipt } from "./scriptSections.js";
 
 /**
- * Persists safe, non-raw diagnostics for provider failures during script generation.
+ * Persists safe diagnostics for recognized script-generation provider failures.
  *
- * The raw provider response is intentionally not stored because model output can contain
- * unexpected secrets, prompt echoes, or large malformed payloads.
+ * Returns the original run when the error is unrelated to a provider failure or
+ * when persisting the diagnostics fails. Raw provider responses are not stored.
+ *
+ * @param receipts - Generation receipts to summarize in the diagnostics artifact
+ * @returns The persisted run, or the original run when no diagnostics are written
  */
 export async function persistScriptGenerationFailure(
   run: RunRecord,
@@ -42,8 +45,7 @@ export async function persistScriptGenerationFailure(
         createdAt: nowIso(),
       },
     );
-    await saveRun(updated);
-    return updated;
+    return await saveRun(updated);
   } catch {
     return run;
   }

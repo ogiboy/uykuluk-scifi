@@ -1,7 +1,5 @@
-import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
-import { readFile, rm, writeFile } from "node:fs/promises";
-import path from "node:path";
+import { readFile } from "node:fs/promises";
 import { loadConfig } from "../config/config.js";
 import {
   artifactPath,
@@ -14,49 +12,46 @@ import { SafeExitError } from "../core/errors.js";
 import { appendLedgerEvent } from "../core/ledger.js";
 import { loadRun, saveRun } from "../core/runStore.js";
 import { requireApproval, requireState } from "../safeguards/approvalGuard.js";
-import { ensureDir } from "../utils/fs.js";
 import { nowIso } from "../utils/time.js";
 import { verifyProductionPackage } from "./production/productionPackageIntegrity.js";
 import { readRenderPlanEvidence } from "./renderPlan.js";
-import { readPiperProviderEvidence } from "./voice/piperProviderEvidence.js";
-import {
-  normalizePcm16WavPeak,
-  readWavInfo,
-  wavFromPcm16,
-  type WavPeakNormalizationEvidence,
-} from "./voice/voiceWav.js";
+import type { VoiceExecutionMetadataProvider } from "./voice/voiceExecutionPreflight.js";
+import { prepareVoiceExecution } from "./voice/voiceExecutionPreparation.js";
+import { recoverCommittedVoiceExecution } from "./voice/voiceExecutionRecovery.js";
 import {
   VoiceoverAudioMeta,
+  voiceoverAlignmentPath,
   voiceoverAudioMetaPath,
   voiceoverAudioMetaSchema,
   voiceoverAudioPath,
   voiceoverAudioReviewPath,
 } from "./voice/voiceoverEvidence.js";
+import {
+  prepareVoiceoverText,
+  voiceoverPreparationPath,
+  voiceoverPreparedTextPath,
+} from "./voice/voiceoverPreparation.js";
 import { renderVoiceoverReviewMarkdown } from "./voice/voiceoverReviewMarkdown.js";
+import { synthesizeVoiceover } from "./voice/voiceSynthesisExecution.js";
 
-type SynthesizedAudio = {
-  buffer: Buffer;
-  channels: number;
-  durationSeconds: number;
-  provider?: NonNullable<VoiceoverAudioMeta["provider"]>;
-  processing?: { peakNormalization: WavPeakNormalizationEvidence };
-  quality: VoiceoverAudioMeta["quality"];
-  sampleRateHz: number;
-};
-
-export async function generateVoiceoverAudio(runId: string): Promise<VoiceoverAudioMeta> {
+/**
+ * Generates voiceover audio and persists its metadata and review artifacts for a run.
+ *
+ * @param runId - Identifier of the run to process
+ * @param options - Optional execution metadata provider and lifecycle callbacks
+ * @returns Metadata describing the generated voiceover audio and associated artifacts
+ * @throws SafeExitError If the render plan is invalid, the source voiceover is empty, or local TTS is disabled
+ */
+export async function generateVoiceoverAudio(
+  runId: string,
+  options: {
+    metadataProvider?: VoiceExecutionMetadataProvider;
+    afterSynthesis?: () => Promise<void>;
+    afterResultCommitted?: () => Promise<void>;
+  } = {},
+): Promise<VoiceoverAudioMeta> {
   const config = await loadConfig();
   let run = await loadRun(runId);
-  if (!config.providers.tts.enabled) {
-    await appendLedgerEvent({
-      runId: run.runId,
-      type: "GUARD_BLOCKED",
-      stage: "voice",
-      message: "Voice/TTS is disabled until local TTS configuration is explicitly enabled.",
-    });
-    throw new SafeExitError("Voice/TTS is disabled and requires explicit local TTS configuration.");
-  }
-
   await requireState(run, "READY_FOR_MANUAL_PRODUCTION", "voice");
   await requireApproval(run, "script", "voice");
   await verifyProductionPackage(run);
@@ -81,21 +76,74 @@ export async function generateVoiceoverAudio(runId: string): Promise<VoiceoverAu
     throw new SafeExitError("Voice/TTS requires non-empty production/voiceover.txt.");
   }
 
-  const audio =
-    config.providers.tts.mode === "deterministic-local"
-      ? synthesizeDeterministicReferenceAudio(voiceover)
-      : await synthesizePiperAudio({
-          binary: config.providers.tts.piperBinary ?? "piper",
-          configPath: config.providers.tts.piperConfigPath,
-          modelPath: config.providers.tts.piperModelPath,
-          runId: run.runId,
-          text: voiceover,
-        });
-
-  if (config.providers.tts.mode === "deterministic-local") {
-    run = await writeRunBinary(run, "voice", voiceoverAudioPath, audio.buffer);
+  const recovered = await recoverCommittedVoiceExecution({ run, sourceDigest: source.sha256 });
+  let mode: VoiceoverAudioMeta["mode"];
+  let preparation: ReturnType<typeof prepareVoiceoverText>;
+  let synthesis: Awaited<ReturnType<typeof synthesizeVoiceover>>;
+  if (recovered) {
+    mode = recovered.mode;
+    preparation = recovered.preparation;
+    synthesis = recovered.synthesis;
   } else {
+    if (!config.providers.tts.enabled) {
+      await appendLedgerEvent({
+        runId: run.runId,
+        type: "GUARD_BLOCKED",
+        stage: "voice",
+        message: "Voice/TTS is disabled until local TTS configuration is explicitly enabled.",
+      });
+      throw new SafeExitError(
+        "Voice/TTS is disabled and requires explicit local TTS configuration.",
+      );
+    }
+    preparation = prepareVoiceoverText({
+      runId: run.runId,
+      sourceText: voiceover,
+      pronunciationReplacements: config.providers.tts.pronunciationReplacements,
+    });
+    const execution = await prepareVoiceExecution({
+      runId: run.runId,
+      config,
+      preparedText: preparation.text,
+      metadataProvider: options.metadataProvider,
+    });
+    mode = execution.provider.mode;
+    synthesis = await synthesizeVoiceover(
+      execution.provider,
+      { runId: run.runId, text: preparation.text },
+      {
+        preparationDigest: preparation.evidence.output.sha256,
+        binding: execution.binding,
+        preflight: execution.preflight,
+        approvedQuote: execution.approvedQuote,
+        afterResultCommitted: options.afterResultCommitted,
+        preparation: { evidence: preparation.evidence, evidenceText: preparation.evidenceText },
+      },
+    );
+  }
+  const { audio } = synthesis;
+  await options.afterSynthesis?.();
+
+  run = await writeRunText(run, "voice", voiceoverPreparedTextPath, preparation.text);
+  run = await writeRunJson(run, "voice", voiceoverPreparationPath, preparation.evidence);
+
+  if (audio.outputAlreadyPersisted) {
     run = await recordRunArtifact(run, "voice", voiceoverAudioPath);
+  } else {
+    run = await writeRunBinary(run, "voice", voiceoverAudioPath, audio.buffer);
+  }
+
+  const alignment = audio.alignment
+    ? {
+        path: voiceoverAlignmentPath,
+        sha256: createHash("sha256")
+          .update(`${JSON.stringify(audio.alignment, null, 2)}\n`, "utf8")
+          .digest("hex"),
+        characterCount: audio.alignment.characters.length,
+      }
+    : undefined;
+  if (audio.alignment) {
+    run = await writeRunJson(run, "voice", voiceoverAlignmentPath, audio.alignment);
   }
 
   const digest = createHash("sha256").update(audio.buffer).digest("hex");
@@ -103,9 +151,18 @@ export async function generateVoiceoverAudio(runId: string): Promise<VoiceoverAu
     schemaVersion: 1,
     runId: run.runId,
     createdAt: nowIso(),
-    mode: config.providers.tts.mode,
+    mode,
     quality: audio.quality,
-    source,
+    source: {
+      ...source,
+      preparation: {
+        path: voiceoverPreparedTextPath,
+        sha256: preparation.evidence.output.sha256,
+        metadataPath: voiceoverPreparationPath,
+        metadataSha256: createHash("sha256").update(preparation.evidenceText, "utf8").digest("hex"),
+        replacementsApplied: preparation.evidence.replacements.length,
+      },
+    },
     renderPlan: { path: "production/render_plan.json", digest: renderPlan.digest },
     output: {
       path: voiceoverAudioPath,
@@ -116,7 +173,9 @@ export async function generateVoiceoverAudio(runId: string): Promise<VoiceoverAu
       channels: audio.channels,
     },
     provider: audio.provider,
+    paidExecution: synthesis.paidExecution,
     processing: audio.processing,
+    alignment,
   });
   run = await writeRunJson(run, "voice", voiceoverAudioMetaPath, meta);
   run = await writeRunText(
@@ -129,91 +188,12 @@ export async function generateVoiceoverAudio(runId: string): Promise<VoiceoverAu
   return meta;
 }
 
-function synthesizeDeterministicReferenceAudio(text: string): SynthesizedAudio {
-  const sampleRateHz = 16_000;
-  const wordCount = countWords(text);
-  const durationSeconds = Math.max(1, Math.min(45, Math.ceil(wordCount / 2.4)));
-  const sampleCount = sampleRateHz * durationSeconds;
-  const pcm = Buffer.alloc(sampleCount * 2);
-  const seed = createHash("sha256").update(text, "utf8").digest();
-  const baseFrequency = 180 + seed[0];
-  for (let index = 0; index < sampleCount; index += 1) {
-    const t = index / sampleRateHz;
-    const carrier = Math.sin(2 * Math.PI * baseFrequency * t);
-    const pulse = Math.sin(2 * Math.PI * (baseFrequency / 3) * t) > 0 ? 1 : 0.25;
-    pcm.writeInt16LE(Math.round(carrier * pulse * 2_800), index * 2);
-  }
-  return {
-    buffer: wavFromPcm16(pcm, sampleRateHz, 1),
-    channels: 1,
-    durationSeconds,
-    quality: "deterministic-local-reference",
-    sampleRateHz,
-  };
-}
-
 /**
- * Synthesizes voiceover audio with the local Piper TTS provider.
+ * Counts the whitespace-delimited words in a string.
  *
- * @param options - Piper execution settings and source text.
- * @returns The synthesized WAV buffer and its audio metadata.
- * @throws {SafeExitError} If `options.modelPath` is missing.
+ * @param value - The text whose words to count
+ * @returns The number of words in `value`
  */
-async function synthesizePiperAudio(options: {
-  binary: string;
-  configPath?: string;
-  modelPath?: string;
-  runId: string;
-  text: string;
-}): Promise<SynthesizedAudio> {
-  const provider = await readPiperProviderEvidence(options);
-
-  const output = artifactPath(options.runId, voiceoverAudioPath);
-  await ensureDir(path.dirname(output));
-  await rm(output, { force: true }).catch(() => undefined);
-  const args = ["--model", provider.modelPath, "--output_file", output];
-  if (provider.configPath) {
-    args.push("--config", provider.configPath);
-  }
-  await runPiper(options.binary, args, options.text);
-  const sourceBuffer = await readFile(output);
-  const normalized = normalizePcm16WavPeak(sourceBuffer);
-  if (normalized.evidence.applied) {
-    await writeFile(output, normalized.buffer);
-  }
-  const wav = readWavInfo(normalized.buffer);
-  return {
-    buffer: normalized.buffer,
-    channels: wav.channels,
-    durationSeconds: wav.durationSeconds,
-    provider,
-    processing: { peakNormalization: normalized.evidence },
-    quality: "local-piper",
-    sampleRateHz: wav.sampleRateHz,
-  };
-}
-
-async function runPiper(binary: string, args: string[], input: string): Promise<void> {
-  await new Promise<void>((resolve, reject) => {
-    const child = spawn(binary, args, { stdio: ["pipe", "ignore", "pipe"] });
-    let stderr = "";
-    child.stderr.on("data", (chunk: Buffer) => {
-      stderr += chunk.toString("utf8");
-    });
-    child.on("error", (error) =>
-      reject(new SafeExitError(`Piper failed to start: ${error.message}`)),
-    );
-    child.on("close", (code) => {
-      if (code === 0) {
-        resolve();
-        return;
-      }
-      reject(new SafeExitError(`Piper exited with code ${code}: ${stderr.trim()}`));
-    });
-    child.stdin.end(input.endsWith("\n") ? input : `${input}\n`);
-  });
-}
-
 function countWords(value: string): number {
   return value.trim().split(/\s+/).filter(Boolean).length;
 }

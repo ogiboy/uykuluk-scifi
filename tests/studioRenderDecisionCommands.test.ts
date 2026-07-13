@@ -83,7 +83,8 @@ describe("Studio render decision commands", () => {
       message: "Render decision was recorded, but the run is ARCHIVED.",
     });
 
-    await saveRun(run);
+    const archivedRun = await loadRun(runId);
+    await saveRun({ ...archivedRun, state: run.state });
     await writeEvidence(runId, { currentState: "RENDERED", draftRender: { status: "missing" } });
 
     const missingEvidence = await getStudioRunDetail(runId);

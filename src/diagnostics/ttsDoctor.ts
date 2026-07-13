@@ -6,6 +6,12 @@ import type { DoctorCheck } from "./doctor.js";
 
 const piperSetupCommand = "pnpm tts:piper:setup";
 
+/**
+ * Diagnoses the configured text-to-speech provider and reports its readiness.
+ *
+ * @param config - Project configuration containing the TTS provider settings, if available.
+ * @returns A diagnostic result indicating whether the configured TTS provider is ready, disabled, or blocked by missing prerequisites.
+ */
 export async function ttsProviderCheck(config: ProducerConfig | undefined): Promise<DoctorCheck> {
   if (!config) {
     return {
@@ -33,10 +39,51 @@ export async function ttsProviderCheck(config: ProducerConfig | undefined): Prom
       nextAction: "Use local-piper only after voice quality review is needed.",
     };
   }
+  if (tts.mode === "elevenlabs") {
+    return elevenLabsDiagnostic(tts);
+  }
 
   return piperDiagnostic(tts);
 }
 
+/**
+ * Validates ElevenLabs TTS configuration and server credentials.
+ *
+ * @param tts - The configured TTS provider settings.
+ * @returns A diagnostic result indicating whether ElevenLabs is ready or blocked by missing prerequisites.
+ */
+function elevenLabsDiagnostic(tts: ProducerConfig["providers"]["tts"]): DoctorCheck {
+  const findings: string[] = [];
+  if (!tts.elevenLabs.voiceId) {
+    findings.push("ElevenLabs voice id missing");
+  }
+  if (!process.env.ELEVENLABS_API_KEY?.trim()) {
+    findings.push("ELEVENLABS_API_KEY missing from the server environment");
+  }
+  if (findings.length > 0) {
+    return {
+      name: "TTS provider",
+      status: "block",
+      message: `${findings.join("; ")}. ElevenLabs remains blocked before cost reservation.`,
+      nextAction:
+        "Configure providers.tts.elevenLabs.voiceId and server-side ELEVENLABS_API_KEY, then rerun pnpm producer doctor.",
+    };
+  }
+  return {
+    name: "TTS provider",
+    status: "pass",
+    message: `ElevenLabs is configured with ${tts.elevenLabs.modelId} and a server-side credential.`,
+    nextAction:
+      "Generate and approve the exact cost quote before running ElevenLabs voice synthesis.",
+  };
+}
+
+/**
+ * Reports whether the local Piper text-to-speech provider is ready for use.
+ *
+ * @param tts - The configured TTS provider settings.
+ * @returns The provider readiness check, including any missing Piper prerequisites.
+ */
 async function piperDiagnostic(tts: ProducerConfig["providers"]["tts"]): Promise<DoctorCheck> {
   const findings = await piperFindings(tts);
   if (findings.length === 0) {

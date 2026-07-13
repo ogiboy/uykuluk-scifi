@@ -20,7 +20,7 @@ Durable strategy:
 - learn from published performance through manual imports before YouTube Analytics API work;
 - keep public/scheduled publish out of scope until a separate risk review.
 
-## Current Milestone - Production Loop Validation
+## Current Milestone - Production Quality & Controlled Distribution
 
 Status: active.
 
@@ -30,18 +30,35 @@ manual channel handoff run has completed without upload or publish. That run als
 revision loop by rejecting and archiving faulty drafts before fresh approval.
 
 The next product question is operational, not architectural: can the same documented workflow
-produce the next channel episode without source edits or hidden state repair? Work in this milestone
-should prioritize:
+produce two publish-quality channel episodes without source edits, hidden state repair, or manual
+assembly? Work in this milestone should prioritize:
 
-- repeatable real-episode runs and operator friction notes;
-- audio/pronunciation and subtitle-sync review on complete episodes;
-- stronger visual variety and editable/licensed production assets;
-- Studio parity for the remaining attributed invalid-evidence recovery and final handoff review UX;
-- a concise minimum-publishable-draft checklist in the final review handoff;
-- manual analytics feedback from published episodes before any YouTube API integration.
+- ElevenLabs voice catalog/previews, durable voice selection, exact cost approval, production
+  synthesis, timing evidence, aligned subtitles, reconciliation, and redacted diagnostics while
+  preserving deterministic-local and Piper fallbacks;
+- 12-24 scene-specific still images behind one small provider boundary, static/manual fallback,
+  contact-sheet review, per-scene regeneration, provenance, budget enforcement, and deterministic
+  motion presets before short clips;
+- exact render approval binding for selected voice, aligned subtitles, visual manifest, render plan,
+  and approved media digests, followed by pacing/audio/subtitle/thumbnail polish;
+- resumable private-only YouTube upload bound to the intended channel and exact metadata, thumbnail,
+  caption, and media digests, with processing review; public and scheduled publishing remain
+  unavailable;
+- a concise minimum-publishable-episode scorecard, operator-curated source/claim provenance, and two
+  repeatable real-episode runs;
+- guarded Studio parity, persistent settings/prompt profiles, and one-command local onboarding so
+  ordinary operation does not require source edits or hidden repair.
 
-Do not add more paid-provider, queue, public-publish, or generic agent infrastructure unless a real
-episode run proves it is the blocking dependency.
+Do not add provider sprawl, queues, public publishing, or generic agent infrastructure. Add only the
+approved ElevenLabs path, one hosted still-image provider after a bounded bake-off, and private
+YouTube upload through the existing approval/evidence architecture.
+
+Current voice checkpoint: catalog, bounded preview, attributable selection, exact quote/reservation,
+live preflight, production synthesis, provider-credit settlement, redacted evidence, safe
+reselection, and digest-anchored pending/settled operation recovery are implemented with mocked paid
+execution. Recovery does not require a current API key, live metadata refresh, or a fresh catalog;
+aligned SRT and its render-approval binding are the next voice deliverable. No live paid synthesis
+has run.
 
 ## Phase A - Safe Core Stabilization
 
@@ -71,7 +88,12 @@ infrastructure:
 - evaluate local LLM runtime/model quality through controlled comparisons before more Qwen-specific
   tuning;
 - keep bounded long-form continuation evidence aligned with script receipts and prompt provenance;
-- keep paid-provider internals isolated as future scaffolding until a real adapter is approved.
+- keep paid-provider internals isolated behind reservation/execution contracts; ElevenLabs is the
+  single approved production TTS adapter and all other hosted media providers remain deferred until
+  their explicit roadmap slice and bake-off.
+- add one idempotent local bootstrap command that verifies Node/pnpm, installs the lockfile, builds,
+  initializes config/assets, runs doctor, and starts Studio with honest sequential progress; Docker
+  and hidden/global package installation remain out of scope.
 
 ## Phase B - Real Production Loop
 
@@ -161,8 +183,17 @@ Priority order:
 - maintain the read-only producer doctor diagnostics page backed by ignored local doctor artifacts;
 - maintain the explicit guarded doctor refresh action as a canonical workflow-read-only CLI
   diagnostic that may write ignored diagnostics but is not a configuration or workflow mutation;
-- maintain read-only runtime prompt source/status visibility for tracked defaults and explicit local
-  overrides before any prompt editor work, including the `/prompts` operator route;
+- evolve the existing `/prompts` inventory into a guarded prompt-profile editor: show tracked and
+  local content/diffs, require an operator note and expected revision/hash, persist immutable local
+  revisions through CLI/core, support rollback, and keep save separate from generation/approval;
+- add a guarded settings surface over canonical CLI/core config commands for safe provider/model,
+  TTS, budget, asset, and channel settings. Saves are persistent, visible immediately, and effective
+  for the next command while in-flight work remains pinned to its starting snapshot;
+- label Studio listener ports, `NEXT_PUBLIC_*`, Sentry source-map settings, and other build-time or
+  listener settings as restart-required instead of claiming live application;
+- add genre/profile selection and an editable run-scoped idea brief before `ideas.run`; preserve
+  UykulukSciFi scientific-sci-fi as the default and bind the exact preset/prompt/brief digests into
+  the run without turning the desk into a generic content farm;
 - maintain mutation-service status so operators can see which local approval/review actions are
   guarded and which upload/publish actions remain disabled;
 - maintain guarded local model evaluation refresh actions without starting/downloading models or
@@ -217,7 +248,7 @@ Allowed only after the local production loop is useful:
 - private YouTube upload with explicit config, approval, and request/response evidence;
 - YouTube Analytics API;
 - idea-only scheduler;
-- prompt override UI;
+- richer prompt-profile organization after the guarded V1 editor proves useful;
 - richer late-stage subtitle, scene, popup-card, thumbnail, and metadata editing/revision UX; the
   initial attributable package-artifact and render-revision contracts already exist;
 - thumbnail A/B planning;
