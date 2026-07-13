@@ -88,9 +88,7 @@ describe("voice audition concurrency", () => {
 
     await expect(olderRequest).rejects.toThrow("could not be recorded safely");
     await expect(readVoicePreviewEvidence(runId, voiceId)).resolves.toEqual(newer);
-    const previewFiles = await readdir(
-      artifactPath(runId, `${voicePreviewDirectory}/${voiceId}`),
-    );
+    const previewFiles = await readdir(artifactPath(runId, `${voicePreviewDirectory}/${voiceId}`));
     const registeredPreviewFiles = (await loadRun(runId)).artifacts
       .filter((relativePath) => relativePath.startsWith(`${voicePreviewDirectory}/${voiceId}/`))
       .map((relativePath) => relativePath.split("/").at(-1))

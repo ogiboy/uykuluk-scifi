@@ -1,29 +1,24 @@
-import { chmod, mkdir, readFile, writeFile } from "node:fs/promises";
-import path from "node:path";
+import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { artifactPath } from "../src/core/artifacts";
 import { loadRun } from "../src/core/runStore";
 import { readCostReservationSummaries } from "../src/costs/costReservationStore";
-import { approveIdea } from "../src/stages/approveIdea";
-import { approveScript } from "../src/stages/approveScript";
-import { estimateCost } from "../src/stages/estimate";
 import { generateEvidenceBundle } from "../src/stages/evidence";
-import { runIdeas } from "../src/stages/ideas";
-import { generateProductionPackage } from "../src/stages/productionPackage";
 import { runReadiness } from "../src/stages/readiness";
 import { generateRenderPlan } from "../src/stages/renderPlan";
-import { reviewScript } from "../src/stages/reviewScript";
-import { generateScript } from "../src/stages/script";
 import { generateVoiceoverAudio } from "../src/stages/voice";
-import { DeterministicReferenceTtsProvider } from "../src/stages/voice/providers/deterministicReferenceTtsProvider";
-import { PiperTtsProvider } from "../src/stages/voice/providers/piperTtsProvider";
-import { voiceoverAudioMetaSchema } from "../src/stages/voice/voiceoverEvidence";
-import { voiceoverAudioPath } from "../src/stages/voice/voiceoverPaths";
-import { wavFromPcm16 } from "../src/stages/voice/voiceWav";
 import { pathExists } from "../src/utils/fs";
 import { sha256 } from "../src/utils/hash";
 import { readJsonFile } from "../src/utils/json";
 import { useTempProject } from "./helpers";
+import { createMinimalRenderAssets } from "./renderTestHelpers";
+import {
+  configureTts,
+  enableDeterministicTts,
+  enableFakePiper,
+  preparePackagedRun,
+  prepareReadyRun,
+} from "./voiceTestFixtures";
 
 describe("voiceover audio", () => {
   useTempProject();
@@ -160,48 +155,6 @@ describe("voiceover audio", () => {
     expect(await pathExists(artifactPath(runId, "production/audio/voiceover.wav"))).toBe(false);
   });
 
-  it("terminates a Piper process that exceeds the bounded timeout", async () => {
-    const binary = path.resolve("scripts/fake-piper-timeout-test.mjs");
-    const modelPath = path.resolve("models/piper/test/timeout-model.onnx");
-    await mkdir(path.dirname(binary), { recursive: true });
-    await mkdir(path.dirname(modelPath), { recursive: true });
-    await writeFile(modelPath, "fake local Piper timeout model", "utf8");
-    await writeFile(
-      binary,
-      `#!/usr/bin/env node
-import { writeFileSync } from "node:fs";
-const outputIndex = process.argv.indexOf("--output_file");
-writeFileSync(process.argv[outputIndex + 1], "partial output");
-process.on("SIGTERM", () => undefined);
-setInterval(() => undefined, 1_000);
-`,
-      "utf8",
-    );
-    await chmod(binary, 0o755);
-    const provider = new PiperTtsProvider({ binary, modelPath, timeoutMs: 50 });
-
-    await expect(
-      provider.synthesize({ runId: "run_piper_timeout", text: "zaman aşımı" }),
-    ).rejects.toThrow(/Piper timed out after 50ms/i);
-    expect(await pathExists(artifactPath("run_piper_timeout", voiceoverAudioPath))).toBe(false);
-  });
-
-  it("uses the full deterministic reference duration below the 20-minute limit", async () => {
-    const provider = new DeterministicReferenceTtsProvider();
-
-    const result = await provider.synthesize({ text: Array(120).fill("kelime").join(" ") });
-
-    expect(result.durationSeconds).toBe(50);
-  });
-
-  it("rejects deterministic reference narration longer than 20 minutes", async () => {
-    const provider = new DeterministicReferenceTtsProvider();
-
-    await expect(
-      provider.synthesize({ text: Array(2_881).fill("kelime").join(" ") }),
-    ).rejects.toThrow(/20-minute duration/i);
-  });
-
   it("runs reviewed local Piper through the shared orchestrator without paid gates", async () => {
     const piper = await enableFakePiper();
     const runId = await prepareReadyRun({ renderPlan: true });
@@ -246,120 +199,4 @@ setInterval(() => undefined, 1_000);
       quality: "local-piper",
     });
   });
-
-  it("rejects local Piper metadata without model provenance digests", () => {
-    expect(() =>
-      voiceoverAudioMetaSchema.parse({
-        ...voiceoverMetaFixture(),
-        mode: "local-piper",
-        quality: "local-piper",
-        provider: { binary: "piper", modelPath: "models/piper/model.onnx" },
-      }),
-    ).toThrow(/modelSha256/);
-  });
 });
-
-function voiceoverMetaFixture() {
-  return {
-    schemaVersion: 1,
-    runId: "run_voiceover_meta",
-    createdAt: "2026-06-25T13:00:00.000Z",
-    mode: "deterministic-local",
-    quality: "deterministic-local-reference",
-    source: { path: "production/voiceover.txt", sha256: "a".repeat(64), wordCount: 10 },
-    renderPlan: { path: "production/render_plan.json", digest: "b".repeat(64) },
-    output: {
-      path: "production/audio/voiceover.wav",
-      sha256: "c".repeat(64),
-      bytes: 100,
-      durationSeconds: 4,
-      sampleRateHz: 16_000,
-      channels: 1,
-    },
-  };
-}
-
-async function prepareReadyRun(options: { renderPlan: boolean }): Promise<string> {
-  await createMinimalRenderAssets();
-  const runId = await preparePackagedRun();
-  if (options.renderPlan) {
-    await generateRenderPlan(runId);
-  }
-  await estimateCost(runId);
-  await generateEvidenceBundle(runId);
-  const readiness = await runReadiness(runId);
-  expect(readiness.passed).toBe(true);
-  return runId;
-}
-
-async function preparePackagedRun(): Promise<string> {
-  const { runId, ideas } = await runIdeas();
-  await approveIdea(runId, ideas[0].id);
-  await generateScript(runId);
-  await reviewScript(runId);
-  await approveScript(runId, { acknowledgeWarnings: true });
-  await generateProductionPackage(runId);
-  return runId;
-}
-
-async function enableDeterministicTts(): Promise<void> {
-  await configureTts({ enabled: true, mode: "deterministic-local" });
-}
-
-async function enableFakePiper(): Promise<{
-  binary: string;
-  modelPath: string;
-  configPath: string;
-}> {
-  const binary = path.resolve("scripts/fake-piper-test.mjs");
-  const modelPath = path.resolve("models/piper/test/model.onnx");
-  const configPath = path.resolve("models/piper/test/model.onnx.json");
-  const wav = wavFromPcm16(Buffer.alloc(24_000 * 2), 24_000, 1);
-  await mkdir(path.dirname(binary), { recursive: true });
-  await mkdir(path.dirname(modelPath), { recursive: true });
-  await writeFile(modelPath, "fake local Piper model", "utf8");
-  await writeFile(configPath, '{"audio":{"sample_rate":24000}}', "utf8");
-  await writeFile(
-    binary,
-    `#!/usr/bin/env node\nimport { writeFileSync } from "node:fs";\nconst outputIndex = process.argv.indexOf("--output_file");\nwriteFileSync(process.argv[outputIndex + 1], Buffer.from("${wav.toString("base64")}", "base64"));\n`,
-    "utf8",
-  );
-  await chmod(binary, 0o755);
-  await configureTts({
-    enabled: true,
-    mode: "local-piper",
-    piperBinary: binary,
-    piperModelPath: modelPath,
-    piperConfigPath: configPath,
-  });
-  return { binary, modelPath, configPath };
-}
-
-async function configureTts(
-  tts: Record<string, unknown> & { enabled: boolean; mode: string },
-): Promise<void> {
-  const config = JSON.parse(await readFile("producer.config.json", "utf8")) as {
-    providers: { tts: Record<string, unknown> };
-  };
-  config.providers.tts = tts;
-  await writeFile("producer.config.json", `${JSON.stringify(config, null, 2)}\n`, "utf8");
-}
-
-async function createMinimalRenderAssets(): Promise<void> {
-  const files = new Map([
-    ["assets/brand/uykulukscifi_channel_logo_square_1024.png", "logo"],
-    ["assets/brand/uykulukscifi_watermark_transparent_500.png", "watermark"],
-    ["assets/overlays/subtitle_panel_blank_1700x190.png", "subtitle panel"],
-    ["assets/overlays/video_lower_third_banner_1920x240.png", "lower third"],
-    ["assets/overlays/popup_info_card_900x520.png", "popup card"],
-    ["assets/intro/episode_title_card_1920x1080.jpg", "intro"],
-    ["assets/outro/youtube_end_screen_1920x1080.jpg", "outro"],
-    ["assets/backgrounds/plate_test_1920x1080.jpg", "background"],
-    ["assets/icons/icon_fact_check_512.png", "fact icon"],
-    ["assets/waveforms/waveform_overlay_thin_panel_transparent_1920x240.png", "waveform"],
-  ]);
-  for (const [target, content] of files) {
-    await mkdir(target.split("/").slice(0, -1).join("/"), { recursive: true });
-    await writeFile(target, content, "utf8");
-  }
-}

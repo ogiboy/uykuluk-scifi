@@ -1,7 +1,7 @@
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
-import { createRun, loadRun, runPath, saveRun, statePath } from "../src/core/runStore";
 import { withRunStateLock } from "../src/core/runStateLock";
+import { createRun, loadRun, runPath, saveRun, statePath } from "../src/core/runStore";
 import { RunRecord } from "../src/core/state";
 import { pathExists } from "../src/utils/fs";
 import { useTempProject } from "./helpers";

@@ -49,7 +49,8 @@ reviews:
         "Apply when a future Next.js dashboard, route, styling, component, or frontend build config
         changes."
     - label: docs
-      instructions: "Apply when README, ROADMAP, .ai guidance, prompts, runbooks, or operator docs change."
+      instructions:
+        "Apply when README, ROADMAP, .ai guidance, prompts, runbooks, or operator docs change."
     - label: tests
       instructions: "Apply when tests, QA scripts, fixtures, mocks, or evidence reports change."
     - label: dependencies

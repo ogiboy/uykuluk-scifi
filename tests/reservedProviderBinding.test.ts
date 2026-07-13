@@ -80,43 +80,44 @@ describe("reserved provider execution binding", () => {
   it.each([
     { label: "missing", executionBindingDigest: undefined },
     { label: "different", executionBindingDigest: "d".repeat(64) },
-  ])("rejects an EXECUTION_STARTED event with a $label binding digest", async ({
-    executionBindingDigest,
-  }) => {
-    const run = await createRun();
-    const bindingDigest = "c".repeat(64);
-    const reservationId = "reservation_binding_guard";
-    const createdAt = new Date().toISOString();
-    await appendCostReservationEvent({
-      eventId: "reservation_event_reserved",
-      reservationId,
-      runId: run.runId,
-      type: "RESERVED",
-      operationId: "tts-binding-guard",
-      approvalId: "approval_binding_guard",
-      quoteDigest: "a".repeat(64),
-      stage: "tts",
-      provider: "elevenlabs",
-      model: "eleven_v3",
-      bindingDigest,
-      maxUsdMicros: 10_000,
-      createdAt,
-    });
-
-    await expect(
-      appendCostReservationEvent({
-        eventId: "reservation_event_started",
+  ])(
+    "rejects an EXECUTION_STARTED event with a $label binding digest",
+    async ({ executionBindingDigest }) => {
+      const run = await createRun();
+      const bindingDigest = "c".repeat(64);
+      const reservationId = "reservation_binding_guard";
+      const createdAt = new Date().toISOString();
+      await appendCostReservationEvent({
+        eventId: "reservation_event_reserved",
         reservationId,
         runId: run.runId,
-        type: "EXECUTION_STARTED",
+        type: "RESERVED",
+        operationId: "tts-binding-guard",
+        approvalId: "approval_binding_guard",
+        quoteDigest: "a".repeat(64),
+        stage: "tts",
         provider: "elevenlabs",
         model: "eleven_v3",
-        ...(executionBindingDigest ? { bindingDigest: executionBindingDigest } : {}),
+        bindingDigest,
+        maxUsdMicros: 10_000,
         createdAt,
-      }),
-    ).rejects.toThrow(/identity.*reservation|binding/i);
-    await expect(readCostReservationSummaries(run.runId)).resolves.toEqual([
-      expect.objectContaining({ reservationId, status: "RESERVED", bindingDigest }),
-    ]);
-  });
+      });
+
+      await expect(
+        appendCostReservationEvent({
+          eventId: "reservation_event_started",
+          reservationId,
+          runId: run.runId,
+          type: "EXECUTION_STARTED",
+          provider: "elevenlabs",
+          model: "eleven_v3",
+          ...(executionBindingDigest ? { bindingDigest: executionBindingDigest } : {}),
+          createdAt,
+        }),
+      ).rejects.toThrow(/identity.*reservation|binding/i);
+      await expect(readCostReservationSummaries(run.runId)).resolves.toEqual([
+        expect.objectContaining({ reservationId, status: "RESERVED", bindingDigest }),
+      ]);
+    },
+  );
 });

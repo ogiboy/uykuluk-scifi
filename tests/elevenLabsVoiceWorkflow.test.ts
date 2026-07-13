@@ -33,6 +33,7 @@ import {
   setConfiguredCandidateVoiceId,
   workflowFixtureWav,
 } from "./elevenLabsVoiceWorkflowFixtures";
+import { verifyWorkflowEvidenceTamperGuards } from "./elevenLabsVoiceWorkflowTamperAssertions";
 import { useTempProject } from "./helpers";
 import {
   successfulCatalogProvider,
@@ -230,169 +231,11 @@ describe("ElevenLabs voice workflow", () => {
     expect(quoteMarkdown).toContain(`Voice ID: \`${selectedVoiceId}\``);
     expect(quoteMarkdown).toContain("Approved maximum rate: 0.001000 USD / 1K characters");
 
-    const metaPath = artifactPath(runId, "production/audio/voiceover.meta.json");
-    const originalMetaText = await readFile(metaPath, "utf8");
-    const tamperedMeta = JSON.parse(originalMetaText) as { paidExecution: { approvalId: string } };
-    tamperedMeta.paidExecution.approvalId = "approval_forged";
-    await writeFile(metaPath, `${JSON.stringify(tamperedMeta, null, 2)}\n`, "utf8");
-    await expect(readVoiceoverAudioEvidence(run)).resolves.toMatchObject({
-      status: "block",
-      message: expect.stringMatching(/paid execution.*approval|approval.*reservation/i),
+    await verifyWorkflowEvidenceTamperGuards({
+      runId,
+      run,
+      originalMetaText: persisted[0],
+      originalAlignmentText: persisted[2],
     });
-    await writeFile(metaPath, originalMetaText, "utf8");
-
-    const tamperedBindingMeta = JSON.parse(originalMetaText) as {
-      paidExecution: { binding: { voice: { voiceId: string } } };
-    };
-    tamperedBindingMeta.paidExecution.binding.voice.voiceId = "forged_voice";
-    await writeFile(metaPath, `${JSON.stringify(tamperedBindingMeta, null, 2)}\n`, "utf8");
-    await expect(readVoiceoverAudioEvidence(run)).resolves.toMatchObject({
-      status: "block",
-      message: expect.stringMatching(/binding digest|pinned voice binding|selection artifact/i),
-    });
-    await writeFile(metaPath, originalMetaText, "utf8");
-
-    const costLedgerPath = artifactPath(runId, "costs/ledger.jsonl");
-    const originalCostLedger = await readFile(costLedgerPath, "utf8");
-    await writeFile(costLedgerPath, "", "utf8");
-    await expect(readVoiceoverAudioEvidence(run)).resolves.toMatchObject({
-      status: "block",
-      message: expect.stringMatching(/reservation-linked cost event|cost event/i),
-    });
-    await writeFile(costLedgerPath, originalCostLedger, "utf8");
-
-    await writeFile(
-      artifactPath(runId, "production/audio/alignment.json"),
-      '{"characters":["tampered"]}\n',
-      "utf8",
-    );
-    await expect(readVoiceoverAudioEvidence(run)).resolves.toMatchObject({
-      status: "block",
-      message: expect.stringContaining("alignment digest"),
-    });
-
-    const originalAlignmentText = persisted[2];
-    const tamperedAlignment = JSON.parse(originalAlignmentText) as {
-      characters: string[];
-      characterStartTimesSeconds: number[];
-      characterEndTimesSeconds: number[];
-    };
-    tamperedAlignment.characterStartTimesSeconds[0] += 0.001;
-    const tamperedAlignmentText = `${JSON.stringify(tamperedAlignment, null, 2)}\n`;
-    await writeFile(
-      artifactPath(runId, "production/audio/alignment.json"),
-      tamperedAlignmentText,
-      "utf8",
-    );
-    const alignmentRehashedMeta = JSON.parse(originalMetaText) as { alignment: { sha256: string } };
-    alignmentRehashedMeta.alignment.sha256 = sha256(tamperedAlignmentText);
-    await writeFile(metaPath, `${JSON.stringify(alignmentRehashedMeta, null, 2)}\n`, "utf8");
-    await expect(readVoiceoverAudioEvidence(run)).resolves.toMatchObject({
-      status: "block",
-      message: expect.stringMatching(/provider spool.*alignment|alignment.*spool/i),
-    });
-  });
-
-  it("recovers a settled provider result after a crash before final artifact persistence", async () => {
-    await configureWorkflowElevenLabs();
-    const runId = await preparePackagedWorkflowRun();
-    const catalog = await generateVoiceCandidates(runId, {
-      provider: successfulCatalogProvider({ subscription: paidVoiceSubscription }),
-    });
-    const voiceId = catalog.candidates[0].voiceId;
-    await generateVoicePreview(runId, voiceId, { provider: successfulPreviewProvider(catalog) });
-    await selectVoice(runId, {
-      voiceId,
-      reviewedBy: "recovery operator",
-      notes: "settled spool recovery fixture",
-      confirmProductionRights: true,
-    });
-    await generateRenderPlan(runId);
-    await estimateCost(runId);
-    await approvePaidGenerationCost(runId);
-    await generateEvidenceBundle(runId);
-    expect((await runReadiness(runId)).passed).toBe(true);
-    const metadataProvider = successfulExecutionMetadataProvider({
-      subscription: paidVoiceSubscription,
-    });
-
-    await expect(
-      generateVoiceoverAudio(runId, {
-        metadataProvider,
-        afterSynthesis: async () => {
-          throw new Error("simulated process crash before final voice files");
-        },
-      }),
-    ).rejects.toThrow(/simulated process crash/i);
-    const callsAfterSettledCrash = sdk.convertWithTimestamps.mock.calls.length;
-    expect(callsAfterSettledCrash).toBeGreaterThan(0);
-    expect(await readCostReservationSummaries(runId)).toContainEqual(
-      expect.objectContaining({ status: "SETTLED" }),
-    );
-
-    const changedConfig = JSON.parse(await readFile("producer.config.json", "utf8")) as {
-      providers: { tts: { enabled: boolean; mode: string } };
-    };
-    changedConfig.providers.tts.enabled = false;
-    changedConfig.providers.tts.mode = "deterministic-local";
-    await writeFile("producer.config.json", `${JSON.stringify(changedConfig, null, 2)}\n`, "utf8");
-    delete process.env.ELEVENLABS_API_KEY;
-    vi.useFakeTimers();
-    try {
-      vi.setSystemTime(Date.now() + 2 * 60 * 60 * 1_000);
-      await expect(generateVoiceoverAudio(runId)).resolves.toMatchObject({
-        mode: "elevenlabs",
-        paidExecution: { reservationStatus: "SETTLED" },
-      });
-    } finally {
-      vi.useRealTimers();
-    }
-    expect(sdk.convertWithTimestamps).toHaveBeenCalledTimes(callsAfterSettledCrash);
-  });
-
-  it("finalizes a committed provider result after a crash before settlement", async () => {
-    await configureWorkflowElevenLabs();
-    const runId = await preparePackagedWorkflowRun();
-    const catalog = await generateVoiceCandidates(runId, {
-      provider: successfulCatalogProvider({ subscription: paidVoiceSubscription }),
-    });
-    const voiceId = catalog.candidates[0].voiceId;
-    await generateVoicePreview(runId, voiceId, { provider: successfulPreviewProvider(catalog) });
-    await selectVoice(runId, {
-      voiceId,
-      reviewedBy: "settlement recovery operator",
-      notes: "committed result recovery fixture",
-      confirmProductionRights: true,
-    });
-    await generateRenderPlan(runId);
-    await estimateCost(runId);
-    await approvePaidGenerationCost(runId);
-    await generateEvidenceBundle(runId);
-    expect((await runReadiness(runId)).passed).toBe(true);
-
-    await expect(
-      generateVoiceoverAudio(runId, {
-        metadataProvider: successfulExecutionMetadataProvider({
-          subscription: paidVoiceSubscription,
-        }),
-        afterResultCommitted: async () => {
-          throw new Error("simulated crash after result commit");
-        },
-      }),
-    ).rejects.toThrow(/simulated crash after result commit/i);
-    const callsAfterCommit = sdk.convertWithTimestamps.mock.calls.length;
-    expect(await readCostReservationSummaries(runId)).toContainEqual(
-      expect.objectContaining({
-        status: "SETTLEMENT_PENDING",
-        resultEvidenceDigest: expect.stringMatching(/^[a-f0-9]{64}$/),
-      }),
-    );
-
-    delete process.env.ELEVENLABS_API_KEY;
-    await expect(generateVoiceoverAudio(runId)).resolves.toMatchObject({
-      mode: "elevenlabs",
-      paidExecution: { reservationStatus: "SETTLED" },
-    });
-    expect(sdk.convertWithTimestamps).toHaveBeenCalledTimes(callsAfterCommit);
   });
 });
