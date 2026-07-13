@@ -38,6 +38,7 @@ and make scene-specific visuals first-class without adding ComfyUI or enabling p
   - `0dfa07d7 feat(voice): support long-form Eleven v3 synthesis`
   - `2dea4aaa docs(roadmap): plan controlled production settings`
   - `179fac2f feat(voice): add redacted ElevenLabs candidate catalog`
+  - `c5fef8c8 feat(voice): add audition previews and selection evidence`
 - ElevenLabs now has server-only credential diagnostics, dynamic prepared-character pricing,
   exact provider/model cost binding, reservation/settlement execution, WAV validation, character
   alignment artifacts, redacted provenance, and tamper detection. No live paid call has run.
@@ -70,6 +71,34 @@ and make scene-specific visuals first-class without adding ComfyUI or enabling p
   modularity, secret scan, and diff-check also pass. Spec and code-quality reviews approved the
   contract/store/persistence split after dot-segment, legacy-failure scoping, and trimmed-input
   negative cases were added. No live TTS request ran.
+- Exact production binding is now implemented end to end. The selected voice snapshot drives the
+  quote, operator-readable approval summary, reservation, quote-bound operation id, provider
+  construction, live metadata preflight, synthesis, settlement, and final evidence. Config
+  `voiceId` remains only a candidate hint. Expected discounted pricing and the conservative
+  per-chunk maximum are separate; provider-reported billable credits settle once against the
+  approved base tariff.
+- Paid output is committed to an operation spool whose digest is anchored in reservation and cost
+  settlement evidence. Simulated failures after result commit and after settlement both recovered
+  without a second TTS request, current API key, live metadata refresh, enabled current config, or a
+  fresh catalog. Final audio and alignment must match the pinned spool. Successful chunks preserve
+  hashed request ids, text digests, and provider-reported credits; partial uncertain execution keeps
+  redacted request evidence for reconciliation.
+- Pre-spend reselection is serialized against cost reservation, archives every registered selection
+  plus digest/byte quote evidence, invalidates the exact cost approval, and reopens selection.
+  Active, uncertain, or settled TTS reservations block it; a provider-proven `RELEASED` non-send is
+  durably no-send and permits recovery only through a fresh selection, quote, and approval.
+- The shared local orchestrator now has a fake-binary Piper success regression proving canonical WAV
+  and provenance without selection, preflight, reservation, or paid evidence. Vitest blocks all
+  non-loopback fetch/socket traffic so mocked paid tests cannot silently become live calls.
+- Current focused verification: 187 voice, ElevenLabs, Piper, cost, reservation, readiness, and
+  network-guard tests pass; native TypeScript 7 and compatibility TypeScript 6 checks pass. No live
+  paid call ran.
+- PR hardening is in progress against the approved 2026-07-13 delivery plan. Unrelated Studio
+  dependency patch bumps and lockfile formatting churn were restored to `HEAD`; the two model
+  directory placeholders are deferred in the named stash
+  `defer model directory placeholders after voice PR`. CodeRabbit findings are being revalidated
+  and fixed only when they match current contracts; no paid provider call, Docker service, upload,
+  or publish action is authorized in this pass.
 
 ## Decisions
 
@@ -89,32 +118,38 @@ and make scene-specific visuals first-class without adding ComfyUI or enabling p
 
 ## Remaining Work
 
-1. Bind the implemented exact voice selection into quote, approval, reservation, operation id, and
-   full synthesis; bounded preview and durable selection are complete.
-2. Convert character alignment into a separate aligned SRT artifact and bind it into render approval.
-3. Implement the approved versioned config/prompt-profile design and guarded Studio surfaces, then
+1. Convert character alignment into a separate aligned SRT artifact and bind it into render approval.
+2. Implement the approved versioned config/prompt-profile design and guarded Studio surfaces, then
    add the idempotent one-command local bootstrap.
-4. Add scene-specific visual plan/manifest/review contracts without ComfyUI.
-5. Select one hosted image provider through a bounded UykulukSciFi scene bake-off, then add its
+3. Add scene-specific visual plan/manifest/review contracts without ComfyUI.
+4. Select one hosted image provider through a bounded UykulukSciFi scene bake-off, then add its
    disabled-by-default reserved adapter.
-6. Bind approved voice, aligned subtitles, and visual-manifest digests into render and expose the
+5. Bind approved voice, aligned subtitles, and visual-manifest digests into render and expose the
    guided Studio flow.
-7. Add deterministic motion/audio mastering and final thumbnail rendering.
-8. Add private-only YouTube upload after local final review is reliable; keep public/scheduled
+6. Add deterministic motion/audio mastering and final thumbnail rendering.
+7. Add private-only YouTube upload after local final review is reliable; keep public/scheduled
    publish disabled.
-9. Complete two real episodes without source edits, hidden repair, or manual assembly, then run
+8. Complete two real episodes without source edits, hidden repair, or manual assembly, then run
    PR-level gates.
+
+## Active Resume Hint
+
+- Active slice: finish the approval-bound ElevenLabs v3 branch, keep the final PR below CodeRabbit's
+  150-file ceiling, run the full PR-ready gates, and open the reviewed PR before changing global
+  Codex configuration.
+- Next action after PR creation: modernize the global agent/model routing, Context7 secret launch,
+  and hybrid defensive-security skill catalog, then return here for aligned SRT work.
+- Drift guard: do not widen this PR into Studio settings, visual providers, aligned SRT, live paid
+  synthesis, upload, or public/scheduled publishing.
 
 ## Blockers And Risks
 
 - A hosted visual provider has not been selected; do not guess one or create provider sprawl.
 - ElevenLabs TTS has no documented idempotency key; application operation IDs and reservation
   recovery must prevent blind duplicate generation.
-- A settled provider call followed by a process crash before final artifact persistence still needs
-  an explicit durable recovery/spool design; retries remain fail-closed meanwhile.
 - Long-form subtitle alignment and chunk stitching need deterministic fixtures before live smoke.
-- ElevenLabs model/voice cost multipliers must be known and pinned before any paid call; catalog or
-  metadata uncertainty must fail before network synthesis rather than reconcile only afterward.
+- The paid path remains mock-verified only. The first live synthesis still requires explicit
+  operator approval, a small quote, current eligible account metadata, and post-call evidence review.
 - Config/example/env drift is confirmed: CLI and Studio can resolve `PRODUCER_CONFIG` differently,
   stale Ollama env names are unused, and code/template defaults differ. Fix this through the
   approved config owner rather than piecemeal Studio JSON writes.

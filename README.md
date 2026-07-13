@@ -330,6 +330,8 @@ pnpm producer voice-preview --run <run_id> --voice <voice_id> --json
 pnpm producer voice-select --run <run_id> --voice <voice_id> --reviewed-by <operator> --notes "<audition notes>"
 pnpm producer voice-select --run <run_id> --voice <voice_id> --reviewed-by <operator> --notes "<audition notes>" --json
 # Paid tiers additionally require --confirm-production-rights.
+pnpm producer voice-reselect --run <run_id> --reviewed-by <operator> --reason "<reason>"
+pnpm producer voice-reselect --run <run_id> --reviewed-by <operator> --reason "<reason>" --json
 pnpm producer render-plan --run <run_id>
 pnpm producer render-plan --run <run_id> --json
 pnpm producer review render-plan --run <run_id>
@@ -733,10 +735,9 @@ When ElevenLabs TTS is explicitly enabled, `producer voice-candidates --run <run
 bounded read-only voice/model/subscription catalog requests after production-package generation. It
 writes an append-only redacted `production/audio/voice-candidates/*.json` artifact with
 candidate/model/pricing digests, preview availability, Turkish verification, and
-subscription/license classification; raw
-preview URLs, API keys, provider request IDs, and provider bodies are not persisted. Free-tier
-candidates remain `preview-only`; this command never downloads audio, synthesizes speech, or
-approves cost.
+subscription/license classification; raw preview URLs, API keys, provider request IDs, and provider
+bodies are not persisted. Free-tier candidates remain `preview-only`; this command never downloads
+audio, synthesizes speech, or approves cost.
 
 `producer voice-preview` accepts only a persisted candidate id, refetches that exact provider
 record, and rejects metadata drift. It never accepts a URL from CLI or Studio. Downloads are HTTPS
@@ -750,8 +751,15 @@ remain audit-only and cannot be selected by file existence.
 bytes/evidence, model, pricing, subscription, output format, chunk cap, and voice-settings digest to
 an operator name and required review notes. A valid prior selection is archived before replacement.
 Free-tier selection remains explicitly `preview-only`; paid-tier selection requires
-`--confirm-production-rights`. Selection does not synthesize speech or approve cost. Exact
-selection-bound quote/reservation/synthesis is the next gate.
+`--confirm-production-rights`. Selection does not synthesize speech or approve cost. The later cost
+quote shows the exact selection/voice/model/rates, and production synthesis carries the same binding
+through live metadata preflight, reservation, quote-bound operation id, provider-credit settlement,
+and final evidence. Provider output is spooled and its digest is anchored in settlement evidence, so
+committed-pending or settled local crashes can resume without repeating TTS, current credentials, or
+fresh provider metadata. Per-chunk request ids remain hashed. Before spend,
+`producer voice-reselect --run <run_id> --reviewed-by <operator> --reason "<reason>"` archives the
+old selection/quote and reopens audition; active, uncertain, or settled execution blocks that
+recovery, while a provider-proven non-send may be replaced safely.
 
 `producer review render-plan --run <run_id>` prints a read-only render-plan/contact-sheet handoff
 from validated render-plan evidence. It points operators to `production/storyboard_contact_sheet.md`

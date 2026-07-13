@@ -79,11 +79,10 @@
 
 ## Next
 
-- Complete ElevenLabs production binding before additional hosted-media work. Redacted catalog,
-  bounded local preview, tamper-checked evidence, and attributable voice/model selection are now
-  implemented. Bind the exact selection digest into quote, approval, reservation, operation id,
-  synthesis inputs, final timing evidence, and cost reconciliation. Preserve deterministic-local
-  and Piper operation when credentials are absent; do not run paid provider calls in CI.
+- Build aligned SRT from the completed ElevenLabs character-timing evidence. Preserve the raw
+  alignment artifact, add deterministic Turkish word/cue grouping with readability bounds, bind the
+  aligned subtitle digest into voice/render evidence, and keep deterministic-local/Piper fallback
+  subtitle behavior explicit. Do not run paid provider calls in CI.
 - Implement the approved guarded settings contract in core/CLI before Studio: strict versioned
   config parsing, shared path resolution, atomic revisions, optimistic concurrency, redacted
   history/rollback, command-boundary immutable snapshots, and exact quote/approval invalidation.

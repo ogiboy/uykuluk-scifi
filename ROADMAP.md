@@ -53,6 +53,13 @@ Do not add provider sprawl, queues, public publishing, or generic agent infrastr
 approved ElevenLabs path, one hosted still-image provider after a bounded bake-off, and private
 YouTube upload through the existing approval/evidence architecture.
 
+Current voice checkpoint: catalog, bounded preview, attributable selection, exact quote/reservation,
+live preflight, production synthesis, provider-credit settlement, redacted evidence, safe
+reselection, and digest-anchored pending/settled operation recovery are implemented with mocked paid
+execution. Recovery does not require a current API key, live metadata refresh, or a fresh catalog;
+aligned SRT and its render-approval binding are the next voice deliverable. No live paid synthesis
+has run.
+
 ## Phase A - Safe Core Stabilization
 
 Status: mostly implemented; maintain and simplify.

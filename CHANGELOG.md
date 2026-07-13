@@ -9,7 +9,12 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Features
+
+- bind an attributable ElevenLabs voice selection through operator-visible quote approval,
+  reservation, live preflight, v3 synthesis, provider-credit settlement, externally anchored
+  result-spool recovery, per-request redacted diagnostics, and safe pre-spend reselection while
+  preserving tested deterministic/Piper fallbacks and blocking outbound network in unit tests.
 
 ## v0.80.3 (2026-07-12)
 

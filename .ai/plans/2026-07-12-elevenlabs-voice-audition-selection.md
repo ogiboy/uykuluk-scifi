@@ -203,7 +203,9 @@ Steps:
 6. Persist selection digest and current metadata digests in voiceover evidence. Keep final
    settlement based on allowlisted `character-cost`; keep TTS retries at zero.
 7. Add a safe pre-spend reselection recovery that archives stale quote/approval evidence and returns
-   to the package/selection boundary. It must be unavailable after reservation or synthesis starts.
+   to the package/selection boundary. Active, uncertain, or settled reservations and synthesis
+   evidence block recovery. The sole exception is a `RELEASED` reservation whose durable meaning is
+   that no provider request was sent; recovery still requires a fresh selection, quote, and approval.
 
 Verification:
 
