@@ -5,10 +5,12 @@ import { RunRecord } from "../../core/state.js";
 import { nowIso } from "../../utils/time.js";
 
 /**
- * Persists safe, non-raw diagnostics for provider failures during idea generation.
+ * Persists sanitized diagnostics for recognized provider failures during idea generation.
  *
- * Rejected provider text is intentionally not stored because local model output can contain
- * malformed JSON, prompt echoes, or large repeated text that should not become durable state.
+ * Returns the original run when the failure is not a recognized provider failure or persistence fails.
+ *
+ * @param error - The failure to sanitize and evaluate
+ * @returns The saved run with diagnostics, or the original run if diagnostics are not persisted
  */
 export async function persistIdeaGenerationFailure(
   run: RunRecord,

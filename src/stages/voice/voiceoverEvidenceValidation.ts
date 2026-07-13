@@ -25,6 +25,11 @@ export const persistedAlignmentSchema = z
     }
   });
 
+/**
+ * Verifies that required voiceover artifacts are registered for the run and exist on disk.
+ *
+ * @param requiredPaths - Relative paths of the required voiceover artifacts
+ */
 export async function assertVoiceoverArtifacts(
   run: RunRecord,
   requiredPaths: readonly string[],
@@ -39,6 +44,11 @@ export async function assertVoiceoverArtifacts(
   }
 }
 
+/**
+ * Validates the persisted voiceover alignment artifact against its metadata.
+ *
+ * @param meta - Metadata describing the expected alignment artifact and character count
+ */
 export async function assertVoiceoverAlignment(
   run: RunRecord,
   meta: VoiceoverAudioMeta,
@@ -65,6 +75,12 @@ export async function assertVoiceoverAlignment(
   }
 }
 
+/**
+ * Validates the voiceover source and its optional preparation evidence against the run metadata.
+ *
+ * @param run - The run containing the voiceover artifacts.
+ * @param meta - Metadata describing the expected voiceover source and preparation evidence.
+ */
 export async function assertVoiceoverSource(
   run: RunRecord,
   meta: VoiceoverAudioMeta,

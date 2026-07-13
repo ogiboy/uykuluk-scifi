@@ -21,7 +21,13 @@ import { requireMatchingVoiceExecutionPreflight } from "./voiceExecutionPrefligh
 import { loadVoiceExecutionSpool } from "./voiceExecutionSpool.js";
 import type { VoiceoverAudioMeta } from "./voiceoverEvidence.js";
 
-/** Verifies every persisted approval, quote, selection, reservation, and operation reference. */
+/**
+ * Validates persisted evidence for a paid ElevenLabs voice execution.
+ *
+ * @param run - The run containing the persisted execution, approval, reservation, and cost evidence
+ * @param meta - The voice execution metadata and referenced evidence
+ * @throws SafeExitError If required evidence is missing or inconsistent
+ */
 export async function assertPaidVoiceExecutionEvidence(
   run: RunRecord,
   meta: VoiceoverAudioMeta,
@@ -116,6 +122,13 @@ export async function assertPaidVoiceExecutionEvidence(
   }
 }
 
+/**
+ * Verifies that paid execution evidence, preflight validation, and provider metadata match the pinned voice binding.
+ *
+ * @param meta - Voiceover metadata containing the provider configuration to validate.
+ * @param paid - Persisted evidence for the paid voice execution.
+ * @param binding - Pinned voice execution binding.
+ */
 function requireMatchingBinding(
   meta: VoiceoverAudioMeta,
   paid: NonNullable<VoiceoverAudioMeta["paidExecution"]>,
@@ -145,6 +158,12 @@ function requireMatchingBinding(
   }
 }
 
+/**
+ * Verifies that the persisted voice selection and candidate catalog artifacts match the pinned binding.
+ *
+ * @param run - Run state containing the registered binding artifacts
+ * @param binding - Pinned voice execution binding to validate
+ */
 async function requirePinnedBindingArtifacts(
   run: RunRecord,
   binding: ReturnType<typeof requireSelectedVoiceExecutionBinding>,

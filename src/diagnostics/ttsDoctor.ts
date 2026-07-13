@@ -6,6 +6,12 @@ import type { DoctorCheck } from "./doctor.js";
 
 const piperSetupCommand = "pnpm tts:piper:setup";
 
+/**
+ * Diagnoses the configured text-to-speech provider and reports its readiness.
+ *
+ * @param config - Project configuration containing the TTS provider settings, if available.
+ * @returns A diagnostic result indicating whether the configured TTS provider is ready, disabled, or blocked by missing prerequisites.
+ */
 export async function ttsProviderCheck(config: ProducerConfig | undefined): Promise<DoctorCheck> {
   if (!config) {
     return {
@@ -40,6 +46,12 @@ export async function ttsProviderCheck(config: ProducerConfig | undefined): Prom
   return piperDiagnostic(tts);
 }
 
+/**
+ * Validates ElevenLabs TTS configuration and server credentials.
+ *
+ * @param tts - The configured TTS provider settings.
+ * @returns A diagnostic result indicating whether ElevenLabs is ready or blocked by missing prerequisites.
+ */
 function elevenLabsDiagnostic(tts: ProducerConfig["providers"]["tts"]): DoctorCheck {
   const findings: string[] = [];
   if (!tts.elevenLabs.voiceId) {
@@ -66,6 +78,12 @@ function elevenLabsDiagnostic(tts: ProducerConfig["providers"]["tts"]): DoctorCh
   };
 }
 
+/**
+ * Reports whether the local Piper text-to-speech provider is ready for use.
+ *
+ * @param tts - The configured TTS provider settings.
+ * @returns The provider readiness check, including any missing Piper prerequisites.
+ */
 async function piperDiagnostic(tts: ProducerConfig["providers"]["tts"]): Promise<DoctorCheck> {
   const findings = await piperFindings(tts);
   if (findings.length === 0) {

@@ -23,6 +23,14 @@ const characterAlignmentSchema = z
     }
   });
 
+/**
+ * Validates ElevenLabs character alignment data against its audio duration.
+ *
+ * @param alignment - The optional character alignment returned by ElevenLabs
+ * @param durationSeconds - The duration of the corresponding audio
+ * @returns The validated character alignment
+ * @throws SafeExitError If alignment is missing, timestamps are invalid or non-monotonic, or the final timestamp exceeds the audio duration by more than 0.5 seconds
+ */
 export function parseElevenLabsAlignment(
   alignment: TtsCharacterAlignment | undefined,
   durationSeconds: number,
@@ -48,6 +56,13 @@ export function parseElevenLabsAlignment(
   return parsed;
 }
 
+/**
+ * Combines character alignments from multiple audio chunks into a single timeline.
+ *
+ * @param alignments - Character alignments corresponding to the audio chunks
+ * @param audioChunks - Audio chunks corresponding to the alignments
+ * @returns The combined character alignment with timestamps adjusted to the stitched audio timeline
+ */
 export function stitchElevenLabsAlignments(
   alignments: readonly TtsCharacterAlignment[],
   audioChunks: readonly Buffer[],
@@ -76,6 +91,13 @@ export function stitchElevenLabsAlignments(
   return characterAlignmentSchema.parse(stitched);
 }
 
+/**
+ * Limits context text to 1,000 characters from the requested edge.
+ *
+ * @param value - The optional context text to limit
+ * @param edge - The edge from which to retain characters
+ * @returns The truncated context text, or `undefined` when `value` is empty or absent
+ */
 export function elevenLabsContextText(
   value: string | undefined,
   edge: "start" | "end",

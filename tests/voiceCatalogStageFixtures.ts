@@ -20,6 +20,11 @@ import type { VoiceExecutionMetadataProvider } from "../src/stages/voice/voiceEx
 import { sha256 } from "../src/utils/hash";
 import { playableMp3Bytes } from "./voicePreviewTestAudio";
 
+/**
+ * Configures ElevenLabs as the enabled text-to-speech provider.
+ *
+ * @param overrides - Optional ElevenLabs settings that override the defaults.
+ */
 export async function configureElevenLabs(
   overrides: Partial<ProducerConfig["providers"]["tts"]["elevenLabs"]> = {},
 ): Promise<void> {
@@ -45,6 +50,11 @@ export async function configureElevenLabs(
   );
 }
 
+/**
+ * Completes the packaged production workflow for the first generated idea.
+ *
+ * @returns The identifier of the completed run
+ */
 export async function preparePackagedRun(): Promise<string> {
   const { runId, ideas } = await runIdeas();
   await approveIdea(runId, ideas[0].id);
@@ -55,6 +65,12 @@ export async function preparePackagedRun(): Promise<string> {
   return runId;
 }
 
+/**
+ * Creates a successful ElevenLabs voice catalog provider fixture.
+ *
+ * @param overrides - Optional catalog models, subscription, and voices to use instead of the default fixtures.
+ * @returns A voice catalog provider that returns a normalized catalog.
+ */
 export function successfulCatalogProvider(
   overrides: {
     models?: CatalogModel[];
@@ -97,6 +113,12 @@ export function successfulCatalogProvider(
   };
 }
 
+/**
+ * Creates a catalog voice fixture with standard test values.
+ *
+ * @param overrides - Values that replace the default catalog voice properties
+ * @returns A catalog voice fixture
+ */
 export function defaultCatalogVoice(overrides: Partial<CatalogVoice> = {}): CatalogVoice {
   return {
     voiceId: "voice_catalog_test",
@@ -114,6 +136,12 @@ export function defaultCatalogVoice(overrides: Partial<CatalogVoice> = {}): Cata
   };
 }
 
+/**
+ * Creates a voice preview provider that returns a successful MP3 preview for the catalog's first candidate.
+ *
+ * @param catalog - The voice catalog containing the candidate used to populate preview metadata.
+ * @returns A voice preview provider configured for ElevenLabs.
+ */
 export function successfulPreviewProvider(catalog: VoiceCandidates): VoicePreviewProvider {
   const candidate = catalog.candidates[0];
   return {
@@ -133,6 +161,12 @@ export function successfulPreviewProvider(catalog: VoiceCandidates): VoicePrevie
   };
 }
 
+/**
+ * Creates a successful ElevenLabs execution metadata provider for tests.
+ *
+ * @param overrides - Optional catalog models, subscription, and voices used by the provider.
+ * @returns An execution metadata provider backed by the configured catalog fixture.
+ */
 export function successfulExecutionMetadataProvider(
   overrides: Parameters<typeof successfulCatalogProvider>[0] = {},
 ): VoiceExecutionMetadataProvider {
@@ -144,6 +178,11 @@ export function successfulExecutionMetadataProvider(
   };
 }
 
+/**
+ * Provides playable MP3 bytes for preview tests.
+ *
+ * @returns A buffer containing playable MP3 data.
+ */
 export function previewMp3Bytes(): Buffer {
   return playableMp3Bytes();
 }

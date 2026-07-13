@@ -2,7 +2,12 @@ import { SafeExitError } from "../../../core/errors.js";
 import type { VoiceCatalogProviderResult } from "./voiceCatalogContracts.js";
 import type { CatalogVoice } from "./voiceCatalogProvider.js";
 
-/** Blocks provider-controlled metadata that echoes known credentials or raw request evidence. */
+/**
+ * Rejects provider voice metadata that echoes sensitive request data.
+ *
+ * @param input - The catalog, API key, request IDs, and voice data used to identify sensitive values.
+ * @throws `SafeExitError` if the catalog contains a sensitive value at least eight characters long.
+ */
 export function assertVoiceCatalogRedacted(input: {
   apiKey: string;
   catalog: VoiceCatalogProviderResult;
@@ -24,6 +29,12 @@ export function assertVoiceCatalogRedacted(input: {
   }
 }
 
+/**
+ * Collects preview URL values and sufficiently long query parameter values from voices and their verified languages.
+ *
+ * @param voices - Voices whose preview metadata is inspected
+ * @returns Sensitive values derived from the preview URLs
+ */
 function previewSensitiveValues(voices: CatalogVoice[]): string[] {
   const values: string[] = [];
   for (const voice of voices) {
@@ -35,6 +46,12 @@ function previewSensitiveValues(voices: CatalogVoice[]): string[] {
   return values;
 }
 
+/**
+ * Adds a preview value and sufficiently long query parameter values from it to a collection.
+ *
+ * @param target - The collection to which sensitive values are added
+ * @param value - The preview URL or provider value to inspect
+ */
 function collectPreviewValue(target: string[], value: string | undefined): void {
   if (!value) return;
   target.push(value);

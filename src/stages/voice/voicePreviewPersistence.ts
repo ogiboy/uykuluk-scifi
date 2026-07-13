@@ -22,6 +22,12 @@ import {
   isVoiceCatalogFailureArtifactPath,
 } from "./catalog/voiceCatalogContracts.js";
 
+/**
+ * Records a voice preview failure, reconciles its evidence with the current run, and terminates the stage.
+ *
+ * @param input - Failure details and the run state identifiers used to reconcile the recorded evidence.
+ * @throws SafeExitError Always thrown with the failure message and recommended next action.
+ */
 export async function recordVoicePreviewFailure(input: {
   runId: string;
   voiceId: string;
@@ -63,6 +69,12 @@ export async function recordVoicePreviewFailure(input: {
   throw new SafeExitError(`${failure.message} ${failure.nextAction}`);
 }
 
+/**
+ * Computes the registered artifact revision for voice-preview dependencies.
+ *
+ * @param voiceId - The voice whose preview artifacts are included.
+ * @returns The revision of the relevant registered artifacts.
+ */
 export async function voicePreviewDependencyRevision(
   run: Awaited<ReturnType<typeof loadRun>>,
   voiceId: string,
@@ -79,6 +91,12 @@ export async function voicePreviewDependencyRevision(
   });
 }
 
+/**
+ * Records that a voice preview artifact was written.
+ *
+ * @param runId - The identifier of the run associated with the artifact
+ * @param path - The artifact path
+ */
 export async function appendVoicePreviewArtifactWritten(
   runId: string,
   path: string,
@@ -92,6 +110,12 @@ export async function appendVoicePreviewArtifactWritten(
   });
 }
 
+/**
+ * Checks whether the run's verified production package matches the expected digest.
+ *
+ * @param expectedDigest - The digest to compare with the verified production package
+ * @returns `true` if the verified production package has the expected digest, `false` otherwise
+ */
 async function hasMatchingProductionPackage(
   run: Awaited<ReturnType<typeof loadRun>>,
   expectedDigest: string,
@@ -103,6 +127,12 @@ async function hasMatchingProductionPackage(
   }
 }
 
+/**
+ * Creates a validated failure record for a voice preview attempt.
+ *
+ * @param error - The error that caused the preview failure
+ * @returns A categorized voice preview failure with a recommended next action
+ */
 function previewFailure(runId: string, voiceId: string, error: unknown): VoicePreviewFailure {
   const code = previewFailureCode(error);
   const shouldRefreshCatalog = code === "catalog-stale" || code === "metadata-changed";
@@ -121,6 +151,12 @@ function previewFailure(runId: string, voiceId: string, error: unknown): VoicePr
   });
 }
 
+/**
+ * Classifies a voice preview error based on its type and message.
+ *
+ * @param error - The error to classify.
+ * @returns The corresponding voice preview failure code.
+ */
 function previewFailureCode(error: unknown): VoicePreviewFailure["code"] {
   if (!(error instanceof SafeExitError)) return "provider-unavailable";
   const message = error.message.toLowerCase();

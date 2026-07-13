@@ -21,7 +21,13 @@ export type PreparedVoiceExecution = {
   approvedQuote?: { quoteDigest: string; approvalId: string };
 };
 
-/** Resolves local TTS directly or proves the exact approved paid binding before live metadata GETs. */
+/**
+ * Prepares a text-to-speech provider and validates ElevenLabs execution prerequisites.
+ *
+ * @param input - Run, provider configuration, prepared text, and optional metadata provider used for execution preflight.
+ * @returns The prepared provider, with binding, preflight receipt, and approved quote details for ElevenLabs execution.
+ * @throws SafeExitError If the approved quote cannot be validated, does not match the selected binding, or execution preflight fails.
+ */
 export async function prepareVoiceExecution(input: {
   runId: string;
   config: ProducerConfig;

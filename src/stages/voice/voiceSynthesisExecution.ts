@@ -33,7 +33,14 @@ export type VoiceSynthesisExecutionResult = {
   paidExecution?: PaidVoiceExecutionEvidence;
 };
 
-/** Executes local synthesis or one exact reservation-bound paid synthesis operation. */
+/**
+ * Executes local synthesis or one reservation-bound paid synthesis operation.
+ *
+ * @param provider - The TTS provider used for synthesis.
+ * @param input - The synthesis input, including the text and run identifier.
+ * @param options - Validation evidence and execution settings for paid synthesis.
+ * @returns The synthesized audio and, for paid execution, its settlement evidence.
+ */
 export async function synthesizeVoiceover(
   provider: TtsProvider,
   input: TtsSynthesisInput,
@@ -113,7 +120,13 @@ export async function synthesizeVoiceover(
   );
 }
 
-/** Reconstructs final paid evidence from one digest-anchored settled operation spool. */
+/**
+ * Reconstructs paid voice synthesis evidence from a settled, digest-anchored execution spool.
+ *
+ * @param input - The settled execution spool and corresponding reservation, binding, and approved quote.
+ * @returns The synthesized audio and validated paid execution evidence.
+ * @throws SafeExitError If settlement is incomplete, durable evidence does not match, or billing evidence is missing.
+ */
 export function settledVoiceSynthesisResult(input: {
   spool: LoadedVoiceExecutionSpool;
   reservation: CostReservationSummary;
@@ -166,6 +179,13 @@ export function settledVoiceSynthesisResult(input: {
 
 type SpoolExecutionValue = { audio: TtsSynthesisResult; spool: LoadedVoiceExecutionSpool };
 
+/**
+ * Wraps a reserved voice provider adapter with durable result and reservation evidence recording.
+ *
+ * @param adapter - The provider adapter that performs voice synthesis
+ * @param input - Execution identifiers and evidence required to persist the synthesis result
+ * @returns An adapter that returns the synthesized audio with its persisted spool on success
+ */
 function spoolPaidVoiceResult(
   adapter: ReservedProviderAdapter<TtsSynthesisResult>,
   input: {
@@ -214,6 +234,13 @@ function spoolPaidVoiceResult(
   };
 }
 
+/**
+ * Validates that a settled voice execution spool matches the expected durable evidence.
+ *
+ * @param spool - The persisted voice execution spool to validate
+ * @param expected - The reservation, binding, billing, and result evidence expected in the spool
+ * @throws SafeExitError If the spool does not match the expected evidence
+ */
 function requireMatchingSettledSpool(
   spool: LoadedVoiceExecutionSpool,
   expected: {
@@ -236,6 +263,12 @@ function requireMatchingSettledSpool(
   }
 }
 
+/**
+ * Requires a settled voice operation to provide its result evidence digest.
+ *
+ * @param value - The result evidence digest to validate
+ * @returns The provided result evidence digest
+ */
 function requireResultEvidenceDigest(value: string | undefined): string {
   if (!value) {
     throw new SafeExitError("Settled voice operation is missing its result evidence digest.");

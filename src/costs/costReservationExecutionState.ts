@@ -9,7 +9,11 @@ import {
   providerAdapterIdentitiesMatch,
 } from "./providerAdapterIdentity.js";
 
-/** Atomically claims one matching reservation for a single callback invocation. */
+/**
+ * Attempts to start execution for a matching reserved cost reservation.
+ *
+ * @returns The current reservation and whether execution was started.
+ */
 export async function beginCostReservationExecution(input: {
   runId: string;
   reservationId: string;
@@ -51,7 +55,13 @@ export async function beginCostReservationExecution(input: {
   });
 }
 
-/** Releases a claimed callback only when the matching adapter proves no request was submitted. */
+/**
+ * Releases an execution reservation after the provider adapter confirms that no request was submitted.
+ *
+ * @param input - Identifies the reservation, adapter, and confirmed reason for non-submission.
+ * @returns The updated cost reservation summary.
+ * @throws SafeExitError If the reservation is not in execution or the adapter does not match the reservation.
+ */
 export async function releaseDefinitelyNotSentExecution(input: {
   runId: string;
   reservationId: string;
@@ -87,6 +97,14 @@ export async function releaseDefinitelyNotSentExecution(input: {
   });
 }
 
+/**
+ * Verifies that an adapter matches the reservation identity for the requested action.
+ *
+ * @param reservation - The reservation to validate against.
+ * @param adapter - The provider adapter identity to compare with the reservation.
+ * @param action - The action name included in the rejection message.
+ * @throws SafeExitError If the adapter does not match the reservation.
+ */
 function requireMatchingAdapter(
   reservation: CostReservationSummary,
   adapter: ProviderAdapterIdentity,

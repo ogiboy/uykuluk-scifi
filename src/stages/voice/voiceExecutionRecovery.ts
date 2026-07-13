@@ -27,7 +27,12 @@ export type RecoveredVoiceExecution = {
   synthesis: VoiceSynthesisExecutionResult;
 };
 
-/** Recovers an already-committed paid result without credentials, fresh catalog data, or live GETs. */
+/**
+ * Recovers a durably committed ElevenLabs voice execution without credentials or live provider requests.
+ *
+ * @param input - The run and source digest identifying the execution to recover.
+ * @returns The recovered voice execution, or `undefined` when no matching committed execution is available.
+ */
 export async function recoverCommittedVoiceExecution(input: {
   run: RunRecord;
   sourceDigest: string;
@@ -108,6 +113,15 @@ export async function recoverCommittedVoiceExecution(input: {
   };
 }
 
+/**
+ * Validates the execution binding and recovered spool against the historical reservation.
+ *
+ * @param spool - The committed voice execution spool to validate
+ * @param reservation - The historical cost reservation associated with the execution
+ * @param expectedModel - The model expected for the recovered execution
+ * @param sourceDigest - The expected source content digest
+ * @returns The validated voice execution binding
+ */
 function requireRecoveryBinding(
   spool: LoadedVoiceExecutionSpool,
   reservation: CostReservationSummary,
@@ -132,6 +146,12 @@ function requireRecoveryBinding(
   return binding;
 }
 
+/**
+ * Retrieves the result evidence digest required to recover a committed voice execution.
+ *
+ * @param reservation - The committed voice execution reservation.
+ * @returns The reservation's result evidence digest.
+ */
 function requireResultEvidenceDigest(reservation: CostReservationSummary): string {
   if (!reservation.resultEvidenceDigest) {
     throw new SafeExitError("Committed voice reservation is missing result evidence.");
@@ -139,6 +159,12 @@ function requireResultEvidenceDigest(reservation: CostReservationSummary): strin
   return reservation.resultEvidenceDigest;
 }
 
+/**
+ * Retrieves the exact actual cost recorded for a committed voice reservation.
+ *
+ * @param reservation - The committed voice reservation containing the actual cost
+ * @returns The reservation's actual cost in USD micros
+ */
 function requireActualUsdMicros(reservation: CostReservationSummary): number {
   if (reservation.actualUsdMicros === undefined) {
     throw new SafeExitError("Committed voice reservation is missing its exact cost.");

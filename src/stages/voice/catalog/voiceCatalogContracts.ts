@@ -147,14 +147,32 @@ export const voiceCatalogFailureSchema = z.strictObject({
   nextAction: terminalSafeString(300),
 });
 
+/**
+ * Builds the artifact path for a voice candidates record.
+ *
+ * @param artifactId - The filesystem-safe artifact identifier.
+ * @returns The relative path to the voice candidates artifact.
+ */
 export function voiceCandidatesArtifactPath(artifactId: string): string {
   return `${voiceCandidatesDirectory}/${filesystemSegmentSchema.parse(artifactId)}.json`;
 }
 
+/**
+ * Builds the artifact path for a voice catalog failure.
+ *
+ * @param artifactId - The filesystem-safe artifact identifier.
+ * @returns The relative path to the voice catalog failure artifact.
+ */
 export function voiceCatalogFailureArtifactPath(artifactId: string): string {
   return `${voiceCatalogFailureDirectory}/${filesystemSegmentSchema.parse(artifactId)}.json`;
 }
 
+/**
+ * Determines whether a relative path identifies a voice candidates artifact.
+ *
+ * @param relativePath - The relative path to classify
+ * @returns `true` if the path matches a supported voice candidates artifact path, `false` otherwise
+ */
 export function isVoiceCandidatesArtifactPath(relativePath: string): boolean {
   return (
     relativePath === voiceCandidatesPath ||
@@ -162,6 +180,12 @@ export function isVoiceCandidatesArtifactPath(relativePath: string): boolean {
   );
 }
 
+/**
+ * Determines whether a relative path identifies a voice catalog failure artifact.
+ *
+ * @param relativePath - The relative path to classify
+ * @returns `true` if the path is a supported voice catalog failure artifact path, `false` otherwise
+ */
 export function isVoiceCatalogFailureArtifactPath(relativePath: string): boolean {
   return (
     relativePath === voiceCatalogFailurePath ||

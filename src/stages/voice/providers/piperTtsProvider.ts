@@ -64,6 +64,14 @@ export class PiperTtsProvider implements LocalTtsProvider {
   }
 }
 
+/**
+ * Runs Piper with the provided input and arguments, enforcing an execution timeout.
+ *
+ * @param binary - Path to the Piper executable
+ * @param args - Arguments passed to Piper
+ * @param input - Text provided to Piper for synthesis
+ * @param timeoutMs - Maximum execution time in milliseconds
+ */
 async function runPiper(
   binary: string,
   args: string[],

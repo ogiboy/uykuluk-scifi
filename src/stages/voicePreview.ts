@@ -37,7 +37,14 @@ import {
 
 type Options = { provider?: VoicePreviewProvider };
 
-/** Downloads one provider-owned preview into bounded, redacted run evidence. */
+/**
+ * Downloads a provider-owned voice preview and records bounded, redacted run evidence.
+ *
+ * @param runId - The run receiving the preview evidence
+ * @param voiceId - The persisted voice candidate identifier
+ * @param options - Optional preview provider configuration
+ * @returns The validated voice preview evidence
+ */
 export async function generateVoicePreview(
   runId: string,
   voiceId: string,
@@ -175,6 +182,13 @@ export async function generateVoicePreview(
   return evidence;
 }
 
+/**
+ * Verifies that a fetched voice preview matches its catalog candidate.
+ *
+ * @param candidate - The catalog candidate used to request the preview
+ * @param result - The fetched preview result
+ * @throws SafeExitError If the preview metadata or source URL digest differs from the candidate
+ */
 function assertPreviewResult(
   candidate: { metadataDigest: string; preview: { urlSha256?: string } },
   result: Awaited<ReturnType<VoicePreviewProvider["fetchPreview"]>>,

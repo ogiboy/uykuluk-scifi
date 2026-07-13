@@ -27,7 +27,13 @@ import { ElevenLabsVoiceCatalogProvider } from "./voice/providers/elevenLabsVoic
 
 type GenerateVoiceCandidatesOptions = { provider?: VoiceCatalogProvider };
 
-/** Fetches and persists a redacted run-scoped ElevenLabs audition catalog. */
+/**
+ * Fetches, validates, and persists a redacted ElevenLabs voice audition catalog for a run.
+ *
+ * @param runId - The run identifier
+ * @param options - Optional voice catalog provider configuration
+ * @returns The persisted voice candidate catalog
+ */
 export async function generateVoiceCandidates(
   runId: string,
   options: GenerateVoiceCandidatesOptions = {},
@@ -104,6 +110,14 @@ export async function generateVoiceCandidates(
   return catalog;
 }
 
+/**
+ * Records a voice catalog failure and terminates the operation with a safe exit error.
+ *
+ * Preserves newer run evidence when the run state, dependency revision, or production
+ * package digest has changed since the catalog request began.
+ *
+ * @param input - Failure details and the run revisions captured before catalog fetching.
+ */
 async function recordCatalogFailure(input: {
   runId: string;
   modelId: string;
@@ -143,6 +157,12 @@ async function recordCatalogFailure(input: {
   throw new SafeExitError(`${failure.message} ${failure.nextAction}`);
 }
 
+/**
+ * Computes a revision for the run's voice catalog dependencies.
+ *
+ * @param run - The loaded run whose relevant artifacts and evidence are included.
+ * @returns The dependency revision.
+ */
 async function voiceCatalogDependencyRevision(
   run: Awaited<ReturnType<typeof loadRun>>,
 ): Promise<string> {
@@ -159,6 +179,13 @@ async function voiceCatalogDependencyRevision(
   });
 }
 
+/**
+ * Records that an artifact was written for a run.
+ *
+ * @param runId - The run identifier
+ * @param stage - The stage associated with the artifact
+ * @param path - The written artifact path
+ */
 async function appendArtifactWritten(runId: string, stage: string, path: string): Promise<void> {
   await appendLedgerEvent({
     runId,
@@ -169,6 +196,13 @@ async function appendArtifactWritten(runId: string, stage: string, path: string)
   });
 }
 
+/**
+ * Determines whether the run's production package has the expected digest.
+ *
+ * @param run - The run whose production package is verified
+ * @param expectedDigest - The digest to compare against
+ * @returns `true` if the verified production package has the expected digest, `false` if verification fails or the digests differ
+ */
 async function hasMatchingProductionPackage(
   run: Awaited<ReturnType<typeof loadRun>>,
   expectedDigest: string,
@@ -180,6 +214,14 @@ async function hasMatchingProductionPackage(
   }
 }
 
+/**
+ * Builds a validated failure record for a voice catalog operation.
+ *
+ * @param runId - The run associated with the failed catalog operation
+ * @param modelId - The voice catalog model involved in the failure
+ * @param error - The error that caused the operation to fail
+ * @returns A structured voice catalog failure record
+ */
 function failureFor(runId: string, modelId: string, error: unknown): VoiceCatalogFailure {
   const code = voiceCatalogFailureCode(error);
   return voiceCatalogFailureSchema.parse({
@@ -198,6 +240,12 @@ function failureFor(runId: string, modelId: string, error: unknown): VoiceCatalo
   });
 }
 
+/**
+ * Classifies an error encountered while fetching the voice catalog.
+ *
+ * @param error - The error to classify
+ * @returns The corresponding voice catalog failure code
+ */
 function voiceCatalogFailureCode(error: unknown): VoiceCatalogFailure["code"] {
   if (error instanceof VoiceCatalogProviderError) return error.providerCode;
   if (error instanceof Error && error.message.includes("ELEVENLABS_API_KEY")) {

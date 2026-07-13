@@ -1,10 +1,24 @@
 import { sha256 } from "../../../utils/hash.js";
 
-/** Computes a key-order-independent digest for validated JSON evidence. */
+/**
+ * Computes a key-order-independent SHA-256 digest for validated JSON evidence.
+ *
+ * @param value - The JSON evidence to digest
+ * @returns The SHA-256 digest of the canonicalized evidence
+ */
 export function canonicalVoiceEvidenceDigest(value: unknown): string {
   return sha256(canonicalJson(value));
 }
 
+/**
+ * Produces a deterministic JSON representation of validated voice evidence.
+ *
+ * Object keys are sorted, array order is preserved, and properties with `undefined` values are omitted.
+ *
+ * @param value - The evidence value to canonicalize
+ * @returns The canonical JSON representation
+ * @throws TypeError If the value contains a non-finite number or an unsupported type
+ */
 function canonicalJson(value: unknown): string {
   if (value === null || typeof value === "boolean" || typeof value === "string") {
     return JSON.stringify(value);

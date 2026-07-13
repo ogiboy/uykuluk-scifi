@@ -28,10 +28,13 @@ export const voiceoverPreparationSchema = z.strictObject({
 export type VoiceoverPreparation = z.infer<typeof voiceoverPreparationSchema>;
 
 /**
- * Prepares approved narration text for TTS without mutating the approved production package.
+ * Prepares narration text for text-to-speech using explicit pronunciation replacements.
  *
- * Replacements are explicit, case-sensitive, and applied longest-key-first so the resulting text
- * and provenance stay deterministic.
+ * Replacements are case-sensitive and applied longest-key-first. The result includes metadata
+ * describing the source, output, and replacements that were applied.
+ *
+ * @param input - The narration source, run identifier, and pronunciation replacements.
+ * @returns The prepared text, validated preparation evidence, and its formatted JSON representation.
  */
 export function prepareVoiceoverText(input: {
   runId: string;
@@ -64,6 +67,12 @@ export function prepareVoiceoverText(input: {
   return { text, evidence, evidenceText: `${JSON.stringify(evidence, null, 2)}\n` };
 }
 
+/**
+ * Normalizes line endings, horizontal whitespace, and excessive blank lines in text.
+ *
+ * @param value - The text to normalize
+ * @returns The normalized text without leading or trailing whitespace
+ */
 function normalizeLayout(value: string): string {
   return value
     .replaceAll("\r\n", "\n")
@@ -75,6 +84,13 @@ function normalizeLayout(value: string): string {
     .trim();
 }
 
+/**
+ * Counts non-overlapping literal occurrences of a substring.
+ *
+ * @param value - The string to search
+ * @param search - The literal substring to count
+ * @returns The number of occurrences, or `0` when `search` is empty
+ */
 function countLiteral(value: string, search: string): number {
   if (!search) {
     return 0;

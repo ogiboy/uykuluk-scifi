@@ -6,7 +6,13 @@ import { artifactPath } from "./artifacts.js";
 import { SafeExitError } from "./errors.js";
 import type { RunRecord } from "./state.js";
 
-/** Hashes exact registered artifact bytes and rejects file/state registration mismatches. */
+/**
+ * Computes a revision hash from the exact bytes of the specified registered artifacts.
+ *
+ * @param run - The run whose artifact registrations and files are validated.
+ * @param relativePaths - Relative artifact paths to include in the revision.
+ * @returns A SHA-256 revision hash for the artifact paths and their contents.
+ */
 export async function registeredArtifactRevision(
   run: RunRecord,
   relativePaths: readonly string[],
@@ -32,7 +38,14 @@ export async function registeredArtifactRevision(
   return sha256(JSON.stringify(entries));
 }
 
-/** Reads one optional artifact while requiring filesystem presence to match run registration. */
+/**
+ * Reads an artifact and verifies that its filesystem presence matches run registration.
+ *
+ * @param run - The run whose artifact registration is checked
+ * @param relativePath - The artifact path relative to the run's artifact directory
+ * @returns The artifact bytes, or `undefined` when the artifact is absent
+ * @throws `SafeExitError` if filesystem presence does not match run registration
+ */
 export async function readRegisteredArtifactBytes(
   run: RunRecord,
   relativePath: string,
@@ -47,6 +60,12 @@ export async function readRegisteredArtifactBytes(
   return bytes;
 }
 
+/**
+ * Safely reads a registered artifact file from the filesystem.
+ *
+ * @param target - The artifact file path to read
+ * @returns The file contents, or `undefined` if the path does not exist
+ */
 async function readContainedArtifact(target: string): Promise<Buffer | undefined> {
   let handle;
   try {
@@ -68,7 +87,13 @@ async function readContainedArtifact(target: string): Promise<Buffer | undefined
   }
 }
 
-/** Hashes the ordered registered members of an append-only artifact family. */
+/**
+ * Computes a revision hash for the registered artifacts selected by a predicate.
+ *
+ * @param run - The run whose registered artifacts are evaluated
+ * @param predicate - Selects artifact paths belonging to the artifact family
+ * @returns The SHA-256 revision hash of the selected artifacts
+ */
 export async function registeredArtifactSetRevision(
   run: RunRecord,
   predicate: (relativePath: string) => boolean,

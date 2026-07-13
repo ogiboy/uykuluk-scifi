@@ -11,11 +11,11 @@ import { withCostReservationLock } from "./costReservationLock.js";
 import { appendCostReservationEvent, CostReservationSummary } from "./costReservationStore.js";
 
 /**
- * Finalizes a reservation's cost after a provider charge is known.
+ * Finalizes a reservation after the provider charge and execution evidence are available.
  *
  * @param input.actualUsdMicros - The actual cost charged by the provider, in USD micros
- * @throws {SafeExitError} If the reservation cannot be settled due to its status or if the actual cost exceeds the approved cap.
- * @returns The updated reservation.
+ * @throws {SafeExitError} If the reservation state, cost, provider request hash, or result evidence does not allow settlement, or if the cost exceeds the approved cap
+ * @returns The updated reservation
  */
 export async function settleCostReservation(input: {
   runId: string;
@@ -91,7 +91,12 @@ export async function settleCostReservation(input: {
   });
 }
 
-/** Durably journals a provider-success result before final cost settlement can begin. */
+/**
+ * Records a successful provider execution result so the reservation can proceed to final settlement.
+ *
+ * @param input - The reservation identifiers, actual cost, provider request hash, and result evidence digest.
+ * @returns The reservation updated with the execution result.
+ */
 export async function recordCostReservationExecutionResult(input: {
   runId: string;
   reservationId: string;
@@ -122,6 +127,14 @@ export async function recordCostReservationExecutionResult(input: {
   });
 }
 
+/**
+ * Records execution results and advances an executable reservation to settlement pending.
+ *
+ * @param reservation - The reservation whose execution result is being recorded.
+ * @param input - The execution cost, evidence, and reservation identifiers.
+ * @returns The updated reservation, or the original reservation when it is not ready for settlement pending.
+ * @throws SafeExitError If the actual charge exceeds the approved cost cap.
+ */
 async function advanceReservationToSettlementPending(
   reservation: CostReservationSummary,
   input: {

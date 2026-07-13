@@ -27,6 +27,9 @@ export const paidVoiceSubscription = {
   hasOpenInvoices: false,
 };
 
+/**
+ * Configures the workflow to use the ElevenLabs text-to-speech provider and writes the configuration to `producer.config.json`.
+ */
 export async function configureWorkflowElevenLabs(): Promise<void> {
   await writeFile(
     "producer.config.json",
@@ -58,6 +61,11 @@ export async function configureWorkflowElevenLabs(): Promise<void> {
   );
 }
 
+/**
+ * Updates the configured ElevenLabs voice used by the workflow.
+ *
+ * @param voiceId - The identifier of the voice to configure
+ */
 export async function setConfiguredCandidateVoiceId(voiceId: string): Promise<void> {
   const config = JSON.parse(await readFile("producer.config.json", "utf8")) as {
     providers: { tts: { elevenLabs: Record<string, unknown> } };
@@ -66,6 +74,11 @@ export async function setConfiguredCandidateVoiceId(voiceId: string): Promise<vo
   await writeFile("producer.config.json", `${JSON.stringify(config, null, 2)}\n`, "utf8");
 }
 
+/**
+ * Prepares a workflow run through production package generation.
+ *
+ * @returns The identifier of the prepared workflow run.
+ */
 export async function preparePackagedWorkflowRun(): Promise<string> {
   await createMinimalRenderAssets();
   const { runId, ideas } = await runIdeas();
@@ -77,6 +90,11 @@ export async function preparePackagedWorkflowRun(): Promise<string> {
   return runId;
 }
 
+/**
+ * Prepares a workflow run with an approved voice and verifies that it reaches readiness.
+ *
+ * @returns The generated voice catalog, workflow run identifier, and selected voice identifier.
+ */
 export async function prepareApprovedSelectedVoiceRun() {
   await configureWorkflowElevenLabs();
   const runId = await preparePackagedWorkflowRun();
@@ -101,6 +119,11 @@ export async function prepareApprovedSelectedVoiceRun() {
   return { catalog, runId, voiceId };
 }
 
+/**
+ * Generates a 24 kHz mono WAV fixture containing a 220 Hz sine wave.
+ *
+ * @returns A WAV audio buffer containing the generated test tone.
+ */
 export function workflowFixtureWav(): Buffer {
   const pcm = Buffer.alloc(24_000 * 2);
   for (let index = 0; index < 24_000; index += 1) {

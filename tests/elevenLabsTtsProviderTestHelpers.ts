@@ -21,6 +21,13 @@ export const baseElevenLabsTtsConfig: ElevenLabsTtsProviderConfig = {
   billedCreditUsdPerThousandCharacters: 0.1,
 };
 
+/**
+ * Executes a reserved ElevenLabs text-to-speech operation for test data.
+ *
+ * @param text - The text to synthesize.
+ * @param maxUsdMicros - The maximum permitted cost in microdollars.
+ * @returns The reserved provider outcome containing the synthesis result.
+ */
 export async function executeElevenLabsAdapter(
   provider: ElevenLabsTtsProvider,
   text: string,
@@ -39,6 +46,11 @@ export async function executeElevenLabsAdapter(
     });
 }
 
+/**
+ * Creates a WAV fixture containing a 220 Hz mono sine wave.
+ *
+ * @returns A 24 kHz mono WAV buffer with 16-bit PCM audio
+ */
 export function fixtureWav(): Buffer {
   const pcm = Buffer.alloc(24_000 * 2);
   for (let index = 0; index < 24_000; index += 1) {

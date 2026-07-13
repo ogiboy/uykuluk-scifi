@@ -1,6 +1,11 @@
 import { sha256 } from "../../utils/hash.js";
 
-/** Derives the stable paid-TTS operation id from one exact quote approval and execution binding. */
+/**
+ * Creates a stable operation identifier for a paid text-to-speech execution.
+ *
+ * @param input - The run, preparation, binding, quote, and approval identifiers used to derive the operation ID
+ * @returns An operation ID prefixed with `tts_`
+ */
 export function createVoiceExecutionOperationId(input: {
   runId: string;
   preparationDigest: string;

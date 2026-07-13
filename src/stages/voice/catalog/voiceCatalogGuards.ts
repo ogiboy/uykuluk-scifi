@@ -2,6 +2,14 @@ import type { ProducerConfig } from "../../../config/schema.js";
 import { SafeExitError } from "../../../core/errors.js";
 import type { VoiceCandidate, VoiceCandidates } from "./voiceCatalogContracts.js";
 
+/**
+ * Validates the persisted voice catalog against the configured ElevenLabs settings.
+ *
+ * @param config - Producer configuration containing the ElevenLabs TTS settings
+ * @param catalog - Persisted voice catalog to validate
+ * @returns The validated ElevenLabs TTS settings
+ * @throws SafeExitError If ElevenLabs TTS is not enabled or the catalog is incompatible with the configured model, language, request size, or pricing
+ */
 export function requireElevenLabsCatalogConfig(
   config: ProducerConfig,
   catalog: VoiceCandidates,
@@ -28,6 +36,13 @@ export function requireElevenLabsCatalogConfig(
   return settings;
 }
 
+/**
+ * Locates and validates a voice candidate from the persisted catalog.
+ *
+ * @param voiceId - The identifier of the voice candidate to select
+ * @param nowMs - The current time in milliseconds, used to evaluate whether sharing is disabled
+ * @returns The validated voice candidate
+ */
 export function requireCatalogCandidate(
   catalog: VoiceCandidates,
   voiceId: string,

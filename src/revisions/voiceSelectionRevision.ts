@@ -78,7 +78,13 @@ export const voiceSelectionRevisionSchema = z.strictObject({
 
 export type VoiceSelectionRevision = z.infer<typeof voiceSelectionRevisionSchema>;
 
-/** Reads one archived reselection decision and verifies every registered archived byte. */
+/**
+ * Reads a voice-selection revision and verifies its archived artifacts.
+ *
+ * @param runId - The run containing the revision
+ * @param revisionId - The revision to read
+ * @returns The validated voice-selection revision
+ */
 export async function readVoiceSelectionRevision(
   runId: string,
   revisionId: string,
@@ -100,7 +106,13 @@ export async function readVoiceSelectionRevision(
   return revision;
 }
 
-/** Archives unspent selection/cost evidence and returns the run to the explicit selection gate. */
+/**
+ * Creates a voice-selection revision and moves the run back to the explicit selection gate.
+ *
+ * @param rawInput - The run identifier, revision reason, and reviewer identity.
+ * @param options - Optional hooks invoked after reservation checks and after the run mutation commits.
+ * @returns The persisted voice-selection revision.
+ */
 export async function reviseVoiceSelection(
   rawInput: z.input<typeof inputSchema>,
   options: {
@@ -223,6 +235,12 @@ export async function reviseVoiceSelection(
   }
 }
 
+/**
+ * Records a blocked voice-selection revision and terminates the operation.
+ *
+ * @param runId - The run whose revision was blocked
+ * @param message - The reason the revision was blocked
+ */
 async function blockRevision(runId: string, message: string): Promise<never> {
   await appendLedgerEvent({
     runId,

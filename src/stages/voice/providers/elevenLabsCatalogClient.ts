@@ -10,7 +10,12 @@ const requestTimeoutSeconds = 30;
 // SDK retry sleeps are not abort-aware; V1 keeps retries at zero under the outer deadline.
 const maximumRetries = 0;
 
-/** Builds the narrowly scoped read-only SDK client used by catalog and preview adapters. */
+/**
+ * Creates a narrowly scoped, read-only ElevenLabs client for catalog and preview operations.
+ *
+ * @param apiKey - The API key used to authenticate requests.
+ * @returns A client that provides read-only catalog and preview operations.
+ */
 export function createOfficialElevenLabsCatalogClient(apiKey: string): ElevenLabsCatalogClient {
   const client = new ElevenLabsClient({
     apiKey,

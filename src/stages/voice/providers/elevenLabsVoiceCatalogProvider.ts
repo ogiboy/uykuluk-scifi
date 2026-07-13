@@ -79,6 +79,12 @@ export class ElevenLabsVoiceCatalogProvider implements VoiceCatalogProvider {
   }
 }
 
+/**
+ * Fetches all available voice pages within the bounded pagination limit.
+ *
+ * @param requestIds - Collects request identifiers from catalog responses.
+ * @returns The voices retrieved from the catalog.
+ */
 async function readVoicePages(
   client: ElevenLabsCatalogClient,
   requestIds: string[],
@@ -108,6 +114,12 @@ async function readVoicePages(
   throw new SafeExitError("ElevenLabs voice catalog exceeded the bounded pagination limit.");
 }
 
+/**
+ * Adds a valid request ID to the target collection.
+ *
+ * @param target - The collection to update
+ * @param value - The request ID to trim and add
+ */
 function pushRequestId(target: string[], value: string | undefined): void {
   const normalized = value?.trim();
   if (normalized && normalized.length <= 256) {
@@ -115,6 +127,13 @@ function pushRequestId(target: string[], value: string | undefined): void {
   }
 }
 
+/**
+ * Converts an error into a safe provider error with hashed request identifiers.
+ *
+ * @param error - The error to classify and wrap
+ * @param requestIds - Request identifiers associated with the failed operation
+ * @returns A `VoiceCatalogProviderError` containing the appropriate provider code and request ID hashes
+ */
 function catalogProviderError(error: unknown, requestIds: string[]): VoiceCatalogProviderError {
   const requestIdHashes = requestIds.map((requestId) => sha256(requestId));
   if (error instanceof VoiceCatalogProviderError) {
@@ -146,6 +165,12 @@ function catalogProviderError(error: unknown, requestIds: string[]): VoiceCatalo
   );
 }
 
+/**
+ * Maps an HTTP status code to the corresponding provider error category.
+ *
+ * @param statusCode - The HTTP status code associated with the provider failure
+ * @returns The provider error category for the status code
+ */
 function providerCodeForStatus(
   statusCode: number | undefined,
 ): VoiceCatalogProviderError["providerCode"] {
@@ -154,6 +179,13 @@ function providerCodeForStatus(
   return "provider-unavailable";
 }
 
+/**
+ * Runs a catalog operation with a bounded deadline and aborts it when the deadline expires.
+ *
+ * @param timeoutMs - Maximum duration of the operation in milliseconds
+ * @param task - Operation to run with an abort signal
+ * @returns The result produced by `task`
+ */
 async function withCatalogDeadline<T>(
   timeoutMs: number,
   task: (abortSignal: AbortSignal) => Promise<T>,

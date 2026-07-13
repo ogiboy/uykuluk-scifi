@@ -1,3 +1,8 @@
+/**
+ * Creates a deterministic playable MP3 audio fixture.
+ *
+ * @returns An 834-byte `Buffer` containing MP3 audio data.
+ */
 export function playableMp3Bytes(): Buffer {
   const audio = Buffer.alloc(834);
   audio.set([0xff, 0xfb, 0x90, 0x64], 0);
@@ -5,6 +10,11 @@ export function playableMp3Bytes(): Buffer {
   return audio;
 }
 
+/**
+ * Creates a deterministic playable MP3 audio fixture.
+ *
+ * @returns The MP3 audio data as a `Uint8Array`
+ */
 export function playableMp3Body(): Uint8Array<ArrayBuffer> {
   const audio = new Uint8Array(834);
   audio.set([0xff, 0xfb, 0x90, 0x64], 0);
@@ -12,6 +22,11 @@ export function playableMp3Body(): Uint8Array<ArrayBuffer> {
   return audio;
 }
 
+/**
+ * Creates a deterministic PCM WAV audio fixture.
+ *
+ * @returns A `Buffer` containing a WAV file with 8,820 bytes of audio data.
+ */
 export function playableWavBytes(): Buffer {
   const dataBytes = 8_820;
   const audio = Buffer.alloc(44 + dataBytes);
@@ -31,6 +46,11 @@ export function playableWavBytes(): Buffer {
   return audio;
 }
 
+/**
+ * Creates a WAV audio fixture with an intentionally short data section.
+ *
+ * @returns A WAV-format `Buffer` containing 84 bytes of audio data
+ */
 export function tooShortWavBytes(): Buffer {
   const dataBytes = 84;
   const audio = Buffer.alloc(44 + dataBytes);
