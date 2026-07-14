@@ -1,6 +1,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { extractRunId, productFileExists } from "./product-uat-helpers.mjs";
+import { prepareAndApproveVisuals } from "./visual-uat-helpers.mjs";
 
 /**
  * Creates a run with generated ideas but no approval.
@@ -42,6 +43,7 @@ export async function createVoiceReadyRun({ assertCondition, pnpm, run, scenario
     scenario,
   });
   run([pnpm, "producer", "package", "--run", runId], { label: "generate package", scenario });
+  await prepareAndApproveVisuals({ pnpm, reviewer: "product-uat", run, runId, scenario, workdir });
   run([pnpm, "producer", "render-plan", "--run", runId], {
     label: "generate render plan",
     scenario,

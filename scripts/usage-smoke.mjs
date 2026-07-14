@@ -17,7 +17,7 @@ import {
   enableDeterministicTts,
   runLocalMediaSmoke,
 } from "./qa/usage-smoke-media.mjs";
-
+import { prepareAndApproveVisuals } from "./qa/visual-uat-helpers.mjs";
 const repoRoot = process.cwd();
 const pnpm = process.env.PNPM_EXECUTABLE ?? "pnpm";
 const startedAt = new Date();
@@ -118,6 +118,7 @@ try {
     label: "approve script with warning acknowledgement",
   });
   run([pnpm, "producer", "package", "--run", runId], { label: "package" });
+  await prepareAndApproveVisuals({ pnpm, reviewer: "usage-smoke", run, runId, workdir });
   run([pnpm, "producer", "render-plan", "--run", runId], { label: "render plan" });
   await enableDeterministicTts({ workdir });
   run([pnpm, "producer", "estimate", "--run", runId], { label: "estimate" });
