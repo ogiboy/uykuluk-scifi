@@ -1,6 +1,6 @@
 import { isValidArtifactRelativePath } from "./artifactPathRules.js";
 import { SafeExitError } from "./errors.js";
-import { runPath } from "./runPaths.js";
+import { projectRunPath, runPath } from "./runPaths.js";
 
 export { isValidArtifactRelativePath } from "./artifactPathRules.js";
 
@@ -29,4 +29,21 @@ export function validateArtifactRelativePath(relativePath: string): string {
 export function artifactPath(runId: string, relativePath: string): string {
   const validated = validateArtifactRelativePath(relativePath);
   return runPath(runId, ...validated.split("/"));
+}
+
+/**
+ * Constructs a validated artifact path beneath a specific producer project root.
+ *
+ * @param projectRoot - Producer project root containing `runs/`.
+ * @param runId - Run identifier owning the artifact.
+ * @param relativePath - Canonical artifact-relative path.
+ * @returns The symlink-contained absolute artifact path.
+ */
+export function artifactPathAtProjectRoot(
+  projectRoot: string,
+  runId: string,
+  relativePath: string,
+): string {
+  const validated = validateArtifactRelativePath(relativePath);
+  return projectRunPath(projectRoot, runId, ...validated.split("/"));
 }

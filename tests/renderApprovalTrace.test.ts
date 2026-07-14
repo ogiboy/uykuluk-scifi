@@ -1,4 +1,5 @@
-import { writeFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
+import { readFile, writeFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { artifactPath } from "../src/core/artifacts";
 import { loadRun, saveRun } from "../src/core/runStore";
@@ -28,6 +29,47 @@ describe("draft render approval trace", () => {
     expect(run.state).toBe("RENDER_APPROVED");
     expect(run.artifacts).not.toContain("production/render/draft.mp4");
     expect(await pathExists(artifactPath(runId, "production/render/draft.mp4"))).toBe(false);
+  });
+
+  it("rejects stale render approval after active subtitle metadata changes", async () => {
+    const runId = await prepareVoiceoverReadyRun();
+    await approveRender(runId);
+    const subtitleMetadataPath = artifactPath(
+      runId,
+      "production/audio/subtitles.aligned.meta.json",
+    );
+    const subtitleMetadata = await readJsonFile<Record<string, unknown>>(subtitleMetadataPath);
+    const revisedSubtitleMetadataText = `${JSON.stringify(
+      { ...subtitleMetadata, createdAt: "2026-07-13T00:00:00.000Z" },
+      null,
+      2,
+    )}\n`;
+    await writeFile(subtitleMetadataPath, revisedSubtitleMetadataText, "utf8");
+
+    const voiceMetadataPath = artifactPath(runId, "production/audio/voiceover.meta.json");
+    const voiceMetadata = await readJsonFile<
+      { subtitle: { metadataSha256: string } } & Record<string, unknown>
+    >(voiceMetadataPath);
+    await writeFile(
+      voiceMetadataPath,
+      `${JSON.stringify(
+        {
+          ...voiceMetadata,
+          subtitle: {
+            ...voiceMetadata.subtitle,
+            metadataSha256: createHash("sha256")
+              .update(revisedSubtitleMetadataText, "utf8")
+              .digest("hex"),
+          },
+        },
+        null,
+        2,
+      )}\n`,
+      "utf8",
+    );
+
+    await expect(renderDraft(runId, { ffprobeBinary: false })).rejects.toThrow(/stale/i);
+    expect(await readFile(voiceMetadataPath, "utf8")).toContain("subtitles.aligned");
   });
 
   it("blocks draft render evidence when the render approval record changes", async () => {

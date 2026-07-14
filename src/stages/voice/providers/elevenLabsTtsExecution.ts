@@ -47,6 +47,7 @@ export async function executeElevenLabsReservedSynthesis(input: {
     );
     const audioChunks: Buffer[] = [];
     const alignments: TtsCharacterAlignment[] = [];
+    const normalizedAlignments: Array<TtsCharacterAlignment | undefined> = [];
     const requestIds: string[] = [];
     const requestDiagnostics: NonNullable<TtsSynthesisResult["providerRequests"]> = [];
     let characterCost = 0;
@@ -84,12 +85,16 @@ export async function executeElevenLabsReservedSynthesis(input: {
           requestEvidence: [...requestEvidence, redactedRequest],
         };
       }
+      requestEvidence.push({ ...redactedRequest, reportedUnits: response.characterCost });
       const sourceBuffer = Buffer.from(response.audioBase64, "base64");
       const chunkWav = readWavInfo(sourceBuffer);
       audioChunks.push(sourceBuffer);
-      alignments.push(
-        parseElevenLabsAlignment(
-          response.normalizedAlignment ?? response.alignment,
+      const alignment = parseElevenLabsAlignment(response.alignment, chunkWav.durationSeconds);
+      requireExactOriginalAlignmentText(alignment, text, `chunk ${index + 1}`);
+      alignments.push(alignment);
+      normalizedAlignments.push(
+        parseNormalizedAlignmentForDiagnostics(
+          response.normalizedAlignment,
           chunkWav.durationSeconds,
         ),
       );
@@ -100,11 +105,16 @@ export async function executeElevenLabsReservedSynthesis(input: {
         ...(redactedRequest.requestIdHash ? { requestIdHash: redactedRequest.requestIdHash } : {}),
         reportedBillableCredits: response.characterCost,
       });
-      requestEvidence.push({ ...redactedRequest, reportedUnits: response.characterCost });
       if (response.requestId) requestIds.push(response.requestId);
     }
     const stitched = concatenatePcm16Wavs(audioChunks);
     const alignment = stitchElevenLabsAlignments(alignments, audioChunks);
+    requireExactOriginalAlignmentText(alignment, input.synthesisInput.text, "stitched synthesis");
+    const normalizedAlignment = normalizedAlignments.every(
+      (item): item is TtsCharacterAlignment => item !== undefined,
+    )
+      ? stitchElevenLabsAlignments(normalizedAlignments, audioChunks)
+      : undefined;
     const normalized = normalizePcm16WavPeak(stitched);
     const wav = readWavInfo(normalized.buffer);
     const actualUsdMicros = usdToMicrosCeil(
@@ -123,6 +133,7 @@ export async function executeElevenLabsReservedSynthesis(input: {
       value: {
         buffer: normalized.buffer,
         alignment,
+        ...(normalizedAlignment ? { normalizedAlignment } : {}),
         channels: wav.channels,
         durationSeconds: wav.durationSeconds,
         outputAlreadyPersisted: false,
@@ -153,6 +164,28 @@ export async function executeElevenLabsReservedSynthesis(input: {
       providerRequestId: lastProviderRequestId,
       ...(requestEvidence.length > 0 ? { requestEvidence } : {}),
     };
+  }
+}
+
+function parseNormalizedAlignmentForDiagnostics(
+  alignment: TtsCharacterAlignment | undefined,
+  durationSeconds: number,
+): TtsCharacterAlignment | undefined {
+  if (!alignment) return undefined;
+  try {
+    return parseElevenLabsAlignment(alignment, durationSeconds);
+  } catch {
+    return undefined;
+  }
+}
+
+function requireExactOriginalAlignmentText(
+  alignment: TtsCharacterAlignment,
+  expectedText: string,
+  scope: string,
+): void {
+  if (alignment.characters.join("") !== expectedText) {
+    throw new Error(`ElevenLabs original alignment text does not match ${scope}.`);
   }
 }
 

@@ -1,12 +1,15 @@
-import { readFile } from "node:fs/promises";
+import { readRegisteredArtifactBytesAtProjectRoot } from "../../../../../src/core/artifactRevision";
 import { isValidRunId } from "../../../../../src/core/runId";
 import {
   materializeRunCommand,
   staticEvidenceNextCommand,
 } from "../../../../../src/stages/evidence/evidenceNextCommand";
+import {
+  EvidenceStatusCurrentContextError,
+  readEvidenceStatusCurrentContext,
+} from "../../../../../src/stages/status/statusEvidenceCurrentContext";
 import { validateEvidenceStatusSnapshot } from "../../../../../src/stages/status/statusEvidenceSchema";
 import type { EvidenceStatus } from "../../../../../src/stages/status/statusMediaSummary";
-import { studioRunFilePath } from "./runFilePaths";
 
 export type StudioEvidenceSummary = {
   message: string;
@@ -21,26 +24,29 @@ export type StudioEvidenceSummary = {
  * @param root - The root directory containing run data
  * @param runId - The run identifier
  * @param state - The expected generation state
+ * @param artifacts - Registered run artifacts used to detect same-state evidence drift
  * @returns A summary of the evidence bundle's status and contents
  */
 export async function readStudioEvidenceSummary(
   root: string,
   runId: string,
   state: string,
+  artifacts: readonly string[],
 ): Promise<StudioEvidenceSummary> {
+  let validatedRunId: string;
   try {
-    const validatedRunId = validStudioRunId(runId);
-    const file = studioRunFilePath(root, validatedRunId, "evidence_bundle.json");
-    if (!file) {
-      return invalidEvidence(runId, "Evidence bundle path is invalid.");
-    }
-    return summarizeEvidenceSnapshot(
-      JSON.parse(await readFile(file, "utf8")),
-      validatedRunId,
-      state,
+    validatedRunId = validStudioRunId(runId);
+  } catch {
+    return invalidEvidence(runId, "Evidence bundle path is invalid.");
+  }
+  let evidence: unknown;
+  try {
+    const bytes = await readRegisteredArtifactBytesAtProjectRoot(
+      root,
+      { runId: validatedRunId, artifacts: [...artifacts] },
+      "evidence_bundle.json",
     );
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+    if (!bytes) {
       return {
         message: "Evidence bundle has not been generated.",
         nextAction: evidenceNextAction(runId),
@@ -48,8 +54,42 @@ export async function readStudioEvidenceSummary(
         status: "missing",
       };
     }
-    return invalidEvidence(runId, "Evidence bundle could not be parsed.");
+    evidence = JSON.parse(bytes.toString("utf8")) as unknown;
+  } catch (error) {
+    return invalidEvidence(
+      runId,
+      error instanceof SyntaxError
+        ? "Evidence bundle could not be parsed."
+        : "Evidence bundle could not be read safely.",
+    );
   }
+  let currentContext: Awaited<ReturnType<typeof readEvidenceStatusCurrentContext>>;
+  try {
+    currentContext = await readEvidenceStatusCurrentContext({
+      evidence,
+      runId: validatedRunId,
+      currentState: state,
+      currentArtifacts: artifacts,
+      projectRoot: root,
+    });
+  } catch (error) {
+    return invalidEvidence(
+      runId,
+      error instanceof EvidenceStatusCurrentContextError && error.source === "tts-configuration"
+        ? "Evidence bundle could not be validated against current TTS configuration."
+        : "Evidence bundle could not be validated against selected voice evidence.",
+    );
+  }
+  return summarizeEvidenceSnapshot(
+    evidence,
+    validatedRunId,
+    state,
+    artifacts,
+    currentContext.currentVoiceAuditionPathRevision,
+    currentContext.currentVoiceAuditionRevision,
+    currentContext.currentTtsConfigurationDigest,
+    currentContext.currentVoiceAuditionRequired,
+  );
 }
 
 function validStudioRunId(runId: string): string {
@@ -89,14 +129,33 @@ export function evidenceNextRecommendedCommand(
  * @param evidence - Parsed evidence bundle content.
  * @param runId - The run identifier the snapshot must belong to.
  * @param state - The current run state the snapshot must match.
+ * @param artifacts - Registered run artifacts the snapshot must match.
+ * @param currentVoiceAuditionPathRevision - Ordered registry revision of audition inputs.
+ * @param currentVoiceAuditionRevision - Exact byte revision of the selected audition chain.
+ * @param currentTtsConfigurationDigest - Current non-secret TTS configuration digest.
+ * @param currentVoiceAuditionRequired - Whether live TTS config requires ElevenLabs audition.
  * @returns A current, stale, or invalid evidence summary.
  */
 function summarizeEvidenceSnapshot(
   evidence: unknown,
   runId: string,
   state: string,
+  artifacts: readonly string[],
+  currentVoiceAuditionPathRevision: string,
+  currentVoiceAuditionRevision: string | null,
+  currentTtsConfigurationDigest: string | null,
+  currentVoiceAuditionRequired: boolean | null,
 ): StudioEvidenceSummary {
-  const result = validateEvidenceStatusSnapshot(evidence, runId, state);
+  const result = validateEvidenceStatusSnapshot(
+    evidence,
+    runId,
+    state,
+    artifacts,
+    currentVoiceAuditionPathRevision,
+    currentVoiceAuditionRevision,
+    currentTtsConfigurationDigest,
+    currentVoiceAuditionRequired,
+  );
   if (result.kind === "invalid") {
     return invalidEvidence(runId, studioEvidenceMessage(result.message));
   }

@@ -27,6 +27,7 @@ export type TtsSynthesisInput = { runId: string; text: string };
 export type TtsSynthesisResult = {
   buffer: Buffer;
   alignment?: TtsCharacterAlignment;
+  normalizedAlignment?: TtsCharacterAlignment;
   channels: number;
   durationSeconds: number;
   outputAlreadyPersisted: boolean;

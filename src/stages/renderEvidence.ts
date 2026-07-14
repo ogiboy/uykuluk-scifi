@@ -43,6 +43,8 @@ export async function readDraftRenderEvidence(run: RunRecord): Promise<DraftRend
     voiceoverMode: manifest.voiceoverAudio.mode,
     voiceoverProductionVoiceCandidate: manifest.voiceoverAudio.productionVoiceCandidate,
     voiceoverQuality: manifest.voiceoverAudio.quality,
+    subtitlePath: manifest.subtitles.path,
+    subtitleTimingMode: manifest.subtitles.timingMode,
     renderApproval: manifest.renderApproval,
     mediaProbe: manifest.mediaProbe,
   };

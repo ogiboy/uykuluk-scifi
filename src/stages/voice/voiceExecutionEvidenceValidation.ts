@@ -1,12 +1,12 @@
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 
-import { artifactPath } from "../../core/artifacts.js";
+import { artifactPathAtProjectRoot } from "../../core/artifactPaths.js";
 import { SafeExitError } from "../../core/errors.js";
 import type { RunRecord } from "../../core/state.js";
-import { readCostEstimate } from "../../costs/costEstimate.js";
-import { readCostEvents } from "../../costs/costLedger.js";
-import { readCostReservationSummaries } from "../../costs/costReservationStore.js";
+import { readCostEstimateAtProjectRoot } from "../../costs/costEstimate.js";
+import { readCostEventsAtProjectRoot } from "../../costs/costLedger.js";
+import { readCostReservationSummariesAtProjectRoot } from "../../costs/costReservationStore.js";
 import { usdToMicros } from "../../costs/money.js";
 import { voiceSelectionSchema } from "./catalog/voiceAuditionContracts.js";
 import { voiceCandidatesSchema } from "./catalog/voiceCatalogContracts.js";
@@ -18,7 +18,7 @@ import {
 import { paidVoiceExecutionEvidenceSchema } from "./voiceExecutionEvidence.js";
 import { createVoiceExecutionOperationId } from "./voiceExecutionOperation.js";
 import { requireMatchingVoiceExecutionPreflight } from "./voiceExecutionPreflight.js";
-import { loadVoiceExecutionSpool } from "./voiceExecutionSpool.js";
+import { loadVoiceExecutionSpoolAtProjectRoot } from "./voiceExecutionSpool.js";
 import type { VoiceoverAudioMeta } from "./voiceoverEvidence.js";
 
 /**
@@ -32,21 +32,33 @@ export async function assertPaidVoiceExecutionEvidence(
   run: RunRecord,
   meta: VoiceoverAudioMeta,
 ): Promise<void> {
+  return assertPaidVoiceExecutionEvidenceAtProjectRoot(process.cwd(), run, meta);
+}
+
+/** Validates paid voice evidence beneath an explicit producer project root. */
+export async function assertPaidVoiceExecutionEvidenceAtProjectRoot(
+  projectRoot: string,
+  run: RunRecord,
+  meta: VoiceoverAudioMeta,
+): Promise<void> {
   if (meta.mode !== "elevenlabs") return;
   const paid = paidVoiceExecutionEvidenceSchema.parse(meta.paidExecution);
   const preparation = meta.source.preparation;
   if (!preparation) {
     throw new SafeExitError("Paid voice execution requires prepared-text evidence.");
   }
-  const preparedText = await readFile(artifactPath(run.runId, preparation.path), "utf8");
+  const preparedText = await readFile(
+    artifactPathAtProjectRoot(projectRoot, run.runId, preparation.path),
+    "utf8",
+  );
   const binding = requireMatchingVoiceExecutionInput(paid.binding, {
     preparedText,
     preparationDigest: preparation.sha256,
   });
-  await requirePinnedBindingArtifacts(run, binding);
+  await requirePinnedBindingArtifacts(projectRoot, run, binding);
   requireMatchingBinding(meta, paid, binding);
 
-  const quote = await readCostEstimate(run.runId);
+  const quote = await readCostEstimateAtProjectRoot(projectRoot, run.runId);
   const quoteLine = quote.estimate.stages.find((stage) => stage.stage === "tts");
   if (
     paid.quoteDigest !== quote.digest ||
@@ -62,9 +74,9 @@ export async function assertPaidVoiceExecutionEvidence(
       "Paid execution approval does not match the approved reservation quote.",
     );
   }
-  const reservation = (await readCostReservationSummaries(run.runId)).find(
-    (item) => item.reservationId === paid.reservationId,
-  );
+  const reservation = (
+    await readCostReservationSummariesAtProjectRoot(projectRoot, run.runId)
+  ).find((item) => item.reservationId === paid.reservationId);
   if (
     reservation?.status !== "SETTLED" ||
     reservation.operationId !== paid.operationId ||
@@ -76,7 +88,11 @@ export async function assertPaidVoiceExecutionEvidence(
   ) {
     throw new SafeExitError("Paid execution reservation or settlement evidence does not match.");
   }
-  const spool = await loadVoiceExecutionSpool(run.runId, paid.resultSpool);
+  const spool = await loadVoiceExecutionSpoolAtProjectRoot(
+    projectRoot,
+    run.runId,
+    paid.resultSpool,
+  );
   if (
     spool.binding.bindingDigest !== binding.bindingDigest ||
     spool.approvedQuote.quoteDigest !== paid.quoteDigest ||
@@ -87,13 +103,17 @@ export async function assertPaidVoiceExecutionEvidence(
     spool.reference.operationId !== paid.operationId ||
     spool.alignmentReference.digest !== meta.alignment?.sha256 ||
     spool.alignmentReference.characterCount !== meta.alignment?.characterCount ||
+    spool.normalizedAlignmentReference?.digest !==
+      (meta.schemaVersion === 2 ? meta.normalizedAlignment?.sha256 : undefined) ||
+    spool.normalizedAlignmentReference?.characterCount !==
+      (meta.schemaVersion === 2 ? meta.normalizedAlignment?.characterCount : undefined) ||
     createHash("sha256").update(spool.audio.buffer).digest("hex") !== meta.output.sha256
   ) {
     throw new SafeExitError(
       "Paid execution provider spool audio or alignment does not match final voice evidence.",
     );
   }
-  const linkedCostEvents = (await readCostEvents(run.runId)).filter(
+  const linkedCostEvents = (await readCostEventsAtProjectRoot(projectRoot, run.runId)).filter(
     (event) => event.reservationId === paid.reservationId,
   );
   const linkedCostEvent = linkedCostEvents[0];
@@ -165,6 +185,7 @@ function requireMatchingBinding(
  * @param binding - Pinned voice execution binding to validate
  */
 async function requirePinnedBindingArtifacts(
+  projectRoot: string,
   run: RunRecord,
   binding: ReturnType<typeof requireSelectedVoiceExecutionBinding>,
 ): Promise<void> {
@@ -175,7 +196,12 @@ async function requirePinnedBindingArtifacts(
     throw new SafeExitError("Paid execution binding artifacts are not registered in run state.");
   }
   const selection = voiceSelectionSchema.parse(
-    JSON.parse(await readFile(artifactPath(run.runId, binding.selection.path), "utf8")) as unknown,
+    JSON.parse(
+      await readFile(
+        artifactPathAtProjectRoot(projectRoot, run.runId, binding.selection.path),
+        "utf8",
+      ),
+    ) as unknown,
   );
   const { selectionDigest, ...selectionInput } = selection;
   if (
@@ -194,7 +220,12 @@ async function requirePinnedBindingArtifacts(
     throw new SafeExitError("Paid execution selection artifact does not match its pinned binding.");
   }
   const catalog = voiceCandidatesSchema.parse(
-    JSON.parse(await readFile(artifactPath(run.runId, binding.catalog.path), "utf8")) as unknown,
+    JSON.parse(
+      await readFile(
+        artifactPathAtProjectRoot(projectRoot, run.runId, binding.catalog.path),
+        "utf8",
+      ),
+    ) as unknown,
   );
   const { catalogDigest, ...catalogInput } = catalog;
   const voice = catalog.candidates.find((candidate) => candidate.voiceId === binding.voice.voiceId);

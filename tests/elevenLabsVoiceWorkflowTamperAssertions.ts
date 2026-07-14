@@ -15,8 +15,17 @@ export async function verifyWorkflowEvidenceTamperGuards(options: {
   run: RunRecord;
   originalMetaText: string;
   originalAlignmentText: string;
+  originalSubtitleText: string;
+  originalSubtitleMetadataText: string;
 }): Promise<void> {
-  const { runId, run, originalMetaText, originalAlignmentText } = options;
+  const {
+    runId,
+    run,
+    originalMetaText,
+    originalAlignmentText,
+    originalSubtitleText,
+    originalSubtitleMetadataText,
+  } = options;
   const metaPath = artifactPath(runId, "production/audio/voiceover.meta.json");
   const tamperedMeta = JSON.parse(originalMetaText) as { paidExecution: { approvalId: string } };
   tamperedMeta.paidExecution.approvalId = "approval_forged";
@@ -46,6 +55,34 @@ export async function verifyWorkflowEvidenceTamperGuards(options: {
     message: expect.stringMatching(/reservation-linked cost event|cost event/i),
   });
   await writeFile(costLedgerPath, originalCostLedger, "utf8");
+
+  const subtitlePath = artifactPath(runId, "production/audio/subtitles.aligned.srt");
+  await writeFile(
+    subtitlePath,
+    `${originalSubtitleText}\n1\n00:00:00,000 --> 00:00:01,000\ntampered\n`,
+    "utf8",
+  );
+  await expect(readVoiceoverAudioEvidence(run)).resolves.toMatchObject({
+    status: "block",
+    message: expect.stringMatching(/subtitle bytes/i),
+  });
+  await writeFile(subtitlePath, originalSubtitleText, "utf8");
+
+  const subtitleMetadataPath = artifactPath(runId, "production/audio/subtitles.aligned.meta.json");
+  const tamperedSubtitleMetadata = JSON.parse(originalSubtitleMetadataText) as {
+    output: { cueCount: number };
+  };
+  tamperedSubtitleMetadata.output.cueCount += 1;
+  await writeFile(
+    subtitleMetadataPath,
+    `${JSON.stringify(tamperedSubtitleMetadata, null, 2)}\n`,
+    "utf8",
+  );
+  await expect(readVoiceoverAudioEvidence(run)).resolves.toMatchObject({
+    status: "block",
+    message: expect.stringMatching(/subtitle bytes/i),
+  });
+  await writeFile(subtitleMetadataPath, originalSubtitleMetadataText, "utf8");
 
   await writeFile(
     artifactPath(runId, "production/audio/alignment.json"),

@@ -38,6 +38,10 @@ export async function approveRender(runId: string): Promise<ApprovalRecord> {
       target: "render",
       approvedRef: renderApprovalRef({
         renderPlanDigest: renderPlan.digest,
+        subtitleDigest: voiceoverAudio.subtitle.sha256,
+        subtitleMetadataDigest: voiceoverAudio.subtitle.metadataSha256,
+        subtitleTimingMode: voiceoverAudio.subtitle.timingMode,
+        voiceMetadataDigest: voiceoverAudio.metadataDigest,
         voiceoverAudioDigest: voiceoverAudio.digest,
         voiceoverMode: voiceoverAudio.mode,
         voiceoverProductionVoiceCandidate: voiceoverAudio.productionVoiceCandidate,

@@ -1,8 +1,15 @@
 import { SafeExitError } from "../../core/errors.js";
 
-export type DraftSubtitleTiming = {
-  sourceDurationSeconds: number;
-  sceneDurationSeconds: number;
+type DraftSubtitleTimingBase = { sourceDurationSeconds: number; sceneDurationSeconds: number };
+
+export type DraftSubtitleTiming =
+  | (DraftSubtitleTimingBase & { timingMode: "linear-fallback"; timeScale: number })
+  | (DraftSubtitleTimingBase & { timingMode: "elevenlabs-character-aligned"; timeScale: 1 });
+
+export type DraftSubtitleTimingMode = DraftSubtitleTiming["timingMode"];
+
+type DraftSubtitleTimingInput = DraftSubtitleTimingBase & {
+  timingMode: DraftSubtitleTimingMode;
   timeScale: number;
 };
 
@@ -35,25 +42,60 @@ export function parseSrtDurationSeconds(subtitles: string): number {
 /**
  * Builds deterministic subtitle retiming evidence for the validated voiceover window.
  *
- * Piper does not provide word-level timestamps, so the V1 draft renderer linearly maps the source
- * SRT clock onto the actual audio duration and records the scale for operator review.
+ * Local fallback subtitles linearly map their source clock onto the voiceover window. ElevenLabs
+ * character-aligned subtitles retain their provider-derived clock and must end within that window.
  *
  * @param sourceDurationSeconds - The final source SRT cue end time.
  * @param sceneDurationSeconds - The actual voiceover-backed scene window.
- * @returns Source, target, and linear subtitle-clock scale values.
+ * @param timingMode - The validated subtitle timing strategy.
+ * @returns Source, target, timing mode, and subtitle-clock scale values.
  */
 export function buildDraftSubtitleTiming(
   sourceDurationSeconds: number,
   sceneDurationSeconds: number,
+  timingMode: DraftSubtitleTimingMode,
 ): DraftSubtitleTiming {
-  if (sourceDurationSeconds <= 0 || sceneDurationSeconds <= 0) {
+  const sourceDuration = roundMilliseconds(sourceDurationSeconds);
+  const sceneDuration = roundMilliseconds(sceneDurationSeconds);
+  if (sourceDuration <= 0 || sceneDuration <= 0) {
     throw new SafeExitError("Draft subtitle timing requires positive source and scene durations.");
   }
-  return {
-    sourceDurationSeconds: roundMilliseconds(sourceDurationSeconds),
-    sceneDurationSeconds: roundMilliseconds(sceneDurationSeconds),
-    timeScale: Number((sourceDurationSeconds / sceneDurationSeconds).toFixed(6)),
-  };
+  if (timingMode === "elevenlabs-character-aligned") {
+    return validateDraftSubtitleTiming({
+      timingMode,
+      sourceDurationSeconds: sourceDuration,
+      sceneDurationSeconds: sceneDuration,
+      timeScale: 1,
+    });
+  }
+  return validateDraftSubtitleTiming({
+    timingMode,
+    sourceDurationSeconds: sourceDuration,
+    sceneDurationSeconds: sceneDuration,
+    timeScale: Number((sourceDuration / sceneDuration).toFixed(6)),
+  });
+}
+
+/** Validates a caller-provided timing descriptor before it reaches FFmpeg planning. */
+export function validateDraftSubtitleTiming(timing: DraftSubtitleTimingInput): DraftSubtitleTiming {
+  if (timing.sourceDurationSeconds <= 0 || timing.sceneDurationSeconds <= 0) {
+    throw new SafeExitError("Draft subtitle timing requires positive source and scene durations.");
+  }
+  if (timing.timingMode === "elevenlabs-character-aligned") {
+    if (timing.timeScale !== 1 || timing.sourceDurationSeconds > timing.sceneDurationSeconds) {
+      throw new SafeExitError(
+        "Character-aligned subtitle timing must remain unscaled and within the scene audio window.",
+      );
+    }
+    return { ...timing, timeScale: 1 };
+  }
+  const expectedScale = Number(
+    (timing.sourceDurationSeconds / timing.sceneDurationSeconds).toFixed(6),
+  );
+  if (timing.timeScale !== expectedScale) {
+    throw new SafeExitError("Linear fallback subtitle timing scale is inconsistent.");
+  }
+  return { ...timing, timingMode: "linear-fallback" };
 }
 
 function parseSrtTimestamp(value: string): number {

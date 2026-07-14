@@ -28,10 +28,7 @@ import {
 import { RenderPlan, renderPlanSchema } from "./render/renderPlanSchemas.js";
 import { probeDraftRender } from "./render/renderProbe.js";
 import { renderDraftReviewMarkdown } from "./render/renderReviewMarkdown.js";
-import {
-  buildDraftSubtitleTiming,
-  parseSrtDurationSeconds,
-} from "./render/renderSubtitleTiming.js";
+import { buildDraftSubtitleTiming } from "./render/renderSubtitleTiming.js";
 import {
   DraftRenderManifest,
   draftRenderChaptersJsonPath,
@@ -80,6 +77,10 @@ export async function renderDraft(
     const approval = run.approvals.find((item) => item.target === "render");
     const currentApprovalRef = renderApprovalRef({
       renderPlanDigest: renderPlanEvidence.digest,
+      subtitleDigest: voiceoverAudio.subtitle.sha256,
+      subtitleMetadataDigest: voiceoverAudio.subtitle.metadataSha256,
+      subtitleTimingMode: voiceoverAudio.subtitle.timingMode,
+      voiceMetadataDigest: voiceoverAudio.metadataDigest,
       voiceoverAudioDigest: voiceoverAudio.digest,
       voiceoverMode: voiceoverAudio.mode,
       voiceoverProductionVoiceCandidate: voiceoverAudio.productionVoiceCandidate,
@@ -98,10 +99,9 @@ export async function renderDraft(
     const timeline = buildDraftRenderTimeline(renderPlan, durationSeconds);
     const timing = summarizeDraftRenderTimeline(timeline);
     const subtitleTiming = buildDraftSubtitleTiming(
-      parseSrtDurationSeconds(
-        await readFile(artifactPath(run.runId, "production/subtitles.srt"), "utf8"),
-      ),
+      voiceoverAudio.subtitle.sourceDurationSeconds,
       timing.sceneAudioDurationSeconds,
+      voiceoverAudio.subtitle.timingMode,
     );
     const ffmpegTimelineInputs = buildFfmpegTimelineInputs(timeline);
     const composition = buildDraftRenderComposition(renderPlan);
@@ -115,6 +115,7 @@ export async function renderDraft(
       ffmpegOutputPath: temporaryOutput,
       renderPlan,
       runId: run.runId,
+      subtitleArtifactPath: voiceoverAudio.subtitle.path,
       timeline,
       composition,
       durationSeconds,
@@ -138,17 +139,19 @@ export async function renderDraft(
     const outputBytes = await readFile(output);
     run = await recordRunArtifact(run, "render", draftRenderPath);
     const manifestBase = {
-      schemaVersion: 8,
+      schemaVersion: 9,
       runId: run.runId,
       createdAt: nowIso(),
       renderPlan: { path: "production/render_plan.json", digest: renderPlanEvidence.digest },
       voiceoverAudio: {
         path: voiceoverAudioPath,
         digest: voiceoverAudio.digest,
+        metadataDigest: voiceoverAudio.metadataDigest,
         mode: voiceoverAudio.mode,
         productionVoiceCandidate: voiceoverAudio.productionVoiceCandidate,
         quality: voiceoverAudio.quality,
       },
+      subtitles: voiceoverAudio.subtitle,
       renderApproval: { approvalId: approval.approvalId, approvedRef: currentApprovalRef },
       timeline,
       timing,

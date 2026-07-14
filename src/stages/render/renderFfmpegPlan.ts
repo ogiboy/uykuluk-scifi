@@ -12,7 +12,7 @@ import { buildTimedOverlayFilters } from "./renderFfmpegOverlays.js";
 import { buildPopupTextFilters, hasPopupText, popupTextWindows } from "./renderFfmpegPopupText.js";
 import { buildSubtitleConcatFilter } from "./renderFfmpegSubtitles.js";
 import { RenderPlan } from "./renderPlanSchemas.js";
-import type { DraftSubtitleTiming } from "./renderSubtitleTiming.js";
+import { validateDraftSubtitleTiming, type DraftSubtitleTiming } from "./renderSubtitleTiming.js";
 import {
   buildDraftRenderTimeline,
   summarizeDraftRenderTimeline,
@@ -44,7 +44,8 @@ export function buildFfmpegArgs(input: {
   ffmpegOutputPath: string;
   renderPlan: RenderPlan;
   runId: string;
-  subtitleTiming?: DraftSubtitleTiming;
+  subtitleArtifactPath: string;
+  subtitleTiming: DraftSubtitleTiming;
   timeline?: DraftRenderTimeline;
 }): string[] {
   const timeline =
@@ -60,16 +61,12 @@ export function buildFfmpegArgs(input: {
   if (Math.abs(timing.totalDurationSeconds - input.durationSeconds) > 0.01) {
     throw new SafeExitError("Draft render duration does not match its timeline.");
   }
-  const subtitleTiming = input.subtitleTiming ?? {
-    sourceDurationSeconds: timing.sceneAudioDurationSeconds,
-    sceneDurationSeconds: timing.sceneAudioDurationSeconds,
-    timeScale: 1,
-  };
+  const subtitleTiming = validateDraftSubtitleTiming(input.subtitleTiming);
   if (Math.abs(subtitleTiming.sceneDurationSeconds - timing.sceneAudioDurationSeconds) > 0.01) {
     throw new SafeExitError("Draft subtitle timing does not match the scene-audio window.");
   }
   const audio = artifactPath(input.runId, voiceoverAudioPath);
-  const subtitles = artifactPath(input.runId, "production/subtitles.srt");
+  const subtitles = artifactPath(input.runId, input.subtitleArtifactPath);
   const audioInputIndex = ffmpegInputs.length;
   const sceneFilters = ffmpegInputs.map(
     (item, index) =>

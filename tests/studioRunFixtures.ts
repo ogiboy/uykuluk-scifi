@@ -158,7 +158,7 @@ export async function writeEvidence(
   const run = await loadRun(runId);
   await writeFile(
     artifactPath(runId, "evidence_bundle.json"),
-    JSON.stringify(studioEvidenceFixture(run.runId, run.state, evidence)),
+    JSON.stringify(studioEvidenceFixture(run.runId, run.state, evidence, run.artifacts)),
     "utf8",
   );
 }

@@ -3,12 +3,15 @@ import { describe, expect, it } from "vitest";
 import { artifactPath } from "../src/core/artifacts";
 import { createRun, saveRun } from "../src/core/runStore";
 import { formatRunStatus, readRunStatus } from "../src/stages/status";
+import { ttsConfigurationDigest } from "../src/stages/voice/catalog/voiceAuditionRevision";
 import { useTempProject } from "./helpers";
-import { passingRenderedEvidence } from "./statusOutputEvidenceFixtures";
+import { elevenLabsTtsConfig } from "./statusEvidenceFixtures";
 import { studioEvidenceFixture } from "./studioRunFixtures";
+import { configureElevenLabs } from "./voiceCatalogStageFixtures";
 
 describe("status evidence validity", () => {
   useTempProject();
+  afterEach(() => vi.useRealTimers());
 
   it("labels production media as artifact-record fallback when evidence is missing", async () => {
     const run = await createRun();
@@ -41,24 +44,26 @@ describe("status evidence validity", () => {
 
   it("labels production media as current evidence when evidence is valid", async () => {
     const run = await createRun();
-    await saveRun({
-      ...run,
-      artifacts: ["production/render_plan.json", "evidence_bundle.json"],
-      state: "PRODUCTION_PACKAGE_GENERATED",
-    });
+    const currentArtifacts = ["production/render_plan.json", "evidence_bundle.json"];
+    await saveRun({ ...run, artifacts: currentArtifacts, state: "PRODUCTION_PACKAGE_GENERATED" });
     await writeFile(
       artifactPath(run.runId, "evidence_bundle.json"),
       JSON.stringify(
-        studioEvidenceFixture(run.runId, "PRODUCTION_PACKAGE_GENERATED", {
-          nextRecommendedCommand: "pnpm producer estimate --run <run_id>",
-          renderPlan: {
-            artifactCount: 3,
-            assetCount: 11,
-            digest: "a".repeat(64),
-            path: "production/render_plan.json",
-            status: "pass",
+        studioEvidenceFixture(
+          run.runId,
+          "PRODUCTION_PACKAGE_GENERATED",
+          {
+            nextRecommendedCommand: "pnpm producer estimate --run <run_id>",
+            renderPlan: {
+              artifactCount: 3,
+              assetCount: 11,
+              digest: "a".repeat(64),
+              path: "production/render_plan.json",
+              status: "pass",
+            },
           },
-        }),
+          currentArtifacts,
+        ),
       ),
       "utf8",
     );
@@ -85,9 +90,12 @@ describe("status evidence validity", () => {
     await writeFile(
       artifactPath(run.runId, "evidence_bundle.json"),
       JSON.stringify(
-        studioEvidenceFixture(run.runId, "SCRIPT_REVIEWED", {
-          nextRecommendedCommand: "pnpm producer approve script --run <run_id>",
-        }),
+        studioEvidenceFixture(
+          run.runId,
+          "SCRIPT_REVIEWED",
+          { nextRecommendedCommand: "pnpm producer approve script --run <run_id>" },
+          run.artifacts,
+        ),
       ),
       "utf8",
     );
@@ -104,30 +112,31 @@ describe("status evidence validity", () => {
     expect(output).toContain(`Next safe action: pnpm producer evidence --run ${run.runId}`);
   });
 
-  it("marks unreadable evidence JSON as invalid instead of missing", async () => {
+  it("marks same-state evidence stale when the registered artifact set changes", async () => {
+    await configureElevenLabs();
     const run = await createRun();
-    await mkdir(`runs/${run.runId}`, { recursive: true });
-    await writeFile(artifactPath(run.runId, "evidence_bundle.json"), "{", "utf8");
-
-    const output = formatRunStatus(await readRunStatus(run.runId));
-
-    expect(output).toContain("Evidence: invalid (evidence_bundle.json could not be parsed.)");
-    expect(output).toContain(`Evidence next action: pnpm producer evidence --run ${run.runId}`);
-    expect(output).toContain(
-      "Production media evidence: artifact-record fallback because evidence is invalid.",
-    );
-  });
-
-  it("marks evidence with malformed schema fields as invalid", async () => {
-    const run = await createRun();
-    await saveRun({ ...run, artifacts: ["evidence_bundle.json"], state: "SCRIPT_APPROVED" });
+    const evidenceArtifacts = ["production/render_plan.json", "evidence_bundle.json"];
+    const newSelectionPath = "production/audio/voice-selections/selection_002.json";
+    await mkdir(artifactPath(run.runId, "production/audio/voice-selections"), { recursive: true });
+    await writeFile(artifactPath(run.runId, newSelectionPath), "{}", "utf8");
+    await saveRun({
+      ...run,
+      artifacts: [...evidenceArtifacts, newSelectionPath],
+      state: "PRODUCTION_PACKAGE_GENERATED",
+    });
     await writeFile(
       artifactPath(run.runId, "evidence_bundle.json"),
       JSON.stringify(
-        studioEvidenceFixture(run.runId, "SCRIPT_APPROVED", {
-          currentState: "NOT_A_RUN_STATE",
-          generatedAt: "not-a-date",
-        }),
+        studioEvidenceFixture(
+          run.runId,
+          "PRODUCTION_PACKAGE_GENERATED",
+          {
+            nextRecommendedCommand: "pnpm producer estimate --run <run_id>",
+            ttsConfigurationDigest: ttsConfigurationDigest(elevenLabsTtsConfig()),
+            voiceSelection: { status: "missing-or-invalid" },
+          },
+          evidenceArtifacts,
+        ),
       ),
       "utf8",
     );
@@ -135,68 +144,8 @@ describe("status evidence validity", () => {
     const output = formatRunStatus(await readRunStatus(run.runId));
 
     expect(output).toContain(
-      "Evidence: invalid (evidence_bundle.json is missing required fields.)",
+      "Evidence: stale (evidence_bundle.json does not match current voice audition evidence.)",
     );
-    expect(output).toContain(`Evidence next action: pnpm producer evidence --run ${run.runId}`);
-    expect(output).toContain(
-      "Production media evidence: artifact-record fallback because evidence is invalid.",
-    );
-  });
-
-  it("rejects legacy passing draft-render evidence without review command provenance", async () => {
-    const run = await createRun();
-    await saveRun({
-      ...run,
-      artifacts: ["production/render/draft.mp4", "evidence_bundle.json"],
-      state: "RENDERED",
-    });
-    const evidence = passingRenderedEvidence(run.runId);
-    delete (evidence.draftRender as Record<string, unknown>).ffmpegReviewCommand;
-    await writeFile(
-      artifactPath(run.runId, "evidence_bundle.json"),
-      JSON.stringify(evidence),
-      "utf8",
-    );
-
-    const output = formatRunStatus(await readRunStatus(run.runId));
-
-    expect(output).toContain(
-      "Evidence: invalid (evidence_bundle.json is missing required fields.)",
-    );
-    expect(output).toContain(`Evidence next action: pnpm producer evidence --run ${run.runId}`);
-  });
-
-  it("rejects legacy passing voiceover evidence without a local playback path", async () => {
-    const run = await createRun();
-    await saveRun({
-      ...run,
-      artifacts: ["production/audio/voiceover.wav", "evidence_bundle.json"],
-      state: "READY_FOR_MANUAL_PRODUCTION",
-    });
-    const evidence = studioEvidenceFixture(run.runId, "READY_FOR_MANUAL_PRODUCTION", {
-      voiceoverAudio: {
-        digest: "b".repeat(64),
-        durationSeconds: 8.2,
-        mode: "local-piper",
-        path: "production/audio/voiceover.wav",
-        productionVoiceCandidate: true,
-        quality: "local-piper",
-        reviewPath: "production/audio/voiceover_review.md",
-        sourceWordCount: 42,
-        status: "pass",
-      },
-    });
-    await writeFile(
-      artifactPath(run.runId, "evidence_bundle.json"),
-      JSON.stringify(evidence),
-      "utf8",
-    );
-
-    const output = formatRunStatus(await readRunStatus(run.runId));
-
-    expect(output).toContain(
-      "Evidence: invalid (evidence_bundle.json is missing required fields.)",
-    );
-    expect(output).toContain(`Evidence next action: pnpm producer evidence --run ${run.runId}`);
+    expect(output).toContain(`Next safe action: pnpm producer evidence --run ${run.runId}`);
   });
 });

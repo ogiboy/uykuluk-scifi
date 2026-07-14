@@ -1,17 +1,26 @@
+import { defaultConfig } from "../src/config/config";
+import {
+  ttsConfigurationDigest,
+  voiceAuditionPathRevision,
+} from "../src/stages/voice/catalog/voiceAuditionRevision";
+
 /**
  * Builds a schema-current evidence fixture for Studio tests.
  *
  * @param runId - The run identifier.
  * @param currentState - The current run state.
  * @param evidence - Additional evidence fields to merge into the fixture.
+ * @param currentArtifacts - Registered artifacts represented by the fixture.
  * @returns A persisted evidence bundle shape suitable for status validation.
  */
 export function studioEvidenceFixture(
   runId: string,
   currentState: string,
   evidence: Record<string, unknown> = {},
+  currentArtifacts: readonly string[] = [],
 ): Record<string, unknown> {
   const base = {
+    schemaVersion: 1,
     runId,
     generatedAt: "2026-06-27T00:00:00.000Z",
     currentState,
@@ -39,6 +48,10 @@ export function studioEvidenceFixture(
         "production/audio/voiceover_review.md",
       ],
     },
+    voiceSelection: { status: "not-required" },
+    voiceAuditionPathRevision: voiceAuditionPathRevision(currentArtifacts),
+    voiceAuditionRevision: null,
+    ttsConfigurationDigest: ttsConfigurationDigest(defaultConfig.providers.tts),
     draftRender: {
       status: "missing",
       requiredArtifacts: [
@@ -48,7 +61,7 @@ export function studioEvidenceFixture(
       ],
     },
     costEstimatePath: null,
-    generatedArtifacts: [],
+    generatedArtifacts: [...currentArtifacts],
     warnings: [],
     promptProvenance: [],
     revisions: [],

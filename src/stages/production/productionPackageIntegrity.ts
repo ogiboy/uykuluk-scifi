@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { z } from "zod";
+import { artifactPathAtProjectRoot } from "../../core/artifactPaths.js";
 import { artifactPath } from "../../core/artifacts.js";
 import { SafeExitError } from "../../core/errors.js";
 import { RunRecord } from "../../core/state.js";
@@ -92,8 +93,20 @@ export async function createProductionPackageManifest(
 export async function verifyProductionPackage(
   run: RunRecord,
 ): Promise<{ manifest: ProductionPackageManifest; digest: string }> {
+  return verifyProductionPackageAtProjectRoot(process.cwd(), run);
+}
+
+/** Verifies a production package beneath an explicit producer project root. */
+export async function verifyProductionPackageAtProjectRoot(
+  projectRoot: string,
+  run: RunRecord,
+): Promise<{ manifest: ProductionPackageManifest; digest: string }> {
   try {
-    const manifestText = await readPackageArtifact(run.runId, productionPackageManifestPath);
+    const manifestText = await readPackageArtifactAtProjectRoot(
+      projectRoot,
+      run.runId,
+      productionPackageManifestPath,
+    );
     const manifest = productionPackageManifestSchema.parse(JSON.parse(manifestText) as unknown);
     if (manifest.runId !== run.runId) {
       throw new SafeExitError("Production package manifest belongs to a different run.");
@@ -111,7 +124,7 @@ export async function verifyProductionPackage(
         );
       }
     }
-    const script = await readPackageArtifact(run.runId, "script.md");
+    const script = await readPackageArtifactAtProjectRoot(projectRoot, run.runId, "script.md");
     const scriptDigest = sha256(script);
     const scriptApprovalExists = run.approvals.some(
       (approval) =>
@@ -125,7 +138,9 @@ export async function verifyProductionPackage(
       );
     }
     for (const artifact of manifest.artifacts) {
-      const currentDigest = sha256(await readPackageArtifact(run.runId, artifact.path));
+      const currentDigest = sha256(
+        await readPackageArtifactAtProjectRoot(projectRoot, run.runId, artifact.path),
+      );
       if (currentDigest !== artifact.digest) {
         throw new SafeExitError(
           `Production package artifact changed after generation: ${artifact.path}.`,
@@ -171,8 +186,16 @@ export async function readProductionPackageIntegrityEvidence(
 }
 
 async function readPackageArtifact(runId: string, relativePath: string): Promise<string> {
+  return readPackageArtifactAtProjectRoot(process.cwd(), runId, relativePath);
+}
+
+async function readPackageArtifactAtProjectRoot(
+  projectRoot: string,
+  runId: string,
+  relativePath: string,
+): Promise<string> {
   try {
-    return await readFile(artifactPath(runId, relativePath), "utf8");
+    return await readFile(artifactPathAtProjectRoot(projectRoot, runId, relativePath), "utf8");
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") {
       throw new SafeExitError(`Production package artifact is missing: ${relativePath}.`);

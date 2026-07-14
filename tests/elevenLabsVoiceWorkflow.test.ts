@@ -27,11 +27,12 @@ import { generateVoicePreview } from "../src/stages/voicePreview";
 import { selectVoice } from "../src/stages/voiceSelection";
 import { sha256 } from "../src/utils/hash";
 import {
+  approvedHostedVoiceConfirmation,
   configureWorkflowElevenLabs,
   paidVoiceSubscription,
   preparePackagedWorkflowRun,
   setConfiguredCandidateVoiceId,
-  workflowFixtureWav,
+  workflowConvertWithTimestamps,
 } from "./elevenLabsVoiceWorkflowFixtures";
 import { verifyWorkflowEvidenceTamperGuards } from "./elevenLabsVoiceWorkflowTamperAssertions";
 import { useTempProject } from "./helpers";
@@ -46,31 +47,7 @@ describe("ElevenLabs voice workflow", () => {
 
   beforeEach(() => {
     process.env.ELEVENLABS_API_KEY = "secret-workflow-test-key";
-    sdk.convertWithTimestamps.mockImplementation((_voiceId, request) => {
-      const characters = Array.from(request.text as string);
-      return {
-        withRawResponse: async () => ({
-          data: {
-            audioBase64: workflowFixtureWav().toString("base64"),
-            alignment: {
-              characters,
-              characterStartTimesSeconds: characters.map(
-                (_, index) => (index / characters.length) * 0.9,
-              ),
-              characterEndTimesSeconds: characters.map(
-                (_, index) => ((index + 1) / characters.length) * 0.9,
-              ),
-            },
-          },
-          rawResponse: {
-            headers: new Headers({
-              "character-cost": String(characters.length),
-              "request-id": "workflow-request-id",
-            }),
-          },
-        }),
-      };
-    });
+    sdk.convertWithTimestamps.mockImplementation(workflowConvertWithTimestamps);
   });
 
   it("quotes, reserves, synthesizes, and persists redacted production voice evidence", async () => {
@@ -117,16 +94,29 @@ describe("ElevenLabs voice workflow", () => {
     expect((await runReadiness(runId)).passed).toBe(true);
 
     const meta = await generateVoiceoverAudio(runId, {
+      confirmation: await approvedHostedVoiceConfirmation(runId),
       metadataProvider: successfulExecutionMetadataProvider({
         subscription: paidVoiceSubscription,
       }),
     });
     expect(meta).toMatchObject({
+      schemaVersion: 2,
       mode: "elevenlabs",
       quality: "elevenlabs",
       alignment: {
         path: "production/audio/alignment.json",
         sha256: expect.stringMatching(/^[a-f0-9]{64}$/),
+      },
+      normalizedAlignment: {
+        path: "production/audio/alignment.normalized.json",
+        sha256: expect.stringMatching(/^[a-f0-9]{64}$/),
+      },
+      subtitle: {
+        timingMode: "elevenlabs-character-aligned",
+        path: "production/audio/subtitles.aligned.srt",
+        sha256: expect.stringMatching(/^[a-f0-9]{64}$/),
+        metadataPath: "production/audio/subtitles.aligned.meta.json",
+        metadataSha256: expect.stringMatching(/^[a-f0-9]{64}$/),
       },
       provider: {
         service: "elevenlabs",
@@ -153,7 +143,13 @@ describe("ElevenLabs voice workflow", () => {
     await expect(readVoiceoverAudioEvidence(run)).resolves.toMatchObject({
       status: "pass",
       alignmentPath: "production/audio/alignment.json",
+      normalizedAlignmentPath: "production/audio/alignment.normalized.json",
       productionVoiceCandidate: true,
+      subtitle: {
+        timingMode: "elevenlabs-character-aligned",
+        path: "production/audio/subtitles.aligned.srt",
+        metadataPath: "production/audio/subtitles.aligned.meta.json",
+      },
     });
 
     const changedConfig = JSON.parse(await readFile("producer.config.json", "utf8")) as {
@@ -217,6 +213,9 @@ describe("ElevenLabs voice workflow", () => {
         "production/audio/voiceover.meta.json",
         "production/audio/voiceover_review.md",
         "production/audio/alignment.json",
+        "production/audio/alignment.normalized.json",
+        "production/audio/subtitles.aligned.srt",
+        "production/audio/subtitles.aligned.meta.json",
         "costs/ledger.jsonl",
       ].map((relativePath) => readFile(artifactPath(runId, relativePath), "utf8")),
     );
@@ -224,6 +223,17 @@ describe("ElevenLabs voice workflow", () => {
     expect(persisted[1]).toContain("Execution binding");
     expect(persisted[1]).toContain("Selection digest");
     expect(persisted[1]).toContain("Reservation ID");
+    expect(persisted[1]).toContain("elevenlabs-character-aligned");
+    const subtitleMetadata = JSON.parse(persisted[5]) as {
+      timingMode: string;
+      alignment?: { authority: string };
+      output: { path: string; cueCount: number };
+    };
+    expect(subtitleMetadata).toMatchObject({
+      timingMode: "elevenlabs-character-aligned",
+      alignment: { authority: "elevenlabs-original" },
+      output: { path: "production/audio/subtitles.aligned.srt", cueCount: expect.any(Number) },
+    });
     const quoteMarkdown = await readFile(artifactPath(runId, "costs/estimate.md"), "utf8");
     expect(quoteMarkdown).toContain(
       `Selection digest: \`${currentSelection.selection.selectionDigest}\``,
@@ -236,6 +246,8 @@ describe("ElevenLabs voice workflow", () => {
       run,
       originalMetaText: persisted[0],
       originalAlignmentText: persisted[2],
+      originalSubtitleText: persisted[4],
+      originalSubtitleMetadataText: persisted[5],
     });
   });
 });

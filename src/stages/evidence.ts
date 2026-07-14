@@ -19,6 +19,13 @@ import { readProductionPackageIntegrityEvidence } from "./production/productionP
 import { readDraftRenderEvidence } from "./renderEvidence.js";
 import { readRenderPlanEvidence } from "./renderPlan.js";
 import { readScriptReviewEvidence } from "./script/scriptReviewEvidence.js";
+import {
+  ttsConfigurationDigest,
+  voiceAuditionArtifactRevision,
+  voiceAuditionPathRevision,
+} from "./voice/catalog/voiceAuditionRevision.js";
+import { maximumVoiceCatalogAgeMs } from "./voice/catalog/voiceCatalogStore.js";
+import { readCurrentVoiceSelection } from "./voice/catalog/voiceSelectionStore.js";
 import { readVoiceoverAudioEvidence } from "./voice/voiceoverEvidence.js";
 
 /**
@@ -43,6 +50,13 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
   const draftRender = await readDraftRenderEvidence(run);
   const scriptReview = await readScriptReviewEvidence(run);
   const promptProvenance = await readPromptProvenance(run.runId);
+  const voiceSelection = await readVoiceSelectionEvidence(run.runId, config);
+  const voiceAuditionPathRevisionDigest = voiceAuditionPathRevision(run.artifacts);
+  const currentTtsConfigurationDigest = ttsConfigurationDigest(config.providers.tts);
+  const voiceAuditionRevision =
+    voiceSelection.status === "current"
+      ? await voiceAuditionArtifactRevision(run, Object.values(voiceSelection.artifacts))
+      : null;
   const unresolvedCostReservations = costReservations.filter(isActiveCostReservation);
   const approvedIdea =
     run.approvedIdeaId && (await pathExists(artifactPath(run.runId, "ideas.json")))
@@ -60,6 +74,7 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
     unresolvedCostReservations.length,
   );
   const bundle = {
+    schemaVersion: 1,
     runId: run.runId,
     generatedAt: nowIso(),
     currentState: run.state,
@@ -73,6 +88,10 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
     productionPackageIntegrity,
     renderPlan,
     voiceoverAudio,
+    voiceSelection,
+    voiceAuditionPathRevision: voiceAuditionPathRevisionDigest,
+    voiceAuditionRevision,
+    ttsConfigurationDigest: currentTtsConfigurationDigest,
     draftRender,
     costEstimatePath: (await pathExists(artifactPath(run.runId, "costs/estimate.json")))
       ? "costs/estimate.json"
@@ -93,6 +112,8 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
         scriptReview,
         state: run.state,
         ttsEnabled: config.providers.tts.enabled,
+        ttsMode: config.providers.tts.mode,
+        voiceSelection,
         voiceoverAudio,
       }),
       run.runId,
@@ -103,6 +124,49 @@ export async function generateEvidenceBundle(runId: string): Promise<unknown> {
   run = await writeRunText(run, "evidence", "evidence_bundle.md", renderEvidenceMarkdown(bundle));
   await saveRun(run);
   return bundle;
+}
+
+async function readVoiceSelectionEvidence(
+  runId: string,
+  config: Awaited<ReturnType<typeof loadConfig>>,
+): Promise<
+  | { status: "not-required" }
+  | { status: "missing-or-invalid" }
+  | {
+      status: "current";
+      path: string;
+      digest: string;
+      validUntil: string;
+      artifacts: {
+        catalog: string;
+        previewEvidence: string;
+        previewAudio: string;
+        selection: string;
+      };
+    }
+> {
+  if (!config.providers.tts.enabled || config.providers.tts.mode !== "elevenlabs") {
+    return { status: "not-required" };
+  }
+  try {
+    const current = await readCurrentVoiceSelection(runId, { config });
+    return {
+      status: "current",
+      path: current.selectionPath,
+      digest: current.selection.selectionDigest,
+      validUntil: new Date(
+        Date.parse(current.catalog.fetchedAt) + maximumVoiceCatalogAgeMs,
+      ).toISOString(),
+      artifacts: {
+        catalog: current.catalogPath,
+        previewEvidence: current.previewPath,
+        previewAudio: current.preview.output.path,
+        selection: current.selectionPath,
+      },
+    };
+  } catch {
+    return { status: "missing-or-invalid" };
+  }
 }
 
 /** Reads quote evidence, preserving parse failures as explicit invalid status. */

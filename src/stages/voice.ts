@@ -1,37 +1,20 @@
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { loadConfig } from "../config/config.js";
-import {
-  artifactPath,
-  recordRunArtifact,
-  writeRunBinary,
-  writeRunJson,
-  writeRunText,
-} from "../core/artifacts.js";
+import { artifactPath } from "../core/artifacts.js";
 import { SafeExitError } from "../core/errors.js";
 import { appendLedgerEvent } from "../core/ledger.js";
-import { loadRun, saveRun } from "../core/runStore.js";
+import { loadRun } from "../core/runStore.js";
 import { requireApproval, requireState } from "../safeguards/approvalGuard.js";
-import { nowIso } from "../utils/time.js";
 import { verifyProductionPackage } from "./production/productionPackageIntegrity.js";
 import { readRenderPlanEvidence } from "./renderPlan.js";
+import type { HostedVoiceExecutionConfirmation } from "./voice/voiceExecutionConfirmation.js";
 import type { VoiceExecutionMetadataProvider } from "./voice/voiceExecutionPreflight.js";
 import { prepareVoiceExecution } from "./voice/voiceExecutionPreparation.js";
 import { recoverCommittedVoiceExecution } from "./voice/voiceExecutionRecovery.js";
-import {
-  VoiceoverAudioMeta,
-  voiceoverAlignmentPath,
-  voiceoverAudioMetaPath,
-  voiceoverAudioMetaSchema,
-  voiceoverAudioPath,
-  voiceoverAudioReviewPath,
-} from "./voice/voiceoverEvidence.js";
-import {
-  prepareVoiceoverText,
-  voiceoverPreparationPath,
-  voiceoverPreparedTextPath,
-} from "./voice/voiceoverPreparation.js";
-import { renderVoiceoverReviewMarkdown } from "./voice/voiceoverReviewMarkdown.js";
+import { persistVoiceoverArtifacts } from "./voice/voiceoverArtifactPersistence.js";
+import type { VoiceoverAudioMeta } from "./voice/voiceoverEvidence.js";
+import { prepareVoiceoverText } from "./voice/voiceoverPreparation.js";
 import { synthesizeVoiceover } from "./voice/voiceSynthesisExecution.js";
 
 /**
@@ -45,13 +28,14 @@ import { synthesizeVoiceover } from "./voice/voiceSynthesisExecution.js";
 export async function generateVoiceoverAudio(
   runId: string,
   options: {
+    confirmation?: HostedVoiceExecutionConfirmation;
     metadataProvider?: VoiceExecutionMetadataProvider;
     afterSynthesis?: () => Promise<void>;
     afterResultCommitted?: () => Promise<void>;
   } = {},
 ): Promise<VoiceoverAudioMeta> {
   const config = await loadConfig();
-  let run = await loadRun(runId);
+  const run = await loadRun(runId);
   await requireState(run, "READY_FOR_MANUAL_PRODUCTION", "voice");
   await requireApproval(run, "script", "voice");
   await verifyProductionPackage(run);
@@ -105,6 +89,7 @@ export async function generateVoiceoverAudio(
       runId: run.runId,
       config,
       preparedText: preparation.text,
+      ...(options.confirmation ? { confirmation: options.confirmation } : {}),
       metadataProvider: options.metadataProvider,
     });
     mode = execution.provider.mode;
@@ -121,71 +106,16 @@ export async function generateVoiceoverAudio(
       },
     );
   }
-  const { audio } = synthesis;
   await options.afterSynthesis?.();
-
-  run = await writeRunText(run, "voice", voiceoverPreparedTextPath, preparation.text);
-  run = await writeRunJson(run, "voice", voiceoverPreparationPath, preparation.evidence);
-
-  if (audio.outputAlreadyPersisted) {
-    run = await recordRunArtifact(run, "voice", voiceoverAudioPath);
-  } else {
-    run = await writeRunBinary(run, "voice", voiceoverAudioPath, audio.buffer);
-  }
-
-  const alignment = audio.alignment
-    ? {
-        path: voiceoverAlignmentPath,
-        sha256: createHash("sha256")
-          .update(`${JSON.stringify(audio.alignment, null, 2)}\n`, "utf8")
-          .digest("hex"),
-        characterCount: audio.alignment.characters.length,
-      }
-    : undefined;
-  if (audio.alignment) {
-    run = await writeRunJson(run, "voice", voiceoverAlignmentPath, audio.alignment);
-  }
-
-  const digest = createHash("sha256").update(audio.buffer).digest("hex");
-  const meta = voiceoverAudioMetaSchema.parse({
-    schemaVersion: 1,
-    runId: run.runId,
-    createdAt: nowIso(),
-    mode,
-    quality: audio.quality,
-    source: {
-      ...source,
-      preparation: {
-        path: voiceoverPreparedTextPath,
-        sha256: preparation.evidence.output.sha256,
-        metadataPath: voiceoverPreparationPath,
-        metadataSha256: createHash("sha256").update(preparation.evidenceText, "utf8").digest("hex"),
-        replacementsApplied: preparation.evidence.replacements.length,
-      },
-    },
-    renderPlan: { path: "production/render_plan.json", digest: renderPlan.digest },
-    output: {
-      path: voiceoverAudioPath,
-      sha256: digest,
-      bytes: audio.buffer.byteLength,
-      durationSeconds: audio.durationSeconds,
-      sampleRateHz: audio.sampleRateHz,
-      channels: audio.channels,
-    },
-    provider: audio.provider,
-    paidExecution: synthesis.paidExecution,
-    processing: audio.processing,
-    alignment,
-  });
-  run = await writeRunJson(run, "voice", voiceoverAudioMetaPath, meta);
-  run = await writeRunText(
+  return persistVoiceoverArtifacts({
     run,
-    "voice",
-    voiceoverAudioReviewPath,
-    renderVoiceoverReviewMarkdown(meta),
-  );
-  await saveRun(run);
-  return meta;
+    source,
+    sourceText: voiceover,
+    mode,
+    preparation,
+    synthesis,
+    renderPlanDigest: renderPlan.digest,
+  });
 }
 
 /**

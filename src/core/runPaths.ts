@@ -34,8 +34,19 @@ export function runsDir(): string {
  * Existing path components must not be symbolic links. Missing suffixes are allowed for creation.
  */
 export function runsPath(...segments: string[]): string {
+  return projectRunsPath(process.cwd(), ...segments);
+}
+
+/**
+ * Constructs a symlink-contained path beneath a specific project runs directory.
+ *
+ * @param projectRoot - Producer project root containing `runs/`.
+ * @param segments - Validated internal path segments below `runs/`.
+ * @returns The contained path below the selected project root.
+ */
+export function projectRunsPath(projectRoot: string, ...segments: string[]): string {
   validateInternalSegments(segments);
-  const root = path.join(process.cwd(), "runs");
+  const root = path.join(path.resolve(projectRoot), "runs");
   assertExistingComponentsAreContained(root, segments);
   return path.join(root, ...segments);
 }
@@ -53,6 +64,11 @@ export function runDir(runId: string): string {
 /** Constructs a symlink-contained internal path beneath a validated run directory. */
 export function runPath(runId: string, ...segments: string[]): string {
   return runsPath(validateRunId(runId), ...segments);
+}
+
+/** Constructs a symlink-contained run path beneath a specific producer project root. */
+export function projectRunPath(projectRoot: string, runId: string, ...segments: string[]): string {
+  return projectRunsPath(projectRoot, validateRunId(runId), ...segments);
 }
 
 /**

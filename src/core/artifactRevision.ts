@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { constants } from "node:fs";
 import { open } from "node:fs/promises";
 import { sha256 } from "../utils/hash.js";
-import { artifactPath } from "./artifacts.js";
+import { artifactPathAtProjectRoot } from "./artifactPaths.js";
 import { SafeExitError } from "./errors.js";
 import type { RunRecord } from "./state.js";
 
@@ -17,17 +17,25 @@ export async function registeredArtifactRevision(
   run: RunRecord,
   relativePaths: readonly string[],
 ): Promise<string> {
+  return registeredArtifactRevisionAtProjectRoot(process.cwd(), run, relativePaths);
+}
+
+/**
+ * Computes an exact registered-artifact revision beneath a selected producer project root.
+ *
+ * @param projectRoot - Producer project root containing `runs/`.
+ * @param run - Run identity and registered artifact paths.
+ * @param relativePaths - Registered artifact paths included in the revision.
+ * @returns A SHA-256 revision over ordered paths and exact file bytes.
+ */
+export async function registeredArtifactRevisionAtProjectRoot(
+  projectRoot: string,
+  run: Pick<RunRecord, "runId" | "artifacts">,
+  relativePaths: readonly string[],
+): Promise<string> {
   const entries: Array<{ path: string; sha256: string }> = [];
   for (const relativePath of relativePaths) {
-    const target = artifactPath(run.runId, relativePath);
-    const registered = run.artifacts.includes(relativePath);
-    const bytes = await readContainedArtifact(target);
-    const exists = bytes !== undefined;
-    if (registered !== exists) {
-      throw new SafeExitError(
-        `Run artifact registration does not match local evidence: ${relativePath}.`,
-      );
-    }
+    const bytes = await readRegisteredArtifactBytesAtProjectRoot(projectRoot, run, relativePath);
     if (bytes) {
       entries.push({
         path: relativePath,
@@ -50,7 +58,23 @@ export async function readRegisteredArtifactBytes(
   run: RunRecord,
   relativePath: string,
 ): Promise<Buffer | undefined> {
-  const target = artifactPath(run.runId, relativePath);
+  return readRegisteredArtifactBytesAtProjectRoot(process.cwd(), run, relativePath);
+}
+
+/**
+ * Reads a registered artifact beneath a selected producer project root.
+ *
+ * @param projectRoot - Producer project root containing `runs/`.
+ * @param run - Run identity and artifact registry used for containment verification.
+ * @param relativePath - Registered artifact path to read.
+ * @returns Artifact bytes, or `undefined` when both registration and file are absent.
+ */
+export async function readRegisteredArtifactBytesAtProjectRoot(
+  projectRoot: string,
+  run: Pick<RunRecord, "runId" | "artifacts">,
+  relativePath: string,
+): Promise<Buffer | undefined> {
+  const target = artifactPathAtProjectRoot(projectRoot, run.runId, relativePath);
   const bytes = await readContainedArtifact(target);
   if (run.artifacts.includes(relativePath) !== (bytes !== undefined)) {
     throw new SafeExitError(

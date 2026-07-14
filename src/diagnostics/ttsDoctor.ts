@@ -53,20 +53,13 @@ export async function ttsProviderCheck(config: ProducerConfig | undefined): Prom
  * @returns A diagnostic result indicating whether ElevenLabs is ready or blocked by missing prerequisites.
  */
 function elevenLabsDiagnostic(tts: ProducerConfig["providers"]["tts"]): DoctorCheck {
-  const findings: string[] = [];
-  if (!tts.elevenLabs.voiceId) {
-    findings.push("ElevenLabs voice id missing");
-  }
   if (!process.env.ELEVENLABS_API_KEY?.trim()) {
-    findings.push("ELEVENLABS_API_KEY missing from the server environment");
-  }
-  if (findings.length > 0) {
     return {
       name: "TTS provider",
       status: "block",
-      message: `${findings.join("; ")}. ElevenLabs remains blocked before cost reservation.`,
-      nextAction:
-        "Configure providers.tts.elevenLabs.voiceId and server-side ELEVENLABS_API_KEY, then rerun pnpm producer doctor.",
+      message:
+        "ELEVENLABS_API_KEY missing from the server environment. ElevenLabs remains blocked before audition or cost reservation.",
+      nextAction: "Configure server-side ELEVENLABS_API_KEY, then rerun pnpm producer doctor.",
     };
   }
   return {
@@ -74,7 +67,7 @@ function elevenLabsDiagnostic(tts: ProducerConfig["providers"]["tts"]): DoctorCh
     status: "pass",
     message: `ElevenLabs is configured with ${tts.elevenLabs.modelId} and a server-side credential.`,
     nextAction:
-      "Generate and approve the exact cost quote before running ElevenLabs voice synthesis.",
+      "Run pnpm producer voice-candidates --run <run_id> to begin run-scoped audition and selection before estimating cost.",
   };
 }
 

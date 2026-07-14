@@ -39,6 +39,7 @@ describe("evidence Markdown media summary", () => {
         status: "pass",
         path: "production/audio/voiceover.wav",
         digest: digest(),
+        metadataDigest: digest(),
         durationSeconds: 2.4,
         localPlaybackPath: "runs/run_media_summary/production/audio/voiceover.wav",
         mode: "deterministic-local",
@@ -46,6 +47,15 @@ describe("evidence Markdown media summary", () => {
         quality: "deterministic-local-reference",
         reviewPath: "production/audio/voiceover_review.md",
         sourceWordCount: 12,
+        subtitle: {
+          timingMode: "linear-fallback",
+          path: "production/subtitles.srt",
+          sha256: digest(),
+          metadataPath: "production/audio/subtitles.aligned.meta.json",
+          metadataSha256: digest(),
+          cueCount: 2,
+          sourceDurationSeconds: 2.4,
+        },
       },
       draftRender: {
         status: "pass",
@@ -64,6 +74,8 @@ describe("evidence Markdown media summary", () => {
         voiceoverMode: "deterministic-local",
         voiceoverProductionVoiceCandidate: false,
         voiceoverQuality: "deterministic-local-reference",
+        subtitlePath: "production/subtitles.srt",
+        subtitleTimingMode: "linear-fallback",
         renderApproval: { approvalId: "approval_render_trace", approvedRef: digest() },
         mediaProbe: {
           binary: "ffprobe",

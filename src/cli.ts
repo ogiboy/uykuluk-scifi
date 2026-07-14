@@ -11,6 +11,7 @@ import { registerRevisionCommands } from "./cli/revisionCommands.js";
 import { resolveStatusRunId } from "./cli/statusRunSelector.js";
 import { readCliVersion } from "./cli/version.js";
 import { registerVoiceCommands } from "./cli/voiceCommands.js";
+import { voiceExecutionConfirmationFromOptions } from "./cli/voiceExecutionConfirmationOptions.js";
 import { initProject } from "./config/config.js";
 import { loadLocalEnvironmentFiles } from "./config/localEnvironment.js";
 import { SafeExitError } from "./core/errors.js";
@@ -140,15 +141,32 @@ program
 program
   .command("voice")
   .requiredOption("--run <run_id>")
+  .option("--binding-digest <sha256>", "Confirm the exact hosted voice execution binding.")
+  .option("--quote-digest <sha256>", "Confirm the exact approved hosted TTS quote.")
+  .option("--approval-id <approval_id>", "Confirm the exact paid-generation approval.")
+  .option("--confirm-paid-operation", "Explicitly confirm the exact hosted paid operation.")
   .option("--json", "Print the raw voiceover metadata JSON for automation.")
-  .description("Generate local voiceover audio after readiness and render planning.")
+  .description("Generate local or explicitly confirmed hosted voiceover audio after readiness.")
   .action(
-    wrap(async (options: { json?: boolean; run: string }) => {
-      const meta = await generateVoiceoverAudio(options.run);
-      console.log(
-        options.json ? JSON.stringify(meta, null, 2) : formatVoiceoverGeneratedConsole(meta),
-      );
-    }),
+    wrap(
+      async (options: {
+        approvalId?: string;
+        bindingDigest?: string;
+        confirmPaidOperation?: boolean;
+        json?: boolean;
+        quoteDigest?: string;
+        run: string;
+      }) => {
+        const confirmation = voiceExecutionConfirmationFromOptions(options);
+        const meta = await generateVoiceoverAudio(
+          options.run,
+          confirmation ? { confirmation } : {},
+        );
+        console.log(
+          options.json ? JSON.stringify(meta, null, 2) : formatVoiceoverGeneratedConsole(meta),
+        );
+      },
+    ),
   );
 
 program

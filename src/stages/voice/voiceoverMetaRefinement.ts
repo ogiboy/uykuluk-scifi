@@ -4,12 +4,14 @@ type ProviderField =
   "service" | "modelId" | "voiceId" | "outputFormat" | "modelPath" | "modelSha256";
 
 export type VoiceoverMetaRefinementInput = {
+  schemaVersion: 1 | 2;
   mode: "deterministic-local" | "local-piper" | "elevenlabs";
   quality: "deterministic-local-reference" | "local-piper" | "elevenlabs";
   source: { preparation?: unknown };
   provider?: Partial<Record<ProviderField | "configPath" | "configSha256", string>>;
   paidExecution?: unknown;
   alignment?: unknown;
+  subtitle?: { timingMode?: string };
 };
 
 /**
@@ -22,6 +24,22 @@ export function refineVoiceoverMeta(
   meta: VoiceoverMetaRefinementInput,
   context: RefinementCtx<VoiceoverMetaRefinementInput>,
 ): void {
+  if (meta.schemaVersion === 2) {
+    requireValue(
+      Boolean(meta.subtitle),
+      "Current voiceover metadata requires active subtitle evidence.",
+      ["subtitle"],
+      context,
+    );
+    const expectedTimingMode =
+      meta.mode === "elevenlabs" ? "elevenlabs-character-aligned" : "linear-fallback";
+    requireValue(
+      meta.subtitle?.timingMode === expectedTimingMode,
+      `Voiceover subtitle timing must be ${expectedTimingMode} for ${meta.mode}.`,
+      ["subtitle", "timingMode"],
+      context,
+    );
+  }
   if (meta.mode === "elevenlabs") {
     refineElevenLabsMeta(meta, context);
     return;

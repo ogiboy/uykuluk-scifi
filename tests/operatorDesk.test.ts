@@ -121,7 +121,9 @@ describe("operator desk", () => {
     );
     await writeFile(
       artifactPath(run.runId, "evidence_bundle.json"),
-      JSON.stringify(manualProductionEvidence(run.runId)),
+      JSON.stringify(
+        manualProductionEvidence(run.runId, ["diagnostics/readiness.json", "evidence_bundle.json"]),
+      ),
       "utf8",
     );
 

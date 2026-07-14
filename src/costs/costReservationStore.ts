@@ -1,5 +1,6 @@
 import { appendFile, readFile, readdir } from "node:fs/promises";
 import { SafeExitError } from "../core/errors.js";
+import { projectRunPath } from "../core/runPaths.js";
 import { isValidRunId, runPath, runsDir } from "../core/runStore.js";
 import { ensureDir, pathExists } from "../utils/fs.js";
 import {
@@ -21,6 +22,11 @@ export function costReservationLedgerPath(runId: string): string {
   return runPath(runId, "costs", "reservations.jsonl");
 }
 
+/** Returns the reservation-ledger path beneath an explicit producer project root. */
+export function costReservationLedgerPathAtProjectRoot(projectRoot: string, runId: string): string {
+  return projectRunPath(projectRoot, runId, "costs", "reservations.jsonl");
+}
+
 /** Validates and appends one reservation event without permitting an invalid sequence. */
 export async function appendCostReservationEvent(event: CostReservationEvent): Promise<void> {
   const parsed = costReservationEventSchema.parse(event);
@@ -33,7 +39,15 @@ export async function appendCostReservationEvent(event: CostReservationEvent): P
 
 /** Reads a run's validated reservation event stream. */
 export async function readCostReservationEvents(runId: string): Promise<CostReservationEvent[]> {
-  const target = costReservationLedgerPath(runId);
+  return readCostReservationEventsAtProjectRoot(process.cwd(), runId);
+}
+
+/** Reads reservation events beneath an explicit producer project root. */
+export async function readCostReservationEventsAtProjectRoot(
+  projectRoot: string,
+  runId: string,
+): Promise<CostReservationEvent[]> {
+  const target = costReservationLedgerPathAtProjectRoot(projectRoot, runId);
   if (!(await pathExists(target))) {
     return [];
   }
@@ -60,6 +74,16 @@ export async function readCostReservationSummaries(
   runId: string,
 ): Promise<CostReservationSummary[]> {
   return summarizeCostReservationEvents(await readCostReservationEvents(runId));
+}
+
+/** Replays reservation events beneath an explicit producer project root. */
+export async function readCostReservationSummariesAtProjectRoot(
+  projectRoot: string,
+  runId: string,
+): Promise<CostReservationSummary[]> {
+  return summarizeCostReservationEvents(
+    await readCostReservationEventsAtProjectRoot(projectRoot, runId),
+  );
 }
 
 /** Aggregates reservation summaries across valid run directories. */
