@@ -4,7 +4,7 @@ import { z } from "zod";
 import { loadConfig } from "../config/config.js";
 import { artifactPath, writeRunBinary } from "../core/artifacts.js";
 import { SafeExitError } from "../core/errors.js";
-import { appendLedgerEvent } from "../core/ledger.js";
+import { queueRunLedgerEvent, reconcileRunLedgerOutbox } from "../core/runLedgerOutbox.js";
 import { mutateRun } from "../core/runStore.js";
 import { requireState } from "../safeguards/approvalGuard.js";
 import { nowIso } from "../utils/time.js";
@@ -50,6 +50,7 @@ export type VisualDecisionInput = Readonly<{
 
 /** Creates a pending scene manifest using deterministic committed background assets. */
 export async function prepareStaticVisuals(runId: string): Promise<VisualManifest> {
+  await reconcileRunLedgerOutbox(runId);
   const config = await loadConfig();
   const assets = await selectRenderAssets(config.assets);
   const provider = new StaticVisualProvider(assets.backgrounds);
@@ -101,15 +102,15 @@ export async function prepareStaticVisuals(runId: string): Promise<VisualManifes
     );
     let updatedRun = await invalidateVisualConsumers(run, "visuals-prepare");
     updatedRun = await persistVisualManifest(updatedRun, nextManifest, "visuals-prepare");
+    updatedRun = queueRunLedgerEvent(updatedRun, {
+      type: "GUARD_PASSED",
+      stage: "visuals-prepare",
+      message: `Prepared ${nextManifest.scenes.length} static fallback scene visuals for review.`,
+      data: { sceneCount: nextManifest.scenes.length, provider: "static" },
+    });
     return { run: updatedRun, value: nextManifest };
   });
-  await appendLedgerEvent({
-    runId,
-    type: "GUARD_PASSED",
-    stage: "visuals-prepare",
-    message: `Prepared ${manifest.scenes.length} static fallback scene visuals for review.`,
-    data: { sceneCount: manifest.scenes.length, provider: "static" },
-  });
+  await reconcileRunLedgerOutbox(runId);
   return manifest;
 }
 
@@ -117,6 +118,7 @@ export async function prepareStaticVisuals(runId: string): Promise<VisualManifes
 export async function importManualVisual(
   input: { runId: string; sceneIndex: number; sourcePath: string } & VisualMutationExpectation,
 ): Promise<VisualManifest> {
+  await reconcileRunLedgerOutbox(input.runId);
   const provider = new ManualImportVisualProvider(path.resolve(input.sourcePath));
   const result = await provider.createSceneVisual({
     revision: 1,
@@ -127,7 +129,6 @@ export async function importManualVisual(
   if (result.provider !== "manual-import") {
     throw new SafeExitError("Manual visual provider returned an unexpected result.");
   }
-  let nextRevision = 0;
   const mutation = await mutateRun(input.runId, async (run, transaction) => {
     await requireState(run, "PRODUCTION_PACKAGE_GENERATED", "visuals-import");
     const loaded = await loadVisualManifest(run);
@@ -136,7 +137,7 @@ export async function importManualVisual(
     if (!scene) {
       throw new SafeExitError(`Visual scene ${input.sceneIndex} does not exist.`);
     }
-    nextRevision = Math.max(...scene.revisions.map((item) => item.revision)) + 1;
+    const nextRevision = Math.max(...scene.revisions.map((item) => item.revision)) + 1;
     const relativePath = visualRevisionPath(input.sceneIndex, nextRevision, result.extension);
     transaction.onRollback(
       await captureVisualArtifactRollback(input.runId, "visuals-import", [
@@ -162,24 +163,21 @@ export async function importManualVisual(
     });
     updatedRun = await invalidateVisualConsumers(updatedRun, "visuals-import");
     updatedRun = await persistVisualManifest(updatedRun, nextManifest, "visuals-import");
+    updatedRun = queueRunLedgerEvent(updatedRun, {
+      type: "ARTIFACT_REVISED",
+      stage: "visuals-import",
+      message: `Imported manual visual revision ${nextRevision} for scene ${input.sceneIndex}.`,
+      data: { assetPath: relativePath, revision: nextRevision, sceneIndex: input.sceneIndex },
+    });
     return { run: updatedRun, value: nextManifest };
   });
-  await appendLedgerEvent({
-    runId: input.runId,
-    type: "ARTIFACT_REVISED",
-    stage: "visuals-import",
-    message: `Imported manual visual revision ${nextRevision} for scene ${input.sceneIndex}.`,
-    data: {
-      assetPath: visualRevisionPath(input.sceneIndex, nextRevision, result.extension),
-      revision: nextRevision,
-      sceneIndex: input.sceneIndex,
-    },
-  });
+  await reconcileRunLedgerOutbox(input.runId);
   return mutation.value;
 }
 
 /** Records attributed approve/reject decisions for active scene revisions. */
 export async function decideVisuals(input: VisualDecisionInput): Promise<VisualManifest> {
+  await reconcileRunLedgerOutbox(input.runId);
   const reviewedBy = input.reviewedBy.trim();
   const notes = input.notes.trim();
   if (!reviewedBy || !notes) {
@@ -223,15 +221,15 @@ export async function decideVisuals(input: VisualDecisionInput): Promise<VisualM
     );
     let updatedRun = await invalidateVisualConsumers(run, "visuals-decide");
     updatedRun = await persistVisualManifest(updatedRun, nextManifest, "visuals-decide");
+    updatedRun = queueRunLedgerEvent(updatedRun, {
+      type: "REVIEW_DECISION_RECORDED",
+      stage: "visuals-decide",
+      message: `Recorded ${input.status} for ${requested.size} active visual revision(s).`,
+      data: { sceneIndexes: [...requested], status: input.status, reviewedBy },
+    });
     return { run: updatedRun, value: nextManifest };
   });
-  await appendLedgerEvent({
-    runId: input.runId,
-    type: "REVIEW_DECISION_RECORDED",
-    stage: "visuals-decide",
-    message: `Recorded ${input.status} for ${requested.size} active visual revision(s).`,
-    data: { sceneIndexes: [...requested], status: input.status, reviewedBy },
-  });
+  await reconcileRunLedgerOutbox(input.runId);
   return manifest;
 }
 

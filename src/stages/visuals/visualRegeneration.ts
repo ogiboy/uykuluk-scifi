@@ -1,6 +1,6 @@
 import { loadConfig } from "../../config/config.js";
 import { SafeExitError } from "../../core/errors.js";
-import { appendLedgerEvent } from "../../core/ledger.js";
+import { queueRunLedgerEvent, reconcileRunLedgerOutbox } from "../../core/runLedgerOutbox.js";
 import { mutateRun } from "../../core/runStore.js";
 import { requireState } from "../../safeguards/approvalGuard.js";
 import { nowIso } from "../../utils/time.js";
@@ -28,6 +28,7 @@ import { createStaticVisualRevision } from "./visualRevisions.js";
 export async function regenerateRejectedStaticVisuals(
   input: Readonly<{ runId: string; sceneIndexes: readonly number[] }> & VisualMutationExpectation,
 ): Promise<VisualManifest> {
+  await reconcileRunLedgerOutbox(input.runId);
   const requested = new Set(input.sceneIndexes);
   if (requested.size === 0) {
     throw new SafeExitError("Visual regeneration requires at least one rejected scene.");
@@ -91,14 +92,14 @@ export async function regenerateRejectedStaticVisuals(
     );
     let updatedRun = await invalidateVisualConsumers(run, "visuals-regenerate");
     updatedRun = await persistVisualManifest(updatedRun, nextManifest, "visuals-regenerate");
+    updatedRun = queueRunLedgerEvent(updatedRun, {
+      type: "ARTIFACT_REVISED",
+      stage: "visuals-regenerate",
+      message: `Regenerated ${requested.size} rejected visual scene(s) as static fallback revisions.`,
+      data: { sceneIndexes: [...requested] },
+    });
     return { run: updatedRun, value: nextManifest };
   });
-  await appendLedgerEvent({
-    runId: input.runId,
-    type: "ARTIFACT_REVISED",
-    stage: "visuals-regenerate",
-    message: `Regenerated ${requested.size} rejected visual scene(s) as static fallback revisions.`,
-    data: { sceneIndexes: [...requested] },
-  });
+  await reconcileRunLedgerOutbox(input.runId);
   return manifest;
 }

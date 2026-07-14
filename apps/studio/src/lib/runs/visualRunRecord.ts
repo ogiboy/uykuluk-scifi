@@ -1,5 +1,6 @@
-import { readFile } from "node:fs/promises";
-import { runRecordSchema, type RunRecord } from "../../../../../src/core/state";
+import { lstat } from "node:fs/promises";
+import { loadRunAtProjectRoot } from "../../../../../src/core/runStore";
+import type { RunRecord } from "../../../../../src/core/state";
 import { studioRunFilePath } from "./runFilePaths";
 
 /** Reads a Studio run record only when its path and persisted schema are both valid. */
@@ -10,8 +11,10 @@ export async function readCoreVisualRunRecord(
   const statePath = studioRunFilePath(root, runId, "state.json");
   if (!statePath) return null;
   try {
-    return runRecordSchema.parse(JSON.parse(await readFile(statePath, "utf8")) as unknown);
-  } catch {
-    return null;
+    await lstat(statePath);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
+    throw error;
   }
+  return loadRunAtProjectRoot(root, runId);
 }

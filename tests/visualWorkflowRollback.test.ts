@@ -1,8 +1,9 @@
-import { readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rename, rm, symlink, writeFile } from "node:fs/promises";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { artifactPath, writeRunText } from "../src/core/artifacts";
 import { readLedger } from "../src/core/ledger";
-import { loadRun, mutateRun } from "../src/core/runStore";
+import { loadRun, mutateRun, runDir } from "../src/core/runStore";
 import { prepareStaticVisuals } from "../src/stages/visuals";
 import { captureVisualArtifactRollback } from "../src/stages/visuals/visualArtifactRollback";
 import { visualMutationRollbackPaths } from "../src/stages/visuals/visualPersistence";
@@ -75,12 +76,53 @@ describe("scene visual workflow rollback", () => {
         type: "ARTIFACT_ROLLBACK",
         stage: "test-visual-rollback",
         data: {
-          failure: expect.stringMatching(
-            phase === "state" ? /run state changed/i : new RegExp(`injected after ${phase}`, "i"),
-          ),
+          failure: { category: expect.any(String), name: expect.any(String) },
           paths: expect.arrayContaining([pendingAsset, "production/visuals/manifest.json"]),
         },
       });
+      expect(JSON.stringify(rollbackEvent)).not.toContain(`injected after ${phase}`);
     }
+  });
+
+  it("revalidates run containment before restoring a captured artifact", async () => {
+    const runId = await preparePackagedVisualRun();
+    await prepareStaticVisuals(runId);
+    const relativePath = "production/visuals/manifest.json";
+    const rollback = await captureVisualArtifactRollback(runId, "test-symlink-swap", [
+      relativePath,
+    ]);
+    const visualDirectory = path.join(runDir(runId), "production", "visuals");
+    const archivedDirectory = `${visualDirectory}.captured`;
+    const outsideDirectory = path.join(process.cwd(), "outside-visual-rollback");
+    await mkdir(outsideDirectory);
+    const outsideSentinel = path.join(outsideDirectory, "manifest.json");
+    await writeFile(outsideSentinel, "outside sentinel\n", "utf8");
+    await rename(visualDirectory, archivedDirectory);
+    await symlink(outsideDirectory, visualDirectory, "dir");
+
+    await expect(rollback(new Error("secret=/tmp/operator?token=hidden"))).rejects.toThrow(
+      /symbolic link|symlink/i,
+    );
+    await expect(readFile(outsideSentinel, "utf8")).resolves.toBe("outside sentinel\n");
+  });
+
+  it("persists only allowlisted rollback failure metadata", async () => {
+    const runId = await preparePackagedVisualRun();
+    await prepareStaticVisuals(runId);
+    const rollback = await captureVisualArtifactRollback(runId, "test-redacted-rollback", [
+      "production/visuals/manifest.json",
+    ]);
+    const failure = new Error("secret=/tmp/operator?token=hidden") as NodeJS.ErrnoException;
+    failure.name = "SecretCredentialName";
+    failure.code = "SECRET_TOKEN_ABC";
+
+    await rollback(failure);
+
+    const event = (await readLedger(runId)).at(-1);
+    expect(event).toMatchObject({
+      data: { failure: { category: "unexpected", name: "Error" } },
+      type: "ARTIFACT_ROLLBACK",
+    });
+    expect(JSON.stringify(event)).not.toMatch(/secret|operator|token/i);
   });
 });

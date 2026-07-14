@@ -30,6 +30,28 @@ const approvalTargets = [
   "publish",
 ] as const;
 
+const ledgerEventTypes = [
+  "RUN_CREATED",
+  "STATE_CHANGED",
+  "ARTIFACT_WRITTEN",
+  "ARTIFACT_REMOVED",
+  "ARTIFACT_REVISED",
+  "ARTIFACT_ROLLBACK",
+  "REVIEW_DECISION_RECORDED",
+  "APPROVAL_RECORDED",
+  "COST_ESTIMATED",
+  "COST_RESERVED",
+  "COST_EXECUTION_STARTED",
+  "COST_RELEASED",
+  "COST_UNCERTAIN",
+  "COST_SETTLED",
+  "COST_RECONCILED",
+  "GUARD_PASSED",
+  "GUARD_BLOCKED",
+  "WARNING",
+  "ERROR",
+] as const;
+
 export const runStateSchema = z.enum(runStates);
 export const approvalTargetSchema = z.enum(approvalTargets);
 
@@ -48,6 +70,17 @@ export const approvalRecordSchema = z.strictObject({
   createdAt: z.iso.datetime(),
 });
 
+export const ledgerEventTypeSchema = z.enum(ledgerEventTypes);
+export const ledgerEventSchema = z.strictObject({
+  eventId: z.string().min(1),
+  runId: z.string().min(1),
+  type: ledgerEventTypeSchema,
+  stage: z.string().min(1),
+  message: z.string().min(1),
+  data: z.unknown().optional(),
+  createdAt: z.iso.datetime(),
+});
+
 export const runRecordSchema = z.strictObject({
   runId: z.string().min(1),
   state: runStateSchema,
@@ -57,41 +90,14 @@ export const runRecordSchema = z.strictObject({
   approvals: z.array(approvalRecordSchema),
   artifacts: z.array(z.string()),
   warnings: z.array(z.string()),
+  pendingLedgerEvents: z.array(ledgerEventSchema).max(64).optional(),
 });
 
 export type ApprovalRecord = z.infer<typeof approvalRecordSchema>;
 export type RunRecord = z.infer<typeof runRecordSchema>;
 
-export type LedgerEventType =
-  | "RUN_CREATED"
-  | "STATE_CHANGED"
-  | "ARTIFACT_WRITTEN"
-  | "ARTIFACT_REMOVED"
-  | "ARTIFACT_REVISED"
-  | "ARTIFACT_ROLLBACK"
-  | "REVIEW_DECISION_RECORDED"
-  | "APPROVAL_RECORDED"
-  | "COST_ESTIMATED"
-  | "COST_RESERVED"
-  | "COST_EXECUTION_STARTED"
-  | "COST_RELEASED"
-  | "COST_UNCERTAIN"
-  | "COST_SETTLED"
-  | "COST_RECONCILED"
-  | "GUARD_PASSED"
-  | "GUARD_BLOCKED"
-  | "WARNING"
-  | "ERROR";
-
-export type LedgerEvent = {
-  eventId: string;
-  runId: string;
-  type: LedgerEventType;
-  stage: string;
-  message: string;
-  data?: unknown;
-  createdAt: string;
-};
+export type LedgerEventType = z.infer<typeof ledgerEventTypeSchema>;
+export type LedgerEvent = z.infer<typeof ledgerEventSchema>;
 
 export type CostEvent = {
   runId: string;

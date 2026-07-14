@@ -2,12 +2,12 @@
 
 ## Result
 
-- `pnpm check`: passed, including 234 test files / 1,040 tests, production Studio webpack build,
+- `pnpm check`: passed, including 236 test files / 1,048 tests, production Studio webpack build,
   modularity, secret scan, release conventions, and formatting.
 - Two consecutive post-rebase `pnpm test` runs: 233 files / 1,040 tests each passed before the
-  rollback test split; the final full suite passed as 234 files / 1,040 tests.
-- `pnpm qa:usage`: passed with 18 deterministic visual beats prepared and approved before render
-  planning.
+  rollback test split; the final post-review suite passed as 236 files / 1,048 tests.
+- `pnpm qa:usage`: passed again after review fixes with 18 deterministic visual beats prepared and
+  approved before render planning.
 - `pnpm qa:product`: passed in a clean isolated install through Studio actions, local render,
   recovery, tamper, and disabled-publish checks.
 - `pnpm qa:browser`: 9/9 Playwright tests passed against the production Studio build.
@@ -20,9 +20,10 @@
 
 ## Boundary
 
-- Covered: deterministic static/manual visual providers, exact review snapshots, rollback,
-  digest-bound media, Studio prepare/import/decision/regeneration, render-plan/approval/FFmpeg
-  binding, and local product/browser fallbacks.
+- Covered: deterministic static/manual visual providers, exact review snapshots, recoverable ledger
+  outbox, symlink-contained rollback/project-asset reads, digest-bound media, Studio
+  prepare/import/decision/regeneration, render-plan/approval/FFmpeg binding, and local
+  product/browser fallbacks.
 - Not covered: hosted image generation, real paid provider calls, or real episode acceptance.
 - Local `pnpm sonar:cloud` could not upload because the `codex-sonarcloud-token` Keychain item was
   unavailable. Hosted PR CI is the remaining Sonar authority.

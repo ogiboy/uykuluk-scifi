@@ -1,4 +1,4 @@
-import { spawn } from "node:child_process";
+import { spawn, type ChildProcess } from "node:child_process";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -22,7 +22,13 @@ export function runProducerCli(args: readonly string[]): Promise<StudioCliResult
     const child = spawn(
       path.join(sourceRoot, "node_modules", ".bin", "tsx"),
       [path.join(sourceRoot, "src", "cli.ts"), ...args],
-      { cwd: projectRoot(), env: process.env, shell: false, windowsHide: true },
+      {
+        cwd: projectRoot(),
+        detached: process.platform !== "win32",
+        env: process.env,
+        shell: false,
+        windowsHide: true,
+      },
     );
     let settled = false;
     let stdout = "";
@@ -36,8 +42,11 @@ export function runProducerCli(args: readonly string[]): Promise<StudioCliResult
       if (terminationReason) return;
       terminationReason = reason;
       stderr = appendStderr(stderr, message);
-      child.kill("SIGTERM");
-      forceKillTimer = setTimeout(() => child.kill("SIGKILL"), studioCliKillGraceMs);
+      terminateStudioCliProcessTree(child, "SIGTERM");
+      forceKillTimer = setTimeout(
+        () => terminateStudioCliProcessTree(child, "SIGKILL"),
+        studioCliKillGraceMs,
+      );
     };
     const timeout = setTimeout(() => {
       terminate(
@@ -74,6 +83,38 @@ export function runProducerCli(args: readonly string[]): Promise<StudioCliResult
       clearStudioCliTimers(timeout, forceKillTimer);
       resolve({ stderr, stdout, status: studioCliResultStatus(terminationReason, code) });
     });
+  });
+}
+
+function terminateStudioCliProcessTree(child: ChildProcess, signal: NodeJS.Signals): void {
+  if (!child.pid) {
+    child.kill(signal);
+    return;
+  }
+  if (process.platform === "win32") {
+    terminateWindowsProcessTree(child, signal);
+    return;
+  }
+  try {
+    process.kill(-child.pid, signal);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== "ESRCH") child.kill(signal);
+  }
+}
+
+function terminateWindowsProcessTree(child: ChildProcess, signal: NodeJS.Signals): void {
+  const args = ["/PID", String(child.pid), "/T"];
+  if (signal === "SIGKILL") args.push("/F");
+  const terminator = spawn("taskkill", args, { shell: false, stdio: "ignore", windowsHide: true });
+  let fellBack = false;
+  const fallback = (): void => {
+    if (fellBack) return;
+    fellBack = true;
+    child.kill(signal);
+  };
+  terminator.once("error", fallback);
+  terminator.once("close", (code) => {
+    if (code !== 0) fallback();
   });
 }
 

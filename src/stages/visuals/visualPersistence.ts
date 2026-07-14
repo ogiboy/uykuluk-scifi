@@ -17,6 +17,7 @@ export const invalidatedVisualConsumers = [
 ] as const;
 
 export const visualMutationRollbackPaths = [
+  "ledger.jsonl",
   visualManifestPath,
   visualContactSheetPath,
   ...invalidatedVisualConsumers,

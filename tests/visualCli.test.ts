@@ -175,7 +175,7 @@ function runCli(args: string[]): { status: number | null; stderr: string; stdout
   const result = spawnSync(
     path.join(repoRoot, "node_modules", ".bin", "tsx"),
     [path.join(repoRoot, "src", "cli.ts"), ...args],
-    { cwd: process.cwd(), encoding: "utf8" },
+    { cwd: process.cwd(), encoding: "utf8", timeout: 30_000 },
   );
   return {
     status: result.status,

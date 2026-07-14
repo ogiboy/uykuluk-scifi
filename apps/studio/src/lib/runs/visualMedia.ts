@@ -1,7 +1,6 @@
 import { createHash } from "node:crypto";
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 import { readRegisteredArtifactBytesAtProjectRoot } from "../../../../../src/core/artifactRevision";
+import { readProjectAssetBytesAtProjectRoot } from "../../../../../src/core/projectAssets";
 import { loadVisualManifest } from "../../../../../src/stages/visuals/visualManifest";
 import { readCoreVisualRunRecord } from "./visualRunRecord";
 
@@ -38,7 +37,7 @@ export async function readStudioVisualMedia(
     if (!active || active.revision !== expectedRevision) return { status: 404 };
     const body = active.asset.path.startsWith("production/")
       ? await readRegisteredArtifactBytesAtProjectRoot(root, run, active.asset.path)
-      : await readContainedProjectAsset(root, active.asset.path);
+      : await readProjectAssetBytesAtProjectRoot(root, active.asset.path);
     if (!body) return { status: 404 };
     if (createHash("sha256").update(body).digest("hex") !== active.asset.digest) {
       return { status: 404 };
@@ -59,16 +58,6 @@ export async function readStudioVisualMedia(
   } catch {
     return { status: 404 };
   }
-}
-
-async function readContainedProjectAsset(
-  root: string,
-  relativePath: string,
-): Promise<Buffer | null> {
-  const resolvedRoot = path.resolve(root);
-  const target = path.resolve(resolvedRoot, relativePath);
-  if (target !== resolvedRoot && !target.startsWith(`${resolvedRoot}${path.sep}`)) return null;
-  return readFile(target);
 }
 
 type ByteRange =

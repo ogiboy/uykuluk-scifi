@@ -73,9 +73,9 @@ Current voice checkpoint:
 
 Current visual checkpoint:
 
-- Implemented on the active candidate: a minimal `VisualProvider` boundary with deterministic static
-  and manual PNG/JPEG paths, duration-preserving 12–24 visual beats, revision history, contact-sheet
-  review, rejected-only regeneration, and deterministic motion presets.
+- Implemented on the `v0.83.0` candidate: a minimal `VisualProvider` boundary with deterministic
+  static and manual PNG/JPEG paths, duration-preserving 12–24 visual beats, revision history,
+  contact-sheet review, rejected-only regeneration, and deterministic motion presets.
 - Studio supports prepare, digest/revision-bound media review, batch approve/reject, manual import,
   and rejected-scene regeneration without normal CLI use. Stale browser snapshots cannot mutate a
   newer manifest.

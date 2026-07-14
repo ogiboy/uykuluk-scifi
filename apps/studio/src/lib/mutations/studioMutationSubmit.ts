@@ -7,6 +7,7 @@ import {
   summarizeStudioMutationRecord,
   type StudioMutationRecordSummary,
 } from "./studioMutationResultSummary";
+import { studioMutationWarnings } from "./studioMutationWarnings";
 
 export type StudioMutationSubmitResult = Readonly<
   | {
@@ -105,16 +106,6 @@ export async function submitStudioJsonMutation(input: {
     recordSummary: summarizeStudioMutationRecord(payload?.record),
     warnings,
   };
-}
-
-function studioMutationWarnings(value: unknown): string[] {
-  if (!Array.isArray(value)) return [];
-  return value
-    .filter((item): item is string => typeof item === "string")
-    .map((item) => item.trim())
-    .filter(Boolean)
-    .slice(0, 3)
-    .map((item) => item.slice(0, 500));
 }
 
 function messageWithWarnings(message: string, warnings: readonly string[]): string {

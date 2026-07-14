@@ -1,9 +1,8 @@
 import { createHash } from "node:crypto";
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 import { artifactPathAtProjectRoot } from "../../core/artifactPaths.js";
 import { readRegisteredArtifactBytesAtProjectRoot } from "../../core/artifactRevision.js";
 import { SafeExitError } from "../../core/errors.js";
+import { readProjectAssetBytesAtProjectRoot } from "../../core/projectAssets.js";
 import type { RunRecord } from "../../core/state.js";
 import { pathExists } from "../../utils/fs.js";
 import { readJsonFile } from "../../utils/json.js";
@@ -130,7 +129,7 @@ async function assertManifestMatchesRun(
     }
     const bytes = active.asset.path.startsWith("production/")
       ? await readRegisteredArtifactBytesAtProjectRoot(projectRoot, run, active.asset.path)
-      : await readFile(path.join(projectRoot, active.asset.path));
+      : await readProjectAssetBytesAtProjectRoot(projectRoot, active.asset.path);
     if (!bytes || createHash("sha256").update(bytes).digest("hex") !== active.asset.digest) {
       throw new SafeExitError(
         `Visual asset changed after evidence was recorded: ${active.asset.path}.`,

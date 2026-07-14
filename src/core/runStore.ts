@@ -227,5 +227,10 @@ function validateRunArtifacts(record: RunRecord): RunRecord {
   for (const relativePath of record.artifacts) {
     validateArtifactRelativePath(relativePath);
   }
+  for (const event of record.pendingLedgerEvents ?? []) {
+    if (event.runId !== record.runId) {
+      throw new SafeExitError("Pending ledger event identity does not match its owning run.");
+    }
+  }
   return record;
 }

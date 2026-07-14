@@ -1,9 +1,11 @@
-import { writeFile } from "node:fs/promises";
+import { copyFile, mkdir, rename, symlink, writeFile } from "node:fs/promises";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { GET as getVisualMedia } from "../apps/studio/src/app/runs/[runId]/visuals/[sceneIndex]/route";
+import { readCoreVisualRunRecord } from "../apps/studio/src/lib/runs/visualRunRecord";
 import { readStudioVisualSummary } from "../apps/studio/src/lib/runs/visualSummaries";
 import { artifactPath } from "../src/core/artifacts";
-import { loadRun, saveRun } from "../src/core/runStore";
+import { loadRun, saveRun, statePath } from "../src/core/runStore";
 import { importManualVisual, prepareStaticVisuals } from "../src/stages/visuals";
 import { useTempProject } from "./helpers";
 import {
@@ -91,6 +93,61 @@ describe("Studio visual review read model", () => {
     await expect(visualResponse(scene.mediaUrl, runId, scene.sceneIndex)).resolves.toMatchObject({
       status: 404,
     });
+  });
+
+  it("refuses static visual media reached through a linked project asset directory", async () => {
+    const runId = await preparePackagedVisualRun();
+    await prepareStaticVisuals(runId);
+    const summary = await readStudioVisualSummary(process.cwd(), runId);
+    const scene = summary.scenes[0]!;
+    const backgrounds = path.join(process.cwd(), "assets", "backgrounds");
+    const archived = path.join(process.cwd(), "assets", "backgrounds-original");
+    const outside = path.join(process.cwd(), "outside-backgrounds");
+    await rename(backgrounds, archived);
+    await mkdir(outside);
+    await copyFile(
+      path.join(archived, path.basename(scene.assetPath)),
+      path.join(outside, path.basename(scene.assetPath)),
+    );
+    await symlink(outside, backgrounds, "dir");
+
+    await expect(visualResponse(scene.mediaUrl, runId, scene.sceneIndex)).resolves.toMatchObject({
+      status: 404,
+    });
+  });
+
+  it("refuses a final static visual asset symlink", async () => {
+    const runId = await preparePackagedVisualRun();
+    await prepareStaticVisuals(runId);
+    const summary = await readStudioVisualSummary(process.cwd(), runId);
+    const scene = summary.scenes[0]!;
+    const target = path.join(process.cwd(), scene.assetPath);
+    const archived = `${target}.original`;
+    await rename(target, archived);
+    await symlink(archived, target, "file");
+
+    await expect(visualResponse(scene.mediaUrl, runId, scene.sceneIndex)).resolves.toMatchObject({
+      status: 404,
+    });
+  });
+
+  it("surfaces malformed or mismatched persisted run state instead of hiding it as missing", async () => {
+    const runId = await preparePackagedVisualRun();
+    const run = await loadRun(runId);
+    await writeFile(
+      statePath(runId),
+      `${JSON.stringify({ ...run, runId: "run_mismatched_visual_state" }, null, 2)}\n`,
+      "utf8",
+    );
+
+    await expect(readCoreVisualRunRecord(process.cwd(), runId)).rejects.toThrow(
+      /persisted run id does not match/i,
+    );
+
+    await writeFile(statePath(runId), "{not-json", "utf8");
+    await expect(readCoreVisualRunRecord(process.cwd(), runId)).rejects.toThrow(
+      /run state is invalid/i,
+    );
   });
 });
 

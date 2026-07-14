@@ -356,8 +356,8 @@
   become 12–24 duration-preserving beats with revisions, contact-sheet evidence, deterministic motion,
   and active-asset digests.
 - CLI/core and Studio support prepare, batch review, manual import, and rejected-only regeneration.
-  Mutations carry the exact manifest digest and revision snapshot; rollback and typed compensation
-  preserve failed multi-file operations.
+  Mutations carry exact snapshots; rollback revalidates containment, while an idempotent run outbox
+  reconciles committed visual events after an interrupted ledger append.
 - Studio media URLs bind manifest digest and active revision, then verify bytes before serving.
   Operator decisions stay prominent; paths, digests, and CLI fallback remain under Advanced.
 - Render plan, approval, FFmpeg motion, and draft evidence bind the approved visual manifest. Legacy
