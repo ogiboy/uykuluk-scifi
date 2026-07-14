@@ -9,6 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
+_No unreleased changes yet._
+
+## v0.82.0 (2026-07-14)
+
 ### Features
 
 - generate publish-readable Turkish-aligned SRT from verified ElevenLabs original character timing,
