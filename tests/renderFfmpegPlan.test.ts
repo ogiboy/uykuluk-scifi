@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildDraftRenderComposition } from "../src/stages/render/renderComposition";
 import { buildDraftRenderTimeline, buildFfmpegArgs } from "../src/stages/render/renderFfmpegPlan";
-import { createTwoSceneRenderPlan } from "./renderFfmpegPlanFixtures";
+import { createTwoSceneRenderPlan, linearSubtitleTiming } from "./renderFfmpegPlanFixtures";
 
 const fallbackSubtitlePath = "production/subtitles.srt";
 
@@ -154,12 +154,3 @@ describe("draft render FFmpeg planning", () => {
     expect(renderedArgs).not.toContain("assets/intro/title_card.jpg");
   });
 });
-
-function linearSubtitleTiming(sceneDurationSeconds: number) {
-  return {
-    timingMode: "linear-fallback" as const,
-    sourceDurationSeconds: sceneDurationSeconds,
-    sceneDurationSeconds,
-    timeScale: 1,
-  };
-}

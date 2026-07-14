@@ -1,6 +1,7 @@
 import { SafeExitError } from "../../../core/errors.js";
 import type { TtsCharacterAlignment } from "../providers/ttsProvider.js";
 import type { VoiceoverPreparationV2 } from "../voiceoverPreparation.js";
+import { voiceSubtitleThresholds } from "./voiceSubtitleContracts.js";
 import type { AlignmentOffset } from "./voiceSubtitleTypes.js";
 
 export function validateSubtitleAlignment(
@@ -25,7 +26,11 @@ export function validateSubtitleAlignment(
   for (let index = 0; index < alignment.characters.length; index += 1) {
     const start = alignment.characterStartTimesSeconds[index] ?? -1;
     const end = alignment.characterEndTimesSeconds[index] ?? -1;
-    if (start < previousEnd || end < start || end > audioDurationSeconds + 0.001) {
+    if (
+      start < previousEnd ||
+      end < start ||
+      end > audioDurationSeconds + voiceSubtitleThresholds.timingToleranceSeconds
+    ) {
       throw new SafeExitError(
         "Voice subtitle alignment must be monotonic and within the audio duration.",
       );

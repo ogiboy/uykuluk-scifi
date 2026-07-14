@@ -1,9 +1,5 @@
-import { readRegisteredArtifactBytesAtProjectRoot } from "../../core/artifactRevision.js";
 import type { RunState } from "../../core/state.js";
-import {
-  EvidenceStatusCurrentContextError,
-  readEvidenceStatusCurrentContext,
-} from "./statusEvidenceCurrentContext.js";
+import { readEvidenceStatusSnapshot } from "./statusEvidenceCurrentContext.js";
 import {
   validateEvidenceStatusSnapshot,
   type EvidenceStatusValidationResult,
@@ -24,41 +20,27 @@ export async function readEvidenceStatus(
   currentState: RunState,
   currentArtifacts: readonly string[],
 ): Promise<EvidenceReadResult> {
-  let evidence: unknown;
-  try {
-    const bytes = await readRegisteredArtifactBytesAtProjectRoot(
-      process.cwd(),
-      { runId, artifacts: [...currentArtifacts] },
-      "evidence_bundle.json",
-    );
-    if (!bytes) {
-      return { kind: "missing" };
-    }
-    evidence = JSON.parse(bytes.toString("utf8")) as unknown;
-  } catch (error) {
-    return evidenceReadFailure(error);
-  }
-  let currentContext: Awaited<ReturnType<typeof readEvidenceStatusCurrentContext>>;
-  try {
-    currentContext = await readEvidenceStatusCurrentContext({
-      evidence,
-      runId,
-      currentState,
-      currentArtifacts,
-      projectRoot: process.cwd(),
-    });
-  } catch (error) {
-    return { kind: "invalid", message: evidenceContextFailureMessage(error) };
-  }
-  return validateEvidenceStatus(
-    evidence,
+  const snapshot = await readEvidenceStatusSnapshot({
     runId,
     currentState,
     currentArtifacts,
-    currentContext.currentVoiceAuditionPathRevision,
-    currentContext.currentVoiceAuditionRevision,
-    currentContext.currentTtsConfigurationDigest,
-    currentContext.currentVoiceAuditionRequired,
+    projectRoot: process.cwd(),
+  });
+  if (snapshot.kind === "missing") {
+    return snapshot;
+  }
+  if (snapshot.kind === "invalid") {
+    return { kind: "invalid", message: evidenceReadFailureMessage(snapshot.source) };
+  }
+  return validateEvidenceStatus(
+    snapshot.evidence,
+    runId,
+    currentState,
+    currentArtifacts,
+    snapshot.currentContext.currentVoiceAuditionPathRevision,
+    snapshot.currentContext.currentVoiceAuditionRevision,
+    snapshot.currentContext.currentTtsConfigurationDigest,
+    snapshot.currentContext.currentVoiceAuditionRequired,
   );
 }
 
@@ -97,17 +79,12 @@ export function validateEvidenceStatus(
   );
 }
 
-function evidenceContextFailureMessage(error: unknown): string {
-  return error instanceof EvidenceStatusCurrentContextError && error.source === "tts-configuration"
+function evidenceReadFailureMessage(
+  source: "parse" | "read" | "tts-configuration" | "voice-audition",
+): string {
+  if (source === "parse") return "evidence_bundle.json could not be parsed.";
+  if (source === "read") return "evidence_bundle.json could not be read safely.";
+  return source === "tts-configuration"
     ? "evidence_bundle.json could not be validated against current TTS configuration."
     : "evidence_bundle.json could not be validated against selected voice evidence.";
-}
-
-function evidenceReadFailure(error: unknown): EvidenceReadResult {
-  if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-    return { kind: "missing" };
-  }
-  return error instanceof SyntaxError
-    ? { kind: "invalid", message: "evidence_bundle.json could not be parsed." }
-    : { kind: "invalid", message: "evidence_bundle.json could not be read safely." };
 }

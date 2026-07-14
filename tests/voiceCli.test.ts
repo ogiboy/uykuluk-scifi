@@ -1,6 +1,7 @@
 import { spawnSync } from "node:child_process";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
+import { voiceExecutionConfirmationFromOptions } from "../src/cli/voiceExecutionConfirmationOptions";
 import { loadRun } from "../src/core/runStore";
 import { approveIdea } from "../src/stages/approveIdea";
 import { approveScript } from "../src/stages/approveScript";
@@ -26,7 +27,7 @@ describe("producer voice CLI", () => {
 
     const result = runCli(["voice", "--run", runId, "--json"]);
 
-    expect(result.status).toBe(0);
+    expect(result.status, result.stderr).toBe(0);
     expect(JSON.parse(result.stdout) as unknown).toMatchObject({
       schemaVersion: 2,
       runId,
@@ -59,6 +60,17 @@ describe("producer voice CLI", () => {
 
     expect(result.status).toBe(1);
     expect(result.stderr).toMatch(/requires --binding-digest.*--quote-digest.*--approval-id/i);
+  });
+
+  it("distinguishes malformed hosted confirmation values from missing flags", () => {
+    expect(() =>
+      voiceExecutionConfirmationFromOptions({
+        approvalId: "approval_voice_cli",
+        bindingDigest: "not-a-digest",
+        confirmPaidOperation: true,
+        quoteDigest: "b".repeat(64),
+      }),
+    ).toThrow(/confirmation values are invalid/i);
   });
 });
 

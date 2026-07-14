@@ -6,11 +6,12 @@ import type { RunRecord } from "../../core/state.js";
 import { pathExists } from "../../utils/fs.js";
 import { persistedAlignmentSchema } from "./voiceoverAlignmentValidation.js";
 import type { VoiceoverAudioMeta } from "./voiceoverEvidence.js";
-import { voiceoverPreparationV2Schema } from "./voiceoverPreparation.js";
+import { parseVoiceoverPreparationV2 } from "./voiceoverPreparation.js";
 import {
   alignedSubtitleMetadataPath,
   inspectVoiceSubtitleSrt,
   voiceSubtitleMetadataSchema,
+  voiceSubtitleThresholds,
   type ActiveVoiceSubtitleDescriptor,
 } from "./voiceoverSubtitles.js";
 
@@ -50,7 +51,7 @@ export async function assertVoiceoverSubtitles(
     throw new SafeExitError("Voice subtitle evidence requires preparation metadata.");
   }
   const preparationText = await readFile(resolveArtifact(sourcePreparation.metadataPath), "utf8");
-  const preparation = voiceoverPreparationV2Schema.parse(JSON.parse(preparationText) as unknown);
+  const preparation = parseVoiceoverPreparationV2(JSON.parse(preparationText) as unknown);
   const preparedText = await readFile(resolveArtifact(sourcePreparation.path), "utf8");
   const sourceText = await readFile(resolveArtifact(meta.source.path), "utf8");
   const stats = inspectVoiceSubtitleSrt(subtitleText);
@@ -60,12 +61,16 @@ export async function assertVoiceoverSubtitles(
     metadata.output.path !== descriptor.path ||
     metadata.output.sha256 !== descriptor.sha256 ||
     metadata.output.cueCount !== descriptor.cueCount ||
-    Math.abs(metadata.output.lastCueEndSeconds - descriptor.sourceDurationSeconds) > 0.001 ||
+    Math.abs(metadata.output.lastCueEndSeconds - descriptor.sourceDurationSeconds) >
+      voiceSubtitleThresholds.timingToleranceSeconds ||
     stats.cueCount !== metadata.output.cueCount ||
-    Math.abs(stats.firstCueStartSeconds - metadata.output.firstCueStartSeconds) > 0.001 ||
-    Math.abs(stats.lastCueEndSeconds - metadata.output.lastCueEndSeconds) > 0.001 ||
+    Math.abs(stats.firstCueStartSeconds - metadata.output.firstCueStartSeconds) >
+      voiceSubtitleThresholds.timingToleranceSeconds ||
+    Math.abs(stats.lastCueEndSeconds - metadata.output.lastCueEndSeconds) >
+      voiceSubtitleThresholds.timingToleranceSeconds ||
     metadata.audio.sha256 !== audioDigest ||
-    Math.abs(metadata.audio.durationSeconds - meta.output.durationSeconds) > 0.001 ||
+    Math.abs(metadata.audio.durationSeconds - meta.output.durationSeconds) >
+      voiceSubtitleThresholds.timingToleranceSeconds ||
     metadata.source.sha256 !== meta.source.sha256 ||
     createHash("sha256").update(sourceText, "utf8").digest("hex") !== meta.source.sha256 ||
     metadata.source.normalizedSha256 !== preparation.source.normalizedSha256 ||
@@ -115,7 +120,11 @@ async function assertAlignedSubtitleTimeline(
   for (let index = 0; index < alignment.characters.length; index += 1) {
     const start = alignment.characterStartTimesSeconds[index] ?? -1;
     const end = alignment.characterEndTimesSeconds[index] ?? -1;
-    if (start < previousEnd || end < start || end > meta.output.durationSeconds + 0.001) {
+    if (
+      start < previousEnd ||
+      end < start ||
+      end > meta.output.durationSeconds + voiceSubtitleThresholds.timingToleranceSeconds
+    ) {
       throw new SafeExitError(
         "Original alignment timeline is not monotonic or exceeds voice audio.",
       );

@@ -15,7 +15,7 @@ import {
   approvedHostedVoiceConfirmation,
   paidVoiceSubscription,
   prepareApprovedSelectedVoiceRun,
-  workflowFixtureWav,
+  workflowConvertWithTimestamps,
 } from "./elevenLabsVoiceWorkflowFixtures";
 import { useTempProject } from "./helpers";
 import { successfulExecutionMetadataProvider } from "./voiceCatalogStageFixtures";
@@ -25,41 +25,7 @@ describe("ElevenLabs voice workflow recovery", () => {
 
   beforeEach(() => {
     process.env.ELEVENLABS_API_KEY = "secret-workflow-test-key";
-    sdk.convertWithTimestamps.mockImplementation((_voiceId, request) => {
-      const characters = Array.from(request.text as string);
-      const durationSeconds = Math.max(1, characters.length / 14);
-      return {
-        withRawResponse: async () => ({
-          data: {
-            audioBase64: workflowFixtureWav(Math.ceil(durationSeconds)).toString("base64"),
-            alignment: {
-              characters,
-              characterStartTimesSeconds: characters.map(
-                (_, index) => (index / characters.length) * durationSeconds,
-              ),
-              characterEndTimesSeconds: characters.map(
-                (_, index) => ((index + 1) / characters.length) * durationSeconds,
-              ),
-            },
-            normalizedAlignment: {
-              characters,
-              characterStartTimesSeconds: characters.map(
-                (_, index) => (index / characters.length) * durationSeconds,
-              ),
-              characterEndTimesSeconds: characters.map(
-                (_, index) => ((index + 1) / characters.length) * durationSeconds,
-              ),
-            },
-          },
-          rawResponse: {
-            headers: new Headers({
-              "character-cost": String(characters.length),
-              "request-id": "workflow-request-id",
-            }),
-          },
-        }),
-      };
-    });
+    sdk.convertWithTimestamps.mockImplementation(workflowConvertWithTimestamps);
   });
 
   it("recovers a settled provider result after a crash before final artifact persistence", async () => {

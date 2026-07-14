@@ -41,7 +41,17 @@ export async function readVoiceCandidatesWithPathAtProjectRoot(
     failureMessage: "The latest voice catalog refresh failed; refresh it before audition.",
   });
   const bytes = await requireRegisteredBytes(projectRoot, run, path);
-  const catalog = voiceCandidatesSchema.parse(JSON.parse(bytes.toString("utf8")) as unknown);
+  let decoded: unknown;
+  try {
+    decoded = JSON.parse(bytes.toString("utf8")) as unknown;
+  } catch {
+    throw new SafeExitError("Voice candidate catalog contains invalid JSON.");
+  }
+  const parsed = voiceCandidatesSchema.safeParse(decoded);
+  if (!parsed.success) {
+    throw new SafeExitError("Voice candidate catalog does not match the expected schema.");
+  }
+  const catalog = parsed.data;
   if (catalog.runId !== run.runId) {
     throw new SafeExitError("Voice candidate catalog belongs to a different run.");
   }

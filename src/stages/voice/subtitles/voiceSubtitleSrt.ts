@@ -53,8 +53,24 @@ export function parseAndValidateSrt(input: string, requireAudioBounds: boolean):
   });
   let previousEnd = 0;
   for (const cue of cues) {
+    const durationSeconds = cue.endSeconds - cue.startSeconds;
+    const characterCount = visibleLength(cue.lines.join(""));
     if (cue.startSeconds < previousEnd || cue.endSeconds <= cue.startSeconds) {
       throw new SafeExitError("Voice subtitle SRT cues must be positive and non-overlapping.");
+    }
+    if (
+      durationSeconds + voiceSubtitleThresholds.timingToleranceSeconds <
+        voiceSubtitleThresholds.minCueDurationSeconds ||
+      durationSeconds >
+        voiceSubtitleThresholds.maxCueDurationSeconds +
+          voiceSubtitleThresholds.timingToleranceSeconds ||
+      characterCount / durationSeconds >
+        voiceSubtitleThresholds.maxCharactersPerSecond +
+          voiceSubtitleThresholds.timingToleranceSeconds
+    ) {
+      throw new SafeExitError(
+        `Voice subtitle SRT cue ${cue.index} timing is not readable (${durationSeconds.toFixed(3)}s, ${(characterCount / durationSeconds).toFixed(1)} chars/s).`,
+      );
     }
     previousEnd = cue.endSeconds;
   }

@@ -2,19 +2,13 @@ import { readFile, writeFile } from "node:fs/promises";
 import { expect } from "vitest";
 import { loadConfig } from "../src/config/config";
 import { artifactPath } from "../src/core/artifacts";
-import { loadRun } from "../src/core/runStore";
-import { readCostEstimate } from "../src/costs/costEstimate";
 import {
   costReservationLedgerPath,
   readCostReservationSummaries,
 } from "../src/costs/costReservationStore";
-import type { ReservedProviderAdapter } from "../src/costs/reservedProviderExecution";
 import { canonicalVoiceEvidenceDigest } from "../src/stages/voice/catalog/voiceCatalogDigest";
 import { splitElevenLabsText } from "../src/stages/voice/elevenLabsTextChunks";
-import type {
-  ReservedTtsProvider,
-  TtsSynthesisResult,
-} from "../src/stages/voice/providers/ttsProvider";
+import type { TtsSynthesisResult } from "../src/stages/voice/providers/ttsProvider";
 import { buildSelectedVoiceExecutionBinding } from "../src/stages/voice/voiceExecutionBinding";
 import { revalidateSelectedVoiceExecutionBinding } from "../src/stages/voice/voiceExecutionPreflight";
 import { synthesizeVoiceover } from "../src/stages/voice/voiceSynthesisExecution";
@@ -26,6 +20,9 @@ import {
   workflowFixtureWav,
 } from "./elevenLabsVoiceWorkflowFixtures";
 import { successfulExecutionMetadataProvider } from "./voiceCatalogStageFixtures";
+import { approvedQuote, reservedProvider } from "./voiceExecutionProviderFixtures";
+
+export { reservedProvider } from "./voiceExecutionProviderFixtures";
 
 export async function settledSpoolFixture() {
   const { runId } = await prepareApprovedSelectedVoiceRun();
@@ -41,12 +38,7 @@ export async function settledSpoolFixture() {
     binding,
     provider: successfulExecutionMetadataProvider({ subscription: paidVoiceSubscription }),
   });
-  const quote = await readCostEstimate(runId);
-  const approval = (await loadRun(runId)).approvals.find(
-    (item) => item.target === "paid-generation-cost" && item.approvedRef === quote.digest,
-  );
-  if (!approval) throw new Error("Expected approved quote fixture.");
-  const approvedQuote = { quoteDigest: quote.digest, approvalId: approval.approvalId };
+  const quoteApproval = await approvedQuote(runId);
   const first = await synthesizeVoiceover(
     reservedProvider(binding.bindingDigest, async () => ({
       kind: "success",
@@ -59,7 +51,7 @@ export async function settledSpoolFixture() {
       preparationDigest: binding.input.preparedTextDigest,
       binding,
       preflight,
-      approvedQuote,
+      approvedQuote: quoteApproval,
       preparation,
     },
   );
@@ -76,26 +68,9 @@ export async function settledSpoolFixture() {
     preparedText,
     binding,
     preflight,
-    approvedQuote,
+    approvedQuote: quoteApproval,
     preparation,
     resultSpoolPath: first.paidExecution.resultSpool.path,
-  };
-}
-
-export function reservedProvider(
-  bindingDigest: string,
-  execute: ReservedProviderAdapter<TtsSynthesisResult>["execute"],
-): ReservedTtsProvider {
-  return {
-    mode: "elevenlabs",
-    executionPolicy: "reserved-paid",
-    assertReady() {},
-    createReservedAdapter: () => ({
-      provider: "elevenlabs",
-      model: "eleven_v3",
-      bindingDigest,
-      execute,
-    }),
   };
 }
 

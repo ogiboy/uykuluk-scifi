@@ -7,8 +7,9 @@ import { readCostEstimate } from "../src/costs/costEstimate";
 import { canonicalVoiceEvidenceDigest } from "../src/stages/voice/catalog/voiceCatalogDigest";
 import { buildSelectedVoiceExecutionBinding } from "../src/stages/voice/voiceExecutionBinding";
 import { revalidateSelectedVoiceExecutionBinding } from "../src/stages/voice/voiceExecutionPreflight";
-import { synthesizeVoiceover } from "../src/stages/voice/voiceSynthesisExecution";
+import { loadVoiceExecutionSpool } from "../src/stages/voice/voiceExecutionSpool";
 import { prepareVoiceoverText } from "../src/stages/voice/voiceoverPreparation";
+import { synthesizeVoiceover } from "../src/stages/voice/voiceSynthesisExecution";
 import {
   paidVoiceSubscription,
   prepareApprovedSelectedVoiceRun,
@@ -119,6 +120,22 @@ describe("voice execution result spool recovery", () => {
       ),
     ).rejects.toThrow(/legacy.*does not identify original alignment/i);
     expect(retryExecute).not.toHaveBeenCalled();
+  });
+
+  it("reports a missing committed spool artifact as an operator-safe error", async () => {
+    const fixture = await settledSpoolFixture();
+    const spool = JSON.parse(
+      await readFile(artifactPath(fixture.runId, fixture.resultSpoolPath), "utf8"),
+    ) as { operationId: string; spoolDigest: string; audio: { path: string } };
+    await rm(artifactPath(fixture.runId, spool.audio.path));
+
+    await expect(
+      loadVoiceExecutionSpool(fixture.runId, {
+        operationId: spool.operationId,
+        path: fixture.resultSpoolPath,
+        digest: spool.spoolDigest,
+      }),
+    ).rejects.toThrow(/spool artifact is missing/i);
   });
 
   it("rejects a self-rehashed settled spool without invoking the provider again", async () => {

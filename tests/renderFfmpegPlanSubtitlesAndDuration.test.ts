@@ -6,7 +6,7 @@ import {
   draftRenderTargetDuration,
   summarizeDraftRenderTimeline,
 } from "../src/stages/render/renderFfmpegPlan";
-import { createTwoSceneRenderPlan } from "./renderFfmpegPlanFixtures";
+import { createTwoSceneRenderPlan, linearSubtitleTiming } from "./renderFfmpegPlanFixtures";
 
 const fallbackSubtitlePath = "production/subtitles.srt";
 
@@ -143,12 +143,3 @@ describe("draft render FFmpeg subtitles and duration", () => {
     ).toThrow(/at least one/i);
   });
 });
-
-function linearSubtitleTiming(sceneDurationSeconds: number) {
-  return {
-    timingMode: "linear-fallback" as const,
-    sourceDurationSeconds: sceneDurationSeconds,
-    sceneDurationSeconds,
-    timeScale: 1,
-  };
-}

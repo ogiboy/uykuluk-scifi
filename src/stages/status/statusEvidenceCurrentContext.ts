@@ -1,5 +1,6 @@
 import { loadConfigAtProjectRoot } from "../../config/config.js";
 import type { ProducerConfig } from "../../config/schema.js";
+import { readRegisteredArtifactBytesAtProjectRoot } from "../../core/artifactRevision.js";
 import {
   ttsConfigurationDigest,
   validatedVoiceAuditionArtifactRevision,
@@ -23,6 +24,51 @@ export class EvidenceStatusCurrentContextError extends Error {
   constructor(public readonly source: "tts-configuration" | "voice-audition") {
     super(`Evidence status context failed: ${source}.`);
     this.name = "EvidenceStatusCurrentContextError";
+  }
+}
+
+export type EvidenceStatusSnapshotReadResult =
+  | { kind: "missing" }
+  | { kind: "invalid"; source: "parse" | "read" | EvidenceStatusCurrentContextError["source"] }
+  | { kind: "present"; evidence: unknown; currentContext: EvidenceStatusCurrentContext };
+
+/** Reads, parses, and builds freshness context for one registered evidence bundle. */
+export async function readEvidenceStatusSnapshot(input: {
+  runId: string;
+  currentState: string;
+  currentArtifacts: readonly string[];
+  projectRoot: string;
+}): Promise<EvidenceStatusSnapshotReadResult> {
+  let bytes: Buffer | undefined;
+  try {
+    bytes = await readRegisteredArtifactBytesAtProjectRoot(
+      input.projectRoot,
+      { runId: input.runId, artifacts: [...input.currentArtifacts] },
+      "evidence_bundle.json",
+    );
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+      return { kind: "missing" };
+    }
+    return { kind: "invalid", source: "read" };
+  }
+  if (!bytes) {
+    return { kind: "missing" };
+  }
+  let evidence: unknown;
+  try {
+    evidence = JSON.parse(bytes.toString("utf8")) as unknown;
+  } catch {
+    return { kind: "invalid", source: "parse" };
+  }
+  try {
+    const currentContext = await readEvidenceStatusCurrentContext({ ...input, evidence });
+    return { kind: "present", evidence, currentContext };
+  } catch (error) {
+    return {
+      kind: "invalid",
+      source: error instanceof EvidenceStatusCurrentContextError ? error.source : "voice-audition",
+    };
   }
 }
 

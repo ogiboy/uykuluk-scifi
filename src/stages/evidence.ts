@@ -1,5 +1,6 @@
 import { loadConfig } from "../config/config.js";
 import { artifactPath, writeRunJson, writeRunText } from "../core/artifacts.js";
+import { SafeExitError } from "../core/errors.js";
 import { readLedger } from "../core/ledger.js";
 import { loadRun, saveRun } from "../core/runStore.js";
 import { readCostEstimate } from "../costs/costEstimate.js";
@@ -164,8 +165,11 @@ async function readVoiceSelectionEvidence(
         selection: current.selectionPath,
       },
     };
-  } catch {
-    return { status: "missing-or-invalid" };
+  } catch (error) {
+    if (error instanceof SafeExitError) {
+      return { status: "missing-or-invalid" };
+    }
+    throw error;
   }
 }
 

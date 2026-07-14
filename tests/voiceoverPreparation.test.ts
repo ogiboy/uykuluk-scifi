@@ -98,4 +98,23 @@ describe("voiceover text preparation", () => {
 
     expect(parsed.schemaVersion).toBe(1);
   });
+
+  it("applies v2 occurrence invariants after discriminated-union parsing", () => {
+    const generated = prepareVoiceoverText({
+      runId: "run_invalid_voice_preparation",
+      sourceText: "JWST gözlem yapıyor.",
+      pronunciationReplacements: { JWST: "James Webb Uzay Teleskobu" },
+    });
+    const occurrence = generated.evidence.replacementOccurrences[0];
+    if (!occurrence) throw new Error("Expected replacement occurrence fixture.");
+
+    expect(() =>
+      parsePersistedVoiceoverPreparation({
+        ...generated.evidence,
+        replacementOccurrences: [
+          { ...occurrence, sourceSpan: { ...occurrence.sourceSpan, end: 3 } },
+        ],
+      }),
+    ).toThrow(/spans must match/i);
+  });
 });

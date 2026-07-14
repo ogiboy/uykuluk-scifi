@@ -31,23 +31,8 @@ export async function assertVoiceoverAlignment(
   resolveArtifact: (relativePath: string) => string = (relativePath) =>
     artifactPath(run.runId, relativePath),
 ): Promise<void> {
-  if (!meta.alignment) return;
-  if (!run.artifacts.includes(meta.alignment.path)) {
-    throw new SafeExitError(
-      `Voiceover alignment artifact is not registered: ${meta.alignment.path}.`,
-    );
-  }
-  const target = resolveArtifact(meta.alignment.path);
-  if (!(await pathExists(target))) {
-    throw new SafeExitError(`Voiceover alignment artifact is missing: ${meta.alignment.path}.`);
-  }
-  const text = await readFile(target, "utf8");
-  if (createHash("sha256").update(text, "utf8").digest("hex") !== meta.alignment.sha256) {
-    throw new SafeExitError("Voiceover alignment digest does not match metadata.");
-  }
-  const alignment = persistedAlignmentSchema.parse(JSON.parse(text) as unknown);
-  if (alignment.characters.length !== meta.alignment.characterCount) {
-    throw new SafeExitError("Voiceover alignment character count does not match metadata.");
+  if (meta.alignment) {
+    await assertAlignmentArtifact(run, meta.alignment, "alignment", resolveArtifact);
   }
   if (meta.schemaVersion === 2 && meta.normalizedAlignment) {
     await assertAlignmentArtifact(
@@ -68,7 +53,11 @@ async function assertAlignmentArtifact(
   if (!run.artifacts.includes(descriptor.path)) {
     throw new SafeExitError(`Voiceover ${label} artifact is not registered: ${descriptor.path}.`);
   }
-  const text = await readFile(resolveArtifact(descriptor.path), "utf8");
+  const target = resolveArtifact(descriptor.path);
+  if (!(await pathExists(target))) {
+    throw new SafeExitError(`Voiceover ${label} artifact is missing: ${descriptor.path}.`);
+  }
+  const text = await readFile(target, "utf8");
   if (createHash("sha256").update(text, "utf8").digest("hex") !== descriptor.sha256) {
     throw new SafeExitError(`Voiceover ${label} digest does not match metadata.`);
   }

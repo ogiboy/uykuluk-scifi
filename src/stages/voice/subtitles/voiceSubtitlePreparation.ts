@@ -2,7 +2,7 @@ import { SafeExitError } from "../../../core/errors.js";
 import { sha256 } from "../../../utils/hash.js";
 import {
   normalizeVoiceoverSourceText,
-  voiceoverPreparationV2Schema,
+  parseVoiceoverPreparationV2,
   type VoiceoverPreparationV2,
 } from "../voiceoverPreparation.js";
 
@@ -12,7 +12,7 @@ export function validateSubtitlePreparation(input: {
   preparedText: string;
   preparation: VoiceoverPreparationV2;
 }): string {
-  const preparation = voiceoverPreparationV2Schema.parse(input.preparation);
+  const preparation = parseVoiceoverPreparationV2(input.preparation);
   const normalizedSource = normalizeVoiceoverSourceText(input.sourceText);
   if (
     preparation.runId !== input.runId ||

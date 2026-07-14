@@ -32,7 +32,7 @@ import {
   requireSpoolableAudio,
   sha256Buffer,
 } from "./voiceExecutionSpoolValidation.js";
-import { voiceoverPreparationV2Schema, type VoiceoverPreparation } from "./voiceoverPreparation.js";
+import { parseVoiceoverPreparationV2, type VoiceoverPreparation } from "./voiceoverPreparation.js";
 
 /**
  * Persists validated voice execution artifacts and their integrity metadata, then loads the committed spool.
@@ -53,7 +53,7 @@ export async function persistVoiceExecutionSpool(input: {
   audio: TtsSynthesisResult;
 }): Promise<LoadedVoiceExecutionSpool> {
   const operationId = operationIdSchema.parse(input.operationId);
-  const preparation = voiceoverPreparationV2Schema.parse(input.preparation.evidence);
+  const preparation = parseVoiceoverPreparationV2(input.preparation.evidence);
   if (`${JSON.stringify(preparation, null, 2)}\n` !== input.preparation.evidenceText) {
     throw new SafeExitError("Paid voice spool requires canonical preparation evidence.");
   }

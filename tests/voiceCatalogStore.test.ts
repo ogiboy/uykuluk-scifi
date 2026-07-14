@@ -79,6 +79,19 @@ describe("voice catalog evidence store", () => {
       '"provider": "elevenlabs"',
     );
   });
+
+  it.each([
+    ["invalid JSON", "{"],
+    ["invalid schema", JSON.stringify({ schemaVersion: 1 })],
+  ])("reports %s as an operator-safe catalog error", async (_label, persistedText) => {
+    await configureElevenLabs();
+    const runId = await preparePackagedRun();
+    await generateVoiceCandidates(runId, { provider: successfulCatalogProvider() });
+    const current = await readVoiceCandidatesWithPath(runId);
+    await writeFile(artifactPath(runId, current.path), persistedText, "utf8");
+
+    await expect(readVoiceCandidates(runId)).rejects.toThrow(/voice candidate catalog/i);
+  });
 });
 
 function reverseKeys(value: unknown): unknown {

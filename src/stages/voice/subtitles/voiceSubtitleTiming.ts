@@ -62,10 +62,14 @@ export function timeCueCandidates(
     if (
       start < previousEnd ||
       end <= start ||
-      end > audioDurationSeconds + 0.001 ||
-      duration + 0.001 < requiredDuration ||
-      duration > voiceSubtitleThresholds.maxCueDurationSeconds + 0.001 ||
-      characterCount / duration > voiceSubtitleThresholds.maxCharactersPerSecond + 0.001
+      end > audioDurationSeconds + voiceSubtitleThresholds.timingToleranceSeconds ||
+      duration + voiceSubtitleThresholds.timingToleranceSeconds < requiredDuration ||
+      duration >
+        voiceSubtitleThresholds.maxCueDurationSeconds +
+          voiceSubtitleThresholds.timingToleranceSeconds ||
+      characterCount / duration >
+        voiceSubtitleThresholds.maxCharactersPerSecond +
+          voiceSubtitleThresholds.timingToleranceSeconds
     ) {
       throw new SafeExitError(
         `Voice subtitle cue ${index + 1} cannot satisfy readability and audio bounds.`,
@@ -86,7 +90,7 @@ function splitCandidateForMaximumDuration(
   const bounds = candidateAlignmentBounds(tokens, preparation, alignment, alignmentOffsets);
   if (
     bounds.endSeconds - bounds.startSeconds <=
-    voiceSubtitleThresholds.maxCueDurationSeconds + 0.001
+    voiceSubtitleThresholds.maxCueDurationSeconds + voiceSubtitleThresholds.timingToleranceSeconds
   ) {
     return [[...tokens]];
   }

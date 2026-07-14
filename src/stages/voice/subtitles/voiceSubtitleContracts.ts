@@ -18,14 +18,18 @@ export const voiceSubtitleThresholds = {
   maxCharactersPerSecond: 24,
   minCueDurationSeconds: 0.8,
   maxCueDurationSeconds: 7,
+  minCueTextLengthBeforeBreak: 20,
+  timingToleranceSeconds: 0.001,
 } as const;
 
 const thresholdsSchema = z.strictObject({
-  maxCharactersPerLine: z.literal(46),
-  maxLinesPerCue: z.literal(2),
-  maxCharactersPerSecond: z.literal(24),
-  minCueDurationSeconds: z.literal(0.8),
-  maxCueDurationSeconds: z.literal(7),
+  maxCharactersPerLine: z.literal(voiceSubtitleThresholds.maxCharactersPerLine),
+  maxLinesPerCue: z.literal(voiceSubtitleThresholds.maxLinesPerCue),
+  maxCharactersPerSecond: z.literal(voiceSubtitleThresholds.maxCharactersPerSecond),
+  minCueDurationSeconds: z.literal(voiceSubtitleThresholds.minCueDurationSeconds),
+  maxCueDurationSeconds: z.literal(voiceSubtitleThresholds.maxCueDurationSeconds),
+  minCueTextLengthBeforeBreak: z.literal(voiceSubtitleThresholds.minCueTextLengthBeforeBreak),
+  timingToleranceSeconds: z.literal(voiceSubtitleThresholds.timingToleranceSeconds),
 });
 
 const artifactDigestSchema = z.strictObject({ path: z.string().min(1), sha256: digestSchema });
@@ -84,7 +88,10 @@ export const voiceSubtitleMetadataSchema = z
   })
   .superRefine((metadata, context) => {
     if (metadata.timingMode === "elevenlabs-character-aligned") {
-      if (metadata.output.lastCueEndSeconds > metadata.audio.durationSeconds + 0.001) {
+      if (
+        metadata.output.lastCueEndSeconds >
+        metadata.audio.durationSeconds + voiceSubtitleThresholds.timingToleranceSeconds
+      ) {
         context.addIssue({
           code: "custom",
           path: ["output", "lastCueEndSeconds"],

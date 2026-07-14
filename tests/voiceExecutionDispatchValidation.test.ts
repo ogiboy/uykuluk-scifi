@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { loadConfig } from "../src/config/config";
 import { readLedger } from "../src/core/ledger";
 import { readCostReservationSummaries } from "../src/costs/costReservationStore";
@@ -21,11 +21,21 @@ import {
   reservedProvider,
 } from "./voiceExecutionDispatchFixtures";
 
+const initialElevenLabsApiKey = process.env.ELEVENLABS_API_KEY;
+
 describe("voice execution dispatch validation", () => {
   useTempProject();
 
   beforeEach(() => {
     process.env.ELEVENLABS_API_KEY = "secret-dispatch-test-key";
+  });
+
+  afterEach(() => {
+    if (initialElevenLabsApiKey === undefined) {
+      delete process.env.ELEVENLABS_API_KEY;
+      return;
+    }
+    process.env.ELEVENLABS_API_KEY = initialElevenLabsApiKey;
   });
 
   it("records redacted diagnostics when the live metadata provider fails", async () => {

@@ -1,3 +1,5 @@
+import type { TtsMode } from "../voice/providers/ttsProvider.js";
+
 /** Minimal evidence projections used to choose one safe operator command. */
 type CostQuoteNextStep = { invalid?: boolean; approvalRequired: boolean; approved: boolean } | null;
 
@@ -13,8 +15,6 @@ type VoiceoverNextStep = { productionVoiceCandidate?: boolean | null; status?: s
 type DraftRenderNextStep = { status?: string; voiceoverProductionVoiceCandidate?: boolean } | null;
 
 type VoiceSelectionNextStep = { status?: string } | null;
-
-type TtsMode = "deterministic-local" | "local-piper" | "elevenlabs";
 
 type EvidenceNextCommandInput = {
   costQuote: CostQuoteNextStep;

@@ -36,84 +36,98 @@ export const voiceoverPreparationV1Schema = z.strictObject({
   replacements: z.array(appliedReplacementSchema),
 });
 
-export const voiceoverPreparationV2Schema = z
-  .strictObject({
-    schemaVersion: z.literal(2),
-    runId: z.string().min(1),
-    createdAt: z.iso.datetime(),
-    source: z.strictObject({
-      path: z.literal("production/voiceover.txt"),
-      sha256: digestSchema,
-      normalizedSha256: digestSchema,
-      normalizedCharacterCount: z.int().positive(),
-      offsetUnit: z.literal("utf16-code-unit"),
-    }),
-    output: z.strictObject({
-      path: z.literal(voiceoverPreparedTextPath),
-      sha256: digestSchema,
-      characterCount: z.int().positive(),
-    }),
-    replacements: z.array(appliedReplacementSchema),
-    replacementOccurrences: z.array(replacementOccurrenceSchema),
-  })
-  .superRefine((evidence, context) => {
-    let previousSourceEnd = 0;
-    let previousPreparedEnd = 0;
-    for (const [index, occurrence] of evidence.replacementOccurrences.entries()) {
-      if (
-        occurrence.sourceSpan.start < previousSourceEnd ||
-        occurrence.preparedSpan.start < previousPreparedEnd
-      ) {
-        context.addIssue({
-          code: "custom",
-          path: ["replacementOccurrences", index],
-          message: "Replacement occurrences must be ordered and non-overlapping.",
-        });
-      }
-      if (
-        occurrence.sourceSpan.end - occurrence.sourceSpan.start !== occurrence.source.length ||
-        occurrence.preparedSpan.end - occurrence.preparedSpan.start !==
-          occurrence.replacement.length
-      ) {
-        context.addIssue({
-          code: "custom",
-          path: ["replacementOccurrences", index],
-          message: "Replacement occurrence spans must match their UTF-16 text lengths.",
-        });
-      }
-      previousSourceEnd = occurrence.sourceSpan.end;
-      previousPreparedEnd = occurrence.preparedSpan.end;
+export const voiceoverPreparationV2Schema = z.strictObject({
+  schemaVersion: z.literal(2),
+  runId: z.string().min(1),
+  createdAt: z.iso.datetime(),
+  source: z.strictObject({
+    path: z.literal("production/voiceover.txt"),
+    sha256: digestSchema,
+    normalizedSha256: digestSchema,
+    normalizedCharacterCount: z.int().positive(),
+    offsetUnit: z.literal("utf16-code-unit"),
+  }),
+  output: z.strictObject({
+    path: z.literal(voiceoverPreparedTextPath),
+    sha256: digestSchema,
+    characterCount: z.int().positive(),
+  }),
+  replacements: z.array(appliedReplacementSchema),
+  replacementOccurrences: z.array(replacementOccurrenceSchema),
+});
+
+export type VoiceoverPreparationV2 = z.infer<typeof voiceoverPreparationV2Schema>;
+
+function validateVoiceoverPreparationV2(
+  evidence: VoiceoverPreparationV2,
+  context: z.RefinementCtx,
+): void {
+  let previousSourceEnd = 0;
+  let previousPreparedEnd = 0;
+  for (const [index, occurrence] of evidence.replacementOccurrences.entries()) {
+    if (
+      occurrence.sourceSpan.start < previousSourceEnd ||
+      occurrence.preparedSpan.start < previousPreparedEnd
+    ) {
+      context.addIssue({
+        code: "custom",
+        path: ["replacementOccurrences", index],
+        message: "Replacement occurrences must be ordered and non-overlapping.",
+      });
     }
-    for (const [index, replacement] of evidence.replacements.entries()) {
-      const occurrenceCount = evidence.replacementOccurrences.filter(
-        (item) =>
-          item.source === replacement.source && item.replacement === replacement.replacement,
-      ).length;
-      if (occurrenceCount !== replacement.count) {
-        context.addIssue({
-          code: "custom",
-          path: ["replacements", index, "count"],
-          message: "Replacement summary count must match occurrence evidence.",
-        });
-      }
+    if (
+      occurrence.sourceSpan.end - occurrence.sourceSpan.start !== occurrence.source.length ||
+      occurrence.preparedSpan.end - occurrence.preparedSpan.start !== occurrence.replacement.length
+    ) {
+      context.addIssue({
+        code: "custom",
+        path: ["replacementOccurrences", index],
+        message: "Replacement occurrence spans must match their UTF-16 text lengths.",
+      });
+    }
+    previousSourceEnd = occurrence.sourceSpan.end;
+    previousPreparedEnd = occurrence.preparedSpan.end;
+  }
+  for (const [index, replacement] of evidence.replacements.entries()) {
+    const occurrenceCount = evidence.replacementOccurrences.filter(
+      (item) => item.source === replacement.source && item.replacement === replacement.replacement,
+    ).length;
+    if (occurrenceCount !== replacement.count) {
+      context.addIssue({
+        code: "custom",
+        path: ["replacements", index, "count"],
+        message: "Replacement summary count must match occurrence evidence.",
+      });
+    }
+  }
+}
+
+const validatedVoiceoverPreparationV2Schema = voiceoverPreparationV2Schema.superRefine(
+  validateVoiceoverPreparationV2,
+);
+
+export const persistedVoiceoverPreparationSchema = z
+  .discriminatedUnion("schemaVersion", [voiceoverPreparationV1Schema, voiceoverPreparationV2Schema])
+  .superRefine((evidence, context) => {
+    if (evidence.schemaVersion === 2) {
+      validateVoiceoverPreparationV2(evidence, context);
     }
   });
-
-export const persistedVoiceoverPreparationSchema = z.discriminatedUnion("schemaVersion", [
-  voiceoverPreparationV1Schema,
-  voiceoverPreparationV2Schema,
-]);
 
 /** Compatibility alias used by existing persisted-evidence readers. */
 export const voiceoverPreparationSchema = persistedVoiceoverPreparationSchema;
 
-export type VoiceoverPreparationV2 = z.infer<typeof voiceoverPreparationV2Schema>;
 export type PersistedVoiceoverPreparation = z.infer<typeof persistedVoiceoverPreparationSchema>;
 export type VoiceoverPreparation = VoiceoverPreparationV2;
 
 /** Parses either legacy schema v1 or current schema v2 preparation evidence. */
 export function parsePersistedVoiceoverPreparation(value: unknown): PersistedVoiceoverPreparation {
   return persistedVoiceoverPreparationSchema.parse(value);
+}
+
+/** Parses current schema v2 evidence with its cross-field occurrence invariants. */
+export function parseVoiceoverPreparationV2(value: unknown): VoiceoverPreparationV2 {
+  return validatedVoiceoverPreparationV2Schema.parse(value);
 }
 
 /**
@@ -140,7 +154,7 @@ export function prepareVoiceoverText(input: {
     const count = replacementResult.occurrences.filter((item) => item.source === source).length;
     return count > 0 ? [{ source, replacement, count }] : [];
   });
-  const evidence = voiceoverPreparationV2Schema.parse({
+  const evidence = parseVoiceoverPreparationV2({
     schemaVersion: 2,
     runId: input.runId,
     createdAt: nowIso(),

@@ -1,13 +1,9 @@
-import { readRegisteredArtifactBytesAtProjectRoot } from "../../../../../src/core/artifactRevision";
 import { isValidRunId } from "../../../../../src/core/runId";
 import {
   materializeRunCommand,
   staticEvidenceNextCommand,
 } from "../../../../../src/stages/evidence/evidenceNextCommand";
-import {
-  EvidenceStatusCurrentContextError,
-  readEvidenceStatusCurrentContext,
-} from "../../../../../src/stages/status/statusEvidenceCurrentContext";
+import { readEvidenceStatusSnapshot } from "../../../../../src/stages/status/statusEvidenceCurrentContext";
 import { validateEvidenceStatusSnapshot } from "../../../../../src/stages/status/statusEvidenceSchema";
 import type { EvidenceStatus } from "../../../../../src/stages/status/statusMediaSummary";
 
@@ -39,57 +35,43 @@ export async function readStudioEvidenceSummary(
   } catch {
     return invalidEvidence(runId, "Evidence bundle path is invalid.");
   }
-  let evidence: unknown;
-  try {
-    const bytes = await readRegisteredArtifactBytesAtProjectRoot(
-      root,
-      { runId: validatedRunId, artifacts: [...artifacts] },
-      "evidence_bundle.json",
-    );
-    if (!bytes) {
-      return {
-        message: "Evidence bundle has not been generated.",
-        nextAction: evidenceNextAction(runId),
-        snapshot: null,
-        status: "missing",
-      };
-    }
-    evidence = JSON.parse(bytes.toString("utf8")) as unknown;
-  } catch (error) {
-    return invalidEvidence(
-      runId,
-      error instanceof SyntaxError
-        ? "Evidence bundle could not be parsed."
-        : "Evidence bundle could not be read safely.",
-    );
+  const loaded = await readEvidenceStatusSnapshot({
+    runId: validatedRunId,
+    currentState: state,
+    currentArtifacts: artifacts,
+    projectRoot: root,
+  });
+  if (loaded.kind === "missing") {
+    return {
+      message: "Evidence bundle has not been generated.",
+      nextAction: evidenceNextAction(runId),
+      snapshot: null,
+      status: "missing",
+    };
   }
-  let currentContext: Awaited<ReturnType<typeof readEvidenceStatusCurrentContext>>;
-  try {
-    currentContext = await readEvidenceStatusCurrentContext({
-      evidence,
-      runId: validatedRunId,
-      currentState: state,
-      currentArtifacts: artifacts,
-      projectRoot: root,
-    });
-  } catch (error) {
-    return invalidEvidence(
-      runId,
-      error instanceof EvidenceStatusCurrentContextError && error.source === "tts-configuration"
-        ? "Evidence bundle could not be validated against current TTS configuration."
-        : "Evidence bundle could not be validated against selected voice evidence.",
-    );
+  if (loaded.kind === "invalid") {
+    return invalidEvidence(runId, studioEvidenceReadFailureMessage(loaded.source));
   }
   return summarizeEvidenceSnapshot(
-    evidence,
+    loaded.evidence,
     validatedRunId,
     state,
     artifacts,
-    currentContext.currentVoiceAuditionPathRevision,
-    currentContext.currentVoiceAuditionRevision,
-    currentContext.currentTtsConfigurationDigest,
-    currentContext.currentVoiceAuditionRequired,
+    loaded.currentContext.currentVoiceAuditionPathRevision,
+    loaded.currentContext.currentVoiceAuditionRevision,
+    loaded.currentContext.currentTtsConfigurationDigest,
+    loaded.currentContext.currentVoiceAuditionRequired,
   );
+}
+
+function studioEvidenceReadFailureMessage(
+  source: "parse" | "read" | "tts-configuration" | "voice-audition",
+): string {
+  if (source === "parse") return "Evidence bundle could not be parsed.";
+  if (source === "read") return "Evidence bundle could not be read safely.";
+  return source === "tts-configuration"
+    ? "Evidence bundle could not be validated against current TTS configuration."
+    : "Evidence bundle could not be validated against selected voice evidence.";
 }
 
 function validStudioRunId(runId: string): string {

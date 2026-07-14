@@ -7,6 +7,7 @@ import {
   alignedSubtitlePath,
   buildAlignedVoiceSubtitles,
   buildLinearFallbackVoiceSubtitles,
+  inspectVoiceSubtitleSrt,
   voiceSubtitleMetadataSchema,
 } from "../src/stages/voice/voiceoverSubtitles";
 import { sha256 } from "../src/utils/hash";
@@ -168,6 +169,13 @@ describe("voiceover subtitles", () => {
     });
     expect(result.metadata.alignment).toBeUndefined();
     expect(result.metadata.audio.durationSeconds).toBe(2);
+  });
+
+  it("rejects persisted cues that exceed the readable character rate", () => {
+    const subtitleText =
+      "1\n00:00:00,000 --> 00:00:01,000\nBu metin bir saniyede kesin okunamaz.\n";
+
+    expect(() => inspectVoiceSubtitleSrt(subtitleText)).toThrow(/timing is not readable/i);
   });
 });
 

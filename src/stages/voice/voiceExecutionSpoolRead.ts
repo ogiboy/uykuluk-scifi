@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import { artifactPathAtProjectRoot } from "../../core/artifactPaths.js";
 import { artifactPath } from "../../core/artifacts.js";
 import { SafeExitError } from "../../core/errors.js";
+import { pathExists } from "../../utils/fs.js";
 import { sha256 } from "../../utils/hash.js";
 import { readJsonFile } from "../../utils/json.js";
 import { canonicalVoiceEvidenceDigest } from "./catalog/voiceCatalogDigest.js";
@@ -20,7 +21,7 @@ import {
   sha256Buffer,
 } from "./voiceExecutionSpoolValidation.js";
 import { persistedAlignmentSchema } from "./voiceoverEvidenceValidation.js";
-import { voiceoverPreparationV2Schema } from "./voiceoverPreparation.js";
+import { parseVoiceoverPreparationV2 } from "./voiceoverPreparation.js";
 
 /** Loads a committed result spool and verifies all referenced bytes and canonical snapshots. */
 export async function loadVoiceExecutionSpool(
@@ -62,6 +63,18 @@ export async function loadVoiceExecutionSpoolAtProjectRoot(
   }
   const binding = requireSelectedSpoolBinding(spool);
   const preflight = requireMatchingVoiceExecutionPreflight(spool.liveValidation, binding);
+  const committedPaths = [
+    spool.audio.path,
+    spool.alignments.original.path,
+    ...(spool.alignments.normalized ? [spool.alignments.normalized.path] : []),
+    spool.preparation.text.path,
+    spool.preparation.evidence.path,
+  ];
+  for (const relativePath of committedPaths) {
+    if (!(await pathExists(resolveArtifact(relativePath)))) {
+      throw new SafeExitError(`Voice execution spool artifact is missing: ${relativePath}.`);
+    }
+  }
   const audioBuffer = await readFile(resolveArtifact(spool.audio.path));
   const originalAlignmentText = await readFile(
     resolveArtifact(spool.alignments.original.path),
@@ -95,9 +108,7 @@ export async function loadVoiceExecutionSpoolAtProjectRoot(
   const normalizedAlignment = normalizedAlignmentText
     ? persistedAlignmentSchema.parse(JSON.parse(normalizedAlignmentText) as unknown)
     : undefined;
-  const preparation = voiceoverPreparationV2Schema.parse(
-    JSON.parse(preparationEvidenceText) as unknown,
-  );
+  const preparation = parseVoiceoverPreparationV2(JSON.parse(preparationEvidenceText) as unknown);
   if (
     originalAlignment.characters.length !== spool.alignments.original.characterCount ||
     (spool.alignments.normalized &&

@@ -29,8 +29,15 @@ export function voiceExecutionConfirmationFromOptions(
     quoteDigest: options.quoteDigest,
   });
   if (!result.success) {
+    const allRequiredValuesProvided =
+      Boolean(options.approvalId) &&
+      Boolean(options.bindingDigest) &&
+      options.confirmPaidOperation === true &&
+      Boolean(options.quoteDigest);
     throw new SafeExitError(
-      "Hosted voice execution requires --binding-digest, --quote-digest, --approval-id, and --confirm-paid-operation together.",
+      allRequiredValuesProvided
+        ? "Hosted voice execution confirmation values are invalid; verify the approval ID and SHA-256 digests."
+        : "Hosted voice execution requires --binding-digest, --quote-digest, --approval-id, and --confirm-paid-operation together.",
     );
   }
   return result.data;

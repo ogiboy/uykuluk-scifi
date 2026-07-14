@@ -15,7 +15,7 @@ export function buildCueCandidates(
     const currentText = wrapTokens(current).join(" ");
     if (
       current.length > 0 &&
-      visibleLength(currentText) >= 20 &&
+      visibleLength(currentText) >= voiceSubtitleThresholds.minCueTextLengthBeforeBreak &&
       /[.!?…]["')\]]?$/u.test(current.at(-1)?.text ?? "")
     ) {
       cues.push(current);
