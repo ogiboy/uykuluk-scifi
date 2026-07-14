@@ -68,9 +68,8 @@ export function buildFfmpegArgs(input: {
   const audio = artifactPath(input.runId, voiceoverAudioPath);
   const subtitles = artifactPath(input.runId, input.subtitleArtifactPath);
   const audioInputIndex = ffmpegInputs.length;
-  const sceneFilters = ffmpegInputs.map(
-    (item, index) =>
-      `[${index}:v]scale=1280:720,setsar=1,trim=duration=${item.durationSeconds},setpts=PTS-STARTPTS[s${index}]`,
+  const sceneFilters = ffmpegInputs.map((item, index) =>
+    sceneInputFilter(item, index, input.renderPlan.format.fps, input.renderPlan.format.resolution),
   );
   const concatInputs = ffmpegInputs.map((_, index) => `[s${index}]`).join("");
   const filter = buildVideoFilter({
@@ -125,6 +124,64 @@ export function buildFfmpegArgs(input: {
     input.ffmpegOutputPath,
   );
   return args;
+}
+
+function sceneInputFilter(
+  item: ReturnType<typeof buildFfmpegTimelineInputs>[number],
+  index: number,
+  fps: number,
+  resolution: RenderPlan["format"]["resolution"],
+): string {
+  const prefix = `[${index}:v]`;
+  const suffix = `setsar=1,trim=duration=${item.durationSeconds},setpts=PTS-STARTPTS[s${index}]`;
+  const { width, height } = renderDimensions(resolution);
+  if (!item.motion || item.source === "source-frame") {
+    return `${prefix}scale=${width}:${height},${suffix}`;
+  }
+  const frames = Math.max(1, Math.round(item.durationSeconds * fps));
+  const frameDenominator = Math.max(1, frames - 1);
+  const zoomDelta = Math.abs(item.motion.zoomEnd - item.motion.zoomStart) / frameDenominator;
+  const zoom = zoomExpression(item.motion, zoomDelta);
+  const x = panExpression(item.motion.pan, frameDenominator);
+  return `${prefix}zoompan=z='${zoom}':x='${x}':y='(ih-ih/zoom)/2':d=1:s=${width}x${height}:fps=${fps},${suffix}`;
+}
+
+function zoomExpression(
+  motion: NonNullable<ReturnType<typeof buildFfmpegTimelineInputs>[number]["motion"]>,
+  zoomDelta: number,
+): string {
+  const delta = zoomDelta.toFixed(7);
+  if (motion.kind === "slow-zoom-in") {
+    return `if(eq(on\\,0)\\,${motion.zoomStart}\\,min(zoom+${delta}\\,${motion.zoomEnd}))`;
+  }
+  if (motion.kind === "slow-zoom-out") {
+    return `if(eq(on\\,0)\\,${motion.zoomStart}\\,max(zoom-${delta}\\,${motion.zoomEnd}))`;
+  }
+  return String(motion.zoomStart);
+}
+
+function panExpression(
+  pan: NonNullable<ReturnType<typeof buildFfmpegTimelineInputs>[number]["motion"]>["pan"],
+  frameDenominator: number,
+): string {
+  if (pan === "left") {
+    return `(iw-iw/zoom)*(1-on/${frameDenominator})`;
+  }
+  if (pan === "right") {
+    return `(iw-iw/zoom)*(on/${frameDenominator})`;
+  }
+  return `(iw-iw/zoom)/2`;
+}
+
+function renderDimensions(resolution: RenderPlan["format"]["resolution"]): {
+  width: number;
+  height: number;
+} {
+  const [width, height] = resolution.split("x").map(Number);
+  if (!width || !height) {
+    throw new SafeExitError(`Unsupported render resolution: ${resolution}.`);
+  }
+  return { width, height };
 }
 
 /**

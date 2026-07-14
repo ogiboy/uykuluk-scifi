@@ -37,6 +37,7 @@ import {
   safeReaddir,
 } from "./runs/runSummaryFiles";
 import { loadRunSummaryInputs } from "./runs/runSummaryInputs";
+import { readStudioVisualSummary, type StudioVisualSummary } from "./runs/visualSummaries";
 import {
   readStudioVoiceAuditionSummary,
   type StudioVoiceAuditionSummary,
@@ -78,6 +79,7 @@ export type StudioRunDetail = StudioRunSummary & {
   readinessChecks: StudioReadinessCheck[];
   renderDecisionCommands: RenderDecisionCommandTemplate[];
   revisionSources: StudioRevisionSources;
+  visuals: StudioVisualSummary;
   voiceAudition: StudioVoiceAuditionSummary;
   warnings: string[];
 };
@@ -126,12 +128,13 @@ export async function getStudioRunDetail(runId: string): Promise<StudioRunDetail
     inputs.channelHandoff,
     inputs.channelHandoffDecision,
   );
-  const [artifacts, diagnostics, generatedIdeas, revisionSources, voiceAudition] =
+  const [artifacts, diagnostics, generatedIdeas, revisionSources, visuals, voiceAudition] =
     await Promise.all([
       readReviewArtifactPreviews(root, runId),
       readStudioRunDiagnostics(root, runId, record.artifacts ?? []),
       readStudioGeneratedIdeas(root, runId),
       readStudioRevisionSources(root, runId),
+      readStudioVisualSummary(root, runId),
       readStudioVoiceAuditionSummary(root, {
         approvals: record.approvals ?? [],
         artifacts: record.artifacts ?? [],
@@ -157,6 +160,7 @@ export async function getStudioRunDetail(runId: string): Promise<StudioRunDetail
       inputs.renderDecision,
     ),
     revisionSources,
+    visuals,
     voiceAudition,
     warnings: record.warnings ?? [],
   };

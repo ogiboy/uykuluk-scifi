@@ -16,6 +16,7 @@ export type StudioStageActionId = Extract<
   | "review-bundle.run"
   | "script.review"
   | "script.run"
+  | "visuals.prepare"
   | "voice.review"
   | "voice.run"
 >;
@@ -42,6 +43,7 @@ const studioStageActionRows = {
   "script.run": ["/actions/run-script", "script", "Generate Script", "Generate the next script draft for the approved idea."],
   "script.review": ["/actions/review-script", "review script", "Review Script", "Run the local script review and persist warnings/blockers for approval."],
   "package.run": ["/actions/run-package", "package", "Generate Package", "Generate production package artifacts from the approved script."],
+  "visuals.prepare": ["/actions/visuals-prepare", "visuals prepare", "Prepare Scene Visuals", "Prepare the deterministic 12-24 beat static visual fallback for contact-sheet review and manual revision."],
   "render-plan.run": ["/actions/run-render-plan", "render-plan", "Generate Render Plan", "Generate the deterministic render plan, contact sheet, and asset provenance."],
   "render-plan.review": ["/actions/review-render-plan", "review render-plan", "Review Render Plan", "Open the render-plan handoff through the canonical local review command."],
   "estimate.run": ["/actions/run-estimate", "estimate", "Regenerate Estimate", "Regenerate the current cost estimate before approval or readiness work."],

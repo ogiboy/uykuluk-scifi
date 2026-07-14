@@ -28,6 +28,10 @@ export const studioCliMutationActionIds = [
   "script.review",
   "script.revise",
   "script.run",
+  "visuals.decide",
+  "visuals.import",
+  "visuals.prepare",
+  "visuals.regenerate",
   "voice.candidates",
   "voice.preview",
   "voice.reselect",
@@ -55,6 +59,9 @@ export type RunOnlyCliActionId = Exclude<
   | "render.decide"
   | "script.approve"
   | "script.revise"
+  | "visuals.decide"
+  | "visuals.import"
+  | "visuals.regenerate"
   | "voice.preview"
   | "voice.reselect"
   | "voice.run"
@@ -82,6 +89,7 @@ export const runOnlyCliCommand: Record<RunOnlyCliActionId, readonly string[]> = 
   "review-bundle.run": ["review-bundle"],
   "script.review": ["review", "script"],
   "script.run": ["script"],
+  "visuals.prepare": ["visuals", "prepare"],
   "voice.candidates": ["voice-candidates"],
   "voice.review": ["review", "voice"],
 };

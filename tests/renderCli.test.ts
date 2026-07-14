@@ -25,6 +25,7 @@ import {
   enableDeterministicTts,
   renderToolRoot,
 } from "./renderTestHelpers";
+import { prepareApprovedStaticVisuals } from "./visualTestHelpers";
 
 const repoRoot = process.cwd();
 
@@ -42,7 +43,7 @@ describe("producer render CLI", () => {
 
     expect(result.status).toBe(0);
     expect(JSON.parse(result.stdout) as unknown).toMatchObject({
-      schemaVersion: 9,
+      schemaVersion: 10,
       runId,
       chapterDraft: {
         jsonPath: "production/render/youtube_chapters.json",
@@ -203,6 +204,7 @@ async function prepareVoiceoverReadyRun(): Promise<string> {
   await reviewScript(runId);
   await approveScript(runId, { acknowledgeWarnings: true });
   await generateProductionPackage(runId);
+  await prepareApprovedStaticVisuals(runId);
   await generateRenderPlan(runId);
   await estimateCost(runId);
   await generateEvidenceBundle(runId);

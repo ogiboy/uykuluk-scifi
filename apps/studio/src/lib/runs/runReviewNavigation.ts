@@ -4,6 +4,7 @@ import { buildStudioRunReviewBrief } from "./runReviewBrief";
 export const runReviewTabValues = [
   "progress",
   "voice",
+  "visuals",
   "media",
   "artifacts",
   "handoff",
@@ -29,7 +30,7 @@ type RunReviewNavigationInput = Pick<
   | "state"
 > &
   Parameters<typeof buildStudioRunReviewBrief>[0] &
-  Partial<Pick<StudioRunDetail, "voiceAudition">>;
+  Partial<Pick<StudioRunDetail, "visuals" | "voiceAudition">>;
 
 type RunReviewSummaryNavigationInput = Pick<
   StudioRunDetail,
@@ -171,6 +172,13 @@ export function runReviewTabFocus(run: RunReviewNavigationInput): RunReviewTabFo
       tab: "handoff",
     };
   }
+  if (isExactVisualCommand(run.nextRecommendedCommand)) {
+    return {
+      detail: "Scene visuals are the exact current CLI/core task and need contact-sheet review.",
+      label: "Visual review",
+      tab: "visuals",
+    };
+  }
   if (
     run.voiceAudition?.production.synthesis.status !== "ready" &&
     (run.voiceAudition?.production.hostedExecution ||
@@ -181,6 +189,14 @@ export function runReviewTabFocus(run: RunReviewNavigationInput): RunReviewTabFo
       detail: "Voice audition or exact production confirmation is the current operator task.",
       label: "Voice production",
       tab: "voice",
+    };
+  }
+  if (run.visuals?.kind === "ready" && run.visuals.approvedCount < run.visuals.scenes.length) {
+    return {
+      detail:
+        "Scene visuals are ready for contact-sheet review, selective replacement, and approval.",
+      label: "Visual review",
+      tab: "visuals",
     };
   }
   if (run.productionMedia.some((artifact) => artifact.status === "pass")) {
@@ -202,6 +218,10 @@ export function runReviewTabFocus(run: RunReviewNavigationInput): RunReviewTabFo
     label: "Progress",
     tab: "progress",
   };
+}
+
+function isExactVisualCommand(command: string | null | undefined): boolean {
+  return /^pnpm producer visuals(?:\s|$)/.test(command?.trim() ?? "");
 }
 
 function firstSearchParamValue(value: string | string[] | undefined): string | undefined {

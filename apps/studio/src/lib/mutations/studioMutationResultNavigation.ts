@@ -28,6 +28,10 @@ const mutationReviewTargets: Readonly<Record<string, MutationReviewTarget>> = {
   "script.review": target("artifacts", "Open script review artifacts"),
   "script.revise": target("artifacts", "Open revised script", "review-decision"),
   "script.run": target("artifacts", "Open generated script"),
+  "visuals.decide": target("visuals", "Open visual contact sheet"),
+  "visuals.import": target("visuals", "Open visual contact sheet"),
+  "visuals.prepare": target("visuals", "Open visual contact sheet"),
+  "visuals.regenerate": target("visuals", "Open regenerated visual beats"),
   "voice.review": target("media", "Open voiceover review"),
   "voice.run": target("media", "Open voiceover media"),
 };

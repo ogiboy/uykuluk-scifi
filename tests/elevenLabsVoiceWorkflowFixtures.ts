@@ -23,6 +23,7 @@ import { generateVoiceCandidates } from "../src/stages/voiceCandidates";
 import { generateVoicePreview } from "../src/stages/voicePreview";
 import { selectVoice } from "../src/stages/voiceSelection";
 import { createMinimalRenderAssets } from "./renderTestHelpers";
+import { prepareApprovedStaticVisuals } from "./visualTestHelpers";
 import { successfulCatalogProvider, successfulPreviewProvider } from "./voiceCatalogStageFixtures";
 
 export const paidVoiceSubscription = {
@@ -115,6 +116,7 @@ export async function prepareApprovedSelectedVoiceRun() {
     notes: "approved selected voice fixture",
     confirmProductionRights: true,
   });
+  await prepareApprovedStaticVisuals(runId);
   await generateRenderPlan(runId);
   await estimateCost(runId);
   await approvePaidGenerationCost(runId);

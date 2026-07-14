@@ -12,6 +12,7 @@ import { reviewScript } from "../src/stages/reviewScript";
 import { generateScript } from "../src/stages/script";
 import { pathExists } from "../src/utils/fs";
 import { useTempProject } from "./helpers";
+import { prepareApprovedStaticVisuals } from "./visualTestHelpers";
 
 const repoRoot = process.cwd();
 
@@ -21,12 +22,13 @@ describe("producer render-plan CLI", () => {
   it("prints parseable JSON render plans for automation", async () => {
     await createMinimalRenderAssets();
     const runId = await preparePackagedRun();
+    await prepareApprovedStaticVisuals(runId);
 
     const result = runCli(["render-plan", "--run", runId, "--json"]);
 
     expect(result.status).toBe(0);
     expect(JSON.parse(result.stdout) as unknown).toMatchObject({
-      schemaVersion: 1,
+      schemaVersion: 2,
       runId,
       productionPackageManifestPath: "production/production_package.meta.json",
       scenes: expect.arrayContaining([
@@ -46,6 +48,7 @@ describe("producer render-plan CLI", () => {
   it("prints the read-only review command after generating a render plan", async () => {
     await createMinimalRenderAssets();
     const runId = await preparePackagedRun();
+    await prepareApprovedStaticVisuals(runId);
 
     const result = runCli(["render-plan", "--run", runId]);
 

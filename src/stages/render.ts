@@ -70,6 +70,9 @@ export async function renderDraft(
     if (renderPlanEvidence.status !== "pass") {
       throw new SafeExitError("Draft render requires valid render-plan evidence.");
     }
+    if (!renderPlanEvidence.visualManifestDigest) {
+      throw new SafeExitError("Draft render requires visual-manifest-bound render-plan evidence.");
+    }
     const voiceoverAudio = await readVoiceoverAudioEvidence(run);
     if (voiceoverAudio.status !== "pass") {
       throw new SafeExitError("Draft render requires valid voiceover audio evidence.");
@@ -77,6 +80,7 @@ export async function renderDraft(
     const approval = run.approvals.find((item) => item.target === "render");
     const currentApprovalRef = renderApprovalRef({
       renderPlanDigest: renderPlanEvidence.digest,
+      visualManifestDigest: renderPlanEvidence.visualManifestDigest,
       subtitleDigest: voiceoverAudio.subtitle.sha256,
       subtitleMetadataDigest: voiceoverAudio.subtitle.metadataSha256,
       subtitleTimingMode: voiceoverAudio.subtitle.timingMode,
@@ -139,10 +143,14 @@ export async function renderDraft(
     const outputBytes = await readFile(output);
     run = await recordRunArtifact(run, "render", draftRenderPath);
     const manifestBase = {
-      schemaVersion: 9,
+      schemaVersion: 10,
       runId: run.runId,
       createdAt: nowIso(),
-      renderPlan: { path: "production/render_plan.json", digest: renderPlanEvidence.digest },
+      renderPlan: {
+        path: "production/render_plan.json",
+        digest: renderPlanEvidence.digest,
+        visualManifestDigest: renderPlanEvidence.visualManifestDigest,
+      },
       voiceoverAudio: {
         path: voiceoverAudioPath,
         digest: voiceoverAudio.digest,

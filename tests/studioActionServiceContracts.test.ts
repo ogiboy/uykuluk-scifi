@@ -119,6 +119,12 @@ describe("Studio mutation service contracts", () => {
           coreExport: "generateVoiceoverAudio",
           coreModule: "src/stages/voice.ts",
         }),
+        expect.objectContaining({
+          actionId: "visuals.regenerate",
+          availability: "ready-for-cli",
+          coreExport: "regenerateRejectedStaticVisuals",
+          coreModule: "src/stages/visuals/visualRegeneration.ts",
+        }),
       ]),
     );
   });
@@ -129,6 +135,14 @@ describe("Studio mutation service contracts", () => {
       expect(contract.requiresDurableEvidence).toBe(true);
       expect(contract.requiresExplicitApproval).toBe(true);
       expect(contract.cliCommand).toMatch(/^pnpm producer /);
+    }
+  });
+
+  it("documents exact snapshot flags for every visual revision mutation", () => {
+    for (const actionId of ["visuals.import", "visuals.decide", "visuals.regenerate"] as const) {
+      const command = getStudioMutationServiceContract(actionId)?.cliCommand;
+      expect(command).toContain("--expected-manifest-digest <sha256>");
+      expect(command).toContain("--expected-active-revisions-file <temp_json>");
     }
   });
 

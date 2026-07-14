@@ -1,6 +1,8 @@
 import { SafeExitError } from "../../core/errors.js";
 import { AssetRef, RenderPlan } from "./renderPlanSchemas.js";
 
+type SceneMotion = Extract<RenderPlan, { schemaVersion: 2 }>["scenes"][number]["motion"];
+
 type DraftRenderTimelineSegment = "intro" | "outro" | "scene";
 
 export type DraftRenderTimeline = Array<{
@@ -9,6 +11,7 @@ export type DraftRenderTimeline = Array<{
   durationSeconds: number;
   backgroundAsset: AssetRef;
   sourceFrameAssets?: AssetRef[];
+  motion?: SceneMotion;
 }>;
 
 export type DraftRenderTiming = {
@@ -103,6 +106,7 @@ export function buildDraftRenderTimeline(
         sceneIndex: scene.sceneIndex,
         durationSeconds,
         backgroundAsset: scene.backgroundAsset,
+        ...("motion" in scene ? { motion: scene.motion } : {}),
       });
       remainingSeconds = roundSeconds(remainingSeconds - durationSeconds);
     }
@@ -147,6 +151,7 @@ function extendLastTimelineScene(
     sceneIndex: firstScene.sceneIndex,
     durationSeconds: positiveDuration(remainingSeconds),
     backgroundAsset: firstScene.backgroundAsset,
+    ...("motion" in firstScene ? { motion: firstScene.motion } : {}),
   });
 }
 

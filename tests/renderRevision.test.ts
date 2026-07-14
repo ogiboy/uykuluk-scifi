@@ -71,7 +71,7 @@ describe("render revision recovery", () => {
       maxDurationSeconds: 8,
     });
     const rerenderedManifest = manifest as DraftRenderManifest;
-    expect(rerenderedManifest.schemaVersion).toBe(9);
+    expect(rerenderedManifest.schemaVersion).toBe(10);
     expect(rerenderedManifest.voiceoverAudio.metadataDigest).toMatch(/^[a-f0-9]{64}$/);
     expect(rerenderedManifest.subtitles).toMatchObject({
       timingMode: "linear-fallback",

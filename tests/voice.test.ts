@@ -12,6 +12,7 @@ import { sha256 } from "../src/utils/hash";
 import { readJsonFile } from "../src/utils/json";
 import { useTempProject } from "./helpers";
 import { createMinimalRenderAssets } from "./renderTestHelpers";
+import { prepareApprovedStaticVisuals } from "./visualTestHelpers";
 import {
   configureTts,
   enableDeterministicTts,
@@ -126,6 +127,7 @@ describe("voiceover audio", () => {
     await enableDeterministicTts();
     await createMinimalRenderAssets();
     const runId = await preparePackagedRun();
+    await prepareApprovedStaticVisuals(runId);
     await generateRenderPlan(runId);
 
     await expect(generateVoiceoverAudio(runId)).rejects.toThrow(/ready_for_manual_production/i);

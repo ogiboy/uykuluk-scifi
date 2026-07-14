@@ -15,6 +15,7 @@ import { generateScript } from "../src/stages/script";
 import { pathExists } from "../src/utils/fs";
 import { readJsonFile } from "../src/utils/json";
 import { useTempProject } from "./helpers";
+import { prepareApprovedStaticVisuals } from "./visualTestHelpers";
 
 const renderArtifacts = [
   "production/render_plan.json",
@@ -29,6 +30,7 @@ describe("render plan", () => {
     await createMinimalRenderAssets();
     const runId = await preparePackagedRun();
 
+    await prepareApprovedStaticVisuals(runId);
     await generateRenderPlan(runId);
 
     const run = await loadRun(runId);
@@ -62,7 +64,7 @@ describe("render plan", () => {
       }>;
     }>(artifactPath(runId, "production/render_plan.json"));
     expect(plan).toMatchObject({
-      schemaVersion: 1,
+      schemaVersion: 2,
       runId,
       productionPackageManifestPath: "production/production_package.meta.json",
     });
@@ -101,7 +103,7 @@ describe("render plan", () => {
       expect.arrayContaining([
         expect.objectContaining({ role: "watermark" }),
         expect.objectContaining({ role: "subtitle-panel" }),
-        expect.objectContaining({ role: "background-plate" }),
+        expect.objectContaining({ role: "scene-visual" }),
         expect.objectContaining({ role: "intro-source" }),
         expect.objectContaining({ role: "intro-source-frame" }),
         expect.objectContaining({ role: "outro-source" }),
@@ -139,7 +141,9 @@ describe("render plan", () => {
   it("blocks when required render assets are missing", async () => {
     const runId = await preparePackagedRun();
 
-    await expect(generateRenderPlan(runId)).rejects.toThrow(/missing render planning asset/i);
+    await expect(prepareApprovedStaticVisuals(runId)).rejects.toThrow(
+      /missing render planning asset/i,
+    );
     for (const artifact of renderArtifacts) {
       expect(await pathExists(artifactPath(runId, artifact))).toBe(false);
     }
@@ -149,6 +153,7 @@ describe("render plan", () => {
     await createMinimalRenderAssets();
     const runId = await preparePackagedRun();
 
+    await prepareApprovedStaticVisuals(runId);
     await generateRenderPlan(runId);
     const planPath = artifactPath(runId, "production/render_plan.json");
     const plan = await readJsonFile<Record<string, unknown>>(planPath);
@@ -164,6 +169,7 @@ describe("render plan", () => {
     await createMinimalRenderAssets();
     const runId = await preparePackagedRun();
 
+    await prepareApprovedStaticVisuals(runId);
     await generateRenderPlan(runId);
     const provenancePath = artifactPath(runId, "production/asset_provenance.json");
     const provenance = await readJsonFile<Record<string, unknown>>(provenancePath);
@@ -179,6 +185,7 @@ describe("render plan", () => {
     await createMinimalRenderAssets();
     const runId = await preparePackagedRun();
 
+    await prepareApprovedStaticVisuals(runId);
     await generateRenderPlan(runId);
     const planPath = artifactPath(runId, "production/render_plan.json");
     const plan = await readJsonFile<Record<string, unknown>>(planPath);

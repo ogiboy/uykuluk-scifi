@@ -16,7 +16,14 @@ import { validateStudioMutationRequest } from "./studioMutationSecurity";
 
 export type { StudioCliMutationActionId } from "./studioCliMutationArgs";
 
-type CliResult = Readonly<{ stderr: string; stdout: string; status: number }>;
+export type StudioCliResult = Readonly<{ stderr: string; stdout: string; status: number }>;
+export type StudioCliMutationRouteDependencies = Readonly<{
+  prepareCli?: typeof cliArgsForAction;
+  runCli?: (args: readonly string[]) => Promise<StudioCliResult>;
+}>;
+
+const cleanupWarning =
+  "The producer CLI finished, but Studio could not remove every temporary input file.";
 
 const studioCliTimeoutMs = 20 * 60 * 1000;
 const studioCliKillGraceMs = 5_000;
@@ -35,6 +42,7 @@ const studioCliOutputLimitChars = 128_000;
 export async function runStudioCliMutationRoute(
   request: Request,
   actionId: StudioCliMutationActionId,
+  dependencies: StudioCliMutationRouteDependencies = {},
 ): Promise<Response> {
   const security = validateStudioMutationRequest(request, actionId);
   if (!security.ok) {
@@ -49,17 +57,31 @@ export async function runStudioCliMutationRoute(
   }
 
   try {
-    const cli = await cliArgsForAction(actionId, payload);
-    const result = await runProducerCliWithCleanup(cli.args, cli.cleanup);
+    const cli = await (dependencies.prepareCli ?? cliArgsForAction)(actionId, payload);
+    const execution = await runProducerCliWithCleanup(
+      cli.args,
+      cli.cleanup,
+      dependencies.runCli ?? runProducerCli,
+    );
+    const warnings = execution.cleanupError ? [cleanupWarning] : [];
+    if (execution.cleanupError) {
+      captureStudioUnexpectedError(execution.cleanupError, {
+        actionId,
+        boundary: "route-mutation",
+        routePath: new URL(request.url).pathname,
+      });
+    }
+    const result = execution.result;
     if (result.status !== 0) {
       return jsonError(
         cliErrorMessage(result.stderr),
         studioCliHttpStatus(result.status),
         parseCliJsonOrNull(result.stdout),
+        warnings,
       );
     }
     return Response.json(
-      { actionId, record: parseCliJson(result.stdout), status: "ok" },
+      { actionId, record: parseCliJson(result.stdout), status: "ok", warnings },
       { headers: noStoreHeaders() },
     );
   } catch (error) {
@@ -78,17 +100,38 @@ export async function runStudioCliMutationRoute(
 async function runProducerCliWithCleanup(
   args: readonly string[],
   cleanup: () => Promise<void>,
-): Promise<CliResult> {
+  runCli: (args: readonly string[]) => Promise<StudioCliResult>,
+): Promise<Readonly<{ cleanupError: unknown | null; result: StudioCliResult }>> {
+  const outcome = await runCli(args).then(
+    (result) => ({ kind: "result" as const, result }),
+    (error: unknown) => ({ error, kind: "error" as const }),
+  );
+  let cleanupError: unknown | null = null;
   try {
-    return await runProducerCli(args);
-  } finally {
     await cleanup();
+  } catch (error) {
+    cleanupError = error;
   }
+  if (outcome.kind === "error") {
+    if (cleanupError) {
+      throw new AggregateError(
+        [outcome.error, cleanupError],
+        "Producer CLI execution and temporary input cleanup both failed.",
+      );
+    }
+    throw outcome.error;
+  }
+  return { cleanupError, result: outcome.result };
 }
 
-function jsonError(message: string, status: number, record: unknown = null): Response {
+function jsonError(
+  message: string,
+  status: number,
+  record: unknown = null,
+  warnings: readonly string[] = [],
+): Response {
   return Response.json(
-    { message, ...(record ? { record } : {}), status: "error" },
+    { message, ...(record ? { record } : {}), status: "error", warnings },
     { headers: noStoreHeaders(), status },
   );
 }
@@ -97,7 +140,7 @@ function noStoreHeaders(): HeadersInit {
   return { "cache-control": "no-store" };
 }
 
-function runProducerCli(args: readonly string[]): Promise<CliResult> {
+function runProducerCli(args: readonly string[]): Promise<StudioCliResult> {
   return new Promise((resolve, reject) => {
     const sourceRoot = sourceProjectRoot();
     const child = spawn(

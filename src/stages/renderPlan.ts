@@ -28,6 +28,7 @@ import {
   renderPlanSchema,
 } from "./render/renderPlanSchemas.js";
 import { ProductionScene } from "./types.js";
+import { readApprovedVisualManifestEvidence } from "./visuals/visualManifest.js";
 
 const renderPlanAllowedStates: ReadonlySet<RunState> = new Set([
   "PRODUCTION_PACKAGE_GENERATED",
@@ -38,7 +39,14 @@ const renderPlanAllowedStates: ReadonlySet<RunState> = new Set([
 
 export type RenderPlanEvidence =
   | { status: "missing"; requiredArtifacts: readonly string[] }
-  | { status: "pass"; path: string; digest: string; artifactCount: number; assetCount: number }
+  | {
+      status: "pass";
+      path: string;
+      digest: string;
+      artifactCount: number;
+      assetCount: number;
+      visualManifestDigest?: string;
+    }
   | { status: "block"; path: string; message: string };
 
 /**
@@ -54,16 +62,25 @@ export async function generateRenderPlan(runId: string): Promise<RenderPlan> {
     throw new SafeExitError("Render planning requires a generated production package.");
   }
   const { digest } = await verifyProductionPackage(run);
+  const visualEvidence = await readApprovedVisualManifestEvidence(run);
+  if (visualEvidence.status !== "pass") {
+    throw new SafeExitError(
+      visualEvidence.status === "missing"
+        ? "Render planning requires prepared and approved scene visuals."
+        : `Render planning requires approved scene visuals: ${visualEvidence.message}`,
+    );
+  }
   const scenes = await readProductionScenes(run.runId);
   const popupCards = await readProductionPackagePopupCards(run.runId);
   const assets = await selectRenderAssets(config.assets);
   const now = nowIso();
   const plan = renderPlanSchema.parse({
-    schemaVersion: 1,
+    schemaVersion: 2,
     runId: run.runId,
     createdAt: now,
     productionPackageManifestPath,
     productionPackageManifestDigest: digest,
+    visualManifest: { path: visualEvidence.path, digest: visualEvidence.digest },
     format: {
       resolution: "1920x1080",
       fps: 30,
@@ -82,23 +99,47 @@ export async function generateRenderPlan(runId: string): Promise<RenderPlan> {
         ...(assets.outroFrames.length > 0 ? { frameAssets: assets.outroFrames } : {}),
       },
     },
-    scenes: scenes.map((scene, index) => ({
-      sceneIndex: scene.index,
-      narrationPreview: scene.narration.slice(0, 180),
-      durationSeconds: scene.durationSeconds,
-      visualPrompt: scene.visualPrompt,
-      ...popupCardText(popupCards, index),
-      backgroundAsset: assets.backgrounds[index % assets.backgrounds.length],
-      overlayAssets: [
-        assets.subtitlePanel,
-        assets.watermark,
-        assets.lowerThird,
-        assets.popupCard,
-        assets.waveform,
-      ].filter((asset): asset is AssetRef => Boolean(asset)),
-      subtitleSource: "production/subtitles.srt",
-      voiceoverSource: "production/voiceover.txt",
-    })),
+    scenes: visualEvidence.manifest.scenes.map((visualScene, index) => {
+      const visualRevision = visualScene.revisions.find(
+        (item) => item.revision === visualScene.activeRevision,
+      );
+      if (!visualRevision) {
+        throw new SafeExitError(
+          `Approved visual evidence is missing beat ${visualScene.sceneIndex}.`,
+        );
+      }
+      const sourceScenes = visualScene.productionSceneIndexes.map((sceneIndex) => {
+        const source = scenes.find((scene) => scene.index === sceneIndex);
+        if (!source) {
+          throw new SafeExitError(
+            `Approved visual beat ${visualScene.sceneIndex} references missing production scene ${sceneIndex}.`,
+          );
+        }
+        return source;
+      });
+      return {
+        sceneIndex: visualScene.sceneIndex,
+        narrationPreview: sourceScenes
+          .map((scene) => scene.narration)
+          .join(" ")
+          .slice(0, 180),
+        durationSeconds: visualScene.durationSeconds,
+        visualPrompt: visualScene.visualPrompt,
+        ...popupCardText(popupCards, index),
+        backgroundAsset: visualRevision.asset,
+        visualRevision: visualRevision.revision,
+        motion: visualRevision.motion,
+        overlayAssets: [
+          assets.subtitlePanel,
+          assets.watermark,
+          assets.lowerThird,
+          assets.popupCard,
+          assets.waveform,
+        ].filter((asset): asset is AssetRef => Boolean(asset)),
+        subtitleSource: "production/subtitles.srt" as const,
+        voiceoverSource: "production/voiceover.txt" as const,
+      };
+    }),
   });
   const provenance = assetProvenanceSchema.parse({
     schemaVersion: 1,
@@ -116,7 +157,9 @@ export async function generateRenderPlan(runId: string): Promise<RenderPlan> {
       ...assets.outroFrames,
       assets.factCheckIcon,
       assets.waveform,
-      ...assets.backgrounds,
+      ...visualEvidence.manifest.scenes
+        .map((scene) => scene.revisions.find((item) => item.revision === scene.activeRevision))
+        .map((revision) => revision?.asset),
     ]),
   });
 
@@ -173,6 +216,7 @@ export async function readRenderPlanEvidenceAtProjectRoot(
       digest: createHash("sha256").update(planText, "utf8").digest("hex"),
       artifactCount: renderPlanArtifactPaths.length,
       assetCount: provenance.assets.length,
+      ...(plan.schemaVersion === 2 ? { visualManifestDigest: plan.visualManifest.digest } : {}),
     };
   } catch (error) {
     return {
@@ -197,6 +241,12 @@ async function assertRenderPlanEvidenceMatchesRun(
     throw new SafeExitError(
       "Render plan evidence was generated from a stale production package manifest.",
     );
+  }
+  if (plan.schemaVersion === 2) {
+    const visualEvidence = await readApprovedVisualManifestEvidence(run, projectRoot);
+    if (visualEvidence.status !== "pass" || visualEvidence.digest !== plan.visualManifest.digest) {
+      throw new SafeExitError("Render plan evidence was generated from stale visual evidence.");
+    }
   }
 }
 

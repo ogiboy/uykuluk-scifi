@@ -47,7 +47,7 @@ describe("draft render", () => {
       artifactPath(runId, "production/render/render_manifest.json"),
     );
     const draftRenderArtifactPath = artifactPath(runId, "production/render/draft.mp4");
-    expect(manifest.schemaVersion).toBe(9);
+    expect(manifest.schemaVersion).toBe(10);
     expect(manifest.renderApproval).toEqual({ approvalId: approval.approvalId, approvedRef });
     expect(manifest.output).toMatchObject({
       path: "production/render/draft.mp4",
@@ -78,9 +78,14 @@ describe("draft render", () => {
       cueCount: expect.any(Number),
       sourceDurationSeconds: expect.any(Number),
     });
+    expect(manifest.renderPlan.visualManifestDigest).toMatch(/^[a-f0-9]{64}$/);
+    if (!manifest.renderPlan.visualManifestDigest) {
+      throw new Error("Current draft render manifest must bind the visual manifest digest.");
+    }
     expect(manifest.renderApproval.approvedRef).toBe(
       renderApprovalRef({
         renderPlanDigest: manifest.renderPlan.digest,
+        visualManifestDigest: manifest.renderPlan.visualManifestDigest,
         subtitleDigest: manifest.subtitles.sha256,
         subtitleMetadataDigest: manifest.subtitles.metadataSha256,
         subtitleTimingMode: manifest.subtitles.timingMode,
@@ -171,6 +176,9 @@ describe("draft render", () => {
     expect(manifest.ffmpeg.args.join("\n")).toContain("production/audio/voiceover.wav");
     expect(manifest.ffmpeg.args.join("\n")).toContain("production/subtitles.srt");
     expect(manifest.ffmpeg.args.join("\n")).toContain("adelay=2000:all=1");
+    expect(manifest.ffmpeg.args.join("\n")).toContain("scale=1920:1080");
+    expect(manifest.ffmpeg.args.join("\n")).toContain("s=1920x1080");
+    expect(manifest.ffmpeg.args.join("\n")).toContain("0.0008989");
     expect(manifest.ffmpeg.args.join("\n")).toContain("[subtitleTimeline]split=3");
     expect(manifest.ffmpeg.args.join("\n")).toContain("[subtitleSceneSource]trim=start=2:end=5");
     expect(manifest.ffmpeg.args.join("\n")).toContain("overlay=0:H-h:enable='between(t\\,2\\,5)'");

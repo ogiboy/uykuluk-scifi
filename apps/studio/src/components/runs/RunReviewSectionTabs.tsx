@@ -10,6 +10,7 @@ type RunReviewSectionTabsProps = Readonly<{
     | "finalReviewBundle"
     | "productionMedia"
     | "readinessStatus"
+    | "visuals"
     | "voiceAudition"
     | "workflowProgress"
   >;
@@ -37,11 +38,18 @@ export function RunReviewSectionTabs({ run }: RunReviewSectionTabsProps) {
         status={`${mediaPassed}/${run.productionMedia.length}`}
       />
       <RunReviewTab value='voice' label='Voice' status={formatVoiceStatus(run.voiceAudition)} />
+      <RunReviewTab value='visuals' label='Visuals' status={formatVisualStatus(run.visuals)} />
       <RunReviewTab value='artifacts' label='Artifacts' status={formatCount(run.artifactCount)} />
       <RunReviewTab value='handoff' label='Handoff' status={formatHandoffStatus(run)} />
       <RunReviewTab value='readiness' label='Readiness' status={run.readinessStatus} />
     </TabsList>
   );
+}
+
+function formatVisualStatus(visuals: StudioRunDetail["visuals"]): string {
+  return visuals.kind === "ready"
+    ? `${visuals.approvedCount}/${visuals.scenes.length}`
+    : visuals.kind;
 }
 
 function RunReviewTab({

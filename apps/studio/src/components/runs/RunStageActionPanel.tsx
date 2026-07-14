@@ -78,6 +78,14 @@ export function RunStageActionPanel({ run }: RunStageActionPanelProps) {
             authoritative.
           </p>
           <StudioMutationResultPanel state={state} />
+          {run.nextRecommendedCommand ? (
+            <details className='text-muted-foreground text-xs'>
+              <summary className='cursor-pointer font-medium'>Advanced CLI fallback</summary>
+              <code className='bg-muted mt-2 block max-w-full rounded-md px-2 py-1 break-all'>
+                {run.nextRecommendedCommand}
+              </code>
+            </details>
+          ) : null}
         </CardContent>
         <CardFooter className='flex-col items-start gap-3 sm:flex-row sm:items-center'>
           <Button
@@ -87,11 +95,6 @@ export function RunStageActionPanel({ run }: RunStageActionPanelProps) {
           >
             {state.kind === "submitting" ? "Running..." : action.buttonLabel}
           </Button>
-          {run.nextRecommendedCommand ? (
-            <code className='bg-muted text-muted-foreground max-w-full rounded-md px-2 py-1 text-xs break-all'>
-              CLI equivalent: {run.nextRecommendedCommand}
-            </code>
-          ) : null}
         </CardFooter>
       </Card>
       <RunStageActionConfirmationDialog

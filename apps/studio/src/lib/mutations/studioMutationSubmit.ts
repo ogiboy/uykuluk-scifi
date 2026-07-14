@@ -14,9 +14,14 @@ export type StudioMutationSubmitResult = Readonly<
       message: string;
       recordSummary: StudioMutationRecordSummary | null;
       status: number;
+      warnings: readonly string[];
     }
   | { kind: "error"; message: string; status?: number }
-  | { kind: "success"; recordSummary: StudioMutationRecordSummary | null }
+  | {
+      kind: "success";
+      recordSummary: StudioMutationRecordSummary | null;
+      warnings: readonly string[];
+    }
 >;
 
 export const studioMutationFetchTimeoutMs = 30_000;
@@ -71,7 +76,9 @@ export async function submitStudioJsonMutation(input: {
   const payload = (await response.json().catch(() => null)) as {
     message?: string;
     record?: unknown;
+    warnings?: unknown;
   } | null;
+  const warnings = studioMutationWarnings(payload?.warnings);
   if (!response.ok) {
     if (response.status === 401) {
       clearCachedStudioMutationSession();
@@ -84,13 +91,32 @@ export async function submitStudioJsonMutation(input: {
           "Studio action wrote local output but the producer CLI reported a blocked state.",
         recordSummary: summarizeStudioMutationRecord(payload.record),
         status: response.status,
+        warnings,
       };
     }
     return {
       kind: "error",
-      message: payload?.message ?? input.fallbackError,
+      message: messageWithWarnings(payload?.message ?? input.fallbackError, warnings),
       status: response.status,
     };
   }
-  return { kind: "success", recordSummary: summarizeStudioMutationRecord(payload?.record) };
+  return {
+    kind: "success",
+    recordSummary: summarizeStudioMutationRecord(payload?.record),
+    warnings,
+  };
+}
+
+function studioMutationWarnings(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter((item): item is string => typeof item === "string")
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .slice(0, 3)
+    .map((item) => item.slice(0, 500));
+}
+
+function messageWithWarnings(message: string, warnings: readonly string[]): string {
+  return warnings.length > 0 ? `${message} ${warnings.join(" ")}` : message;
 }

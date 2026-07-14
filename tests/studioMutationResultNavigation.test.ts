@@ -32,6 +32,15 @@ describe("Studio mutation result navigation", () => {
     expect(studioMutationResultLinkLabel("render.decide")).toBe("Open handoff review");
   });
 
+  it("opens regenerated visual results on the visual contact sheet", () => {
+    expect(studioMutationResultHref("run_visuals", "visuals.regenerate")).toBe(
+      "/runs/run_visuals?tab=visuals",
+    );
+    expect(studioMutationResultLinkLabel("visuals.regenerate")).toBe(
+      "Open regenerated visual beats",
+    );
+  });
+
   it("uses a safe progress fallback for unknown future actions", () => {
     expect(studioMutationResultHref("run_future", "future.action")).toBe(
       "/runs/run_future?tab=progress",
