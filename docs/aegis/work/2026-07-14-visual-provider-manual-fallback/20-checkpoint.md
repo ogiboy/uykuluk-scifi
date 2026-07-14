@@ -12,10 +12,12 @@
 - Verified: independent core and Studio reviews approved; 233 test files / 1,037 tests, all four
   root/Studio TypeScript lanes, and the focused cleanup regressions passed before main
   reconciliation.
-- Active: safely commit and reconcile the candidate with current `origin/main`.
-- Pending: full post-rebase checks, browser/operator UAT, PR gates, push, and CI.
-- Next: rebase the committed candidate, resolve overlap with merged voice work, then run PR-ready
-  verification.
+- Completed: rebased onto `v0.82.0`/current `origin/main`; PR diff is 117 files.
+- Verified: `pnpm check`, usage/product/browser QA, dependency audit, coverage, version plan, and a
+  production-build browser run with 18 visual beats all passed.
+- Active: push the clean candidate and open the PR.
+- Pending: hosted CI, SonarCloud, CodeQL, and review completion.
+- Next: let hosted checks supply the Sonar token unavailable to the local Keychain session.
 
 ## BaselineUsageDraft
 
@@ -26,15 +28,16 @@
   v2 render-approval generation path.
 - Acknowledged: independent Studio specification and code-quality reviewers approved the repaired
   guarded mutation and review flow.
-- Missing: post-rebase browser/operator and hosted CI evidence.
-- Decision: commit the green candidate and reconcile main; the slice is not PR-ready until the
-  remaining evidence is green.
+- Acknowledged: real Studio UAT selected and approved all 18 beats; the UI refreshed to `18/18`
+  without browser console warnings/errors.
+- Missing: hosted CI evidence. Local SonarCloud upload stopped before scanning because its Keychain
+  token was unavailable; coverage generation itself passed.
+- Decision: candidate is PR-ready, not merge-complete until hosted checks are green.
 
 ## ResumeStateHint
 
-Preserve every current tracked and untracked visual-slice file. Do not reset, stash, or rebase the
-dirty worktree. `origin/main` is four commits ahead through merged PR #149; reconcile only after the
-visual candidate is internally green and safely committed.
+The branch is clean and rebased on `origin/main`. Preserve the worktree until PR checks and any
+review follow-ups complete.
 
 ## DriftCheckDraft
 
@@ -42,4 +45,5 @@ visual candidate is internally green and safely committed.
 - Compatibility: legacy v9 render evidence remains readable, but cannot be newly approved or
   rendered without the v10 visual binding.
 - New owners: `src/stages/visuals/**` is intentional and within the approved boundary.
-- Decision: core and Studio specs are aligned; post-rebase end-to-end verification remains.
+- Decision: core and Studio specs remain aligned after modularity repair; hosted PR verification
+  remains.
