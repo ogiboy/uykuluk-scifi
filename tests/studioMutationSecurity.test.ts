@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
+import { validateStudioMutationRequest } from "../apps/studio/src/lib/mutations/studioMutationSecurity";
 import {
   studioActionHeaderName,
   studioSessionCookieName,
   studioSessionHeaderName,
-  validateStudioMutationRequest,
-} from "../apps/studio/src/lib/mutations/studioMutationSecurity";
+} from "../apps/studio/src/lib/mutations/studioMutationSecurityContracts";
 
 const token = "test_session_token_1234567890ABCDEFGH";
 

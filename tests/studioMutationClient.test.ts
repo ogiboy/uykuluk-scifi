@@ -9,7 +9,7 @@ import {
   studioActionHeaderName,
   studioSessionCookieName,
   studioSessionHeaderName,
-} from "../apps/studio/src/lib/mutations/studioMutationSecurity";
+} from "../apps/studio/src/lib/mutations/studioMutationSecurityContracts";
 import {
   createStudioMutationSession,
   studioSessionMaxAgeSeconds,

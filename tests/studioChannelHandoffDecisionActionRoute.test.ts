@@ -5,7 +5,7 @@ import {
   studioActionHeaderName,
   studioSessionCookieName,
   studioSessionHeaderName,
-} from "../apps/studio/src/lib/mutations/studioMutationSecurity";
+} from "../apps/studio/src/lib/mutations/studioMutationSecurityContracts";
 import { artifactPath } from "../src/core/artifacts";
 import { loadRun } from "../src/core/runStore";
 import { createChannelHandoff } from "../src/stages/channelHandoff";

@@ -2,7 +2,7 @@ import { GET as issueStudioSession } from "../../apps/studio/src/app/actions/ses
 import {
   studioActionHeaderName,
   studioSessionHeaderName,
-} from "../../apps/studio/src/lib/mutations/studioMutationSecurity";
+} from "../../apps/studio/src/lib/mutations/studioMutationSecurityContracts";
 
 const baseUrl = "http://localhost:3000";
 

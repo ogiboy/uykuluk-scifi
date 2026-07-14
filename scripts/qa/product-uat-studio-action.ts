@@ -3,7 +3,7 @@ import { GET as issueStudioSession } from "../../apps/studio/src/app/actions/ses
 import {
   studioActionHeaderName,
   studioSessionHeaderName,
-} from "../../apps/studio/src/lib/mutations/studioMutationSecurity";
+} from "../../apps/studio/src/lib/mutations/studioMutationSecurityContracts";
 import { getStudioRunDetail } from "../../apps/studio/src/lib/runSummaries";
 
 const runId = process.argv[2];
