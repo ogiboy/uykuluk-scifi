@@ -30,7 +30,7 @@ function stripAnsiSequences(value: string): string {
   let normalized = "";
   let index = 0;
   while (index < value.length) {
-    if (value.charCodeAt(index) !== 0x1b) {
+    if (value.codePointAt(index) !== 0x1b) {
       normalized += value[index];
       index += 1;
       continue;
@@ -41,7 +41,7 @@ function stripAnsiSequences(value: string): string {
 }
 
 function skipAnsiSequence(value: string, escapeIndex: number): number {
-  const kind = value.charCodeAt(escapeIndex + 1);
+  const kind = value.codePointAt(escapeIndex + 1);
   if (kind === 0x5b) return skipCsiSequence(value, escapeIndex + 2);
   if (kind === 0x5d) return skipOscSequence(value, escapeIndex + 2);
   return escapeIndex + 1;
@@ -49,7 +49,7 @@ function skipAnsiSequence(value: string, escapeIndex: number): number {
 
 function skipCsiSequence(value: string, index: number): number {
   while (index < value.length) {
-    const code = value.charCodeAt(index) ?? 0;
+    const code = value.codePointAt(index) ?? 0;
     index += 1;
     if (code >= 0x40 && code <= 0x7e) break;
   }
@@ -58,9 +58,9 @@ function skipCsiSequence(value: string, index: number): number {
 
 function skipOscSequence(value: string, index: number): number {
   while (index < value.length) {
-    const code = value.charCodeAt(index);
+    const code = value.codePointAt(index);
     if (code === 0x07) return index + 1;
-    if (code === 0x1b && value.charCodeAt(index + 1) === 0x5c) return index + 2;
+    if (code === 0x1b && value.codePointAt(index + 1) === 0x5c) return index + 2;
     index += 1;
   }
   return index;

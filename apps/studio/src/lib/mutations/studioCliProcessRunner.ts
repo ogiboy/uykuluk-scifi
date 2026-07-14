@@ -105,7 +105,7 @@ function terminateStudioCliProcessTree(child: ChildProcess, signal: NodeJS.Signa
 function terminateWindowsProcessTree(child: ChildProcess, signal: NodeJS.Signals): void {
   const args = ["/PID", String(child.pid), "/T"];
   if (signal === "SIGKILL") args.push("/F");
-  const systemRoot = process.env.SystemRoot ?? "C:\\Windows";
+  const systemRoot = process.env.SystemRoot ?? String.raw`C:\Windows`;
   const terminator = spawn(path.join(systemRoot, "System32", "taskkill.exe"), args, {
     shell: false,
     stdio: "ignore",
