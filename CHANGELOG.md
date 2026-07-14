@@ -11,6 +11,32 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.83.0 (2026-07-14)
+
+### Fixes
+
+- resolve remaining Sonar findings (ab32271)
+- resolve SonarCloud findings (dc3897d)
+- address review findings (c033264)
+- preserve rollback failure cause (ead990e)
+
+### Documentation
+
+- record PR readiness evidence (789af8c)
+- update production checkpoint (7a4ee5f)
+
+### Tests
+
+- exercise approved visual workflow (b6fd090)
+
+### Refactoring
+
+- keep workflow owners modular (fa568d1)
+
+### Features
+
+- add reviewed scene visual workflow (9141be8)
+
 ## v0.82.0 (2026-07-14)
 
 ### Features
