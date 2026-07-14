@@ -112,6 +112,9 @@ describe("run store integrity", () => {
 
     expect(calls).toEqual(["second", "first"]);
     expect(failure).toBeInstanceOf(AggregateError);
+    expect((failure as AggregateError).cause).toMatchObject({
+      message: "injected mutation failure",
+    });
     expect(failure).toMatchObject({
       message: expect.stringMatching(/artifact rollback could not be completed/i),
       errors: [

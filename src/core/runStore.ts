@@ -130,6 +130,7 @@ export async function mutateRun<T>(
         throw new AggregateError(
           [error, ...rollbackErrors],
           "Run mutation failed and its artifact rollback could not be completed.",
+          { cause: error },
         );
       }
       throw error;
