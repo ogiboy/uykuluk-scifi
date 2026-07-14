@@ -1,156 +1,155 @@
-# Production Quality Media
+# Production Quality, Studio-First Operation & Controlled Distribution
 
 ## Objective
 
-Turn the proven local production loop into a publish-quality, single-application media workflow.
-Keep deterministic/Piper fallbacks, add an approval- and cost-gated ElevenLabs production path,
-and make scene-specific visuals first-class without adding ComfyUI or enabling public publish.
+Continue UykulukSciFi Producer from `v0.81.0` to a Studio-first v1 that can compare and select
+scripts, create and review production voice and scene-specific visuals, render an exact approved
+MP4, upload it privately to the intended YouTube channel, and review processing without normal CLI
+dependence. Preserve deterministic-local, Piper, static, and manual-import fallbacks. Public and
+scheduled publishing remain unavailable.
+
+CLI/core continues to own workflow state, transitions, approvals, cost reservations and settlement,
+artifacts, evidence, and readiness. Studio is a guarded typed operator surface, never a second
+workflow engine. Missing or stale approval, insufficient budget, unsafe configuration, tampered
+evidence, provider uncertainty, or ambiguous paid execution must fail closed.
 
 ## Completion Criteria
 
-- Studio/core can select local or hosted TTS without duplicating workflow state.
-- ElevenLabs credentials stay server-side and all paid calls use exact quote, reservation,
-  settlement, redacted evidence, timeout, and retry boundaries.
-- The approved render input binds voice, aligned subtitles, and scene-specific visual evidence.
-- Static assets remain a safe fallback; one automatic visual provider can be added without changing
-  workflow contracts.
-- Each vertical slice has focused tests; full project/product/browser/security/release gates pass at
-  PR readiness.
-- Upload/public publish remain disabled in this workstream.
+- Studio exposes the complete brief/script-selection, source/claim review, voice audition,
+  cost approval, production voice/aligned subtitle, visual review/regeneration, render review,
+  private upload, and processing-review journey.
+- Voice, aligned subtitle, visual, music/SFX, thumbnail, metadata, caption, and final media digests
+  are bound into their exact approval/evidence owners.
+- One hosted TTS path and one hosted still-image path remain replaceable providers behind the same
+  quote, approval, reservation, bounded execution, settlement, provenance, and redaction rules.
+- A credential-free local fallback reaches a reviewable MP4 without paid services.
+- Two real episodes complete without source edits, hidden state repair, manual assembly, or normal
+  CLI operation; public release remains manual.
+- Each slice has focused regression evidence. PR-ready slices also pass full check, product/browser
+  UAT, security/dependency, coverage, version, and Sonar Cloud gates. No paid live call runs in CI.
 
 ## Current State
 
-- Branch/worktree: `feat/elevenlabs-v3-voice-selection` at
-  `/Users/ogiboy/.codex/worktrees/63dc/uykuluk-scifi`.
-- Base: `origin/main` at `489521e8` (`v0.80.3`).
-- The existing loop has produced a real Gemma 3 12B -> Piper -> FFmpeg -> handoff episode.
-- Current voice modes are `deterministic-local` and `local-piper`.
-- Render plans persist scene `visualPrompt` values but rotate static background assets; no visual
-  provider consumes those prompts yet.
-- Worktree was clean at workstream start.
-- Completed commits:
-  - `49e56ca1 chore(env): track encrypted dotenv vaults`
-  - `3e972d75 refactor(voice): establish tts provider boundary`
-  - `5084e166 feat(voice): add inspectable tts text preparation`
-  - `5496633e feat(voice): add reserved ElevenLabs adapter`
-  - `367a809f feat(voice): integrate approval-gated ElevenLabs synthesis`
-  - `97ee13e6 chore(env): prepare ElevenLabs local credentials`
-  - `0dfa07d7 feat(voice): support long-form Eleven v3 synthesis`
-  - `2dea4aaa docs(roadmap): plan controlled production settings`
-  - `179fac2f feat(voice): add redacted ElevenLabs candidate catalog`
-  - `c5fef8c8 feat(voice): add audition previews and selection evidence`
-- ElevenLabs now has server-only credential diagnostics, dynamic prepared-character pricing,
-  exact provider/model cost binding, reservation/settlement execution, WAV validation, character
-  alignment artifacts, redacted provenance, and tamper detection. No live paid call has run.
-- Focused verification after integration: 71 tests passed across voice, cost, reservation, doctor,
-  readiness, status, and render gates; TS 7 and TS 6 typechecks passed; modularity and secret scan
-  passed; dependency audit reported no known vulnerabilities.
-- Eleven v3 follow-up verification: 108 focused tests passed across voice/config/cost/reservation,
-  plus TS 7/TS 6 typechecks, targeted lint, and secret scan. The adapter now chunks long Turkish
-  scripts within the v3 request cap, stitches canonical PCM16 WAV/alignment data, reconciles raw
-  provider character cost, retains the last provider request id on uncertain failure, and keeps
-  blind retry disabled. No live provider call ran.
-- Operator-created ignored `producer.config.json` uses `eleven_v3`; local `.env` files contain the
-  configured server-only key. Tracked `.env.vault` and `apps/studio/.env.vault` ciphertext changes
-  are operator-owned and must not be staged without explicit intent.
-- `producer voice-candidates` now performs bounded read-only account-voice/model/subscription calls
-  after package generation and persists only normalized hashes/classifications. A live read-only
-  smoke on 2026-07-12 returned 21 preview-capable voices, including 2 Turkish-verified candidates;
-  no raw URL or request ID survived serialization, and all voices were correctly `preview-only` on
-  the current free subscription. No TTS request ran.
-- Catalog-slice verification: 94 focused voice/cost/reservation/readiness tests, TS 7 and TS 6,
-  targeted ESLint, modularity, formatting, and secret scan passed. The live model reported Turkish
-  TTS support, 5,000 characters/request, no Speaker Boost, and 1x model/discount multipliers.
-- The next local audition slice now adds canonical digest verification, model-exact Turkish ranking,
-  free-form metadata redaction, bounded operation deadlines, conflicting-duplicate rejection,
-  account/tier checks, redirect-free 5 MiB preview download, tamper-checked local evidence,
-  attributable selection, prior-selection archive, and explicit paid-tier production-rights
-  confirmation. No preview URL can enter through CLI input and no synthesis call occurs.
-- Audition-slice verification passes 62 focused tests across catalog/provider/download, stage/store
-  tamper and concurrency cases, and CLI selection; TypeScript 7/6, targeted ESLint, Prettier,
-  modularity, secret scan, and diff-check also pass. Spec and code-quality reviews approved the
-  contract/store/persistence split after dot-segment, legacy-failure scoping, and trimmed-input
-  negative cases were added. No live TTS request ran.
-- Exact production binding is now implemented end to end. The selected voice snapshot drives the
-  quote, operator-readable approval summary, reservation, quote-bound operation id, provider
-  construction, live metadata preflight, synthesis, settlement, and final evidence. Config
-  `voiceId` remains only a candidate hint. Expected discounted pricing and the conservative
-  per-chunk maximum are separate; provider-reported billable credits settle once against the
-  approved base tariff.
-- Paid output is committed to an operation spool whose digest is anchored in reservation and cost
-  settlement evidence. Simulated failures after result commit and after settlement both recovered
-  without a second TTS request, current API key, live metadata refresh, enabled current config, or a
-  fresh catalog. Final audio and alignment must match the pinned spool. Successful chunks preserve
-  hashed request ids, text digests, and provider-reported credits; partial uncertain execution keeps
-  redacted request evidence for reconciliation.
-- Pre-spend reselection is serialized against cost reservation, archives every registered selection
-  plus digest/byte quote evidence, invalidates the exact cost approval, and reopens selection.
-  Active, uncertain, or settled TTS reservations block it; a provider-proven `RELEASED` non-send is
-  durably no-send and permits recovery only through a fresh selection, quote, and approval.
-- The shared local orchestrator now has a fake-binary Piper success regression proving canonical WAV
-  and provenance without selection, preflight, reservation, or paid evidence. Vitest blocks all
-  non-loopback fetch/socket traffic so mocked paid tests cannot silently become live calls.
-- Current focused verification: 187 voice, ElevenLabs, Piper, cost, reservation, readiness, and
-  network-guard tests pass; native TypeScript 7 and compatibility TypeScript 6 checks pass. No live
-  paid call ran.
-- PR hardening is in progress against the approved 2026-07-13 delivery plan. Unrelated Studio
-  dependency patch bumps and lockfile formatting churn were restored to `HEAD`; the two model
-  directory placeholders are deferred in the named stash
-  `defer model directory placeholders after voice PR`. CodeRabbit findings are being revalidated
-  and fixed only when they match current contracts; no paid provider call, Docker service, upload,
-  or publish action is authorized in this pass.
+- Branch/worktree: `codex/voice-studio-aligned-srt` at
+  `/Users/ogiboy/.codex/worktrees/63dc/uykuluk-scifi`, based on `origin/main` tag `v0.81.0`
+  (`b88a30c3`).
+- `v0.81.0` contains approval-bound ElevenLabs v3 catalog, preview, attributable selection,
+  reselection, quote, reservation, synthesis, alignment, settlement, recovery, and redacted evidence
+  with deterministic-local and Piper fallbacks. PR #146 and hosted CI/Sonar/CodeQL were green.
+- No live paid synthesis has been validated. The configured free account may be used only for
+  permitted read-only metadata/catalog/preview smoke; production-rights checks may not be bypassed.
+- Character alignment is persisted and stitched. The active `v0.82.0` candidate adds aligned
+  SRT/metadata and exact render consumers plus typed Studio candidate/preview/select/reselect and
+  exact hosted-confirmation actions. Integration and real production-build Studio browser UAT pass;
+  the work is not release-validated until remaining PR-ready gates and merge complete. Released
+  `v0.81.0` still consumes package-time estimated subtitles and lacks this Studio audition surface.
+- Visual prompts exist in scene artifacts, but render rotates static assets and has no
+  `VisualProvider`. Private YouTube upload remains fail-closed placeholder behavior.
+- Fresh pre-branch evidence from the same `v0.81.0` code: `pnpm qa:product` passed; focused stale
+  compare-and-save tests passed; the default unbounded local Vitest worker count produced three
+  intermittent five-second timeouts, while `maxWorkers=4` passed all 927 tests and CI-shaped
+  `maxWorkers=2` with 15-second timeouts also passed all 927 tests.
+- External global Codex closeout completed before this branch: AGENTS/agent model routing preserved,
+  Ruflo marketplace registry repaired without removing plugins, security router verified 738
+  archived skills plus pin/new-task/unpin smoke, Context7 Keychain JSON-RPC smoke passed, and OMX
+  doctor/team checks are clean. Preserve `/Users/ogiboy/.codex/config.toml.backup-20260713-1845`.
+- Stabilization is implemented and committed on this branch: local Vitest is bounded to four
+  workers; Doctor and product copy no longer depend on mutable `voiceId`; ElevenLabs cost guidance
+  requires a current persisted selection; and CLI/Studio evidence binds the live TTS requirement,
+  exact four-artifact audition chain, catalog expiry, canonical config digest, and root-aware
+  containment. Historical completed evidence is exempt from pre-spend catalog/config freshness. Spec
+  and independent quality/security reviews passed. Two consecutive local full suites passed at 210
+  files / 952 tests; the native and compatibility TypeScript lanes, lint, diff check, and 12 changed
+  test files / 95 tests also passed for that stabilization checkpoint.
+- The integrated voice candidate now passes 214 files / 991 tests twice locally, the same 214 / 991
+  in CI mode, focused subtitle/render/voice/Studio suites, all four native/compatibility core and
+  Studio TypeScript lanes at the implementation checkpoint, `studio:build`, `qa:usage`, `qa:product`,
+  and `qa:browser` (9/9). Real browser UAT verified dashboard, run detail, local A/B selection,
+  exact approval/binding/quote confirmation, local-only preview media, and a clean console; captures
+  are committed under `docs/images/`.
 
 ## Decisions
 
-- ComfyUI is explicitly out of scope.
-- The product remains local-first, not local-only: providers are replaceable engines behind core
-  approvals, costs, evidence, and operator UX.
-- Piper remains an offline preview/fallback path; ElevenLabs is the first production-quality hosted
-  TTS provider.
-- No live paid API call runs in CI or without explicit operator approval and credentials.
-- Do not add multiple hosted visual providers at once; establish the contract and choose one using
-  a bounded scene bake-off.
-- Run focused verification per vertical slice and full gates once at PR readiness.
-- Persistent Studio settings use approved command-boundary semantics: successful saves are visible
-  immediately and apply to the next command, while in-flight work retains an immutable starting
-  snapshot. Listener ports and build-time env changes require controlled restart/rebuild; secrets
-  remain env-only.
+- Active first slice is voice completion and Studio parity, not settings/provider expansion.
+- Local Vitest uses four workers with the existing five-second fail-fast timeout. CI keeps two
+  workers and 15-second test/hook timeouts.
+- ElevenLabs original alignment is the timing authority; normalized alignment is diagnostic only.
+  ElevenLabs production evidence without a valid aligned subtitle must not silently use linear
+  fallback. Piper/deterministic-local retain explicit `linear-fallback` timing evidence.
+- Studio hosted execution must echo the exact binding, quote, and approval identity visible to the
+  operator; core revalidates all values before spend.
+- Private upload is a v1 controlled-distribution deliverable. Public/scheduled publishing is not.
+- Advanced settings/prompt history follows media quality. Only minimal versioned provider/model/
+  budget settings may be introduced just in time before the first hosted visual call.
+- ComfyUI, generic queues/team SaaS, multiple hosted visual adapters, and short clips remain out of
+  scope until real episode evidence proves a need.
+
+## Execution Readiness View
+
+- Intent lock: finish the exact Studio-first production journey while preserving local fallback and
+  fail-closed paid/external effects.
+- Scope fence for the active PR: test stability, doctor/next-action truth, aligned subtitle evidence,
+  exact render binding, guarded Studio voice audition/selection/reselection/production review, and
+  roadmap/current-state/task/checkpoint reconciliation, plus the concise product README and initial
+  versioned Markdown documentation migration. A hosted docs site remains deferred.
+- Baseline lock: `origin/main` `b88a30c3` (`v0.81.0`); existing ElevenLabs operation spool,
+  reservation, settlement, and selection evidence remain authoritative.
+- Compatibility boundary: existing local runs remain readable through explicit linear subtitle
+  fallback; no automatic compatibility fallback is permitted for incomplete/tampered paid evidence.
+- Test obligations: focused producer/consumer regression, two consecutive local full suites,
+  CI-shaped full suite, TypeScript native/compat, product/browser UAT, and PR-ready security/release
+  gates.
+- Review gate: spec compliance before code-quality review for each coherent implementation slice;
+  no completion claim from unit tests alone.
+- Drift/rewind rule: a new provider, state machine, unapproved paid call, public upload surface, or
+  new persistent owner outside this checkpoint requires plan refresh before implementation.
 
 ## Remaining Work
 
-1. Convert character alignment into a separate aligned SRT artifact and bind it into render approval.
-2. Implement the approved versioned config/prompt-profile design and guarded Studio surfaces, then
-   add the idempotent one-command local bootstrap.
-3. Add scene-specific visual plan/manifest/review contracts without ComfyUI.
-4. Select one hosted image provider through a bounded UykulukSciFi scene bake-off, then add its
-   disabled-by-default reserved adapter.
-5. Bind approved voice, aligned subtitles, and visual-manifest digests into render and expose the
-   guided Studio flow.
-6. Add deterministic motion/audio mastering and final thumbnail rendering.
-7. Add private-only YouTube upload after local final review is reliable; keep public/scheduled
-   publish disabled.
-8. Complete two real episodes without source edits, hidden repair, or manual assembly, then run
-   PR-level gates.
+Active `v0.82.0` candidate, PR closeout:
+
+1. Rerun post-build type/lint/full checks, coverage, dependency, version, and Sonar Cloud gates.
+2. Review the integrated diff, update changelog/release evidence, commit coherent slices, and open
+   the voice-completion PR from `codex/voice-studio-aligned-srt`.
+3. Keep commercial ElevenLabs synthesis explicitly unverified until an eligible account completes
+   one exact quote/approval/reservation/settlement smoke outside CI.
+
+Ordered slices after `v0.82.0`:
+
+4. Visual production and exact render: add static/manual `VisualProvider`, run a three-scene hosted
+   bake-off, integrate only the selected provider, and deliver 12-24 scene images, contact-sheet
+   review, rejected-only regeneration, provenance/cost, deterministic motion, mastering, thumbnail,
+   and exact media binding.
+5. Script audition and editorial quality: add sequential candidates, side-by-side selection,
+   streamlined review, operator-curated source/claim provenance, and the minimum-publishable
+   scorecard.
+6. Controlled distribution: add resumable private-only YouTube upload with target-channel and media/
+   metadata/thumbnail/caption binding plus processing review; keep public/scheduled paths
+   unreachable.
+7. Productization and real proof: complete persistent settings/prompts, bootstrap/onboarding,
+   stabilize documentation navigation and evaluate a docs site only after content settles, run the
+   local fallback rehearsal and one approved commercial voice smoke, and complete two real episode
+   acceptance runs.
 
 ## Active Resume Hint
 
-- Active slice: finish the approval-bound ElevenLabs v3 branch, keep the final PR below CodeRabbit's
-  150-file ceiling, run the full PR-ready gates, and open the reviewed PR before changing global
-  Codex configuration.
-- Next action after PR creation: modernize the global agent/model routing, Context7 secret launch,
-  and hybrid defensive-security skill catalog, then return here for aligned SRT work.
-- Drift guard: do not widen this PR into Studio settings, visual providers, aligned SRT, live paid
-  synthesis, upload, or public/scheduled publishing.
+- Current todo: finish PR-ready validation/review and merge the implemented voice-completion
+  candidate; do not repeat already-green feature work unless a gate exposes a regression.
+- Current evidence: 214 files / 991 tests passed twice locally and once in CI mode; focused
+  producer/consumer tests, four typecheck lanes, production Studio build, usage/product/browser QA,
+  and real browser UAT passed. Browser captures are under `docs/images/`.
+- Explicit next-slice boundary: after PR closeout, begin the static/manual `VisualProvider` and exact
+  render slice. Do not add multiple hosted adapters, ComfyUI, short clips, upload, or public publish.
+- Next verification: fresh post-documentation typecheck/check, coverage, dependency/version, Sonar
+  Cloud, then final diff review and PR creation.
 
 ## Blockers And Risks
 
-- A hosted visual provider has not been selected; do not guess one or create provider sprawl.
-- ElevenLabs TTS has no documented idempotency key; application operation IDs and reservation
-  recovery must prevent blind duplicate generation.
-- Long-form subtitle alignment and chunk stitching need deterministic fixtures before live smoke.
-- The paid path remains mock-verified only. The first live synthesis still requires explicit
-  operator approval, a small quote, current eligible account metadata, and post-call evidence review.
-- Config/example/env drift is confirmed: CLI and Studio can resolve `PRODUCER_CONFIG` differently,
-  stale Ollama env names are unused, and code/template defaults differ. Fix this through the
-  approved config owner rather than piecemeal Studio JSON writes.
-- Heavy tests and concurrent agents can overload the local machine; keep heavy work sequential.
+- Free ElevenLabs access does not establish commercial production rights. Live synthesis remains
+  blocked until account eligibility, exact quote, persisted approval, and reservation are all valid.
+- The hosted visual provider is intentionally unselected; only the bounded bake-off may choose it.
+- Heavy tests, browser runs, Sonar, and local model processes can overload the machine and must run
+  sequentially.
+- Codex currently reports a broad plugin-skill context-budget warning despite the completed security
+  archive migration. Do not remove unrelated plugins during this product slice; treat broader plugin
+  catalog pruning as a separate global maintenance decision.
