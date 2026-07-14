@@ -14,7 +14,7 @@ import {
   voiceExecutionPreflightReceiptSchema,
   type VoiceExecutionPreflightReceipt,
 } from "./voiceExecutionPreflight.js";
-import type { VoiceoverPreparation } from "./voiceoverPreparation.js";
+import type { VoiceoverPreparationV2 } from "./voiceoverPreparation.js";
 
 export const operationIdSchema = z.string().regex(/^tts_[a-f0-9]{64}$/);
 const spoolPathSchema = z.string().regex(/^operations\/tts\/tts_[a-f0-9]{64}\/result\.json$/);
@@ -131,6 +131,6 @@ export type LoadedVoiceExecutionSpool = {
   providerRequestIdHash?: string;
   alignmentReference: { digest: string; characterCount: number };
   normalizedAlignmentReference?: { digest: string; characterCount: number };
-  preparation: { text: string; evidence: VoiceoverPreparation; evidenceText: string };
+  preparation: { text: string; evidence: VoiceoverPreparationV2; evidenceText: string };
   audio: TtsSynthesisResult;
 };

@@ -1,5 +1,4 @@
 import { createHash } from "node:crypto";
-import { readFile } from "node:fs/promises";
 import { readRegisteredArtifactBytesAtProjectRoot } from "../../../../../src/core/artifactRevision";
 import { runRecordSchema, type RunRecord } from "../../../../../src/core/state";
 import {
@@ -10,7 +9,10 @@ import {
   type VoiceoverAudioMeta,
 } from "../../../../../src/stages/voice/voiceoverEvidence";
 import type { ActiveVoiceSubtitleDescriptor } from "../../../../../src/stages/voice/voiceoverSubtitles";
-import { studioRunFilePath } from "../runs/runFilePaths";
+import { readRunRecord } from "../runs/runSummaryFiles";
+
+const srtTimingLinePattern =
+  /^(\s*\d{2,}:\d{2}:\d{2}),(\d{3})(\s+-->\s+)(\d{2,}:\d{2}:\d{2}),(\d{3})(.*)$/u;
 
 export type StudioMediaReadResult =
   { body: BodyInit; headers: Headers; status: 200 | 206 } | { status: 404 | 416 };
@@ -46,11 +48,12 @@ export async function readStudioCaptionArtifact(
 /** Converts a validated persisted SRT artifact into browser-readable WebVTT. */
 export function srtToWebVtt(input: string): string {
   const normalizedInput = input.replaceAll("\r\n", "\n").replaceAll("\r", "\n").trim();
-  const body = normalizedInput
-    .split("\n")
-    .map((line) => (line.includes("-->") ? line.replaceAll(",", ".") : line))
-    .join("\n");
+  const body = normalizedInput.split("\n").map(srtTimingLineToWebVtt).join("\n");
   return `WEBVTT\n\n${body}\n`;
+}
+
+function srtTimingLineToWebVtt(line: string): string {
+  return line.replace(srtTimingLinePattern, "$1.$2$3$4.$5$6");
 }
 
 async function readValidatedStudioSubtitle(root: string, runId: string): Promise<string> {
@@ -62,10 +65,7 @@ export async function readValidatedStudioVoiceEvidence(
   root: string,
   runId: string,
 ): Promise<ValidatedStudioVoiceEvidence> {
-  const statePath = studioRunFilePath(root, runId, "state.json");
-  if (!statePath) throw new Error("Invalid run path.");
-  const run = runRecordSchema.parse(JSON.parse(await readFile(statePath, "utf8")) as unknown);
-  if (run.runId !== runId) throw new Error("Voice evidence is unavailable.");
+  const run = runRecordSchema.parse(await readRunRecord(root, runId));
   const canonical = await readVoiceoverAudioEvidenceAtProjectRoot(root, run);
   if (canonical.status !== "pass") {
     throw new Error(

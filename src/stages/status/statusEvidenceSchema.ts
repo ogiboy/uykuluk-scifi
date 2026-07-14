@@ -12,29 +12,27 @@ export type EvidenceStatusValidationResult =
   | { kind: "invalid"; message: string }
   | { kind: "stale"; message: string };
 
+export type EvidenceStatusValidationContext = Readonly<{
+  currentArtifacts: readonly string[];
+  currentState: string;
+  currentTtsConfigurationDigest: string | null;
+  currentVoiceAuditionPathRevision: string;
+  currentVoiceAuditionRequired: boolean | null;
+  currentVoiceAuditionRevision: string | null;
+  runId: string;
+}>;
+
 /**
  * Validates a persisted evidence bundle snapshot for status and Studio reads.
  *
  * @param evidence - Parsed evidence data to validate.
- * @param runId - Expected run identifier.
- * @param currentState - Expected run state.
- * @param currentArtifacts - Current artifact registry used to verify the selected voice path.
- * @param currentVoiceAuditionPathRevision - Current ordered audition path revision.
- * @param currentVoiceAuditionRevision - Exact current selected-chain revision, when required.
- * @param currentTtsConfigurationDigest - Current non-secret TTS configuration digest.
- * @param currentVoiceAuditionRequired - Whether current live TTS config requires ElevenLabs audition.
+ * @param context - Current run, artifact, TTS, and voice-audition identity.
  * @param nowMs - Time used to enforce catalog freshness.
  * @returns A present, stale, or invalid evidence classification.
  */
 export function validateEvidenceStatusSnapshot(
   evidence: unknown,
-  runId: string,
-  currentState: string,
-  currentArtifacts: readonly string[],
-  currentVoiceAuditionPathRevision: string,
-  currentVoiceAuditionRevision: string | null,
-  currentTtsConfigurationDigest: string | null,
-  currentVoiceAuditionRequired: boolean | null,
+  context: EvidenceStatusValidationContext,
   nowMs: number = Date.now(),
 ): EvidenceStatusValidationResult {
   if (isLegacyEvidenceSnapshot(evidence)) {
@@ -47,75 +45,95 @@ export function validateEvidenceStatusSnapshot(
   if (!parsed.success) {
     return { kind: "invalid", message: "evidence_bundle.json is missing required fields." };
   }
-  if (parsed.data.runId !== runId) {
+  const identityMismatch = validateSnapshotIdentity(parsed.data, context);
+  if (identityMismatch) return identityMismatch;
+  const ttsMismatch = validateTtsContext(parsed.data, context);
+  if (ttsMismatch) return ttsMismatch;
+  const requiresVoiceAudition = requiresCurrentVoiceAudition(
+    parsed.data,
+    context.currentState,
+    context.currentVoiceAuditionRequired,
+  );
+  const voiceMismatch = validateVoiceAuditionContext(
+    parsed.data,
+    context,
+    requiresVoiceAudition,
+    nowMs,
+  );
+  if (voiceMismatch) return voiceMismatch;
+  return { evidence: parsed.data, kind: "present" };
+}
+
+function validateSnapshotIdentity(
+  evidence: PersistedEvidenceStatus,
+  context: EvidenceStatusValidationContext,
+): EvidenceStatusValidationResult | null {
+  if (evidence.runId !== context.runId) {
     return { kind: "stale", message: "evidence_bundle.json belongs to a different run." };
   }
-  if (parsed.data.currentState !== currentState) {
-    return {
-      kind: "stale",
-      message: `evidence_bundle.json was generated for ${String(
-        parsed.data.currentState,
-      )}, but the run is ${currentState}.`,
-    };
-  }
+  return evidence.currentState === context.currentState
+    ? null
+    : {
+        kind: "stale",
+        message: `evidence_bundle.json was generated for ${String(
+          evidence.currentState,
+        )}, but the run is ${context.currentState}.`,
+      };
+}
+
+function validateTtsContext(
+  evidence: PersistedEvidenceStatus,
+  context: EvidenceStatusValidationContext,
+): EvidenceStatusValidationResult | null {
+  if (!requiresCurrentTtsConfiguration(evidence, context.currentState)) return null;
   if (
-    requiresCurrentTtsConfiguration(parsed.data, currentState) &&
-    (currentTtsConfigurationDigest === null ||
-      parsed.data.ttsConfigurationDigest !== currentTtsConfigurationDigest)
+    context.currentTtsConfigurationDigest === null ||
+    evidence.ttsConfigurationDigest !== context.currentTtsConfigurationDigest
   ) {
     return {
       kind: "stale",
       message: "evidence_bundle.json does not match current TTS configuration.",
     };
   }
-  const requiresVoiceAudition = requiresCurrentVoiceAudition(
-    parsed.data,
-    currentState,
-    currentVoiceAuditionRequired,
-  );
-  if (
-    requiresCurrentTtsConfiguration(parsed.data, currentState) &&
-    (currentVoiceAuditionRequired === null ||
-      (parsed.data.voiceSelection.status !== "not-required") !== currentVoiceAuditionRequired)
-  ) {
+  return context.currentVoiceAuditionRequired !== null &&
+    (evidence.voiceSelection.status !== "not-required") === context.currentVoiceAuditionRequired
+    ? null
+    : {
+        kind: "stale",
+        message:
+          "evidence_bundle.json voice selection requirement does not match current TTS provider.",
+      };
+}
+
+function validateVoiceAuditionContext(
+  evidence: PersistedEvidenceStatus,
+  context: EvidenceStatusValidationContext,
+  required: boolean,
+  nowMs: number,
+): EvidenceStatusValidationResult | null {
+  if (!required) return null;
+  if (evidence.voiceAuditionPathRevision !== context.currentVoiceAuditionPathRevision) {
     return {
       kind: "stale",
-      message:
-        "evidence_bundle.json voice selection requirement does not match current TTS provider.",
+      message: "evidence_bundle.json does not match current voice audition evidence.",
     };
   }
-  if (requiresVoiceAudition) {
-    if (parsed.data.voiceAuditionPathRevision !== currentVoiceAuditionPathRevision) {
-      return {
-        kind: "stale",
-        message: "evidence_bundle.json does not match current voice audition evidence.",
-      };
-    }
-    if (
-      parsed.data.voiceSelection.status === "current" &&
-      parsed.data.voiceAuditionRevision !== currentVoiceAuditionRevision
-    ) {
-      return {
-        kind: "stale",
-        message: "evidence_bundle.json does not match current selected voice evidence.",
-      };
-    }
+  if (evidence.voiceSelection.status !== "current") return null;
+  if (evidence.voiceAuditionRevision !== context.currentVoiceAuditionRevision) {
+    return {
+      kind: "stale",
+      message: "evidence_bundle.json does not match current selected voice evidence.",
+    };
   }
-  if (requiresVoiceAudition && parsed.data.voiceSelection.status === "current") {
-    if (!currentArtifacts.includes(parsed.data.voiceSelection.path)) {
-      return {
-        kind: "stale",
-        message: "evidence_bundle.json references an unregistered voice selection.",
-      };
-    }
-    if (Date.parse(parsed.data.voiceSelection.validUntil) <= nowMs) {
-      return {
-        kind: "stale",
-        message: "evidence_bundle.json voice catalog freshness has expired.",
-      };
-    }
+  if (!context.currentArtifacts.includes(evidence.voiceSelection.path)) {
+    return {
+      kind: "stale",
+      message: "evidence_bundle.json references an unregistered voice selection.",
+    };
   }
-  return { evidence: parsed.data, kind: "present" };
+  return Date.parse(evidence.voiceSelection.validUntil) > nowMs
+    ? null
+    : { kind: "stale", message: "evidence_bundle.json voice catalog freshness has expired." };
 }
 
 export type EvidenceVoiceAuditionBinding = {

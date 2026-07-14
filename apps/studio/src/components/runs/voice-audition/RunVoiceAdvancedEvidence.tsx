@@ -53,14 +53,14 @@ function EvidenceList({
       <h4 className='text-sm font-semibold'>{heading}</h4>
       {items.length > 0 ? (
         <ul className='grid gap-1.5'>
-          {items.map((item) => (
+          {items.map((item, index) => (
             <li
               className={
                 mono
                   ? "bg-background/40 rounded-md p-2 font-mono text-xs break-all"
                   : "bg-background/40 text-muted-foreground rounded-md p-2 text-sm break-words"
               }
-              key={item}
+              key={`${index}:${item}`}
             >
               {item}
             </li>

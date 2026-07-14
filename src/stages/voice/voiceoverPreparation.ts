@@ -118,7 +118,6 @@ export const persistedVoiceoverPreparationSchema = z
 export const voiceoverPreparationSchema = persistedVoiceoverPreparationSchema;
 
 export type PersistedVoiceoverPreparation = z.infer<typeof persistedVoiceoverPreparationSchema>;
-export type VoiceoverPreparation = VoiceoverPreparationV2;
 
 /** Parses either legacy schema v1 or current schema v2 preparation evidence. */
 export function parsePersistedVoiceoverPreparation(value: unknown): PersistedVoiceoverPreparation {

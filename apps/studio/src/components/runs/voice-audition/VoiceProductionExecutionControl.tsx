@@ -28,6 +28,7 @@ export function VoiceProductionExecutionControl({
 }: VoiceProductionExecutionControlProps) {
   if (executionMode === "unknown" || (executionMode === "hosted" && !confirmation)) return null;
   const hosted = executionMode === "hosted";
+  const buttonLabel = productionVoiceButtonLabel(alreadyReady, hosted);
   return (
     <form
       className='border-primary/30 bg-primary/5 grid gap-3 rounded-lg border p-4'
@@ -73,15 +74,16 @@ export function VoiceProductionExecutionControl({
           type='submit'
         >
           <Mic2Icon />
-          {alreadyReady
-            ? "Production voice ready"
-            : hosted
-              ? "Synthesize production voice"
-              : "Generate local voice"}
+          {buttonLabel}
         </Button>
       </div>
     </form>
   );
+}
+
+function productionVoiceButtonLabel(alreadyReady: boolean, hosted: boolean): string {
+  if (alreadyReady) return "Production voice ready";
+  return hosted ? "Synthesize production voice" : "Generate local voice";
 }
 
 function VoiceExecutionIdentity({ label, value }: Readonly<{ label: string; value: string }>) {

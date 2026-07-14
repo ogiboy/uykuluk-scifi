@@ -25,6 +25,15 @@ export type PreparedVoiceExecution = {
   approvedQuote?: { quoteDigest: string; approvalId: string };
 };
 
+type VoiceExecutionPreparationInput = {
+  runId: string;
+  config: ProducerConfig;
+  preparedText: string;
+  confirmation?: HostedVoiceExecutionConfirmation;
+  metadataProvider?: VoiceExecutionMetadataProvider;
+};
+type ApprovedQuoteLine = Awaited<ReturnType<typeof loadApprovedQuoteLine>>;
+
 /**
  * Prepares a text-to-speech provider and validates ElevenLabs execution prerequisites.
  *
@@ -32,13 +41,9 @@ export type PreparedVoiceExecution = {
  * @returns The prepared provider, with binding, preflight receipt, and approved quote details for ElevenLabs execution.
  * @throws SafeExitError If the approved quote cannot be validated, does not match the selected binding, or execution preflight fails.
  */
-export async function prepareVoiceExecution(input: {
-  runId: string;
-  config: ProducerConfig;
-  preparedText: string;
-  confirmation?: HostedVoiceExecutionConfirmation;
-  metadataProvider?: VoiceExecutionMetadataProvider;
-}): Promise<PreparedVoiceExecution> {
+export async function prepareVoiceExecution(
+  input: VoiceExecutionPreparationInput,
+): Promise<PreparedVoiceExecution> {
   if (input.config.providers.tts.mode !== "elevenlabs") {
     if (input.confirmation) {
       throw new SafeExitError(
@@ -52,12 +57,27 @@ export async function prepareVoiceExecution(input: {
     config: input.config,
     preparedText: input.preparedText,
   });
-  let approved: Awaited<ReturnType<typeof loadApprovedQuoteLine>>;
+  const approved = await loadApprovedQuoteForBinding(input.runId, binding);
+  await assertApprovedQuoteMatchesBinding(input.runId, approved, binding);
+  await assertHostedExecutionConfirmation(input.runId, input.confirmation, approved, binding);
+  const preflight = await refreshExecutionPreflight(input.runId, binding, input.metadataProvider);
+  return {
+    binding,
+    preflight,
+    approvedQuote: { quoteDigest: approved.quoteDigest, approvalId: approved.approvalId },
+    provider: createTtsProvider(input.config.providers.tts, binding),
+  };
+}
+
+async function loadApprovedQuoteForBinding(
+  runId: string,
+  binding: SelectedVoiceExecutionBinding,
+): Promise<ApprovedQuoteLine> {
   try {
-    approved = await loadApprovedQuoteLine(input.runId, "tts");
+    return await loadApprovedQuoteLine(runId, "tts");
   } catch (error) {
     await appendLedgerEvent({
-      runId: input.runId,
+      runId,
       type: "GUARD_BLOCKED",
       stage: "voice-execution-preflight",
       message: "Approved TTS quote validation failed before provider execution.",
@@ -73,13 +93,20 @@ export async function prepareVoiceExecution(input: {
     }
     throw new SafeExitError("Approved TTS quote validation failed safely.");
   }
+}
+
+async function assertApprovedQuoteMatchesBinding(
+  runId: string,
+  approved: ApprovedQuoteLine,
+  binding: SelectedVoiceExecutionBinding,
+): Promise<void> {
   if (
     approved.provider !== binding.provider ||
     approved.model !== binding.model.modelId ||
     approved.bindingDigest !== binding.bindingDigest
   ) {
     await appendLedgerEvent({
-      runId: input.runId,
+      runId,
       type: "GUARD_BLOCKED",
       stage: "voice-execution-preflight",
       message: "Approved TTS quote does not match the current selected voice binding.",
@@ -98,23 +125,31 @@ export async function prepareVoiceExecution(input: {
       "Approved TTS quote does not match the current selected voice binding.",
     );
   }
+}
+
+async function assertHostedExecutionConfirmation(
+  runId: string,
+  confirmation: HostedVoiceExecutionConfirmation | undefined,
+  approved: ApprovedQuoteLine,
+  binding: SelectedVoiceExecutionBinding,
+): Promise<void> {
   if (
-    !input.confirmation ||
-    !hostedVoiceExecutionConfirmationMatches(input.confirmation, {
+    !confirmation ||
+    !hostedVoiceExecutionConfirmationMatches(confirmation, {
       approvalId: approved.approvalId,
       bindingDigest: binding.bindingDigest,
       quoteDigest: approved.quoteDigest,
     })
   ) {
     await appendLedgerEvent({
-      runId: input.runId,
+      runId,
       type: "GUARD_BLOCKED",
       stage: "voice-execution-preflight",
-      message: input.confirmation
+      message: confirmation
         ? "Hosted voice execution confirmation is stale or does not match the active quote."
         : "Hosted voice execution requires exact paid-operation confirmation.",
       data: {
-        reason: input.confirmation
+        reason: confirmation
           ? "hosted-execution-confirmation-mismatch"
           : "hosted-execution-confirmation-missing",
         approvalId: approved.approvalId,
@@ -122,21 +157,23 @@ export async function prepareVoiceExecution(input: {
         bindingDigest: binding.bindingDigest,
       },
     });
-    throw new SafeExitError(
-      input.confirmation
-        ? "ElevenLabs production voice confirmation is stale. Refresh the run and confirm the current approved quote."
-        : "ElevenLabs production voice requires explicit confirmation of the current binding, quote, and approval.",
-    );
+    const message = confirmation
+      ? "ElevenLabs production voice confirmation is stale. Refresh the run and confirm the current approved quote."
+      : "ElevenLabs production voice requires explicit confirmation of the current binding, quote, and approval.";
+    throw new SafeExitError(message);
   }
-  let preflight: VoiceExecutionPreflightReceipt;
+}
+
+async function refreshExecutionPreflight(
+  runId: string,
+  binding: SelectedVoiceExecutionBinding,
+  metadataProvider: VoiceExecutionMetadataProvider | undefined,
+): Promise<VoiceExecutionPreflightReceipt> {
   try {
-    preflight = await revalidateSelectedVoiceExecutionBinding({
-      binding,
-      provider: input.metadataProvider,
-    });
+    return await revalidateSelectedVoiceExecutionBinding({ binding, provider: metadataProvider });
   } catch (error) {
     await appendLedgerEvent({
-      runId: input.runId,
+      runId,
       type: "GUARD_BLOCKED",
       stage: "voice-execution-preflight",
       message: "ElevenLabs live execution preflight blocked before reservation.",
@@ -151,10 +188,4 @@ export async function prepareVoiceExecution(input: {
     }
     throw new SafeExitError("ElevenLabs execution metadata refresh failed safely.");
   }
-  return {
-    binding,
-    preflight,
-    approvedQuote: { quoteDigest: approved.quoteDigest, approvalId: approved.approvalId },
-    provider: createTtsProvider(input.config.providers.tts, binding),
-  };
 }

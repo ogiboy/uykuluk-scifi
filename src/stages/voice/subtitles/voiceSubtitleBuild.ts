@@ -118,7 +118,7 @@ function finalizeBuild(input: {
   outputPath: VoiceSubtitleMetadata["output"]["path"];
   subtitleText?: string;
   alignment?: NonNullable<VoiceSubtitleMetadata["alignment"]>;
-  normalizedAlignment?: VoiceSubtitleMetadata["normalizedAlignment"];
+  normalizedAlignment?: NonNullable<VoiceSubtitleMetadata["normalizedAlignment"]>;
 }): VoiceSubtitleBuildResult {
   const subtitleText = input.subtitleText ?? renderSrt(input.cues);
   const metadata = voiceSubtitleMetadataSchema.parse({

@@ -131,9 +131,8 @@ export async function validatedVoiceAuditionArtifactRevision(input: {
   assertNestedCatalogDigests(catalog);
   const audioEntry = byteEntries.find((entry) => entry.path === input.artifacts.previewAudio);
   if (
-    !audioEntry ||
-    preview.output.bytes !== audioEntry.bytes.byteLength ||
-    preview.output.sha256 !== audioEntry.sha256
+    preview.output.bytes !== audioEntry?.bytes.byteLength ||
+    preview.output.sha256 !== audioEntry?.sha256
   ) {
     throw new SafeExitError("Selected voice preview audio does not match its evidence digest.");
   }

@@ -11,7 +11,7 @@ future generated release notes can be inserted predictably.
 
 ### Features
 
-- generate publish-readable Turkish aligned SRT from verified ElevenLabs original character timing,
+- generate publish-readable Turkish-aligned SRT from verified ElevenLabs original character timing,
   retain explicit local linear fallback timing, and bind the active subtitle descriptor through
   voice evidence, render approval, FFmpeg execution, captions, and the schema-v9 render manifest.
 - add Studio voice catalog, persisted preview, A/B audition, attributable selection/reselection,

@@ -20,10 +20,8 @@ import {
   successfulCatalogProvider,
   successfulPreviewProvider,
 } from "./voiceCatalogStageFixtures";
-
 describe("Studio local media artifacts", () => {
   useTempProject();
-
   it("builds browser media URLs only for allowlisted local review artifacts", () => {
     expect(studioMediaArtifactUrl("run_media_review", "production/audio/voiceover.wav")).toBe(
       "/runs/run_media_review/media/production/audio/voiceover.wav",
@@ -45,6 +43,9 @@ describe("Studio local media artifacts", () => {
     expect(studioMediaArtifactUrl("run_media_review", "evidence_bundle.json")).toBeNull();
     expect(
       studioMediaArtifactUrl("run_media_review", "https://provider.example/preview.mp3"),
+    ).toBeNull();
+    expect(
+      studioMediaArtifactUrl("run_media_review", "production/audio/voice-previews/../preview.mp3"),
     ).toBeNull();
   });
 

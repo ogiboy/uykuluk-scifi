@@ -92,6 +92,11 @@ function readableCueDurations(
       Array.from(block.lines.join("")).length / voiceSubtitleThresholds.maxCharactersPerSecond,
     ),
   );
+  if (minimums.some((minimum) => minimum > voiceSubtitleThresholds.maxCueDurationSeconds)) {
+    throw new SafeExitError(
+      "Production subtitle text cannot fit within the maximum readable cue duration.",
+    );
+  }
   const durations = blocks.map((block, index) =>
     Math.min(
       voiceSubtitleThresholds.maxCueDurationSeconds,

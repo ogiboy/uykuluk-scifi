@@ -32,7 +32,10 @@ import {
   requireSpoolableAudio,
   sha256Buffer,
 } from "./voiceExecutionSpoolValidation.js";
-import { parseVoiceoverPreparationV2, type VoiceoverPreparation } from "./voiceoverPreparation.js";
+import {
+  parseVoiceoverPreparationV2,
+  type VoiceoverPreparationV2,
+} from "./voiceoverPreparation.js";
 
 /**
  * Persists validated voice execution artifacts and their integrity metadata, then loads the committed spool.
@@ -45,7 +48,7 @@ export async function persistVoiceExecutionSpool(input: {
   runId: string;
   operationId: string;
   binding: SelectedVoiceExecutionBinding;
-  preparation: { text: string; evidence: VoiceoverPreparation; evidenceText: string };
+  preparation: { text: string; evidence: VoiceoverPreparationV2; evidenceText: string };
   approvedQuote: { quoteDigest: string; approvalId: string };
   preflight: VoiceExecutionPreflightReceipt;
   actualUsdMicros: number;

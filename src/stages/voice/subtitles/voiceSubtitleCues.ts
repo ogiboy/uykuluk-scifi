@@ -67,8 +67,8 @@ function buildDisplayTokens(source: string, preparation: VoiceoverPreparationV2)
     }
     let end = cursor;
     while (end < source.length && !/\s/u.test(source[end] ?? "")) {
-      const nextOccurrence = occurrences.find((item) => item.sourceSpan.start === end);
-      if (nextOccurrence && end > cursor) break;
+      const startsOccurrence = occurrences.some((item) => item.sourceSpan.start === end);
+      if (startsOccurrence && end > cursor) break;
       end += codeUnitWidthAt(source, end);
     }
     const token = source.slice(cursor, end);

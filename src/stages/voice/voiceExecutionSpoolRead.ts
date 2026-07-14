@@ -23,6 +23,11 @@ import {
 import { persistedAlignmentSchema } from "./voiceoverEvidenceValidation.js";
 import { parseVoiceoverPreparationV2 } from "./voiceoverPreparation.js";
 
+type CurrentVoiceExecutionSpool = Extract<
+  ReturnType<typeof persistedVoiceExecutionSpoolSchema.parse>,
+  { schemaVersion: 2 }
+>;
+
 /** Loads a committed result spool and verifies all referenced bytes and canonical snapshots. */
 export async function loadVoiceExecutionSpool(
   runId: string,
@@ -47,15 +52,7 @@ export async function loadVoiceExecutionSpoolAtProjectRoot(
   const spool = persistedVoiceExecutionSpoolSchema.parse(
     await readJsonFile<unknown>(resolveArtifact(reference.path)),
   );
-  const { spoolDigest, ...digestInput } = spool;
-  if (
-    spool.runId !== runId ||
-    spool.operationId !== reference.operationId ||
-    spoolDigest !== reference.digest ||
-    canonicalVoiceEvidenceDigest(digestInput) !== spoolDigest
-  ) {
-    throw new SafeExitError("Voice execution spool digest or identity is invalid.");
-  }
+  assertSpoolIdentity(spool, runId, reference);
   if (spool.schemaVersion === 1) {
     throw new SafeExitError(
       "Legacy ElevenLabs voice spool cannot be recovered safely because it does not identify original alignment. Automatic recovery and synthesis retry are blocked; operator intervention is required.",
@@ -63,45 +60,13 @@ export async function loadVoiceExecutionSpoolAtProjectRoot(
   }
   const binding = requireSelectedSpoolBinding(spool);
   const preflight = requireMatchingVoiceExecutionPreflight(spool.liveValidation, binding);
-  const committedPaths = [
-    spool.audio.path,
-    spool.alignments.original.path,
-    ...(spool.alignments.normalized ? [spool.alignments.normalized.path] : []),
-    spool.preparation.text.path,
-    spool.preparation.evidence.path,
-  ];
-  for (const relativePath of committedPaths) {
-    if (!(await pathExists(resolveArtifact(relativePath)))) {
-      throw new SafeExitError(`Voice execution spool artifact is missing: ${relativePath}.`);
-    }
-  }
-  const audioBuffer = await readFile(resolveArtifact(spool.audio.path));
-  const originalAlignmentText = await readFile(
-    resolveArtifact(spool.alignments.original.path),
-    "utf8",
-  );
-  const normalizedAlignmentText = spool.alignments.normalized
-    ? await readFile(resolveArtifact(spool.alignments.normalized.path), "utf8")
-    : undefined;
-  const preparedText = await readFile(resolveArtifact(spool.preparation.text.path), "utf8");
-  const preparationEvidenceText = await readFile(
-    resolveArtifact(spool.preparation.evidence.path),
-    "utf8",
-  );
-  if (
-    audioBuffer.byteLength !== spool.audio.bytes ||
-    sha256Buffer(audioBuffer) !== spool.audio.sha256 ||
-    sha256(originalAlignmentText) !== spool.alignments.original.sha256 ||
-    (spool.alignments.normalized &&
-      (!normalizedAlignmentText ||
-        sha256(normalizedAlignmentText) !== spool.alignments.normalized.sha256)) ||
-    Buffer.byteLength(preparedText, "utf8") !== spool.preparation.text.bytes ||
-    sha256(preparedText) !== spool.preparation.text.sha256 ||
-    Buffer.byteLength(preparationEvidenceText, "utf8") !== spool.preparation.evidence.bytes ||
-    sha256(preparationEvidenceText) !== spool.preparation.evidence.sha256
-  ) {
-    throw new SafeExitError("Voice execution spool audio or alignment digest is invalid.");
-  }
+  const {
+    audioBuffer,
+    normalizedAlignmentText,
+    originalAlignmentText,
+    preparedText,
+    preparationEvidenceText,
+  } = await readVerifiedSpoolArtifacts(spool, resolveArtifact);
   const originalAlignment = persistedAlignmentSchema.parse(
     JSON.parse(originalAlignmentText) as unknown,
   );
@@ -109,13 +74,7 @@ export async function loadVoiceExecutionSpoolAtProjectRoot(
     ? persistedAlignmentSchema.parse(JSON.parse(normalizedAlignmentText) as unknown)
     : undefined;
   const preparation = parseVoiceoverPreparationV2(JSON.parse(preparationEvidenceText) as unknown);
-  if (
-    originalAlignment.characters.length !== spool.alignments.original.characterCount ||
-    (spool.alignments.normalized &&
-      normalizedAlignment?.characters.length !== spool.alignments.normalized.characterCount)
-  ) {
-    throw new SafeExitError("Voice execution spool alignment count is invalid.");
-  }
+  assertSpoolAlignmentCounts(spool, originalAlignment, normalizedAlignment);
   requireMatchingSpoolPreparation(spool, preparation, preparedText, preparationEvidenceText);
   return {
     reference,
@@ -156,6 +115,99 @@ export async function loadVoiceExecutionSpoolAtProjectRoot(
       sampleRateHz: spool.result.sampleRateHz,
     },
   };
+}
+
+function assertSpoolIdentity(
+  spool: ReturnType<typeof persistedVoiceExecutionSpoolSchema.parse>,
+  runId: string,
+  reference: VoiceExecutionSpoolReference,
+): void {
+  const { spoolDigest, ...digestInput } = spool;
+  if (
+    spool.runId !== runId ||
+    spool.operationId !== reference.operationId ||
+    spoolDigest !== reference.digest ||
+    canonicalVoiceEvidenceDigest(digestInput) !== spoolDigest
+  ) {
+    throw new SafeExitError("Voice execution spool digest or identity is invalid.");
+  }
+}
+
+async function readVerifiedSpoolArtifacts(
+  spool: CurrentVoiceExecutionSpool,
+  resolveArtifact: (relativePath: string) => string,
+) {
+  const committedPaths = [
+    spool.audio.path,
+    spool.alignments.original.path,
+    ...(spool.alignments.normalized ? [spool.alignments.normalized.path] : []),
+    spool.preparation.text.path,
+    spool.preparation.evidence.path,
+  ];
+  for (const relativePath of committedPaths) {
+    if (!(await pathExists(resolveArtifact(relativePath)))) {
+      throw new SafeExitError(`Voice execution spool artifact is missing: ${relativePath}.`);
+    }
+  }
+  const audioBuffer = await readFile(resolveArtifact(spool.audio.path));
+  const originalAlignmentText = await readFile(
+    resolveArtifact(spool.alignments.original.path),
+    "utf8",
+  );
+  const normalizedAlignmentText = spool.alignments.normalized
+    ? await readFile(resolveArtifact(spool.alignments.normalized.path), "utf8")
+    : undefined;
+  const preparedText = await readFile(resolveArtifact(spool.preparation.text.path), "utf8");
+  const preparationEvidenceText = await readFile(
+    resolveArtifact(spool.preparation.evidence.path),
+    "utf8",
+  );
+  if (
+    audioBuffer.byteLength !== spool.audio.bytes ||
+    sha256Buffer(audioBuffer) !== spool.audio.sha256 ||
+    sha256(originalAlignmentText) !== spool.alignments.original.sha256 ||
+    normalizedAlignmentDigestMismatch(spool, normalizedAlignmentText) ||
+    Buffer.byteLength(preparedText, "utf8") !== spool.preparation.text.bytes ||
+    sha256(preparedText) !== spool.preparation.text.sha256 ||
+    Buffer.byteLength(preparationEvidenceText, "utf8") !== spool.preparation.evidence.bytes ||
+    sha256(preparationEvidenceText) !== spool.preparation.evidence.sha256
+  ) {
+    throw new SafeExitError("Voice execution spool audio or alignment digest is invalid.");
+  }
+  return {
+    audioBuffer,
+    normalizedAlignmentText,
+    originalAlignmentText,
+    preparedText,
+    preparationEvidenceText,
+  };
+}
+
+function normalizedAlignmentDigestMismatch(
+  spool: CurrentVoiceExecutionSpool,
+  normalizedAlignmentText: string | undefined,
+): boolean {
+  return Boolean(
+    spool.alignments.normalized &&
+    (!normalizedAlignmentText ||
+      sha256(normalizedAlignmentText) !== spool.alignments.normalized.sha256),
+  );
+}
+
+function assertSpoolAlignmentCounts(
+  spool: CurrentVoiceExecutionSpool,
+  originalAlignment: { characters: readonly string[] },
+  normalizedAlignment: { characters: readonly string[] } | undefined,
+): void {
+  const normalizedCountInvalid =
+    spool.alignments.normalized &&
+    normalizedAlignment?.characters.length !== spool.alignments.normalized.characterCount;
+  if (
+    originalAlignment.characters.length !== spool.alignments.original.characterCount ||
+    normalizedCountInvalid
+  ) {
+    throw new SafeExitError("Voice execution spool alignment count is invalid.");
+  }
 }
 
 /** Resolves a committed spool from its deterministic operation directory. */

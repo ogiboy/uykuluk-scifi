@@ -35,30 +35,29 @@ export function buildStudioRunPrimaryAction(
 ): StudioRunPrimaryAction {
   const stageAction = stageActionForRun(run);
   const workbench = buildStudioActionWorkbench(run);
-  const hostedVoiceAction =
-    stageAction?.actionId === "voice.run" && run.voiceAudition?.production.hostedExecution;
-  if (
-    hostedVoiceAction &&
-    run.blockedActionCount === 0 &&
-    run.readinessStatus === "passed" &&
-    workbench.primary.tone === "available"
-  ) {
-    return {
-      command: run.nextRecommendedCommand,
-      description:
-        "Open Voice to review and explicitly confirm the exact hosted binding, quote, and approval before synthesis.",
-      label: stageAction.heading,
-      mode: "rail",
-      routePath: stageAction.routePath,
-      tone: "available",
-    };
-  }
-  if (hostedVoiceAction) {
+  const hostedVoiceStageAction = stageAction?.actionId === "voice.run" ? stageAction : null;
+  const hostedVoiceExecution = run.voiceAudition?.production.hostedExecution;
+  if (hostedVoiceStageAction && hostedVoiceExecution) {
+    if (
+      run.blockedActionCount === 0 &&
+      run.readinessStatus === "passed" &&
+      workbench.primary.tone === "available"
+    ) {
+      return {
+        command: run.nextRecommendedCommand,
+        description:
+          "Open Voice to review and explicitly confirm the exact hosted binding, quote, and approval before synthesis.",
+        label: hostedVoiceStageAction.heading,
+        mode: "rail",
+        routePath: hostedVoiceStageAction.routePath,
+        tone: "available",
+      };
+    }
     return {
       command: run.nextRecommendedCommand,
       description:
         "Hosted voice confirmation is unavailable until current readiness and blocked-action checks pass.",
-      label: stageAction.heading,
+      label: hostedVoiceStageAction.heading,
       mode: "command",
       routePath: null,
       tone: "blocked",

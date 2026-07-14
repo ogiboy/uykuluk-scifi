@@ -7,4 +7,10 @@ describe("SRT to WebVTT conversion", () => {
       "WEBVTT\n\n1\n00:00:00.000 --> 00:00:01.250\nAçılış\n",
     );
   });
+
+  it("does not rewrite commas in cue text that contains arrow syntax", () => {
+    expect(srtToWebVtt("1\n00:00:00,000 --> 00:00:01,250\nA --> B, ardından C.\n")).toBe(
+      "WEBVTT\n\n1\n00:00:00.000 --> 00:00:01.250\nA --> B, ardından C.\n",
+    );
+  });
 });

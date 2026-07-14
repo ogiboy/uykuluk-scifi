@@ -1,6 +1,7 @@
 import { loadConfigAtProjectRoot } from "../../config/config.js";
 import type { ProducerConfig } from "../../config/schema.js";
 import { readRegisteredArtifactBytesAtProjectRoot } from "../../core/artifactRevision.js";
+import { SafeExitError } from "../../core/errors.js";
 import {
   ttsConfigurationDigest,
   validatedVoiceAuditionArtifactRevision,
@@ -50,7 +51,10 @@ export async function readEvidenceStatusSnapshot(input: {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") {
       return { kind: "missing" };
     }
-    return { kind: "invalid", source: "read" };
+    if (error instanceof SafeExitError) {
+      return { kind: "invalid", source: "read" };
+    }
+    throw error;
   }
   if (!bytes) {
     return { kind: "missing" };
@@ -65,10 +69,10 @@ export async function readEvidenceStatusSnapshot(input: {
     const currentContext = await readEvidenceStatusCurrentContext({ ...input, evidence });
     return { kind: "present", evidence, currentContext };
   } catch (error) {
-    return {
-      kind: "invalid",
-      source: error instanceof EvidenceStatusCurrentContextError ? error.source : "voice-audition",
-    };
+    if (error instanceof EvidenceStatusCurrentContextError) {
+      return { kind: "invalid", source: error.source };
+    }
+    throw error;
   }
 }
 

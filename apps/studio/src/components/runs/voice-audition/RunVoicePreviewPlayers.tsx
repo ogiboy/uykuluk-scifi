@@ -4,6 +4,9 @@ import type {
   StudioVoicePreviewSummary,
 } from "@/lib/runs/voiceAuditionSummaries";
 
+const unavailablePreviewTranscriptUrl =
+  "data:text/vtt;charset=utf-8,WEBVTT%0A%0A00%3A00.000%20--%3E%2023%3A59%3A59.999%0AProvider-supplied%20voice%20sample.%20A%20transcript%20is%20unavailable.";
+
 export function VoiceComparison({
   candidates,
   runId,
@@ -54,6 +57,13 @@ export function LocalPreviewPlayer({
   const mediaUrl = localMediaUrl(runId, preview.mediaUrl);
   return mediaUrl ? (
     <audio className='w-full' controls preload='none' src={mediaUrl}>
+      <track
+        default
+        kind='captions'
+        label='Transcript status'
+        src={unavailablePreviewTranscriptUrl}
+        srcLang='en'
+      />
       Your browser does not support local audio preview.
     </audio>
   ) : (

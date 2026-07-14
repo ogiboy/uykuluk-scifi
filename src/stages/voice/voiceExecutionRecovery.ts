@@ -19,11 +19,11 @@ import {
   settledVoiceSynthesisResult,
   type VoiceSynthesisExecutionResult,
 } from "./voiceSynthesisExecution.js";
-import type { VoiceoverPreparation } from "./voiceoverPreparation.js";
+import type { VoiceoverPreparationV2 } from "./voiceoverPreparation.js";
 
 export type RecoveredVoiceExecution = {
   mode: "elevenlabs";
-  preparation: { text: string; evidence: VoiceoverPreparation; evidenceText: string };
+  preparation: { text: string; evidence: VoiceoverPreparationV2; evidenceText: string };
   synthesis: VoiceSynthesisExecutionResult;
 };
 

@@ -25,6 +25,9 @@ export type VoiceQuoteReadResult = Readonly<{
   summary: StudioVoiceProductionSummary["quote"];
 }>;
 
+type VoiceQuoteEstimate = Awaited<ReturnType<typeof readCostEstimateAtProjectRoot>>["estimate"];
+type VoiceQuoteStage = VoiceQuoteEstimate["stages"][number] | undefined;
+
 export async function readVoiceQuoteSummary(
   root: string,
   run: VoiceAuditionRun,
@@ -36,46 +39,11 @@ export async function readVoiceQuoteSummary(
     return { diagnostics: [], paths: [], summary: { status: "missing" }, facts: [] };
   }
   try {
-    if (!run.artifacts.includes(jsonPath) || !run.artifacts.includes(markdownPath)) {
-      throw new Error("both quote JSON and Markdown must remain registered");
-    }
+    assertVoiceQuoteArtifactsRegistered(run, jsonPath, markdownPath);
     const { estimate, digest } = await readCostEstimateAtProjectRoot(root, run.runId);
-    if (estimate.runId !== run.runId) throw new Error("quote belongs to a different run");
-    if (estimate.pricingDigest !== stagesDigest(estimate.stages)) {
-      throw new Error("quote pricing digest does not match its stage details");
-    }
-    if (config && estimate.configDigest !== relevantConfigDigest(config)) {
-      throw new Error("quote is stale for the current provider or budget configuration");
-    }
     const ttsStage = estimate.stages.find((stage) => stage.stage === "tts");
-    if (ttsStage?.provider === "elevenlabs") {
-      if (!config || !config.providers.tts.enabled || config.providers.tts.mode !== "elevenlabs") {
-        throw new Error("hosted quote is not current for the configured voice execution mode");
-      }
-      if (!ttsStage.bindingDigest || ttsStage.bindingSummary?.kind !== "selected-voice") {
-        throw new Error("hosted quote is missing its selected-voice binding");
-      }
-    }
-    return {
-      ...(ttsStage?.bindingDigest ? { bindingDigest: ttsStage.bindingDigest } : {}),
-      diagnostics: estimate.blockedReasons.map((reason) => `Quote block: ${reason}`),
-      digest,
-      paths: [jsonPath, markdownPath],
-      ...(ttsStage?.provider ? { provider: ttsStage.provider } : {}),
-      ...(ttsStage?.bindingSummary?.kind === "selected-voice"
-        ? { selectionDigest: ttsStage.bindingSummary.selectionDigest }
-        : {}),
-      summary: {
-        budgetAllowed: estimate.budgetAllowed,
-        estimatedUsd: ttsStage?.estimatedUsd ?? estimate.estimatedStageCost,
-        status: estimate.budgetAllowed ? "ready" : "blocked",
-      },
-      facts: [
-        { label: "Quote digest", value: digest },
-        { label: "Config digest", value: estimate.configDigest },
-        { label: "Pricing digest", value: estimate.pricingDigest },
-      ],
-    };
+    assertVoiceQuoteIsCurrent(estimate, run, config, ttsStage);
+    return readyVoiceQuoteResult(estimate, digest, ttsStage, jsonPath, markdownPath);
   } catch (error) {
     return {
       diagnostics: [`Cost quote could not be validated: ${errorMessage(error)}`],
@@ -84,6 +52,67 @@ export async function readVoiceQuoteSummary(
       facts: [],
     };
   }
+}
+
+function assertVoiceQuoteArtifactsRegistered(
+  run: VoiceAuditionRun,
+  jsonPath: string,
+  markdownPath: string,
+): void {
+  if (!run.artifacts.includes(jsonPath) || !run.artifacts.includes(markdownPath)) {
+    throw new Error("both quote JSON and Markdown must remain registered");
+  }
+}
+
+function assertVoiceQuoteIsCurrent(
+  estimate: VoiceQuoteEstimate,
+  run: VoiceAuditionRun,
+  config: ProducerConfig | null,
+  ttsStage: VoiceQuoteStage,
+): void {
+  if (estimate.runId !== run.runId) throw new Error("quote belongs to a different run");
+  if (estimate.pricingDigest !== stagesDigest(estimate.stages)) {
+    throw new Error("quote pricing digest does not match its stage details");
+  }
+  if (config && estimate.configDigest !== relevantConfigDigest(config)) {
+    throw new Error("quote is stale for the current provider or budget configuration");
+  }
+  if (ttsStage?.provider !== "elevenlabs") return;
+  if (!config || !config.providers.tts.enabled || config.providers.tts.mode !== "elevenlabs") {
+    throw new Error("hosted quote is not current for the configured voice execution mode");
+  }
+  if (!ttsStage.bindingDigest || ttsStage.bindingSummary?.kind !== "selected-voice") {
+    throw new Error("hosted quote is missing its selected-voice binding");
+  }
+}
+
+function readyVoiceQuoteResult(
+  estimate: VoiceQuoteEstimate,
+  digest: string,
+  ttsStage: VoiceQuoteStage,
+  jsonPath: string,
+  markdownPath: string,
+): VoiceQuoteReadResult {
+  return {
+    ...(ttsStage?.bindingDigest ? { bindingDigest: ttsStage.bindingDigest } : {}),
+    diagnostics: estimate.blockedReasons.map((reason) => `Quote block: ${reason}`),
+    digest,
+    paths: [jsonPath, markdownPath],
+    ...(ttsStage?.provider ? { provider: ttsStage.provider } : {}),
+    ...(ttsStage?.bindingSummary?.kind === "selected-voice"
+      ? { selectionDigest: ttsStage.bindingSummary.selectionDigest }
+      : {}),
+    summary: {
+      budgetAllowed: estimate.budgetAllowed,
+      estimatedUsd: ttsStage?.estimatedUsd ?? estimate.estimatedStageCost,
+      status: estimate.budgetAllowed ? "ready" : "blocked",
+    },
+    facts: [
+      { label: "Quote digest", value: digest },
+      { label: "Config digest", value: estimate.configDigest },
+      { label: "Pricing digest", value: estimate.pricingDigest },
+    ],
+  };
 }
 
 export async function readVoiceSynthesisSummary(

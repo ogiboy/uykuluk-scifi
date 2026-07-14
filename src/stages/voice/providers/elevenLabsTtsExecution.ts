@@ -73,11 +73,8 @@ export async function executeElevenLabsReservedSynthesis(input: {
         inputDigest: sha256(text),
         ...(response.requestId ? { requestIdHash: sha256(response.requestId) } : {}),
       };
-      if (
-        typeof response.characterCost !== "number" ||
-        !Number.isFinite(response.characterCost) ||
-        response.characterCost < 0
-      ) {
+      const reportedCharacterCost = validCharacterCost(response.characterCost);
+      if (reportedCharacterCost === null) {
         return {
           kind: "unknown",
           reason: "indeterminate",
@@ -85,7 +82,7 @@ export async function executeElevenLabsReservedSynthesis(input: {
           requestEvidence: [...requestEvidence, redactedRequest],
         };
       }
-      requestEvidence.push({ ...redactedRequest, reportedUnits: response.characterCost });
+      requestEvidence.push({ ...redactedRequest, reportedUnits: reportedCharacterCost });
       const sourceBuffer = Buffer.from(response.audioBase64, "base64");
       const chunkWav = readWavInfo(sourceBuffer);
       audioChunks.push(sourceBuffer);
@@ -98,23 +95,22 @@ export async function executeElevenLabsReservedSynthesis(input: {
           chunkWav.durationSeconds,
         ),
       );
-      characterCost += response.characterCost;
+      characterCost += reportedCharacterCost;
       requestDiagnostics.push({
         chunkIndex: index,
         textDigest: redactedRequest.inputDigest,
         ...(redactedRequest.requestIdHash ? { requestIdHash: redactedRequest.requestIdHash } : {}),
-        reportedBillableCredits: response.characterCost,
+        reportedBillableCredits: reportedCharacterCost,
       });
       if (response.requestId) requestIds.push(response.requestId);
     }
     const stitched = concatenatePcm16Wavs(audioChunks);
     const alignment = stitchElevenLabsAlignments(alignments, audioChunks);
     requireExactOriginalAlignmentText(alignment, input.synthesisInput.text, "stitched synthesis");
-    const normalizedAlignment = normalizedAlignments.every(
-      (item): item is TtsCharacterAlignment => item !== undefined,
-    )
-      ? stitchElevenLabsAlignments(normalizedAlignments, audioChunks)
-      : undefined;
+    const normalizedAlignment = stitchCompleteNormalizedAlignments(
+      normalizedAlignments,
+      audioChunks,
+    );
     const normalized = normalizePcm16WavPeak(stitched);
     const wav = readWavInfo(normalized.buffer);
     const actualUsdMicros = usdToMicrosCeil(
@@ -165,6 +161,19 @@ export async function executeElevenLabsReservedSynthesis(input: {
       ...(requestEvidence.length > 0 ? { requestEvidence } : {}),
     };
   }
+}
+
+function validCharacterCost(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0 ? value : null;
+}
+
+function stitchCompleteNormalizedAlignments(
+  alignments: readonly (TtsCharacterAlignment | undefined)[],
+  audioChunks: readonly Buffer[],
+): TtsCharacterAlignment | undefined {
+  return alignments.every((item): item is TtsCharacterAlignment => item !== undefined)
+    ? stitchElevenLabsAlignments(alignments, audioChunks)
+    : undefined;
 }
 
 function parseNormalizedAlignmentForDiagnostics(

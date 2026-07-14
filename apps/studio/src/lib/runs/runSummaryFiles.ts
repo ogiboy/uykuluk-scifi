@@ -1,5 +1,7 @@
 import { readdir, readFile } from "node:fs/promises";
+import { SafeExitError } from "../../../../../src/core/errors";
 import { isValidRunId } from "../../../../../src/core/runId";
+import { loadRunAtProjectRoot } from "../../../../../src/core/runStore";
 import {
   diagnosticSummaryArtifactPaths,
   summarizeRunDiagnosticArtifact,
@@ -30,11 +32,13 @@ export async function readStudioRunDiagnostics(
 }
 
 export async function readRunRecord(root: string, runId: string): Promise<ValidRunRecord | null> {
-  const record = await readOptionalJson<RunRecord>(root, runId, "state.json");
-  if (record?.runId !== runId || !record.state) {
-    return null;
+  try {
+    const record = await loadRunAtProjectRoot(root, runId);
+    return { ...record, runId: record.runId, state: record.state };
+  } catch (error) {
+    if (error instanceof SafeExitError) return null;
+    throw error;
   }
-  return { ...record, runId: record.runId, state: record.state };
 }
 
 export async function safeReaddir(

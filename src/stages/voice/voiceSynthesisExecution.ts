@@ -21,7 +21,7 @@ import {
   settledVoiceSynthesisResult,
   spoolPaidVoiceResult,
 } from "./voiceSynthesisSettlement.js";
-import type { VoiceoverPreparation } from "./voiceoverPreparation.js";
+import type { VoiceoverPreparationV2 } from "./voiceoverPreparation.js";
 
 export { settledVoiceSynthesisResult } from "./voiceSynthesisSettlement.js";
 
@@ -47,7 +47,7 @@ export async function synthesizeVoiceover(
     preflight?: VoiceExecutionPreflightReceipt;
     approvedQuote?: { quoteDigest: string; approvalId: string };
     afterResultCommitted?: () => Promise<void>;
-    preparation?: { evidence: VoiceoverPreparation; evidenceText: string };
+    preparation?: { evidence: VoiceoverPreparationV2; evidenceText: string };
   },
 ): Promise<VoiceSynthesisExecutionResult> {
   if (provider.executionPolicy === "local") {

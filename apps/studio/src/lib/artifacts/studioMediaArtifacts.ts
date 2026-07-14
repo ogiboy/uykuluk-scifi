@@ -1,9 +1,11 @@
 import { createReadStream } from "node:fs";
-import { readFile, stat } from "node:fs/promises";
+import { stat } from "node:fs/promises";
 import { Readable } from "node:stream";
+import { isValidArtifactRelativePath } from "../../../../../src/core/artifactPaths";
 import { runRecordSchema } from "../../../../../src/core/state";
 import { readCurrentVoicePreviewMediaAtProjectRoot } from "../../../../../src/stages/voice/catalog/voiceCatalogStore";
 import { studioRunFilePath } from "../runs/runFilePaths";
+import { readRunRecord } from "../runs/runSummaryFiles";
 import { readStudioCaptionArtifact, type StudioMediaReadResult } from "./studioCaptionArtifacts";
 
 export { srtToWebVtt } from "./studioCaptionArtifacts";
@@ -100,7 +102,10 @@ export async function readStudioMediaArtifact(
 }
 
 function isStudioMediaArtifactPath(value: string): value is StudioMediaArtifactPath {
-  return value in allowedStudioMediaArtifacts || isStudioVoicePreviewArtifactPath(value);
+  return (
+    isValidArtifactRelativePath(value) &&
+    (value in allowedStudioMediaArtifacts || isStudioVoicePreviewArtifactPath(value))
+  );
 }
 
 function isStudioVoicePreviewArtifactPath(
@@ -114,11 +119,8 @@ async function readValidatedStudioVoicePreview(
   runId: string,
   artifactPath: string,
 ): Promise<Buffer | null> {
-  const statePath = studioRunFilePath(root, runId, "state.json");
-  if (!statePath) return null;
   try {
-    const run = runRecordSchema.parse(JSON.parse(await readFile(statePath, "utf8")) as unknown);
-    if (run.runId !== runId) return null;
+    const run = runRecordSchema.parse(await readRunRecord(root, runId));
     const voiceId = artifactPath.split("/")[3];
     if (!voiceId) return null;
     return (

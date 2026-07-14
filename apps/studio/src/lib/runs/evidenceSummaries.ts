@@ -52,16 +52,15 @@ export async function readStudioEvidenceSummary(
   if (loaded.kind === "invalid") {
     return invalidEvidence(runId, studioEvidenceReadFailureMessage(loaded.source));
   }
-  return summarizeEvidenceSnapshot(
-    loaded.evidence,
-    validatedRunId,
-    state,
-    artifacts,
-    loaded.currentContext.currentVoiceAuditionPathRevision,
-    loaded.currentContext.currentVoiceAuditionRevision,
-    loaded.currentContext.currentTtsConfigurationDigest,
-    loaded.currentContext.currentVoiceAuditionRequired,
-  );
+  return summarizeEvidenceSnapshot(loaded.evidence, {
+    runId: validatedRunId,
+    currentState: state,
+    currentArtifacts: artifacts,
+    currentVoiceAuditionPathRevision: loaded.currentContext.currentVoiceAuditionPathRevision,
+    currentVoiceAuditionRevision: loaded.currentContext.currentVoiceAuditionRevision,
+    currentTtsConfigurationDigest: loaded.currentContext.currentTtsConfigurationDigest,
+    currentVoiceAuditionRequired: loaded.currentContext.currentVoiceAuditionRequired,
+  });
 }
 
 function studioEvidenceReadFailureMessage(
@@ -109,43 +108,22 @@ export function evidenceNextRecommendedCommand(
  * Validates an evidence bundle snapshot and classifies it as available, stale, or invalid.
  *
  * @param evidence - Parsed evidence bundle content.
- * @param runId - The run identifier the snapshot must belong to.
- * @param state - The current run state the snapshot must match.
- * @param artifacts - Registered run artifacts the snapshot must match.
- * @param currentVoiceAuditionPathRevision - Ordered registry revision of audition inputs.
- * @param currentVoiceAuditionRevision - Exact byte revision of the selected audition chain.
- * @param currentTtsConfigurationDigest - Current non-secret TTS configuration digest.
- * @param currentVoiceAuditionRequired - Whether live TTS config requires ElevenLabs audition.
+ * @param context - Current run, artifact, TTS, and voice-audition identity.
  * @returns A current, stale, or invalid evidence summary.
  */
 function summarizeEvidenceSnapshot(
   evidence: unknown,
-  runId: string,
-  state: string,
-  artifacts: readonly string[],
-  currentVoiceAuditionPathRevision: string,
-  currentVoiceAuditionRevision: string | null,
-  currentTtsConfigurationDigest: string | null,
-  currentVoiceAuditionRequired: boolean | null,
+  context: Parameters<typeof validateEvidenceStatusSnapshot>[1],
 ): StudioEvidenceSummary {
-  const result = validateEvidenceStatusSnapshot(
-    evidence,
-    runId,
-    state,
-    artifacts,
-    currentVoiceAuditionPathRevision,
-    currentVoiceAuditionRevision,
-    currentTtsConfigurationDigest,
-    currentVoiceAuditionRequired,
-  );
+  const result = validateEvidenceStatusSnapshot(evidence, context);
   if (result.kind === "invalid") {
-    return invalidEvidence(runId, studioEvidenceMessage(result.message));
+    return invalidEvidence(context.runId, studioEvidenceMessage(result.message));
   }
   if (result.kind === "stale") {
-    return staleEvidence(runId, studioEvidenceMessage(result.message));
+    return staleEvidence(context.runId, studioEvidenceMessage(result.message));
   }
   if (result.kind === "missing") {
-    return invalidEvidence(runId, "Evidence bundle has not been generated.");
+    return invalidEvidence(context.runId, "Evidence bundle has not been generated.");
   }
   return { message: "Evidence bundle is current.", snapshot: result.evidence, status: "available" };
 }

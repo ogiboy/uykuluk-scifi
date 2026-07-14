@@ -32,16 +32,12 @@ export async function readEvidenceStatus(
   if (snapshot.kind === "invalid") {
     return { kind: "invalid", message: evidenceReadFailureMessage(snapshot.source) };
   }
-  return validateEvidenceStatus(
-    snapshot.evidence,
+  return validateEvidenceStatus(snapshot.evidence, {
     runId,
     currentState,
     currentArtifacts,
-    snapshot.currentContext.currentVoiceAuditionPathRevision,
-    snapshot.currentContext.currentVoiceAuditionRevision,
-    snapshot.currentContext.currentTtsConfigurationDigest,
-    snapshot.currentContext.currentVoiceAuditionRequired,
-  );
+    ...snapshot.currentContext,
+  });
 }
 
 /**
@@ -59,24 +55,9 @@ export async function readEvidenceStatus(
  */
 export function validateEvidenceStatus(
   evidence: unknown,
-  runId: string,
-  currentState: string,
-  currentArtifacts: readonly string[],
-  currentVoiceAuditionPathRevision: string,
-  currentVoiceAuditionRevision: string | null,
-  currentTtsConfigurationDigest: string | null,
-  currentVoiceAuditionRequired: boolean | null,
+  context: Parameters<typeof validateEvidenceStatusSnapshot>[1],
 ): EvidenceReadResult {
-  return validateEvidenceStatusSnapshot(
-    evidence,
-    runId,
-    currentState,
-    currentArtifacts,
-    currentVoiceAuditionPathRevision,
-    currentVoiceAuditionRevision,
-    currentTtsConfigurationDigest,
-    currentVoiceAuditionRequired,
-  );
+  return validateEvidenceStatusSnapshot(evidence, context);
 }
 
 function evidenceReadFailureMessage(
