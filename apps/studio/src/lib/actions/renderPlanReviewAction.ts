@@ -43,7 +43,7 @@ const artifactReviewDefinitions = [
     ],
     command: voiceoverReviewCommand,
     details:
-      "Listen to the generated local voiceover and inspect the review artifact before render approval. Deterministic reference audio remains timing-only unless evidence says it is a production voice candidate.",
+      "Listen to the generated voiceover and inspect the review artifact before render approval. Deterministic reference audio remains timing-only unless evidence says it is a production voice candidate.",
     eyebrow: "Audio review",
   },
   {

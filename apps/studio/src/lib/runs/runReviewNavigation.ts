@@ -3,6 +3,7 @@ import { buildStudioRunReviewBrief } from "./runReviewBrief";
 
 export const runReviewTabValues = [
   "progress",
+  "voice",
   "media",
   "artifacts",
   "handoff",
@@ -27,7 +28,8 @@ type RunReviewNavigationInput = Pick<
   | "renderDecision"
   | "state"
 > &
-  Parameters<typeof buildStudioRunReviewBrief>[0];
+  Parameters<typeof buildStudioRunReviewBrief>[0] &
+  Partial<Pick<StudioRunDetail, "voiceAudition">>;
 
 type RunReviewSummaryNavigationInput = Pick<
   StudioRunDetail,
@@ -167,6 +169,18 @@ export function runReviewTabFocus(run: RunReviewNavigationInput): RunReviewTabFo
       detail: "Local review or manual channel handoff evidence is ready to inspect.",
       label: "Handoff",
       tab: "handoff",
+    };
+  }
+  if (
+    run.voiceAudition?.production.synthesis.status !== "ready" &&
+    (run.voiceAudition?.production.hostedExecution ||
+      run.voiceAudition?.currentSelection ||
+      run.nextRecommendedCommand?.includes("producer voice"))
+  ) {
+    return {
+      detail: "Voice audition or exact production confirmation is the current operator task.",
+      label: "Voice production",
+      tab: "voice",
     };
   }
   if (run.productionMedia.some((artifact) => artifact.status === "pass")) {

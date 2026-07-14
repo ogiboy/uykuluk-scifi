@@ -66,7 +66,8 @@ export function StudioActionOverviewPanel({ runs, status }: StudioActionOverview
           CLI/core still validates approvals, readiness, evidence, budget, and provider boundaries.
         </li>
         <li className='bg-background/45 rounded-xl p-3'>
-          Upload, public publish, scheduling, and paid-provider execution stay disabled here.
+          Upload, public publishing, and scheduling stay disabled. Hosted voice remains available
+          only through exact CLI/core approval and cost gates.
         </li>
       </ul>
     </section>

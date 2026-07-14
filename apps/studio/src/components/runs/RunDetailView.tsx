@@ -12,6 +12,7 @@ import { RunReviewDecisionRail } from "./RunReviewDecisionRail";
 import { RunReviewSectionTabs } from "./RunReviewSectionTabs";
 import { RunReviewTabs } from "./RunReviewTabs";
 import { RunWorkflowProgressPanel } from "./RunWorkflowProgressPanel";
+import { RunVoiceAuditionPanel } from "./voice-audition/RunVoiceAuditionPanel";
 
 const reviewWorkspaceClass =
   "grid min-w-0 items-start gap-4 min-[720px]:grid-cols-[repeat(auto-fit,minmax(320px,1fr))]";
@@ -50,6 +51,11 @@ export function RunDetailView({
                 productionMedia={run.productionMedia}
                 runId={run.runId}
               />
+            </div>
+          </TabsContent>
+          <TabsContent value='voice'>
+            <div className={reviewWorkspaceClass}>
+              <RunVoiceAuditionPanel runId={run.runId} summary={run.voiceAudition} />
             </div>
           </TabsContent>
           <TabsContent value='artifacts'>

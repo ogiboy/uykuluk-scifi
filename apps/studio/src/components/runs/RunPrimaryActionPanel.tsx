@@ -96,8 +96,12 @@ function PrimaryActionBody({
   railHref: string;
   run: StudioRunPrimaryActionRun;
 }>) {
+  const effectiveRailHref =
+    action.mode === "rail" && action.routePath === "/actions/run-voice"
+      ? `/runs/${encodeURIComponent(run.runId)}?tab=voice#voice-production-execution-heading`
+      : railHref;
   const railAction = (
-    <a className={buttonVariants({ variant: "default" })} href={railHref}>
+    <a className={buttonVariants({ variant: "default" })} href={effectiveRailHref}>
       Open action rail
     </a>
   );
@@ -126,8 +130,8 @@ function PrimaryActionBody({
 function PrimaryActionBoundary() {
   return (
     <p className='text-muted-foreground text-xs'>
-      Upload, scheduling, public publish, and paid-provider execution stay unavailable from this
-      surface.
+      Upload, scheduling, and public publishing stay unavailable. Hosted voice execution remains
+      approval- and cost-gated by CLI/core.
     </p>
   );
 }

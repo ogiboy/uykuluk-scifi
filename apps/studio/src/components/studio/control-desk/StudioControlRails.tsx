@@ -71,8 +71,8 @@ export function HomeControlRail({
             </div>
 
             <p className='text-muted-foreground text-xs'>
-              Upload, scheduling, public publish, and paid-provider execution stay disabled from the
-              web surface.
+              Upload, scheduling, and public publishing stay disabled. Hosted voice remains
+              approval- and cost-gated by CLI/core.
             </p>
           </CardContent>
         </Card>

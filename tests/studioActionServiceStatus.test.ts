@@ -6,13 +6,13 @@ describe("Studio action service status", () => {
     const status = getStudioActionServiceStatus();
 
     expect(status).toMatchObject({
-      actionCount: 31,
+      actionCount: 35,
       cliFallbackCount: 0,
       disabledRouteCount: 2,
       findings: [],
-      readyForCliCount: 29,
+      readyForCliCount: 33,
       riskyExternalCount: 2,
-      webReadyCount: 29,
+      webReadyCount: 33,
       webMutationsEnabled: true,
     });
     expect(status.summaries).toContainEqual(
@@ -69,6 +69,13 @@ describe("Studio action service status", () => {
         actionId: "ideas.run",
         availability: "ready-for-cli",
         routePath: "/actions/run-ideas",
+      }),
+    );
+    expect(status.summaries).toContainEqual(
+      expect.objectContaining({
+        actionId: "voice.select",
+        availability: "ready-for-cli",
+        routePath: "/actions/voice-select",
       }),
     );
     expect(status.summaries).toContainEqual(

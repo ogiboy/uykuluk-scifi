@@ -41,8 +41,9 @@ export function RunStageActionConfirmationDialog({
         <DialogHeader>
           <DialogTitle>Confirm local workflow action</DialogTitle>
           <DialogDescription>
-            Studio will run the canonical producer CLI for {runId}. Upload, scheduling, public
-            publish, and paid-provider execution remain unavailable from this action.
+            Studio will run the canonical producer CLI for {runId}. Upload, scheduling, and public
+            publishing remain unavailable. Any hosted voice call still requires the exact persisted
+            selection, quote, approval, reservation, and budget checks.
           </DialogDescription>
         </DialogHeader>
         <div className='bg-muted/30 space-y-4 rounded-lg border p-4'>

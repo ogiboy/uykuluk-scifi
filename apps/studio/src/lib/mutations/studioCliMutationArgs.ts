@@ -1,4 +1,10 @@
-import type { StudioMutationActionId } from "../../../../../src/studio/actionServiceMetadata";
+import {
+  prepared,
+  runOnlyCliCommand,
+  type RunOnlyCliActionId,
+  type StudioCliMutationActionId,
+  type StudioPreparedCliArgs,
+} from "./studioCliMutationArgsContracts";
 import { writeTemporaryInputFile } from "./studioCliMutationTempFile";
 import { isStaticCliAction, staticCliCommand } from "./studioCliStaticCommands";
 import {
@@ -12,65 +18,17 @@ import {
   parseRunOnlyPayload,
   parseScriptApprovalPayload,
   parseScriptRevisionPayload,
+  parseVoicePreviewPayload,
+  parseVoiceReselectionPayload,
+  parseVoiceRunPayload,
+  parseVoiceSelectionPayload,
 } from "./studioMutationPayloadContracts";
 
-export const studioCliMutationActionIds = [
-  "analytics.import",
-  "analytics.report",
-  "channel-handoff.decide",
-  "channel-handoff.run",
-  "cost.approve",
-  "doctor.run",
-  "estimate.run",
-  "evidence.run",
-  "idea.approve",
-  "ideas.run",
-  "model-eval-candidates.run",
-  "model-eval.run",
-  "package.run",
-  "package-artifact.revise",
-  "readiness.run",
-  "render.approve",
-  "render.decide",
-  "render.review",
-  "render.revise",
-  "render.run",
-  "render-plan.review",
-  "render-plan.run",
-  "review-bundle.run",
-  "script.approve",
-  "script.review",
-  "script.revise",
-  "script.run",
-  "voice.review",
-  "voice.run",
-] as const satisfies readonly Exclude<
-  StudioMutationActionId,
-  "publish.schedule" | "upload.private"
->[];
-
-export type StudioCliMutationActionId = (typeof studioCliMutationActionIds)[number];
-
-type RunOnlyCliActionId = Exclude<
+export { studioCliMutationActionIds } from "./studioCliMutationArgsContracts";
+export type {
   StudioCliMutationActionId,
-  | "channel-handoff.decide"
-  | "analytics.import"
-  | "analytics.report"
-  | "doctor.run"
-  | "idea.approve"
-  | "ideas.run"
-  | "model-eval.run"
-  | "model-eval-candidates.run"
-  | "package-artifact.revise"
-  | "render.decide"
-  | "script.approve"
-  | "script.revise"
->;
-
-export type StudioPreparedCliArgs = Readonly<{
-  args: readonly string[];
-  cleanup: () => Promise<void>;
-}>;
+  StudioPreparedCliArgs,
+} from "./studioCliMutationArgsContracts";
 
 /**
  * Builds whitelisted producer CLI arguments for one guarded Studio mutation.
@@ -204,39 +162,64 @@ export async function cliArgsForAction(
       "--json",
     ]);
   }
+  if (actionId === "voice.preview") {
+    const input = parseVoicePreviewPayload(payload);
+    return prepared(["voice-preview", "--run", input.runId, "--voice", input.voiceId, "--json"]);
+  }
+  if (actionId === "voice.select") {
+    const input = parseVoiceSelectionPayload(payload);
+    return prepared([
+      "voice-select",
+      "--run",
+      input.runId,
+      "--voice",
+      input.voiceId,
+      "--reviewed-by",
+      input.reviewedBy,
+      "--notes",
+      input.notes,
+      ...(input.confirmProductionRights ? ["--confirm-production-rights"] : []),
+      "--json",
+    ]);
+  }
+  if (actionId === "voice.reselect") {
+    const input = parseVoiceReselectionPayload(payload);
+    return prepared([
+      "voice-reselect",
+      "--run",
+      input.runId,
+      "--reviewed-by",
+      input.reviewedBy,
+      "--reason",
+      input.reason,
+      "--json",
+    ]);
+  }
+  if (actionId === "voice.run") {
+    const input = parseVoiceRunPayload(payload);
+    if (!("executionMode" in input)) {
+      return prepared(["voice", "--run", input.runId, "--json"]);
+    }
+    return prepared([
+      "voice",
+      "--run",
+      input.runId,
+      "--binding-digest",
+      input.bindingDigest,
+      "--quote-digest",
+      input.quoteDigest,
+      "--approval-id",
+      input.approvalId,
+      "--confirm-paid-operation",
+      "--json",
+    ]);
+  }
   return runOnlyCliArgs(actionId, payload);
 }
 
 function runOnlyCliArgs(actionId: RunOnlyCliActionId, payload: unknown): StudioPreparedCliArgs {
   const input = parseRunOnlyPayload(payload);
   return prepared([...runOnlyCliCommand[actionId], "--run", input.runId, "--json"]);
-}
-
-const runOnlyCliCommand: Record<RunOnlyCliActionId, readonly string[]> = {
-  "channel-handoff.run": ["channel-handoff"],
-  "cost.approve": ["approve", "cost"],
-  "estimate.run": ["estimate"],
-  "evidence.run": ["evidence"],
-  "package.run": ["package"],
-  "readiness.run": ["readiness"],
-  "render.approve": ["approve", "render"],
-  "render.review": ["review", "render"],
-  "render.revise": ["revise", "render"],
-  "render.run": ["render"],
-  "render-plan.review": ["review", "render-plan"],
-  "render-plan.run": ["render-plan"],
-  "review-bundle.run": ["review-bundle"],
-  "script.review": ["review", "script"],
-  "script.run": ["script"],
-  "voice.review": ["review", "voice"],
-  "voice.run": ["voice"],
-};
-
-function prepared(
-  args: readonly string[],
-  cleanup: () => Promise<void> = async () => {},
-): StudioPreparedCliArgs {
-  return { args, cleanup };
 }
 
 function analyticsImportTempFileName(sourceFileName: string, format: "csv" | "json"): string {

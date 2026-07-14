@@ -79,25 +79,34 @@
 
 ## Next
 
-- Build aligned SRT from the completed ElevenLabs character-timing evidence. Preserve the raw
-  alignment artifact, add deterministic Turkish word/cue grouping with readability bounds, bind the
-  aligned subtitle digest into voice/render evidence, and keep deterministic-local/Piper fallback
-  subtitle behavior explicit. Do not run paid provider calls in CI.
-- Implement the approved guarded settings contract in core/CLI before Studio: strict versioned
-  config parsing, shared path resolution, atomic revisions, optimistic concurrency, redacted
-  history/rollback, command-boundary immutable snapshots, and exact quote/approval invalidation.
-  Then expose safe fields through shared Studio contracts with negative route tests; secrets remain
-  status-only and listener/build-time settings are restart-required.
-- Implement prompt profiles through the existing runtime prompt owner: tracked genre presets,
-  immutable ignored local revisions, diff/preview, attributed save/rollback, and exact run snapshots.
-  Add a run-scoped editable idea brief to `ideas.run`; saving a prompt must remain separate from
-  generation and approval.
-- Add one idempotent local bootstrap command with plain/ANSI progress for Node/pnpm preflight,
-  frozen install, build, init, doctor, and Studio start. Do not require Docker, silently install
-  global tools, or claim success after a failed prerequisite.
-- Treat Production Quality & Controlled Distribution as the active product milestone. Repeat the complete documented
-  idea-to-manual-handoff workflow on real episodes and record operator/media friction; do not add a
-  new platform surface unless the run exposes a concrete blocker.
+- Close the active `v0.82.0` candidate: aligned SRT/render binding and guarded Studio voice audition,
+  selection, reselection, A/B playback, and exact hosted confirmation are implemented and have passed
+  focused integration, repeated full-suite, CI-shaped, product/browser QA, and real Studio UAT.
+  Complete PR-ready coverage, dependency, version, Sonar, review, changelog, and merge gates without
+  weakening deterministic-local/Piper `linear-fallback` timing or making a paid CI call.
+- Keep live ElevenLabs production validation separate from implementation completion. Free-tier
+  metadata/catalog/preview smoke is allowed only where the provider permits it and never proves
+  production rights. Production synthesis requires commercial eligibility, exact quote, persisted
+  approval, reservation, bounded execution, and settlement; until then report it as pending.
+- Next slice: add static/manual `VisualProvider`, run the bounded three-scene hosted bake-off,
+  choose at most one hosted still-image adapter, then deliver 12-24 scene images, contact-sheet
+  review, rejected-only regeneration, provenance/cost, deterministic motion, mastering, thumbnail
+  JPG, and exact visual/render binding. Preserve a credential-free static/manual fallback.
+- Then add sequential multi-model script audition and editorial quality: immutable shared brief and
+  prompt/settings snapshots, side-by-side selection, retained alternatives, inline review, operator-
+  curated source/claim provenance, and a minimum-publishable scorecard.
+- Then implement resumable private-only YouTube upload with server-side OAuth/session state, exact
+  target-channel and MP4/metadata/thumbnail/caption digest binding, durable
+  operation/offset/remote-ID evidence, and processing review. Public and scheduled publishing remain
+  unavailable at schema, action-catalog, and UI levels.
+- Productization follows media and controlled distribution: implement versioned settings/history/
+  rollback, prompt profiles and editable idea briefs, one-command bootstrap/onboarding, concise
+  product documentation, local fallback rehearsal, and two real-episode acceptance runs. Saves are
+  visible immediately and affect the next command; in-flight work remains snapshot-pinned, secrets
+  remain status-only, and listener/build-time settings require restart or rebuild.
+- Treat Production Quality & Controlled Distribution as the active product milestone. Repeat the
+  complete documented idea-to-manual-handoff workflow on real episodes and record operator/media
+  friction; do not add a new platform surface unless the run exposes a concrete blocker.
 - Keep the live local-model result honest: Gemma 3 12B on managed llama.cpp completed one real
   long-form run, but still required bounded continuation and attributable script/package review.
   Preserve Qwen failures as regression evidence and keep local model QA outside CI.
@@ -243,16 +252,17 @@
 - Repeat live local-model QA only after provider, prompt, model-setting, or evaluation-harness
   changes justify the time cost.
 - YouTube Analytics API only after manual analytics import/reporting proves useful.
-- Private YouTube upload behind upload approval and explicit config.
 - Public/scheduled publish only after separate risk review.
 
 ## Do Not Do Yet
 
 - Do not implement additional Studio mutations before shared service contracts, route security
   requirements, and negative tests exist.
-- Do not add paid APIs.
+- Do not add paid providers outside the approved ElevenLabs and single hosted-still slices, or make
+  live paid calls without the exact approval/budget/evidence boundary.
 - Do not add paid/generative media providers before deterministic local planning, TTS, and render
   flows are useful.
-- Do not implement upload or publish.
+- Do not implement private upload before exact local media review and upload-approval contracts are
+  reliable. Do not implement public or scheduled publishing for v1.
 - Do not create a second state machine in frontend code.
 - Do not infer approvals from files or readiness output.
