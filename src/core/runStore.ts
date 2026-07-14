@@ -100,16 +100,48 @@ export async function saveRun(record: RunRecord): Promise<RunRecord> {
  */
 export async function mutateRun<T>(
   runId: string,
-  mutation: (current: RunRecord) => Promise<{ run: RunRecord; value: T; persist?: boolean }>,
+  mutation: (
+    current: RunRecord,
+    context: RunMutationContext,
+  ) => Promise<{ run: RunRecord; value: T; persist?: boolean }>,
 ): Promise<{ run: RunRecord; value: T }> {
   return withRunStateLock(runId, async () => {
     const current = await loadRun(runId);
-    const result = await mutation(current);
-    if (result.persist === false) return { run: current, value: result.value };
-    const saved = await persistRunIfCurrent(result.run, current);
-    return { run: saved, value: result.value };
+    const rollbackHandlers: Array<(failure: unknown) => Promise<void> | void> = [];
+    try {
+      const result = await mutation(current, {
+        onRollback(handler) {
+          rollbackHandlers.push(handler);
+        },
+      });
+      if (result.persist === false) return { run: current, value: result.value };
+      const saved = await persistRunIfCurrent(result.run, current);
+      return { run: saved, value: result.value };
+    } catch (error) {
+      const rollbackErrors: unknown[] = [];
+      rollbackHandlers.reverse();
+      for (const rollback of rollbackHandlers) {
+        try {
+          await rollback(error);
+        } catch (rollbackError) {
+          rollbackErrors.push(rollbackError);
+        }
+      }
+      if (rollbackErrors.length > 0) {
+        throw new AggregateError(
+          [error, ...rollbackErrors],
+          "Run mutation failed and its artifact rollback could not be completed.",
+          { cause: error },
+        );
+      }
+      throw error;
+    }
   });
 }
+
+export type RunMutationContext = Readonly<{
+  onRollback: (handler: (failure: unknown) => Promise<void> | void) => void;
+}>;
 
 /**
  * Updates a run's state and records the change in the ledger.
@@ -195,6 +227,11 @@ export async function listRuns(): Promise<RunRecord[]> {
 function validateRunArtifacts(record: RunRecord): RunRecord {
   for (const relativePath of record.artifacts) {
     validateArtifactRelativePath(relativePath);
+  }
+  for (const event of record.pendingLedgerEvents ?? []) {
+    if (event.runId !== record.runId) {
+      throw new SafeExitError("Pending ledger event identity does not match its owning run.");
+    }
   }
   return record;
 }

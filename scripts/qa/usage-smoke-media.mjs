@@ -199,7 +199,7 @@ async function assertRenderedEvidence({ workdir, runId, assert }) {
     "render manifest records reference audio classification",
   );
   assert(
-    renderManifest.schemaVersion === 9 &&
+    renderManifest.schemaVersion === 10 &&
       typeof renderManifest.ffmpeg?.reviewCommand === "string" &&
       renderManifest.ffmpeg.reviewCommand.includes("production/render/draft.mp4"),
     "render manifest records final-artifact FFmpeg review command",
@@ -215,8 +215,8 @@ async function assertRenderedEvidence({ workdir, runId, assert }) {
     "render manifest review command validates the final draft without rewriting temp output",
   );
   assert(
-    renderManifest.mediaProbe?.video?.width === 1280 &&
-      renderManifest.mediaProbe?.video?.height === 720 &&
+    renderManifest.mediaProbe?.video?.width === 1920 &&
+      renderManifest.mediaProbe?.video?.height === 1080 &&
       renderManifest.mediaProbe?.audio?.codecName === "aac",
     "render manifest records ffprobe video and audio evidence",
   );
@@ -263,7 +263,7 @@ function fakeFfprobeSource() {
     "console.log(JSON.stringify({",
     "  format: { duration, format_name: 'mov,mp4,m4a,3gp,3g2,mj2' },",
     "  streams: [",
-    "    { codec_type: 'video', codec_name: 'h264', width: 1280, height: 720, duration },",
+    "    { codec_type: 'video', codec_name: 'h264', width: 1920, height: 1080, duration },",
     "    { codec_type: 'audio', codec_name: 'aac', sample_rate: '48000', channels: 2, duration }",
     "  ]",
     "}));",

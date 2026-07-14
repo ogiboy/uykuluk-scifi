@@ -70,6 +70,25 @@ describe("Studio run review navigation", () => {
     ).toBe("voice");
   });
 
+  it("prioritizes an exact visuals command before an otherwise actionable voice surface", () => {
+    expect(
+      runReviewTabFocus(
+        navigationFixture({
+          nextRecommendedCommand: "pnpm producer visuals prepare --run run_brief",
+          productionMedia: [],
+          state: "PRODUCTION_PACKAGE_GENERATED",
+          voiceAudition: {
+            currentSelection: { voiceId: "voice_selected" },
+            production: {
+              hostedExecution: null,
+              synthesis: { detail: "Voice is missing.", status: "missing" },
+            },
+          } as NavigationFixture["voiceAudition"],
+        }),
+      ),
+    ).toMatchObject({ label: "Visual review", tab: "visuals" });
+  });
+
   it("opens handoff after a render decision or local handoff exists", () => {
     expect(
       defaultRunReviewTab(

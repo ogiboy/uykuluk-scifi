@@ -6,6 +6,7 @@ import {
 import { renderPlanArtifactPaths } from "../../../../../src/stages/render/renderPlanSchemas";
 import type { StatusWorkflowStep } from "../../../../../src/stages/status/statusWorkflow";
 import { buildStatusWorkflowProgress } from "../../../../../src/stages/status/statusWorkflow";
+import { visualManifestPath } from "../../../../../src/stages/visuals/visualContracts";
 import type { StudioChannelHandoffDecisionSummary } from "./channelHandoffDecisionSummaries";
 import type { StudioChannelHandoffSummary } from "./channelHandoffSummaries";
 import { evidenceNextRecommendedCommand, type StudioEvidenceSummary } from "./evidenceSummaries";
@@ -172,8 +173,14 @@ function productionPackageActionWhenEvidenceCannotLead(
   const nextCommand =
     evidenceUnavailableBecauseItIsUnsafe || hasCompleteRenderPlanArtifacts(artifacts)
       ? "pnpm producer evidence --run <run_id>"
-      : "pnpm producer render-plan --run <run_id>";
+      : productionMediaPreparationCommand(artifacts);
   return nextCommand.replaceAll("<run_id>", runId);
+}
+
+function productionMediaPreparationCommand(artifacts: readonly string[]): string {
+  return artifacts.includes(visualManifestPath)
+    ? "pnpm producer render-plan --run <run_id>"
+    : "pnpm producer visuals prepare --run <run_id>";
 }
 
 function hasCompleteRenderPlanArtifacts(artifacts: readonly string[]): boolean {

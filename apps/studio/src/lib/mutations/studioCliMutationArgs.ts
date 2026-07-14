@@ -23,6 +23,7 @@ import {
   parseVoiceRunPayload,
   parseVoiceSelectionPayload,
 } from "./studioMutationPayloadContracts";
+import { visualCliArgsForAction } from "./studioVisualCliMutationArgs";
 
 export { studioCliMutationActionIds } from "./studioCliMutationArgsContracts";
 export type {
@@ -165,6 +166,10 @@ export async function cliArgsForAction(
         "--json",
       ]);
     }
+    case "visuals.import":
+    case "visuals.decide":
+    case "visuals.regenerate":
+      return visualCliArgsForAction(actionId, payload);
     case "voice.preview": {
       const input = parseVoicePreviewPayload(payload);
       return prepared(["voice-preview", "--run", input.runId, "--voice", input.voiceId, "--json"]);

@@ -14,6 +14,7 @@ import { reviewScript } from "../src/stages/reviewScript";
 import { generateScript } from "../src/stages/script";
 import { wavFromPcm16 } from "../src/stages/voice/voiceWav";
 import { createMinimalRenderAssets } from "./renderTestHelpers";
+import { prepareApprovedStaticVisuals } from "./visualTestHelpers";
 
 /** Creates a deterministic voiceover metadata fixture for schema validation. */
 export function voiceoverMetaFixture() {
@@ -41,6 +42,7 @@ export async function prepareReadyRun(options: { renderPlan: boolean }): Promise
   await createMinimalRenderAssets();
   const runId = await preparePackagedRun();
   if (options.renderPlan) {
+    await prepareApprovedStaticVisuals(runId);
     await generateRenderPlan(runId);
   }
   await estimateCost(runId);

@@ -15,6 +15,7 @@ import { generateScript } from "../src/stages/script";
 import { generateVoiceoverAudio } from "../src/stages/voice";
 import { useTempProject } from "./helpers";
 import { createMinimalRenderAssets, enableDeterministicTts } from "./renderTestHelpers";
+import { prepareApprovedStaticVisuals } from "./visualTestHelpers";
 
 const repoRoot = process.cwd();
 
@@ -105,6 +106,7 @@ async function prepareVoiceoverReadyRun(): Promise<string> {
   const runId = await prepareReviewedScriptRun();
   await approveScript(runId, { acknowledgeWarnings: true });
   await generateProductionPackage(runId);
+  await prepareApprovedStaticVisuals(runId);
   await generateRenderPlan(runId);
   await estimateCost(runId);
   await generateEvidenceBundle(runId);

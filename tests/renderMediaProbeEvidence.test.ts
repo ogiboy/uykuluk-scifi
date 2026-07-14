@@ -24,6 +24,7 @@ import {
   enableDeterministicTts,
   renderToolRoot,
 } from "./renderTestHelpers";
+import { prepareApprovedStaticVisuals } from "./visualTestHelpers";
 
 describe("draft render media probe evidence", () => {
   useTempProject();
@@ -72,6 +73,7 @@ async function prepareVoiceoverReadyRun(): Promise<string> {
   await reviewScript(runId);
   await approveScript(runId, { acknowledgeWarnings: true });
   await generateProductionPackage(runId);
+  await prepareApprovedStaticVisuals(runId);
   await generateRenderPlan(runId);
   await estimateCost(runId);
   await generateEvidenceBundle(runId);

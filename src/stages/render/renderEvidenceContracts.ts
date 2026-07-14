@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { visualMotionPresetSchema } from "../visuals/visualMotionContracts.js";
 import { activeVoiceSubtitleDescriptorSchema } from "../voice/voiceoverSubtitles.js";
 import { assetRefSchema, digestSchema } from "./renderPlanSchemas.js";
 import { renderMediaProbeSchema, type RenderMediaProbe } from "./renderProbe.js";
@@ -39,6 +40,7 @@ const renderTimelineItemSchema = z
     durationSeconds: z.number().positive(),
     backgroundAsset: assetRefSchema,
     sourceFrameAssets: z.array(assetRefSchema).min(1).optional(),
+    motion: visualMotionPresetSchema.optional(),
   })
   .refine(
     (item) => item.segment === "intro" || item.segment === "outro" || item.sceneIndex !== undefined,
@@ -51,15 +53,17 @@ const ffmpegTimelineInputSchema = z.strictObject({
   asset: assetRefSchema,
   source: z.enum(["background", "source-frame"]),
   frameIndex: z.int().positive().optional(),
+  motion: visualMotionPresetSchema.optional(),
 });
 
-export const draftRenderManifestSchema = z.strictObject({
+const legacyDraftRenderManifestSchema = z.strictObject({
   schemaVersion: z.literal(9),
   runId: z.string().min(1),
   createdAt: z.iso.datetime(),
   renderPlan: z.strictObject({
     path: z.literal("production/render_plan.json"),
     digest: digestSchema,
+    visualManifestDigest: digestSchema.optional(),
   }),
   voiceoverAudio: z.strictObject({
     path: z.literal("production/audio/voiceover.wav"),
@@ -117,6 +121,20 @@ export const draftRenderManifestSchema = z.strictObject({
   }),
   mediaProbe: renderMediaProbeSchema,
 });
+
+const visualDraftRenderManifestSchema = legacyDraftRenderManifestSchema.extend({
+  schemaVersion: z.literal(10),
+  renderPlan: z.strictObject({
+    path: z.literal("production/render_plan.json"),
+    digest: digestSchema,
+    visualManifestDigest: digestSchema,
+  }),
+});
+
+export const draftRenderManifestSchema = z.discriminatedUnion("schemaVersion", [
+  legacyDraftRenderManifestSchema,
+  visualDraftRenderManifestSchema,
+]);
 
 export type DraftRenderManifest = z.infer<typeof draftRenderManifestSchema>;
 

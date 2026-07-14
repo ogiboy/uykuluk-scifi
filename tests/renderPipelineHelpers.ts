@@ -19,6 +19,7 @@ import {
   enableDeterministicTts,
   renderToolRoot,
 } from "./renderTestHelpers";
+import { prepareApprovedStaticVisuals } from "./visualTestHelpers";
 
 /**
  * Prepares a run that has all manual-production prerequisites plus deterministic voiceover audio.
@@ -62,6 +63,7 @@ export async function prepareReadyRunWithoutVoiceover(): Promise<string> {
   await reviewScript(runId);
   await approveScript(runId, { acknowledgeWarnings: true });
   await generateProductionPackage(runId);
+  await prepareApprovedStaticVisuals(runId);
   await generateRenderPlan(runId);
   await estimateCost(runId);
   await generateEvidenceBundle(runId);

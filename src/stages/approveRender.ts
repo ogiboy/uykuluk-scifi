@@ -28,6 +28,11 @@ export async function approveRender(runId: string): Promise<ApprovalRecord> {
     if (renderPlan.status !== "pass") {
       throw new SafeExitError("Cannot approve render without valid render-plan evidence.");
     }
+    if (!renderPlan.visualManifestDigest) {
+      throw new SafeExitError(
+        "Cannot approve render without visual-manifest-bound render-plan evidence.",
+      );
+    }
     const voiceoverAudio = await readVoiceoverAudioEvidence(run);
     if (voiceoverAudio.status !== "pass") {
       throw new SafeExitError("Cannot approve render without valid voiceover audio evidence.");
@@ -38,6 +43,7 @@ export async function approveRender(runId: string): Promise<ApprovalRecord> {
       target: "render",
       approvedRef: renderApprovalRef({
         renderPlanDigest: renderPlan.digest,
+        visualManifestDigest: renderPlan.visualManifestDigest,
         subtitleDigest: voiceoverAudio.subtitle.sha256,
         subtitleMetadataDigest: voiceoverAudio.subtitle.metadataSha256,
         subtitleTimingMode: voiceoverAudio.subtitle.timingMode,
@@ -60,7 +66,7 @@ export async function approveRender(runId: string): Promise<ApprovalRecord> {
       runId: run.runId,
       type: "APPROVAL_RECORDED",
       stage: "approve-render",
-      message: "Render approved for the current render plan and voiceover audio.",
+      message: "Render approved for the current visual manifest, render plan, and voiceover audio.",
       data: approval,
     });
     await setRunState(run, "RENDER_APPROVED", "approve-render");

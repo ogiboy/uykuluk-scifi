@@ -41,6 +41,12 @@ export type StudioGuardedActionSubmitInput = Readonly<{
   successMessage: string;
   successToastTitle: string;
 }>;
+export type StudioGuardedActionClientErrorInput = Readonly<{
+  actionId: string;
+  message: string;
+  routePath: string;
+  toastTitle: string;
+}>;
 
 /**
  * Tracks the guarded Studio mutation submit lifecycle shared by action panels: state
@@ -69,18 +75,19 @@ export function useStudioGuardedActionSubmit(idleMessage: string) {
     });
     if (result.kind === "blocked") {
       const blockedAction = actionMetadata(input, true);
+      const blockedMessage = messageWithWarnings(result.message, result.warnings);
       setState({
         action: blockedAction,
         kind: "blocked",
-        message: result.message,
+        message: blockedMessage,
         recordSummary: result.recordSummary,
         status: result.status,
       });
-      writeLastMutationResult("blocked", blockedAction, result.message, result.recordSummary, {
+      writeLastMutationResult("blocked", blockedAction, blockedMessage, result.recordSummary, {
         status: result.status,
       });
       toast.warning(input.errorToastTitle, {
-        description: `${result.message} Studio is refreshing persisted local state.`,
+        description: `${blockedMessage} Studio is refreshing persisted local state.`,
       });
       router.refresh();
       return result;
@@ -99,21 +106,43 @@ export function useStudioGuardedActionSubmit(idleMessage: string) {
       return result;
     }
     const completedAction = actionMetadata(input, true);
+    const completedMessage = messageWithWarnings(input.successMessage, result.warnings);
     setState({
       action: completedAction,
       kind: "success",
-      message: input.successMessage,
+      message: completedMessage,
       recordSummary: result.recordSummary,
     });
-    writeLastMutationResult("success", completedAction, input.successMessage, result.recordSummary);
-    toast.success(input.successToastTitle, {
-      description: "Studio is refreshing the persisted run detail.",
-    });
+    writeLastMutationResult("success", completedAction, completedMessage, result.recordSummary);
+    if (result.warnings.length > 0) {
+      toast.warning(`${input.successToastTitle} with cleanup warning`, {
+        description: result.warnings.join(" "),
+      });
+    } else {
+      toast.success(input.successToastTitle, {
+        description: "Studio is refreshing the persisted run detail.",
+      });
+    }
     router.refresh();
     return result;
   }
 
-  return { state, submit };
+  function reportError(input: StudioGuardedActionClientErrorInput): void {
+    const action = {
+      actionId: input.actionId,
+      refreshedPersistedState: false,
+      routePath: input.routePath,
+    };
+    setState({ action, kind: "error", message: input.message });
+    writeLastMutationResult("error", action, input.message, null);
+    toast.error(input.toastTitle, { description: input.message });
+  }
+
+  return { reportError, state, submit };
+}
+
+function messageWithWarnings(message: string, warnings: readonly string[]): string {
+  return warnings.length > 0 ? `${message} ${warnings.join(" ")}` : message;
 }
 
 function writeLastMutationResult(

@@ -107,6 +107,7 @@ describe("Studio mutation submit", () => {
       message: "Readiness is blocked.",
       recordSummary: { facts: ["Run: run_blocked_submit"], runId: "run_blocked_submit" },
       status: 409,
+      warnings: [],
     });
     expect(readStudioMutationSessionSnapshot()).toMatchObject({ status: "ready" });
   });
@@ -128,6 +129,7 @@ describe("Studio mutation submit", () => {
             runId: "run_submit",
           },
           status: "ok",
+          warnings: ["Temporary input cleanup requires operator attention."],
         }),
       );
     vi.stubGlobal("fetch", fetchMock);
@@ -150,6 +152,7 @@ describe("Studio mutation submit", () => {
         ],
         runId: "run_submit",
       },
+      warnings: ["Temporary input cleanup requires operator attention."],
     });
   });
 

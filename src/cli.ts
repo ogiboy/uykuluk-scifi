@@ -10,6 +10,7 @@ import { registerReviewCommands } from "./cli/reviewCommands.js";
 import { registerRevisionCommands } from "./cli/revisionCommands.js";
 import { resolveStatusRunId } from "./cli/statusRunSelector.js";
 import { readCliVersion } from "./cli/version.js";
+import { registerVisualCommands } from "./cli/visualCommands.js";
 import { registerVoiceCommands } from "./cli/voiceCommands.js";
 import { voiceExecutionConfirmationFromOptions } from "./cli/voiceExecutionConfirmationOptions.js";
 import { initProject } from "./config/config.js";
@@ -67,6 +68,7 @@ registerGenerationCommands(program, wrap);
 registerOperatorDeskCommand(program, wrap);
 registerReviewCommands(program, wrap);
 registerVoiceCommands(program, wrap);
+registerVisualCommands(program, wrap);
 
 registerRevisionCommands(program, wrap);
 

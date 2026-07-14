@@ -36,6 +36,7 @@ import {
 } from "./elevenLabsVoiceWorkflowFixtures";
 import { verifyWorkflowEvidenceTamperGuards } from "./elevenLabsVoiceWorkflowTamperAssertions";
 import { useTempProject } from "./helpers";
+import { prepareApprovedStaticVisuals } from "./visualTestHelpers";
 import {
   successfulCatalogProvider,
   successfulExecutionMetadataProvider,
@@ -67,6 +68,7 @@ describe("ElevenLabs voice workflow", () => {
       confirmProductionRights: true,
     });
     const currentSelection = await readCurrentVoiceSelection(runId);
+    await prepareApprovedStaticVisuals(runId);
     await generateRenderPlan(runId);
     await estimateCost(runId);
 

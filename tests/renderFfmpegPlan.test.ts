@@ -42,6 +42,7 @@ describe("draft render FFmpeg planning", () => {
     expect(renderedArgs).toContain("assets/backgrounds/plate_a.jpg");
     expect(renderedArgs).toContain("assets/backgrounds/plate_b.jpg");
     expect(renderedArgs).toContain("assets/outro/end_screen.jpg");
+    expect(renderedArgs).toContain("scale=1920:1080");
     expect(renderedArgs).toContain("assets/overlays/lower_third.png");
     expect(renderedArgs).toContain("assets/waveforms/waveform.png");
     expect(renderedArgs).toContain("assets/overlays/popup_card.png");

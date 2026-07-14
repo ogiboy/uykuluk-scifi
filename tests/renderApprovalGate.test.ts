@@ -1,3 +1,4 @@
+import { readFile, writeFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { artifactPath } from "../src/core/artifacts";
 import { loadRun } from "../src/core/runStore";
@@ -30,5 +31,26 @@ describe("draft render approval gates", () => {
 
     await expect(approveRender(runId)).rejects.toThrow(/voiceover/i);
     expect((await loadRun(runId)).state).toBe("READY_FOR_MANUAL_PRODUCTION");
+  });
+
+  it("refuses approval for a readable legacy render plan without visual binding", async () => {
+    const runId = await prepareVoiceoverReadyRun();
+    const planPath = artifactPath(runId, "production/render_plan.json");
+    const plan = JSON.parse(await readFile(planPath, "utf8")) as {
+      visualManifest?: unknown;
+      schemaVersion: number;
+      scenes: Array<Record<string, unknown>>;
+    };
+    const legacyScenes = plan.scenes.map((scene) => {
+      const legacyScene = { ...scene };
+      delete legacyScene.motion;
+      delete legacyScene.visualRevision;
+      return legacyScene;
+    });
+    const legacyPlan: Record<string, unknown> = { ...plan, schemaVersion: 1, scenes: legacyScenes };
+    delete legacyPlan.visualManifest;
+    await writeFile(planPath, `${JSON.stringify(legacyPlan, null, 2)}\n`, "utf8");
+
+    await expect(approveRender(runId)).rejects.toThrow(/visual-manifest-bound/i);
   });
 });

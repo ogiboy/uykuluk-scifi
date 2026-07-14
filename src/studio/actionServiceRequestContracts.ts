@@ -2,6 +2,7 @@ import { z } from "zod";
 import { isValidRunId } from "../core/runId.js";
 import { channelHandoffDecisionValues } from "../stages/channel/channelHandoffDecisionContracts.js";
 import { renderDecisionValues } from "../stages/render/renderDecisionCommands.js";
+import { visualMutationExpectationSchema } from "../stages/visuals/visualMutationExpectation.js";
 import { voiceSelectionInputSchema } from "../stages/voice/catalog/voiceAuditionContracts.js";
 import { voiceIdSchema } from "../stages/voice/catalog/voiceCatalogContracts.js";
 import {
@@ -52,6 +53,54 @@ export const voiceReselectionRequestSchema = z.strictObject({
     .max(200)
     .refine((value) => !hasUnsafeControlCharacters(value), "Reviewer contains unsafe controls."),
   runId: runIdSchema,
+});
+
+const visualSourceFileNameSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(240)
+  .refine((value) => !value.includes("/") && !value.includes("\\"), {
+    message: "Visual source file name must not contain path separators.",
+  })
+  .refine((value) => /\.(?:jpe?g|png)$/i.test(value), {
+    message: "Visual imports must use a PNG or JPEG file name.",
+  });
+const visualBase64Schema = z
+  .string()
+  .min(4)
+  .max(34_952_536)
+  .refine((value) => value.length % 4 === 0 && /^[A-Za-z0-9+/]*={0,2}$/.test(value), {
+    message: "Visual import content must be canonical base64.",
+  });
+const visualExpectedActiveRevisionsSchema =
+  visualMutationExpectationSchema.shape.expectedActiveRevisions.refine(
+    (items) => new Set(items.map((item) => item.sceneIndex)).size === items.length,
+    { message: "Expected active visual revisions must contain unique scene indexes." },
+  );
+const visualMutationExpectationRequestShape = {
+  expectedActiveRevisions: visualExpectedActiveRevisionsSchema,
+  expectedManifestDigest: visualMutationExpectationSchema.shape.expectedManifestDigest,
+} as const;
+export const visualImportRequestSchema = z.strictObject({
+  contentBase64: visualBase64Schema,
+  ...visualMutationExpectationRequestShape,
+  runId: runIdSchema,
+  sceneIndex: z.int().positive().max(24),
+  sourceFileName: visualSourceFileNameSchema,
+});
+export const visualDecisionRequestSchema = z.strictObject({
+  ...visualMutationExpectationRequestShape,
+  notes: z.string().trim().min(1).max(4_000),
+  reviewedBy: z.string().trim().min(1).max(200),
+  runId: runIdSchema,
+  sceneIndexes: z.array(z.int().positive().max(24)).min(1).max(24),
+  status: z.enum(["approved", "rejected"]),
+});
+export const visualRegenerationRequestSchema = z.strictObject({
+  ...visualMutationExpectationRequestShape,
+  runId: runIdSchema,
+  sceneIndexes: z.array(z.int().positive().max(24)).min(1).max(24),
 });
 
 export const emptyRequestSchema = z.strictObject({});
@@ -149,6 +198,10 @@ export type StudioActionRequestById = {
   "script.run": z.infer<typeof runOnlyRequestSchema>;
   "package-artifact.revise": z.infer<typeof packageArtifactRevisionRequestSchema>;
   "upload.private": z.infer<typeof runOnlyRequestSchema>;
+  "visuals.decide": z.infer<typeof visualDecisionRequestSchema>;
+  "visuals.import": z.infer<typeof visualImportRequestSchema>;
+  "visuals.prepare": z.infer<typeof runOnlyRequestSchema>;
+  "visuals.regenerate": z.infer<typeof visualRegenerationRequestSchema>;
   "voice.candidates": z.infer<typeof runOnlyRequestSchema>;
   "voice.preview": z.infer<typeof voicePreviewRequestSchema>;
   "voice.reselect": z.infer<typeof voiceReselectionRequestSchema>;
@@ -187,6 +240,10 @@ export const studioMutationRequestSchemaByAction = {
   "script.run": runOnlyRequestSchema,
   "package-artifact.revise": packageArtifactRevisionRequestSchema,
   "upload.private": runOnlyRequestSchema,
+  "visuals.decide": visualDecisionRequestSchema,
+  "visuals.import": visualImportRequestSchema,
+  "visuals.prepare": runOnlyRequestSchema,
+  "visuals.regenerate": visualRegenerationRequestSchema,
   "voice.candidates": runOnlyRequestSchema,
   "voice.preview": voicePreviewRequestSchema,
   "voice.reselect": voiceReselectionRequestSchema,

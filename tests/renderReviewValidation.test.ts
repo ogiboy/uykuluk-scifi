@@ -34,6 +34,53 @@ describe("draft render review validation", () => {
     });
   });
 
+  it("keeps legacy v9 render manifests readable for historical runs", async () => {
+    const runId = await prepareVoiceoverReadyRun();
+    await approveRender(runId);
+    const ffmpeg = await createFakeFfmpeg(renderToolRoot("legacy-v9-review"));
+    const ffprobe = await createFakeFfprobe(renderToolRoot("legacy-v9-review"));
+    await renderDraft(runId, { ffmpegBinary: ffmpeg, ffprobeBinary: ffprobe });
+    const manifestPath = artifactPath(runId, "production/render/render_manifest.json");
+    const manifest = await readJsonFile<DraftRenderManifest>(manifestPath);
+    const legacyRenderPlan: Record<string, unknown> = { ...manifest.renderPlan };
+    delete legacyRenderPlan.visualManifestDigest;
+    await writeFile(
+      manifestPath,
+      `${JSON.stringify(
+        { ...manifest, schemaVersion: 9, renderPlan: legacyRenderPlan },
+        null,
+        2,
+      )}\n`,
+      "utf8",
+    );
+
+    await expect(reviewDraftRender(runId)).resolves.toMatchObject({ schemaVersion: 9, runId });
+  });
+
+  it("blocks v10 render evidence when its visual manifest digest is stale", async () => {
+    const runId = await prepareVoiceoverReadyRun();
+    await approveRender(runId);
+    const ffmpeg = await createFakeFfmpeg(renderToolRoot("stale-visual-v10"));
+    const ffprobe = await createFakeFfprobe(renderToolRoot("stale-visual-v10"));
+    await renderDraft(runId, { ffmpegBinary: ffmpeg, ffprobeBinary: ffprobe });
+    const manifestPath = artifactPath(runId, "production/render/render_manifest.json");
+    const manifest = await readJsonFile<DraftRenderManifest>(manifestPath);
+    await writeFile(
+      manifestPath,
+      `${JSON.stringify(
+        {
+          ...manifest,
+          renderPlan: { ...manifest.renderPlan, visualManifestDigest: "f".repeat(64) },
+        },
+        null,
+        2,
+      )}\n`,
+      "utf8",
+    );
+
+    await expect(reviewDraftRender(runId)).rejects.toThrow(/stale visual manifest/i);
+  });
+
   it("blocks evidence and review handoff when persisted review command provenance is tampered", async () => {
     const runId = await prepareVoiceoverReadyRun();
     await approveRender(runId);

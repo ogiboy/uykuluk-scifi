@@ -1,7 +1,7 @@
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { withRunStateLock } from "../src/core/runStateLock";
-import { createRun, loadRun, runPath, saveRun, statePath } from "../src/core/runStore";
+import { createRun, loadRun, mutateRun, runPath, saveRun, statePath } from "../src/core/runStore";
 import { RunRecord } from "../src/core/state";
 import { pathExists } from "../src/utils/fs";
 import { useTempProject } from "./helpers";
@@ -52,6 +52,76 @@ describe("run store integrity", () => {
       "Run state changed",
     );
     await expect(loadRun(created.runId)).resolves.toMatchObject({ warnings: ["first-writer"] });
+  });
+
+  it("runs registered rollback handlers when a mutation fails", async () => {
+    const run = await createRun();
+    const calls: string[] = [];
+
+    await expect(
+      mutateRun(run.runId, async (_current, transaction) => {
+        transaction.onRollback(() => {
+          calls.push("first");
+        });
+        transaction.onRollback(() => {
+          calls.push("second");
+        });
+        throw new Error("injected mutation failure");
+      }),
+    ).rejects.toThrow("injected mutation failure");
+
+    expect(calls).toEqual(["second", "first"]);
+  });
+
+  it("runs registered rollback handlers when compare-and-save persistence fails", async () => {
+    const run = await createRun();
+    let rolledBack = false;
+
+    await expect(
+      mutateRun(run.runId, async (current, transaction) => {
+        transaction.onRollback(() => {
+          rolledBack = true;
+        });
+        return {
+          run: {
+            ...current,
+            updatedAt: new Date(Date.parse(current.updatedAt) + 1_000).toISOString(),
+          },
+          value: null,
+        };
+      }),
+    ).rejects.toThrow("Run state changed");
+
+    expect(rolledBack).toBe(true);
+  });
+
+  it("attempts every rollback handler when one rollback fails", async () => {
+    const run = await createRun();
+    const calls: string[] = [];
+
+    const failure = await mutateRun(run.runId, async (_current, transaction) => {
+      transaction.onRollback(() => {
+        calls.push("first");
+      });
+      transaction.onRollback(() => {
+        calls.push("second");
+        throw new Error("injected rollback failure");
+      });
+      throw new Error("injected mutation failure");
+    }).catch((error: unknown) => error);
+
+    expect(calls).toEqual(["second", "first"]);
+    expect(failure).toBeInstanceOf(AggregateError);
+    expect((failure as AggregateError).cause).toMatchObject({
+      message: "injected mutation failure",
+    });
+    expect(failure).toMatchObject({
+      message: expect.stringMatching(/artifact rollback could not be completed/i),
+      errors: [
+        expect.objectContaining({ message: "injected mutation failure" }),
+        expect.objectContaining({ message: "injected rollback failure" }),
+      ],
+    });
   });
 
   it("rejects state whose embedded run id does not match its directory", async () => {

@@ -15,6 +15,7 @@ import { reviewScript } from "../src/stages/reviewScript";
 import { generateScript } from "../src/stages/script";
 import { useTempProject } from "./helpers";
 import { createMinimalRenderAssets, enableDeterministicTts } from "./renderTestHelpers";
+import { prepareApprovedStaticVisuals } from "./visualTestHelpers";
 
 const repoRoot = process.cwd();
 
@@ -95,6 +96,7 @@ async function prepareReadyRun(): Promise<string> {
   await reviewScript(runId);
   await approveScript(runId, { acknowledgeWarnings: true });
   await generateProductionPackage(runId);
+  await prepareApprovedStaticVisuals(runId);
   await generateRenderPlan(runId);
   await estimateCost(runId);
   await generateEvidenceBundle(runId);

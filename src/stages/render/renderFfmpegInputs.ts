@@ -8,6 +8,7 @@ export type FfmpegTimelineInput = {
   sceneIndex?: number;
   segment: DraftRenderTimeline[number]["segment"];
   source: "background" | "source-frame";
+  motion: DraftRenderTimeline[number]["motion"];
 };
 
 type SelectedTimelineAsset = {
@@ -33,6 +34,7 @@ export function buildFfmpegTimelineInputs(timeline: DraftRenderTimeline): Ffmpeg
       sceneIndex: item.sceneIndex,
       segment: item.segment,
       source: asset.source,
+      motion: item.motion,
     }));
   });
 }

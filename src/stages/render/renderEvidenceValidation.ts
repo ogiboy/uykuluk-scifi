@@ -167,6 +167,12 @@ async function assertDraftRenderInputs(
     throw new SafeExitError("Draft render was generated from a stale or missing render plan.");
   }
   if (
+    manifest.schemaVersion === 10 &&
+    renderPlan.visualManifestDigest !== manifest.renderPlan.visualManifestDigest
+  ) {
+    throw new SafeExitError("Draft render was generated from stale visual manifest evidence.");
+  }
+  if (
     voiceoverAudio.status !== "pass" ||
     voiceoverAudio.digest !== manifest.voiceoverAudio.digest ||
     voiceoverAudio.metadataDigest !== manifest.voiceoverAudio.metadataDigest ||

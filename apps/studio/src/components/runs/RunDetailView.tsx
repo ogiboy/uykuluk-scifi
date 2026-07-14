@@ -12,6 +12,7 @@ import { RunReviewDecisionRail } from "./RunReviewDecisionRail";
 import { RunReviewSectionTabs } from "./RunReviewSectionTabs";
 import { RunReviewTabs } from "./RunReviewTabs";
 import { RunWorkflowProgressPanel } from "./RunWorkflowProgressPanel";
+import { RunVisualReviewPanel } from "./visual-review/RunVisualReviewPanel";
 import { RunVoiceAuditionPanel } from "./voice-audition/RunVoiceAuditionPanel";
 
 const reviewWorkspaceClass =
@@ -52,6 +53,9 @@ export function RunDetailView({
                 runId={run.runId}
               />
             </div>
+          </TabsContent>
+          <TabsContent value='visuals'>
+            <RunVisualReviewPanel runId={run.runId} summary={run.visuals} />
           </TabsContent>
           <TabsContent value='voice'>
             <div className={reviewWorkspaceClass}>

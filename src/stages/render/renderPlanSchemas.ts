@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { productionPackageManifestPath } from "../production/productionPackagePaths.js";
+import { visualMotionPresetSchema } from "../visuals/visualMotionContracts.js";
 
 export const renderPlanArtifactPaths = [
   "production/render_plan.json",
@@ -24,8 +25,19 @@ const renderBookendSchema = z.strictObject({
   asset: assetRefSchema,
   frameAssets: z.array(assetRefSchema).min(1).optional(),
 });
-export const renderPlanSchema = z.strictObject({
-  schemaVersion: z.literal(1),
+const renderPlanSceneBase = {
+  sceneIndex: z.int().positive(),
+  narrationPreview: z.string().min(1),
+  durationSeconds: z.number().positive(),
+  visualPrompt: z.string().min(1),
+  popupCardText: z.string().min(1).optional(),
+  backgroundAsset: assetRefSchema,
+  overlayAssets: z.array(assetRefSchema),
+  subtitleSource: z.literal("production/subtitles.srt"),
+  voiceoverSource: z.literal("production/voiceover.txt"),
+} as const;
+
+const renderPlanBase = {
   runId: z.string().min(1),
   createdAt: z.iso.datetime(),
   productionPackageManifestPath: z.literal(productionPackageManifestPath),
@@ -37,20 +49,36 @@ export const renderPlanSchema = z.strictObject({
     draftRenderer: z.literal("ffmpeg-local-draft"),
   }),
   bookends: z.strictObject({ intro: renderBookendSchema, outro: renderBookendSchema }).optional(),
-  scenes: z.array(
-    z.strictObject({
-      sceneIndex: z.int().positive(),
-      narrationPreview: z.string().min(1),
-      durationSeconds: z.number().positive(),
-      visualPrompt: z.string().min(1),
-      popupCardText: z.string().min(1).optional(),
-      backgroundAsset: assetRefSchema,
-      overlayAssets: z.array(assetRefSchema),
-      subtitleSource: z.literal("production/subtitles.srt"),
-      voiceoverSource: z.literal("production/voiceover.txt"),
-    }),
-  ),
+} as const;
+
+const legacyRenderPlanSchema = z.strictObject({
+  schemaVersion: z.literal(1),
+  ...renderPlanBase,
+  scenes: z.array(z.strictObject(renderPlanSceneBase)).min(1),
 });
+
+const visualRenderPlanSchema = z.strictObject({
+  schemaVersion: z.literal(2),
+  ...renderPlanBase,
+  visualManifest: z.strictObject({
+    path: z.literal("production/visuals/manifest.json"),
+    digest: digestSchema,
+  }),
+  scenes: z
+    .array(
+      z.strictObject({
+        ...renderPlanSceneBase,
+        visualRevision: z.int().positive(),
+        motion: visualMotionPresetSchema,
+      }),
+    )
+    .min(1),
+});
+
+export const renderPlanSchema = z.discriminatedUnion("schemaVersion", [
+  legacyRenderPlanSchema,
+  visualRenderPlanSchema,
+]);
 export const assetProvenanceSchema = z.strictObject({
   schemaVersion: z.literal(1),
   runId: z.string().min(1),

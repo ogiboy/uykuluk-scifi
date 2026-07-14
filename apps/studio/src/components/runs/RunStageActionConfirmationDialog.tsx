@@ -66,9 +66,12 @@ export function RunStageActionConfirmationDialog({
             </div>
           </dl>
           {nextRecommendedCommand ? (
-            <code className='bg-background text-muted-foreground block max-w-full rounded-md px-2 py-1 text-xs break-all'>
-              CLI equivalent: {nextRecommendedCommand}
-            </code>
+            <details className='text-muted-foreground text-xs'>
+              <summary className='cursor-pointer font-medium'>Advanced CLI fallback</summary>
+              <code className='bg-background mt-2 block max-w-full rounded-md px-2 py-1 break-all'>
+                {nextRecommendedCommand}
+              </code>
+            </details>
           ) : null}
         </div>
         <DialogFooter showCloseButton>

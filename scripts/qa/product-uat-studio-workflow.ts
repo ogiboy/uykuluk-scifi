@@ -18,6 +18,8 @@ import { POST as runRender } from "../../apps/studio/src/app/actions/run-render/
 import { POST as runReviewBundle } from "../../apps/studio/src/app/actions/run-review-bundle/route";
 import { POST as runScript } from "../../apps/studio/src/app/actions/run-script/route";
 import { POST as runVoice } from "../../apps/studio/src/app/actions/run-voice/route";
+import { POST as decideVisuals } from "../../apps/studio/src/app/actions/visuals-decide/route";
+import { POST as prepareVisuals } from "../../apps/studio/src/app/actions/visuals-prepare/route";
 import { getStudioRunDetail } from "../../apps/studio/src/lib/runSummaries";
 import { studioJsonRequest, studioSessionCookie } from "./product-uat-studio-http";
 
@@ -44,6 +46,19 @@ await post(approveScript, "/actions/approve-script", "script.approve", {
   runId,
 });
 await post(runPackage, "/actions/run-package", "package.run", { runId });
+await post(prepareVisuals, "/actions/visuals-prepare", "visuals.prepare", { runId });
+const visualDetail = await getStudioRunDetail(runId);
+assert(visualDetail !== null, "Studio reloads the prepared visual manifest.");
+assert(visualDetail.visuals.kind === "ready", "Studio exposes prepared visuals for review.");
+await post(decideVisuals, "/actions/visuals-decide", "visuals.decide", {
+  expectedActiveRevisions: visualDetail.visuals.activeRevisions,
+  expectedManifestDigest: visualDetail.visuals.manifestDigest,
+  notes: "Approved deterministic visual fallback in Studio product UAT.",
+  reviewedBy: "studio-workflow-uat",
+  runId,
+  sceneIndexes: visualDetail.visuals.scenes.map((scene) => scene.sceneIndex),
+  status: "approved",
+});
 await post(runRenderPlan, "/actions/run-render-plan", "render-plan.run", { runId });
 await post(reviewRenderPlan, "/actions/review-render-plan", "render-plan.review", { runId });
 await post(runEstimate, "/actions/run-estimate", "estimate.run", { runId });

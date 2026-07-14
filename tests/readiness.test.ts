@@ -19,6 +19,7 @@ import { generateVoiceoverAudio } from "../src/stages/voice";
 import { readJsonFile } from "../src/utils/json";
 import { useTempProject } from "./helpers";
 import { createMinimalRenderAssets, enableDeterministicTts } from "./renderTestHelpers";
+import { prepareApprovedStaticVisuals } from "./visualTestHelpers";
 
 describe("readiness and disabled public actions", () => {
   useTempProject();
@@ -122,6 +123,7 @@ describe("readiness and disabled public actions", () => {
     await reviewScript(runId);
     await approveScript(runId, { acknowledgeWarnings: true });
     await generateProductionPackage(runId);
+    await prepareApprovedStaticVisuals(runId);
     await generateRenderPlan(runId);
     await estimateCost(runId);
     await generateEvidenceBundle(runId);

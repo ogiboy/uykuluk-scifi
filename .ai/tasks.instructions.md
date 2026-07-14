@@ -79,19 +79,19 @@
 
 ## Next
 
-- Close the active `v0.82.0` candidate: aligned SRT/render binding and guarded Studio voice audition,
-  selection, reselection, A/B playback, and exact hosted confirmation are implemented and have passed
-  focused integration, repeated full-suite, CI-shaped, product/browser QA, and real Studio UAT.
-  Complete PR-ready coverage, dependency, version, Sonar, review, changelog, and merge gates without
-  weakening deterministic-local/Piper `linear-fallback` timing or making a paid CI call.
+- Maintain the merged aligned-SRT/render-binding and guarded Studio voice flow without weakening
+  deterministic-local/Piper `linear-fallback` timing or making a paid CI call.
 - Keep live ElevenLabs production validation separate from implementation completion. Free-tier
   metadata/catalog/preview smoke is allowed only where the provider permits it and never proves
   production rights. Production synthesis requires commercial eligibility, exact quote, persisted
   approval, reservation, bounded execution, and settlement; until then report it as pending.
-- Next slice: add static/manual `VisualProvider`, run the bounded three-scene hosted bake-off,
-  choose at most one hosted still-image adapter, then deliver 12-24 scene images, contact-sheet
-  review, rejected-only regeneration, provenance/cost, deterministic motion, mastering, thumbnail
-  JPG, and exact visual/render binding. Preserve a credential-free static/manual fallback.
+- Close the active static/manual visual candidate: 12–24 deterministic beats, contact-sheet review,
+  manual import, rejected-only regeneration, exact mutation snapshots, and visual-bound render
+  approval are implemented. Complete product/browser UAT, PR gates, main reconciliation, and merge.
+- Then run the bounded three-scene hosted image bake-off and choose at most one adapter. Add exact
+  quote/reservation/settlement, provider provenance, and rejected-scene regeneration without
+  weakening the credential-free static/manual fallback. Mastering and thumbnail JPG polish remain
+  in the same production-quality workstream after hosted still reliability is proven.
 - Then add sequential multi-model script audition and editorial quality: immutable shared brief and
   prompt/settings snapshots, side-by-side selection, retained alternatives, inline review, operator-
   curated source/claim provenance, and a minimum-publishable scorecard.

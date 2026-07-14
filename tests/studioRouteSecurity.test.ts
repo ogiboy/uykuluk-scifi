@@ -28,7 +28,7 @@ describe("Studio route security contract", () => {
     const pageRoutes = await discoverPageRoutes(appRoot);
     const contractedRoutes = readOnlyStudioRoutes
       .map((route) => route.path)
-      .filter((routePath) => !routePath.includes("/media/"))
+      .filter((routePath) => !routePath.includes("/media/") && !routePath.includes("/visuals/"))
       .sort(routeSort);
 
     expect(pageRoutes).toEqual(contractedRoutes);
@@ -86,11 +86,16 @@ describe("Studio route security contract", () => {
         "actions/run-script/route.ts",
         "actions/run-voice/route.ts",
         "actions/session/route.ts",
+        "actions/visuals-decide/route.ts",
+        "actions/visuals-import/route.ts",
+        "actions/visuals-prepare/route.ts",
+        "actions/visuals-regenerate/route.ts",
         "actions/voice-candidates/route.ts",
         "actions/voice-preview/route.ts",
         "actions/voice-reselect/route.ts",
         "actions/voice-select/route.ts",
         "runs/[runId]/media/[...artifactPath]/route.ts",
+        "runs/[runId]/visuals/[sceneIndex]/route.ts",
       ].map((routePath) => path.join(appRoot, routePath)),
     );
     expect(routeSecurityFindings()).toEqual([]);
@@ -197,6 +202,11 @@ describe("Studio route security contract", () => {
           path: "/actions/run-channel-handoff",
           requiredApproval: "workflow",
           serviceContractId: "channel-handoff.run",
+        }),
+        expect.objectContaining({
+          path: "/actions/visuals-regenerate",
+          requiredApproval: "review",
+          serviceContractId: "visuals.regenerate",
         }),
       ]),
     );

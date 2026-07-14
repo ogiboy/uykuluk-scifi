@@ -4,6 +4,9 @@ import { channelHandoffDecisionValues } from "../../../../../src/stages/channel/
 import { renderDecisionValues } from "../../../../../src/stages/render/renderDecisionCommands";
 import {
   runOnlyRequestSchema,
+  visualDecisionRequestSchema,
+  visualImportRequestSchema,
+  visualRegenerationRequestSchema,
   voicePreviewRequestSchema,
   voiceReselectionRequestSchema,
   voiceRunRequestSchema,
@@ -121,6 +124,24 @@ export function parseAnalyticsImportPayload(
 
 export function parseRunOnlyPayload(payload: unknown): z.infer<typeof runOnlyRequestSchema> {
   return runOnlyRequestSchema.parse(payload);
+}
+
+export function parseVisualImportPayload(
+  payload: unknown,
+): z.infer<typeof visualImportRequestSchema> {
+  return visualImportRequestSchema.parse(payload);
+}
+
+export function parseVisualDecisionPayload(
+  payload: unknown,
+): z.infer<typeof visualDecisionRequestSchema> {
+  return visualDecisionRequestSchema.parse(payload);
+}
+
+export function parseVisualRegenerationPayload(
+  payload: unknown,
+): z.infer<typeof visualRegenerationRequestSchema> {
+  return visualRegenerationRequestSchema.parse(payload);
 }
 
 export function parseVoiceRunPayload(payload: unknown): z.infer<typeof voiceRunRequestSchema> {

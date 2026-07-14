@@ -5,6 +5,7 @@ import type { DraftSubtitleTimingMode } from "./renderSubtitleTiming.js";
 
 export type RenderApprovalRefInput = {
   renderPlanDigest: string;
+  visualManifestDigest: string;
   subtitleDigest: string;
   subtitleMetadataDigest: string;
   subtitleTimingMode: DraftSubtitleTimingMode;
@@ -23,6 +24,6 @@ export type RenderApprovalRefInput = {
  */
 export function renderApprovalRef(input: RenderApprovalRefInput): string {
   return createHash("sha256")
-    .update(JSON.stringify({ contractVersion: 2, ...input }), "utf8")
+    .update(JSON.stringify({ contractVersion: 3, ...input }), "utf8")
     .digest("hex");
 }
