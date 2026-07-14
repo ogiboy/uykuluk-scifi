@@ -42,7 +42,6 @@ import {
   readStudioVoiceAuditionSummary,
   type StudioVoiceAuditionSummary,
 } from "./runs/voiceAuditionSummaries";
-
 export type StudioRunSummary = {
   approvalCount: number;
   artifactCount: number;

@@ -4,17 +4,17 @@ import { StudioMutationResultPanel } from "@/components/studio/StudioMutationRes
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { useStudioGuardedActionSubmit } from "@/lib/mutations/useStudioGuardedActionSubmit";
 import type { StudioVisualSummary } from "@/lib/runs/visualSummaries";
 import { useState } from "react";
 import { RunDetailCard } from "../RunDetailCard";
+import { RunVisualManifestEvidence } from "./RunVisualManifestEvidence";
+import { RunVisualReviewSelectionControls } from "./RunVisualReviewSelectionControls";
 import { RunVisualSceneCard } from "./RunVisualSceneCard";
+import { visualFileProblem } from "./visualFileValidation";
 import { encodeVisualImportFile } from "./visualImportFile";
 
 type RunVisualReviewPanelProps = Readonly<{ runId: string; summary: StudioVisualSummary }>;
-const maximumVisualBytes = 25 * 1024 * 1024;
 
 /** Renders visual preparation, contact-sheet decisions, and per-beat manual revision controls. */
 export function RunVisualReviewPanel({ runId, summary }: RunVisualReviewPanelProps) {
@@ -154,61 +154,20 @@ export function RunVisualReviewPanel({ runId, summary }: RunVisualReviewPanelPro
 
       {summary.kind === "ready" ? (
         <>
-          <div className='bg-muted/10 grid gap-3 rounded-lg p-4'>
-            <div className='flex flex-wrap gap-2'>
-              <Button size='sm' variant='outline' onClick={() => selectBy("all")}>
-                Select all
-              </Button>
-              <Button size='sm' variant='outline' onClick={() => selectBy("pending")}>
-                Select pending
-              </Button>
-              <Button size='sm' variant='outline' onClick={() => selectBy("rejected")}>
-                Select rejected
-              </Button>
-              <Button size='sm' variant='ghost' onClick={() => setSelected(new Set())}>
-                Clear
-              </Button>
-            </div>
-            <div className='grid gap-3 sm:grid-cols-2'>
-              <Input
-                aria-label='Visual reviewer'
-                maxLength={200}
-                placeholder='Reviewer'
-                value={reviewedBy}
-                onChange={(event) => setReviewedBy(event.target.value)}
-              />
-              <Textarea
-                aria-label='Visual review notes'
-                maxLength={4_000}
-                value={notes}
-                onChange={(event) => setNotes(event.target.value)}
-              />
-            </div>
-            <div className='flex flex-wrap gap-2'>
-              <Button
-                disabled={busy || selected.size === 0 || !reviewedBy.trim() || !notes.trim()}
-                onClick={() => decide("approved")}
-              >
-                Approve selected ({selected.size})
-              </Button>
-              <Button
-                disabled={busy || selected.size === 0 || !reviewedBy.trim() || !notes.trim()}
-                variant='destructive'
-                onClick={() => decide("rejected")}
-              >
-                Reject selected
-              </Button>
-              <Button
-                disabled={
-                  busy || selectedRejectedCount === 0 || !summary.actions["visuals.regenerate"]
-                }
-                variant='secondary'
-                onClick={regenerateRejected}
-              >
-                Regenerate rejected ({selectedRejectedCount})
-              </Button>
-            </div>
-          </div>
+          <RunVisualReviewSelectionControls
+            busy={busy}
+            notes={notes}
+            regenerateAvailable={Boolean(summary.actions["visuals.regenerate"])}
+            reviewedBy={reviewedBy}
+            selectedCount={selected.size}
+            selectedRejectedCount={selectedRejectedCount}
+            onClear={() => setSelected(new Set())}
+            onDecide={decide}
+            onNotesChange={setNotes}
+            onRegenerateRejected={regenerateRejected}
+            onReviewedByChange={setReviewedBy}
+            onSelectBy={selectBy}
+          />
 
           {fileError ? (
             <Alert variant='destructive'>
@@ -239,17 +198,7 @@ export function RunVisualReviewPanel({ runId, summary }: RunVisualReviewPanelPro
       ) : null}
 
       <StudioMutationResultPanel state={state} />
-
-      {summary.manifestDigest ? (
-        <details className='text-muted-foreground text-xs'>
-          <summary className='cursor-pointer font-medium'>Advanced manifest evidence</summary>
-          <div className='mt-2 grid gap-1 break-all'>
-            <p>Manifest digest: {summary.manifestDigest}</p>
-            <p>Updated: {summary.updatedAt}</p>
-            <p>Active revisions: {JSON.stringify(summary.activeRevisions)}</p>
-          </div>
-        </details>
-      ) : null}
+      <RunVisualManifestEvidence summary={summary} />
     </RunDetailCard>
   );
 
@@ -262,12 +211,4 @@ export function RunVisualReviewPanel({ runId, summary }: RunVisualReviewPanelPro
       ),
     );
   }
-}
-
-function visualFileProblem(file: File): string | null {
-  if (![/\.png$/i, /\.jpe?g$/i].some((pattern) => pattern.test(file.name))) {
-    return "Choose a PNG or JPEG image.";
-  }
-  if (file.size > maximumVisualBytes) return "Visual imports must not exceed 25 MiB.";
-  return null;
 }

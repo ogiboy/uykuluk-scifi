@@ -336,41 +336,34 @@
 
 ## Voice Completion And Studio Parity
 
-- Main implements aligned Turkish SRT plus metadata from ElevenLabs original character
-  timing and binds the verified subtitle descriptor through voice evidence, render approval, render
-  manifest, FFmpeg, and Studio caption consumers. Incomplete ElevenLabs evidence does not silently
-  fall back to linear timing.
-- The same merged slice adds guarded Studio candidate, preview, select, reselect, and exact hosted
-  production-confirmation actions over the existing CLI/core owners. Provider URLs and secrets stay
-  server-side. Required CI, Sonar, CodeQL, product/browser QA, and real production-build Studio UAT
-  passed before merge.
-- Deterministic-local and Piper remain credential-free fallbacks. They retain explicit
-  `linear-fallback` subtitle timing; deterministic-local is reference timing only, while Piper still
-  requires operator listening before production use.
-- After this slice, delivery order is scene-specific visuals plus exact render, script audition plus
-  editorial provenance, resumable private-only YouTube upload, then persistent settings/prompts,
-  onboarding, documentation productization, and real-episode acceptance.
+- Main implements aligned Turkish SRT plus metadata from ElevenLabs character timing and binds the
+  verified subtitle descriptor through voice evidence, render approval/manifest, FFmpeg, and Studio.
+  Incomplete ElevenLabs evidence never silently falls back to linear timing.
+- Studio exposes guarded candidate, preview, select/reselect, and exact hosted-production actions
+  over CLI/core owners; provider URLs and secrets stay server-side. CI, Sonar, CodeQL, product/browser
+  QA, and production-build Studio UAT passed before merge.
+- Deterministic-local and Piper remain credential-free `linear-fallback` options. The former is
+  reference timing only; Piper still requires operator listening before production use.
+- Delivery order is scene-specific visuals plus exact render, script audition and provenance,
+  resumable private-only YouTube upload, persistent settings/prompts, onboarding, documentation
+  productization, and real-episode acceptance.
 - Private-only upload is required for v1 controlled distribution. It is not implemented yet. Public
   and scheduled publishing remain unavailable and out of v1 scope.
 
 ## Visual Provider Manual Fallback And Exact Render Candidate
 
-- The active candidate adds the minimal replaceable visual boundary with deterministic static and
-  manual PNG/JPEG providers. Production scenes are converted into 12–24 duration-preserving visual
-  beats with revision history, contact-sheet evidence, deterministic motion, and active asset
-  digests.
-- CLI/core and Studio support prepare, batch approve/reject, manual import, and rejected-only static
-  regeneration. Every mutation carries the exact manifest digest and complete active-revision
-  snapshot; filesystem rollback and typed ledger compensation preserve failed multi-file mutations.
-- Studio media URLs bind manifest digest plus active revision and verify actual asset bytes before
-  serving. Normal review shows operator decisions; paths, digests, and CLI fallback stay under
-  Advanced disclosure.
+- The candidate adds a replaceable deterministic-static/manual PNG/JPEG boundary. Production scenes
+  become 12–24 duration-preserving beats with revisions, contact-sheet evidence, deterministic motion,
+  and active-asset digests.
+- CLI/core and Studio support prepare, batch review, manual import, and rejected-only regeneration.
+  Mutations carry the exact manifest digest and revision snapshot; rollback and typed compensation
+  preserve failed multi-file operations.
+- Studio media URLs bind manifest digest and active revision, then verify bytes before serving.
+  Operator decisions stay prominent; paths, digests, and CLI fallback remain under Advanced.
 - Render plan, approval, FFmpeg motion, and draft evidence bind the approved visual manifest. Legacy
-  render evidence stays read-compatible but cannot enter a new approval or render without the visual
-  binding.
-- Hosted still-image generation, provider cost/provenance, mastering/thumbnail polish, and real
-  episode acceptance remain subsequent work. No hosted image provider was added to this fallback
-  slice.
+  evidence remains readable but cannot enter a new approval/render without that binding.
+- Hosted image generation, provider cost/provenance, mastering/thumbnail polish, and real-episode
+  acceptance remain subsequent work; this fallback slice adds no hosted image provider.
 
 ## Current Commands
 
@@ -438,8 +431,7 @@ pnpm qa:usage
 pnpm qa:browser
 ```
 
-If the shell does not expose `node` or `pnpm`, use the Codex bundled Node path or restore
-Corepack/PATH before treating failures as product failures.
+If the shell lacks `node` or `pnpm`, use bundled Node or restore Corepack/PATH before treating failures as product failures.
 
 ## Known Limits
 
@@ -462,19 +454,17 @@ Corepack/PATH before treating failures as product failures.
 - Studio voice review now exposes guarded catalog refresh, persisted local previews, A/B comparison,
   attributable selection/reselection, quote/quota state, and exact hosted execution confirmation;
   CLI/core remains authoritative for every state, approval, cost, and provider transition.
-- Optional Sentry captures unexpected Next.js and Studio mutation-boundary failures without request
-  bodies/artifacts; without a DSN it is disabled and never affects workflow or authorization.
-- Local prompt overrides are ignored `prompts/local/*.md` paths configured in
-  `producer.config.json` and recorded in provenance. Prompt editing/revision UI remains future work;
-  tracked defaults stay read-only. Full translation catalogs and a language selector are deferred.
-- Approved settings/prompt editing is not implemented. Saves affect the next command; in-flight
-  work stays pinned; listener/build-time settings restart; secrets stay env-only.
+- Optional Sentry captures unexpected Next.js and mutation-boundary failures without request bodies
+  or artifacts; without a DSN it is disabled and never affects workflow or authorization.
+- Local prompt overrides are ignored `prompts/local/*.md` paths configured in `producer.config.json`
+  and recorded in provenance. Editing UI remains future work; tracked defaults stay read-only, and
+  full translation catalogs plus a language selector are deferred.
+- Approved settings/prompt editing is not implemented. Saves affect the next command; in-flight work stays pinned; listener/build-time settings restart; secrets stay env-only.
 - Initial package artifact revision contracts cover subtitles, scenes, popup-card package Markdown,
   and YouTube metadata. They are limited to `PRODUCTION_PACKAGE_GENERATED`, refresh the manifest,
   and invalidate stale evidence/readiness/render-plan artifacts; richer per-field editing UX and
   post-estimate repair flows remain future work.
-- Render planning does not render media, approve render execution, or reserve spend. It is a local
-  review/planning artifact only.
+- Render planning does not render media, approve execution, or reserve spend; it is a local review/planning artifact only.
 - Local TTS provides deterministic/reference WAV, Piper shell-out, ignored-model setup, digest
   provenance, and review Markdown. It does not commit voice models, approve render execution,
   upload, or publish. Deterministic-local evidence is timing proof only; production voice quality
@@ -482,15 +472,8 @@ Corepack/PATH before treating failures as product failures.
 - FFmpeg draft render creates a local review MP4 from intro/outro sources, scene-timed plates,
   audio-bound subtitles, overlays, voiceover, evidence, a read-only review command, and checklist.
   Rejected drafts archive safely; reusable clips, exact TTS alignment, and polish remain follow-up.
-- Private upload remains disabled placeholder behavior but is a v1 controlled-distribution
-  deliverable. Public/scheduled publish remains unavailable and out of scope; manual/Studio
-  analytics are local-only and richer APIs are not implemented.
-- Run-path containment blocks pre-existing symlinks; hostile concurrent replacement remains a local
-  TOCTOU limitation because portable Node APIs lack directory-handle `openat` semantics.
-- Brand, overlay, thumbnail, background, transition, icon, waveform, intro-frame, and outro-frame
-  assets are present. The local draft renderer consumes intro/outro source frames when present.
-  Editable source files, reusable rendered intro/outro clips, and font licensing notes remain useful
-  additions.
-- Stable git tags are present and release automation treats the latest reachable stable tag as the
-  release base. Release planning fails if `package.json` drifts from that latest stable tag. Sonar
-  scan upload requires `SONAR_TOKEN` or Keychain; tokens must never be tracked.
+- Private upload remains a disabled v1 controlled-distribution placeholder. Public/scheduled publish
+  is unavailable and out of scope; manual/Studio analytics are local-only without richer APIs.
+- Run-path containment blocks pre-existing symlinks; concurrent replacement remains a local TOCTOU limitation because portable Node APIs lack directory-handle `openat` semantics.
+- Brand, overlay, thumbnail, background, transition, icon, waveform, intro-frame, and outro-frame assets are present; the local renderer consumes intro/outro frames when available. Editable sources, reusable rendered clips, and font licensing notes remain useful additions.
+- Stable tags define the release base, and planning fails when `package.json` drifts from the latest reachable stable tag. Sonar upload requires `SONAR_TOKEN` or Keychain; tokens must never be tracked.

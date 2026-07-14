@@ -1,34 +1,33 @@
-import { createHash } from "node:crypto";
-import { readFile } from "node:fs/promises";
 import { z } from "zod";
 import { loadConfig } from "../config/config.js";
-import { artifactPathAtProjectRoot } from "../core/artifactPaths.js";
 import { artifactPath, writeRunJson, writeRunText } from "../core/artifacts.js";
 import { SafeExitError } from "../core/errors.js";
 import { loadRun, saveRun } from "../core/runStore.js";
-import { RunRecord, RunState } from "../core/state.js";
-import { pathExists } from "../utils/fs.js";
+import { RunState } from "../core/state.js";
 import { readJsonFile } from "../utils/json.js";
 import { nowIso } from "../utils/time.js";
 import {
   productionPackageManifestPath,
   verifyProductionPackage,
-  verifyProductionPackageAtProjectRoot,
 } from "./production/productionPackageIntegrity.js";
 import { readProductionPackagePopupCards } from "./production/productionPackageMarkdown.js";
 import { selectRenderAssets, uniqueAssets } from "./render/renderPlanAssets.js";
 import { renderContactSheet } from "./render/renderPlanContactSheet.js";
 import {
-  AssetProvenance,
   assetProvenanceSchema,
   AssetRef,
   productionSceneSchema,
   RenderPlan,
-  renderPlanArtifactPaths,
   renderPlanSchema,
 } from "./render/renderPlanSchemas.js";
 import { ProductionScene } from "./types.js";
 import { readApprovedVisualManifestEvidence } from "./visuals/visualManifest.js";
+
+export {
+  readRenderPlanEvidence,
+  readRenderPlanEvidenceAtProjectRoot,
+} from "./render/renderPlanEvidence.js";
+export type { RenderPlanEvidence } from "./render/renderPlanEvidence.js";
 
 const renderPlanAllowedStates: ReadonlySet<RunState> = new Set([
   "PRODUCTION_PACKAGE_GENERATED",
@@ -36,18 +35,6 @@ const renderPlanAllowedStates: ReadonlySet<RunState> = new Set([
   "PAID_GENERATION_COST_APPROVED",
   "READY_FOR_MANUAL_PRODUCTION",
 ]);
-
-export type RenderPlanEvidence =
-  | { status: "missing"; requiredArtifacts: readonly string[] }
-  | {
-      status: "pass";
-      path: string;
-      digest: string;
-      artifactCount: number;
-      assetCount: number;
-      visualManifestDigest?: string;
-    }
-  | { status: "block"; path: string; message: string };
 
 /**
  * Generates the render plan and related production artifacts for a run.
@@ -182,93 +169,10 @@ function popupCardText(cards: readonly string[], sceneIndex: number): { popupCar
   return { popupCardText: cards[sceneIndex % cards.length] };
 }
 
-export async function readRenderPlanEvidence(run: RunRecord): Promise<RenderPlanEvidence> {
-  return readRenderPlanEvidenceAtProjectRoot(process.cwd(), run);
-}
-
-/** Reads render-plan evidence beneath an explicit producer project root. */
-export async function readRenderPlanEvidenceAtProjectRoot(
-  projectRoot: string,
-  run: RunRecord,
-): Promise<RenderPlanEvidence> {
-  const resolveArtifact = (relativePath: string) =>
-    artifactPathAtProjectRoot(projectRoot, run.runId, relativePath);
-  const registered = renderPlanArtifactPaths.some((relativePath) =>
-    run.artifacts.includes(relativePath),
-  );
-  const exists = await Promise.all(
-    renderPlanArtifactPaths.map((relativePath) => pathExists(resolveArtifact(relativePath))),
-  );
-  if (!registered && exists.every((item) => !item)) {
-    return { status: "missing", requiredArtifacts: renderPlanArtifactPaths };
-  }
-  try {
-    await assertRenderPlanArtifacts(run, resolveArtifact);
-    const planText = await readFile(resolveArtifact("production/render_plan.json"), "utf8");
-    const plan = renderPlanSchema.parse(JSON.parse(planText) as unknown);
-    const provenance = assetProvenanceSchema.parse(
-      await readJsonFile(resolveArtifact("production/asset_provenance.json")),
-    );
-    await assertRenderPlanEvidenceMatchesRun(projectRoot, run, plan, provenance);
-    return {
-      status: "pass",
-      path: "production/render_plan.json",
-      digest: createHash("sha256").update(planText, "utf8").digest("hex"),
-      artifactCount: renderPlanArtifactPaths.length,
-      assetCount: provenance.assets.length,
-      ...(plan.schemaVersion === 2 ? { visualManifestDigest: plan.visualManifest.digest } : {}),
-    };
-  } catch (error) {
-    return {
-      status: "block",
-      path: "production/render_plan.json",
-      message: error instanceof Error ? error.message : String(error),
-    };
-  }
-}
-
-async function assertRenderPlanEvidenceMatchesRun(
-  projectRoot: string,
-  run: RunRecord,
-  plan: RenderPlan,
-  provenance: AssetProvenance,
-): Promise<void> {
-  if (plan.runId !== run.runId || provenance.runId !== run.runId) {
-    throw new SafeExitError("Render plan evidence belongs to a different run.");
-  }
-  const { digest } = await verifyProductionPackageAtProjectRoot(projectRoot, run);
-  if (plan.productionPackageManifestDigest !== digest) {
-    throw new SafeExitError(
-      "Render plan evidence was generated from a stale production package manifest.",
-    );
-  }
-  if (plan.schemaVersion === 2) {
-    const visualEvidence = await readApprovedVisualManifestEvidence(run, projectRoot);
-    if (visualEvidence.status !== "pass" || visualEvidence.digest !== plan.visualManifest.digest) {
-      throw new SafeExitError("Render plan evidence was generated from stale visual evidence.");
-    }
-  }
-}
-
 async function readProductionScenes(runId: string): Promise<ProductionScene[]> {
   const data = await readJsonFile<{ scenes: unknown[] }>(
     artifactPath(runId, "production/scenes.json"),
   );
   const scenes = z.array(productionSceneSchema).min(1).parse(data.scenes);
   return scenes.map((scene) => ({ ...scene }));
-}
-
-async function assertRenderPlanArtifacts(
-  run: RunRecord,
-  resolveArtifact: (relativePath: string) => string = (relativePath) =>
-    artifactPath(run.runId, relativePath),
-): Promise<void> {
-  for (const relativePath of renderPlanArtifactPaths) {
-    if (!run.artifacts.includes(relativePath)) {
-      throw new SafeExitError(`Render plan artifact is not registered: ${relativePath}.`);
-    }
-    if (!(await pathExists(resolveArtifact(relativePath)))) {
-      throw new SafeExitError(`Render plan artifact is missing: ${relativePath}.`);
-    }
-  }
 }
