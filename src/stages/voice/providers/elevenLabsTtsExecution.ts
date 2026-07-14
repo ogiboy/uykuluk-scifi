@@ -71,7 +71,7 @@ export async function executeElevenLabsReservedSynthesis(input: {
       const redactedRequest = {
         requestIndex: index,
         inputDigest: sha256(text),
-        ...(response.requestId ? { requestIdHash: sha256(response.requestId) } : {}),
+        ...requestIdHashEvidence(response.requestId),
       };
       const reportedCharacterCost = validCharacterCost(response.characterCost);
       if (reportedCharacterCost === null) {
@@ -161,6 +161,10 @@ export async function executeElevenLabsReservedSynthesis(input: {
       ...(requestEvidence.length > 0 ? { requestEvidence } : {}),
     };
   }
+}
+
+function requestIdHashEvidence(requestId: string | undefined): { requestIdHash?: string } {
+  return requestId ? { requestIdHash: sha256(requestId) } : {};
 }
 
 function validCharacterCost(value: unknown): number | null {
