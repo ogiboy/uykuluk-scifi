@@ -2,6 +2,13 @@ import { z } from "zod";
 import { isValidRunId } from "../../../../../src/core/runId";
 import { channelHandoffDecisionValues } from "../../../../../src/stages/channel/channelHandoffDecisionContracts";
 import { renderDecisionValues } from "../../../../../src/stages/render/renderDecisionCommands";
+import { voiceSelectionInputSchema } from "../../../../../src/stages/voice/catalog/voiceAuditionContracts";
+import { voiceIdSchema } from "../../../../../src/stages/voice/catalog/voiceCatalogContracts";
+import {
+  hasUnsafeControlCharacters,
+  hasUnsafeNotesControlCharacters,
+} from "../../../../../src/stages/voice/catalog/voiceCatalogValueNormalization";
+import { hostedVoiceExecutionConfirmationSchema } from "../../../../../src/stages/voice/voiceExecutionConfirmation";
 
 const runIdSchema = z.string().refine(isValidRunId, { message: "Invalid run id." });
 const localReviewPayloadShape = {
@@ -18,6 +25,40 @@ const scriptApprovalPayloadSchema = z.strictObject({
 });
 
 const runOnlyPayloadSchema = z.strictObject({ runId: runIdSchema });
+
+const hostedVoiceRunPayloadSchema = z.strictObject({
+  executionMode: z.literal("hosted"),
+  runId: runIdSchema,
+  ...hostedVoiceExecutionConfirmationSchema.shape,
+});
+
+const voiceRunPayloadSchema = z.union([runOnlyPayloadSchema, hostedVoiceRunPayloadSchema]);
+
+const voicePreviewPayloadSchema = z.strictObject({ runId: runIdSchema, voiceId: voiceIdSchema });
+
+const voiceSelectionPayloadSchema = z.strictObject({
+  runId: runIdSchema,
+  voiceId: voiceSelectionInputSchema.shape.voiceId,
+  reviewedBy: voiceSelectionInputSchema.shape.reviewedBy,
+  notes: voiceSelectionInputSchema.shape.notes,
+  confirmProductionRights: z.boolean(),
+});
+
+const voiceReselectionPayloadSchema = z.strictObject({
+  reason: z
+    .string()
+    .trim()
+    .min(1)
+    .max(1_000)
+    .refine((value) => !hasUnsafeNotesControlCharacters(value), "Reason contains unsafe controls."),
+  reviewedBy: z
+    .string()
+    .trim()
+    .min(1)
+    .max(200)
+    .refine((value) => !hasUnsafeControlCharacters(value), "Reviewer contains unsafe controls."),
+  runId: runIdSchema,
+});
 
 const emptyPayloadSchema = z.strictObject({});
 const localModelCandidateNameSchema = z.string().trim().min(1).max(240);
@@ -116,6 +157,28 @@ export function parseAnalyticsImportPayload(
 
 export function parseRunOnlyPayload(payload: unknown): z.infer<typeof runOnlyPayloadSchema> {
   return runOnlyPayloadSchema.parse(payload);
+}
+
+export function parseVoiceRunPayload(payload: unknown): z.infer<typeof voiceRunPayloadSchema> {
+  return voiceRunPayloadSchema.parse(payload);
+}
+
+export function parseVoicePreviewPayload(
+  payload: unknown,
+): z.infer<typeof voicePreviewPayloadSchema> {
+  return voicePreviewPayloadSchema.parse(payload);
+}
+
+export function parseVoiceSelectionPayload(
+  payload: unknown,
+): z.infer<typeof voiceSelectionPayloadSchema> {
+  return voiceSelectionPayloadSchema.parse(payload);
+}
+
+export function parseVoiceReselectionPayload(
+  payload: unknown,
+): z.infer<typeof voiceReselectionPayloadSchema> {
+  return voiceReselectionPayloadSchema.parse(payload);
 }
 
 export function parseEmptyPayload(payload: unknown): z.infer<typeof emptyPayloadSchema> {

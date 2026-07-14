@@ -59,4 +59,18 @@ describe("Studio stage action mapping", () => {
       }),
     ).toMatchObject({ actionId: "render.revise", routePath: "/actions/revise-render" });
   });
+
+  it("routes voice generation to the audition surface instead of a generic run-only submit", () => {
+    expect(
+      stageActionForRun({
+        nextRecommendedCommand: "pnpm producer voice --run run_voice_surface",
+        runId: "run_voice_surface",
+        state: "READY_FOR_MANUAL_PRODUCTION",
+      }),
+    ).toMatchObject({
+      actionId: "voice.run",
+      routePath: "/actions/run-voice",
+      submission: "voice-surface",
+    });
+  });
 });

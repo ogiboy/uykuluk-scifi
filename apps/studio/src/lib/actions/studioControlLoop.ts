@@ -124,7 +124,7 @@ function controlLoopItems(run: StudioControlLoopRun): StudioControlLoopItem[] {
     },
     {
       detail:
-        "Upload, scheduling, public publish, and paid provider execution are not exposed here.",
+        "Upload, scheduling, and public publishing are not exposed. Hosted voice remains available only through exact CLI/core approval and cost gates.",
       label: "Disabled actions",
       tone: "done",
     },

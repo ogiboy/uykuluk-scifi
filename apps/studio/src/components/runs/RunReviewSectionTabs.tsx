@@ -10,6 +10,7 @@ type RunReviewSectionTabsProps = Readonly<{
     | "finalReviewBundle"
     | "productionMedia"
     | "readinessStatus"
+    | "voiceAudition"
     | "workflowProgress"
   >;
 }>;
@@ -35,6 +36,7 @@ export function RunReviewSectionTabs({ run }: RunReviewSectionTabsProps) {
         label='Media'
         status={`${mediaPassed}/${run.productionMedia.length}`}
       />
+      <RunReviewTab value='voice' label='Voice' status={formatVoiceStatus(run.voiceAudition)} />
       <RunReviewTab value='artifacts' label='Artifacts' status={formatCount(run.artifactCount)} />
       <RunReviewTab value='handoff' label='Handoff' status={formatHandoffStatus(run)} />
       <RunReviewTab value='readiness' label='Readiness' status={run.readinessStatus} />
@@ -66,4 +68,13 @@ function formatCount(count: number): string {
 
 function formatHandoffStatus(run: Pick<StudioRunDetail, "finalReviewBundle">): "missing" | "ready" {
   return run.finalReviewBundle.kind === "present" ? "ready" : "missing";
+}
+
+function formatVoiceStatus(
+  voiceAudition: StudioRunDetail["voiceAudition"],
+): "missing" | "ready" | "selected" | "stale" {
+  if (voiceAudition.currentSelection) return "selected";
+  if (voiceAudition.catalog.kind === "ready") return "ready";
+  if (voiceAudition.catalog.kind === "stale") return "stale";
+  return "missing";
 }

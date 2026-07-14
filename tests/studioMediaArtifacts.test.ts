@@ -1,5 +1,5 @@
-import { mkdir, writeFile } from "node:fs/promises";
-import { describe, expect, it } from "vitest";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { describe, expect, it, vi } from "vitest";
 import { GET as getRunMedia } from "../apps/studio/src/app/runs/[runId]/media/[...artifactPath]/route";
 import {
   readStudioMediaArtifact,
@@ -9,7 +9,17 @@ import {
 } from "../apps/studio/src/lib/artifacts/studioMediaArtifacts";
 import { artifactPath } from "../src/core/artifacts";
 import { createRun, saveRun } from "../src/core/runStore";
+import { generateVoiceCandidates } from "../src/stages/voiceCandidates";
+import { generateVoicePreview } from "../src/stages/voicePreview";
 import { useTempProject } from "./helpers";
+import { prepareVoiceoverReadyRun } from "./renderPipelineHelpers";
+import { candidateVoiceId, prepareVoiceCatalog } from "./voiceAuditionStageFixtures";
+import {
+  defaultCatalogVoice,
+  previewMp3Bytes,
+  successfulCatalogProvider,
+  successfulPreviewProvider,
+} from "./voiceCatalogStageFixtures";
 
 describe("Studio local media artifacts", () => {
   useTempProject();
@@ -21,10 +31,106 @@ describe("Studio local media artifacts", () => {
     expect(studioMediaArtifactUrl("run_media_review", "production/render/draft.mp4")).toBe(
       "/runs/run_media_review/media/production/render/draft.mp4",
     );
+    expect(
+      studioMediaArtifactUrl(
+        "run_media_review",
+        "production/audio/voice-previews/voice_test/preview_test.mp3",
+      ),
+    ).toBe(
+      "/runs/run_media_review/media/production/audio/voice-previews/voice_test/preview_test.mp3",
+    );
     expect(studioCaptionArtifactUrl("run_media_review")).toBe(
       "/runs/run_media_review/media/production/subtitles.vtt",
     );
     expect(studioMediaArtifactUrl("run_media_review", "evidence_bundle.json")).toBeNull();
+    expect(
+      studioMediaArtifactUrl("run_media_review", "https://provider.example/preview.mp3"),
+    ).toBeNull();
+  });
+
+  it("streams only the current evidence-bound persisted voice preview", async () => {
+    const { catalog, runId } = await prepareVoiceCatalog();
+    const voiceId = candidateVoiceId(catalog);
+    const evidence = await generateVoicePreview(runId, voiceId, {
+      provider: successfulPreviewProvider(catalog),
+    });
+    const unregisteredPath = `production/audio/voice-previews/${voiceId}/preview_unregistered.mp3`;
+
+    const response = await getRunMedia(mediaRequest(runId, evidence.output.path), {
+      params: Promise.resolve({ artifactPath: evidence.output.path.split("/"), runId }),
+    });
+    const blocked = await getRunMedia(mediaRequest(runId, unregisteredPath), {
+      params: Promise.resolve({ artifactPath: unregisteredPath.split("/"), runId }),
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toBe("audio/mpeg");
+    expect(Buffer.from(await response.arrayBuffer())).toEqual(previewMp3Bytes());
+    expect(blocked.status).toBe(404);
+  });
+
+  it("rejects superseded and failed preview generations", async () => {
+    const { catalog, runId } = await prepareVoiceCatalog();
+    const voiceId = candidateVoiceId(catalog);
+    const first = await generateVoicePreview(runId, voiceId, {
+      provider: successfulPreviewProvider(catalog),
+    });
+    const second = await generateVoicePreview(runId, voiceId, {
+      provider: successfulPreviewProvider(catalog),
+    });
+
+    await expect(mediaStatus(runId, first.output.path)).resolves.toBe(404);
+    await expect(mediaStatus(runId, second.output.path)).resolves.toBe(200);
+
+    const failingProvider = successfulPreviewProvider(catalog);
+    await expect(
+      generateVoicePreview(runId, voiceId, {
+        provider: {
+          ...failingProvider,
+          async fetchPreview() {
+            throw new Error("fixture preview failure");
+          },
+        },
+      }),
+    ).rejects.toThrow("could not be recorded safely");
+    await expect(mediaStatus(runId, second.output.path)).resolves.toBe(404);
+  });
+
+  it("rejects a preview after the current catalog metadata changes", async () => {
+    const { catalog, runId } = await prepareVoiceCatalog();
+    const voiceId = candidateVoiceId(catalog);
+    const evidence = await generateVoicePreview(runId, voiceId, {
+      provider: successfulPreviewProvider(catalog),
+    });
+    await generateVoiceCandidates(runId, {
+      provider: successfulCatalogProvider({
+        voices: [defaultCatalogVoice({ name: "Refreshed Catalog Voice" })],
+      }),
+    });
+
+    await expect(mediaStatus(runId, evidence.output.path)).resolves.toBe(404);
+  });
+
+  it("rejects stale catalog and tampered preview bytes", async () => {
+    const { catalog, runId } = await prepareVoiceCatalog();
+    const voiceId = candidateVoiceId(catalog);
+    const evidence = await generateVoicePreview(runId, voiceId, {
+      provider: successfulPreviewProvider(catalog),
+    });
+    await writeFile(
+      artifactPath(runId, evidence.output.path),
+      Buffer.alloc(evidence.output.bytes, 0x41),
+    );
+    await expect(mediaStatus(runId, evidence.output.path)).resolves.toBe(404);
+
+    await writeFile(artifactPath(runId, evidence.output.path), previewMp3Bytes());
+    vi.useFakeTimers();
+    try {
+      vi.setSystemTime(Date.now() + 2 * 60 * 60 * 1_000);
+      await expect(mediaStatus(runId, evidence.output.path)).resolves.toBe(404);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("streams an allowlisted voiceover artifact without exposing arbitrary run files", async () => {
@@ -52,7 +158,27 @@ describe("Studio local media artifacts", () => {
     expect(blocked.status).toBe(404);
   });
 
-  it("converts local SRT subtitles into WebVTT captions for media previews", async () => {
+  it("converts evidence-backed local subtitles into WebVTT and rejects later tampering", async () => {
+    const runId = await prepareVoiceoverReadyRun();
+    const subtitlePath = artifactPath(runId, "production/subtitles.srt");
+    const expected = srtToWebVtt(await readFile(subtitlePath, "utf8"));
+
+    const response = await getRunMedia(mediaRequest(runId, "production/subtitles.vtt"), {
+      params: Promise.resolve({ artifactPath: ["production", "subtitles.vtt"], runId }),
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toBe("text/vtt; charset=utf-8");
+    expect(await response.text()).toBe(expected);
+
+    await writeFile(subtitlePath, `${await readFile(subtitlePath, "utf8")}\nTampered\n`, "utf8");
+    const tampered = await getRunMedia(mediaRequest(runId, "production/subtitles.vtt"), {
+      params: Promise.resolve({ artifactPath: ["production", "subtitles.vtt"], runId }),
+    });
+    expect(tampered.status).toBe(404);
+  });
+
+  it("rejects a bare subtitle file without registered voice evidence", async () => {
     const run = await createRun();
     await mkdir(artifactPath(run.runId, "production"), { recursive: true });
     await writeFile(
@@ -65,11 +191,7 @@ describe("Studio local media artifacts", () => {
       params: Promise.resolve({ artifactPath: ["production", "subtitles.vtt"], runId: run.runId }),
     });
 
-    expect(response.status).toBe(200);
-    expect(response.headers.get("content-type")).toBe("text/vtt; charset=utf-8");
-    expect(await response.text()).toBe(
-      "WEBVTT\n\n1\n00:00:01.000 --> 00:00:02.500\nMerhaba UykulukSciFi\n",
-    );
+    expect(response.status).toBe(404);
   });
 
   it("does not expose raw subtitle artifacts through the media route", async () => {
@@ -124,14 +246,13 @@ describe("Studio local media artifacts", () => {
   });
 });
 
-describe("SRT to WebVTT conversion", () => {
-  it("normalizes line endings and timestamp separators", () => {
-    expect(srtToWebVtt("1\r\n00:00:00,000 --> 00:00:01,250\r\nAçılış\r\n")).toBe(
-      "WEBVTT\n\n1\n00:00:00.000 --> 00:00:01.250\nAçılış\n",
-    );
-  });
-});
-
 function mediaRequest(runId: string, artifactPath: string): Request {
   return new Request(`http://localhost:3000/runs/${runId}/media/${artifactPath}`);
+}
+
+async function mediaStatus(runId: string, relativePath: string): Promise<number> {
+  const response = await getRunMedia(mediaRequest(runId, relativePath), {
+    params: Promise.resolve({ artifactPath: relativePath.split("/"), runId }),
+  });
+  return response.status;
 }

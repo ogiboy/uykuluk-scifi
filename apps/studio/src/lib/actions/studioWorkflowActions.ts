@@ -53,8 +53,9 @@ const workflowActionStepDefinitions = [
       "render.review",
       "render.revise",
     ],
-    label: "Local media review",
-    summary: "Generate/review local voiceover and draft render after explicit approval.",
+    label: "Production media review",
+    summary:
+      "Generate and review configured voiceover plus the local draft render after explicit approval.",
   },
   {
     actionIds: [

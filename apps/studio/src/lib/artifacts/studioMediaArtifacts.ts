@@ -1,20 +1,26 @@
 import { createReadStream } from "node:fs";
 import { readFile, stat } from "node:fs/promises";
 import { Readable } from "node:stream";
+import { runRecordSchema } from "../../../../../src/core/state";
+import { readCurrentVoicePreviewMediaAtProjectRoot } from "../../../../../src/stages/voice/catalog/voiceCatalogStore";
 import { studioRunFilePath } from "../runs/runFilePaths";
+import { readStudioCaptionArtifact, type StudioMediaReadResult } from "./studioCaptionArtifacts";
+
+export { srtToWebVtt } from "./studioCaptionArtifacts";
 
 const allowedStudioMediaArtifacts = {
   "production/audio/voiceover.wav": "audio/wav",
   "production/render/draft.mp4": "video/mp4",
 } as const;
 
+const studioVoicePreviewPathPattern =
+  /^production\/audio\/voice-previews\/[A-Za-z0-9._-]{1,128}\/[A-Za-z0-9._-]{1,128}\.(mp3|wav)$/u;
+
 const studioCaptionArtifactPath = "production/subtitles.vtt";
-const studioCaptionSourcePath = "production/subtitles.srt";
 
-export type StudioMediaArtifactPath = keyof typeof allowedStudioMediaArtifacts;
-
-type StudioMediaReadResult =
-  { body: BodyInit; headers: Headers; status: 200 | 206 } | { status: 404 | 416 };
+export type StudioMediaArtifactPath =
+  | keyof typeof allowedStudioMediaArtifacts
+  | `production/audio/voice-previews/${string}/${string}.${"mp3" | "wav"}`;
 
 /**
  * Builds the Studio-local media URL for an allowlisted run artifact.
@@ -60,6 +66,11 @@ export async function readStudioMediaArtifact(
   if (!isStudioMediaArtifactPath(artifactPath)) {
     return { status: 404 };
   }
+  if (isStudioVoicePreviewArtifactPath(artifactPath)) {
+    const audio = await readValidatedStudioVoicePreview(root, runId, artifactPath);
+    if (!audio) return { status: 404 };
+    return mediaBytesResult(artifactPath, audio, rangeHeader);
+  }
   const target = studioRunFilePath(root, runId, artifactPath);
   if (!target) {
     return { status: 404 };
@@ -88,49 +99,54 @@ export async function readStudioMediaArtifact(
   }
 }
 
-async function readStudioCaptionArtifact(
+function isStudioMediaArtifactPath(value: string): value is StudioMediaArtifactPath {
+  return value in allowedStudioMediaArtifacts || isStudioVoicePreviewArtifactPath(value);
+}
+
+function isStudioVoicePreviewArtifactPath(
+  value: string,
+): value is `production/audio/voice-previews/${string}/${string}.${"mp3" | "wav"}` {
+  return studioVoicePreviewPathPattern.test(value);
+}
+
+async function readValidatedStudioVoicePreview(
   root: string,
   runId: string,
-): Promise<StudioMediaReadResult> {
-  const target = studioRunFilePath(root, runId, studioCaptionSourcePath);
-  if (!target) {
-    return { status: 404 };
-  }
+  artifactPath: string,
+): Promise<Buffer | null> {
+  const statePath = studioRunFilePath(root, runId, "state.json");
+  if (!statePath) return null;
   try {
-    return {
-      body: srtToWebVtt(await readFile(target, "utf8")),
-      headers: new Headers({
-        "Cache-Control": "no-store",
-        "Content-Type": "text/vtt; charset=utf-8",
-        "X-Content-Type-Options": "nosniff",
-      }),
-      status: 200,
-    };
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-      return { status: 404 };
-    }
-    throw error;
+    const run = runRecordSchema.parse(JSON.parse(await readFile(statePath, "utf8")) as unknown);
+    if (run.runId !== runId) return null;
+    const voiceId = artifactPath.split("/")[3];
+    if (!voiceId) return null;
+    return (
+      await readCurrentVoicePreviewMediaAtProjectRoot({
+        projectRoot: root,
+        requestedPath: artifactPath,
+        run,
+        voiceId,
+      })
+    ).audio;
+  } catch {
+    return null;
   }
 }
 
-/**
- * Converts the persisted SRT subtitle artifact into browser-readable WebVTT.
- *
- * @param input - The subtitle content in SRT format.
- * @returns WebVTT content suitable for an HTML media track.
- */
-export function srtToWebVtt(input: string): string {
-  const normalizedInput = input.replaceAll("\r\n", "\n").replaceAll("\r", "\n").trim();
-  const body = normalizedInput
-    .split("\n")
-    .map((line) => (line.includes("-->") ? line.replaceAll(",", ".") : line))
-    .join("\n");
-  return `WEBVTT\n\n${body}\n`;
-}
-
-function isStudioMediaArtifactPath(value: string): value is StudioMediaArtifactPath {
-  return value in allowedStudioMediaArtifacts;
+function mediaBytesResult(
+  artifactPath: StudioMediaArtifactPath,
+  bytes: Buffer,
+  rangeHeader: string | null,
+): StudioMediaReadResult {
+  const range = parseByteRange(rangeHeader, bytes.byteLength);
+  if (range.kind === "invalid") return { status: 416 };
+  const body = range.kind === "partial" ? bytes.subarray(range.start, range.end + 1) : bytes;
+  return {
+    body: new Uint8Array(body),
+    headers: mediaHeaders(artifactPath, bytes.byteLength, range),
+    status: range.kind === "partial" ? 206 : 200,
+  };
 }
 
 type ByteRange =
@@ -184,7 +200,7 @@ function mediaHeaders(
   const headers = new Headers({
     "Accept-Ranges": "bytes",
     "Cache-Control": "no-store",
-    "Content-Type": allowedStudioMediaArtifacts[artifactPath],
+    "Content-Type": studioMediaContentType(artifactPath),
     "X-Content-Type-Options": "nosniff",
   });
   if (range.kind === "partial") {
@@ -194,4 +210,11 @@ function mediaHeaders(
   }
   headers.set("Content-Length", String(sizeBytes));
   return headers;
+}
+
+function studioMediaContentType(artifactPath: StudioMediaArtifactPath): string {
+  if (artifactPath in allowedStudioMediaArtifacts) {
+    return allowedStudioMediaArtifacts[artifactPath as keyof typeof allowedStudioMediaArtifacts];
+  }
+  return artifactPath.endsWith(".mp3") ? "audio/mpeg" : "audio/wav";
 }
