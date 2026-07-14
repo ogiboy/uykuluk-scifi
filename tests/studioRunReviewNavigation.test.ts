@@ -44,6 +44,32 @@ describe("Studio run review navigation", () => {
     });
   });
 
+  it("opens voice when exact hosted production confirmation is next", () => {
+    expect(
+      defaultRunReviewTab(
+        navigationFixture({
+          nextRecommendedCommand: "pnpm producer voice --run run_brief",
+          productionMedia: [],
+          state: "READY_FOR_MANUAL_PRODUCTION",
+          voiceAudition: {
+            currentSelection: null,
+            production: {
+              hostedExecution: {
+                approvalId: "approval_voice_exact",
+                bindingDigest: "a".repeat(64),
+                quoteDigest: "b".repeat(64),
+              },
+              synthesis: {
+                detail: "Production voice has not been synthesized.",
+                status: "missing",
+              },
+            },
+          } as NavigationFixture["voiceAudition"],
+        }),
+      ),
+    ).toBe("voice");
+  });
+
   it("opens handoff after a render decision or local handoff exists", () => {
     expect(
       defaultRunReviewTab(

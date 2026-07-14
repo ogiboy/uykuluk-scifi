@@ -119,11 +119,16 @@ function assertDraftRenderTiming(manifest: DraftRenderManifest): void {
   const subtitleTiming = buildDraftSubtitleTiming(
     manifest.subtitleTiming.sourceDurationSeconds,
     timing.sceneAudioDurationSeconds,
+    manifest.subtitleTiming.timingMode,
   );
   if (
     Math.abs(subtitleTiming.sceneDurationSeconds - manifest.subtitleTiming.sceneDurationSeconds) >
       0.01 ||
-    Math.abs(subtitleTiming.timeScale - manifest.subtitleTiming.timeScale) > 0.000001
+    Math.abs(subtitleTiming.timeScale - manifest.subtitleTiming.timeScale) > 0.000001 ||
+    manifest.subtitleTiming.timingMode !== manifest.subtitles.timingMode ||
+    Math.abs(
+      manifest.subtitleTiming.sourceDurationSeconds - manifest.subtitles.sourceDurationSeconds,
+    ) > 0.001
   ) {
     throw new SafeExitError("Draft subtitle timing does not match its scene-audio window.");
   }
@@ -164,11 +169,25 @@ async function assertDraftRenderInputs(
   if (
     voiceoverAudio.status !== "pass" ||
     voiceoverAudio.digest !== manifest.voiceoverAudio.digest ||
+    voiceoverAudio.metadataDigest !== manifest.voiceoverAudio.metadataDigest ||
     voiceoverAudio.mode !== manifest.voiceoverAudio.mode ||
     voiceoverAudio.quality !== manifest.voiceoverAudio.quality ||
     voiceoverAudio.productionVoiceCandidate !== manifest.voiceoverAudio.productionVoiceCandidate
   ) {
     throw new SafeExitError("Draft render was generated from stale or missing voiceover audio.");
+  }
+  if (
+    voiceoverAudio.subtitle.path !== manifest.subtitles.path ||
+    voiceoverAudio.subtitle.sha256 !== manifest.subtitles.sha256 ||
+    voiceoverAudio.subtitle.metadataPath !== manifest.subtitles.metadataPath ||
+    voiceoverAudio.subtitle.metadataSha256 !== manifest.subtitles.metadataSha256 ||
+    voiceoverAudio.subtitle.timingMode !== manifest.subtitles.timingMode ||
+    voiceoverAudio.subtitle.cueCount !== manifest.subtitles.cueCount ||
+    Math.abs(
+      voiceoverAudio.subtitle.sourceDurationSeconds - manifest.subtitles.sourceDurationSeconds,
+    ) > 0.001
+  ) {
+    throw new SafeExitError("Draft render was generated from stale or missing subtitle evidence.");
   }
   const approval = run.approvals.find((item) => item.target === "render");
   if (

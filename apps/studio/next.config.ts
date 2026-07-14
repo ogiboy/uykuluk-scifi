@@ -7,17 +7,9 @@ import { fileURLToPath } from "node:url";
 const workspaceRoot = dirname(fileURLToPath(import.meta.url));
 const repoRoot = dirname(dirname(workspaceRoot));
 
-const stageSourceAliases = {
-  "../production/productionPackagePaths.js": "production/productionPackagePaths",
-  "../render/renderPlanSchemas.js": "render/renderPlanSchemas",
-  "./finalReviewBundleContracts.js": "finalReview/finalReviewBundleContracts",
-  "./productionPackagePaths.js": "production/productionPackagePaths",
-  "./renderPlanSchemas.js": "render/renderPlanSchemas",
-  "./statusMediaFacts.js": "status/statusMediaFacts",
-} as const;
-
 const nextConfig: NextConfig = {
   allowedDevOrigins: ["127.0.0.1", "localhost"],
+  experimental: { extensionAlias: { ".js": [".ts", ".tsx", ".js", ".jsx"] }, externalDir: true },
   async headers() {
     return [
       {
@@ -41,23 +33,8 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "ui.shadcn.com" },
     ],
   },
+  outputFileTracingRoot: repoRoot,
   poweredByHeader: false,
-  turbopack: {
-    ignoreIssue: [
-      {
-        path: "**/apps/studio/next.config.ts",
-        title: "Encountered unexpected file in NFT list",
-        description: /whole project was traced unintentionally/,
-      },
-    ],
-    resolveAlias: Object.fromEntries(
-      Object.entries(stageSourceAliases).map(([specifier, source]) => [
-        specifier,
-        `../../src/stages/${source}.ts`,
-      ]),
-    ),
-    root: repoRoot,
-  },
   typedRoutes: true,
 };
 

@@ -1,16 +1,18 @@
+import { SafeExitError } from "../../core/errors.js";
 import {
   cleanScriptProductionText,
   parseScriptProductionUnits,
   type ScriptProductionUnit,
 } from "../../utils/scriptProductionText.js";
 import type { ProductionScene } from "../types.js";
+import { voiceSubtitleThresholds } from "../voice/subtitles/voiceSubtitleContracts.js";
 
 type SceneDraft = { narration: string; visuals: string[] };
 
 type SubtitleBlock = { lines: string[]; weight: number };
 
-const maxSubtitleLineLength = 46;
-const maxSubtitleLinesPerCue = 2;
+const maxSubtitleLineLength = voiceSubtitleThresholds.maxCharactersPerLine;
+const maxSubtitleLinesPerCue = voiceSubtitleThresholds.maxLinesPerCue;
 
 /**
  * Extracts spoken narration from a labeled script.
@@ -33,7 +35,7 @@ export function buildProductionScenesFromScript(script: string): ProductionScene
     index: index + 1,
     narration: scene.narration,
     visualPrompt: renderVisualPrompt(index + 1, scene),
-    durationSeconds: Math.max(8, Math.round(scene.narration.split(/\s+/u).length / 2.3)),
+    durationSeconds: Math.max(7, Math.round(scene.narration.split(/\s+/u).length / 2.3)),
   }));
 }
 
@@ -55,16 +57,13 @@ export function buildWrappedSrt(scenes: readonly ProductionScene[]): string {
     const blocks = subtitleBlocks(scene.narration);
     const sceneStart = cursor;
     const sceneEnd = cursor + scene.durationSeconds;
-    const totalWeight = blocks.reduce((sum, block) => sum + block.weight, 0) || 1;
-    let consumedWeight = 0;
+    const durations = readableCueDurations(blocks, scene.durationSeconds);
+    let cueStart = sceneStart;
 
     for (const [blockIndex, block] of blocks.entries()) {
-      const start = sceneStart + (scene.durationSeconds * consumedWeight) / totalWeight;
-      consumedWeight += block.weight;
+      const start = cueStart;
       const end =
-        blockIndex === blocks.length - 1
-          ? sceneEnd
-          : sceneStart + (scene.durationSeconds * consumedWeight) / totalWeight;
+        blockIndex === blocks.length - 1 ? sceneEnd : start + (durations[blockIndex] ?? 0);
       cues.push(
         [
           String(cueIndex),
@@ -74,11 +73,66 @@ export function buildWrappedSrt(scenes: readonly ProductionScene[]): string {
         ].join("\n"),
       );
       cueIndex += 1;
+      cueStart = end;
     }
     cursor = sceneEnd;
   }
 
   return cues.join("\n");
+}
+
+function readableCueDurations(
+  blocks: readonly SubtitleBlock[],
+  sceneDurationSeconds: number,
+): number[] {
+  const totalWeight = blocks.reduce((sum, block) => sum + block.weight, 0) || 1;
+  const minimums = blocks.map((block) =>
+    Math.max(
+      voiceSubtitleThresholds.minCueDurationSeconds,
+      Array.from(block.lines.join("")).length / voiceSubtitleThresholds.maxCharactersPerSecond,
+    ),
+  );
+  if (minimums.some((minimum) => minimum > voiceSubtitleThresholds.maxCueDurationSeconds)) {
+    throw new SafeExitError(
+      "Production subtitle text cannot fit within the maximum readable cue duration.",
+    );
+  }
+  const durations = blocks.map((block, index) =>
+    Math.min(
+      voiceSubtitleThresholds.maxCueDurationSeconds,
+      Math.max(minimums[index] ?? 0, (sceneDurationSeconds * block.weight) / totalWeight),
+    ),
+  );
+  rebalanceCueDurations(
+    durations,
+    minimums,
+    sceneDurationSeconds,
+    voiceSubtitleThresholds.maxCueDurationSeconds,
+  );
+  return durations;
+}
+
+function rebalanceCueDurations(
+  durations: number[],
+  minimums: readonly number[],
+  targetSeconds: number,
+  maximumSeconds: number,
+): void {
+  const currentTotal = durations.reduce((sum, duration) => sum + duration, 0);
+  const delta = targetSeconds - currentTotal;
+  const capacities = durations.map((duration, index) =>
+    delta >= 0 ? maximumSeconds - duration : duration - (minimums[index] ?? 0),
+  );
+  const totalCapacity = capacities.reduce((sum, capacity) => sum + capacity, 0);
+  if (Math.abs(delta) > totalCapacity + voiceSubtitleThresholds.timingToleranceSeconds) {
+    throw new SafeExitError("Production subtitle timing cannot satisfy readable cue thresholds.");
+  }
+  if (Math.abs(delta) <= voiceSubtitleThresholds.timingToleranceSeconds) return;
+  for (let index = 0; index < durations.length; index += 1) {
+    const capacity = capacities[index] ?? 0;
+    if (capacity <= 0 || totalCapacity <= 0) continue;
+    durations[index] = (durations[index] ?? 0) + (delta * capacity) / totalCapacity;
+  }
 }
 
 export function renderVoiceoverText(scenes: readonly ProductionScene[]): string {

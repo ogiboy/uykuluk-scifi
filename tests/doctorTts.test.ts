@@ -61,7 +61,7 @@ describe("producer doctor TTS diagnostics", () => {
 
   it("blocks ElevenLabs before reservation when the server credential is missing", async () => {
     delete process.env.ELEVENLABS_API_KEY;
-    await writeElevenLabsConfig("voice_doctor_test");
+    await writeElevenLabsConfig();
 
     const report = await runDoctor();
 
@@ -74,13 +74,13 @@ describe("producer doctor TTS diagnostics", () => {
 
   it("passes local ElevenLabs diagnostics without making a remote request", async () => {
     process.env.ELEVENLABS_API_KEY = "doctor-test-key";
-    await writeElevenLabsConfig("voice_doctor_test");
+    await writeElevenLabsConfig();
 
     const report = await runDoctor();
     expect(report.checks.find((check) => check.name === "TTS provider")).toMatchObject({
       status: "pass",
       message: expect.stringContaining("eleven_v3"),
-      nextAction: expect.stringContaining("cost quote"),
+      nextAction: expect.stringContaining("voice-candidates"),
     });
   });
 });
@@ -107,7 +107,7 @@ async function writePiperConfig(tts: {
   );
 }
 
-async function writeElevenLabsConfig(voiceId: string): Promise<void> {
+async function writeElevenLabsConfig(): Promise<void> {
   await writeFile(
     "producer.config.json",
     `${JSON.stringify(
@@ -119,7 +119,7 @@ async function writeElevenLabsConfig(voiceId: string): Promise<void> {
             ...defaultConfig.providers.tts,
             enabled: true,
             mode: "elevenlabs",
-            elevenLabs: { ...defaultConfig.providers.tts.elevenLabs, voiceId },
+            elevenLabs: { ...defaultConfig.providers.tts.elevenLabs },
           },
         },
       },

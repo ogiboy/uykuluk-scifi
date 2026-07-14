@@ -1,8 +1,10 @@
 import { timingSafeEqual } from "node:crypto";
 
-export const studioActionHeaderName = "x-uykuluk-studio-action";
-export const studioSessionCookieName = "uykuluk_studio_session";
-export const studioSessionHeaderName = "x-uykuluk-studio-session";
+import {
+  studioActionHeaderName,
+  studioSessionCookieName,
+  studioSessionHeaderName,
+} from "./studioMutationSecurityContracts";
 
 export type StudioMutationSecurityResult =
   { ok: true } | { message: string; ok: false; status: 400 | 401 | 403 | 415 };

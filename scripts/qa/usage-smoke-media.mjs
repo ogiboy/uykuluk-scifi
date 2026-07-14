@@ -199,7 +199,7 @@ async function assertRenderedEvidence({ workdir, runId, assert }) {
     "render manifest records reference audio classification",
   );
   assert(
-    renderManifest.schemaVersion === 8 &&
+    renderManifest.schemaVersion === 9 &&
       typeof renderManifest.ffmpeg?.reviewCommand === "string" &&
       renderManifest.ffmpeg.reviewCommand.includes("production/render/draft.mp4"),
     "render manifest records final-artifact FFmpeg review command",

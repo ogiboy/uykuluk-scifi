@@ -11,7 +11,7 @@ import {
   persistVoiceExecutionSpool,
   type LoadedVoiceExecutionSpool,
 } from "./voiceExecutionSpool.js";
-import type { VoiceoverPreparation } from "./voiceoverPreparation.js";
+import type { VoiceoverPreparationV2 } from "./voiceoverPreparation.js";
 
 export type SettledVoiceSynthesisResult = {
   audio: TtsSynthesisResult;
@@ -90,7 +90,7 @@ export function spoolPaidVoiceResult(
     runId: string;
     operationId: string;
     binding: SelectedVoiceExecutionBinding;
-    preparation: { text: string; evidence: VoiceoverPreparation; evidenceText: string };
+    preparation: { text: string; evidence: VoiceoverPreparationV2; evidenceText: string };
     approvedQuote: { quoteDigest: string; approvalId: string };
     preflight: VoiceExecutionPreflightReceipt;
   },

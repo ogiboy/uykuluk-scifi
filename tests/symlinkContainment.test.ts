@@ -1,6 +1,7 @@
 import { link, mkdir, readFile, rm, symlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
+import { registeredArtifactRevisionAtProjectRoot } from "../src/core/artifactRevision";
 import { artifactPath, writeRunText } from "../src/core/artifacts";
 import { appendLedgerEvent, ledgerPath, readLedger } from "../src/core/ledger";
 import { createRun, loadRun, runDir, saveRun, statePath } from "../src/core/runStore";
@@ -79,6 +80,27 @@ describe("run filesystem symlink containment", () => {
     );
     expect(await readFile(outside, "utf8")).toBe("original\n");
     expect(await readLedger(run.runId)).toHaveLength(1);
+  });
+
+  it("blocks root-aware Studio revisions through a symlinked artifact directory", async () => {
+    const run = await createRun();
+    const relativePath = "production/audio/voice-selections/selection.json";
+    const targetDirectory = path.join(runDir(run.runId), "production", "audio", "voice-selections");
+    const outsideDirectory = path.join(process.cwd(), "outside-voice-selections");
+    await mkdir(targetDirectory, { recursive: true });
+    await writeFile(artifactPath(run.runId, relativePath), "{}", "utf8");
+    await mkdir(outsideDirectory);
+    await writeFile(path.join(outsideDirectory, "selection.json"), "{}", "utf8");
+    await rm(targetDirectory, { recursive: true });
+    await symlink(outsideDirectory, targetDirectory, "dir");
+
+    await expect(
+      registeredArtifactRevisionAtProjectRoot(
+        process.cwd(),
+        { runId: run.runId, artifacts: [relativePath] },
+        [relativePath],
+      ),
+    ).rejects.toThrow(/symbolic link|symlink/i);
   });
 
   it("rejects a symlinked core ledger before appending", async () => {

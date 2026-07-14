@@ -147,7 +147,7 @@ describe("Studio run evidence copy", () => {
 
     expect(summary).toMatchObject({
       focus: { label: "Draft render", status: "pass" },
-      title: "Local media ready for review",
+      title: "Production media ready for review",
       tone: "ready",
       verifiedCount: 3,
     });

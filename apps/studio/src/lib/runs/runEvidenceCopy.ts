@@ -174,7 +174,7 @@ function productionMediaReviewTitle(tone: ProductionMediaReviewSummary["tone"]):
     case "attention":
       return "Refresh evidence before trusting media";
     case "ready":
-      return "Local media ready for review";
+      return "Production media ready for review";
     case "pending":
       return "Media artifacts still pending";
   }

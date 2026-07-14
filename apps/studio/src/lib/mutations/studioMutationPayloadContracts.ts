@@ -2,6 +2,13 @@ import { z } from "zod";
 import { isValidRunId } from "../../../../../src/core/runId";
 import { channelHandoffDecisionValues } from "../../../../../src/stages/channel/channelHandoffDecisionContracts";
 import { renderDecisionValues } from "../../../../../src/stages/render/renderDecisionCommands";
+import {
+  runOnlyRequestSchema,
+  voicePreviewRequestSchema,
+  voiceReselectionRequestSchema,
+  voiceRunRequestSchema,
+  voiceSelectionRequestSchema,
+} from "../../../../../src/studio/actionServiceRequestContracts";
 
 const runIdSchema = z.string().refine(isValidRunId, { message: "Invalid run id." });
 const localReviewPayloadShape = {
@@ -16,8 +23,6 @@ const scriptApprovalPayloadSchema = z.strictObject({
   acknowledgeWarnings: z.boolean().default(false),
   runId: runIdSchema,
 });
-
-const runOnlyPayloadSchema = z.strictObject({ runId: runIdSchema });
 
 const emptyPayloadSchema = z.strictObject({});
 const localModelCandidateNameSchema = z.string().trim().min(1).max(240);
@@ -114,8 +119,30 @@ export function parseAnalyticsImportPayload(
   return analyticsImportPayloadSchema.parse(payload);
 }
 
-export function parseRunOnlyPayload(payload: unknown): z.infer<typeof runOnlyPayloadSchema> {
-  return runOnlyPayloadSchema.parse(payload);
+export function parseRunOnlyPayload(payload: unknown): z.infer<typeof runOnlyRequestSchema> {
+  return runOnlyRequestSchema.parse(payload);
+}
+
+export function parseVoiceRunPayload(payload: unknown): z.infer<typeof voiceRunRequestSchema> {
+  return voiceRunRequestSchema.parse(payload);
+}
+
+export function parseVoicePreviewPayload(
+  payload: unknown,
+): z.infer<typeof voicePreviewRequestSchema> {
+  return voicePreviewRequestSchema.parse(payload);
+}
+
+export function parseVoiceSelectionPayload(
+  payload: unknown,
+): z.infer<typeof voiceSelectionRequestSchema> {
+  return voiceSelectionRequestSchema.parse(payload);
+}
+
+export function parseVoiceReselectionPayload(
+  payload: unknown,
+): z.infer<typeof voiceReselectionRequestSchema> {
+  return voiceReselectionRequestSchema.parse(payload);
 }
 
 export function parseEmptyPayload(payload: unknown): z.infer<typeof emptyPayloadSchema> {

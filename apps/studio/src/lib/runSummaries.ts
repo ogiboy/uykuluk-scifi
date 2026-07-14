@@ -37,6 +37,10 @@ import {
   safeReaddir,
 } from "./runs/runSummaryFiles";
 import { loadRunSummaryInputs } from "./runs/runSummaryInputs";
+import {
+  readStudioVoiceAuditionSummary,
+  type StudioVoiceAuditionSummary,
+} from "./runs/voiceAuditionSummaries";
 
 export type StudioRunSummary = {
   approvalCount: number;
@@ -74,6 +78,7 @@ export type StudioRunDetail = StudioRunSummary & {
   readinessChecks: StudioReadinessCheck[];
   renderDecisionCommands: RenderDecisionCommandTemplate[];
   revisionSources: StudioRevisionSources;
+  voiceAudition: StudioVoiceAuditionSummary;
   warnings: string[];
 };
 
@@ -121,13 +126,25 @@ export async function getStudioRunDetail(runId: string): Promise<StudioRunDetail
     inputs.channelHandoff,
     inputs.channelHandoffDecision,
   );
+  const [artifacts, diagnostics, generatedIdeas, revisionSources, voiceAudition] =
+    await Promise.all([
+      readReviewArtifactPreviews(root, runId),
+      readStudioRunDiagnostics(root, runId, record.artifacts ?? []),
+      readStudioGeneratedIdeas(root, runId),
+      readStudioRevisionSources(root, runId),
+      readStudioVoiceAuditionSummary(root, {
+        approvals: record.approvals ?? [],
+        artifacts: record.artifacts ?? [],
+        runId: record.runId,
+      }),
+    ]);
   return {
     ...summary,
     approvals: record.approvals ?? [],
-    artifacts: await readReviewArtifactPreviews(root, runId),
-    diagnostics: await readStudioRunDiagnostics(root, runId, record.artifacts ?? []),
+    artifacts,
+    diagnostics,
     evidence: inputs.evidence.snapshot,
-    generatedIdeas: await readStudioGeneratedIdeas(root, runId),
+    generatedIdeas,
     productionMedia: productionMediaStatus(
       { artifacts: record.artifacts ?? [], runId: record.runId },
       inputs.evidence.snapshot,
@@ -139,7 +156,8 @@ export async function getStudioRunDetail(runId: string): Promise<StudioRunDetail
       inputs.evidence,
       inputs.renderDecision,
     ),
-    revisionSources: await readStudioRevisionSources(root, runId),
+    revisionSources,
+    voiceAudition,
     warnings: record.warnings ?? [],
   };
 }

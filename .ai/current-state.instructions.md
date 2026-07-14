@@ -81,19 +81,24 @@
   `timing-draft-only` or `production-voice-candidate`, while Studio production-media rows surface
   the same review command, render approval command, and approval scope without adding a web
   mutation.
-- ElevenLabs v3 voice discovery, selection, approval binding, execution recovery, reconciliation,
-  and fail-closed revision behavior are documented in
-  [the focused current-state note](current-state/elevenlabs-voice.instructions.md).
+- ElevenLabs v3 catalog, bounded preview, attributable selection/reselection, exact quote and
+  reservation binding, synthesis adapter, original/normalized character-alignment persistence,
+  settlement, redacted diagnostics, and fail-closed recovery are implemented and documented in
+  [the focused current-state note](current-state/elevenlabs-voice.instructions.md). Automated paid
+  execution remains mocked: no live production synthesis has been validated. Free-tier
+  metadata/catalog/preview access does not establish commercial production rights and must never
+  bypass exact eligibility, quote, persisted approval, reservation, or settlement gates.
 - `pnpm tts:piper:setup` downloads the pinned CPU-friendly Turkish
   `speaches-ai/piper-tr_TR-fahrettin-medium` model into ignored `models/` and prints the matching
   local config override for `local-piper`.
 - `producer doctor` diagnostics persist next-action fields in JSON and Markdown for prompt override
   path/content problems, disabled TTS, deterministic reference audio, valid local Piper config, and
   local Piper remediation.
-- Approval-gated local FFmpeg draft render. Exact render-plan, voiceover digest, and voice
-  classification approval is required before writing the MP4, schema-v8 manifest, review, and
-  manifest-bound chapter artifacts. The concat timeline uses bookends, scenes, and available source
-  frames; audio/subtitles stay outside bookends, SRT timing maps to actual voice duration, and
+- Approval-gated local FFmpeg draft render. Exact render-plan, canonical voice evidence, active
+  subtitle descriptor/timing mode, and voice classification approval are required before writing
+  the MP4, schema-v9 manifest, review, and manifest-bound chapter artifacts. The concat timeline uses
+  bookends, scenes, and available source frames; audio/subtitles stay outside bookends, SRT timing
+  maps to actual voice duration, and
   lower-third/waveform/popup overlays stay scene-scoped. Sample popup copy is masked before plain
   wrapped runtime text is drawn. The manifest records timing, cadence, overlay placement, approval,
   execution/review commands, and `ffprobe` evidence. CLI, evidence, and Studio expose local review
@@ -245,44 +250,20 @@
   operator steps such as render-plan generation, cost estimation, local voiceover generation, render
   approval, local draft render, exact quote approval, and evidence refresh.
 - Disabled upload and publish placeholders.
-- Basic Next.js Producer Studio shell under `apps/studio` with read-only run, idea-history, and
-  detail routes backed by local service contracts.
-- Visual asset pack imported under `assets/`.
 - Optional `pnpm qa:product` smoke covers happy path, tamper/order abuse, disabled upload/publish,
   analytics recovery, render decisions, and Studio visibility.
 - Production build emits a Node-runnable `dist/cli.js` and `pnpm build:smoke` verifies the built CLI
   starts and can initialize a fresh project from an arbitrary working directory.
-- Direct mock/Ollama/llama.cpp provider diagnostics and upload/publish safeguard tests.
 - `producer doctor` project diagnostics with durable local JSON/Markdown evidence for config,
   provider/model availability, local TTS/Piper readiness with next actions, local FFmpeg/ffprobe
   toolchain availability, assets, and publish defaults.
 - Blocked `producer doctor` provider and publish-default diagnostics include operator-facing
   `nextAction` remediation guidance in terminal, JSON, and Markdown output; risky
   upload/private/public publish config still blocks.
-- Project-local capability inventory and routing for engineering, product, design, marketing, data,
-  security, testing, research, release, browser QA, and swarm orchestration.
-- Explicit frontend taste routing for public pages, cinematic landing pages, Google Stitch design
-  generation, and legacy compatibility, while keeping Producer Studio on its operator-focused design
-  system.
-- Durable long-task checkpoints and context-budget rules that avoid reloading the full host
-  capability catalog or forking oversized threads.
-- CI high-severity dependency audit.
-- Main-branch release workflow that computes a Conventional Commit release plan, validates
-  release-range commit subjects, updates `package.json`, moves `CHANGELOG.md` Unreleased notes into
-  a versioned section, commits `chore(release): vX.Y.Z`, and tags `vX.Y.Z`. The publish helper
-  refreshes `origin/main` before planning and retries the atomic push when main advances during
-  rapid consecutive merges. `pnpm version:plan` now exposes the pending tag, changelog note source,
-  and main-only release-file ownership so PRs do not look like missing package bumps.
-- Release workflow contract tests assert the main-only bot guard, high-severity dependency audit,
-  release validation, version planning, release application, annotated tag creation, atomic push,
-  and failed-tag cleanup wiring.
-- CodeRabbit, GitHub Actions, CodeQL, Dependabot, SonarQube, Prettier, ESLint,
-  eslint-config-prettier, Vitest, Playwright, native TypeScript 7 plus TypeScript 6 parser
-  compatibility, modularity, secret-scan, changelog, and release hygiene gates.
-- Studio has Tailwind CSS v4, shadcn-style config/primitives, Radix Tabs, lucide icons, GSAP, and
-  `next/font` wired for the initial shell.
-- Studio has a type-safe `next-intl` request/provider foundation with English and Turkish locale
-  selection through a local cookie. Existing operator copy has not been migrated yet.
+- Project-local capability routing, resumable `.ai/checkpoints/`, dependency auditing, and the
+  conventional-commit release workflow are documented and covered by repository quality gates.
+- Studio uses the existing Tailwind/shadcn/Radix design system and a typed `next-intl` foundation;
+  full operator-copy translation remains future work.
 - Studio can list local persisted runs with counts, readiness/evidence status, remediation, and
   next-action visibility, then refine the operator queue with read-only shadcn sort, search, filter,
   blocker-limit, density, and tuning controls. Studio run detail shows a persistent action rail over
@@ -352,6 +333,26 @@
   `ogiboy_uykuluk-scifi`.
 - `pnpm sonar` has successfully uploaded at least one local analysis to
   `http://localhost:9000/dashboard?id=uykuluk-scifi`.
+
+## v0.82 Voice Completion And Studio Parity Candidate
+
+- The active branch implements aligned Turkish SRT plus metadata from ElevenLabs original character
+  timing and binds the verified subtitle descriptor through voice evidence, render approval, render
+  manifest, FFmpeg, and Studio caption consumers. Incomplete ElevenLabs evidence does not silently
+  fall back to linear timing.
+- The same slice adds guarded Studio candidate, preview, select, reselect, and exact hosted
+  production-confirmation actions over the existing CLI/core owners. Provider URLs and secrets stay
+  server-side. Focused integration tests, two consecutive local full suites, a CI-shaped suite,
+  product/browser QA, and real production-build Studio UAT pass; remaining work is PR-ready coverage,
+  dependency, version, and Sonar validation plus review/merge.
+- Deterministic-local and Piper remain credential-free fallbacks. They retain explicit
+  `linear-fallback` subtitle timing; deterministic-local is reference timing only, while Piper still
+  requires operator listening before production use.
+- After this slice, delivery order is scene-specific visuals plus exact render, script audition plus
+  editorial provenance, resumable private-only YouTube upload, then persistent settings/prompts,
+  onboarding, documentation productization, and real-episode acceptance.
+- Private-only upload is required for v1 controlled distribution. It is not implemented yet. Public
+  and scheduled publishing remain unavailable and out of v1 scope.
 
 ## Current Commands
 
@@ -435,9 +436,14 @@ Corepack/PATH before treating failures as product failures.
 - Ollama and `llama.cpp` configuration accepts only credential-free loopback HTTP(S) origins, preventing local adapters from silently becoming arbitrary outbound endpoints; hosted or LAN provider support needs a separately reviewed adapter boundary.
 - ElevenLabs is the only approved hosted production provider currently implemented. It remains
   disabled without explicit config, server-only credentials, exact quote approval, reservation,
-  and operator-triggered synthesis; no live paid call has run. No hosted visual provider, upload,
-  or public/scheduled publish adapter is enabled.
-- Current local-only Studio combines read/review pages and grouped artifact metadata with guarded mutations backed by canonical CLI/core contracts. Stage and Studio-lib roots retain stable public entrypoints while domain helpers live in named subfolders. Route security covers page reads, short-lived session proof, same-origin actions, and disabled upload/publish; generation and local render run only through guarded contracts.
+  commercial production rights, and operator-triggered synthesis; no live paid call has run. A free
+  account may support permitted audition metadata/previews but cannot prove production eligibility.
+  No hosted visual provider or private-upload adapter is enabled; public/scheduled publish remains
+  out of scope.
+- Current local-first Studio combines read/review pages and grouped artifact metadata with guarded mutations backed by canonical CLI/core contracts. Stage and Studio-lib roots retain stable public entrypoints while domain helpers live in named subfolders. Route security covers page reads, short-lived session proof, same-origin actions, and disabled upload/publish; generation and local render run only through guarded contracts.
+- Studio voice review now exposes guarded catalog refresh, persisted local previews, A/B comparison,
+  attributable selection/reselection, quote/quota state, and exact hosted execution confirmation;
+  CLI/core remains authoritative for every state, approval, cost, and provider transition.
 - Optional Sentry captures unexpected Next.js and Studio mutation-boundary failures without request
   bodies/artifacts; without a DSN it is disabled and never affects workflow or authorization.
 - Local prompt overrides are ignored `prompts/local/*.md` paths configured in
@@ -458,8 +464,9 @@ Corepack/PATH before treating failures as product failures.
 - FFmpeg draft render creates a local review MP4 from intro/outro sources, scene-timed plates,
   audio-bound subtitles, overlays, voiceover, evidence, a read-only review command, and checklist.
   Rejected drafts archive safely; reusable clips, exact TTS alignment, and polish remain follow-up.
-- Upload/publish are disabled scaffolds; manual/Studio analytics are local-only; richer APIs are not
-  implemented.
+- Private upload remains disabled placeholder behavior but is a v1 controlled-distribution
+  deliverable. Public/scheduled publish remains unavailable and out of scope; manual/Studio
+  analytics are local-only and richer APIs are not implemented.
 - Run-path containment blocks pre-existing symlinks; hostile concurrent replacement remains a local
   TOCTOU limitation because portable Node APIs lack directory-handle `openat` semantics.
 - Brand, overlay, thumbnail, background, transition, icon, waveform, intro-frame, and outro-frame

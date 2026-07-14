@@ -1,4 +1,4 @@
-import { studioActionHeaderName, studioSessionHeaderName } from "./studioMutationSecurity";
+import { studioActionHeaderName, studioSessionHeaderName } from "./studioMutationSecurityContracts";
 
 type StudioSessionResponse = Readonly<{ expiresInSeconds?: unknown; token?: unknown }>;
 

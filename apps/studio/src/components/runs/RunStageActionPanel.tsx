@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { useStudioStageActionSubmit } from "@/lib/mutations/useStudioStageActionSubmit";
 import type { StudioRunDetail } from "@/lib/runSummaries";
+import Link from "next/link";
 import { StudioMutationResultPanel } from "../studio/StudioMutationResultPanel";
 import { RunStageActionConfirmationDialog } from "./RunStageActionConfirmationDialog";
 
@@ -37,6 +38,27 @@ export function RunStageActionPanel({ run }: RunStageActionPanelProps) {
 
   if (!action) {
     return null;
+  }
+
+  if (action.submission === "voice-surface") {
+    return (
+      <section aria-labelledby='stage-action-heading'>
+        <Card>
+          <CardHeader>
+            <CardTitle id='stage-action-heading'>Open voice production</CardTitle>
+            <CardDescription>
+              Local voice can run directly there; hosted voice requires the exact persisted quote
+              confirmation shown in the audition surface.
+            </CardDescription>
+          </CardHeader>
+          <CardFooter>
+            <Button asChild>
+              <Link href={`/runs/${run.runId}?tab=voice`}>Open voice production</Link>
+            </Button>
+          </CardFooter>
+        </Card>
+      </section>
+    );
   }
 
   return (

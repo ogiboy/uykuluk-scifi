@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { activeVoiceSubtitleDescriptorSchema } from "../voice/voiceoverSubtitles.js";
 import { assetRefSchema, digestSchema } from "./renderPlanSchemas.js";
 import { renderMediaProbeSchema, type RenderMediaProbe } from "./renderProbe.js";
 
@@ -53,7 +54,7 @@ const ffmpegTimelineInputSchema = z.strictObject({
 });
 
 export const draftRenderManifestSchema = z.strictObject({
-  schemaVersion: z.literal(8),
+  schemaVersion: z.literal(9),
   runId: z.string().min(1),
   createdAt: z.iso.datetime(),
   renderPlan: z.strictObject({
@@ -63,10 +64,12 @@ export const draftRenderManifestSchema = z.strictObject({
   voiceoverAudio: z.strictObject({
     path: z.literal("production/audio/voiceover.wav"),
     digest: digestSchema,
+    metadataDigest: digestSchema,
     mode: voiceoverModeSchema,
     productionVoiceCandidate: z.boolean(),
     quality: voiceoverQualitySchema,
   }),
+  subtitles: activeVoiceSubtitleDescriptorSchema,
   renderApproval: renderApprovalSchema,
   timeline: z.array(renderTimelineItemSchema).min(1),
   timing: z.strictObject({
@@ -75,11 +78,20 @@ export const draftRenderManifestSchema = z.strictObject({
     outroDurationSeconds: z.number().nonnegative(),
     totalDurationSeconds: z.number().positive(),
   }),
-  subtitleTiming: z.strictObject({
-    sourceDurationSeconds: z.number().positive(),
-    sceneDurationSeconds: z.number().positive(),
-    timeScale: z.number().positive(),
-  }),
+  subtitleTiming: z.discriminatedUnion("timingMode", [
+    z.strictObject({
+      timingMode: z.literal("linear-fallback"),
+      sourceDurationSeconds: z.number().positive(),
+      sceneDurationSeconds: z.number().positive(),
+      timeScale: z.number().positive(),
+    }),
+    z.strictObject({
+      timingMode: z.literal("elevenlabs-character-aligned"),
+      sourceDurationSeconds: z.number().positive(),
+      sceneDurationSeconds: z.number().positive(),
+      timeScale: z.literal(1),
+    }),
+  ]),
   ffmpegTimelineInputs: z.array(ffmpegTimelineInputSchema).min(1),
   composition: z.strictObject({
     overlays: z.array(renderCompositionOverlaySchema),
@@ -127,6 +139,8 @@ export type DraftRenderEvidence =
       voiceoverMode: z.infer<typeof voiceoverModeSchema>;
       voiceoverProductionVoiceCandidate: boolean;
       voiceoverQuality: z.infer<typeof voiceoverQualitySchema>;
+      subtitlePath: string;
+      subtitleTimingMode: z.infer<typeof activeVoiceSubtitleDescriptorSchema>["timingMode"];
       renderApproval: z.infer<typeof renderApprovalSchema>;
       mediaProbe: RenderMediaProbe;
     }

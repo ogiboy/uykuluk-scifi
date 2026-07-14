@@ -71,7 +71,7 @@ export async function readRunStatus(runId: string): Promise<RunStatusSummary> {
   const run = await loadRun(runId);
   const [evidenceResult, diagnostics, readiness, renderDecision, finalReviewBundle] =
     await Promise.all([
-      readEvidenceStatus(run.runId, run.state),
+      readEvidenceStatus(run.runId, run.state, run.artifacts),
       readRunDiagnosticSummaries(run.runId, run.artifacts),
       readStatusReadiness(run.runId, run.state),
       readRenderDecisionStatus(run),

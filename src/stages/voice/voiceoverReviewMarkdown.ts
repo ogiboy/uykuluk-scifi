@@ -36,6 +36,13 @@ export function renderVoiceoverReviewMarkdown(meta: VoiceoverAudioMeta): string 
         ...peakNormalizationRows(meta),
         ["Bytes", String(meta.output.bytes)],
         ["SHA-256", meta.output.sha256],
+        ...(meta.schemaVersion === 2
+          ? [
+              ["Subtitle timing", meta.subtitle.timingMode],
+              ["Active subtitles", meta.subtitle.path],
+              ["Subtitle metadata", meta.subtitle.metadataPath],
+            ]
+          : []),
         ["Render approval scope", renderApprovalScope(meta)],
         ["Render approval command", voiceoverRenderApprovalCommand(meta.runId)],
       ],
@@ -55,6 +62,9 @@ export function renderVoiceoverReviewMarkdown(meta: VoiceoverAudioMeta): string 
             ]
           : []),
         ...(meta.alignment ? [[meta.alignment.path, meta.alignment.sha256]] : []),
+        ...(meta.schemaVersion === 2 && meta.normalizedAlignment
+          ? [[meta.normalizedAlignment.path, meta.normalizedAlignment.sha256]]
+          : []),
         [meta.renderPlan.path, meta.renderPlan.digest],
       ],
     ),

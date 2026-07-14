@@ -9,7 +9,18 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Features
+
+- generate publish-readable Turkish-aligned SRT from verified ElevenLabs original character timing,
+  retain explicit local linear fallback timing, and bind the active subtitle descriptor through
+  voice evidence, render approval, FFmpeg execution, captions, and the schema-v9 render manifest.
+- add Studio voice catalog, persisted preview, A/B audition, attributable selection/reselection,
+  quote/quota review, and exact approval-bound hosted synthesis confirmation without normal CLI use.
+
+### Documentation
+
+- replace the CLI-heavy landing page with a concise product README, versioned operator/provider/
+  architecture references, and real production-build Studio screenshots.
 
 ## v0.81.0 (2026-07-13)
 

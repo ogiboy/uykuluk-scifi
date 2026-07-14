@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { studioSessionCookieName } from "./studioMutationSecurity";
+import { studioSessionCookieName } from "./studioMutationSecurityContracts";
 
 export const studioSessionMaxAgeSeconds = 15 * 60;
 

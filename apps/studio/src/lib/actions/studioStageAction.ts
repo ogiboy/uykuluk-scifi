@@ -27,6 +27,7 @@ export type StudioStageActionConfig = Readonly<{
   description: string;
   heading: string;
   routePath: string;
+  submission: "run-only" | "voice-surface";
 }>;
 
 export type StudioStageActionRun = Pick<
@@ -46,8 +47,8 @@ const studioStageActionRows = {
   "estimate.run": ["/actions/run-estimate", "estimate", "Regenerate Estimate", "Regenerate the current cost estimate before approval or readiness work."],
   "evidence.run": ["/actions/run-evidence", "evidence", "Regenerate Evidence", "Regenerate evidence from persisted artifacts so Studio status can trust it."],
   "readiness.run": ["/actions/run-readiness", "readiness", "Run Readiness", "Run readiness diagnostics through the canonical local workflow."],
-  "voice.run": ["/actions/run-voice", "voice", "Generate Voiceover", "Generate local voiceover only when TTS config and workflow guards allow it."],
-  "voice.review": ["/actions/review-voice", "review voice", "Review Voiceover", "Open the local voiceover review handoff before render approval."],
+  "voice.run": ["/actions/run-voice", "voice", "Generate Voiceover", "Generate voiceover through the configured local or approval-bound hosted TTS provider after CLI/core rechecks every gate."],
+  "voice.review": ["/actions/review-voice", "review voice", "Review Voiceover", "Open the voiceover review handoff before render approval."],
   "render.run": ["/actions/run-render", "render", "Render Draft", "Generate the local FFmpeg draft after exact render approval."],
   "render.review": ["/actions/review-render", "review render", "Review Draft Render", "Open the local draft-render review handoff without upload or publish."],
   "render.revise": ["/actions/revise-render", "revise render", "Archive and Revise Draft", "Archive the non-accepted draft, invalidate its approval, and return to the guarded render workflow."],
@@ -106,6 +107,7 @@ function stageAction(
     description,
     heading,
     routePath,
+    submission: actionId === "voice.run" ? "voice-surface" : "run-only",
   };
 }
 

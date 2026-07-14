@@ -67,6 +67,15 @@ export function createTwoSceneRenderPlan(
   };
 }
 
+export function linearSubtitleTiming(sceneDurationSeconds: number) {
+  return {
+    timingMode: "linear-fallback" as const,
+    sourceDurationSeconds: sceneDurationSeconds,
+    sceneDurationSeconds,
+    timeScale: 1,
+  };
+}
+
 /**
  * Builds the optional intro and outro bookend configuration.
  *

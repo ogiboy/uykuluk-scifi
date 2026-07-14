@@ -1,6 +1,9 @@
 import { readFile, writeFile } from "node:fs/promises";
 
-import { defaultConfig } from "../src/config/config";
+import { defaultConfig, loadConfig } from "../src/config/config";
+import { artifactPath } from "../src/core/artifacts";
+import { loadRun } from "../src/core/runStore";
+import { readCostEstimate } from "../src/costs/costEstimate";
 import { approvePaidGenerationCost } from "../src/stages/approveCost";
 import { approveIdea } from "../src/stages/approveIdea";
 import { approveScript } from "../src/stages/approveScript";
@@ -12,6 +15,9 @@ import { runReadiness } from "../src/stages/readiness";
 import { generateRenderPlan } from "../src/stages/renderPlan";
 import { reviewScript } from "../src/stages/reviewScript";
 import { generateScript } from "../src/stages/script";
+import { buildSelectedVoiceExecutionBinding } from "../src/stages/voice/voiceExecutionBinding";
+import type { HostedVoiceExecutionConfirmation } from "../src/stages/voice/voiceExecutionConfirmation";
+import { prepareVoiceoverText } from "../src/stages/voice/voiceoverPreparation";
 import { wavFromPcm16 } from "../src/stages/voice/voiceWav";
 import { generateVoiceCandidates } from "../src/stages/voiceCandidates";
 import { generateVoicePreview } from "../src/stages/voicePreview";
@@ -119,15 +125,74 @@ export async function prepareApprovedSelectedVoiceRun() {
   return { catalog, runId, voiceId };
 }
 
+/** Builds the exact confirmation currently required by an approved ElevenLabs workflow fixture. */
+export async function approvedHostedVoiceConfirmation(
+  runId: string,
+): Promise<HostedVoiceExecutionConfirmation> {
+  const config = await loadConfig();
+  const sourceText = await readFile(artifactPath(runId, "production/voiceover.txt"), "utf8");
+  const preparation = prepareVoiceoverText({
+    runId,
+    sourceText,
+    pronunciationReplacements: config.providers.tts.pronunciationReplacements,
+  });
+  const binding = await buildSelectedVoiceExecutionBinding({
+    runId,
+    config,
+    preparedText: preparation.text,
+  });
+  const quoteDigest = (await readCostEstimate(runId)).digest;
+  const approval = (await loadRun(runId)).approvals.find(
+    (item) => item.target === "paid-generation-cost" && item.approvedRef === quoteDigest,
+  );
+  if (!approval) throw new Error("Expected exact paid-generation approval fixture.");
+  return {
+    approvalId: approval.approvalId,
+    bindingDigest: binding.bindingDigest,
+    confirmPaidOperation: true,
+    quoteDigest,
+  };
+}
+
 /**
- * Generates a 24 kHz mono WAV fixture containing a 220 Hz sine wave.
+ * Generates a duration-aware 24 kHz mono silent WAV fixture.
  *
- * @returns A WAV audio buffer containing the generated test tone.
+ * @param durationSeconds - Whole-second duration used by mocked alignment timelines
+ * @returns A WAV audio buffer containing duration-accurate silence.
  */
-export function workflowFixtureWav(): Buffer {
-  const pcm = Buffer.alloc(24_000 * 2);
-  for (let index = 0; index < 24_000; index += 1) {
-    pcm.writeInt16LE(Math.round(Math.sin((2 * Math.PI * 220 * index) / 24_000) * 2_000), index * 2);
-  }
+export function workflowFixtureWav(durationSeconds = 1): Buffer {
+  const pcm = Buffer.alloc(24_000 * durationSeconds * 2);
   return wavFromPcm16(pcm, 24_000, 1);
+}
+
+export function workflowConvertWithTimestamps(_voiceId: unknown, request: { text: unknown }) {
+  const characters = Array.from(request.text as string);
+  const durationSeconds = Math.max(1, characters.length / 14);
+  return {
+    withRawResponse: async () => ({
+      data: {
+        audioBase64: workflowFixtureWav(Math.ceil(durationSeconds)).toString("base64"),
+        alignment: workflowAlignment(characters, durationSeconds),
+        normalizedAlignment: workflowAlignment(characters, durationSeconds),
+      },
+      rawResponse: {
+        headers: new Headers({
+          "character-cost": String(characters.length),
+          "request-id": "workflow-request-id",
+        }),
+      },
+    }),
+  };
+}
+
+function workflowAlignment(characters: string[], durationSeconds: number) {
+  return {
+    characters,
+    characterStartTimesSeconds: characters.map(
+      (_, index) => (index / characters.length) * durationSeconds,
+    ),
+    characterEndTimesSeconds: characters.map(
+      (_, index) => ((index + 1) / characters.length) * durationSeconds,
+    ),
+  };
 }

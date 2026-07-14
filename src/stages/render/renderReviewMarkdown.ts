@@ -40,12 +40,13 @@ export function renderDraftReviewMarkdown(manifest: DraftRenderManifest): string
         ["Voiceover-backed scenes", `${manifest.timing.sceneAudioDurationSeconds}s`],
         ["Outro", `${manifest.timing.outroDurationSeconds}s`],
         ["Complete draft", `${manifest.timing.totalDurationSeconds}s`],
+        ["Subtitle mode", manifest.subtitleTiming.timingMode],
         ["Source SRT", `${manifest.subtitleTiming.sourceDurationSeconds}s`],
         ["Subtitle clock scale", String(manifest.subtitleTiming.timeScale)],
       ],
     ),
     "",
-    "The current draft renderer linearly maps the source SRT clock onto the validated voiceover-backed scene window. Confirm synchronization by listening and watching; intro/outro remain outside the subtitle window. Provider alignment evidence, when available, remains separate until aligned-SRT render binding is approved.",
+    subtitleTimingReviewNote(manifest),
     "",
   ];
   sections.push(
@@ -95,6 +96,12 @@ export function renderDraftReviewMarkdown(manifest: DraftRenderManifest): string
           manifest.voiceoverAudio.path,
           manifest.voiceoverAudio.digest,
           voiceoverReviewDetail(manifest),
+        ],
+        [manifest.subtitles.path, manifest.subtitles.sha256, manifest.subtitles.timingMode],
+        [
+          manifest.subtitles.metadataPath,
+          manifest.subtitles.metadataSha256,
+          "validated subtitle timing evidence",
         ],
       ],
     ),
@@ -149,6 +156,13 @@ export function renderDraftReviewMarkdown(manifest: DraftRenderManifest): string
     ...renderDraftDecision(manifest),
   );
   return sections.join("\n");
+}
+
+function subtitleTimingReviewNote(manifest: DraftRenderManifest): string {
+  if (manifest.subtitleTiming.timingMode === "elevenlabs-character-aligned") {
+    return "The renderer burns the validated ElevenLabs original-alignment SRT on its exact provider timeline. Confirm Turkish wording, cue rhythm, and synchronization by listening and watching; intro/outro remain outside the subtitle window.";
+  }
+  return "The renderer linearly maps the production-package SRT clock onto the validated local voiceover window. Confirm synchronization by listening and watching; intro/outro remain outside the subtitle window.";
 }
 
 /**

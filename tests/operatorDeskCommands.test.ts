@@ -25,7 +25,14 @@ describe("operator desk command and diagnostic summaries", () => {
     });
     await writeFile(
       artifactPath(run.runId, "evidence_bundle.json"),
-      JSON.stringify(passingRenderedEvidence(run.runId)),
+      JSON.stringify(
+        passingRenderedEvidence(run.runId, [
+          "production/render_plan.json",
+          "production/audio/voiceover.wav",
+          "production/render/draft.mp4",
+          "evidence_bundle.json",
+        ]),
+      ),
       "utf8",
     );
 
@@ -77,28 +84,38 @@ describe("operator desk command and diagnostic summaries", () => {
     await writeFile(
       artifactPath(run.runId, "evidence_bundle.json"),
       JSON.stringify(
-        studioEvidenceFixture(run.runId, "READY_FOR_MANUAL_PRODUCTION", {
-          nextRecommendedCommand: "pnpm producer approve render --run <run_id>",
-          renderPlan: {
-            artifactCount: 3,
-            assetCount: 11,
-            digest: "a".repeat(64),
-            path: "production/render_plan.json",
-            status: "pass",
+        studioEvidenceFixture(
+          run.runId,
+          "READY_FOR_MANUAL_PRODUCTION",
+          {
+            nextRecommendedCommand: "pnpm producer approve render --run <run_id>",
+            renderPlan: {
+              artifactCount: 3,
+              assetCount: 11,
+              digest: "a".repeat(64),
+              path: "production/render_plan.json",
+              status: "pass",
+            },
+            voiceoverAudio: {
+              digest: "b".repeat(64),
+              durationSeconds: 8.2,
+              localPlaybackPath: `runs/${run.runId}/production/audio/voiceover.wav`,
+              mode: "local-piper",
+              path: "production/audio/voiceover.wav",
+              productionVoiceCandidate: true,
+              quality: "local-piper",
+              reviewPath: "production/audio/voiceover_review.md",
+              sourceWordCount: 42,
+              status: "pass",
+            },
           },
-          voiceoverAudio: {
-            digest: "b".repeat(64),
-            durationSeconds: 8.2,
-            localPlaybackPath: `runs/${run.runId}/production/audio/voiceover.wav`,
-            mode: "local-piper",
-            path: "production/audio/voiceover.wav",
-            productionVoiceCandidate: true,
-            quality: "local-piper",
-            reviewPath: "production/audio/voiceover_review.md",
-            sourceWordCount: 42,
-            status: "pass",
-          },
-        }),
+          [
+            "production/render_plan.json",
+            "production/audio/voiceover.wav",
+            "evidence_bundle.json",
+            "diagnostics/readiness.json",
+          ],
+        ),
       ),
       "utf8",
     );

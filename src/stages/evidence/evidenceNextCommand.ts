@@ -1,3 +1,5 @@
+import type { TtsMode } from "../voice/providers/ttsProvider.js";
+
 /** Minimal evidence projections used to choose one safe operator command. */
 type CostQuoteNextStep = { invalid?: boolean; approvalRequired: boolean; approved: boolean } | null;
 
@@ -12,6 +14,8 @@ type VoiceoverNextStep = { productionVoiceCandidate?: boolean | null; status?: s
 
 type DraftRenderNextStep = { status?: string; voiceoverProductionVoiceCandidate?: boolean } | null;
 
+type VoiceSelectionNextStep = { status?: string } | null;
+
 type EvidenceNextCommandInput = {
   costQuote: CostQuoteNextStep;
   draftRender?: DraftRenderNextStep;
@@ -20,6 +24,8 @@ type EvidenceNextCommandInput = {
   scriptReview?: ScriptReviewNextStep;
   state: string;
   ttsEnabled?: boolean;
+  ttsMode?: TtsMode;
+  voiceSelection?: VoiceSelectionNextStep;
   voiceoverAudio?: VoiceoverNextStep;
 };
 
@@ -69,6 +75,8 @@ export function evidenceNextCommand(input: EvidenceNextCommandInput): string {
     scriptReview = {},
     state,
     ttsEnabled = false,
+    ttsMode = "deterministic-local",
+    voiceSelection = null,
     voiceoverAudio = null,
   } = input;
   if (hasUnresolvedCostReservation) {
@@ -78,7 +86,16 @@ export function evidenceNextCommand(input: EvidenceNextCommandInput): string {
     return scriptReviewNextCommand(scriptReview);
   }
   return (
-    dynamicNextCommand({ costQuote, draftRender, renderPlan, state, ttsEnabled, voiceoverAudio }) ??
+    dynamicNextCommand({
+      costQuote,
+      draftRender,
+      renderPlan,
+      state,
+      ttsEnabled,
+      ttsMode,
+      voiceSelection,
+      voiceoverAudio,
+    }) ??
     STATIC_NEXT_COMMANDS[state] ??
     "Review state and ledger before continuing."
   );
@@ -97,11 +114,23 @@ function scriptReviewNextCommand(scriptReview: ScriptReviewNextStep): string {
 function dynamicNextCommand(
   input: Pick<
     EvidenceNextCommandInput,
-    "costQuote" | "draftRender" | "renderPlan" | "state" | "ttsEnabled" | "voiceoverAudio"
+    | "costQuote"
+    | "draftRender"
+    | "renderPlan"
+    | "state"
+    | "ttsEnabled"
+    | "ttsMode"
+    | "voiceSelection"
+    | "voiceoverAudio"
   >,
 ): string | undefined {
   if (input.state === "PRODUCTION_PACKAGE_GENERATED") {
-    return productionPackageNextCommand(input.renderPlan ?? null);
+    return productionPackageNextCommand(
+      input.renderPlan ?? null,
+      input.ttsEnabled ?? false,
+      input.ttsMode ?? "deterministic-local",
+      input.voiceSelection ?? null,
+    );
   }
   if (input.state === "COST_ESTIMATED") {
     return costEstimatedNextCommand(input.costQuote);
@@ -118,8 +147,16 @@ function dynamicNextCommand(
   return undefined;
 }
 
-function productionPackageNextCommand(renderPlan: RenderPlanNextStep): string {
+function productionPackageNextCommand(
+  renderPlan: RenderPlanNextStep,
+  ttsEnabled: boolean,
+  ttsMode: TtsMode,
+  voiceSelection: VoiceSelectionNextStep,
+): string {
   if (renderPlan?.status === "pass") {
+    if (ttsEnabled && ttsMode === "elevenlabs" && voiceSelection?.status !== "current") {
+      return "pnpm producer voice-candidates --run <run_id>";
+    }
     return "pnpm producer estimate --run <run_id>";
   }
   return "pnpm producer render-plan --run <run_id>";

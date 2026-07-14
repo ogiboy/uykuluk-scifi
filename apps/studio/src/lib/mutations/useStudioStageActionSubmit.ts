@@ -35,7 +35,7 @@ export function useStudioStageActionSubmit(
   const { state, submit } = useStudioGuardedActionSubmit(messages.idleMessage);
 
   async function submitStageAction(): Promise<void> {
-    if (!action) return;
+    if (action?.submission !== "run-only") return;
     setConfirmationOpen(false);
     await submit({
       actionId: action.actionId,

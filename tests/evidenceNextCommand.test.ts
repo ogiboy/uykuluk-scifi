@@ -51,6 +51,48 @@ describe("evidence next command", () => {
     ).not.toContain("approve script");
   });
 
+  it("requires ElevenLabs audition before cost estimation when no current selection exists", () => {
+    expect(
+      evidenceNextCommand({
+        costQuote: null,
+        hasUnresolvedCostReservation: false,
+        renderPlan: { status: "pass" },
+        state: "PRODUCTION_PACKAGE_GENERATED",
+        ttsEnabled: true,
+        ttsMode: "elevenlabs",
+        voiceSelection: { status: "missing-or-invalid" },
+      }),
+    ).toBe("pnpm producer voice-candidates --run <run_id>");
+  });
+
+  it("allows cost estimation after the persisted ElevenLabs selection is current", () => {
+    expect(
+      evidenceNextCommand({
+        costQuote: null,
+        hasUnresolvedCostReservation: false,
+        renderPlan: { status: "pass" },
+        state: "PRODUCTION_PACKAGE_GENERATED",
+        ttsEnabled: true,
+        ttsMode: "elevenlabs",
+        voiceSelection: { status: "current" },
+      }),
+    ).toBe("pnpm producer estimate --run <run_id>");
+  });
+
+  it("keeps local TTS cost estimation independent of hosted voice selection", () => {
+    expect(
+      evidenceNextCommand({
+        costQuote: null,
+        hasUnresolvedCostReservation: false,
+        renderPlan: { status: "pass" },
+        state: "PRODUCTION_PACKAGE_GENERATED",
+        ttsEnabled: true,
+        ttsMode: "local-piper",
+        voiceSelection: { status: "not-required" },
+      }),
+    ).toBe("pnpm producer estimate --run <run_id>");
+  });
+
   it("routes reference voiceover audio through read-only review before render approval", () => {
     expect(
       evidenceNextCommand({

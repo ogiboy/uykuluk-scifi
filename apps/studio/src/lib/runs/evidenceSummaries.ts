@@ -1,12 +1,11 @@
-import { readFile } from "node:fs/promises";
 import { isValidRunId } from "../../../../../src/core/runId";
 import {
   materializeRunCommand,
   staticEvidenceNextCommand,
 } from "../../../../../src/stages/evidence/evidenceNextCommand";
+import { readEvidenceStatusSnapshot } from "../../../../../src/stages/status/statusEvidenceCurrentContext";
 import { validateEvidenceStatusSnapshot } from "../../../../../src/stages/status/statusEvidenceSchema";
 import type { EvidenceStatus } from "../../../../../src/stages/status/statusMediaSummary";
-import { studioRunFilePath } from "./runFilePaths";
 
 export type StudioEvidenceSummary = {
   message: string;
@@ -21,35 +20,57 @@ export type StudioEvidenceSummary = {
  * @param root - The root directory containing run data
  * @param runId - The run identifier
  * @param state - The expected generation state
+ * @param artifacts - Registered run artifacts used to detect same-state evidence drift
  * @returns A summary of the evidence bundle's status and contents
  */
 export async function readStudioEvidenceSummary(
   root: string,
   runId: string,
   state: string,
+  artifacts: readonly string[],
 ): Promise<StudioEvidenceSummary> {
+  let validatedRunId: string;
   try {
-    const validatedRunId = validStudioRunId(runId);
-    const file = studioRunFilePath(root, validatedRunId, "evidence_bundle.json");
-    if (!file) {
-      return invalidEvidence(runId, "Evidence bundle path is invalid.");
-    }
-    return summarizeEvidenceSnapshot(
-      JSON.parse(await readFile(file, "utf8")),
-      validatedRunId,
-      state,
-    );
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-      return {
-        message: "Evidence bundle has not been generated.",
-        nextAction: evidenceNextAction(runId),
-        snapshot: null,
-        status: "missing",
-      };
-    }
-    return invalidEvidence(runId, "Evidence bundle could not be parsed.");
+    validatedRunId = validStudioRunId(runId);
+  } catch {
+    return invalidEvidence(runId, "Evidence bundle path is invalid.");
   }
+  const loaded = await readEvidenceStatusSnapshot({
+    runId: validatedRunId,
+    currentState: state,
+    currentArtifacts: artifacts,
+    projectRoot: root,
+  });
+  if (loaded.kind === "missing") {
+    return {
+      message: "Evidence bundle has not been generated.",
+      nextAction: evidenceNextAction(runId),
+      snapshot: null,
+      status: "missing",
+    };
+  }
+  if (loaded.kind === "invalid") {
+    return invalidEvidence(runId, studioEvidenceReadFailureMessage(loaded.source));
+  }
+  return summarizeEvidenceSnapshot(loaded.evidence, {
+    runId: validatedRunId,
+    currentState: state,
+    currentArtifacts: artifacts,
+    currentVoiceAuditionPathRevision: loaded.currentContext.currentVoiceAuditionPathRevision,
+    currentVoiceAuditionRevision: loaded.currentContext.currentVoiceAuditionRevision,
+    currentTtsConfigurationDigest: loaded.currentContext.currentTtsConfigurationDigest,
+    currentVoiceAuditionRequired: loaded.currentContext.currentVoiceAuditionRequired,
+  });
+}
+
+function studioEvidenceReadFailureMessage(
+  source: "parse" | "read" | "tts-configuration" | "voice-audition",
+): string {
+  if (source === "parse") return "Evidence bundle could not be parsed.";
+  if (source === "read") return "Evidence bundle could not be read safely.";
+  return source === "tts-configuration"
+    ? "Evidence bundle could not be validated against current TTS configuration."
+    : "Evidence bundle could not be validated against selected voice evidence.";
 }
 
 function validStudioRunId(runId: string): string {
@@ -87,24 +108,22 @@ export function evidenceNextRecommendedCommand(
  * Validates an evidence bundle snapshot and classifies it as available, stale, or invalid.
  *
  * @param evidence - Parsed evidence bundle content.
- * @param runId - The run identifier the snapshot must belong to.
- * @param state - The current run state the snapshot must match.
+ * @param context - Current run, artifact, TTS, and voice-audition identity.
  * @returns A current, stale, or invalid evidence summary.
  */
 function summarizeEvidenceSnapshot(
   evidence: unknown,
-  runId: string,
-  state: string,
+  context: Parameters<typeof validateEvidenceStatusSnapshot>[1],
 ): StudioEvidenceSummary {
-  const result = validateEvidenceStatusSnapshot(evidence, runId, state);
+  const result = validateEvidenceStatusSnapshot(evidence, context);
   if (result.kind === "invalid") {
-    return invalidEvidence(runId, studioEvidenceMessage(result.message));
+    return invalidEvidence(context.runId, studioEvidenceMessage(result.message));
   }
   if (result.kind === "stale") {
-    return staleEvidence(runId, studioEvidenceMessage(result.message));
+    return staleEvidence(context.runId, studioEvidenceMessage(result.message));
   }
   if (result.kind === "missing") {
-    return invalidEvidence(runId, "Evidence bundle has not been generated.");
+    return invalidEvidence(context.runId, "Evidence bundle has not been generated.");
   }
   return { message: "Evidence bundle is current.", snapshot: result.evidence, status: "available" };
 }

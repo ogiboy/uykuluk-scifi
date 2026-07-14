@@ -17,10 +17,9 @@ export function buildSubtitleConcatFilter(input: {
   const subtitleFilter = `subtitles=${escapeFilterPath(
     input.subtitles,
   )}:force_style='FontSize=22,Outline=1,Shadow=0,Alignment=2,MarginV=86'`;
-  const scale = formatScale(input.subtitleTiming.timeScale);
-  const scaledSubtitleFilter = `setpts=(PTS-STARTPTS)*${scale},${subtitleFilter},setpts=(PTS-STARTPTS)/${scale}`;
+  const timedSubtitleFilter = subtitleFilterForTiming(subtitleFilter, input.subtitleTiming);
   if (input.timing.introDurationSeconds === 0 && input.timing.outroDurationSeconds === 0) {
-    return `${concat},${scaledSubtitleFilter}[${input.outputLabel}]`;
+    return `${concat},${timedSubtitleFilter}[${input.outputLabel}]`;
   }
 
   const segments = subtitleSegments(input.timing);
@@ -28,12 +27,20 @@ export function buildSubtitleConcatFilter(input: {
   const filters = [
     `${concat}[subtitleTimeline]`,
     `[subtitleTimeline]split=${segments.length}${splitSources.join("")}`,
-    ...segments.map((segment) => subtitleSegmentFilter(segment, scaledSubtitleFilter)),
+    ...segments.map((segment) => subtitleSegmentFilter(segment, timedSubtitleFilter)),
     `${segments
       .map((segment) => `[subtitle${capitalize(segment.kind)}]`)
       .join("")}concat=n=${segments.length}:v=1:a=0[${input.outputLabel}]`,
   ];
   return filters.join(";");
+}
+
+function subtitleFilterForTiming(subtitleFilter: string, timing: DraftSubtitleTiming): string {
+  if (timing.timingMode === "elevenlabs-character-aligned") {
+    return subtitleFilter;
+  }
+  const scale = formatScale(timing.timeScale);
+  return `setpts=(PTS-STARTPTS)*${scale},${subtitleFilter},setpts=(PTS-STARTPTS)/${scale}`;
 }
 
 type SubtitleSegment = { end: number; kind: "intro" | "outro" | "scene"; start: number };

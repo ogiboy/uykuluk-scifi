@@ -155,7 +155,8 @@ function blockedActionItem(run: StudioActionPreflightRun): StudioActionPreflight
 
 function uploadPublishBoundaryItem(): StudioActionPreflightItem {
   return {
-    detail: "This web action cannot upload, schedule, publish, or call paid providers.",
+    detail:
+      "This approval or decision action cannot upload, schedule, publish, or initiate provider execution.",
     label: "Upload / publish",
     status: "done",
   };

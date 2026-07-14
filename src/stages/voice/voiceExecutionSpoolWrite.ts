@@ -32,7 +32,10 @@ import {
   requireSpoolableAudio,
   sha256Buffer,
 } from "./voiceExecutionSpoolValidation.js";
-import { voiceoverPreparationSchema, type VoiceoverPreparation } from "./voiceoverPreparation.js";
+import {
+  parseVoiceoverPreparationV2,
+  type VoiceoverPreparationV2,
+} from "./voiceoverPreparation.js";
 
 /**
  * Persists validated voice execution artifacts and their integrity metadata, then loads the committed spool.
@@ -45,7 +48,7 @@ export async function persistVoiceExecutionSpool(input: {
   runId: string;
   operationId: string;
   binding: SelectedVoiceExecutionBinding;
-  preparation: { text: string; evidence: VoiceoverPreparation; evidenceText: string };
+  preparation: { text: string; evidence: VoiceoverPreparationV2; evidenceText: string };
   approvedQuote: { quoteDigest: string; approvalId: string };
   preflight: VoiceExecutionPreflightReceipt;
   actualUsdMicros: number;
@@ -53,7 +56,7 @@ export async function persistVoiceExecutionSpool(input: {
   audio: TtsSynthesisResult;
 }): Promise<LoadedVoiceExecutionSpool> {
   const operationId = operationIdSchema.parse(input.operationId);
-  const preparation = voiceoverPreparationSchema.parse(input.preparation.evidence);
+  const preparation = parseVoiceoverPreparationV2(input.preparation.evidence);
   if (`${JSON.stringify(preparation, null, 2)}\n` !== input.preparation.evidenceText) {
     throw new SafeExitError("Paid voice spool requires canonical preparation evidence.");
   }
@@ -66,22 +69,34 @@ export async function persistVoiceExecutionSpool(input: {
   requireMatchingRequestEvidence(input.audio, binding, input.preparation.text);
   const directory = `operations/tts/${operationId}`;
   const audioPath = `${directory}/result.wav`;
-  const alignmentPath = `${directory}/alignment.json`;
+  const originalAlignmentPath = `${directory}/alignment.original.json`;
+  const normalizedAlignmentPath = `${directory}/alignment.normalized.json`;
   const spoolPath = `${directory}/result.json`;
   const preparedTextPath = `${directory}/prepared-text.txt`;
   const preparationEvidencePath = `${directory}/preparation.json`;
-  const alignment = input.audio.alignment;
-  if (!alignment) throw new SafeExitError("Paid voice spool requires alignment evidence.");
-  const alignmentText = `${JSON.stringify(alignment, null, 2)}\n`;
+  const originalAlignment = input.audio.alignment;
+  if (!originalAlignment) {
+    throw new SafeExitError("Paid voice spool requires original alignment evidence.");
+  }
+  const originalAlignmentText = `${JSON.stringify(originalAlignment, null, 2)}\n`;
+  const normalizedAlignmentText = input.audio.normalizedAlignment
+    ? `${JSON.stringify(input.audio.normalizedAlignment, null, 2)}\n`
+    : undefined;
   await writeBinaryFile(artifactPath(input.runId, audioPath), input.audio.buffer);
-  await writeTextFile(artifactPath(input.runId, alignmentPath), alignmentText);
+  await writeTextFile(artifactPath(input.runId, originalAlignmentPath), originalAlignmentText);
+  if (normalizedAlignmentText) {
+    await writeTextFile(
+      artifactPath(input.runId, normalizedAlignmentPath),
+      normalizedAlignmentText,
+    );
+  }
   await writeTextFile(artifactPath(input.runId, preparedTextPath), input.preparation.text);
   await writeTextFile(
     artifactPath(input.runId, preparationEvidencePath),
     input.preparation.evidenceText,
   );
   const spoolInput = {
-    schemaVersion: 1 as const,
+    schemaVersion: 2 as const,
     runId: input.runId,
     operationId,
     binding,
@@ -107,10 +122,22 @@ export async function persistVoiceExecutionSpool(input: {
       sha256: sha256Buffer(input.audio.buffer),
       bytes: input.audio.buffer.byteLength,
     },
-    alignment: {
-      path: alignmentPath,
-      sha256: sha256(alignmentText),
-      characterCount: alignment.characters.length,
+    alignments: {
+      authority: "original" as const,
+      original: {
+        path: originalAlignmentPath,
+        sha256: sha256(originalAlignmentText),
+        characterCount: originalAlignment.characters.length,
+      },
+      ...(normalizedAlignmentText && input.audio.normalizedAlignment
+        ? {
+            normalized: {
+              path: normalizedAlignmentPath,
+              sha256: sha256(normalizedAlignmentText),
+              characterCount: input.audio.normalizedAlignment.characters.length,
+            },
+          }
+        : {}),
     },
     result: {
       channels: input.audio.channels,

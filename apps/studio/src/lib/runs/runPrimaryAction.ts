@@ -4,6 +4,7 @@ import {
   type StudioActionWorkbenchRun,
 } from "../actions/studioActionWorkbench";
 import { stageActionForRun, type StudioStageActionRun } from "../actions/studioStageAction";
+import type { StudioRunDetail } from "../runSummaries";
 
 export type StudioRunPrimaryActionMode = "command" | "complete" | "rail" | "stage";
 
@@ -16,7 +17,9 @@ export type StudioRunPrimaryAction = Readonly<{
   tone: StudioActionWorkbenchPrimary["tone"];
 }>;
 
-export type StudioRunPrimaryActionRun = StudioActionWorkbenchRun & StudioStageActionRun;
+export type StudioRunPrimaryActionRun = StudioActionWorkbenchRun &
+  StudioStageActionRun &
+  Partial<Pick<StudioRunDetail, "voiceAudition">>;
 
 /**
  * Projects the most useful Studio primary action for the run detail hero and mobile sheet.
@@ -30,8 +33,36 @@ export type StudioRunPrimaryActionRun = StudioActionWorkbenchRun & StudioStageAc
 export function buildStudioRunPrimaryAction(
   run: StudioRunPrimaryActionRun,
 ): StudioRunPrimaryAction {
-  const workbench = buildStudioActionWorkbench(run);
   const stageAction = stageActionForRun(run);
+  const workbench = buildStudioActionWorkbench(run);
+  const hostedVoiceStageAction = stageAction?.actionId === "voice.run" ? stageAction : null;
+  const hostedVoiceExecution = run.voiceAudition?.production.hostedExecution;
+  if (hostedVoiceStageAction && hostedVoiceExecution) {
+    if (
+      run.blockedActionCount === 0 &&
+      run.readinessStatus === "passed" &&
+      workbench.primary.tone === "available"
+    ) {
+      return {
+        command: run.nextRecommendedCommand,
+        description:
+          "Open Voice to review and explicitly confirm the exact hosted binding, quote, and approval before synthesis.",
+        label: hostedVoiceStageAction.heading,
+        mode: "rail",
+        routePath: hostedVoiceStageAction.routePath,
+        tone: "available",
+      };
+    }
+    return {
+      command: run.nextRecommendedCommand,
+      description:
+        "Hosted voice confirmation is unavailable until current readiness and blocked-action checks pass.",
+      label: hostedVoiceStageAction.heading,
+      mode: "command",
+      routePath: null,
+      tone: "blocked",
+    };
+  }
   if (
     stageAction &&
     workbench.primary.tone === "available" &&

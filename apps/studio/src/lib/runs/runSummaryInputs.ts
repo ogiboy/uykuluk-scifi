@@ -38,7 +38,7 @@ export async function loadRunSummaryInputs(
   record: LoadedRunRecord,
 ): Promise<RunSummaryInputs> {
   const [evidence, readiness] = await Promise.all([
-    readStudioEvidenceSummary(root, runId, record.state),
+    readStudioEvidenceSummary(root, runId, record.state, record.artifacts ?? []),
     readStudioReadinessSnapshot(root, runId),
   ]);
   const renderDecision = await readStudioRenderDecisionSummary(root, record, evidence.snapshot);

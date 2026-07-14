@@ -70,7 +70,26 @@ describe("render revision recovery", () => {
       ffprobeBinary: await createFakeFfprobe(renderToolRoot("render-revision-rerender")),
       maxDurationSeconds: 8,
     });
-    expect((manifest as DraftRenderManifest).schemaVersion).toBe(8);
+    const rerenderedManifest = manifest as DraftRenderManifest;
+    expect(rerenderedManifest.schemaVersion).toBe(9);
+    expect(rerenderedManifest.voiceoverAudio.metadataDigest).toMatch(/^[a-f0-9]{64}$/);
+    expect(rerenderedManifest.subtitles).toMatchObject({
+      timingMode: "linear-fallback",
+      path: "production/subtitles.srt",
+      sha256: expect.stringMatching(/^[a-f0-9]{64}$/),
+      metadataPath: "production/audio/subtitles.aligned.meta.json",
+      metadataSha256: expect.stringMatching(/^[a-f0-9]{64}$/),
+    });
+    expect(rerenderedManifest.subtitleTiming).toEqual({
+      timingMode: rerenderedManifest.subtitles.timingMode,
+      sourceDurationSeconds: rerenderedManifest.subtitles.sourceDurationSeconds,
+      sceneDurationSeconds: expect.any(Number),
+      timeScale: expect.any(Number),
+    });
+    expect(rerenderedManifest.renderApproval).toEqual({
+      approvalId: freshApproval.approvalId,
+      approvedRef: freshApproval.approvedRef,
+    });
     await expect(loadRun(runId)).resolves.toMatchObject({ state: "RENDERED" });
     await expect(
       recordRenderDecision({

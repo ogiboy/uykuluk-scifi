@@ -5,7 +5,7 @@ import { createId, nowIso } from "../utils/time.js";
 import { validateArtifactRelativePath } from "./artifactPaths.js";
 import { invariant, SafeExitError } from "./errors.js";
 import { appendLedgerEvent } from "./ledger.js";
-import { isValidRunId, runDir, runsDir, statePath } from "./runPaths.js";
+import { isValidRunId, projectRunPath, runDir, runsDir, statePath } from "./runPaths.js";
 import { withRunStateLock } from "./runStateLock.js";
 import { RunRecord, runRecordSchema, RunState } from "./state.js";
 
@@ -50,7 +50,19 @@ export async function createRun(): Promise<RunRecord> {
  * @throws If the run does not exist or if its persisted state is invalid
  */
 export async function loadRun(runId: string): Promise<RunRecord> {
-  const target = statePath(runId);
+  return loadRunAtProjectRoot(process.cwd(), runId);
+}
+
+/**
+ * Loads a run beneath an explicit producer project root using canonical path containment.
+ *
+ * @param projectRoot - Producer project root containing the run state.
+ * @param runId - Run identifier whose state is loaded.
+ * @returns The validated persisted run record.
+ * @throws SafeExitError If the path, persisted state, or artifact registry is invalid.
+ */
+export async function loadRunAtProjectRoot(projectRoot: string, runId: string): Promise<RunRecord> {
+  const target = projectRunPath(projectRoot, runId, "state.json");
   invariant(await pathExists(target), `Run not found: ${runId}`);
   try {
     const record = validateRunArtifacts(runRecordSchema.parse(await readJsonFile<unknown>(target)));

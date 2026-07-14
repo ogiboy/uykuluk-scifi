@@ -62,11 +62,21 @@ export const defaultConfig: ProducerConfig = {
 };
 
 export function configPath(): string {
-  return path.join(process.cwd(), process.env.PRODUCER_CONFIG ?? "producer.config.json");
+  return configPathAtProjectRoot(process.cwd());
+}
+
+/** Resolves the producer config path beneath a selected project root. */
+export function configPathAtProjectRoot(projectRoot: string): string {
+  return path.join(projectRoot, process.env.PRODUCER_CONFIG ?? "producer.config.json");
 }
 
 export async function loadConfig(): Promise<ProducerConfig> {
-  const target = configPath();
+  return loadConfigAtProjectRoot(process.cwd());
+}
+
+/** Loads validated producer configuration from a selected Studio or CLI project root. */
+export async function loadConfigAtProjectRoot(projectRoot: string): Promise<ProducerConfig> {
+  const target = configPathAtProjectRoot(projectRoot);
   if (!(await pathExists(target))) {
     return defaultConfig;
   }

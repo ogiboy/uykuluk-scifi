@@ -17,14 +17,12 @@ import {
   voiceSelectionArtifactPath,
   voiceSelectionInputSchema,
   voiceSelectionSchema,
-  type VoicePreviewEvidence,
   type VoiceSelection,
   type VoiceSelectionInput,
 } from "./voice/catalog/voiceAuditionContracts.js";
 import {
   isVoiceCandidatesArtifactPath,
   isVoiceCatalogFailureArtifactPath,
-  type VoiceCandidates,
 } from "./voice/catalog/voiceCatalogContracts.js";
 import { canonicalVoiceEvidenceDigest } from "./voice/catalog/voiceCatalogDigest.js";
 import {
@@ -36,6 +34,7 @@ import {
   readVoicePreviewEvidenceWithPath,
   requireCurrentVoiceCatalog,
 } from "./voice/catalog/voiceCatalogStore.js";
+import { assertVoicePreviewMatchesCatalog } from "./voice/catalog/voiceSelectionIntegrity.js";
 
 type SelectVoiceOptions = { beforeCommit?: () => Promise<void> };
 
@@ -68,7 +67,7 @@ export async function selectVoice(
   }
   const previewRecord = await readVoicePreviewEvidenceWithPath(runId, parsed.voiceId);
   const preview = previewRecord.evidence;
-  assertPreviewMatchesCatalog(catalog, candidate, preview);
+  assertVoicePreviewMatchesCatalog(catalog, candidate, preview);
 
   const productionRightsRequired =
     catalog.subscription.productionUseStatus === "operator-rights-required";
@@ -150,7 +149,7 @@ export async function selectVoice(
     const currentCandidate = requireCatalogCandidate(currentCatalog, parsed.voiceId);
     const currentPreviewRecord = await readVoicePreviewEvidenceWithPath(runId, parsed.voiceId);
     const currentPreview = currentPreviewRecord.evidence;
-    assertPreviewMatchesCatalog(currentCatalog, currentCandidate, currentPreview);
+    assertVoicePreviewMatchesCatalog(currentCatalog, currentCandidate, currentPreview);
     if (
       currentCatalogRecord.path !== catalogRecord.path ||
       currentCatalog.catalogDigest !== catalog.catalogDigest ||
@@ -205,29 +204,4 @@ async function voiceSelectionDependencyRevision(
       isVoiceSelectionArtifactPath(relativePath)
     );
   });
-}
-
-/**
- * Verifies that preview evidence exactly corresponds to the current voice catalog candidate.
- *
- * @param catalog - The current voice candidate catalog.
- * @param candidate - The selected candidate from the catalog.
- * @param preview - The stored preview evidence to validate.
- * @throws SafeExitError If the preview evidence differs from the catalog or candidate.
- */
-function assertPreviewMatchesCatalog(
-  catalog: VoiceCandidates,
-  candidate: ReturnType<typeof requireCatalogCandidate>,
-  preview: VoicePreviewEvidence,
-): void {
-  if (
-    preview.catalogDigest !== catalog.catalogDigest ||
-    preview.candidate.voiceId !== candidate.voiceId ||
-    preview.candidate.metadataDigest !== candidate.metadataDigest ||
-    preview.model.modelId !== catalog.model.modelId ||
-    preview.model.metadataDigest !== catalog.model.metadataDigest ||
-    preview.source.urlSha256 !== candidate.preview.urlSha256
-  ) {
-    throw new SafeExitError("Voice preview does not match the current catalog candidate exactly.");
-  }
 }

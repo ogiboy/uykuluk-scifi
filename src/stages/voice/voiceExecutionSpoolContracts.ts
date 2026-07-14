@@ -14,7 +14,7 @@ import {
   voiceExecutionPreflightReceiptSchema,
   type VoiceExecutionPreflightReceipt,
 } from "./voiceExecutionPreflight.js";
-import type { VoiceoverPreparation } from "./voiceoverPreparation.js";
+import type { VoiceoverPreparationV2 } from "./voiceoverPreparation.js";
 
 export const operationIdSchema = z.string().regex(/^tts_[a-f0-9]{64}$/);
 const spoolPathSchema = z.string().regex(/^operations\/tts\/tts_[a-f0-9]{64}\/result\.json$/);
@@ -47,8 +47,7 @@ const peakNormalizationSchema = z.strictObject({
   targetPeakDbfs: z.number().negative(),
 });
 
-export const voiceExecutionSpoolSchema = z.strictObject({
-  schemaVersion: z.literal(1),
+const voiceExecutionSpoolBaseShape = {
   runId: z.string().min(1),
   operationId: operationIdSchema,
   binding: selectedVoiceExecutionBindingSchema,
@@ -74,11 +73,6 @@ export const voiceExecutionSpoolSchema = z.strictObject({
     sha256: sha256Schema,
     bytes: z.int().positive(),
   }),
-  alignment: z.strictObject({
-    path: z.string().regex(/^operations\/tts\/tts_[a-f0-9]{64}\/alignment\.json$/),
-    sha256: sha256Schema,
-    characterCount: z.int().positive(),
-  }),
   result: z.strictObject({
     channels: z.int().positive(),
     durationSeconds: z.number().positive(),
@@ -91,9 +85,42 @@ export const voiceExecutionSpoolSchema = z.strictObject({
   }),
   createdAt: z.iso.datetime(),
   spoolDigest: sha256Schema,
+} as const;
+
+const alignmentReferenceSchema = (filename: RegExp) =>
+  z.strictObject({
+    path: z.string().regex(filename),
+    sha256: sha256Schema,
+    characterCount: z.int().positive(),
+  });
+
+const legacyVoiceExecutionSpoolSchema = z.strictObject({
+  schemaVersion: z.literal(1),
+  ...voiceExecutionSpoolBaseShape,
+  alignment: alignmentReferenceSchema(/^operations\/tts\/tts_[a-f0-9]{64}\/alignment\.json$/),
 });
 
+export const voiceExecutionSpoolSchema = z.strictObject({
+  schemaVersion: z.literal(2),
+  ...voiceExecutionSpoolBaseShape,
+  alignments: z.strictObject({
+    authority: z.literal("original"),
+    original: alignmentReferenceSchema(
+      /^operations\/tts\/tts_[a-f0-9]{64}\/alignment\.original\.json$/,
+    ),
+    normalized: alignmentReferenceSchema(
+      /^operations\/tts\/tts_[a-f0-9]{64}\/alignment\.normalized\.json$/,
+    ).optional(),
+  }),
+});
+
+export const persistedVoiceExecutionSpoolSchema = z.discriminatedUnion("schemaVersion", [
+  legacyVoiceExecutionSpoolSchema,
+  voiceExecutionSpoolSchema,
+]);
+
 export type VoiceExecutionSpool = z.infer<typeof voiceExecutionSpoolSchema>;
+export type PersistedVoiceExecutionSpool = z.infer<typeof persistedVoiceExecutionSpoolSchema>;
 
 export type LoadedVoiceExecutionSpool = {
   reference: VoiceExecutionSpoolReference;
@@ -103,6 +130,7 @@ export type LoadedVoiceExecutionSpool = {
   actualUsdMicros: number;
   providerRequestIdHash?: string;
   alignmentReference: { digest: string; characterCount: number };
-  preparation: { text: string; evidence: VoiceoverPreparation; evidenceText: string };
+  normalizedAlignmentReference?: { digest: string; characterCount: number };
+  preparation: { text: string; evidence: VoiceoverPreparationV2; evidenceText: string };
   audio: TtsSynthesisResult;
 };

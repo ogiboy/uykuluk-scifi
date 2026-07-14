@@ -1,5 +1,6 @@
 import { appendFile, readFile, readdir } from "node:fs/promises";
 import { SafeExitError } from "../core/errors.js";
+import { projectRunPath } from "../core/runPaths.js";
 import { isValidRunId, runPath, runsDir } from "../core/runStore.js";
 import { CostEvent, costEventSchema } from "../core/state.js";
 import { ensureDir, pathExists } from "../utils/fs.js";
@@ -12,6 +13,11 @@ import { ensureDir, pathExists } from "../utils/fs.js";
  */
 export function costLedgerPath(runId: string): string {
   return runPath(runId, "costs", "ledger.jsonl");
+}
+
+/** Constructs a cost-ledger path beneath an explicit producer project root. */
+export function costLedgerPathAtProjectRoot(projectRoot: string, runId: string): string {
+  return projectRunPath(projectRoot, runId, "costs", "ledger.jsonl");
 }
 
 /**
@@ -31,7 +37,15 @@ export async function appendCostEvent(event: CostEvent): Promise<void> {
  * @throws SafeExitError if the ledger file is invalid, cannot be parsed, or contains events from a different run.
  */
 export async function readCostEvents(runId: string): Promise<CostEvent[]> {
-  const target = costLedgerPath(runId);
+  return readCostEventsAtProjectRoot(process.cwd(), runId);
+}
+
+/** Reads and validates cost events beneath an explicit producer project root. */
+export async function readCostEventsAtProjectRoot(
+  projectRoot: string,
+  runId: string,
+): Promise<CostEvent[]> {
+  const target = costLedgerPathAtProjectRoot(projectRoot, runId);
   if (!(await pathExists(target))) {
     return [];
   }

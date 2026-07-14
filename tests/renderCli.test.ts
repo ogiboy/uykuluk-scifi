@@ -42,7 +42,7 @@ describe("producer render CLI", () => {
 
     expect(result.status).toBe(0);
     expect(JSON.parse(result.stdout) as unknown).toMatchObject({
-      schemaVersion: 8,
+      schemaVersion: 9,
       runId,
       chapterDraft: {
         jsonPath: "production/render/youtube_chapters.json",
@@ -60,9 +60,25 @@ describe("producer render CLI", () => {
       },
       voiceoverAudio: {
         path: "production/audio/voiceover.wav",
+        metadataDigest: expect.stringMatching(/^[a-f0-9]{64}$/),
         mode: "deterministic-local",
         productionVoiceCandidate: false,
         quality: "deterministic-local-reference",
+      },
+      subtitles: {
+        timingMode: "linear-fallback",
+        path: "production/subtitles.srt",
+        sha256: expect.stringMatching(/^[a-f0-9]{64}$/),
+        metadataPath: "production/audio/subtitles.aligned.meta.json",
+        metadataSha256: expect.stringMatching(/^[a-f0-9]{64}$/),
+        cueCount: expect.any(Number),
+        sourceDurationSeconds: expect.any(Number),
+      },
+      subtitleTiming: {
+        timingMode: "linear-fallback",
+        sourceDurationSeconds: expect.any(Number),
+        sceneDurationSeconds: expect.any(Number),
+        timeScale: expect.any(Number),
       },
       ffmpegTimelineInputs: expect.arrayContaining([
         expect.objectContaining({

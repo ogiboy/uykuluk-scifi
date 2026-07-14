@@ -1,9 +1,14 @@
 import { createHash } from "node:crypto";
+import type { DraftSubtitleTimingMode } from "./renderSubtitleTiming.js";
 
 /** Digest-bound approval helpers for local render inputs. */
 
 export type RenderApprovalRefInput = {
   renderPlanDigest: string;
+  subtitleDigest: string;
+  subtitleMetadataDigest: string;
+  subtitleTimingMode: DraftSubtitleTimingMode;
+  voiceMetadataDigest: string;
   voiceoverAudioDigest: string;
   voiceoverMode: string;
   voiceoverProductionVoiceCandidate: boolean;
@@ -17,5 +22,7 @@ export type RenderApprovalRefInput = {
  * @returns The SHA-256 digest of the serialized input as a hexadecimal string
  */
 export function renderApprovalRef(input: RenderApprovalRefInput): string {
-  return createHash("sha256").update(JSON.stringify(input), "utf8").digest("hex");
+  return createHash("sha256")
+    .update(JSON.stringify({ contractVersion: 2, ...input }), "utf8")
+    .digest("hex");
 }

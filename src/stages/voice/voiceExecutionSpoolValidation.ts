@@ -10,7 +10,7 @@ import {
   type SelectedVoiceExecutionBinding,
 } from "./voiceExecutionBinding.js";
 import type { VoiceExecutionSpool } from "./voiceExecutionSpoolContracts.js";
-import type { VoiceoverPreparation } from "./voiceoverPreparation.js";
+import type { VoiceoverPreparationV2 } from "./voiceoverPreparation.js";
 
 /**
  * Requires persisted per-chunk request diagnostics to match the approved text binding and billing.
@@ -49,7 +49,7 @@ export function requireMatchingRequestEvidence(
  */
 export function requireMatchingSpoolPreparation(
   spool: VoiceExecutionSpool,
-  preparation: VoiceoverPreparation,
+  preparation: VoiceoverPreparationV2,
   preparedText: string,
   evidenceText: string,
 ): void {

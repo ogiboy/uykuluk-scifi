@@ -71,6 +71,19 @@ describe("production package script extraction", () => {
     expect(scene.visualPrompt).toMatch(/tamkelime…$/u);
     expect(scene.visualPrompt).not.toMatch(/tamkeli…$/u);
   });
+
+  it("rejects cue text that cannot fit the maximum readable duration", () => {
+    expect(() =>
+      buildWrappedSrt([
+        {
+          index: 1,
+          narration: "a".repeat(200),
+          visualPrompt: "Static test visual",
+          durationSeconds: 10,
+        },
+      ]),
+    ).toThrow("cannot fit within the maximum readable cue duration");
+  });
 });
 
 function subtitleTextLines(srt: string): string[] {

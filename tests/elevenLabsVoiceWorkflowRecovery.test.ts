@@ -12,9 +12,10 @@ vi.mock("@elevenlabs/elevenlabs-js", () => ({
 import { readCostReservationSummaries } from "../src/costs/costReservationStore";
 import { generateVoiceoverAudio } from "../src/stages/voice";
 import {
+  approvedHostedVoiceConfirmation,
   paidVoiceSubscription,
   prepareApprovedSelectedVoiceRun,
-  workflowFixtureWav,
+  workflowConvertWithTimestamps,
 } from "./elevenLabsVoiceWorkflowFixtures";
 import { useTempProject } from "./helpers";
 import { successfulExecutionMetadataProvider } from "./voiceCatalogStageFixtures";
@@ -24,31 +25,7 @@ describe("ElevenLabs voice workflow recovery", () => {
 
   beforeEach(() => {
     process.env.ELEVENLABS_API_KEY = "secret-workflow-test-key";
-    sdk.convertWithTimestamps.mockImplementation((_voiceId, request) => {
-      const characters = Array.from(request.text as string);
-      return {
-        withRawResponse: async () => ({
-          data: {
-            audioBase64: workflowFixtureWav().toString("base64"),
-            alignment: {
-              characters,
-              characterStartTimesSeconds: characters.map(
-                (_, index) => (index / characters.length) * 0.9,
-              ),
-              characterEndTimesSeconds: characters.map(
-                (_, index) => ((index + 1) / characters.length) * 0.9,
-              ),
-            },
-          },
-          rawResponse: {
-            headers: new Headers({
-              "character-cost": String(characters.length),
-              "request-id": "workflow-request-id",
-            }),
-          },
-        }),
-      };
-    });
+    sdk.convertWithTimestamps.mockImplementation(workflowConvertWithTimestamps);
   });
 
   it("recovers a settled provider result after a crash before final artifact persistence", async () => {
@@ -59,6 +36,7 @@ describe("ElevenLabs voice workflow recovery", () => {
 
     await expect(
       generateVoiceoverAudio(runId, {
+        confirmation: await approvedHostedVoiceConfirmation(runId),
         metadataProvider,
         afterSynthesis: async () => {
           throw new Error("simulated process crash before final voice files");
@@ -96,6 +74,7 @@ describe("ElevenLabs voice workflow recovery", () => {
 
     await expect(
       generateVoiceoverAudio(runId, {
+        confirmation: await approvedHostedVoiceConfirmation(runId),
         metadataProvider: successfulExecutionMetadataProvider({
           subscription: paidVoiceSubscription,
         }),

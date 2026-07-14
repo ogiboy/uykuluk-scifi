@@ -12,7 +12,7 @@ describe("Studio workflow action matrix", () => {
       "Script review",
       "Production planning",
       "Proof and readiness",
-      "Local media review",
+      "Production media review",
       "Final local decision",
       "Feedback and evaluation",
       "Deferred external actions",

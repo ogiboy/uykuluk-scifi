@@ -19,7 +19,7 @@ export function registerRunArtifactPath(run: RunRecord, relativePath: string): R
  * @returns The newest matching artifact path, or `undefined` if no path matches.
  */
 export function latestRegisteredArtifactPath(
-  run: RunRecord,
+  run: Pick<RunRecord, "artifacts">,
   predicate: (relativePath: string) => boolean,
 ): string | undefined {
   for (let index = run.artifacts.length - 1; index >= 0; index -= 1) {

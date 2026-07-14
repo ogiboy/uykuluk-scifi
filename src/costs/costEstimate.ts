@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { ProducerConfig } from "../config/schema.js";
-import { artifactPath } from "../core/artifacts.js";
+import { artifactPathAtProjectRoot } from "../core/artifactPaths.js";
 import { SafeExitError } from "../core/errors.js";
 import { RunRecord } from "../core/state.js";
 import { checkBudget } from "../safeguards/budgetGuard.js";
@@ -72,8 +72,22 @@ export async function buildCostEstimate(
 export async function readCostEstimate(
   runId: string,
 ): Promise<{ estimate: CostEstimate; text: string; markdownText: string; digest: string }> {
-  const text = await readFile(artifactPath(runId, "costs/estimate.json"), "utf8");
-  const markdownText = await readFile(artifactPath(runId, "costs/estimate.md"), "utf8");
+  return readCostEstimateAtProjectRoot(process.cwd(), runId);
+}
+
+/** Reads and verifies a quote beneath an explicit producer project root. */
+export async function readCostEstimateAtProjectRoot(
+  projectRoot: string,
+  runId: string,
+): Promise<{ estimate: CostEstimate; text: string; markdownText: string; digest: string }> {
+  const text = await readFile(
+    artifactPathAtProjectRoot(projectRoot, runId, "costs/estimate.json"),
+    "utf8",
+  );
+  const markdownText = await readFile(
+    artifactPathAtProjectRoot(projectRoot, runId, "costs/estimate.md"),
+    "utf8",
+  );
   const estimate = costEstimateSchema.parse(JSON.parse(text) as unknown);
   const expectedMarkdown = `${renderCostEstimateMarkdown(estimate)}\n`;
   if (markdownText !== expectedMarkdown) {

@@ -197,7 +197,7 @@ function actionWorkbenchBoundaries(runId: string): StudioActionWorkbenchBoundary
     },
     {
       detail:
-        "Upload, scheduling, public publish, and paid provider execution remain unavailable here.",
+        "Upload, scheduling, public publish, and other distribution actions remain unavailable. Hosted voice execution stays behind exact CLI/core selection, quote, approval, reservation, and budget gates.",
       label: "Disabled actions",
     },
   ];

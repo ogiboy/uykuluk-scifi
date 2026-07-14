@@ -18,15 +18,31 @@ describe("draft render subtitle timing", () => {
 
     const sourceDurationSeconds = parseSrtDurationSeconds(subtitles);
     expect(sourceDurationSeconds).toBe(481);
-    expect(buildDraftSubtitleTiming(sourceDurationSeconds, 468.49)).toEqual({
+    expect(buildDraftSubtitleTiming(sourceDurationSeconds, 468.49, "linear-fallback")).toEqual({
+      timingMode: "linear-fallback",
       sourceDurationSeconds: 481,
       sceneDurationSeconds: 468.49,
       timeScale: 1.026703,
     });
   });
 
+  it("keeps character-aligned subtitles on their provider timeline", () => {
+    expect(buildDraftSubtitleTiming(467.25, 468.49, "elevenlabs-character-aligned")).toEqual({
+      timingMode: "elevenlabs-character-aligned",
+      sourceDurationSeconds: 467.25,
+      sceneDurationSeconds: 468.49,
+      timeScale: 1,
+    });
+  });
+
+  it("rejects character-aligned subtitles that exceed the voiceover window", () => {
+    expect(() => buildDraftSubtitleTiming(468.491, 468.49, "elevenlabs-character-aligned")).toThrow(
+      /audio window/i,
+    );
+  });
+
   it("rejects malformed or empty subtitle timing", () => {
     expect(() => parseSrtDurationSeconds("No timing markers here.")).toThrow(/valid positive/i);
-    expect(() => buildDraftSubtitleTiming(0, 10)).toThrow(/positive/i);
+    expect(() => buildDraftSubtitleTiming(0, 10, "linear-fallback")).toThrow(/positive/i);
   });
 });

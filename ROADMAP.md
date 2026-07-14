@@ -53,12 +53,28 @@ Do not add provider sprawl, queues, public publishing, or generic agent infrastr
 approved ElevenLabs path, one hosted still-image provider after a bounded bake-off, and private
 YouTube upload through the existing approval/evidence architecture.
 
-Current voice checkpoint: catalog, bounded preview, attributable selection, exact quote/reservation,
-live preflight, production synthesis, provider-credit settlement, redacted evidence, safe
-reselection, and digest-anchored pending/settled operation recovery are implemented with mocked paid
-execution. Recovery does not require a current API key, live metadata refresh, or a fresh catalog;
-aligned SRT and its render-approval binding are the next voice deliverable. No live paid synthesis
-has run.
+Current voice checkpoint:
+
+- Implemented in `v0.81.0`: ElevenLabs v3 catalog, bounded preview, attributable selection and
+  reselection, exact quote/reservation, live preflight contracts, production synthesis adapter,
+  provider-credit settlement, redacted evidence, and digest-anchored pending/settled recovery. Paid
+  execution remains mock-backed in automated validation; recovery does not require a current API
+  key, live metadata refresh, or a fresh catalog.
+- Implemented on the active `v0.82.0` candidate: publish-readable Turkish aligned SRT and metadata,
+  exact voice/render/FFmpeg/caption binding, plus guarded Studio candidate, preview, selection,
+  reselection, and exact hosted-execution confirmation. Producer/consumer tests, two consecutive
+  local suites, a CI-shaped suite, product/browser QA, and real Studio browser UAT pass; PR-ready
+  coverage, dependency, version, and Sonar gates remain before merge.
+- Live production validation pending: no paid production synthesis has run. Free-tier access may be
+  used only for provider-permitted metadata/catalog/preview smoke and does not establish production
+  rights. Exact commercial eligibility, quote, persisted approval, and reservation remain mandatory.
+- Offline fallback remains part of v1: deterministic-local keeps reference timing, Piper remains the
+  production-capable local voice path, and both use an explicit linear subtitle timing mode rather
+  than pretending to have provider alignment.
+
+After `v0.82.0` PR closeout, delivery order is: scene-specific visuals and exact render; script
+audition and editorial provenance; resumable private-only upload; then persistent settings, prompt
+profiles, onboarding, documentation productization, and real-episode acceptance.
 
 ## Phase A - Safe Core Stabilization
 
@@ -239,20 +255,27 @@ Minimum loop:
 This phase must not invent metrics or claim causality from weak data. YouTube Analytics API work is
 optional later and requires its own credentials, privacy, cost, and approval design.
 
-## Phase E - Optional Integrations
+## Phase E - Controlled Distribution And Later Integrations
 
-Status: deferred.
+Status: private-only upload is a v1 deliverable and is not implemented; other integrations remain
+deferred.
 
-Allowed only after the local production loop is useful:
+Required for v1 after exact local media review is reliable:
 
-- private YouTube upload with explicit config, approval, and request/response evidence;
+- resumable private-only YouTube upload with server-side OAuth/session state, exact target-channel,
+  MP4, metadata, thumbnail, and caption digest binding, durable operation/offset evidence, and
+  processing review;
+
+Optional only after the controlled production loop proves useful:
+
 - YouTube Analytics API;
 - idea-only scheduler;
 - richer prompt-profile organization after the guarded V1 editor proves useful;
 - richer late-stage subtitle, scene, popup-card, thumbnail, and metadata editing/revision UX; the
   initial attributable package-artifact and render-revision contracts already exist;
 - thumbnail A/B planning;
-- paid image/video/TTS providers through the existing approved reservation/execution boundary;
+- additional paid image/video/TTS providers through the existing approved reservation/execution
+  boundary;
 - Shorts repurposing.
 
 Explicitly out of scope for v1:

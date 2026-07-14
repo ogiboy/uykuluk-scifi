@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { useStudioStageActionSubmit } from "@/lib/mutations/useStudioStageActionSubmit";
 import type { StudioRunDetail } from "@/lib/runSummaries";
+import Link from "next/link";
 import { useId } from "react";
 import { StudioMutationResultPanel } from "../studio/StudioMutationResultPanel";
 import { RunStageActionConfirmationDialog } from "./RunStageActionConfirmationDialog";
@@ -48,6 +49,18 @@ export function RunQuickStageActionButton({
 
   const isSubmitting = state.kind === "submitting";
   const buttonLabel = isSubmitting ? "Running..." : label;
+
+  if (action.submission === "voice-surface") {
+    return (
+      <Button
+        asChild
+        title='Open the voice surface for local generation or exact hosted confirmation'
+        variant={variant}
+      >
+        <Link href={`/runs/${run.runId}?tab=voice`}>{label}</Link>
+      </Button>
+    );
+  }
 
   return (
     <div className={showResult ? "grid gap-2" : "contents"}>

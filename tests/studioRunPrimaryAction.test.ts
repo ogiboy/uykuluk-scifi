@@ -51,6 +51,53 @@ describe("Studio run primary action", () => {
     });
   });
 
+  it("routes hosted voice execution to the exact confirmation panel", () => {
+    const action = buildStudioRunPrimaryAction(
+      runPrimaryActionFixture({
+        nextRecommendedCommand: "pnpm producer voice --run run_primary_action",
+        state: "READY_FOR_MANUAL_PRODUCTION",
+        voiceAudition: {
+          production: {
+            hostedExecution: {
+              approvalId: "approval_voice_exact",
+              bindingDigest: "a".repeat(64),
+              quoteDigest: "b".repeat(64),
+            },
+          },
+        } as StudioRunPrimaryActionRun["voiceAudition"],
+      }),
+    );
+
+    expect(action).toMatchObject({
+      label: "Generate Voiceover",
+      mode: "rail",
+      routePath: "/actions/run-voice",
+      tone: "available",
+    });
+  });
+
+  it("does not bypass blocked readiness for hosted voice execution", () => {
+    const action = buildStudioRunPrimaryAction(
+      runPrimaryActionFixture({
+        blockedActionCount: 1,
+        nextRecommendedCommand: "pnpm producer voice --run run_primary_action",
+        readinessStatus: "blocked",
+        state: "READY_FOR_MANUAL_PRODUCTION",
+        voiceAudition: {
+          production: {
+            hostedExecution: {
+              approvalId: "approval_voice_exact",
+              bindingDigest: "a".repeat(64),
+              quoteDigest: "b".repeat(64),
+            },
+          },
+        } as StudioRunPrimaryActionRun["voiceAudition"],
+      }),
+    );
+
+    expect(action).toMatchObject({ mode: "command", routePath: null, tone: "blocked" });
+  });
+
   it("does not confuse approval forms with unrelated stage remediation commands", () => {
     const action = buildStudioRunPrimaryAction(
       runPrimaryActionFixture({

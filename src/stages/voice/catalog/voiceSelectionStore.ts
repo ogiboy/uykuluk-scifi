@@ -14,12 +14,13 @@ import {
 } from "./voiceAuditionContracts.js";
 import type { VoiceCandidates } from "./voiceCatalogContracts.js";
 import { canonicalVoiceEvidenceDigest } from "./voiceCatalogDigest.js";
-import { requireCatalogCandidate, requireElevenLabsCatalogConfig } from "./voiceCatalogGuards.js";
+import { requireCatalogCandidate } from "./voiceCatalogGuards.js";
 import {
   readVoiceCandidatesWithPath,
   readVoicePreviewEvidenceWithPath,
   requireCurrentVoiceCatalog,
 } from "./voiceCatalogStore.js";
+import { assertVoiceSelectionMatchesEvidence } from "./voiceSelectionIntegrity.js";
 
 /**
  * Reads the persisted voice selection for a run.
@@ -91,49 +92,20 @@ export async function readCurrentVoiceSelection(
   const currentCatalog = await readVoiceCandidatesWithPath(runId);
   const catalog = currentCatalog.catalog;
   requireCurrentVoiceCatalog(catalog);
-  const settings = requireElevenLabsCatalogConfig(config, catalog);
   const candidate = requireCatalogCandidate(catalog, selection.voice.voiceId);
   if (candidate.productionEligibility.status === "blocked") {
     throw new SafeExitError("Voice selection is blocked in the current catalog.");
   }
   const currentPreview = await readVoicePreviewEvidenceWithPath(runId, candidate.voiceId);
   const preview = currentPreview.evidence;
-  const verifiedTurkish = candidate.verifiedLanguages.some(
-    (language) =>
-      language.language === settings.languageCode && language.modelId === settings.modelId,
-  );
-  const rightsRequired = catalog.subscription.productionUseStatus === "operator-rights-required";
-  if (
-    selection.catalog.path !== currentCatalog.path ||
-    selection.catalog.digest !== catalog.catalogDigest ||
-    selection.preview.evidencePath !== currentPreview.path ||
-    selection.preview.digest !== preview.previewDigest ||
-    selection.preview.audioPath !== preview.output.path ||
-    selection.preview.audioSha256 !== preview.output.sha256 ||
-    selection.voice.name !== candidate.name ||
-    selection.voice.category !== candidate.category ||
-    selection.voice.metadataDigest !== candidate.metadataDigest ||
-    selection.voice.verifiedTurkish !== verifiedTurkish ||
-    canonicalVoiceEvidenceDigest(selection.voice.productionEligibility) !==
-      canonicalVoiceEvidenceDigest(candidate.productionEligibility) ||
-    selection.model.modelId !== catalog.model.modelId ||
-    selection.model.metadataDigest !== catalog.model.metadataDigest ||
-    selection.model.languageCode !== settings.languageCode ||
-    selection.model.maximumTextLengthPerRequest !== catalog.model.maximumTextLengthPerRequest ||
-    selection.synthesis.outputFormat !== settings.outputFormat ||
-    selection.synthesis.maxCharactersPerRequest !== settings.maxCharactersPerRequest ||
-    selection.synthesis.voiceSettingsDigest !==
-      canonicalVoiceEvidenceDigest(settings.voiceSettings) ||
-    canonicalVoiceEvidenceDigest(selection.pricing) !==
-      canonicalVoiceEvidenceDigest(catalog.pricing) ||
-    selection.subscription.tier !== catalog.subscription.tier ||
-    selection.subscription.productionUseStatus !== catalog.subscription.productionUseStatus ||
-    selection.subscription.digest !== catalog.subscription.digest ||
-    selection.productionRights.required !== rightsRequired ||
-    selection.productionRights.confirmed !== rightsRequired
-  ) {
-    throw new SafeExitError("Voice selection does not match current catalog and preview evidence.");
-  }
+  assertVoiceSelectionMatchesEvidence({
+    catalogPath: currentCatalog.path,
+    previewPath: currentPreview.path,
+    catalog,
+    preview,
+    selection,
+    config,
+  });
   const endingRun = await loadRun(runId);
   if (endingRun.updatedAt !== startingRun.updatedAt) {
     throw new SafeExitError("Voice evidence changed while the selection was being verified.");
