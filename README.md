@@ -37,27 +37,23 @@ publishing bot. Studio is the operator experience; CLI/core remains the source o
 
 ## Current Product Status
 
-| Area                             | Status                                                         |
-| -------------------------------- | -------------------------------------------------------------- |
-| Local mock workflow              | Available without paid credentials                             |
-| Studio guarded workflow          | Available; normal operator surface                             |
-| ElevenLabs v3 contracts          | Implemented: catalog through recovery and settlement           |
-| ElevenLabs live production proof | Pending one approved commercial synthesis smoke                |
-| Aligned subtitles                | v0.82 candidate: implemented and integration-tested            |
-| Voice audition in Studio         | v0.82 candidate: real Studio browser UAT passed                |
-| Visual production                | Static/manual assets today; scene-specific provider slice next |
-| Private YouTube upload           | Pending v1 controlled-distribution slice                       |
-| Public or scheduled publish      | Unavailable and out of v1                                      |
+| Area                             | Status                                                        |
+| -------------------------------- | ------------------------------------------------------------- |
+| Local mock workflow              | Available without paid credentials                            |
+| Studio guarded workflow          | Available; normal operator surface                            |
+| ElevenLabs v3 contracts          | Implemented: catalog through recovery and settlement          |
+| ElevenLabs live production proof | Pending one approved commercial synthesis smoke               |
+| Aligned subtitles                | Implemented and bound into exact render approval              |
+| Voice audition in Studio         | Implemented; real Studio browser UAT passed                   |
+| Visual production                | Candidate: 12–24 static/manual beats with review/regeneration |
+| Private YouTube upload           | Pending v1 controlled-distribution slice                      |
+| Public or scheduled publish      | Unavailable and out of v1                                     |
 
 ## Screenshots
 
 ![Studio dashboard](docs/images/studio-dashboard.png)
 
 ![Voice audition and exact production confirmation](docs/images/studio-voice-audition.png)
-
-The real production build also covers the [run detail](docs/images/studio-run-detail.png) and
-[voice evidence](docs/images/studio-voice-evidence.png) views. These screenshots use synthetic local
-fixtures; the v0.82 work remains a release candidate until its PR gates and merge complete.
 
 ## Requirements
 
@@ -93,12 +89,15 @@ More setup detail: [Getting started](docs/getting-started.md).
 
 ```text
 doctor -> idea -> approval -> script review -> package -> voice audition
-       -> quote/cost approval -> voice/subtitle review -> render approval
+       -> quote/cost approval -> voice/subtitle review -> visual review/regeneration
+       -> exact render approval
        -> FFmpeg MP4 -> final review -> manual channel handoff
 ```
 
 Opening the voice panel performs no provider call. Candidate and preview work begins only from an
-operator action, and preview playback uses validated local run media rather than provider URLs.
+operator action, and preview playback uses validated local run media rather than provider URLs. The
+visual panel prepares a deterministic 12–24 beat fallback, supports batch decisions, manual PNG/JPEG
+revisions, and rejected-only regeneration before the approved manifest enters rendering.
 
 Private upload and processing review will extend this journey in a later v1 slice. Public and
 scheduled publishing remain inaccessible.

@@ -334,17 +334,16 @@
 - `pnpm sonar` has successfully uploaded at least one local analysis to
   `http://localhost:9000/dashboard?id=uykuluk-scifi`.
 
-## v0.82 Voice Completion And Studio Parity Candidate
+## Voice Completion And Studio Parity
 
-- The active branch implements aligned Turkish SRT plus metadata from ElevenLabs original character
+- Main implements aligned Turkish SRT plus metadata from ElevenLabs original character
   timing and binds the verified subtitle descriptor through voice evidence, render approval, render
   manifest, FFmpeg, and Studio caption consumers. Incomplete ElevenLabs evidence does not silently
   fall back to linear timing.
-- The same slice adds guarded Studio candidate, preview, select, reselect, and exact hosted
+- The same merged slice adds guarded Studio candidate, preview, select, reselect, and exact hosted
   production-confirmation actions over the existing CLI/core owners. Provider URLs and secrets stay
-  server-side. Focused integration tests, two consecutive local full suites, a CI-shaped suite,
-  product/browser QA, and real production-build Studio UAT pass; remaining work is PR-ready coverage,
-  dependency, version, and Sonar validation plus review/merge.
+  server-side. Required CI, Sonar, CodeQL, product/browser QA, and real production-build Studio UAT
+  passed before merge.
 - Deterministic-local and Piper remain credential-free fallbacks. They retain explicit
   `linear-fallback` subtitle timing; deterministic-local is reference timing only, while Piper still
   requires operator listening before production use.
@@ -353,6 +352,25 @@
   onboarding, documentation productization, and real-episode acceptance.
 - Private-only upload is required for v1 controlled distribution. It is not implemented yet. Public
   and scheduled publishing remain unavailable and out of v1 scope.
+
+## Visual Provider Manual Fallback And Exact Render Candidate
+
+- The active candidate adds the minimal replaceable visual boundary with deterministic static and
+  manual PNG/JPEG providers. Production scenes are converted into 12–24 duration-preserving visual
+  beats with revision history, contact-sheet evidence, deterministic motion, and active asset
+  digests.
+- CLI/core and Studio support prepare, batch approve/reject, manual import, and rejected-only static
+  regeneration. Every mutation carries the exact manifest digest and complete active-revision
+  snapshot; filesystem rollback and typed ledger compensation preserve failed multi-file mutations.
+- Studio media URLs bind manifest digest plus active revision and verify actual asset bytes before
+  serving. Normal review shows operator decisions; paths, digests, and CLI fallback stay under
+  Advanced disclosure.
+- Render plan, approval, FFmpeg motion, and draft evidence bind the approved visual manifest. Legacy
+  render evidence stays read-compatible but cannot enter a new approval or render without the visual
+  binding.
+- Hosted still-image generation, provider cost/provenance, mastering/thumbnail polish, and real
+  episode acceptance remain subsequent work. No hosted image provider was added to this fallback
+  slice.
 
 ## Current Commands
 

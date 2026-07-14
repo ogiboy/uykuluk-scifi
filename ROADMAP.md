@@ -60,11 +60,10 @@ Current voice checkpoint:
   provider-credit settlement, redacted evidence, and digest-anchored pending/settled recovery. Paid
   execution remains mock-backed in automated validation; recovery does not require a current API
   key, live metadata refresh, or a fresh catalog.
-- Implemented on the active `v0.82.0` candidate: publish-readable Turkish aligned SRT and metadata,
-  exact voice/render/FFmpeg/caption binding, plus guarded Studio candidate, preview, selection,
-  reselection, and exact hosted-execution confirmation. Producer/consumer tests, two consecutive
-  local suites, a CI-shaped suite, product/browser QA, and real Studio browser UAT pass; PR-ready
-  coverage, dependency, version, and Sonar gates remain before merge.
+- Implemented on main after PR #149: publish-readable Turkish aligned SRT and metadata, exact
+  voice/render/FFmpeg/caption binding, plus guarded Studio candidate, preview, selection,
+  reselection, and exact hosted-execution confirmation. Required CI, Sonar, CodeQL, product/browser
+  QA, and real Studio browser UAT passed before merge.
 - Live production validation pending: no paid production synthesis has run. Free-tier access may be
   used only for provider-permitted metadata/catalog/preview smoke and does not establish production
   rights. Exact commercial eligibility, quote, persisted approval, and reservation remain mandatory.
@@ -72,9 +71,24 @@ Current voice checkpoint:
   production-capable local voice path, and both use an explicit linear subtitle timing mode rather
   than pretending to have provider alignment.
 
-After `v0.82.0` PR closeout, delivery order is: scene-specific visuals and exact render; script
-audition and editorial provenance; resumable private-only upload; then persistent settings, prompt
-profiles, onboarding, documentation productization, and real-episode acceptance.
+Current visual checkpoint:
+
+- Implemented on the active candidate: a minimal `VisualProvider` boundary with deterministic static
+  and manual PNG/JPEG paths, duration-preserving 12–24 visual beats, revision history, contact-sheet
+  review, rejected-only regeneration, and deterministic motion presets.
+- Studio supports prepare, digest/revision-bound media review, batch approve/reject, manual import,
+  and rejected-scene regeneration without normal CLI use. Stale browser snapshots cannot mutate a
+  newer manifest.
+- Render-plan v2, render approval v3, and draft manifest v10 bind the approved visual manifest;
+  legacy evidence remains readable but cannot be newly approved or rendered without the binding.
+- Pending before merge: full product/browser UAT, PR-ready coverage/dependency/version/Sonar gates,
+  and main reconciliation. Hosted still-image bake-off/provider integration is deliberately next,
+  not hidden inside the credential-free fallback slice.
+
+After this visual candidate closes, delivery order is: one hosted still-image provider after the
+bounded bake-off; script audition and editorial provenance; resumable private-only upload; then
+persistent settings, prompt profiles, onboarding, documentation productization, and real-episode
+acceptance.
 
 ## Phase A - Safe Core Stabilization
 
