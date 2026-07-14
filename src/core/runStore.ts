@@ -119,7 +119,8 @@ export async function mutateRun<T>(
       return { run: saved, value: result.value };
     } catch (error) {
       const rollbackErrors: unknown[] = [];
-      for (const rollback of rollbackHandlers.reverse()) {
+      rollbackHandlers.reverse();
+      for (const rollback of rollbackHandlers) {
         try {
           await rollback(error);
         } catch (rollbackError) {

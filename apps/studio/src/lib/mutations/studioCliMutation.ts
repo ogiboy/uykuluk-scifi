@@ -88,12 +88,12 @@ async function runProducerCliWithCleanup(
   args: readonly string[],
   cleanup: () => Promise<void>,
   runCli: (args: readonly string[]) => Promise<StudioCliResult>,
-): Promise<Readonly<{ cleanupError: unknown | null; result: StudioCliResult }>> {
+): Promise<Readonly<{ cleanupError: unknown; result: StudioCliResult }>> {
   const outcome = await runCli(args).then(
     (result) => ({ kind: "result" as const, result }),
     (error: unknown) => ({ error, kind: "error" as const }),
   );
-  let cleanupError: unknown | null = null;
+  let cleanupError: unknown = null;
   try {
     await cleanup();
   } catch (error) {

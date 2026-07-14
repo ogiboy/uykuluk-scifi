@@ -8,7 +8,7 @@ export type FfmpegTimelineInput = {
   sceneIndex?: number;
   segment: DraftRenderTimeline[number]["segment"];
   source: "background" | "source-frame";
-  motion?: DraftRenderTimeline[number]["motion"];
+  motion: DraftRenderTimeline[number]["motion"];
 };
 
 type SelectedTimelineAsset = {

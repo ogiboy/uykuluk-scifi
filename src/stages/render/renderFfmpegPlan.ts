@@ -152,10 +152,10 @@ function zoomExpression(
 ): string {
   const delta = zoomDelta.toFixed(7);
   if (motion.kind === "slow-zoom-in") {
-    return `if(eq(on\\,0)\\,${motion.zoomStart}\\,min(zoom+${delta}\\,${motion.zoomEnd}))`;
+    return String.raw`if(eq(on\,0)\,${motion.zoomStart}\,min(zoom+${delta}\,${motion.zoomEnd}))`;
   }
   if (motion.kind === "slow-zoom-out") {
-    return `if(eq(on\\,0)\\,${motion.zoomStart}\\,max(zoom-${delta}\\,${motion.zoomEnd}))`;
+    return String.raw`if(eq(on\,0)\,${motion.zoomStart}\,max(zoom-${delta}\,${motion.zoomEnd}))`;
   }
   return String(motion.zoomStart);
 }

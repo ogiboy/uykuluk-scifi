@@ -112,8 +112,12 @@ async function assertManifestMatchesRun(
   }
   for (const scene of manifest.scenes) {
     const expectedGroup = expectedGroups.find((item) => item.sceneIndex === scene.sceneIndex);
+    if (!expectedGroup) {
+      throw new SafeExitError(
+        `Visual manifest scene ${scene.sceneIndex} has stale prompt evidence.`,
+      );
+    }
     if (
-      !expectedGroup ||
       expectedGroup.promptDigest !== scene.promptDigest ||
       Math.abs(expectedGroup.durationSeconds - scene.durationSeconds) > 0.000001 ||
       JSON.stringify(expectedGroup.productionSceneIndexes) !==

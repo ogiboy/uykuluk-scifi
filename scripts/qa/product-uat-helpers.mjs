@@ -96,7 +96,7 @@ export async function createFakeMediaTools({ workdir }) {
       "#!/usr/bin/env node",
       'import { readFileSync } from "node:fs";',
       "const media = readFileSync(process.argv.at(-1), 'utf8');",
-      "const args = media.split('\\n');",
+      String.raw`const args = media.split('\n');`,
       "const durationIndex = args.lastIndexOf('-t');",
       "const duration = durationIndex >= 0 ? args[durationIndex + 1] : '8.000000';",
       "console.log(JSON.stringify({",

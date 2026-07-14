@@ -34,7 +34,7 @@ export async function readStudioVisualMedia(
     if (loaded.digest !== expectedManifestDigest) return { status: 404 };
     const scene = loaded.manifest.scenes.find((item) => item.sceneIndex === sceneIndex);
     const active = scene?.revisions.find((item) => item.revision === scene.activeRevision);
-    if (!active || active.revision !== expectedRevision) return { status: 404 };
+    if (active?.revision !== expectedRevision) return { status: 404 };
     const body = active.asset.path.startsWith("production/")
       ? await readRegisteredArtifactBytesAtProjectRoot(root, run, active.asset.path)
       : await readProjectAssetBytesAtProjectRoot(root, active.asset.path);
