@@ -1,6 +1,5 @@
-import { readFile } from "node:fs/promises";
-import path from "node:path";
-import { producerConfigSchema } from "../../../../../src/config/schema";
+import { loadConfigAtProjectRoot } from "../../../../../src/config/config";
+import type { ProducerConfig } from "../../../../../src/config/schema";
 import { getStudioActionServiceStatus } from "../actionServiceStatus";
 import {
   missingVoicePreview,
@@ -43,14 +42,16 @@ export async function readStudioVoiceAuditionSummary(
   run: VoiceAuditionRun,
   nowMs: number = Date.now(),
 ): Promise<StudioVoiceAuditionSummary> {
-  const executionModePromise = readConfiguredVoiceExecutionMode(root);
-  const catalogResult = await readVoiceCatalog(root, run, nowMs);
-  const [previewByVoiceId, selections, quote, synthesis, executionMode] = await Promise.all([
+  const [catalogResult, config] = await Promise.all([
+    readVoiceCatalog(root, run, nowMs),
+    loadConfigAtProjectRoot(root).catch(() => null),
+  ]);
+  const executionMode = configuredVoiceExecutionMode(config);
+  const [previewByVoiceId, selections, quote, synthesis] = await Promise.all([
     readVoiceCandidatePreviews(root, run, catalogResult.catalog, nowMs),
     readVoiceSelectionHistory(root, run),
-    readVoiceQuoteSummary(root, run),
+    readVoiceQuoteSummary(root, run, config),
     readVoiceSynthesisSummary(root, run),
-    executionModePromise,
   ]);
   const currentSelection = selections.history.find((item) => item.status === "current") ?? null;
   const candidates = (catalogResult.catalog?.candidates ?? [])
@@ -114,7 +115,10 @@ export async function readStudioVoiceAuditionSummary(
     production: {
       alignment: synthesis.alignment,
       approval,
-      hostedExecution: summarizeHostedVoiceExecution(currentSelection, quote, approval),
+      hostedExecution:
+        executionMode === "hosted"
+          ? summarizeHostedVoiceExecution(currentSelection, quote, approval)
+          : null,
       quote: quote.summary,
       quota: catalogResult.catalog ? summarizeVoiceQuota(catalogResult.catalog) : null,
       synthesis: synthesis.summary,
@@ -122,21 +126,11 @@ export async function readStudioVoiceAuditionSummary(
   };
 }
 
-async function readConfiguredVoiceExecutionMode(
-  root: string,
-): Promise<StudioVoiceAuditionSummary["executionMode"]> {
-  try {
-    const configuredPath = process.env.PRODUCER_CONFIG ?? "producer.config.json";
-    const absolutePath = path.isAbsolute(configuredPath)
-      ? configuredPath
-      : path.join(root, configuredPath);
-    const config = producerConfigSchema.parse(
-      JSON.parse(await readFile(absolutePath, "utf8")) as unknown,
-    );
-    return config.providers.tts.mode === "elevenlabs" ? "hosted" : "local";
-  } catch {
-    return "unknown";
-  }
+function configuredVoiceExecutionMode(
+  config: ProducerConfig | null,
+): StudioVoiceAuditionSummary["executionMode"] {
+  if (!config) return "unknown";
+  return config.providers.tts.mode === "elevenlabs" ? "hosted" : "local";
 }
 
 function voiceActionBindings(

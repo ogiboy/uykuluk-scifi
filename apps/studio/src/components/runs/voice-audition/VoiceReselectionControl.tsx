@@ -30,7 +30,13 @@ export function VoiceReselectionControl({
   onSubmit,
 }: VoiceReselectionControlProps) {
   return (
-    <section className='bg-muted/10 ring-border/5 grid gap-3 rounded-lg p-4 ring-1'>
+    <form
+      className='bg-muted/10 ring-border/5 grid gap-3 rounded-lg p-4 ring-1'
+      onSubmit={(event) => {
+        event.preventDefault();
+        onSubmit();
+      }}
+    >
       <div className='flex flex-wrap items-center justify-between gap-3'>
         <div>
           <p className='text-muted-foreground text-xs font-medium tracking-wide uppercase'>
@@ -77,15 +83,14 @@ export function VoiceReselectionControl({
           </div>
           <Button
             className='justify-self-start'
-            disabled={busy || !reviewer.trim() || !reason.trim()}
-            type='button'
+            disabled={busy || !submitAvailable || !reviewer.trim() || !reason.trim()}
+            type='submit'
             variant='destructive'
-            onClick={onSubmit}
           >
             Archive and reopen selection
           </Button>
         </div>
       ) : null}
-    </section>
+    </form>
   );
 }

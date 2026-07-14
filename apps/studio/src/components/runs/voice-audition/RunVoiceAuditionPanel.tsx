@@ -17,19 +17,27 @@ import { RunVoiceEvidenceSummary } from "./RunVoiceEvidenceSummary";
 import { VoiceProductionExecutionControl } from "./VoiceProductionExecutionControl";
 import { VoiceReselectionControl } from "./VoiceReselectionControl";
 import { VoiceSelectionForm } from "./VoiceSelectionForm";
+import { useVoiceSelectionForm } from "./useVoiceSelectionForm";
 
 type RunVoiceAuditionPanelProps = Readonly<{ runId: string; summary: StudioVoiceAuditionSummary }>;
 
 /** Renders the explicit operator-triggered voice audition and production evidence flow. */
 export function RunVoiceAuditionPanel({ runId, summary }: RunVoiceAuditionPanelProps) {
-  const [compareVoiceIds, setCompareVoiceIds] = useState<string[]>([]);
-  const [selectionVoiceId, setSelectionVoiceId] = useState<string | null>(null);
-  const [reviewedBy, setReviewedBy] = useState("");
-  const [notes, setNotes] = useState("");
-  const [confirmProductionRights, setConfirmProductionRights] = useState(false);
-  const [confirmedProductionIdentity, setConfirmedProductionIdentity] = useState<string | null>(
-    null,
-  );
+  const {
+    cancelSelection,
+    chooseCandidate,
+    compareVoiceIds,
+    confirmedProductionIdentity,
+    confirmProductionRights,
+    notes,
+    reviewedBy,
+    selectionVoiceId,
+    setConfirmProductionRights,
+    setConfirmedProductionIdentity,
+    setNotes,
+    setReviewedBy,
+    toggleComparison,
+  } = useVoiceSelectionForm();
   const [reselectionOpen, setReselectionOpen] = useState(false);
   const [reselectionReviewer, setReselectionReviewer] = useState("");
   const [reselectionReason, setReselectionReason] = useState("");
@@ -61,14 +69,6 @@ export function RunVoiceAuditionPanel({ runId, summary }: RunVoiceAuditionPanelP
       submittingMessage: messages.pending,
       successMessage: messages.success,
       successToastTitle: `${messages.title} completed`,
-    });
-  }
-
-  function toggleComparison(voiceId: string): void {
-    setCompareVoiceIds((current) => {
-      if (current.includes(voiceId)) return current.filter((candidate) => candidate !== voiceId);
-      if (current.length < 2) return [...current, voiceId];
-      return [current[1]!, voiceId];
     });
   }
 
@@ -165,7 +165,7 @@ export function RunVoiceAuditionPanel({ runId, summary }: RunVoiceAuditionPanelP
         previewActionAvailable={Boolean(summary.actions["voice.preview"])}
         runId={runId}
         selectActionAvailable={Boolean(summary.actions["voice.select"])}
-        onChoose={setSelectionVoiceId}
+        onChoose={chooseCandidate}
         onCompare={toggleComparison}
         onPreview={(voiceId) => void requestPreview(voiceId)}
       />
@@ -178,7 +178,7 @@ export function RunVoiceAuditionPanel({ runId, summary }: RunVoiceAuditionPanelP
           notes={notes}
           reviewedBy={reviewedBy}
           submitAvailable={Boolean(summary.actions["voice.select"])}
-          onCancel={() => setSelectionVoiceId(null)}
+          onCancel={cancelSelection}
           onConfirmProductionRightsChange={setConfirmProductionRights}
           onNotesChange={setNotes}
           onReviewedByChange={setReviewedBy}

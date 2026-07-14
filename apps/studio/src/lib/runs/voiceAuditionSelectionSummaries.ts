@@ -1,15 +1,11 @@
+import { voiceSelectionRevisionSchema } from "../../../../../src/revisions/voiceSelectionRevision";
 import {
   isVoiceSelectionArtifactPath,
   voiceSelectionSchema,
   type VoiceSelection,
 } from "../../../../../src/stages/voice/catalog/voiceAuditionContracts";
 import { canonicalVoiceEvidenceDigest } from "../../../../../src/stages/voice/catalog/voiceCatalogDigest";
-import {
-  errorMessage,
-  objectRecord,
-  requireRegisteredBytes,
-  stringField,
-} from "./voiceAuditionArtifactReads";
+import { errorMessage, requireRegisteredBytes, sha256 } from "./voiceAuditionArtifactReads";
 import type {
   StudioVoiceSelectionHistoryItem,
   VoiceAuditionRun,
@@ -57,24 +53,41 @@ async function addArchivedSelections(
   );
   for (const revisionPath of revisionPaths) {
     try {
-      const revision = JSON.parse(
-        (await requireRegisteredBytes(root, run, revisionPath)).toString("utf8"),
-      ) as unknown;
-      const record = objectRecord(revision);
-      const archived = Array.isArray(record.archivedArtifacts) ? record.archivedArtifacts : [];
-      const selectionArchive = archived
-        .map(objectRecord)
-        .find(
-          (item) =>
-            typeof item.sourcePath === "string" && isVoiceSelectionArtifactPath(item.sourcePath),
-        );
-      if (!selectionArchive || typeof selectionArchive.archivedPath !== "string") continue;
+      const revision = voiceSelectionRevisionSchema.parse(
+        JSON.parse(
+          (await requireRegisteredBytes(root, run, revisionPath)).toString("utf8"),
+        ) as unknown,
+      );
+      const revisionId = revisionPath.split("/").at(-2);
+      if (revision.runId !== run.runId || revision.revisionId !== revisionId) {
+        throw new Error("voice-selection revision identity does not match its path");
+      }
+      const selectionArchive = revision.archivedArtifacts.find(
+        (item) =>
+          item.sourcePath === revision.previousSelection.path &&
+          isVoiceSelectionArtifactPath(item.sourcePath),
+      );
+      if (!selectionArchive) throw new Error("voice-selection revision archive is missing");
+      const expectedArchivePath = `revisions/voice-selection/${revision.revisionId}/invalidated/${selectionArchive.sourcePath}`;
+      if (selectionArchive.archivedPath !== expectedArchivePath) {
+        throw new Error("voice-selection revision archive path is invalid");
+      }
+      const archivedBytes = await requireRegisteredBytes(root, run, selectionArchive.archivedPath);
+      if (
+        archivedBytes.byteLength !== selectionArchive.bytes ||
+        sha256(archivedBytes) !== selectionArchive.sha256
+      ) {
+        throw new Error("voice-selection revision archive digest does not match");
+      }
       const selection = await readSelection(root, run, selectionArchive.archivedPath);
+      if (selection.selectionDigest !== revision.previousSelection.digest) {
+        throw new Error("archived voice selection does not match revision provenance");
+      }
       if (knownDigests.has(selection.selectionDigest)) continue;
       history.push({
         ...selectionHistoryItem(selection, selectionArchive.archivedPath, "reselected"),
-        reason: stringField(record, "reason"),
-        reviewedBy: stringField(record, "reviewedBy") ?? selection.selectedBy,
+        reason: revision.reason,
+        reviewedBy: revision.reviewedBy,
       });
       knownDigests.add(selection.selectionDigest);
     } catch (error) {

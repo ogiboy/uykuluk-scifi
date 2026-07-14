@@ -34,9 +34,13 @@ export function VoiceSelectionForm({
 }: VoiceSelectionFormProps) {
   const formReady = reviewedBy.trim().length > 0 && notes.trim().length > 0;
   return (
-    <section
+    <form
       className='border-primary/30 bg-primary/5 grid gap-4 rounded-lg border p-4'
       aria-labelledby='voice-selection-form-heading'
+      onSubmit={(event) => {
+        event.preventDefault();
+        onSubmit();
+      }}
     >
       <div>
         <h3 className='font-semibold' id='voice-selection-form-heading'>
@@ -80,13 +84,13 @@ export function VoiceSelectionForm({
         />
       </div>
       <div className='flex flex-wrap gap-2'>
-        <Button disabled={busy || !submitAvailable || !formReady} type='button' onClick={onSubmit}>
+        <Button disabled={busy || !submitAvailable || !formReady} type='submit'>
           <HeadphonesIcon /> Record selection
         </Button>
         <Button disabled={busy} type='button' variant='outline' onClick={onCancel}>
           Cancel
         </Button>
       </div>
-    </section>
+    </form>
   );
 }

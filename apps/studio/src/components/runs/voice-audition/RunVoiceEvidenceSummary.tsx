@@ -151,8 +151,10 @@ function statusVariant(status: string): "destructive" | "outline" | "secondary" 
   return "outline";
 }
 
+const usdFormatter = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
+
 function formatUsd(value: number): string {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value);
+  return usdFormatter.format(value);
 }
 
 function formatTimestamp(value: string): string {

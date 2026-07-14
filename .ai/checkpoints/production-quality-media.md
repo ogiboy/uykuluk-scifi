@@ -116,17 +116,17 @@ Active `v0.82.0` candidate, PR closeout:
 
 Ordered slices after `v0.82.0`:
 
-4. Visual production and exact render: add static/manual `VisualProvider`, run a three-scene hosted
+1. Visual production and exact render: add static/manual `VisualProvider`, run a three-scene hosted
    bake-off, integrate only the selected provider, and deliver 12-24 scene images, contact-sheet
    review, rejected-only regeneration, provenance/cost, deterministic motion, mastering, thumbnail,
    and exact media binding.
-5. Script audition and editorial quality: add sequential candidates, side-by-side selection,
+2. Script audition and editorial quality: add sequential candidates, side-by-side selection,
    streamlined review, operator-curated source/claim provenance, and the minimum-publishable
    scorecard.
-6. Controlled distribution: add resumable private-only YouTube upload with target-channel and media/
+3. Controlled distribution: add resumable private-only YouTube upload with target-channel and media/
    metadata/thumbnail/caption binding plus processing review; keep public/scheduled paths
    unreachable.
-7. Productization and real proof: complete persistent settings/prompts, bootstrap/onboarding,
+4. Productization and real proof: complete persistent settings/prompts, bootstrap/onboarding,
    stabilize documentation navigation and evaluate a docs site only after content settles, run the
    local fallback rehearsal and one approved commercial voice smoke, and complete two real episode
    acceptance runs.

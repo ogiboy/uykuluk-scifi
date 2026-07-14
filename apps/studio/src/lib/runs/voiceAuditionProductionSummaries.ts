@@ -1,16 +1,12 @@
-import { costEstimateSchema } from "../../../../../src/costs/costEstimateContracts";
+import type { ProducerConfig } from "../../../../../src/config/schema";
+import { readCostEstimateAtProjectRoot } from "../../../../../src/costs/costEstimate";
+import { relevantConfigDigest, stagesDigest } from "../../../../../src/costs/costEstimateIntegrity";
 import {
   voiceoverAudioMetaPath,
   voiceoverAudioPath,
 } from "../../../../../src/stages/voice/voiceoverEvidence";
 import { readValidatedStudioVoiceEvidence } from "../artifacts/studioCaptionArtifacts";
-import {
-  errorMessage,
-  objectRecord,
-  requireRegisteredBytes,
-  sha256,
-  stringField,
-} from "./voiceAuditionArtifactReads";
+import { errorMessage, objectRecord, stringField } from "./voiceAuditionArtifactReads";
 import type {
   StudioVoiceProductionSummary,
   StudioVoiceSelectionHistoryItem,
@@ -32,6 +28,7 @@ export type VoiceQuoteReadResult = Readonly<{
 export async function readVoiceQuoteSummary(
   root: string,
   run: VoiceAuditionRun,
+  config: ProducerConfig | null,
 ): Promise<VoiceQuoteReadResult> {
   const jsonPath = "costs/estimate.json";
   const markdownPath = "costs/estimate.md";
@@ -39,16 +36,26 @@ export async function readVoiceQuoteSummary(
     return { diagnostics: [], paths: [], summary: { status: "missing" }, facts: [] };
   }
   try {
-    const [jsonBytes, markdownBytes] = await Promise.all([
-      requireRegisteredBytes(root, run, jsonPath),
-      requireRegisteredBytes(root, run, markdownPath),
-    ]);
-    const jsonText = jsonBytes.toString("utf8");
-    const markdownText = markdownBytes.toString("utf8");
-    const estimate = costEstimateSchema.parse(JSON.parse(jsonText) as unknown);
+    if (!run.artifacts.includes(jsonPath) || !run.artifacts.includes(markdownPath)) {
+      throw new Error("both quote JSON and Markdown must remain registered");
+    }
+    const { estimate, digest } = await readCostEstimateAtProjectRoot(root, run.runId);
     if (estimate.runId !== run.runId) throw new Error("quote belongs to a different run");
-    const digest = sha256(Buffer.from(`${jsonText}\0${markdownText}`));
+    if (estimate.pricingDigest !== stagesDigest(estimate.stages)) {
+      throw new Error("quote pricing digest does not match its stage details");
+    }
+    if (config && estimate.configDigest !== relevantConfigDigest(config)) {
+      throw new Error("quote is stale for the current provider or budget configuration");
+    }
     const ttsStage = estimate.stages.find((stage) => stage.stage === "tts");
+    if (ttsStage?.provider === "elevenlabs") {
+      if (!config || !config.providers.tts.enabled || config.providers.tts.mode !== "elevenlabs") {
+        throw new Error("hosted quote is not current for the configured voice execution mode");
+      }
+      if (!ttsStage.bindingDigest || ttsStage.bindingSummary?.kind !== "selected-voice") {
+        throw new Error("hosted quote is missing its selected-voice binding");
+      }
+    }
     return {
       ...(ttsStage?.bindingDigest ? { bindingDigest: ttsStage.bindingDigest } : {}),
       diagnostics: estimate.blockedReasons.map((reason) => `Quote block: ${reason}`),

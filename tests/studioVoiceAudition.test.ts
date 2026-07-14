@@ -1,10 +1,13 @@
+import { readFile, writeFile } from "node:fs/promises";
 import { describe, expect, it, vi } from "vitest";
-import { getStudioRunDetail } from "../apps/studio/src/lib/runSummaries";
 import {
   isStudioHostedVoiceExecutionConfirmed,
   studioHostedVoiceExecutionIdentity,
 } from "../apps/studio/src/lib/runs/voiceAuditionSummaryTypes";
+import { getStudioRunDetail } from "../apps/studio/src/lib/runSummaries";
+import { artifactPath } from "../src/core/artifacts";
 import { createRun } from "../src/core/runStore";
+import { reviseVoiceSelection } from "../src/revisions/voiceSelectionRevision";
 import { generateVoiceCandidates } from "../src/stages/voiceCandidates";
 import { generateVoicePreview } from "../src/stages/voicePreview";
 import { selectVoice } from "../src/stages/voiceSelection";
@@ -118,6 +121,21 @@ describe("Studio voice audition read model", () => {
     });
   });
 
+  it("suppresses hosted confirmation when the approved quote becomes stale", async () => {
+    const { runId } = await prepareApprovedSelectedVoiceRun();
+    const config = JSON.parse(await readFile("producer.config.json", "utf8")) as {
+      providers: { tts: { elevenLabs: { timeoutMs: number } } };
+    };
+    config.providers.tts.elevenLabs.timeoutMs += 1_000;
+    await writeFile("producer.config.json", `${JSON.stringify(config, null, 2)}\n`, "utf8");
+
+    const detail = await getStudioRunDetail(runId);
+
+    expect(detail?.voiceAudition.production.quote.status).toBe("blocked");
+    expect(detail?.voiceAudition.production.hostedExecution).toBeNull();
+    expect(detail?.voiceAudition.advanced.diagnostics.join(" ")).toMatch(/quote is stale/i);
+  });
+
   it("binds hosted confirmation to the combined current operation identity", () => {
     const current = {
       approvalId: "approval_current",
@@ -204,6 +222,35 @@ describe("Studio voice audition read model", () => {
     );
     expect(detail?.voiceAudition.advanced.paths).toEqual(
       expect.arrayContaining(["ledger.jsonl", "costs/reservations.jsonl"]),
+    );
+  });
+
+  it("rejects reselection history whose canonical provenance was changed", async () => {
+    const { runId } = await prepareApprovedSelectedVoiceRun();
+    const revision = await reviseVoiceSelection({
+      runId,
+      reviewedBy: "studio-reviewer",
+      reason: "Compare another voice before production spend.",
+    });
+    const revisionPath = `revisions/voice-selection/${revision.revisionId}/revision.json`;
+    await writeFile(
+      artifactPath(runId, revisionPath),
+      `${JSON.stringify(
+        {
+          ...revision,
+          previousSelection: { ...revision.previousSelection, digest: "f".repeat(64) },
+        },
+        null,
+        2,
+      )}\n`,
+      "utf8",
+    );
+
+    const detail = await getStudioRunDetail(runId);
+
+    expect(detail?.voiceAudition.history).toEqual([]);
+    expect(detail?.voiceAudition.advanced.diagnostics.join(" ")).toMatch(
+      /does not match revision provenance/i,
     );
   });
 });

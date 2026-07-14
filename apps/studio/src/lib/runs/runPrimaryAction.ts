@@ -34,7 +34,15 @@ export function buildStudioRunPrimaryAction(
   run: StudioRunPrimaryActionRun,
 ): StudioRunPrimaryAction {
   const stageAction = stageActionForRun(run);
-  if (stageAction?.actionId === "voice.run" && run.voiceAudition?.production.hostedExecution) {
+  const workbench = buildStudioActionWorkbench(run);
+  const hostedVoiceAction =
+    stageAction?.actionId === "voice.run" && run.voiceAudition?.production.hostedExecution;
+  if (
+    hostedVoiceAction &&
+    run.blockedActionCount === 0 &&
+    run.readinessStatus === "passed" &&
+    workbench.primary.tone === "available"
+  ) {
     return {
       command: run.nextRecommendedCommand,
       description:
@@ -45,7 +53,17 @@ export function buildStudioRunPrimaryAction(
       tone: "available",
     };
   }
-  const workbench = buildStudioActionWorkbench(run);
+  if (hostedVoiceAction) {
+    return {
+      command: run.nextRecommendedCommand,
+      description:
+        "Hosted voice confirmation is unavailable until current readiness and blocked-action checks pass.",
+      label: stageAction.heading,
+      mode: "command",
+      routePath: null,
+      tone: "blocked",
+    };
+  }
   if (
     stageAction &&
     workbench.primary.tone === "available" &&

@@ -29,9 +29,13 @@ export function VoiceProductionExecutionControl({
   if (executionMode === "unknown" || (executionMode === "hosted" && !confirmation)) return null;
   const hosted = executionMode === "hosted";
   return (
-    <section
+    <form
       className='border-primary/30 bg-primary/5 grid gap-3 rounded-lg border p-4'
       aria-labelledby='voice-production-execution-heading'
+      onSubmit={(event) => {
+        event.preventDefault();
+        onSubmit();
+      }}
     >
       <div>
         <h3 className='font-semibold' id='voice-production-execution-heading'>
@@ -66,8 +70,7 @@ export function VoiceProductionExecutionControl({
       <div>
         <Button
           disabled={alreadyReady || busy || !submitAvailable || (hosted && !confirmed)}
-          type='button'
-          onClick={onSubmit}
+          type='submit'
         >
           <Mic2Icon />
           {alreadyReady
@@ -77,7 +80,7 @@ export function VoiceProductionExecutionControl({
               : "Generate local voice"}
         </Button>
       </div>
-    </section>
+    </form>
   );
 }
 
