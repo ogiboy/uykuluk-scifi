@@ -167,9 +167,12 @@ function productionPackageActionWhenEvidenceCannotLead(
   if (state !== "PRODUCTION_PACKAGE_GENERATED" || evidence.status === "available") {
     return null;
   }
-  const nextCommand = hasCompleteRenderPlanArtifacts(artifacts)
-    ? "pnpm producer estimate --run <run_id>"
-    : "pnpm producer render-plan --run <run_id>";
+  const evidenceUnavailableBecauseItIsUnsafe =
+    evidence.status === "invalid" || evidence.status === "stale";
+  const nextCommand =
+    evidenceUnavailableBecauseItIsUnsafe || hasCompleteRenderPlanArtifacts(artifacts)
+      ? "pnpm producer evidence --run <run_id>"
+      : "pnpm producer render-plan --run <run_id>";
   return nextCommand.replaceAll("<run_id>", runId);
 }
 
