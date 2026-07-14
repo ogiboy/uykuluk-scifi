@@ -4,6 +4,7 @@ import {
   type StudioActionWorkbenchRun,
 } from "../actions/studioActionWorkbench";
 import { stageActionForRun, type StudioStageActionRun } from "../actions/studioStageAction";
+import type { StudioRunDetail } from "../runSummaries";
 
 export type StudioRunPrimaryActionMode = "command" | "complete" | "rail" | "stage";
 
@@ -16,7 +17,9 @@ export type StudioRunPrimaryAction = Readonly<{
   tone: StudioActionWorkbenchPrimary["tone"];
 }>;
 
-export type StudioRunPrimaryActionRun = StudioActionWorkbenchRun & StudioStageActionRun;
+export type StudioRunPrimaryActionRun = StudioActionWorkbenchRun &
+  StudioStageActionRun &
+  Partial<Pick<StudioRunDetail, "voiceAudition">>;
 
 /**
  * Projects the most useful Studio primary action for the run detail hero and mobile sheet.
@@ -30,8 +33,19 @@ export type StudioRunPrimaryActionRun = StudioActionWorkbenchRun & StudioStageAc
 export function buildStudioRunPrimaryAction(
   run: StudioRunPrimaryActionRun,
 ): StudioRunPrimaryAction {
-  const workbench = buildStudioActionWorkbench(run);
   const stageAction = stageActionForRun(run);
+  if (stageAction?.actionId === "voice.run" && run.voiceAudition?.production.hostedExecution) {
+    return {
+      command: run.nextRecommendedCommand,
+      description:
+        "Open Voice to review and explicitly confirm the exact hosted binding, quote, and approval before synthesis.",
+      label: stageAction.heading,
+      mode: "rail",
+      routePath: stageAction.routePath,
+      tone: "available",
+    };
+  }
+  const workbench = buildStudioActionWorkbench(run);
   if (
     stageAction &&
     workbench.primary.tone === "available" &&
