@@ -69,6 +69,7 @@ export async function generateVoiceoverAudio(
     preparation = recovered.preparation;
     synthesis = recovered.synthesis;
   } else {
+    await requireFreshVoiceExecutionState(run);
     if (!config.providers.tts.enabled) {
       await appendLedgerEvent({
         runId: run.runId,
@@ -116,6 +117,23 @@ export async function generateVoiceoverAudio(
     synthesis,
     renderPlanDigest: renderPlan.digest,
   });
+}
+
+async function requireFreshVoiceExecutionState(
+  run: Awaited<ReturnType<typeof loadRun>>,
+): Promise<void> {
+  const expected = "READY_FOR_MANUAL_PRODUCTION" as const;
+  if (run.state === expected) return;
+  await appendLedgerEvent({
+    runId: run.runId,
+    type: "GUARD_BLOCKED",
+    stage: "voice",
+    message: `Fresh voice execution requires state ${expected}; got ${run.state}.`,
+    data: { actual: run.state, expected },
+  });
+  throw new SafeExitError(
+    `Blocked: fresh voice execution requires state ${expected}; current state is ${run.state}.`,
+  );
 }
 
 async function requireVoiceExecutionState(run: Awaited<ReturnType<typeof loadRun>>): Promise<void> {

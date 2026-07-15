@@ -41,6 +41,7 @@ export async function applySettledHostedVisuals(input: {
       input.reservation.runId !== run.runId ||
       input.reservation.operationId !== input.spool.spool.operationId ||
       input.reservation.bindingDigest !== input.plan.digest ||
+      input.reservation.resultEvidenceDigest !== input.spool.reference.digest ||
       input.spool.spool.plan.digest !== input.plan.digest
     ) {
       throw new SafeExitError("Hosted visual settlement does not match the active run plan.");

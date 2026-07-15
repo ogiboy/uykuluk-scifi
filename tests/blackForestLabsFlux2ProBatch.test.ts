@@ -151,4 +151,44 @@ describe("FLUX.2 Pro batch adapter", () => {
     });
     expect(executeScene).toHaveBeenCalledTimes(2);
   });
+
+  it("retains the over-cap successful request in uncertain batch evidence", async () => {
+    const generationPlan = plan();
+    const executeScene = vi
+      .fn()
+      .mockResolvedValueOnce({
+        kind: "success",
+        value: result(1),
+        actualUsdMicros: 90_000,
+        providerRequestId: "request-1",
+      })
+      .mockResolvedValueOnce({
+        kind: "success",
+        value: {
+          ...result(2),
+          providerBilling: {
+            ...result(2).providerBilling,
+            billableCredits: 10,
+            derivedUsdMicros: 100_000,
+          },
+        },
+        actualUsdMicros: 100_000,
+        providerRequestId: "request-2",
+      });
+    const adapter = createBlackForestLabsFlux2ProBatchAdapter({
+      plan: generationPlan,
+      bindingDigest: generationPlan.bindingDigest,
+      dependencies: { executeScene: executeScene as never },
+    });
+
+    await expect(adapter.execute(context(generationPlan.bindingDigest))).resolves.toMatchObject({
+      kind: "unknown",
+      reason: "indeterminate",
+      requestEvidence: [
+        { requestIndex: 0, reportedUnits: 9 },
+        { requestIndex: 1, reportedUnits: 10 },
+      ],
+    });
+    expect(executeScene).toHaveBeenCalledTimes(2);
+  });
 });

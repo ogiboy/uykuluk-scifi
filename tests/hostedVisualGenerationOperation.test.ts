@@ -9,11 +9,14 @@ describe("hosted visual generation operation identity", () => {
     approvalId: "approval_visual_operation",
   };
 
-  it("is deterministic and bound to the exact plan, quote, and approval", () => {
+  it("is deterministic and bound to the exact run, plan, quote, and approval", () => {
     const operationId = createHostedVisualGenerationOperationId(input);
 
     expect(operationId).toMatch(/^image_[a-f0-9]{64}$/);
     expect(createHostedVisualGenerationOperationId(input)).toBe(operationId);
+    expect(
+      createHostedVisualGenerationOperationId({ ...input, runId: "run_visual_operation_changed" }),
+    ).not.toBe(operationId);
     expect(
       createHostedVisualGenerationOperationId({ ...input, planDigest: "c".repeat(64) }),
     ).not.toBe(operationId);

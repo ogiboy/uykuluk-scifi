@@ -1,18 +1,23 @@
-import { createHash } from "node:crypto";
-import { writeFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
-import { defaultConfig } from "../src/config/config";
 import { artifactPath } from "../src/core/artifacts";
-import type { BlackForestLabsFlux2ProBatchResult } from "../src/stages/visuals/providers/blackForestLabsFlux2ProBatch";
-import type { VisualManifest } from "../src/stages/visuals/visualContracts";
-import { buildHostedVisualGenerationPlan } from "../src/stages/visuals/visualGenerationPlan";
+import { requireSettledHostedVisualSpool } from "../src/stages/visuals/hostedVisualSpoolEvidence";
+import { canonicalVisualGenerationDigest } from "../src/stages/visuals/visualGenerationDigest";
 import {
   loadHostedVisualGenerationSpool,
+  loadHostedVisualGenerationSpoolForOperation,
   persistHostedVisualGenerationSpool,
 } from "../src/stages/visuals/visualGenerationSpool";
-import { deterministicVisualMotion } from "../src/stages/visuals/visualMotion";
-import { sha256 } from "../src/utils/hash";
+import { hostedVisualGenerationSpoolSchema } from "../src/stages/visuals/visualGenerationSpoolContracts";
+import { pathExists } from "../src/utils/fs";
 import { useTempProject } from "./helpers";
+import {
+  batchResult,
+  generationPlan,
+  operationId,
+  planArtifactDigest,
+  settledReservation,
+} from "./hostedVisualGenerationSpoolFixtures";
 
 describe("hosted visual generation spool", () => {
   useTempProject();
@@ -20,12 +25,14 @@ describe("hosted visual generation spool", () => {
   it("persists and reloads exact batch image evidence", async () => {
     const plan = generationPlan();
     const result = batchResult(plan);
+    const planDigest = planArtifactDigest(plan);
+    const approvedQuote = { approvalId: "approval_visual", quoteDigest: "d".repeat(64) };
     const loaded = await persistHostedVisualGenerationSpool({
       runId: plan.runId,
-      operationId: `image_${"f".repeat(64)}`,
+      operationId: operationId(plan.runId, planDigest, approvedQuote),
       plan,
-      planDigest: planArtifactDigest(plan),
-      approvedQuote: { approvalId: "approval_visual", quoteDigest: "d".repeat(64) },
+      planDigest,
+      approvedQuote,
       reservationId: "reservation_visual",
       actualUsdMicros: 180_000,
       providerRequestId: "batch-provider-request",
@@ -42,12 +49,14 @@ describe("hosted visual generation spool", () => {
 
   it("rejects tampered image bytes after the spool is committed", async () => {
     const plan = generationPlan();
+    const planDigest = planArtifactDigest(plan);
+    const approvedQuote = { approvalId: "approval_visual", quoteDigest: "d".repeat(64) };
     const loaded = await persistHostedVisualGenerationSpool({
       runId: plan.runId,
-      operationId: `image_${"a".repeat(64)}`,
+      operationId: operationId(plan.runId, planDigest, approvedQuote),
       plan,
-      planDigest: planArtifactDigest(plan),
-      approvedQuote: { approvalId: "approval_visual", quoteDigest: "d".repeat(64) },
+      planDigest,
+      approvedQuote,
       reservationId: "reservation_visual",
       actualUsdMicros: 180_000,
       providerRequestId: "batch-provider-request",
@@ -62,95 +71,122 @@ describe("hosted visual generation spool", () => {
       /spool image is invalid/i,
     );
   });
+
+  it("requires an external digest when recovering an operation spool", async () => {
+    const plan = generationPlan();
+    const planDigest = planArtifactDigest(plan);
+    const approvedQuote = { approvalId: "approval_visual", quoteDigest: "d".repeat(64) };
+    const operation = operationId(plan.runId, planDigest, approvedQuote);
+    const loaded = await persistHostedVisualGenerationSpool({
+      runId: plan.runId,
+      operationId: operation,
+      plan,
+      planDigest,
+      approvedQuote,
+      reservationId: "reservation_visual",
+      actualUsdMicros: 180_000,
+      providerRequestId: "batch-provider-request",
+      result: batchResult(plan),
+    });
+    const persisted = JSON.parse(
+      await readFile(artifactPath(plan.runId, loaded.reference.path), "utf8"),
+    ) as Record<string, unknown>;
+    const { spoolDigest: _spoolDigest, ...digestInput } = persisted;
+    const tampered = { ...digestInput, actualUsdMicros: 1 };
+    await writeFile(
+      artifactPath(plan.runId, loaded.reference.path),
+      `${JSON.stringify({
+        ...tampered,
+        spoolDigest: canonicalVisualGenerationDigest(tampered),
+      })}\n`,
+      "utf8",
+    );
+
+    await expect(
+      loadHostedVisualGenerationSpoolForOperation(plan.runId, operation, loaded.reference.digest),
+    ).rejects.toThrow(/digest or identity is invalid/i);
+  });
+
+  it.each([
+    ["operation", { operationId: `image_${"e".repeat(64)}` }],
+    ["binding", { bindingDigest: "e".repeat(64) }],
+    ["quote", { quoteDigest: "e".repeat(64) }],
+    ["approval", { approvalId: "approval_other" }],
+  ])("rejects a settled reservation with a mismatched %s identity", async (_label, patch) => {
+    const plan = generationPlan();
+    const planDigest = planArtifactDigest(plan);
+    const approvedQuote = { approvalId: "approval_visual", quoteDigest: "d".repeat(64) };
+    const loaded = await persistHostedVisualGenerationSpool({
+      runId: plan.runId,
+      operationId: operationId(plan.runId, planDigest, approvedQuote),
+      plan,
+      planDigest,
+      approvedQuote,
+      reservationId: "reservation_visual",
+      actualUsdMicros: 180_000,
+      providerRequestId: "batch-provider-request",
+      result: batchResult(plan),
+    });
+    const reservation = settledReservation(loaded, planDigest, approvedQuote);
+
+    expect(() =>
+      requireSettledHostedVisualSpool({
+        spool: loaded,
+        planDigest,
+        approvedQuote,
+        reservation: { ...reservation, ...patch },
+      }),
+    ).toThrow(/does not match its durable result spool/i);
+  });
+
+  it.each([
+    ["foreign run", "run_other", undefined],
+    ["foreign operation", "run_spool", `image_${"e".repeat(64)}`],
+  ])(
+    "rejects a %s binding before writing operation artifacts",
+    async (_label, runId, rawOperation) => {
+      const plan = generationPlan();
+      const planDigest = planArtifactDigest(plan);
+      const approvedQuote = { approvalId: "approval_visual", quoteDigest: "d".repeat(64) };
+      const operation = rawOperation ?? operationId(runId, planDigest, approvedQuote);
+
+      await expect(
+        persistHostedVisualGenerationSpool({
+          runId,
+          operationId: operation,
+          plan,
+          planDigest,
+          approvedQuote,
+          reservationId: "reservation_visual",
+          actualUsdMicros: 180_000,
+          providerRequestId: "batch-provider-request",
+          result: batchResult(plan),
+        }),
+      ).rejects.toThrow(/belongs to another run|operation binding is invalid/i);
+      expect(
+        await pathExists(artifactPath(runId, `operations/image-generation/${operation}`)),
+      ).toBe(false);
+    },
+  );
+
+  it("rejects a non-canonical run id in committed spool evidence", async () => {
+    const plan = generationPlan();
+    const planDigest = planArtifactDigest(plan);
+    const approvedQuote = { approvalId: "approval_visual", quoteDigest: "d".repeat(64) };
+    const loaded = await persistHostedVisualGenerationSpool({
+      runId: plan.runId,
+      operationId: operationId(plan.runId, planDigest, approvedQuote),
+      plan,
+      planDigest,
+      approvedQuote,
+      reservationId: "reservation_visual",
+      actualUsdMicros: 180_000,
+      providerRequestId: "batch-provider-request",
+      result: batchResult(plan),
+    });
+
+    expect(() =>
+      hostedVisualGenerationSpoolSchema.parse({ ...loaded.spool, runId: "../run_foreign" }),
+    ).toThrow(/invalid run id/i);
+  });
 });
-
-function generationPlan() {
-  const manifest = {
-    schemaVersion: 1 as const,
-    runId: "run_spool",
-    createdAt: "2026-07-15T00:00:00.000Z",
-    updatedAt: "2026-07-15T00:00:00.000Z",
-    productionPackage: {
-      path: "production/production_package.meta.json" as const,
-      digest: "b".repeat(64),
-    },
-    scenes: Array.from({ length: 12 }, (_, index) => ({
-      sceneIndex: index + 1,
-      productionSceneIndexes: [index + 1],
-      durationSeconds: 5,
-      visualPrompt: `prompt ${index + 1}`,
-      promptDigest: sha256(`prompt ${index + 1}`),
-      activeRevision: 1,
-      revisions: [
-        {
-          revision: 1,
-          provider: "static" as const,
-          createdAt: "2026-07-15T00:00:00.000Z",
-          asset: { role: "scene-visual" as const, path: "assets/a.jpg", digest: "a".repeat(64) },
-          motion: deterministicVisualMotion(index + 1, 1),
-          source: {
-            kind: "static-fallback" as const,
-            sourceAssetDigest: "a".repeat(64),
-            sourceAssetPath: "assets/a.jpg",
-          },
-        },
-      ],
-    })),
-  } satisfies VisualManifest;
-  return buildHostedVisualGenerationPlan({
-    runId: manifest.runId,
-    createdAt: manifest.createdAt,
-    visualManifest: manifest,
-    visualManifestDigest: "c".repeat(64),
-    purpose: "initial",
-    sceneIndexes: [1, 2],
-    config: {
-      ...defaultConfig.providers.imageGeneration,
-      enabled: true,
-      mode: "black-forest-labs",
-    },
-  });
-}
-
-function batchResult(plan: ReturnType<typeof generationPlan>): BlackForestLabsFlux2ProBatchResult {
-  const images = plan.scenes.map((scene) => {
-    const buffer = Buffer.from(`image-${scene.sceneIndex}`);
-    const requestIdHash = sha256(`request-${scene.sceneIndex}`);
-    return {
-      sceneIndex: scene.sceneIndex,
-      promptDigest: scene.promptDigest,
-      seed: scene.seed,
-      result: {
-        buffer,
-        digest: createHash("sha256").update(buffer).digest("hex"),
-        extension: "jpg" as const,
-        media: { bytes: buffer.byteLength, format: "jpeg" as const, width: 1920, height: 1080 },
-        provider: {
-          service: "black-forest-labs" as const,
-          modelId: "flux-2-pro" as const,
-          outputFormat: "jpeg" as const,
-        },
-        providerBilling: {
-          source: "provider-reported-credits-approved-tariff-derived-usd" as const,
-          billableCredits: 9,
-          usdPerCredit: 0.01 as const,
-          derivedUsdMicros: 90_000,
-        },
-        providerRequest: { inputDigest: sha256(scene.prompt), requestIdHash },
-      },
-    };
-  });
-  return {
-    images,
-    providerRequests: images.map((image, index) => ({
-      requestIndex: index,
-      inputDigest: image.result.providerRequest.inputDigest,
-      requestIdHash: image.result.providerRequest.requestIdHash,
-      reportedUnits: image.result.providerBilling.billableCredits,
-    })),
-  };
-}
-
-function planArtifactDigest(plan: ReturnType<typeof generationPlan>): string {
-  return sha256(`${JSON.stringify(plan, null, 2)}\n`);
-}

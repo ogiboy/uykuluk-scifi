@@ -21,7 +21,7 @@ export async function archiveActiveCostEstimate(input: {
   stage: string;
 }): Promise<{ run: RunRecord; quote: LoadedCostEstimate; archive: ArchivedCostEstimate }> {
   const projectRoot = input.projectRoot ?? process.cwd();
-  const quote = await readCostEstimateAtProjectRoot(projectRoot, input.run.runId);
+  const quote = await readCostEstimateAtProjectRoot(projectRoot, input.run);
   const archive = costEstimateArchivePaths(quote.digest);
   let run = input.run;
   await writeBinaryFile(

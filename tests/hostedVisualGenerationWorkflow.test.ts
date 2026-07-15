@@ -3,10 +3,14 @@ import {
   readStudioVisualMedia,
   readStudioVisualSummary,
 } from "../apps/studio/src/lib/runs/visualSummaries";
+import { loadConfig } from "../src/config/config";
+import { readLedger } from "../src/core/ledger";
 import { loadRun } from "../src/core/runStore";
-import { readCostEstimate } from "../src/costs/costEstimate";
+import { readCostEstimate, validateCostEstimateIntegrity } from "../src/costs/costEstimate";
 import { readCostReservationSummaries } from "../src/costs/costReservationStore";
 import { generateHostedVisuals } from "../src/stages/visuals";
+import { applySettledHostedVisuals } from "../src/stages/visuals/hostedVisualManifestApply";
+import { loadHostedVisualGenerationSpoolForOperation } from "../src/stages/visuals/visualGenerationSpool";
 import { loadVisualManifest } from "../src/stages/visuals/visualManifest";
 import { useTempProject } from "./helpers";
 import {
@@ -20,7 +24,8 @@ describe("hosted visual generation workflow", () => {
 
   it("settles one approved batch and promotes operation-owned images into review", async () => {
     const runId = await prepareApprovedHostedVisualRun();
-    const { digest: quoteDigest } = await readCostEstimate(runId);
+    const quote = await readCostEstimate(runId);
+    const { digest: quoteDigest } = quote;
     const run = await loadRun(runId);
     const approval = run.approvals.find(
       (item) => item.target === "paid-generation-cost" && item.approvedRef === quoteDigest,
@@ -66,6 +71,14 @@ describe("hosted visual generation workflow", () => {
         bindingDigest: plan.planDigest,
       }),
     );
+    await expect(
+      validateCostEstimateIntegrity(
+        await loadRun(runId),
+        await loadConfig(),
+        quote.estimate,
+        quote.digest,
+      ),
+    ).resolves.toEqual([]);
     const persisted = await loadVisualManifest(await loadRun(runId));
     expect(persisted.manifest.scenes[0]?.revisions.at(-1)?.source).toMatchObject({
       kind: "hosted-generation",
@@ -104,12 +117,59 @@ describe("hosted visual generation workflow", () => {
           quoteDigest,
           confirmPaidOperation: true,
         },
-        dependencies: { readApiKey: () => "test-bfl-key", executeScene: executeScene as never },
+        dependencies: { readApiKey: () => undefined, executeScene: executeScene as never },
       }),
     ).rejects.toThrow(/confirmation is stale/i);
 
     expect(executeScene).not.toHaveBeenCalled();
     expect(await readCostReservationSummaries(runId)).toEqual([]);
+    expect(await readLedger(runId)).toContainEqual(
+      expect.objectContaining({
+        type: "GUARD_BLOCKED",
+        stage: "visuals-hosted-execution-preflight",
+        data: expect.objectContaining({ reason: "hosted-execution-confirmation-mismatch" }),
+      }),
+    );
+  });
+
+  it("rejects a settlement whose result digest does not match the committed spool", async () => {
+    const runId = await prepareApprovedHostedVisualRun();
+    const { digest: quoteDigest } = await readCostEstimate(runId);
+    const run = await loadRun(runId);
+    const approval = run.approvals.find(
+      (item) => item.target === "paid-generation-cost" && item.approvedRef === quoteDigest,
+    )!;
+    const plan = await currentHostedVisualPlan(runId);
+    await generateHostedVisuals({
+      runId,
+      confirmation: {
+        approvalId: approval.approvalId,
+        bindingDigest: plan.digest,
+        quoteDigest,
+        confirmPaidOperation: true,
+      },
+      dependencies: {
+        readApiKey: () => "test-bfl-key",
+        executeScene: hostedSceneExecutor("digest-binding") as never,
+      },
+    });
+    const reservation = (await readCostReservationSummaries(runId)).find(
+      (item) => item.stage === "imageGeneration" && item.status === "SETTLED",
+    )!;
+    const spool = await loadHostedVisualGenerationSpoolForOperation(
+      runId,
+      reservation.operationId,
+      reservation.resultEvidenceDigest!,
+    );
+
+    await expect(
+      applySettledHostedVisuals({
+        runId,
+        plan,
+        spool,
+        reservation: { ...reservation, resultEvidenceDigest: "f".repeat(64) },
+      }),
+    ).rejects.toThrow(/settlement does not match/i);
   });
 
   it("settles a committed spool after restart without requiring the provider key again", async () => {

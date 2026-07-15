@@ -3,6 +3,7 @@ import { writeFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 
 import { artifactPath } from "../src/core/artifacts";
+import { readLedger } from "../src/core/ledger";
 import { loadRun } from "../src/core/runStore";
 import { readCostEstimate, readCostEstimateByDigestAtProjectRoot } from "../src/costs/costEstimate";
 import { reserveApprovedCost } from "../src/costs/costReservationService";
@@ -48,6 +49,24 @@ describe("hosted visual rejected-scene regeneration", () => {
     const firstManifest = await loadVisualManifest(await loadRun(runId));
     const firstSceneOneRevision = firstManifest.manifest.scenes[0]!.activeRevision;
     const firstSceneTwoRevision = firstManifest.manifest.scenes[1]!.activeRevision;
+
+    await expect(
+      prepareHostedVisualGenerationPlan({
+        ...(await currentVisualExpectation(runId)),
+        runId,
+        purpose: "regenerate-rejected",
+        sceneIndexes: [1],
+        reviewedBy: "visual director",
+        reason: "Invalid regeneration target before rejection.",
+      }),
+    ).rejects.toThrow(/must reject its active revision/i);
+    expect(await readLedger(runId)).toContainEqual(
+      expect.objectContaining({
+        type: "GUARD_BLOCKED",
+        stage: "visuals-hosted-reopen",
+        message: expect.stringMatching(/must reject its active revision/i),
+      }),
+    );
 
     await decideVisuals({
       runId,
@@ -197,25 +216,21 @@ describe("hosted visual rejected-scene regeneration", () => {
       },
     );
     await reservationCheckReached.promise;
-    const reservationPromise = reserveApprovedCost({
-      runId,
-      stage: "imageGeneration",
-      operationId: "image_generation_concurrent_reopen",
-      adapterIdentity: {
-        provider: "black-forest-labs",
-        model: "flux-2-pro",
-        bindingDigest: plan.digest,
+    const reservationContentionReached = deferred();
+    const reservationPromise = reserveApprovedCost(
+      {
+        runId,
+        stage: "imageGeneration",
+        operationId: "image_generation_concurrent_reopen",
+        adapterIdentity: {
+          provider: "black-forest-labs",
+          model: "flux-2-pro",
+          bindingDigest: plan.digest,
+        },
       },
-    });
-    await expect(
-      Promise.race([
-        reservationPromise.then(
-          () => "settled",
-          () => "settled",
-        ),
-        Promise.resolve("pending"),
-      ]),
-    ).resolves.toBe("pending");
+      { onLockContention: reservationContentionReached.resolve },
+    );
+    await reservationContentionReached.promise;
     releaseRevision.resolve();
 
     const [revisionResult, reservationResult] = await Promise.allSettled([

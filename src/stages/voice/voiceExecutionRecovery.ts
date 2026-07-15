@@ -39,7 +39,7 @@ export async function recoverCommittedVoiceExecution(input: {
 }): Promise<RecoveredVoiceExecution | undefined> {
   const candidates: Array<{ reservation: CostReservationSummary; model: string }> = [];
   for (const reservation of (await readCostReservationSummaries(input.run.runId)).filter(
-    (item) => item.stage === "tts",
+    (item) => item.stage === "tts" && item.status !== "RELEASED",
   )) {
     const approval = input.run.approvals.find(
       (item) =>
@@ -71,11 +71,6 @@ export async function recoverCommittedVoiceExecution(input: {
   }
   const { reservation, model } = candidates[0];
   if (reservation.status === "RESERVED") return undefined;
-  if (reservation.status === "RELEASED") {
-    throw new SafeExitError(
-      "ElevenLabs TTS was not sent; create a fresh voice selection, cost quote, and approval.",
-    );
-  }
   if (reservation.status === "UNCERTAIN" || reservation.status === "EXECUTION_STARTED") {
     throw new SafeExitError(
       "ElevenLabs TTS outcome is not durably committed; explicit cost reconciliation is required.",

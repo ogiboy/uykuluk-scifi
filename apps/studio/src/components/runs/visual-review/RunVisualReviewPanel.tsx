@@ -48,6 +48,7 @@ export function RunVisualReviewPanel({ runId, summary }: RunVisualReviewPanelPro
       {summary.kind === "ready" ? (
         <>
           <RunHostedVisualGenerationControl
+            attributionReady={Boolean(actions.reviewedBy.trim() && actions.notes.trim())}
             busy={actions.busy}
             confirmed={actions.confirmedHosted}
             generateAvailable={Boolean(summary.actions["visuals.generate-hosted"])}

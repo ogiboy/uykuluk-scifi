@@ -4,7 +4,14 @@ import path from "node:path";
 import { SafeExitError } from "../core/errors.js";
 import { runsPath } from "../core/runStore.js";
 
-type LockOptions = { timeoutMs?: number; retryMs?: number; staleMs?: number };
+type LockOptions = {
+  timeoutMs?: number;
+  retryMs?: number;
+  staleMs?: number;
+  onContention?: () => void;
+};
+
+type LockSettings = Required<Pick<LockOptions, "timeoutMs" | "retryMs" | "staleMs">>;
 
 const defaultOptions = { timeoutMs: 5_000, retryMs: 20, staleMs: 120_000 };
 
@@ -31,10 +38,14 @@ export async function withCostReservationLock<T>(
   task: () => Promise<T>,
   options: LockOptions = {},
 ): Promise<T> {
-  const settings = { ...defaultOptions, ...options };
+  const settings: LockSettings = {
+    timeoutMs: options.timeoutMs ?? defaultOptions.timeoutMs,
+    retryMs: options.retryMs ?? defaultOptions.retryMs,
+    staleMs: options.staleMs ?? defaultOptions.staleMs,
+  };
   const target = reservationLockPath();
   const token = randomUUID();
-  await acquireLock(target, token, settings);
+  await acquireLock(target, token, settings, options.onContention);
   try {
     return await task();
   } finally {
@@ -55,9 +66,11 @@ export async function withCostReservationLock<T>(
 async function acquireLock(
   target: string,
   token: string,
-  settings: Required<LockOptions>,
+  settings: LockSettings,
+  onContention: (() => void) | undefined,
 ): Promise<void> {
   const startedAt = Date.now();
+  let contentionReported = false;
   while (true) {
     try {
       await mkdir(target);
@@ -76,6 +89,10 @@ async function acquireLock(
       const code = (error as NodeJS.ErrnoException).code;
       if (code !== "EEXIST") {
         throw error;
+      }
+      if (!contentionReported) {
+        contentionReported = true;
+        onContention?.();
       }
       if (await reclaimStaleLock(target, settings.staleMs)) {
         continue;

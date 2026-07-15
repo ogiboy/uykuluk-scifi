@@ -16,6 +16,22 @@ import { preparePackagedVisualRun } from "./visualTestHelpers";
 describe("cost estimate history", () => {
   useTempProject();
 
+  it("rejects active quote files that are no longer registered by the run", async () => {
+    const runId = await preparePackagedVisualRun();
+    await estimateCost(runId);
+    const run = await loadRun(runId);
+    const unregistered = {
+      ...run,
+      artifacts: run.artifacts.filter((path) => path !== "costs/estimate.json"),
+    };
+    await saveRun(unregistered);
+
+    await expect(readCostEstimate(runId)).rejects.toThrow(/artifact registration/i);
+    await expect(
+      archiveActiveCostEstimate({ run: unregistered, stage: "test-unregistered-quote" }),
+    ).rejects.toThrow(/artifact registration/i);
+  });
+
   it("resolves an exact archived quote and rejects tampered or unknown history", async () => {
     const runId = await preparePackagedVisualRun();
     await estimateCost(runId);

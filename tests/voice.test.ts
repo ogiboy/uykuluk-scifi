@@ -1,7 +1,8 @@
 import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { artifactPath } from "../src/core/artifacts";
-import { loadRun } from "../src/core/runStore";
+import { readLedger } from "../src/core/ledger";
+import { loadRun, saveRun } from "../src/core/runStore";
 import { readCostReservationSummaries } from "../src/costs/costReservationStore";
 import { generateEvidenceBundle } from "../src/stages/evidence";
 import { runReadiness } from "../src/stages/readiness";
@@ -132,6 +133,25 @@ describe("voiceover audio", () => {
 
     await expect(generateVoiceoverAudio(runId)).rejects.toThrow(/ready_for_manual_production/i);
     expect(await pathExists(artifactPath(runId, "production/audio/voiceover.wav"))).toBe(false);
+  });
+
+  it("treats paid cost approval as recovery-only when no committed voice result exists", async () => {
+    await enableDeterministicTts();
+    const runId = await prepareReadyRun({ renderPlan: true });
+    const run = await loadRun(runId);
+    await saveRun({ ...run, state: "PAID_GENERATION_COST_APPROVED" });
+
+    await expect(generateVoiceoverAudio(runId)).rejects.toThrow(
+      /fresh voice execution requires state READY_FOR_MANUAL_PRODUCTION/i,
+    );
+    expect(await pathExists(artifactPath(runId, "production/audio/voiceover.wav"))).toBe(false);
+    expect(await readLedger(runId)).toContainEqual(
+      expect.objectContaining({
+        type: "GUARD_BLOCKED",
+        stage: "voice",
+        data: { actual: "PAID_GENERATION_COST_APPROVED", expected: "READY_FOR_MANUAL_PRODUCTION" },
+      }),
+    );
   });
 
   it("blocks when TTS remains disabled", async () => {

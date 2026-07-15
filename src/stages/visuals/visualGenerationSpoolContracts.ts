@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isValidRunId, RUN_ID_ERROR_MESSAGE } from "../../core/runId.js";
 import { providerRequestEvidenceItemSchema } from "../../costs/providerRequestEvidence.js";
 import { digestSchema } from "../render/renderPlanSchemas.js";
 import { hostedVisualGenerationPlanPath } from "./visualGenerationPlanContracts.js";
@@ -29,7 +30,7 @@ const hostedVisualMediaSchema = z.strictObject({
 
 export const hostedVisualGenerationSpoolSchema = z.strictObject({
   schemaVersion: z.literal(1),
-  runId: z.string().min(1),
+  runId: z.string().refine(isValidRunId, { message: RUN_ID_ERROR_MESSAGE }),
   operationId: hostedVisualOperationIdSchema,
   plan: z.strictObject({
     sourcePath: z.literal(hostedVisualGenerationPlanPath),

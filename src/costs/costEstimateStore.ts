@@ -1,7 +1,5 @@
 import { createHash } from "node:crypto";
-import { readFile } from "node:fs/promises";
 
-import { artifactPathAtProjectRoot } from "../core/artifactPaths.js";
 import { readRegisteredArtifactBytesAtProjectRoot } from "../core/artifactRevision.js";
 import { SafeExitError } from "../core/errors.js";
 import type { RunRecord } from "../core/state.js";
@@ -18,12 +16,15 @@ export type LoadedCostEstimate = Readonly<{
 /** Reads and verifies the active quote beneath an explicit producer project root. */
 export async function readCostEstimateAtProjectRoot(
   projectRoot: string,
-  runId: string,
+  run: Pick<RunRecord, "runId" | "artifacts">,
 ): Promise<LoadedCostEstimate> {
   const [jsonBytes, markdownBytes] = await Promise.all([
-    readFile(artifactPathAtProjectRoot(projectRoot, runId, "costs/estimate.json")),
-    readFile(artifactPathAtProjectRoot(projectRoot, runId, "costs/estimate.md")),
+    readRegisteredArtifactBytesAtProjectRoot(projectRoot, run, "costs/estimate.json"),
+    readRegisteredArtifactBytesAtProjectRoot(projectRoot, run, "costs/estimate.md"),
   ]);
+  if (!jsonBytes || !markdownBytes) {
+    throw new SafeExitError("Active cost quote artifacts are missing.");
+  }
   return parseCostEstimateBytes(jsonBytes, markdownBytes);
 }
 

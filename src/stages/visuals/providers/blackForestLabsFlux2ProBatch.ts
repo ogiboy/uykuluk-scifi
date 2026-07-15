@@ -86,10 +86,6 @@ async function executeBatch(
     if (!outcome.providerRequestId) {
       return { kind: "unknown", reason: "indeterminate", requestEvidence: providerRequests };
     }
-    actualUsdMicros += outcome.actualUsdMicros;
-    if (!Number.isSafeInteger(actualUsdMicros) || actualUsdMicros > context.maxUsdMicros) {
-      return { kind: "unknown", reason: "indeterminate", requestEvidence: providerRequests };
-    }
     providerRequestIds.push(outcome.providerRequestId);
     providerRequests.push({
       requestIndex: providerRequests.length,
@@ -97,6 +93,10 @@ async function executeBatch(
       requestIdHash: outcome.value.providerRequest.requestIdHash,
       reportedUnits: outcome.value.providerBilling.billableCredits,
     });
+    actualUsdMicros += outcome.actualUsdMicros;
+    if (!Number.isSafeInteger(actualUsdMicros) || actualUsdMicros > context.maxUsdMicros) {
+      return { kind: "unknown", reason: "indeterminate", requestEvidence: providerRequests };
+    }
     images.push({
       sceneIndex: scene.sceneIndex,
       promptDigest: scene.promptDigest,

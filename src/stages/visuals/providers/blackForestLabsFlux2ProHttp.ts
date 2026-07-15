@@ -42,7 +42,14 @@ export function isTrustedBflPollingUrl(value: string): boolean {
 
 export function isSecureProviderResultUrl(value: string): boolean {
   const url = new URL(value);
-  return url.protocol === "https:" && !url.username && !url.password;
+  return (
+    url.protocol === "https:" &&
+    !url.username &&
+    !url.password &&
+    (url.hostname === "delivery.bfl.ai" ||
+      (url.hostname.startsWith("delivery.") && url.hostname.endsWith(".bfl.ai")) ||
+      (url.hostname.startsWith("delivery-") && url.hostname.endsWith(".bfl.ai")))
+  );
 }
 
 export async function waitForBlackForestLabsPoll(

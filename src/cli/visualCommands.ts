@@ -106,7 +106,7 @@ export function registerVisualCommands(program: Command, wrap: Wrap): void {
           console.log(
             options.json
               ? JSON.stringify(manifest, null, 2)
-              : `Generated ${manifest.scenes.length} hosted visual beat(s) for review.`,
+              : "Generated the approved hosted visual batch for review.",
           );
         },
       ),

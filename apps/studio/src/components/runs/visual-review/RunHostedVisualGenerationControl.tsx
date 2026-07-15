@@ -9,6 +9,7 @@ import type { StudioHostedVisualSummary } from "@/lib/runs/visualSummaries";
 import { ImageIcon } from "lucide-react";
 
 type Props = Readonly<{
+  attributionReady: boolean;
   busy: boolean;
   confirmed: boolean;
   generateAvailable: boolean;
@@ -24,6 +25,7 @@ type Props = Readonly<{
 
 /** Shows the small Studio-first FLUX.2 Pro plan, quote, and exact execution control. */
 export function RunHostedVisualGenerationControl({
+  attributionReady,
   busy,
   confirmed,
   generateAvailable,
@@ -65,7 +67,7 @@ export function RunHostedVisualGenerationControl({
       </div>
 
       {hosted.quote.estimatedUsd !== undefined ? (
-        <p className='text-sm'>Approved batch cap: ${hosted.quote.estimatedUsd.toFixed(2)}</p>
+        <p className='text-sm'>Quoted batch cap: ${hosted.quote.estimatedUsd.toFixed(2)}</p>
       ) : null}
 
       {hosted.blockedReason ? (
@@ -77,7 +79,13 @@ export function RunHostedVisualGenerationControl({
 
       <div className='flex flex-wrap gap-2'>
         <Button
-          disabled={busy || !planAvailable || selectedCount === 0 || mixedSelection}
+          disabled={
+            busy ||
+            !planAvailable ||
+            selectedCount === 0 ||
+            mixedSelection ||
+            (regenerateSelected && !attributionReady)
+          }
           onClick={onPlan}
         >
           {regenerateSelected ? "Regenerate rejected" : "Plan selected"} with FLUX.2 Pro (
@@ -88,6 +96,11 @@ export function RunHostedVisualGenerationControl({
         <p className='text-muted-foreground text-sm'>
           This workflow state accepts only rejected beats backed by exact settled hosted evidence.
           Clear pending, approved, static, or manual beats from the selection.
+        </p>
+      ) : null}
+      {regenerateSelected && !attributionReady ? (
+        <p className='text-muted-foreground text-sm'>
+          Add both reviewer attribution and revision notes before planning rejected hosted beats.
         </p>
       ) : null}
 

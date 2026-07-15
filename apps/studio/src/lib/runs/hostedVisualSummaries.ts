@@ -94,7 +94,7 @@ export async function readStudioHostedVisualSummary(
       },
     };
     if (!run.artifacts.includes("costs/estimate.json")) return base;
-    const quote = await readCostEstimateAtProjectRoot(root, run.runId);
+    const quote = await readCostEstimateAtProjectRoot(root, run);
     const stage = quote.estimate.stages.find((item) => item.stage === "imageGeneration");
     const quoteProblems = await validateCurrentCostEstimate(
       run,

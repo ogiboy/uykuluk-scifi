@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { canonicalVisualGenerationDigest } from "../src/stages/visuals/visualGenerationDigest";
 import { canonicalVoiceEvidenceDigest } from "../src/stages/voice/catalog/voiceCatalogDigest";
+import { sha256 } from "../src/utils/hash";
 
 describe("canonical JSON evidence digest", () => {
   it("keeps wrapper digests key-order independent and domain consistent", () => {
@@ -9,6 +10,12 @@ describe("canonical JSON evidence digest", () => {
 
     expect(canonicalVoiceEvidenceDigest(left)).toBe(canonicalVoiceEvidenceDigest(right));
     expect(canonicalVisualGenerationDigest(left)).toBe(canonicalVoiceEvidenceDigest(left));
+  });
+
+  it("orders punctuation and non-ASCII keys by locale-independent code units", () => {
+    const value = { İ: 5, é: 4, a: 3, "!": 1, Z: 2 };
+
+    expect(canonicalVisualGenerationDigest(value)).toBe(sha256('{"!":1,"Z":2,"a":3,"é":4,"İ":5}'));
   });
 
   it("preserves domain-specific error messages", () => {

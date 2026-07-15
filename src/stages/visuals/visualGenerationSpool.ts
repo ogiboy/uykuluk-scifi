@@ -8,6 +8,7 @@ import { readJsonFile, writeJsonFile } from "../../utils/json.js";
 import { nowIso } from "../../utils/time.js";
 import type { BlackForestLabsFlux2ProBatchResult } from "./providers/blackForestLabsFlux2ProBatch.js";
 import { canonicalVisualGenerationDigest } from "./visualGenerationDigest.js";
+import { createHostedVisualGenerationOperationId } from "./visualGenerationOperation.js";
 import type { HostedVisualGenerationPlan } from "./visualGenerationPlanContracts.js";
 import {
   hostedVisualGenerationSpoolReferenceSchema,
@@ -32,6 +33,18 @@ export async function persistHostedVisualGenerationSpool(input: {
   result: BlackForestLabsFlux2ProBatchResult;
 }): Promise<LoadedHostedVisualGenerationSpool> {
   const operationId = hostedVisualOperationIdSchema.parse(input.operationId);
+  if (input.plan.runId !== input.runId) {
+    throw new SafeExitError("Hosted visual spool plan belongs to another run.");
+  }
+  const expectedOperationId = createHostedVisualGenerationOperationId({
+    runId: input.runId,
+    planDigest: input.planDigest,
+    quoteDigest: input.approvedQuote.quoteDigest,
+    approvalId: input.approvedQuote.approvalId,
+  });
+  if (operationId !== expectedOperationId) {
+    throw new SafeExitError("Hosted visual spool operation binding is invalid.");
+  }
   assertBatchMatchesPlan(input);
   const directory = `operations/image-generation/${operationId}`;
   const planPath = `${directory}/plan.json`;
@@ -138,18 +151,11 @@ export async function loadHostedVisualGenerationSpool(
 export async function loadHostedVisualGenerationSpoolForOperation(
   runId: string,
   rawOperationId: string,
-  expectedDigest?: string,
+  expectedDigest: string,
 ): Promise<LoadedHostedVisualGenerationSpool> {
   const operationId = hostedVisualOperationIdSchema.parse(rawOperationId);
   const path = `operations/image-generation/${operationId}/result.json`;
-  const spool = hostedVisualGenerationSpoolSchema.parse(
-    await readJsonFile<unknown>(artifactPath(runId, path)),
-  );
-  return loadHostedVisualGenerationSpool(runId, {
-    operationId,
-    path,
-    digest: expectedDigest ?? spool.spoolDigest,
-  });
+  return loadHostedVisualGenerationSpool(runId, { operationId, path, digest: expectedDigest });
 }
 
 function assertBatchMatchesPlan(input: {

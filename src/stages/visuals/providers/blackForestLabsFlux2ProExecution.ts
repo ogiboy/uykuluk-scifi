@@ -157,7 +157,7 @@ export async function executeBlackForestLabsFlux2ProScene(input: {
 
       const imageResponse = await fetchProvider(poll.data.result.sample, {
         method: "GET",
-        redirect: "follow",
+        redirect: "error",
         headers: { accept: expectedImageContentType(prepared.plan.settings.outputFormat) },
         signal: input.context.signal,
       });

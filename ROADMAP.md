@@ -81,7 +81,7 @@ Current visual checkpoint:
   newer manifest.
 - Render-plan v2, render approval v3, and draft manifest v10 bind the approved visual manifest;
   legacy evidence remains readable but cannot be newly approved or rendered without the binding.
-- Active hosted candidate: one FLUX.2 Pro adapter with exact scene-plan quote/approval/reservation,
+- Targeted for `v0.84.0`: one FLUX.2 Pro adapter with exact scene-plan quote/approval/reservation,
   bounded asynchronous execution, provider-credit settlement, durable local image spools, Studio
   confirmation, and rejected-only re-quote/regeneration. Mocked request/poll/recovery and combined
   ElevenLabs-plus-visual workflow validation are implemented; live BFL production proof remains

@@ -57,15 +57,30 @@ const visualSourceSchema = z.discriminatedUnion("kind", [
   hostedVisualSourceSchema,
 ]);
 
-export const visualRevisionSchema = z.strictObject({
-  revision: z.int().positive(),
-  provider: z.enum(["static", "manual-import", "black-forest-labs"]),
-  createdAt: z.iso.datetime(),
-  asset: visualAssetSchema,
-  media: visualMediaSchema.optional(),
-  motion: visualMotionPresetSchema,
-  source: visualSourceSchema,
-});
+export const visualRevisionSchema = z
+  .strictObject({
+    revision: z.int().positive(),
+    provider: z.enum(["static", "manual-import", "black-forest-labs"]),
+    createdAt: z.iso.datetime(),
+    asset: visualAssetSchema,
+    media: visualMediaSchema.optional(),
+    motion: visualMotionPresetSchema,
+    source: visualSourceSchema,
+  })
+  .superRefine((revision, context) => {
+    const providerBySource = {
+      "static-fallback": "static",
+      "manual-import": "manual-import",
+      "hosted-generation": "black-forest-labs",
+    } as const;
+    if (revision.provider !== providerBySource[revision.source.kind]) {
+      context.addIssue({
+        code: "custom",
+        message: "Visual revision provider does not match its source kind.",
+        path: ["provider"],
+      });
+    }
+  });
 
 export const visualDecisionSchema = z.strictObject({
   revision: z.int().positive(),

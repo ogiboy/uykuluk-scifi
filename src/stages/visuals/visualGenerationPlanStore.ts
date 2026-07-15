@@ -3,6 +3,7 @@ import { loadConfig } from "../../config/config.js";
 import { readRegisteredArtifactBytesAtProjectRoot } from "../../core/artifactRevision.js";
 import { writeRunJson } from "../../core/artifacts.js";
 import { SafeExitError } from "../../core/errors.js";
+import { appendLedgerEvent } from "../../core/ledger.js";
 import { loadRun, mutateRun } from "../../core/runStore.js";
 import type { RunRecord } from "../../core/state.js";
 import { requireState } from "../../safeguards/approvalGuard.js";
@@ -55,15 +56,28 @@ export async function prepareHostedVisualGenerationPlan(
     });
     const loadedManifest = await loadVisualManifest(current);
     assertVisualMutationExpectation(loadedManifest, expectation);
-    const plan = buildHostedVisualGenerationPlan({
-      runId: current.runId,
-      createdAt: nowIso(),
-      visualManifest: loadedManifest.manifest,
-      visualManifestDigest: loadedManifest.digest,
-      purpose: input.purpose,
-      sceneIndexes: input.sceneIndexes,
-      config: config.providers.imageGeneration,
-    });
+    let plan: HostedVisualGenerationPlan;
+    try {
+      plan = buildHostedVisualGenerationPlan({
+        runId: current.runId,
+        createdAt: nowIso(),
+        visualManifest: loadedManifest.manifest,
+        visualManifestDigest: loadedManifest.digest,
+        purpose: input.purpose,
+        sceneIndexes: input.sceneIndexes,
+        config: config.providers.imageGeneration,
+      });
+    } catch (error) {
+      if (error instanceof SafeExitError) {
+        await appendLedgerEvent({
+          runId: current.runId,
+          type: "GUARD_BLOCKED",
+          stage: "visuals-hosted-reopen",
+          message: error.message,
+        });
+      }
+      throw error;
+    }
     await reopenRejectedHostedVisualGeneration(
       {
         ...expectation,

@@ -35,7 +35,7 @@ export async function loadApprovedQuoteLine(runId: string, stage: string) {
   }
   const config = await loadConfig();
   const { estimate, digest } = await readCostEstimate(runId);
-  const reasons = await validateCostEstimateIntegrity(run, config, estimate);
+  const reasons = await validateCostEstimateIntegrity(run, config, estimate, digest);
   if (reasons.length > 0) {
     throw new SafeExitError(`Blocked: approved quote is stale. ${reasons.join(" ")}`);
   }

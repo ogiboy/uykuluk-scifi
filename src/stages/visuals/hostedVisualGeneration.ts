@@ -26,12 +26,12 @@ export async function generateHostedVisuals(input: {
   if (recovered) {
     return applySettledHostedVisuals({ runId: input.runId, ...recovered });
   }
-  requireBlackForestLabsCredential(input.dependencies);
   const prepared = await prepareHostedVisualExecution({
     run,
     config,
     confirmation: input.confirmation,
   });
+  requireBlackForestLabsCredential(input.dependencies);
   const executed = await executeHostedVisualGeneration({
     runId: input.runId,
     prepared,

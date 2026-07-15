@@ -68,6 +68,7 @@ describe("Black Forest Labs FLUX.2 Pro reserved adapter", () => {
       }),
     });
     expect(fetchMock.mock.calls[2]?.[1]?.headers).not.toHaveProperty("x-key");
+    expect(fetchMock.mock.calls[2]?.[1]?.redirect).toBe("error");
     expect(JSON.stringify(outcome)).not.toContain("signed/image.jpg");
     expect(JSON.stringify(outcome)).not.toContain("fixture-bfl-api-key");
   });
@@ -124,6 +125,36 @@ describe("Black Forest Labs FLUX.2 Pro reserved adapter", () => {
       reason: "indeterminate",
     });
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("refuses image delivery outside the BFL delivery hosts", async () => {
+    const fetchMock = vi
+      .fn<FetchLike>()
+      .mockResolvedValueOnce(jsonResponse(submitResponse()))
+      .mockResolvedValueOnce(
+        jsonResponse(readyResponse(9, "https://attacker.invalid/signed/image.jpg")),
+      );
+
+    await expect(executeBflAdapter(fetchMock)).resolves.toMatchObject({
+      kind: "unknown",
+      reason: "indeterminate",
+      providerRequestId: "task-123",
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("accepts a regional BFL delivery host without following redirects", async () => {
+    const fetchMock = vi
+      .fn<FetchLike>()
+      .mockResolvedValueOnce(jsonResponse(submitResponse()))
+      .mockResolvedValueOnce(
+        jsonResponse(readyResponse(9, "https://delivery.eu.bfl.ai/signed/image.jpg")),
+      )
+      .mockResolvedValueOnce(imageResponse(expectedJpeg, "image/jpeg"));
+
+    await expect(executeBflAdapter(fetchMock)).resolves.toMatchObject({ kind: "success" });
+    expect(fetchMock.mock.calls[2]?.[0]).toBe("https://delivery.eu.bfl.ai/signed/image.jpg");
+    expect(fetchMock.mock.calls[2]?.[1]?.redirect).toBe("error");
   });
 
   it.each([

@@ -12,7 +12,7 @@ const repoRoot = process.cwd();
 describe("producer visuals CLI", () => {
   useTempProject();
 
-  it("binds decide, regenerate, and import mutations to fresh manifest snapshots", async () => {
+  it("binds decisions to the fresh manifest snapshot", async () => {
     const runId = await preparePackagedVisualRun();
     const prepared = runCli(["visuals", "prepare", "--run", runId, "--json"]);
     expect(prepared.status).toBe(0);
@@ -40,6 +40,29 @@ describe("producer visuals CLI", () => {
       sceneIndex: 1,
       decision: { status: "rejected" },
     });
+  });
+
+  it("binds regeneration to the fresh rejected manifest snapshot", async () => {
+    const runId = await preparePackagedVisualRun();
+    expect(runCli(["visuals", "prepare", "--run", runId]).status).toBe(0);
+    const preparedExpectation = await visualMutationCliArgs(runId);
+    expect(
+      runCli([
+        "visuals",
+        "decide",
+        "--run",
+        runId,
+        "--scenes",
+        "1",
+        "--decision",
+        "rejected",
+        "--reviewed-by",
+        "cli-reviewer",
+        "--notes",
+        "Request the next deterministic fallback.",
+        ...preparedExpectation,
+      ]).status,
+    ).toBe(0);
 
     const rejectedExpectation = await visualMutationCliArgs(runId);
     const regenerated = runCli([
@@ -62,9 +85,13 @@ describe("producer visuals CLI", () => {
         expect.objectContaining({ revision: 2, provider: "static" }),
       ],
     });
+  });
 
+  it("binds manual import to the fresh manifest snapshot", async () => {
+    const runId = await preparePackagedVisualRun();
+    expect(runCli(["visuals", "prepare", "--run", runId]).status).toBe(0);
     await writeTestPng("manual.png");
-    const regeneratedExpectation = await visualMutationCliArgs(runId);
+    const preparedExpectation = await visualMutationCliArgs(runId);
     const imported = runCli([
       "visuals",
       "import",
@@ -74,16 +101,16 @@ describe("producer visuals CLI", () => {
       "1",
       "--file",
       "manual.png",
-      ...regeneratedExpectation,
+      ...preparedExpectation,
       "--json",
     ]);
     expect(imported.status).toBe(0);
     const importedManifest = JSON.parse(imported.stdout) as { scenes: unknown[] };
     expect(importedManifest.scenes[0]).toMatchObject({
       sceneIndex: 1,
-      activeRevision: 3,
+      activeRevision: 2,
       revisions: expect.arrayContaining([
-        expect.objectContaining({ revision: 3, provider: "manual-import" }),
+        expect.objectContaining({ revision: 2, provider: "manual-import" }),
       ]),
     });
   });

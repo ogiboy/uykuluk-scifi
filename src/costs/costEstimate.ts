@@ -1,4 +1,5 @@
 import { ProducerConfig } from "../config/schema.js";
+import { loadRun } from "../core/runStore.js";
 import { RunRecord } from "../core/state.js";
 import { checkBudget } from "../safeguards/budgetGuard.js";
 import { nowIso } from "../utils/time.js";
@@ -78,7 +79,7 @@ export async function buildCostEstimate(
 export async function readCostEstimate(
   runId: string,
 ): Promise<{ estimate: CostEstimate; text: string; markdownText: string; digest: string }> {
-  return readCostEstimateAtProjectRoot(process.cwd(), runId);
+  return readCostEstimateAtProjectRoot(process.cwd(), await loadRun(runId));
 }
 
 /**

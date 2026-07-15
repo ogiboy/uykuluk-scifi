@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { SafeExitError } from "../../core/errors.js";
 import type { CostReservationSummary } from "../../costs/costReservationStore.js";
 import { nowIso } from "../../utils/time.js";
+import { requireSettledHostedVisualSpool } from "./hostedVisualSpoolEvidence.js";
 import type { VisualRevision } from "./visualContracts.js";
 import type { LoadedHostedVisualGenerationSpool } from "./visualGenerationSpool.js";
 import { deterministicVisualMotion } from "./visualMotion.js";
@@ -53,6 +54,12 @@ export function hostedVisualRevision(
   sceneIndex: number,
   revision: number,
 ): VisualRevision {
+  requireSettledHostedVisualSpool({
+    spool,
+    reservation,
+    planDigest: spool.spool.plan.digest,
+    approvedQuote: spool.spool.approvedQuote,
+  });
   const imageIndex = spool.spool.images.findIndex((image) => image.sceneIndex === sceneIndex);
   const image = spool.spool.images[imageIndex];
   if (!image || !image.providerRequest.requestIdHash || reservation.status !== "SETTLED") {

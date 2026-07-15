@@ -34,11 +34,14 @@ export function submitResponse(
   return { id: "task-123", polling_url: pollingUrl, ...(cost === undefined ? {} : { cost }) };
 }
 
-export function readyResponse(cost: number | undefined) {
+export function readyResponse(
+  cost: number | undefined,
+  sample = "https://delivery.bfl.ai/signed/image.jpg",
+) {
   return {
     id: "task-123",
     status: "Ready",
-    result: { sample: "https://delivery.bfl.ai/signed/image.jpg" },
+    result: { sample },
     ...(cost === undefined ? {} : { cost }),
   };
 }

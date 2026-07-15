@@ -3,6 +3,7 @@ import type { RunRecord } from "../core/state.js";
 import { verifyProductionPackage } from "../stages/production/productionPackageIntegrity.js";
 import { sha256 } from "../utils/hash.js";
 import type { CostEstimate } from "./costEstimateContracts.js";
+import { readSettledHostedVisualQuoteStage } from "./costQuoteCompletion.js";
 import { quoteCostStages } from "./costQuoteStages.js";
 
 /**
@@ -14,10 +15,22 @@ export async function validateCostEstimateIntegrity(
   run: RunRecord,
   config: ProducerConfig,
   estimate: CostEstimate,
+  quoteDigest?: string,
 ): Promise<string[]> {
   let currentStages: CostEstimate["stages"];
   try {
+    const settledImageGeneration = quoteDigest
+      ? await readSettledHostedVisualQuoteStage(run, quoteDigest, estimate.stages)
+      : null;
     currentStages = await quoteCostStages(run, config, {
+      ...(settledImageGeneration
+        ? {
+            preserveSettledQuoteStages: {
+              stages: estimate.stages,
+              stageNames: ["imageGeneration"],
+            },
+          }
+        : {}),
       suppressCompletedPaidStages: estimate.stages.some(
         (stage) => stage.bindingSummary?.kind === "settled-paid-stage",
       ),

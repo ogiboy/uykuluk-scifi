@@ -136,6 +136,15 @@ export function useRunVisualReviewActions(runId: string, summary: StudioVisualSu
       });
       return;
     }
+    if (purpose === "regenerate-rejected" && (!reviewedBy.trim() || !notes.trim())) {
+      reportError({
+        actionId: action.actionId,
+        message: "Reviewer attribution and revision notes are required for hosted regeneration.",
+        routePath: action.routePath,
+        toastTitle: "Hosted visual attribution required",
+      });
+      return;
+    }
     await submit({
       actionId: action.actionId,
       body: {
@@ -144,8 +153,8 @@ export function useRunVisualReviewActions(runId: string, summary: StudioVisualSu
         expectedManifestDigest:
           purpose === "regenerate-rejected" ? summary.manifestDigest : undefined,
         purpose,
-        reason: purpose === "regenerate-rejected" ? notes : undefined,
-        reviewedBy: purpose === "regenerate-rejected" ? reviewedBy : undefined,
+        reason: purpose === "regenerate-rejected" ? notes.trim() : undefined,
+        reviewedBy: purpose === "regenerate-rejected" ? reviewedBy.trim() : undefined,
         runId,
         sceneIndexes: [...selected],
       },

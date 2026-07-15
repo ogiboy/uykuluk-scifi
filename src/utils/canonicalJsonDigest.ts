@@ -25,7 +25,7 @@ function canonicalJson(value: unknown, messages: CanonicalJsonErrorMessages): st
     const record = value as Record<string, unknown>;
     return `{${Object.keys(record)
       .filter((key) => record[key] !== undefined)
-      .sort((left, right) => left.localeCompare(right))
+      .sort()
       .map((key) => `${JSON.stringify(key)}:${canonicalJson(record[key], messages)}`)
       .join(",")}}`;
   }

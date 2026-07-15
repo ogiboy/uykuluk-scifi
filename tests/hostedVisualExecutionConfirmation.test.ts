@@ -20,6 +20,18 @@ describe("hosted visual execution confirmation", () => {
     expect(hostedVisualExecutionConfirmationMatches(confirmation, expected)).toBe(true);
     expect(
       hostedVisualExecutionConfirmationMatches(
+        { ...confirmation, approvalId: "approval_other" },
+        expected,
+      ),
+    ).toBe(false);
+    expect(
+      hostedVisualExecutionConfirmationMatches(
+        { ...confirmation, quoteDigest: "c".repeat(64) },
+        expected,
+      ),
+    ).toBe(false);
+    expect(
+      hostedVisualExecutionConfirmationMatches(
         { ...confirmation, bindingDigest: "c".repeat(64) },
         expected,
       ),
