@@ -26,6 +26,13 @@ export type StudioMutationSubmitResult = Readonly<
 >;
 
 export const studioMutationFetchTimeoutMs = 30_000;
+export const hostedVisualMutationFetchTimeoutMs = 4 * 60 * 60 * 1_000 + 2 * 60 * 1_000;
+
+export function studioMutationFetchTimeoutForAction(actionId: string): number {
+  return actionId === "visuals.generate-hosted"
+    ? hostedVisualMutationFetchTimeoutMs
+    : studioMutationFetchTimeoutMs;
+}
 
 /**
  * Posts a guarded same-origin Studio mutation request with a local session proof.
@@ -56,7 +63,10 @@ export async function submitStudioJsonMutation(input: {
   }
   let response: Response;
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), studioMutationFetchTimeoutMs);
+  const timeout = setTimeout(
+    () => controller.abort(),
+    studioMutationFetchTimeoutForAction(input.actionId),
+  );
   try {
     response = await fetch(input.routePath, {
       body,
@@ -70,7 +80,13 @@ export async function submitStudioJsonMutation(input: {
       boundary: "client-mutation",
       routePath: input.routePath,
     });
-    return { kind: "error", message: input.fallbackError };
+    return {
+      kind: "error",
+      message:
+        input.actionId === "visuals.generate-hosted" && isAbortError(error)
+          ? "Hosted visual execution exceeded the Studio wait window. Its durable operation may still require reconciliation; refresh this run before retrying."
+          : input.fallbackError,
+    };
   } finally {
     clearTimeout(timeout);
   }
@@ -106,6 +122,10 @@ export async function submitStudioJsonMutation(input: {
     recordSummary: summarizeStudioMutationRecord(payload?.record),
     warnings,
   };
+}
+
+function isAbortError(error: unknown): boolean {
+  return error instanceof Error && error.name === "AbortError";
 }
 
 function messageWithWarnings(message: string, warnings: readonly string[]): string {

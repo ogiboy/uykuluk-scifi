@@ -1,11 +1,22 @@
 import { loadVisualManifest } from "../../../../../src/stages/visuals/visualManifest";
 import { getStudioActionServiceStatus } from "../actionServiceStatus";
+import {
+  emptyHostedVisualSummary,
+  readStudioHostedVisualSummary,
+  type StudioHostedVisualSummary,
+} from "./hostedVisualSummaries";
 import { readCoreVisualRunRecord } from "./visualRunRecord";
 
+export type { StudioHostedVisualSummary } from "./hostedVisualSummaries";
 export { readStudioVisualMedia, type StudioVisualMediaResult } from "./visualMedia";
 
 export type StudioVisualActionId =
-  "visuals.decide" | "visuals.import" | "visuals.prepare" | "visuals.regenerate";
+  | "visuals.decide"
+  | "visuals.generate-hosted"
+  | "visuals.import"
+  | "visuals.plan-hosted"
+  | "visuals.prepare"
+  | "visuals.regenerate";
 export type StudioVisualActionBinding = Readonly<{
   actionId: StudioVisualActionId;
   routePath: string;
@@ -20,7 +31,7 @@ export type StudioVisualSceneSummary = Readonly<{
   motion: string;
   productionSceneIndexes: readonly number[];
   prompt: string;
-  provider: "manual-import" | "static";
+  provider: "black-forest-labs" | "manual-import" | "static";
   reviewedBy?: string;
   revisionCount: number;
   sceneIndex: number;
@@ -29,6 +40,7 @@ export type StudioVisualSummary = Readonly<{
   activeRevisions: readonly Readonly<{ activeRevision: number; sceneIndex: number }>[];
   actions: Readonly<Record<StudioVisualActionId, StudioVisualActionBinding | null>>;
   approvedCount: number;
+  hosted: StudioHostedVisualSummary;
   kind: "invalid" | "missing" | "ready";
   manifestDigest?: string;
   message: string;
@@ -47,9 +59,8 @@ export async function readStudioVisualSummary(
   if (!run) {
     return visualSummary("invalid", "Run state could not be validated.", noVisualActions());
   }
-  const mutationActions =
-    run.state === "PRODUCTION_PACKAGE_GENERATED" ? actions : noVisualActions();
   if (!run.artifacts.includes("production/visuals/manifest.json")) {
+    const mutationActions = visualMutationActions(run.state, actions, 0);
     return visualSummary(
       "missing",
       run.state === "PRODUCTION_PACKAGE_GENERATED"
@@ -58,7 +69,9 @@ export async function readStudioVisualSummary(
       {
         ...mutationActions,
         "visuals.decide": null,
+        "visuals.generate-hosted": null,
         "visuals.import": null,
+        "visuals.plan-hosted": null,
         "visuals.regenerate": null,
       },
     );
@@ -86,14 +99,17 @@ export async function readStudioVisualSummary(
     });
     const approvedCount = scenes.filter((scene) => scene.decision === "approved").length;
     const rejectedCount = scenes.filter((scene) => scene.decision === "rejected").length;
+    const mutationActions = visualMutationActions(run.state, actions, rejectedCount);
     const activeRevisions = scenes.map((scene) => ({
       activeRevision: scene.activeRevision,
       sceneIndex: scene.sceneIndex,
     }));
+    const hosted = await readStudioHostedVisualSummary(root, run, rejectedCount);
     return {
       actions: { ...mutationActions, "visuals.prepare": null },
       activeRevisions,
       approvedCount,
+      hosted,
       kind: "ready",
       manifestDigest: loaded.digest,
       message: `${approvedCount}/${scenes.length} visual beats approved; ${rejectedCount} rejected.`,
@@ -120,7 +136,9 @@ function visualActionBindings(): Record<StudioVisualActionId, StudioVisualAction
   };
   return {
     "visuals.decide": binding("visuals.decide"),
+    "visuals.generate-hosted": binding("visuals.generate-hosted"),
     "visuals.import": binding("visuals.import"),
+    "visuals.plan-hosted": binding("visuals.plan-hosted"),
     "visuals.prepare": binding("visuals.prepare"),
     "visuals.regenerate": binding("visuals.regenerate"),
   };
@@ -129,10 +147,39 @@ function visualActionBindings(): Record<StudioVisualActionId, StudioVisualAction
 function noVisualActions(): Record<StudioVisualActionId, null> {
   return {
     "visuals.decide": null,
+    "visuals.generate-hosted": null,
     "visuals.import": null,
+    "visuals.plan-hosted": null,
     "visuals.prepare": null,
     "visuals.regenerate": null,
   };
+}
+
+function visualMutationActions(
+  state: string,
+  actions: Record<StudioVisualActionId, StudioVisualActionBinding | null>,
+  rejectedCount: number,
+): Record<StudioVisualActionId, StudioVisualActionBinding | null> {
+  if (state === "PRODUCTION_PACKAGE_GENERATED") {
+    return { ...actions, "visuals.generate-hosted": null };
+  }
+  if (state === "READY_FOR_MANUAL_PRODUCTION") {
+    return {
+      ...noVisualActions(),
+      "visuals.decide": actions["visuals.decide"],
+      "visuals.generate-hosted": actions["visuals.generate-hosted"],
+      "visuals.plan-hosted": rejectedCount > 0 ? actions["visuals.plan-hosted"] : null,
+    };
+  }
+  if (state === "PAID_GENERATION_COST_APPROVED") {
+    return {
+      ...noVisualActions(),
+      "visuals.decide": actions["visuals.decide"],
+      "visuals.generate-hosted": actions["visuals.generate-hosted"],
+      "visuals.plan-hosted": rejectedCount > 0 ? actions["visuals.plan-hosted"] : null,
+    };
+  }
+  return noVisualActions();
 }
 
 function visualSummary(
@@ -144,6 +191,7 @@ function visualSummary(
     actions,
     activeRevisions: [],
     approvedCount: 0,
+    hosted: emptyHostedVisualSummary(),
     kind,
     message,
     rejectedCount: 0,

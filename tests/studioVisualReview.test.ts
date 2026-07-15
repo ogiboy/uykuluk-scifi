@@ -6,7 +6,7 @@ import { readCoreVisualRunRecord } from "../apps/studio/src/lib/runs/visualRunRe
 import { readStudioVisualSummary } from "../apps/studio/src/lib/runs/visualSummaries";
 import { artifactPath } from "../src/core/artifacts";
 import { loadRun, saveRun, statePath } from "../src/core/runStore";
-import { importManualVisual, prepareStaticVisuals } from "../src/stages/visuals";
+import { decideVisuals, importManualVisual, prepareStaticVisuals } from "../src/stages/visuals";
 import { useTempProject } from "./helpers";
 import {
   currentVisualExpectation,
@@ -30,7 +30,9 @@ describe("Studio visual review read model", () => {
       })),
       actions: {
         "visuals.decide": { routePath: "/actions/visuals-decide" },
+        "visuals.generate-hosted": null,
         "visuals.import": { routePath: "/actions/visuals-import" },
+        "visuals.plan-hosted": { routePath: "/actions/visuals-plan-hosted" },
         "visuals.prepare": null,
         "visuals.regenerate": { routePath: "/actions/visuals-regenerate" },
       },
@@ -42,9 +44,35 @@ describe("Studio visual review read model", () => {
     expect(firstUrl.searchParams.get("revision")).toBe("1");
 
     const run = await loadRun(runId);
-    await saveRun({ ...run, state: "COST_ESTIMATED" });
+    await saveRun({ ...run, state: "READY_FOR_MANUAL_PRODUCTION" });
+    const ready = await readStudioVisualSummary(process.cwd(), runId);
+    expect(ready.actions).toMatchObject({
+      "visuals.decide": { routePath: "/actions/visuals-decide" },
+      "visuals.generate-hosted": { routePath: "/actions/visuals-generate-hosted" },
+      "visuals.plan-hosted": null,
+    });
+    await decideVisuals({
+      ...(await currentVisualExpectation(runId)),
+      notes: "Hosted regeneration is available only after an explicit rejection.",
+      reviewedBy: "visual director",
+      runId,
+      sceneIndexes: [1],
+      status: "rejected",
+    });
+    const readyWithRejection = await readStudioVisualSummary(process.cwd(), runId);
+    expect(readyWithRejection.actions).toMatchObject({
+      "visuals.plan-hosted": { routePath: "/actions/visuals-plan-hosted" },
+    });
+    await saveRun({ ...(await loadRun(runId)), state: "PAID_GENERATION_COST_APPROVED" });
+    const paid = await readStudioVisualSummary(process.cwd(), runId);
+    expect(paid.actions).toMatchObject({
+      "visuals.decide": { routePath: "/actions/visuals-decide" },
+      "visuals.generate-hosted": { routePath: "/actions/visuals-generate-hosted" },
+      "visuals.plan-hosted": { routePath: "/actions/visuals-plan-hosted" },
+    });
+    await saveRun({ ...(await loadRun(runId)), state: "COST_ESTIMATED" });
     const unavailable = await readStudioVisualSummary(process.cwd(), runId);
-    expect(Object.values(unavailable.actions)).toEqual([null, null, null, null]);
+    expect(Object.values(unavailable.actions)).toEqual([null, null, null, null, null, null]);
   });
 
   it("supports ranges and rejects missing, stale, traversal-shaped, or tampered media requests", async () => {
@@ -92,6 +120,20 @@ describe("Studio visual review read model", () => {
     await writeFile(artifactPath(runId, scene.assetPath), "tampered", "utf8");
     await expect(visualResponse(scene.mediaUrl, runId, scene.sceneIndex)).resolves.toMatchObject({
       status: 404,
+    });
+  });
+
+  it("keeps invalid hosted configuration visible to the operator", async () => {
+    const runId = await preparePackagedVisualRun();
+    await prepareStaticVisuals(runId);
+    await writeFile("producer.config.json", "{not-json", "utf8");
+
+    const summary = await readStudioVisualSummary(process.cwd(), runId);
+
+    expect(summary.kind).toBe("ready");
+    expect(summary.hosted).toMatchObject({
+      blockedReason: expect.stringMatching(/config/i),
+      mode: "unknown",
     });
   });
 

@@ -6,13 +6,13 @@ describe("Studio action service status", () => {
     const status = getStudioActionServiceStatus();
 
     expect(status).toMatchObject({
-      actionCount: 39,
+      actionCount: 41,
       cliFallbackCount: 0,
       disabledRouteCount: 2,
       findings: [],
-      readyForCliCount: 37,
+      readyForCliCount: 39,
       riskyExternalCount: 2,
-      webReadyCount: 37,
+      webReadyCount: 39,
       webMutationsEnabled: true,
     });
     expect(status.summaries).toContainEqual(

@@ -31,6 +31,8 @@ const mutationReviewTargets: Readonly<Record<string, MutationReviewTarget>> = {
   "visuals.decide": target("visuals", "Open visual contact sheet"),
   "visuals.import": target("visuals", "Open visual contact sheet"),
   "visuals.prepare": target("visuals", "Open visual contact sheet"),
+  "visuals.plan-hosted": target("readiness", "Open hosted visual cost review"),
+  "visuals.generate-hosted": target("visuals", "Open generated visual beats"),
   "visuals.regenerate": target("visuals", "Open regenerated visual beats"),
   "voice.review": target("media", "Open voiceover review"),
   "voice.run": target("media", "Open voiceover media"),

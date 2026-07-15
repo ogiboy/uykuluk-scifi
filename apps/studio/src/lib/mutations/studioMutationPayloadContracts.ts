@@ -3,6 +3,8 @@ import { isValidRunId } from "../../../../../src/core/runId";
 import { channelHandoffDecisionValues } from "../../../../../src/stages/channel/channelHandoffDecisionContracts";
 import { renderDecisionValues } from "../../../../../src/stages/render/renderDecisionCommands";
 import {
+  hostedVisualGenerationRequestSchema,
+  hostedVisualPlanRequestSchema,
   runOnlyRequestSchema,
   visualDecisionRequestSchema,
   visualImportRequestSchema,
@@ -142,6 +144,18 @@ export function parseVisualRegenerationPayload(
   payload: unknown,
 ): z.infer<typeof visualRegenerationRequestSchema> {
   return visualRegenerationRequestSchema.parse(payload);
+}
+
+export function parseHostedVisualPlanPayload(
+  payload: unknown,
+): z.infer<typeof hostedVisualPlanRequestSchema> {
+  return hostedVisualPlanRequestSchema.parse(payload);
+}
+
+export function parseHostedVisualGenerationPayload(
+  payload: unknown,
+): z.infer<typeof hostedVisualGenerationRequestSchema> {
+  return hostedVisualGenerationRequestSchema.parse(payload);
 }
 
 export function parseVoiceRunPayload(payload: unknown): z.infer<typeof voiceRunRequestSchema> {
