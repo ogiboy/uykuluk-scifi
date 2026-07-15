@@ -37,9 +37,9 @@ cp .env.example .env
 cp apps/studio/.env.example apps/studio/.env.local
 ```
 
-Blank optional values are valid. `ELEVENLABS_API_KEY` is required only for explicitly requested
-ElevenLabs operations. Sentry remains disabled when its DSN is blank. Secrets stay server-side and
-must never use a `NEXT_PUBLIC_` name unless the value is intentionally public.
+Blank optional values are valid. `ELEVENLABS_API_KEY` and `BFL_API_KEY` are required only for their
+explicitly requested hosted operations. Sentry remains disabled when its DSN is blank. Secrets stay
+server-side and must never use a `NEXT_PUBLIC_` name unless the value is intentionally public.
 
 ## Verify the Local Setup
 
@@ -75,7 +75,8 @@ pnpm studio:start
 4. Generate, review, and approve the script.
 5. Generate the production package and render plan.
 6. Use local voice fallback or explicitly configure and audition ElevenLabs.
-7. Review subtitles, visual plan, evidence, cost, and readiness before render approval.
+7. Review subtitles and visuals; optionally plan, approve, generate, and selectively regenerate a
+   hosted still-image batch.
 8. Render and review the local MP4.
 
 Private YouTube upload is a pending v1 deliverable. Public and scheduled publishing are unavailable.
@@ -84,5 +85,6 @@ Private YouTube upload is a pending v1 deliverable. Public and scheduled publish
 
 - [Studio workflow](operator-guide/studio-workflow.md)
 - [Voice providers](providers/voice.md)
+- [Visual providers](providers/visuals.md)
 - [Troubleshooting](troubleshooting/provider-and-artifacts.md)
 - [Security model](security/operating-model.md)

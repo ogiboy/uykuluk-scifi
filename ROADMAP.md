@@ -73,22 +73,23 @@ Current voice checkpoint:
 
 Current visual checkpoint:
 
-- Implemented on the `v0.83.0` candidate: a minimal `VisualProvider` boundary with deterministic
-  static and manual PNG/JPEG paths, duration-preserving 12–24 visual beats, revision history,
-  contact-sheet review, rejected-only regeneration, and deterministic motion presets.
+- Implemented in `v0.83.0`: a minimal `VisualProvider` boundary with deterministic static and manual
+  PNG/JPEG paths, duration-preserving 12–24 visual beats, revision history, contact-sheet review,
+  rejected-only regeneration, and deterministic motion presets.
 - Studio supports prepare, digest/revision-bound media review, batch approve/reject, manual import,
   and rejected-scene regeneration without normal CLI use. Stale browser snapshots cannot mutate a
   newer manifest.
 - Render-plan v2, render approval v3, and draft manifest v10 bind the approved visual manifest;
   legacy evidence remains readable but cannot be newly approved or rendered without the binding.
-- Pending before merge: full product/browser UAT, PR-ready coverage/dependency/version/Sonar gates,
-  and main reconciliation. Hosted still-image bake-off/provider integration is deliberately next,
-  not hidden inside the credential-free fallback slice.
+- Active hosted candidate: one FLUX.2 Pro adapter with exact scene-plan quote/approval/reservation,
+  bounded asynchronous execution, provider-credit settlement, durable local image spools, Studio
+  confirmation, and rejected-only re-quote/regeneration. Mocked request/poll/recovery and combined
+  ElevenLabs-plus-visual workflow validation are implemented; live BFL production proof remains
+  pending explicit approval and credentials.
 
-After this visual candidate closes, delivery order is: one hosted still-image provider after the
-bounded bake-off; script audition and editorial provenance; resumable private-only upload; then
-persistent settings, prompt profiles, onboarding, documentation productization, and real-episode
-acceptance.
+After this hosted visual candidate closes, delivery order is: exact render/media polish; script
+audition and editorial provenance; resumable private-only upload; then persistent settings, prompt
+profiles, onboarding, documentation productization, and real-episode acceptance.
 
 ## Phase A - Safe Core Stabilization
 
