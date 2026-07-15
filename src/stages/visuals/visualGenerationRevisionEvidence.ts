@@ -11,9 +11,15 @@ import {
   type CostReservationSummary,
 } from "../../costs/costReservationStore.js";
 import { readJsonFile } from "../../utils/json.js";
-import type { VisualRevision } from "./visualContracts.js";
+import { requireHostedVisualSceneSpoolMatch } from "./hostedVisualSpoolEvidence.js";
+import { hostedVisualSourceSchema, type VisualRevision } from "./visualContracts.js";
+import { canonicalVisualGenerationDigest } from "./visualGenerationDigest.js";
 import { requireHostedVisualGenerationPlan } from "./visualGenerationPlan.js";
 import { hostedVisualGenerationPlanPath } from "./visualGenerationPlanContracts.js";
+import {
+  loadHostedVisualGenerationSpoolForOperation,
+  type LoadedHostedVisualGenerationSpool,
+} from "./visualGenerationSpool.js";
 import { loadVisualManifest } from "./visualManifest.js";
 import { visualMutationExpectationSchema } from "./visualMutationExpectation.js";
 
@@ -60,6 +66,10 @@ export const hostedVisualGenerationRevisionSchema = z.strictObject({
     markdownPath: z.string().min(1),
   }),
   archivedPlanPath: z.string().min(1),
+  selectedSources: z
+    .array(z.strictObject({ sceneIndex: z.int().positive(), source: hostedVisualSourceSchema }))
+    .min(1)
+    .max(24),
   settledReservationIds: z.array(z.string().min(1)).min(1),
   removedDerivedArtifacts: z.array(z.string().min(1)),
   createdAt: z.iso.datetime(),
@@ -138,28 +148,65 @@ export async function readHostedVisualGenerationRevision(
   const reservationsById = new Map(
     reservations.map((reservation) => [reservation.reservationId, reservation]),
   );
+  const spoolByReservationId = new Map<string, LoadedHostedVisualGenerationSpool>();
   const manifest = await loadVisualManifest(run);
-  const expectedReservationIds = revision.rejectedSceneIndexes.map((sceneIndex) => {
-    const scene = manifest.manifest.scenes.find((item) => item.sceneIndex === sceneIndex);
-    const source = scene?.revisions
-      .map((item) => item.source)
-      .find(
-        (
-          candidate,
-        ): candidate is Extract<VisualRevision["source"], { kind: "hosted-generation" }> =>
-          candidate.kind === "hosted-generation" &&
-          candidate.planDigest === revision.previousPlan.digest &&
-          candidate.quoteDigest === revision.previousQuote.digest &&
-          candidate.approvalId === revision.previousQuote.approvalId,
+  const selectedSceneIndexes = revision.selectedSources.map((item) => item.sceneIndex);
+  if (
+    JSON.stringify([...new Set(selectedSceneIndexes)].sort((left, right) => left - right)) !==
+    JSON.stringify([...revision.rejectedSceneIndexes].sort((left, right) => left - right))
+  ) {
+    throw new SafeExitError("Hosted visual revision selected sources do not match its scenes.");
+  }
+  const expectedReservationIds = await Promise.all(
+    revision.selectedSources.map(async ({ sceneIndex, source }) => {
+      const scene = manifest.manifest.scenes.find((item) => item.sceneIndex === sceneIndex);
+      const sourceDigest = canonicalVisualGenerationDigest(source);
+      const historicalRevision = scene?.revisions.find(
+        (candidate) =>
+          candidate.source.kind === "hosted-generation" &&
+          canonicalVisualGenerationDigest(candidate.source) === sourceDigest,
       );
-    if (!source) {
-      throw new SafeExitError(
-        `Hosted visual revision scene ${sceneIndex} has no matching historical source.`,
-      );
-    }
-    assertSettledSource(source, reservationsById.get(source.reservationId));
-    return source.reservationId;
-  });
+      if (!historicalRevision) {
+        throw new SafeExitError(
+          `Hosted visual revision scene ${sceneIndex} has no matching historical source.`,
+        );
+      }
+      if (
+        !run.approvals.some(
+          (item) =>
+            item.approvalId === source.approvalId &&
+            item.target === "paid-generation-cost" &&
+            item.approvedRef === source.quoteDigest,
+        )
+      ) {
+        throw new SafeExitError(
+          `Hosted visual revision scene ${sceneIndex} has no matching source approval.`,
+        );
+      }
+      const sourceReservation = reservationsById.get(source.reservationId);
+      if (!sourceReservation?.resultEvidenceDigest) {
+        throw new SafeExitError(
+          `Hosted visual revision scene ${sceneIndex} is missing settled result evidence.`,
+        );
+      }
+      let sourceSpool = spoolByReservationId.get(source.reservationId);
+      if (!sourceSpool) {
+        sourceSpool = await loadHostedVisualGenerationSpoolForOperation(
+          runId,
+          sourceReservation.operationId,
+          sourceReservation.resultEvidenceDigest,
+        );
+        spoolByReservationId.set(source.reservationId, sourceSpool);
+      }
+      requireHostedVisualSceneSpoolMatch({
+        sceneIndex,
+        revision: historicalRevision,
+        reservation: sourceReservation,
+        spool: sourceSpool,
+      });
+      return source.reservationId;
+    }),
+  );
   if (
     JSON.stringify([...new Set(revision.settledReservationIds)].sort()) !==
     JSON.stringify([...new Set(expectedReservationIds)].sort())

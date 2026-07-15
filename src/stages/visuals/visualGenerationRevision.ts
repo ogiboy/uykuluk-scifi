@@ -135,6 +135,7 @@ export async function reopenRejectedHostedVisualGeneration(
           .map((reservation) => [reservation.reservationId, reservation]),
       );
       const selectedReservationIds: string[] = [];
+      const selectedSources: HostedVisualGenerationRevision["selectedSources"] = [];
       for (const scene of rejectedScenes) {
         const active = scene.revisions.find((item) => item.revision === scene.activeRevision);
         if (!active || active.source.kind !== "hosted-generation") {
@@ -145,6 +146,7 @@ export async function reopenRejectedHostedVisualGeneration(
         }
         assertSettledSource(active.source, settledById.get(active.source.reservationId));
         selectedReservationIds.push(active.source.reservationId);
+        selectedSources.push({ sceneIndex: scene.sceneIndex, source: active.source });
       }
       const planBytes = await readRegisteredArtifactBytes(current, hostedVisualGenerationPlanPath);
       if (!planBytes) {
@@ -227,6 +229,7 @@ export async function reopenRejectedHostedVisualGeneration(
           markdownPath: archivedQuote.archive.markdownPath,
         },
         archivedPlanPath,
+        selectedSources,
         settledReservationIds: Array.from(new Set(selectedReservationIds)),
         removedDerivedArtifacts,
         createdAt: nowIso(),

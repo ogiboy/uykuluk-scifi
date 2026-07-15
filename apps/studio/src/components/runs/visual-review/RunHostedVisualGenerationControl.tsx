@@ -86,8 +86,8 @@ export function RunHostedVisualGenerationControl({
       </div>
       {mixedSelection ? (
         <p className='text-muted-foreground text-sm'>
-          This workflow state accepts rejected beats only. Clear pending or approved beats from the
-          selection so revision evidence stays attributable.
+          This workflow state accepts only rejected beats backed by exact settled hosted evidence.
+          Clear pending, approved, static, or manual beats from the selection.
         </p>
       ) : null}
 

@@ -32,7 +32,7 @@ describe("Studio visual review read model", () => {
         "visuals.decide": { routePath: "/actions/visuals-decide" },
         "visuals.generate-hosted": null,
         "visuals.import": { routePath: "/actions/visuals-import" },
-        "visuals.plan-hosted": { routePath: "/actions/visuals-plan-hosted" },
+        "visuals.plan-hosted": null,
         "visuals.prepare": null,
         "visuals.regenerate": { routePath: "/actions/visuals-regenerate" },
       },
@@ -48,7 +48,7 @@ describe("Studio visual review read model", () => {
     const ready = await readStudioVisualSummary(process.cwd(), runId);
     expect(ready.actions).toMatchObject({
       "visuals.decide": { routePath: "/actions/visuals-decide" },
-      "visuals.generate-hosted": { routePath: "/actions/visuals-generate-hosted" },
+      "visuals.generate-hosted": null,
       "visuals.plan-hosted": null,
     });
     await decideVisuals({
@@ -60,15 +60,13 @@ describe("Studio visual review read model", () => {
       status: "rejected",
     });
     const readyWithRejection = await readStudioVisualSummary(process.cwd(), runId);
-    expect(readyWithRejection.actions).toMatchObject({
-      "visuals.plan-hosted": { routePath: "/actions/visuals-plan-hosted" },
-    });
+    expect(readyWithRejection.actions["visuals.plan-hosted"]).toBeNull();
     await saveRun({ ...(await loadRun(runId)), state: "PAID_GENERATION_COST_APPROVED" });
     const paid = await readStudioVisualSummary(process.cwd(), runId);
     expect(paid.actions).toMatchObject({
       "visuals.decide": { routePath: "/actions/visuals-decide" },
-      "visuals.generate-hosted": { routePath: "/actions/visuals-generate-hosted" },
-      "visuals.plan-hosted": { routePath: "/actions/visuals-plan-hosted" },
+      "visuals.generate-hosted": null,
+      "visuals.plan-hosted": null,
     });
     await saveRun({ ...(await loadRun(runId)), state: "COST_ESTIMATED" });
     const unavailable = await readStudioVisualSummary(process.cwd(), runId);

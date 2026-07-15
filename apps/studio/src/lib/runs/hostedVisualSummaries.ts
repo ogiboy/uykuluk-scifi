@@ -3,8 +3,12 @@ import {
   readCostEstimateAtProjectRoot,
   validateCurrentCostEstimate,
 } from "../../../../../src/costs/costEstimate";
+import { requireSettledAppliedHostedVisualPlan } from "../../../../../src/stages/visuals/hostedVisualPlanCompletion";
 import { hostedVisualGenerationPlanPath } from "../../../../../src/stages/visuals/visualGenerationPlanContracts";
-import { loadHostedVisualGenerationPlan } from "../../../../../src/stages/visuals/visualGenerationPlanStore";
+import {
+  loadHostedVisualGenerationPlan,
+  loadPersistedHostedVisualGenerationPlan,
+} from "../../../../../src/stages/visuals/visualGenerationPlanStore";
 import type { readCoreVisualRunRecord } from "./visualRunRecord";
 
 export type StudioHostedVisualSummary = Readonly<{
@@ -14,13 +18,14 @@ export type StudioHostedVisualSummary = Readonly<{
   }>;
   execution: Readonly<{ approvalId: string; bindingDigest: string; quoteDigest: string }> | null;
   blockedReason?: string;
+  eligibleRejectedSceneIndexes: readonly number[];
   mode: "black-forest-labs" | "static-manual" | "unknown";
   allowedPlanPurpose: "initial" | "regenerate-rejected" | null;
   plan: Readonly<{
     digest?: string;
     purpose?: "initial" | "regenerate-rejected";
     sceneIndexes: readonly number[];
-    status: "blocked" | "missing" | "ready";
+    status: "blocked" | "missing" | "ready" | "settled";
   }>;
   quote: Readonly<{
     digest?: string;
@@ -53,21 +58,39 @@ export async function readStudioHostedVisualSummary(
   if (!run.artifacts.includes(hostedVisualGenerationPlanPath)) {
     return {
       ...emptyHostedVisualSummary(),
-      allowedPlanPurpose: allowedHostedPlanPurpose(run.state, rejectedCount),
+      allowedPlanPurpose: allowedHostedPlanPurpose("missing", run.state, rejectedCount),
       mode: "black-forest-labs",
     };
   }
   try {
-    const loaded = await loadHostedVisualGenerationPlan(run, config, root);
+    const persisted = await loadPersistedHostedVisualGenerationPlan(run, root);
+    let lifecycle: "fresh" | "settled" = "fresh";
+    let eligibleRejectedSceneIndexes: number[] = [];
+    try {
+      await loadHostedVisualGenerationPlan(run, config, root);
+    } catch {
+      const completion = await requireSettledAppliedHostedVisualPlan({
+        run,
+        plan: persisted,
+        projectRoot: root,
+      });
+      eligibleRejectedSceneIndexes = completion.eligibleRejectedSceneIndexes;
+      lifecycle = "settled";
+    }
     const base = {
       ...emptyHostedVisualSummary(),
-      allowedPlanPurpose: allowedHostedPlanPurpose(run.state, rejectedCount),
+      allowedPlanPurpose: allowedHostedPlanPurpose(
+        lifecycle,
+        run.state,
+        eligibleRejectedSceneIndexes.length,
+      ),
+      eligibleRejectedSceneIndexes,
       mode: "black-forest-labs" as const,
       plan: {
-        digest: loaded.digest,
-        purpose: loaded.plan.purpose,
-        sceneIndexes: loaded.plan.targetedSceneIndexes,
-        status: "ready" as const,
+        digest: persisted.digest,
+        purpose: persisted.plan.purpose,
+        sceneIndexes: persisted.plan.targetedSceneIndexes,
+        status: lifecycle === "fresh" ? ("ready" as const) : ("settled" as const),
       },
     };
     if (!run.artifacts.includes("costs/estimate.json")) return base;
@@ -81,11 +104,11 @@ export async function readStudioHostedVisualSummary(
     );
     if (
       quoteProblems.length > 0 ||
-      stage?.provider !== loaded.plan.provider ||
-      stage.model !== loaded.plan.model ||
-      stage.bindingDigest !== loaded.digest ||
+      stage?.provider !== persisted.plan.provider ||
+      stage.model !== persisted.plan.model ||
+      stage.bindingDigest !== persisted.digest ||
       stage.bindingSummary?.kind !== "hosted-visual-generation" ||
-      stage.bindingSummary.planDigest !== loaded.digest
+      stage.bindingSummary.planDigest !== persisted.digest
     ) {
       return {
         ...base,
@@ -98,11 +121,12 @@ export async function readStudioHostedVisualSummary(
       (item) => item.target === "paid-generation-cost" && item.approvedRef === quote.digest,
     );
     const execution =
+      lifecycle === "fresh" &&
       approval &&
       (run.state === "READY_FOR_MANUAL_PRODUCTION" || run.state === "PAID_GENERATION_COST_APPROVED")
         ? {
             approvalId: approval.approvalId,
-            bindingDigest: loaded.digest,
+            bindingDigest: persisted.digest,
             quoteDigest: quote.digest,
           }
         : null;
@@ -131,6 +155,7 @@ export function emptyHostedVisualSummary(): StudioHostedVisualSummary {
   return {
     allowedPlanPurpose: null,
     approval: { status: "missing" },
+    eligibleRejectedSceneIndexes: [],
     execution: null,
     mode: "unknown",
     plan: { sceneIndexes: [], status: "missing" },
@@ -139,13 +164,19 @@ export function emptyHostedVisualSummary(): StudioHostedVisualSummary {
 }
 
 function allowedHostedPlanPurpose(
+  lifecycle: "fresh" | "missing" | "settled",
   state: string,
-  rejectedCount: number,
+  eligibleRejectedCount: number,
 ): StudioHostedVisualSummary["allowedPlanPurpose"] {
-  if (state === "PRODUCTION_PACKAGE_GENERATED") return "initial";
+  if (lifecycle === "missing" && state === "PRODUCTION_PACKAGE_GENERATED") return "initial";
   if (
-    rejectedCount > 0 &&
-    (state === "PAID_GENERATION_COST_APPROVED" || state === "READY_FOR_MANUAL_PRODUCTION")
+    lifecycle === "settled" &&
+    eligibleRejectedCount > 0 &&
+    [
+      "PAID_GENERATION_COST_APPROVED",
+      "PRODUCTION_PACKAGE_GENERATED",
+      "READY_FOR_MANUAL_PRODUCTION",
+    ].includes(state)
   ) {
     return "regenerate-rejected";
   }

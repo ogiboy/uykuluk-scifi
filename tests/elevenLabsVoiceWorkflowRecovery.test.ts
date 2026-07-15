@@ -12,7 +12,11 @@ vi.mock("@elevenlabs/elevenlabs-js", () => ({
 import { loadConfig } from "../src/config/config";
 import { writeRunJson, writeRunText } from "../src/core/artifacts";
 import { loadRun, saveRun } from "../src/core/runStore";
-import { buildCostEstimate, readCostEstimate } from "../src/costs/costEstimate";
+import {
+  buildCostEstimate,
+  readCostEstimate,
+  validateCurrentCostEstimate,
+} from "../src/costs/costEstimate";
 import { archiveActiveCostEstimate } from "../src/costs/costEstimateHistory";
 import { validateCostEstimateIntegrity } from "../src/costs/costEstimateIntegrity";
 import { renderCostEstimateMarkdown } from "../src/costs/costEstimatePresentation";
@@ -119,6 +123,9 @@ describe("ElevenLabs voice workflow recovery", () => {
     const config = await loadConfig();
     const originalQuote = await readCostEstimate(runId);
     let run = await loadRun(runId);
+    await expect(
+      validateCurrentCostEstimate(run, config, originalQuote.estimate, originalQuote.digest),
+    ).resolves.toEqual([]);
     await expect(
       validateCostEstimateIntegrity(run, config, originalQuote.estimate),
     ).resolves.toEqual([]);

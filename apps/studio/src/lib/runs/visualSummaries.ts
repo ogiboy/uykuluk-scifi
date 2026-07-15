@@ -106,7 +106,16 @@ export async function readStudioVisualSummary(
     }));
     const hosted = await readStudioHostedVisualSummary(root, run, rejectedCount);
     return {
-      actions: { ...mutationActions, "visuals.prepare": null },
+      actions: {
+        ...mutationActions,
+        "visuals.generate-hosted": hosted.execution
+          ? mutationActions["visuals.generate-hosted"]
+          : null,
+        "visuals.plan-hosted": hosted.allowedPlanPurpose
+          ? mutationActions["visuals.plan-hosted"]
+          : null,
+        "visuals.prepare": null,
+      },
       activeRevisions,
       approvedCount,
       hosted,

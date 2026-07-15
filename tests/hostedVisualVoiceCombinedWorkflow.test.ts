@@ -1,4 +1,3 @@
-import { createHash } from "node:crypto";
 import { readFile, writeFile } from "node:fs/promises";
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -14,7 +13,11 @@ vi.mock("@elevenlabs/elevenlabs-js", () => ({
 import { loadConfig } from "../src/config/config";
 import type { ProducerConfig } from "../src/config/schema";
 import { loadRun } from "../src/core/runStore";
-import { readCostEstimate, readCostEstimateByDigestAtProjectRoot } from "../src/costs/costEstimate";
+import {
+  readCostEstimate,
+  readCostEstimateByDigestAtProjectRoot,
+  validateCurrentCostEstimate,
+} from "../src/costs/costEstimate";
 import { approvePaidGenerationCost } from "../src/stages/approveCost";
 import { estimateCost } from "../src/stages/estimate";
 import { generateEvidenceBundle } from "../src/stages/evidence";
@@ -25,14 +28,12 @@ import {
   generateHostedVisuals,
   prepareHostedVisualGenerationPlan,
 } from "../src/stages/visuals";
-import type { HostedVisualGenerationPlan } from "../src/stages/visuals/visualGenerationPlanContracts";
 import { loadHostedVisualGenerationPlan } from "../src/stages/visuals/visualGenerationPlanStore";
 import { readHostedVisualGenerationRevision } from "../src/stages/visuals/visualGenerationRevision";
 import { generateVoiceoverAudio } from "../src/stages/voice";
 import { generateVoiceCandidates } from "../src/stages/voiceCandidates";
 import { generateVoicePreview } from "../src/stages/voicePreview";
 import { selectVoice } from "../src/stages/voiceSelection";
-import { sha256 } from "../src/utils/hash";
 import {
   approvedHostedVoiceConfirmation,
   configureWorkflowElevenLabs,
@@ -41,6 +42,7 @@ import {
   workflowConvertWithTimestamps,
 } from "./elevenLabsVoiceWorkflowFixtures";
 import { useTempProject } from "./helpers";
+import { hostedSceneExecutor } from "./hostedVisualWorkflowTestHelpers";
 import { currentVisualExpectation, prepareApprovedStaticVisuals } from "./visualTestHelpers";
 import {
   successfulCatalogProvider,
@@ -95,6 +97,14 @@ describe("combined hosted voice and visual workflow", () => {
     });
     const voiceProviderCalls = sdk.convertWithTimestamps.mock.calls.length;
     expect(voiceProviderCalls).toBeGreaterThan(0);
+    await expect(
+      validateCurrentCostEstimate(
+        await loadRun(runId),
+        await loadConfig(),
+        firstQuote.estimate,
+        firstQuote.digest,
+      ),
+    ).resolves.toEqual([]);
 
     const firstPlan = await currentPlan(runId);
     await generateHostedVisuals({
@@ -220,38 +230,4 @@ async function configureCombinedProviders(): Promise<void> {
 
 async function currentPlan(runId: string) {
   return loadHostedVisualGenerationPlan(await loadRun(runId), await loadConfig());
-}
-
-function hostedSceneExecutor(batch: string, billableCredits = 9) {
-  return vi.fn(
-    async ({ plan, sceneIndex }: { plan: HostedVisualGenerationPlan; sceneIndex: number }) => {
-      const prompt = plan.scenes.find((scene) => scene.sceneIndex === sceneIndex)?.prompt;
-      if (!prompt) throw new Error(`Missing planned prompt for scene ${sceneIndex}.`);
-      const buffer = Buffer.from(`${batch}-hosted-image-${sceneIndex}`);
-      const requestId = `${batch}-bfl-request-${sceneIndex}`;
-      return {
-        kind: "success" as const,
-        value: {
-          buffer,
-          digest: createHash("sha256").update(buffer).digest("hex"),
-          extension: "jpg" as const,
-          media: { bytes: buffer.byteLength, format: "jpeg" as const, width: 1920, height: 1080 },
-          provider: {
-            service: "black-forest-labs" as const,
-            modelId: "flux-2-pro" as const,
-            outputFormat: "jpeg" as const,
-          },
-          providerBilling: {
-            source: "provider-reported-credits-approved-tariff-derived-usd" as const,
-            billableCredits,
-            usdPerCredit: 0.01 as const,
-            derivedUsdMicros: billableCredits * 10_000,
-          },
-          providerRequest: { inputDigest: sha256(prompt), requestIdHash: sha256(requestId) },
-        },
-        actualUsdMicros: billableCredits * 10_000,
-        providerRequestId: requestId,
-      };
-    },
-  );
 }

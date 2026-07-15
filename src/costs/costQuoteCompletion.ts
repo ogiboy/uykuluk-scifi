@@ -19,7 +19,7 @@ export async function readSettledHostedVisualQuoteStage(
   run: RunRecord,
   quoteDigest: string,
   stages: readonly QuotedStage[],
-): Promise<{ actualUsd: number } | null> {
+): Promise<{ actualUsdMicros: number } | null> {
   const matching = (await readCostReservationSummariesAtProjectRoot(process.cwd(), run.runId))
     .filter((reservation) => reservation.stage === "imageGeneration")
     .filter((reservation) => reservation.quoteDigest === quoteDigest)
@@ -64,7 +64,30 @@ export async function readSettledHostedVisualQuoteStage(
     planDigest: quoteLine.bindingDigest,
     approvedQuote: { approvalId: approval.approvalId, quoteDigest },
   });
-  return { actualUsd: reservation.actualUsdMicros / 1_000_000 };
+  return { actualUsdMicros: reservation.actualUsdMicros };
+}
+
+/** Proves whether the exact quote's TTS line has already settled once. */
+export async function readSettledTtsQuoteStage(
+  run: RunRecord,
+  quoteDigest: string,
+  stages: readonly QuotedStage[],
+  projectRoot = process.cwd(),
+): Promise<{ actualUsdMicros: number } | null> {
+  const matching = (await readCostReservationSummariesAtProjectRoot(projectRoot, run.runId))
+    .filter((reservation) => reservation.stage === "tts")
+    .filter((reservation) => reservation.quoteDigest === quoteDigest)
+    .filter((reservation) => reservation.status !== "RELEASED");
+  if (matching.length === 0) return null;
+  if (matching.length !== 1 || matching[0]?.status !== "SETTLED") {
+    throw new SafeExitError("The active TTS quote has an incomplete or ambiguous reservation.");
+  }
+  const quoteLine = stages.find((stage) => stage.stage === "tts");
+  if (!quoteLine?.enabled || quoteLine.estimatedUsd <= 0) {
+    throw new SafeExitError("Settled TTS quote line is missing or disabled.");
+  }
+  const result = await requireSettledTtsResult(run, matching[0], quoteLine, projectRoot);
+  return { actualUsdMicros: result.actualUsdMicros };
 }
 
 /** Replaces a durably settled TTS line with explicit zero-cost completion evidence. */
@@ -93,37 +116,13 @@ export async function suppressSettledTtsStage(
     reservation.quoteDigest,
   );
   const originalLine = quote.estimate.stages.find((stage) => stage.stage === "tts");
-  const approval = run.approvals.find(
-    (item) =>
-      item.approvalId === reservation.approvalId &&
-      item.target === "paid-generation-cost" &&
-      item.approvedRef === reservation.quoteDigest,
+  if (!originalLine) throw new SafeExitError("Settled TTS quote line is missing.");
+  const { actualUsdMicros, resultEvidenceDigest } = await requireSettledTtsResult(
+    run,
+    reservation,
+    originalLine,
+    projectRoot,
   );
-  if (
-    !approval ||
-    originalLine?.provider !== reservation.provider ||
-    originalLine.model !== reservation.model ||
-    originalLine.bindingDigest !== reservation.bindingDigest ||
-    !reservation.resultEvidenceDigest ||
-    reservation.actualUsdMicros === undefined
-  ) {
-    throw new SafeExitError("Settled TTS quote, approval, or reservation evidence is invalid.");
-  }
-  const resultEvidenceDigest = reservation.resultEvidenceDigest;
-  const actualUsdMicros = reservation.actualUsdMicros;
-  const spool = await loadVoiceExecutionSpoolAtProjectRoot(projectRoot, run.runId, {
-    operationId: reservation.operationId,
-    path: `operations/tts/${reservation.operationId}/result.json`,
-    digest: resultEvidenceDigest,
-  });
-  if (
-    spool.binding.bindingDigest !== reservation.bindingDigest ||
-    spool.approvedQuote.quoteDigest !== reservation.quoteDigest ||
-    spool.approvedQuote.approvalId !== reservation.approvalId ||
-    spool.actualUsdMicros !== actualUsdMicros
-  ) {
-    throw new SafeExitError("Settled TTS result spool does not match its historical reservation.");
-  }
   return stages.map((stage) =>
     stage.stage === "tts"
       ? {
@@ -145,4 +144,46 @@ export async function suppressSettledTtsStage(
         }
       : stage,
   );
+}
+
+async function requireSettledTtsResult(
+  run: RunRecord,
+  reservation: Awaited<ReturnType<typeof readCostReservationSummariesAtProjectRoot>>[number],
+  quoteLine: QuotedStage,
+  projectRoot: string,
+): Promise<{ actualUsdMicros: number; resultEvidenceDigest: string }> {
+  const approval = run.approvals.find(
+    (item) =>
+      item.approvalId === reservation.approvalId &&
+      item.target === "paid-generation-cost" &&
+      item.approvedRef === reservation.quoteDigest,
+  );
+  if (
+    reservation.status !== "SETTLED" ||
+    !approval ||
+    quoteLine.provider !== reservation.provider ||
+    quoteLine.model !== reservation.model ||
+    quoteLine.bindingDigest !== reservation.bindingDigest ||
+    !reservation.resultEvidenceDigest ||
+    reservation.actualUsdMicros === undefined
+  ) {
+    throw new SafeExitError("Settled TTS quote, approval, or reservation evidence is invalid.");
+  }
+  const spool = await loadVoiceExecutionSpoolAtProjectRoot(projectRoot, run.runId, {
+    operationId: reservation.operationId,
+    path: `operations/tts/${reservation.operationId}/result.json`,
+    digest: reservation.resultEvidenceDigest,
+  });
+  if (
+    spool.binding.bindingDigest !== reservation.bindingDigest ||
+    spool.approvedQuote.quoteDigest !== reservation.quoteDigest ||
+    spool.approvedQuote.approvalId !== reservation.approvalId ||
+    spool.actualUsdMicros !== reservation.actualUsdMicros
+  ) {
+    throw new SafeExitError("Settled TTS result spool does not match its historical reservation.");
+  }
+  return {
+    actualUsdMicros: reservation.actualUsdMicros,
+    resultEvidenceDigest: reservation.resultEvidenceDigest,
+  };
 }

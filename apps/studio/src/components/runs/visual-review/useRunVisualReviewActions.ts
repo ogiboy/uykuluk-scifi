@@ -19,13 +19,13 @@ export function useRunVisualReviewActions(runId: string, summary: StudioVisualSu
   const selectedRejectedCount = summary.scenes.filter(
     (scene) => scene.decision === "rejected" && selected.has(scene.sceneIndex),
   ).length;
-  const hasMixedHostedSelection =
-    selectedRejectedCount > 0 && selectedRejectedCount < selected.size;
+  const selectedHostedEligibleCount = summary.hosted.eligibleRejectedSceneIndexes.filter(
+    (sceneIndex) => selected.has(sceneIndex),
+  ).length;
   const hostedSelectionBlocked =
-    hasMixedHostedSelection ||
-    (summary.hosted.allowedPlanPurpose === "regenerate-rejected" &&
-      selected.size > 0 &&
-      selectedRejectedCount !== selected.size);
+    summary.hosted.allowedPlanPurpose === "regenerate-rejected" &&
+    selected.size > 0 &&
+    selectedHostedEligibleCount !== selected.size;
 
   async function prepare(): Promise<void> {
     const action = summary.actions["visuals.prepare"];

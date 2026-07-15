@@ -1,5 +1,6 @@
 import { SafeExitError } from "../../core/errors.js";
 import type { CostReservationSummary } from "../../costs/costReservationStore.js";
+import type { VisualRevision } from "./visualContracts.js";
 import type { LoadedHostedVisualGenerationSpool } from "./visualGenerationSpool.js";
 
 type ExactHostedVisualSpoolIdentity = Readonly<{
@@ -45,6 +46,50 @@ export function requireSettledHostedVisualSpool(
     throw new SafeExitError("Hosted visual settlement is not durably complete.");
   }
   return requireCommittedHostedVisualSpool(input);
+}
+
+/** Verifies one manifest revision against its exact settled batch image evidence. */
+export function requireHostedVisualSceneSpoolMatch(input: {
+  sceneIndex: number;
+  revision: VisualRevision;
+  reservation: CostReservationSummary;
+  spool: LoadedHostedVisualGenerationSpool;
+}): void {
+  const source = input.revision.source;
+  if (input.revision.provider !== "black-forest-labs" || source.kind !== "hosted-generation") {
+    throw new SafeExitError(`Hosted visual scene ${input.sceneIndex} has no hosted revision.`);
+  }
+  requireSettledHostedVisualSpool({
+    spool: input.spool,
+    reservation: input.reservation,
+    planDigest: source.planDigest,
+    approvedQuote: { approvalId: source.approvalId, quoteDigest: source.quoteDigest },
+  });
+  const images = input.spool.spool.images.filter((image) => image.sceneIndex === input.sceneIndex);
+  const image = images[0];
+  if (
+    images.length !== 1 ||
+    !image ||
+    source.operationId !== input.spool.spool.operationId ||
+    source.reservationId !== input.reservation.reservationId ||
+    source.resultSpool.path !== input.spool.reference.path ||
+    source.resultSpool.digest !== input.spool.reference.digest ||
+    source.service !== input.spool.spool.provider.service ||
+    source.modelId !== input.spool.spool.provider.modelId ||
+    source.providerRequestIdHash !== image.providerRequest.requestIdHash ||
+    source.billableCredits !== image.billing.billableCredits ||
+    source.actualUsdMicros !== image.billing.derivedUsdMicros ||
+    input.revision.asset.path !== image.asset.path ||
+    input.revision.asset.digest !== image.asset.sha256 ||
+    input.revision.media?.bytes !== image.media.bytes ||
+    input.revision.media.format !== image.media.format ||
+    input.revision.media.height !== image.media.height ||
+    input.revision.media.width !== image.media.width
+  ) {
+    throw new SafeExitError(
+      `Hosted visual scene ${input.sceneIndex} does not match its settled spool image.`,
+    );
+  }
 }
 
 export function requireHostedVisualResultDigest(value: string | undefined): string {

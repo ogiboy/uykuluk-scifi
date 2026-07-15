@@ -28,6 +28,21 @@ const visualMediaSchema = z.strictObject({
   width: z.int().positive(),
 });
 
+export const hostedVisualSourceSchema = z.strictObject({
+  kind: z.literal("hosted-generation"),
+  service: z.literal("black-forest-labs"),
+  modelId: z.literal("flux-2-pro"),
+  operationId: z.string().regex(/^image_[a-f0-9]{64}$/),
+  planDigest: digestSchema,
+  quoteDigest: digestSchema,
+  approvalId: z.string().min(1).max(200),
+  reservationId: z.string().min(1).max(200),
+  resultSpool: z.strictObject({ path: canonicalPathSchema, digest: digestSchema }),
+  providerRequestIdHash: digestSchema,
+  billableCredits: z.number().nonnegative(),
+  actualUsdMicros: z.int().nonnegative(),
+});
+
 const visualSourceSchema = z.discriminatedUnion("kind", [
   z.strictObject({
     kind: z.literal("static-fallback"),
@@ -39,20 +54,7 @@ const visualSourceSchema = z.discriminatedUnion("kind", [
     originalFileName: z.string().min(1).max(240),
     sourceDigest: digestSchema,
   }),
-  z.strictObject({
-    kind: z.literal("hosted-generation"),
-    service: z.literal("black-forest-labs"),
-    modelId: z.literal("flux-2-pro"),
-    operationId: z.string().regex(/^image_[a-f0-9]{64}$/),
-    planDigest: digestSchema,
-    quoteDigest: digestSchema,
-    approvalId: z.string().min(1).max(200),
-    reservationId: z.string().min(1).max(200),
-    resultSpool: z.strictObject({ path: canonicalPathSchema, digest: digestSchema }),
-    providerRequestIdHash: digestSchema,
-    billableCredits: z.number().nonnegative(),
-    actualUsdMicros: z.int().nonnegative(),
-  }),
+  hostedVisualSourceSchema,
 ]);
 
 export const visualRevisionSchema = z.strictObject({

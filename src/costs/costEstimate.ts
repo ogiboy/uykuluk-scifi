@@ -13,8 +13,12 @@ import {
   readCostEstimateAtProjectRoot,
   readCostEstimateByDigestAtProjectRoot,
 } from "./costEstimateStore.js";
-import { readSettledHostedVisualQuoteStage } from "./costQuoteCompletion.js";
+import {
+  readSettledHostedVisualQuoteStage,
+  readSettledTtsQuoteStage,
+} from "./costQuoteCompletion.js";
 import { quoteCostStages } from "./costQuoteStages.js";
+import { usdToMicros } from "./money.js";
 
 export { costEstimateSchema } from "./costEstimateContracts.js";
 export type { CostEstimate } from "./costEstimateContracts.js";
@@ -92,13 +96,18 @@ export async function validateCurrentCostEstimate(
   quoteDigest?: string,
 ): Promise<string[]> {
   let currentStages: CostEstimate["stages"];
-  let hostedVisualSettlement: { actualUsd: number } | null = null;
+  const settledStages = new Map<string, { actualUsdMicros: number }>();
   try {
-    hostedVisualSettlement = quoteDigest
-      ? await readSettledHostedVisualQuoteStage(run, quoteDigest, estimate.stages)
-      : null;
+    if (quoteDigest) {
+      const [tts, imageGeneration] = await Promise.all([
+        readSettledTtsQuoteStage(run, quoteDigest, estimate.stages),
+        readSettledHostedVisualQuoteStage(run, quoteDigest, estimate.stages),
+      ]);
+      if (tts) settledStages.set("tts", tts);
+      if (imageGeneration) settledStages.set("imageGeneration", imageGeneration);
+    }
     currentStages = await quoteCostStages(run, config, {
-      ...(hostedVisualSettlement
+      ...(settledStages.has("imageGeneration")
         ? {
             preserveSettledQuoteStages: {
               stages: estimate.stages,
@@ -121,10 +130,7 @@ export async function validateCurrentCostEstimate(
   );
   const remainingTotal = currentStages.reduce(
     (sum, stage) =>
-      sum +
-      (stage.enabled && !(hostedVisualSettlement && stage.stage === "imageGeneration")
-        ? stage.estimatedUsd
-        : 0),
+      sum + (stage.enabled && !settledStages.has(stage.stage) ? stage.estimatedUsd : 0),
     0,
   );
   const budget = await checkBudget({
@@ -139,19 +145,21 @@ export async function validateCurrentCostEstimate(
     reasons.push("Live hard-budget decision changed after the cost estimate.");
   }
   const approvalRequired =
-    budget.approvalRequired || requiresConfiguredProviderApproval(config, currentStages);
+    budget.approvalRequired ||
+    requiresConfiguredProviderApproval(config, currentStages) ||
+    (settledStages.size > 0 && estimate.approvalRequired);
   if (estimate.approvalRequired !== approvalRequired) {
     reasons.push("Live approval threshold changed after the cost estimate.");
   }
-  const hostedVisualQuoteMaximum = hostedVisualSettlement
-    ? (estimate.stages.find((stage) => stage.stage === "imageGeneration")?.estimatedUsd ?? 0)
-    : 0;
-  const expectedCumulativeRunCost = hostedVisualSettlement
-    ? estimate.cumulativeEstimatedRunCost -
-      hostedVisualQuoteMaximum +
-      hostedVisualSettlement.actualUsd
-    : estimate.cumulativeEstimatedRunCost;
-  if (expectedCumulativeRunCost !== budget.cumulativeEstimatedRunCostUsd) {
+  const expectedCumulativeMicros = [...settledStages.entries()].reduce(
+    (total, [stageName, settlement]) => {
+      const quotedMaximum =
+        estimate.stages.find((stage) => stage.stage === stageName)?.estimatedUsd ?? 0;
+      return total - usdToMicros(quotedMaximum) + settlement.actualUsdMicros;
+    },
+    usdToMicros(estimate.cumulativeEstimatedRunCost),
+  );
+  if (expectedCumulativeMicros !== usdToMicros(budget.cumulativeEstimatedRunCostUsd)) {
     reasons.push("Live cumulative run cost changed after the cost estimate.");
   }
   if (JSON.stringify(estimate.hardBlockedReasons) !== JSON.stringify(budget.blockedReasons)) {
