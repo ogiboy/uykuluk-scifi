@@ -1,11 +1,12 @@
 import { readFile } from "node:fs/promises";
-import path from "node:path";
 import { z } from "zod";
 import { loadConfig } from "../config/config.js";
-import { artifactPath, writeRunBinary } from "../core/artifacts.js";
+import { artifactPath } from "../core/artifacts.js";
 import { SafeExitError } from "../core/errors.js";
+import { appendLedgerEvent } from "../core/ledger.js";
 import { queueRunLedgerEvent, reconcileRunLedgerOutbox } from "../core/runLedgerOutbox.js";
 import { mutateRun } from "../core/runStore.js";
+import type { RunRecord } from "../core/state.js";
 import { requireState } from "../safeguards/approvalGuard.js";
 import { nowIso } from "../utils/time.js";
 import { verifyProductionPackage } from "./production/productionPackageIntegrity.js";
@@ -28,14 +29,13 @@ import {
   persistVisualManifest,
   visualMutationRollbackPaths,
 } from "./visuals/visualPersistence.js";
-import { ManualImportVisualProvider, StaticVisualProvider } from "./visuals/visualProvider.js";
-import {
-  createStaticVisualRevision,
-  manualVisualRevision,
-  visualRevisionPath,
-} from "./visuals/visualRevisions.js";
+import { StaticVisualProvider } from "./visuals/visualProvider.js";
+import { createStaticVisualRevision } from "./visuals/visualRevisions.js";
 import { groupProductionScenesForVisuals } from "./visuals/visualSceneGroups.js";
 
+export { generateHostedVisuals } from "./visuals/hostedVisualGeneration.js";
+export { prepareHostedVisualGenerationPlan } from "./visuals/visualGenerationPlanStore.js";
+export { importManualVisual } from "./visuals/visualManualImport.js";
 export type { VisualMutationExpectation } from "./visuals/visualMutationExpectation.js";
 export { regenerateRejectedStaticVisuals } from "./visuals/visualRegeneration.js";
 
@@ -114,67 +114,6 @@ export async function prepareStaticVisuals(runId: string): Promise<VisualManifes
   return manifest;
 }
 
-/** Imports a new manual image revision for one scene and invalidates stale render planning. */
-export async function importManualVisual(
-  input: { runId: string; sceneIndex: number; sourcePath: string } & VisualMutationExpectation,
-): Promise<VisualManifest> {
-  await reconcileRunLedgerOutbox(input.runId);
-  const provider = new ManualImportVisualProvider(path.resolve(input.sourcePath));
-  const result = await provider.createSceneVisual({
-    revision: 1,
-    runId: input.runId,
-    sceneIndex: input.sceneIndex,
-    visualPrompt: "manual import",
-  });
-  if (result.provider !== "manual-import") {
-    throw new SafeExitError("Manual visual provider returned an unexpected result.");
-  }
-  const mutation = await mutateRun(input.runId, async (run, transaction) => {
-    await requireState(run, "PRODUCTION_PACKAGE_GENERATED", "visuals-import");
-    const loaded = await loadVisualManifest(run);
-    assertVisualMutationExpectation(loaded, input);
-    const scene = loaded.manifest.scenes.find((item) => item.sceneIndex === input.sceneIndex);
-    if (!scene) {
-      throw new SafeExitError(`Visual scene ${input.sceneIndex} does not exist.`);
-    }
-    const nextRevision = Math.max(...scene.revisions.map((item) => item.revision)) + 1;
-    const relativePath = visualRevisionPath(input.sceneIndex, nextRevision, result.extension);
-    transaction.onRollback(
-      await captureVisualArtifactRollback(input.runId, "visuals-import", [
-        ...visualMutationRollbackPaths,
-        relativePath,
-      ]),
-    );
-    let updatedRun = await writeRunBinary(run, "visuals-import", relativePath, result.bytes);
-    const revision = manualVisualRevision(result, input.sceneIndex, nextRevision, relativePath);
-    const nextManifest = visualManifestSchema.parse({
-      ...loaded.manifest,
-      updatedAt: nowIso(),
-      scenes: loaded.manifest.scenes.map((item) =>
-        item.sceneIndex === input.sceneIndex
-          ? {
-              ...item,
-              activeRevision: nextRevision,
-              revisions: [...item.revisions, revision],
-              decision: undefined,
-            }
-          : item,
-      ),
-    });
-    updatedRun = await invalidateVisualConsumers(updatedRun, "visuals-import");
-    updatedRun = await persistVisualManifest(updatedRun, nextManifest, "visuals-import");
-    updatedRun = queueRunLedgerEvent(updatedRun, {
-      type: "ARTIFACT_REVISED",
-      stage: "visuals-import",
-      message: `Imported manual visual revision ${nextRevision} for scene ${input.sceneIndex}.`,
-      data: { assetPath: relativePath, revision: nextRevision, sceneIndex: input.sceneIndex },
-    });
-    return { run: updatedRun, value: nextManifest };
-  });
-  await reconcileRunLedgerOutbox(input.runId);
-  return mutation.value;
-}
-
 /** Records attributed approve/reject decisions for active scene revisions. */
 export async function decideVisuals(input: VisualDecisionInput): Promise<VisualManifest> {
   await reconcileRunLedgerOutbox(input.runId);
@@ -188,7 +127,7 @@ export async function decideVisuals(input: VisualDecisionInput): Promise<VisualM
     throw new SafeExitError("Visual decision requires at least one scene.");
   }
   const { value: manifest } = await mutateRun(input.runId, async (run, transaction) => {
-    await requireState(run, "PRODUCTION_PACKAGE_GENERATED", "visuals-decide");
+    await requireVisualReviewState(run, "visuals-decide");
     const loaded = await loadVisualManifest(run);
     assertVisualMutationExpectation(loaded, input);
     const available = new Set(loaded.manifest.scenes.map((scene) => scene.sceneIndex));
@@ -236,4 +175,31 @@ export async function decideVisuals(input: VisualDecisionInput): Promise<VisualM
 async function readProductionScenes(runId: string) {
   const parsed = JSON.parse(await readFile(artifactPath(runId, "production/scenes.json"), "utf8"));
   return z.array(productionSceneSchema).min(1).parse(parsed.scenes);
+}
+
+async function requireVisualReviewState(run: RunRecord, stage: string): Promise<void> {
+  const allowed = [
+    "PRODUCTION_PACKAGE_GENERATED",
+    "PAID_GENERATION_COST_APPROVED",
+    "READY_FOR_MANUAL_PRODUCTION",
+  ] as const;
+  if (!allowed.includes(run.state as (typeof allowed)[number])) {
+    await appendLedgerEvent({
+      runId: run.runId,
+      type: "GUARD_BLOCKED",
+      stage,
+      message: `Visual review requires state ${allowed.join(" or ")}; got ${run.state}.`,
+      data: { actual: run.state, expected: allowed },
+    });
+    throw new SafeExitError(
+      `Blocked: ${stage} requires state ${allowed.join(" or ")}; current state is ${run.state}.`,
+    );
+  }
+  await appendLedgerEvent({
+    runId: run.runId,
+    type: "GUARD_PASSED",
+    stage,
+    message: `Visual review state gate passed: ${run.state}.`,
+    data: { actual: run.state, expected: allowed },
+  });
 }

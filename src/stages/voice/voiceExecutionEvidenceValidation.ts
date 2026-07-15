@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 import { artifactPathAtProjectRoot } from "../../core/artifactPaths.js";
 import { SafeExitError } from "../../core/errors.js";
 import type { RunRecord } from "../../core/state.js";
-import { readCostEstimateAtProjectRoot } from "../../costs/costEstimate.js";
+import { readCostEstimateByDigestAtProjectRoot } from "../../costs/costEstimateStore.js";
 import { readCostEventsAtProjectRoot } from "../../costs/costLedger.js";
 import { readCostReservationSummariesAtProjectRoot } from "../../costs/costReservationStore.js";
 import { usdToMicros } from "../../costs/money.js";
@@ -58,7 +58,7 @@ export async function assertPaidVoiceExecutionEvidenceAtProjectRoot(
   await requirePinnedBindingArtifacts(projectRoot, run, binding);
   requireMatchingBinding(meta, paid, binding);
 
-  const quote = await readCostEstimateAtProjectRoot(projectRoot, run.runId);
+  const quote = await readCostEstimateByDigestAtProjectRoot(projectRoot, run, paid.quoteDigest);
   const quoteLine = quote.estimate.stages.find((stage) => stage.stage === "tts");
   if (
     paid.quoteDigest !== quote.digest ||

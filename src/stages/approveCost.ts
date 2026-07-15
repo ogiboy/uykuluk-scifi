@@ -24,7 +24,7 @@ export async function approvePaidGenerationCost(runId: string): Promise<Approval
   assertTransition(run.state, "PAID_GENERATION_COST_APPROVED");
   try {
     const { estimate, digest } = await readCostEstimate(run.runId);
-    const validationReasons = await validateCurrentCostEstimate(run, config, estimate);
+    const validationReasons = await validateCurrentCostEstimate(run, config, estimate, digest);
     if (validationReasons.length > 0) {
       throw new SafeExitError(
         `Blocked: cost estimate is stale or invalid. ${validationReasons.join(" ")}`,
@@ -48,13 +48,7 @@ export async function approvePaidGenerationCost(runId: string): Promise<Approval
       approvingCommand: "producer approve cost",
       createdAt: nowIso(),
     };
-    run = {
-      ...run,
-      approvals: [
-        ...run.approvals.filter((item) => item.target !== "paid-generation-cost"),
-        approval,
-      ],
-    };
+    run = { ...run, approvals: [...run.approvals, approval] };
     await appendLedgerEvent({
       runId: run.runId,
       type: "APPROVAL_RECORDED",

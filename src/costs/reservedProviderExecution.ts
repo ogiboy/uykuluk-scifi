@@ -19,7 +19,7 @@ import {
   type ProviderRequestEvidence,
 } from "./providerRequestEvidence.js";
 
-const timeoutSchema = z.int().positive().max(600_000);
+const timeoutSchema = z.int().positive().max(14_400_000);
 const providerRequestIdSchema = z.string().min(1).max(256);
 const providerOutcomeSchema = z.discriminatedUnion("kind", [
   z.strictObject({

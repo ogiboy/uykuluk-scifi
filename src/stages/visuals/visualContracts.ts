@@ -39,11 +39,25 @@ const visualSourceSchema = z.discriminatedUnion("kind", [
     originalFileName: z.string().min(1).max(240),
     sourceDigest: digestSchema,
   }),
+  z.strictObject({
+    kind: z.literal("hosted-generation"),
+    service: z.literal("black-forest-labs"),
+    modelId: z.literal("flux-2-pro"),
+    operationId: z.string().regex(/^image_[a-f0-9]{64}$/),
+    planDigest: digestSchema,
+    quoteDigest: digestSchema,
+    approvalId: z.string().min(1).max(200),
+    reservationId: z.string().min(1).max(200),
+    resultSpool: z.strictObject({ path: canonicalPathSchema, digest: digestSchema }),
+    providerRequestIdHash: digestSchema,
+    billableCredits: z.number().nonnegative(),
+    actualUsdMicros: z.int().nonnegative(),
+  }),
 ]);
 
 export const visualRevisionSchema = z.strictObject({
   revision: z.int().positive(),
-  provider: z.enum(["static", "manual-import"]),
+  provider: z.enum(["static", "manual-import", "black-forest-labs"]),
   createdAt: z.iso.datetime(),
   asset: visualAssetSchema,
   media: visualMediaSchema.optional(),

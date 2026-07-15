@@ -118,6 +118,7 @@ async function assertManifestMatchesRun(
       );
     }
     if (
+      expectedGroup.visualPrompt !== scene.visualPrompt ||
       expectedGroup.promptDigest !== scene.promptDigest ||
       Math.abs(expectedGroup.durationSeconds - scene.durationSeconds) > 0.000001 ||
       JSON.stringify(expectedGroup.productionSceneIndexes) !==
@@ -131,9 +132,9 @@ async function assertManifestMatchesRun(
     if (!active) {
       throw new SafeExitError(`Visual manifest scene ${scene.sceneIndex} has no active revision.`);
     }
-    const bytes = active.asset.path.startsWith("production/")
-      ? await readRegisteredArtifactBytesAtProjectRoot(projectRoot, run, active.asset.path)
-      : await readProjectAssetBytesAtProjectRoot(projectRoot, active.asset.path);
+    const bytes = active.asset.path.startsWith("assets/")
+      ? await readProjectAssetBytesAtProjectRoot(projectRoot, active.asset.path)
+      : await readRegisteredArtifactBytesAtProjectRoot(projectRoot, run, active.asset.path);
     if (!bytes || createHash("sha256").update(bytes).digest("hex") !== active.asset.digest) {
       throw new SafeExitError(
         `Visual asset changed after evidence was recorded: ${active.asset.path}.`,

@@ -9,8 +9,16 @@ vi.mock("@elevenlabs/elevenlabs-js", () => ({
   },
 }));
 
+import { loadConfig } from "../src/config/config";
+import { writeRunJson, writeRunText } from "../src/core/artifacts";
+import { loadRun, saveRun } from "../src/core/runStore";
+import { buildCostEstimate, readCostEstimate } from "../src/costs/costEstimate";
+import { archiveActiveCostEstimate } from "../src/costs/costEstimateHistory";
+import { validateCostEstimateIntegrity } from "../src/costs/costEstimateIntegrity";
+import { renderCostEstimateMarkdown } from "../src/costs/costEstimatePresentation";
 import { readCostReservationSummaries } from "../src/costs/costReservationStore";
 import { generateVoiceoverAudio } from "../src/stages/voice";
+import { readVoiceoverAudioEvidence } from "../src/stages/voice/voiceoverEvidence";
 import {
   approvedHostedVoiceConfirmation,
   paidVoiceSubscription,
@@ -97,5 +105,50 @@ describe("ElevenLabs voice workflow recovery", () => {
       paidExecution: { reservationStatus: "SETTLED" },
     });
     expect(sdk.convertWithTimestamps).toHaveBeenCalledTimes(callsAfterCommit);
+  });
+
+  it("keeps settled voice evidence recoverable after a newer quote becomes active", async () => {
+    const { runId } = await prepareApprovedSelectedVoiceRun();
+    await generateVoiceoverAudio(runId, {
+      confirmation: await approvedHostedVoiceConfirmation(runId),
+      metadataProvider: successfulExecutionMetadataProvider({
+        subscription: paidVoiceSubscription,
+      }),
+    });
+    const providerCalls = sdk.convertWithTimestamps.mock.calls.length;
+    const config = await loadConfig();
+    const originalQuote = await readCostEstimate(runId);
+    let run = await loadRun(runId);
+    await expect(
+      validateCostEstimateIntegrity(run, config, originalQuote.estimate),
+    ).resolves.toEqual([]);
+
+    const archived = await archiveActiveCostEstimate({ run, stage: "test-quote-rollover" });
+    run = archived.run;
+    const nextQuote = await buildCostEstimate(run, config);
+    expect(nextQuote.stages.find((stage) => stage.stage === "tts")).toMatchObject({
+      bindingSummary: { kind: "settled-paid-stage", originalQuoteDigest: originalQuote.digest },
+      enabled: false,
+      estimatedUsd: 0,
+      provider: "elevenlabs",
+    });
+    run = await writeRunJson(run, "test-quote-rollover", "costs/estimate.json", nextQuote);
+    run = await writeRunText(
+      run,
+      "test-quote-rollover",
+      "costs/estimate.md",
+      renderCostEstimateMarkdown(nextQuote),
+    );
+    await saveRun(run);
+
+    await expect(readVoiceoverAudioEvidence(await loadRun(runId))).resolves.toMatchObject({
+      status: "pass",
+      mode: "elevenlabs",
+    });
+    await expect(generateVoiceoverAudio(runId)).resolves.toMatchObject({
+      mode: "elevenlabs",
+      paidExecution: { quoteDigest: originalQuote.digest, reservationStatus: "SETTLED" },
+    });
+    expect(sdk.convertWithTimestamps).toHaveBeenCalledTimes(providerCalls);
   });
 });

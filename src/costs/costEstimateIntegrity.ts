@@ -15,7 +15,28 @@ export async function validateCostEstimateIntegrity(
   config: ProducerConfig,
   estimate: CostEstimate,
 ): Promise<string[]> {
-  const currentStages = await quoteCostStages(run, config);
+  let currentStages: CostEstimate["stages"];
+  try {
+    currentStages = await quoteCostStages(run, config, {
+      suppressCompletedPaidStages: estimate.stages.some(
+        (stage) => stage.bindingSummary?.kind === "settled-paid-stage",
+      ),
+    });
+  } catch (error) {
+    return [
+      `Active execution plan could not be validated: ${error instanceof Error ? error.message : String(error)}`,
+    ];
+  }
+  return validateCostEstimateIntegrityWithStages(run, config, estimate, currentStages);
+}
+
+/** Validates estimate integrity against one already-resolved executable stage snapshot. */
+export async function validateCostEstimateIntegrityWithStages(
+  run: RunRecord,
+  config: ProducerConfig,
+  estimate: CostEstimate,
+  currentStages: CostEstimate["stages"],
+): Promise<string[]> {
   const reasons: string[] = [];
   if (estimate.runId !== run.runId) {
     reasons.push("Cost estimate belongs to a different run.");

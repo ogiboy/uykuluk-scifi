@@ -1,7 +1,9 @@
 import { createHash } from "node:crypto";
 import { SafeExitError } from "../../core/errors.js";
+import type { CostReservationSummary } from "../../costs/costReservationStore.js";
 import { nowIso } from "../../utils/time.js";
 import type { VisualRevision } from "./visualContracts.js";
+import type { LoadedHostedVisualGenerationSpool } from "./visualGenerationSpool.js";
 import { deterministicVisualMotion } from "./visualMotion.js";
 import type { VisualProvider, VisualProviderResult } from "./visualProvider.js";
 
@@ -41,6 +43,42 @@ export function manualVisualRevision(
     media: result.media,
     motion: deterministicVisualMotion(sceneIndex, revision),
     source: result.source,
+  };
+}
+
+/** Builds one immutable hosted revision from a settled batch spool. */
+export function hostedVisualRevision(
+  spool: LoadedHostedVisualGenerationSpool,
+  reservation: CostReservationSummary,
+  sceneIndex: number,
+  revision: number,
+): VisualRevision {
+  const imageIndex = spool.spool.images.findIndex((image) => image.sceneIndex === sceneIndex);
+  const image = spool.spool.images[imageIndex];
+  if (!image || !image.providerRequest.requestIdHash || reservation.status !== "SETTLED") {
+    throw new SafeExitError(`Hosted visual scene ${sceneIndex} has no settled spool image.`);
+  }
+  return {
+    revision,
+    provider: "black-forest-labs",
+    createdAt: nowIso(),
+    asset: { role: "scene-visual", path: image.asset.path, digest: image.asset.sha256 },
+    media: image.media,
+    motion: deterministicVisualMotion(sceneIndex, revision),
+    source: {
+      kind: "hosted-generation",
+      service: spool.spool.provider.service,
+      modelId: spool.spool.provider.modelId,
+      operationId: spool.spool.operationId,
+      planDigest: spool.spool.plan.digest,
+      quoteDigest: spool.spool.approvedQuote.quoteDigest,
+      approvalId: spool.spool.approvedQuote.approvalId,
+      reservationId: reservation.reservationId,
+      resultSpool: { path: spool.reference.path, digest: spool.reference.digest },
+      providerRequestIdHash: image.providerRequest.requestIdHash,
+      billableCredits: image.billing.billableCredits,
+      actualUsdMicros: image.billing.derivedUsdMicros,
+    },
   };
 }
 

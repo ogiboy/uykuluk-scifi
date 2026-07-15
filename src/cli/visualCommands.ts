@@ -1,16 +1,22 @@
 import { Command } from "commander";
-import { readFile } from "node:fs/promises";
 import {
   decideVisuals,
+  generateHostedVisuals,
   importManualVisual,
+  prepareHostedVisualGenerationPlan,
   prepareStaticVisuals,
   regenerateRejectedStaticVisuals,
-  type VisualMutationExpectation,
 } from "../stages/visuals.js";
 import {
-  visualActiveRevisionExpectationsSchema,
-  visualMutationExpectationSchema,
-} from "../stages/visuals/visualMutationExpectation.js";
+  decisionStatus,
+  hostedPlanPurpose,
+  parseExplicitSceneIndexes,
+  parseSceneIndexes,
+  positiveSceneIndex,
+  readRequiredVisualMutationExpectation,
+  readVisualMutationExpectation,
+  type VisualMutationCliOptions,
+} from "./visualCommandInputs.js";
 
 type Wrap = <T extends unknown[]>(handler: (...args: T) => Promise<void>) => (...args: T) => void;
 
@@ -19,6 +25,92 @@ export function registerVisualCommands(program: Command, wrap: Wrap): void {
   const visuals = program
     .command("visuals")
     .description("Prepare, revise, and review scene-specific visual evidence.");
+
+  visuals
+    .command("plan-hosted")
+    .requiredOption("--run <run_id>")
+    .requiredOption("--scenes <list>")
+    .option("--purpose <purpose>", "initial or regenerate-rejected", "initial")
+    .option("--reviewed-by <operator>")
+    .option("--reason <reason>")
+    .option("--expected-manifest-digest <sha256>")
+    .option("--expected-active-revisions-file <path>")
+    .option("--json", "Print the persisted hosted generation plan JSON.")
+    .description("Bind selected visual beats to one exact FLUX.2 Pro cost quote.")
+    .action(
+      wrap(
+        async (options: {
+          json?: boolean;
+          expectedActiveRevisionsFile?: string;
+          expectedManifestDigest?: string;
+          purpose: string;
+          reason?: string;
+          reviewedBy?: string;
+          run: string;
+          scenes: string;
+        }) => {
+          const sceneIndexes = parseExplicitSceneIndexes(options.scenes);
+          const purpose = hostedPlanPurpose(options.purpose);
+          const expectation =
+            purpose === "regenerate-rejected"
+              ? await readRequiredVisualMutationExpectation(options)
+              : {};
+          const plan = await prepareHostedVisualGenerationPlan({
+            ...expectation,
+            runId: options.run,
+            purpose,
+            reason: options.reason,
+            reviewedBy: options.reviewedBy,
+            sceneIndexes,
+          });
+          console.log(
+            options.json
+              ? JSON.stringify(plan, null, 2)
+              : `Prepared ${purpose} FLUX.2 Pro plan for ${sceneIndexes.length} scene(s).`,
+          );
+        },
+      ),
+    );
+
+  visuals
+    .command("generate-hosted")
+    .requiredOption("--run <run_id>")
+    .requiredOption("--binding-digest <sha256>")
+    .requiredOption("--quote-digest <sha256>")
+    .requiredOption("--approval-id <approval_id>")
+    .requiredOption("--confirm-paid-operation")
+    .option("--json", "Print the updated visual manifest JSON.")
+    .description("Execute the exact approved FLUX.2 Pro plan and open results for review.")
+    .action(
+      wrap(
+        async (options: {
+          approvalId: string;
+          bindingDigest: string;
+          confirmPaidOperation: boolean;
+          json?: boolean;
+          quoteDigest: string;
+          run: string;
+        }) => {
+          if (!options.confirmPaidOperation) {
+            throw new Error("Hosted visual generation requires paid-operation confirmation.");
+          }
+          const manifest = await generateHostedVisuals({
+            runId: options.run,
+            confirmation: {
+              approvalId: options.approvalId,
+              bindingDigest: options.bindingDigest,
+              quoteDigest: options.quoteDigest,
+              confirmPaidOperation: true,
+            },
+          });
+          console.log(
+            options.json
+              ? JSON.stringify(manifest, null, 2)
+              : `Generated ${manifest.scenes.length} hosted visual beat(s) for review.`,
+          );
+        },
+      ),
+    );
 
   visuals
     .command("prepare")
@@ -129,45 +221,4 @@ export function registerVisualCommands(program: Command, wrap: Wrap): void {
         );
       }),
     );
-}
-
-type VisualMutationCliOptions = Readonly<{
-  expectedActiveRevisionsFile: string;
-  expectedManifestDigest: string;
-  json?: boolean;
-  run: string;
-}>;
-
-async function readVisualMutationExpectation(
-  options: VisualMutationCliOptions,
-): Promise<VisualMutationExpectation> {
-  const expectedActiveRevisions = visualActiveRevisionExpectationsSchema.parse(
-    JSON.parse(await readFile(options.expectedActiveRevisionsFile, "utf8")) as unknown,
-  );
-  return visualMutationExpectationSchema.parse({
-    expectedManifestDigest: options.expectedManifestDigest,
-    expectedActiveRevisions,
-  });
-}
-
-function positiveSceneIndex(value: string): number {
-  const parsed = Number(value);
-  if (!Number.isSafeInteger(parsed) || parsed <= 0) {
-    throw new Error("Scene index must be a positive integer.");
-  }
-  return parsed;
-}
-
-function parseSceneIndexes(value: string, scenes: ReadonlyArray<{ sceneIndex: number }>): number[] {
-  if (value.trim().toLowerCase() === "all") {
-    return scenes.map((scene) => scene.sceneIndex);
-  }
-  return Array.from(new Set(value.split(",").map((item) => positiveSceneIndex(item.trim()))));
-}
-
-function decisionStatus(value: string): "approved" | "rejected" {
-  if (value === "approved" || value === "rejected") {
-    return value;
-  }
-  throw new Error("Visual decision must be approved or rejected.");
 }

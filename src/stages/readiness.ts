@@ -166,7 +166,7 @@ async function budgetEstimateCheck(
   }
   try {
     const { estimate, digest } = await readCostEstimate(run.runId);
-    const validationReasons = await validateCurrentCostEstimate(run, config, estimate);
+    const validationReasons = await validateCurrentCostEstimate(run, config, estimate, digest);
     if (validationReasons.length > 0) {
       return {
         name: "budget not exceeded",
