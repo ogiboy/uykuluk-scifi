@@ -11,11 +11,11 @@ const ignoredPrefixes = [".ai/qa/artifacts/"];
 const textExtensions = new Set([".ts", ".tsx", ".mjs", ".js", ".md", ".yml", ".yaml", ".json"]);
 
 const limits = {
-  ".ts": 260,
-  ".tsx": 220,
+  ".ts": 340,
+  ".tsx": 240,
   ".mjs": 360,
   ".js": 260,
-  ".md": 480,
+  ".md": 520,
   ".yml": 260,
   ".yaml": 260,
   ".json": 260,

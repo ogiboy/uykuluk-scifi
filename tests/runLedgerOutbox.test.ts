@@ -20,6 +20,7 @@ describe("run ledger outbox", () => {
       return { run: queued, value: queued.pendingLedgerEvents![0]!.eventId };
     });
     const pendingEventId = mutation.value;
+    expect(pendingEventId).toMatch(/^evt_\d{14}_[a-f\d]{16}$/);
     await expect(
       reconcileRunLedgerOutbox(run.runId, {
         afterAppend: async () => {

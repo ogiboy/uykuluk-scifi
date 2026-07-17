@@ -9,6 +9,6 @@ export function createId(prefix: string): string {
     .toISOString()
     .replaceAll(/[-:.TZ]/g, "")
     .slice(0, 14);
-  const random = randomBytes(3).toString("hex");
+  const random = randomBytes(8).toString("hex");
   return `${prefix}_${stamp}_${random}`;
 }
