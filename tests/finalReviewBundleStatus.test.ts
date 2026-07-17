@@ -80,7 +80,7 @@ describe("final review bundle status", () => {
     });
   });
 
-  it("marks final review bundles stale when render evidence or decision bindings change", async () => {
+  it("marks final review bundles stale when the draft render digest changes", async () => {
     const digestRunId = await renderLocalDraft("final-review-status-digest");
     const digestBundle = await createFinalReviewBundle(digestRunId);
     await writeFile(
@@ -96,7 +96,9 @@ describe("final review bundle status", () => {
       kind: "stale",
       message: "Final review bundle was created for a different draft render digest.",
     });
+  });
 
+  it("marks final review bundles stale when the recorded render decision is missing", async () => {
     const missingDecisionRunId = await renderLocalDraft("final-review-status-missing-decision");
     await recordRenderDecision({
       decision: "accepted-for-local-review",
@@ -124,7 +126,9 @@ describe("final review bundle status", () => {
       kind: "stale",
       message: "Final review bundle is missing the recorded render decision.",
     });
+  });
 
+  it("marks final review bundles stale when the render decision outcome changes", async () => {
     const changedDecisionRunId = await renderLocalDraft("final-review-status-changed-decision");
     const originalDecision = await recordRenderDecision({
       decision: "accepted-for-local-review",
