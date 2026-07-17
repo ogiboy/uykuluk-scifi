@@ -10,6 +10,12 @@ import type { BlackForestLabsFlux2ProResult } from "./blackForestLabsFlux2ProCon
 
 type Scene = HostedVisualGenerationPlan["scenes"][number];
 
+/**
+ * Derives approved billing from provider-reported credits when the amount is valid and within both scene and reservation cost limits.
+ *
+ * @param input - Reported credits, approved tariff, and maximum allowed costs for the scene and reservation.
+ * @returns The derived provider billing details, or `undefined` when credits are invalid or the derived cost exceeds either limit.
+ */
 export function deriveBlackForestLabsBilling(input: {
   billableCredits: number | undefined;
   usdPerCredit: 0.01;
@@ -38,6 +44,14 @@ export function deriveBlackForestLabsBilling(input: {
   };
 }
 
+/**
+ * Builds evidence identifying a Black Forest Labs provider request for a scene.
+ *
+ * @param scene - The scene associated with the provider request.
+ * @param providerRequestId - The provider-assigned request identifier.
+ * @param reportedUnits - Provider-reported usage units, when available.
+ * @returns Evidence containing the zero-based scene index, prompt digest, request ID hash, and optional reported usage units.
+ */
 export function blackForestLabsProviderEvidence(
   scene: Scene,
   providerRequestId: string,
@@ -51,6 +65,14 @@ export function blackForestLabsProviderEvidence(
   };
 }
 
+/**
+ * Creates an unknown provider outcome for a Black Forest Labs request.
+ *
+ * @param reason - The reason the provider outcome is unknown.
+ * @param providerRequestId - The provider request identifier, when available.
+ * @param requestEvidence - Evidence associated with the provider request, when available.
+ * @returns An unknown outcome containing the reason and any supplied request context.
+ */
 export function blackForestLabsUnknownOutcome(
   reason: "timeout" | "transport" | "provider-error" | "indeterminate",
   providerRequestId: string | undefined,

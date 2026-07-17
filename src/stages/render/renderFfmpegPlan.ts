@@ -30,13 +30,11 @@ export {
 export type { DraftRenderTimeline, DraftRenderTiming } from "./renderTimeline.js";
 
 /**
- * Builds FFmpeg arguments for rendering a draft video.
+ * Builds the FFmpeg command-line arguments for rendering a draft video.
  *
- * Uses the provided timeline or derives one from the render plan, then assembles the inputs,
- * filters, stream mappings, and output settings needed to write the final file.
- *
- * @throws {SafeExitError} Thrown when the render plan does not contain at least one scene.
- * @returns The FFmpeg command-line arguments.
+ * @param input - Render plan, timing, artifact, overlay, and output configuration.
+ * @returns The assembled FFmpeg command-line arguments.
+ * @throws SafeExitError If the render plan or timeline is empty, or if duration and subtitle timing do not match the timeline.
  */
 export function buildFfmpegArgs(input: {
   composition?: DraftRenderComposition;

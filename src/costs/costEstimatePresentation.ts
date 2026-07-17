@@ -2,9 +2,10 @@ import { table } from "../utils/markdown.js";
 import type { CostEstimate } from "./costEstimate.js";
 
 /**
- * Renders a cost estimate as a markdown-formatted report.
+ * Formats a cost estimate and its approval, budget, blocking, and execution-binding details as a Markdown report.
  *
- * @returns A markdown string containing the cost estimate.
+ * @param estimate - The cost estimate containing stage costs, budgets, approval state, blocks, and execution evidence.
+ * @returns A Markdown report showing estimated costs, spending gates, blocked reasons, and available execution-binding details.
  */
 export function renderCostEstimateMarkdown(estimate: CostEstimate): string {
   const sections = [

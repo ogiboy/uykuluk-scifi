@@ -24,7 +24,13 @@ type StudioVisualCliMutationActionId = Extract<
   | "visuals.regenerate"
 >;
 
-/** Builds guarded CLI arguments for visual import, decision, and regeneration mutations. */
+/**
+ * Builds guarded CLI arguments for the requested visual mutation action.
+ *
+ * @param actionId - The visual mutation action to prepare
+ * @param payload - The action payload to validate and convert into CLI arguments
+ * @returns Prepared CLI arguments and any required temporary-resource cleanup
+ */
 export async function visualCliArgsForAction(
   actionId: StudioVisualCliMutationActionId,
   payload: unknown,
@@ -36,6 +42,12 @@ export async function visualCliArgsForAction(
   return hostedVisualGenerationCliArgs(payload);
 }
 
+/**
+ * Builds guarded CLI arguments for planning a hosted visual mutation.
+ *
+ * @param payload - The untyped hosted visual plan request.
+ * @returns Prepared CLI arguments, including temporary expectation-file cleanup when applicable.
+ */
 async function hostedVisualPlanCliArgs(payload: unknown): Promise<StudioPreparedCliArgs> {
   const input = parseHostedVisualPlanPayload(payload);
   const expectationTemp = input.expectedActiveRevisions
@@ -62,6 +74,12 @@ async function hostedVisualPlanCliArgs(payload: unknown): Promise<StudioPrepared
   );
 }
 
+/**
+ * Builds guarded CLI arguments for generating a hosted visual.
+ *
+ * @param payload - The untyped mutation payload containing the run and approval details.
+ * @returns Prepared CLI arguments for the hosted visual generation command.
+ */
 function hostedVisualGenerationCliArgs(payload: unknown): StudioPreparedCliArgs {
   const input = parseHostedVisualGenerationPayload(payload);
   return prepared([
@@ -80,6 +98,12 @@ function hostedVisualGenerationCliArgs(payload: unknown): StudioPreparedCliArgs 
   ]);
 }
 
+/**
+ * Prepares guarded CLI arguments for importing a visual asset.
+ *
+ * @param payload - The untyped visual import mutation payload.
+ * @returns Prepared CLI arguments and cleanup for the temporary import and expectation files.
+ */
 async function visualImportCliArgs(payload: unknown): Promise<StudioPreparedCliArgs> {
   const input = parseVisualImportPayload(payload);
   const content = Buffer.from(input.contentBase64, "base64");

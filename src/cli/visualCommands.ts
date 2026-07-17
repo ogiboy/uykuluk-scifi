@@ -20,7 +20,14 @@ import {
 
 type Wrap = <T extends unknown[]>(handler: (...args: T) => Promise<void>) => (...args: T) => void;
 
-/** Registers scene-visual preparation, import, and review commands. */
+/**
+ * Registers the `visuals` command group for preparing, importing, approving, rejecting, and regenerating scene visual evidence.
+ *
+ * Hosted generation requires an approved plan, matching digests, and explicit paid-operation confirmation. Mutating commands persist revisions or decisions and report JSON or operator-facing status messages.
+ *
+ * @param program - The Commander program to which the `visuals` command group is added.
+ * @param wrap - The action-handler wrapper used for command execution and failure propagation.
+ */
 export function registerVisualCommands(program: Command, wrap: Wrap): void {
   const visuals = program
     .command("visuals")

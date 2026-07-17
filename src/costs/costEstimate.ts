@@ -26,11 +26,11 @@ export type { CostEstimate } from "./costEstimateContracts.js";
 export { readCostEstimateAtProjectRoot, readCostEstimateByDigestAtProjectRoot };
 
 /**
- * Builds a cost estimate using the current run, configuration, budgets, pricing, and production package.
+ * Builds the run's current cost estimate and determines whether the next paid-generation step is allowed.
  *
- * @param run - The run for which to calculate the estimate
- * @param config - The producer configuration governing costs and budgets
- * @returns The cost estimate, including budget and approval decisions
+ * @param run - The run whose stages and production package are evaluated
+ * @param config - Configuration containing pricing, provider approval requirements, and budget limits
+ * @returns The cost estimate with stage costs, budget decisions, approval requirements, blocking reasons, and digests
  */
 export async function buildCostEstimate(
   run: RunRecord,
@@ -75,7 +75,12 @@ export async function buildCostEstimate(
   };
 }
 
-/** Reads a quote and verifies its operator Markdown matches the persisted JSON. */
+/**
+ * Reads the persisted cost estimate for a run and verifies its serialized representations.
+ *
+ * @param runId - Identifier of the run whose cost estimate should be read
+ * @returns The parsed estimate, persisted text, operator-facing Markdown, and content digest
+ */
 export async function readCostEstimate(
   runId: string,
 ): Promise<{ estimate: CostEstimate; text: string; markdownText: string; digest: string }> {
@@ -83,12 +88,13 @@ export async function readCostEstimate(
 }
 
 /**
- * Checks whether a cost estimate remains current against the run, configuration, pricing, and budget state.
+ * Validates a cost estimate against the current execution plan, pricing, approval requirements, and budget state.
  *
  * @param run - The production run associated with the estimate
  * @param config - The producer configuration used for validation
  * @param estimate - The cost estimate to validate
- * @returns Reasons the estimate is stale or inconsistent; an empty array indicates that it remains current
+ * @param quoteDigest - Optional digest identifying settled quote-stage evidence to include in validation
+ * @returns Reasons the estimate is stale or inconsistent; an empty array indicates that it remains current. Validation failures are returned as reasons.
  */
 export async function validateCurrentCostEstimate(
   run: RunRecord,

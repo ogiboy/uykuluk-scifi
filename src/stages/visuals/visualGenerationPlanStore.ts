@@ -30,7 +30,20 @@ export type LoadedHostedVisualGenerationPlan = Readonly<{
   plan: HostedVisualGenerationPlan;
 }>;
 
-/** Persists the exact hosted scene plan that a later quote must bind. */
+/**
+ * Creates and persists a hosted visual generation plan bound to the active manifest and image-generation configuration.
+ *
+ * For rejected regeneration, requires reviewer attribution and a reason, validates the supplied manifest expectations,
+ * and reopens the rejected generation with the replacement plan. For initial generation, requires the run to be in
+ * `PRODUCTION_PACKAGE_GENERATED` state and persists the plan in the hosted visual plan artifact slot. Guard failures
+ * are recorded as blocked ledger events during rejected regeneration.
+ *
+ * @param input - Run, generation purpose, target scene indexes, and optional mutation expectations.
+ * @param options - Optional checks to perform after reserving a rejected generation for regeneration.
+ * @returns The hosted visual generation plan created for the run.
+ * @throws `SafeExitError` if rejected regeneration lacks reviewer attribution or a reason, or if its manifest
+ * expectations cannot be satisfied.
+ */
 export async function prepareHostedVisualGenerationPlan(
   input: Readonly<{
     runId: string;
@@ -118,7 +131,15 @@ export async function prepareHostedVisualGenerationPlan(
   return value;
 }
 
-/** Reads the registered plan and proves it still matches manifest, run, config, and pricing. */
+/**
+ * Verifies that the persisted hosted visual generation plan matches the active visual manifest and image-generation configuration.
+ *
+ * @param run - The run whose registered hosted visual generation plan is loaded.
+ * @param config - The loaded application configuration used to verify the plan binding.
+ * @param projectRoot - The project root containing the run artifacts.
+ * @returns The persisted plan and its exact artifact digest.
+ * @throws SafeExitError If the plan is missing, malformed, or stale for the active manifest or configuration.
+ */
 export async function loadHostedVisualGenerationPlan(
   run: RunRecord,
   config: Awaited<ReturnType<typeof loadConfig>>,
@@ -144,7 +165,14 @@ export async function loadHostedVisualGenerationPlan(
   return loadedPlan;
 }
 
-/** Reads and structurally verifies the registered plan without asserting current manifest freshness. */
+/**
+ * Loads and structurally verifies the persisted hosted visual generation plan without checking its freshness against the current manifest.
+ *
+ * @param run - The run whose registered hosted visual generation plan is loaded
+ * @param projectRoot - The project root containing the registered artifact
+ * @returns The validated plan and SHA-256 digest of its persisted bytes
+ * @throws `SafeExitError` if the plan is missing, malformed, or invalid
+ */
 export async function loadPersistedHostedVisualGenerationPlan(
   run: RunRecord,
   projectRoot = process.cwd(),
@@ -161,6 +189,13 @@ export async function loadPersistedHostedVisualGenerationPlan(
   return { digest: createHash("sha256").update(bytes).digest("hex"), plan };
 }
 
+/**
+ * Parses and structurally validates persisted hosted visual generation plan data.
+ *
+ * @param bytes - UTF-8 encoded JSON plan data
+ * @returns The validated hosted visual generation plan
+ * @throws `SafeExitError` if the data is malformed or invalid
+ */
 function parsePersistedHostedVisualGenerationPlan(bytes: Buffer): HostedVisualGenerationPlan {
   try {
     return requireHostedVisualGenerationPlan(JSON.parse(bytes.toString("utf8")));

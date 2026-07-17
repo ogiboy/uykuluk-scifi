@@ -10,7 +10,20 @@ import {
 
 type ImageGenerationConfig = ProducerConfig["providers"]["imageGeneration"];
 
-/** Builds one exact, deterministic FLUX.2 Pro plan from the active visual manifest. */
+/**
+ * Builds a deterministic hosted FLUX.2 Pro generation plan for the selected visual scenes.
+ *
+ * The plan binds the run, manifest evidence, active revisions, provider settings, pricing
+ * snapshot, per-image cost caps, and total cost cap. Regeneration requires each selected
+ * scene's active revision to have a rejected decision.
+ *
+ * @param input - Run identity, visual manifest evidence, generation purpose, targeted scenes,
+ * and hosted provider configuration.
+ * @returns A validated generation plan with deterministic scene seeds and binding digests.
+ * @throws SafeExitError If hosted mode is unavailable, manifest evidence belongs to another
+ * run, targeted scenes are invalid, a selected scene lacks its active revision, or
+ * regeneration approval requirements are unmet.
+ */
 export function buildHostedVisualGenerationPlan(
   input: Readonly<{
     runId: string;
@@ -116,7 +129,15 @@ export function buildHostedVisualGenerationPlan(
   });
 }
 
-/** Parses a hosted plan and verifies every internal cost and binding digest. */
+/**
+ * Validates a hosted visual generation plan before it can be used for execution.
+ *
+ * Verifies scene ordering, pricing and cost-cap consistency, and the plan's pricing and binding digests.
+ *
+ * @param value - The untrusted value to parse and validate as a hosted visual generation plan
+ * @returns The validated hosted visual generation plan
+ * @throws SafeExitError If the value is invalid or any scene, pricing, cost, or binding integrity check fails
+ */
 export function requireHostedVisualGenerationPlan(value: unknown): HostedVisualGenerationPlan {
   const plan = hostedVisualGenerationPlanSchema.parse(value);
   const expectedIndexes = plan.scenes.map((scene) => scene.sceneIndex);

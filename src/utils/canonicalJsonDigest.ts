@@ -5,7 +5,13 @@ export type CanonicalJsonErrorMessages = Readonly<{
   unsupportedValue: string;
 }>;
 
-/** Computes a key-order-independent SHA-256 digest for JSON-compatible evidence. */
+/**
+ * Computes a key-order-independent SHA-256 digest for JSON-compatible evidence.
+ *
+ * @param value - The value to canonicalize and hash
+ * @param messages - Error messages for non-finite numbers and unsupported values
+ * @returns The SHA-256 digest of the canonical JSON representation
+ */
 export function canonicalJsonDigest(value: unknown, messages: CanonicalJsonErrorMessages): string {
   return sha256(canonicalJson(value, messages));
 }

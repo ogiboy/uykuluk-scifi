@@ -17,7 +17,17 @@ import {
   type LoadedHostedVisualGenerationSpool,
 } from "./visualGenerationSpool.js";
 
-/** Executes or safely recovers one exact approval-bound hosted visual batch. */
+/**
+ * Executes one hosted visual generation batch under its approved plan and cost quote.
+ *
+ * The operation is tied to the run, plan digest, quote digest, and approval ID. Completed
+ * executions return provider result evidence owned by the reservation; previously completed
+ * executions recover that evidence without submitting duplicate generation.
+ *
+ * @param input - The run, approval-bound execution plan and quote, and optional provider dependencies.
+ * @returns The settled visual result spool and associated cost reservation.
+ * @throws SafeExitError If submission was definitely not sent or the reservation requires reconciliation.
+ */
 export async function executeHostedVisualGeneration(input: {
   runId: string;
   prepared: PreparedHostedVisualExecution;

@@ -27,10 +27,19 @@ export {
 } from "./costSettlementService.js";
 
 /**
- * Creates a cost reservation for an approved quote line or reuses an existing matching reservation.
+ * Reserves an approved quote line for an operation or reuses a matching existing reservation.
  *
- * @returns The created or existing cost reservation summary.
- * @throws SafeExitError If the adapter identity does not match the approved quote, the operation ID is bound to different details, the quote line was already consumed, budget validation fails, or `stage` or `operationId` is empty.
+ * The reservation is accepted only when the adapter identity and operation binding match the
+ * approved quote, the quote line has not been consumed, and the reservation budget is available.
+ * A new reservation and operator-visible cost ledger event are recorded when no matching
+ * reservation exists.
+ *
+ * @param input - The approved run, stage, operation, and adapter identity to bind to the reservation.
+ * @param options - Optional callback invoked when reservation locking encounters contention.
+ * @returns The created or matching cost reservation summary.
+ * @throws SafeExitError If required identifiers are empty, the adapter identity or operation binding
+ * differs from the approved quote, the quote line was already consumed, or the reservation budget
+ * is unavailable.
  */
 export async function reserveApprovedCost(
   input: {

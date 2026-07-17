@@ -17,7 +17,15 @@ export type PreparedHostedVisualExecution = Readonly<{
   plan: LoadedHostedVisualGenerationPlan;
 }>;
 
-/** Revalidates the exact hosted plan, approved quote, and operator confirmation before spend. */
+/**
+ * Revalidates the active hosted visual plan, approved quote, and operator confirmation before provider submission or spend.
+ *
+ * Records a guard-block event and throws `SafeExitError` when quote validation fails, the quote does not match the plan, or confirmation is missing or stale.
+ *
+ * @param input - Run and producer configuration used to load the active plan, plus optional confirmation of the current plan and quote.
+ * @returns The validated hosted visual generation plan and approved quote identifiers.
+ * @throws `SafeExitError` If the approved quote cannot be validated or does not match the plan, or if operator confirmation is missing or stale.
+ */
 export async function prepareHostedVisualExecution(
   input: Readonly<{
     run: RunRecord;
@@ -84,6 +92,13 @@ export async function prepareHostedVisualExecution(
   };
 }
 
+/**
+ * Records a ledger event when hosted visual execution is blocked before provider submission.
+ *
+ * @param runId - The run whose ledger receives the guard-block event
+ * @param reason - The reason execution was blocked
+ * @param data - Additional evidence associated with the block
+ */
 async function recordHostedVisualGuardBlock(
   runId: string,
   reason: string,

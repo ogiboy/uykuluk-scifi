@@ -25,14 +25,15 @@ export function reservationLockPath(): string {
 }
 
 /**
- * Executes a task while holding the cost reservation lock, ensuring exclusive access.
+ * Executes a task while holding exclusive access to the cost reservation lock.
  *
- * The lock is automatically released after the task completes, even if it throws.
+ * Releases the lock after the task completes, including when the task fails. The optional
+ * contention callback is invoked when the lock is already held.
  *
- * @param task - The async function to execute
- * @param options - Lock configuration options
- * @returns The result of the task
- * @throws SafeExitError if the lock cannot be acquired within the configured timeout
+ * @param task - The asynchronous task to execute while the lock is held
+ * @param options - Lock timing configuration and an optional contention callback
+ * @returns The task's result
+ * @throws SafeExitError If the lock cannot be acquired within the configured timeout
  */
 export async function withCostReservationLock<T>(
   task: () => Promise<T>,
@@ -54,14 +55,13 @@ export async function withCostReservationLock<T>(
 }
 
 /**
- * Acquires an exclusive lock by creating the target directory and writing owner metadata.
- *
- * Repeatedly attempts to create the lock directory with owner information, retrying if the lock already exists. Reclaims the lock if it is stale. Throws if the timeout is exceeded.
+ * Acquires the exclusive lock at the specified path, reclaiming stale locks and retrying until successful or timed out.
  *
  * @param target - The filesystem path for the lock directory
  * @param token - The unique identifier for this lock holder
- * @param settings - Lock configuration with timeout, retry delay, and stale detection threshold
- * @throws SafeExitError if lock acquisition times out
+ * @param settings - Lock timeout, retry delay, and stale-lock threshold settings
+ * @param onContention - Optional callback invoked when the lock is already held
+ * @throws SafeExitError If the lock cannot be acquired within the configured timeout
  */
 async function acquireLock(
   target: string,

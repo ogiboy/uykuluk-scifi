@@ -30,8 +30,12 @@ export type RecoveredVoiceExecution = {
 /**
  * Recovers a durably committed ElevenLabs voice execution without credentials or live provider requests.
  *
+ * Matching requires an approved paid-generation quote and a reservation whose cost and execution evidence
+ * match the committed voice spool. Pending settlement is completed before the recovered execution is returned.
+ *
  * @param input - The run and source digest identifying the execution to recover.
- * @returns The recovered voice execution, or `undefined` when no matching committed execution is available.
+ * @returns The recovered voice execution, or `undefined` when no matching execution is available or its reservation is still reserved.
+ * @throws `SafeExitError` if matching reservations are ambiguous, execution commitment is uncertain, or historical approval, cost, evidence, or operation identifiers do not match.
  */
 export async function recoverCommittedVoiceExecution(input: {
   run: RunRecord;

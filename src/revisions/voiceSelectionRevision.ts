@@ -108,7 +108,9 @@ export async function readVoiceSelectionRevision(
 }
 
 /**
- * Creates a voice-selection revision and moves the run back to the explicit selection gate.
+ * Creates a voice-selection revision and moves the run to `PRODUCTION_PACKAGE_GENERATED` for explicit reselection.
+ *
+ * The operation requires a revisable run with no active or attempted TTS reservations and no voice synthesis artifacts. It archives the prior selection and quote evidence, invalidates approvals tied to the active quote, and records the state change and revision in the ledger. Failures before the run mutation commits restore archived sources.
  *
  * @param rawInput - The run identifier, revision reason, and reviewer identity.
  * @param options - Optional hooks invoked after reservation checks and after the run mutation commits.

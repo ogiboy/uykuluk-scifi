@@ -3,6 +3,12 @@ import { appendLedgerEvent } from "../../core/ledger.js";
 import type { VisualScene } from "./visualContracts.js";
 import { hostedVisualGenerationPlanPath } from "./visualGenerationPlanContracts.js";
 
+/**
+ * Creates an error for a blocked hosted visual revision.
+ *
+ * @param message - The operator-visible reason for blocking the revision.
+ * @returns A `SafeExitError` containing the provided message.
+ */
 export async function hostedVisualRevisionBlocked(
   _runId: string,
   message: string,
@@ -10,6 +16,12 @@ export async function hostedVisualRevisionBlocked(
   return new SafeExitError(message);
 }
 
+/**
+ * Builds the filesystem paths for a hosted visual revision and its archived generation plan.
+ *
+ * @param revisionId - The hosted visual revision identifier
+ * @returns The archived generation plan path and revision metadata path
+ */
 export function hostedVisualRevisionPaths(revisionId: string): {
   archivedPlanPath: string;
   revisionPath: string;
@@ -21,6 +33,14 @@ export function hostedVisualRevisionPaths(revisionId: string): {
   };
 }
 
+/**
+ * Validates that each requested hosted visual scene has rejected its active revision before regeneration.
+ *
+ * @param scenes - The available visual scenes.
+ * @param requestedSceneIndexes - The scene indexes requested for regeneration.
+ * @returns The requested scenes after validation.
+ * @throws A `SafeExitError` if a requested scene is missing, has not been rejected, or rejected a revision other than its active revision.
+ */
 export async function requireRejectedHostedVisualScenes(
   scenes: readonly VisualScene[],
   requestedSceneIndexes: readonly number[],
@@ -43,6 +63,13 @@ export async function requireRejectedHostedVisualScenes(
   return rejectedScenes;
 }
 
+/**
+ * Validates and normalizes hosted visual scene indexes for regeneration.
+ *
+ * @param sceneIndexes - The requested scene indexes, which must be unique.
+ * @returns The scene indexes sorted in ascending order.
+ * @throws A `SafeExitError` if duplicate indexes are provided.
+ */
 export async function requireUniqueHostedVisualSceneIndexes(
   sceneIndexes: readonly number[],
 ): Promise<number[]> {
@@ -56,6 +83,12 @@ export async function requireUniqueHostedVisualSceneIndexes(
   return requested;
 }
 
+/**
+ * Records a hosted visual revision guard block for safe-exit errors and rethrows the original error.
+ *
+ * @param runId - The run identifier associated with the blocked revision.
+ * @param error - The error to persist when it is a `SafeExitError` and then rethrow.
+ */
 export async function persistHostedVisualRevisionBlock(
   runId: string,
   error: unknown,

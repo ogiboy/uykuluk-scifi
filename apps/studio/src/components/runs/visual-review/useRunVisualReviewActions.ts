@@ -6,6 +6,17 @@ import { useState } from "react";
 import { visualFileProblem } from "./visualFileValidation";
 import { encodeVisualImportFile } from "./visualImportFile";
 
+/**
+ * Manages guarded visual review actions and selection state for a run.
+ *
+ * Coordinates preparation, review decisions, visual imports, rejected-scene
+ * regeneration, and hosted visual planning and generation while enforcing
+ * persisted run-evidence and hosted-execution confirmation requirements.
+ *
+ * @param runId - Identifier of the run whose visuals are being reviewed
+ * @param summary - Current visual review state and available workflow actions
+ * @returns Visual review state, derived selection flags, field setters, selection helpers, and guarded action handlers
+ */
 export function useRunVisualReviewActions(runId: string, summary: StudioVisualSummary) {
   const { reportError, state, submit } = useStudioGuardedActionSubmit(
     "Visual actions are explicit and refresh persisted run evidence after completion.",
@@ -236,6 +247,12 @@ export function useRunVisualReviewActions(runId: string, summary: StudioVisualSu
   };
 }
 
+/**
+ * Creates a stable identity for a hosted execution confirmation.
+ *
+ * @param execution - The hosted execution to identify, or `null` when no execution is available
+ * @returns A serialized identity based on the execution approval, binding, and quote digests, or `null`
+ */
 function hostedExecutionIdentity(
   execution: StudioVisualSummary["hosted"]["execution"],
 ): string | null {

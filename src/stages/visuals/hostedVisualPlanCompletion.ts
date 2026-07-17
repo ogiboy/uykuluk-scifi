@@ -9,7 +9,13 @@ import {
 } from "./visualGenerationSpool.js";
 import { loadVisualManifest } from "./visualManifest.js";
 
-/** Proves that a stale persisted plan was settled and fully applied to scene history. */
+/**
+ * Verifies that a persisted hosted visual plan has an approved settled reservation and is fully reflected in scene history.
+ *
+ * @param input - The run, persisted hosted visual plan, and project root used for validation.
+ * @returns The indexes of rejected scenes whose active hosted-generation revisions have valid settled evidence.
+ * @throws SafeExitError If the reservation, approval, settlement identity, scene application, or evidence is invalid.
+ */
 export async function requireSettledAppliedHostedVisualPlan(input: {
   run: RunRecord;
   plan: LoadedHostedVisualGenerationPlan;
@@ -101,6 +107,14 @@ export async function requireSettledAppliedHostedVisualPlan(input: {
   return { eligibleRejectedSceneIndexes };
 }
 
+/**
+ * Verifies that a hosted visual source has current approval for its quoted generation cost.
+ *
+ * @param run - The run record containing approval entries.
+ * @param approvalId - The required approval identifier.
+ * @param quoteDigest - The digest of the approved cost quote.
+ * @throws SafeExitError If no matching paid-generation-cost approval exists.
+ */
 function requireSourceApproval(run: RunRecord, approvalId: string, quoteDigest: string): void {
   if (
     !run.approvals.some(

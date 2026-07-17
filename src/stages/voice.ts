@@ -18,12 +18,14 @@ import { prepareVoiceoverText } from "./voice/voiceoverPreparation.js";
 import { synthesizeVoiceover } from "./voice/voiceSynthesisExecution.js";
 
 /**
- * Generates voiceover audio and persists its metadata and review artifacts for a run.
+ * Generates voiceover audio for a run, reusing committed execution artifacts when available and persisting metadata and review evidence.
+ *
+ * The run must satisfy voice execution and script-to-voice approval gates, and its render plan must pass. Fresh synthesis additionally requires the run to be ready for manual production and local TTS to be enabled.
  *
  * @param runId - Identifier of the run to process
- * @param options - Optional execution metadata provider and lifecycle callbacks
- * @returns Metadata describing the generated voiceover audio and associated artifacts
- * @throws SafeExitError If the render plan is invalid, the source voiceover is empty, or local TTS is disabled
+ * @param options - Optional execution confirmation, metadata provider, and lifecycle callbacks
+ * @returns Metadata describing the generated voiceover audio and persisted artifacts
+ * @throws SafeExitError If a required state, approval, render plan, source file, or local TTS configuration is invalid
  */
 export async function generateVoiceoverAudio(
   runId: string,
@@ -136,6 +138,16 @@ async function requireFreshVoiceExecutionState(
   );
 }
 
+/**
+ * Validates that the run is in a state permitted for voice execution.
+ *
+ * Records a passed or blocked voice guard event. Throws `SafeExitError` when
+ * the run state is not `PAID_GENERATION_COST_APPROVED` or
+ * `READY_FOR_MANUAL_PRODUCTION`.
+ *
+ * @param run - The run whose execution state is being validated.
+ * @throws `SafeExitError` If the run state is not permitted for voice execution.
+ */
 async function requireVoiceExecutionState(run: Awaited<ReturnType<typeof loadRun>>): Promise<void> {
   const allowed = ["PAID_GENERATION_COST_APPROVED", "READY_FOR_MANUAL_PRODUCTION"] as const;
   if (!allowed.includes(run.state as (typeof allowed)[number])) {

@@ -9,7 +9,16 @@ import { applySettledHostedVisuals } from "./hostedVisualManifestApply.js";
 import type { BlackForestLabsFlux2ProBatchDependencies } from "./providers/blackForestLabsFlux2ProBatch.js";
 import type { VisualManifest } from "./visualContracts.js";
 
-/** Runs one exact approved FLUX.2 Pro batch and promotes its settled images into review. */
+/**
+ * Executes one approved FLUX.2 Pro hosted batch and promotes its settled images into review.
+ *
+ * Recovers an already committed generation when available; otherwise validates the
+ * execution confirmation, prepares and runs the batch, and applies its settled
+ * visual evidence. Execution and credential errors propagate to the caller.
+ *
+ * @param input - Run identifier, execution confirmation, and optional hosted-provider dependencies.
+ * @returns The visual manifest containing the promoted settled images.
+ */
 export async function generateHostedVisuals(input: {
   runId: string;
   confirmation: HostedVisualExecutionConfirmation;

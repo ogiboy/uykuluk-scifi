@@ -10,6 +10,13 @@ const digest = "a".repeat(64);
 export const bindingDigest = "b".repeat(64);
 export type FetchLike = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
 
+/**
+ * Executes the Black Forest Labs Flux 2 Pro adapter with deterministic test dependencies.
+ *
+ * @param fetchMock - Fetch implementation used for provider requests
+ * @param signal - Abort signal for the adapter execution
+ * @returns The adapter execution result
+ */
 export async function executeBflAdapter(
   fetchMock: FetchLike,
   signal = new AbortController().signal,
@@ -27,6 +34,13 @@ export async function executeBflAdapter(
   return adapter.execute(context(signal));
 }
 
+/**
+ * Creates a mock provider submission response.
+ *
+ * @param pollingUrl - The URL used to poll for the task result
+ * @param cost - The optional request cost
+ * @returns A submission response containing the task identifier, polling URL, and optional cost
+ */
 export function submitResponse(
   pollingUrl = "https://api.bfl.ai/v1/get_result?id=task-123",
   cost: number | undefined = 9,
@@ -34,6 +48,13 @@ export function submitResponse(
   return { id: "task-123", polling_url: pollingUrl, ...(cost === undefined ? {} : { cost }) };
 }
 
+/**
+ * Creates a completed image-generation response for provider polling tests.
+ *
+ * @param cost - Optional provider-reported cost.
+ * @param sample - Image sample URL included in the completed result.
+ * @returns A response payload with a completed status, task identifier, image sample, and optional cost.
+ */
 export function readyResponse(
   cost: number | undefined,
   sample = "https://delivery.bfl.ai/signed/image.jpg",
@@ -46,6 +67,12 @@ export function readyResponse(
   };
 }
 
+/**
+ * Creates a successful JSON response from a value.
+ *
+ * @param body - The value to serialize as JSON
+ * @returns An HTTP 200 response containing the serialized value
+ */
 export function jsonResponse(body: unknown): Response {
   return new Response(JSON.stringify(body), {
     status: 200,
@@ -53,6 +80,13 @@ export function jsonResponse(body: unknown): Response {
   });
 }
 
+/**
+ * Creates a successful HTTP response containing image data.
+ *
+ * @param body - The image bytes to include in the response
+ * @param contentType - The MIME type of the image
+ * @returns A response containing the image data and content type
+ */
 export function imageResponse(body: Buffer, contentType: string): Response {
   return new Response(new Uint8Array(body), {
     status: 200,
@@ -60,6 +94,14 @@ export function imageResponse(body: Buffer, contentType: string): Response {
   });
 }
 
+/**
+ * Creates a solid-color RGB image encoded in the requested format.
+ *
+ * @param format - The output image format.
+ * @param width - The image width in pixels.
+ * @param height - The image height in pixels.
+ * @returns The encoded image data.
+ */
 export async function image(
   format: "jpeg" | "png",
   width: number,
@@ -70,6 +112,12 @@ export async function image(
     .toBuffer();
 }
 
+/**
+ * Creates the fixed provider call context used by the Flux 2 Pro test helpers.
+ *
+ * @param signal - Abort signal associated with the provider call
+ * @returns The provider call context with deterministic reservation, operation, provider, model, binding, and budget values
+ */
 function context(signal: AbortSignal): ReservedProviderCallContext {
   return {
     reservationId: "reservation-1",

@@ -28,6 +28,14 @@ export type VoiceQuoteReadResult = Readonly<{
 type VoiceQuoteEstimate = Awaited<ReturnType<typeof readCostEstimateAtProjectRoot>>["estimate"];
 type VoiceQuoteStage = VoiceQuoteEstimate["stages"][number] | undefined;
 
+/**
+ * Reads and validates the voice production cost quote for the current run.
+ *
+ * @param root - The project root containing the quote artifacts
+ * @param run - The voice audition run associated with the quote
+ * @param config - Producer configuration used to validate quote currency
+ * @returns The quote summary, including validation diagnostics and artifact paths
+ */
 export async function readVoiceQuoteSummary(
   root: string,
   run: VoiceAuditionRun,

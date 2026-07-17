@@ -1,6 +1,11 @@
 import { sha256 } from "../../utils/hash.js";
 
-/** Creates the stable identity for one approval-bound hosted visual batch. */
+/**
+ * Creates a stable identifier for an approval-bound hosted visual generation batch.
+ *
+ * @param input - Identifying values for the run, plan, quote, and approval.
+ * @returns An identifier prefixed with `image_` and derived from the supplied values.
+ */
 export function createHostedVisualGenerationOperationId(input: {
   runId: string;
   planDigest: string;

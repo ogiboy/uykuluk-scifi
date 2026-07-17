@@ -13,7 +13,13 @@ export type HostedVisualExecutionConfirmation = z.infer<
   typeof hostedVisualExecutionConfirmationSchema
 >;
 
-/** Returns whether confirmation still identifies the active plan, quote, and approval. */
+/**
+ * Verifies that an operator confirmation authorizes the active execution plan and quote.
+ *
+ * @param confirmation - The operator confirmation to verify.
+ * @param expected - The active approval, binding, and quote identifiers.
+ * @returns `true` if paid-operation confirmation is enabled and all expected identifiers match, `false` otherwise.
+ */
 export function hostedVisualExecutionConfirmationMatches(
   confirmation: HostedVisualExecutionConfirmation,
   expected: Readonly<{ approvalId: string; bindingDigest: string; quoteDigest: string }>,

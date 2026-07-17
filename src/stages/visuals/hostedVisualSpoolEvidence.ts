@@ -10,7 +10,13 @@ type ExactHostedVisualSpoolIdentity = Readonly<{
   spool: LoadedHostedVisualGenerationSpool;
 }>;
 
-/** Verifies a committed spool against either pending or completed durable settlement evidence. */
+/**
+ * Verifies that a hosted visual result is durably committed and matches its settlement evidence.
+ *
+ * @param input - The reservation, approval, plan, and loaded result spool to verify.
+ * @returns The verified hosted visual generation spool.
+ * @throws SafeExitError If settlement evidence is incomplete or the reservation and spool do not match.
+ */
 export function requireCommittedHostedVisualSpool(
   input: ExactHostedVisualSpoolIdentity,
 ): LoadedHostedVisualGenerationSpool {
@@ -45,7 +51,13 @@ export function requireCommittedHostedVisualSpool(
   return input.spool;
 }
 
-/** Verifies that a committed hosted visual spool also has final settled cost evidence. */
+/**
+ * Verifies that a hosted visual spool has durable settlement evidence and matches its reservation.
+ *
+ * @param input - The reservation and hosted visual spool evidence to validate.
+ * @returns The verified hosted visual generation spool.
+ * @throws SafeExitError If settlement is incomplete or the spool does not match its committed evidence.
+ */
 export function requireSettledHostedVisualSpool(
   input: ExactHostedVisualSpoolIdentity,
 ): LoadedHostedVisualGenerationSpool {
@@ -55,7 +67,12 @@ export function requireSettledHostedVisualSpool(
   return requireCommittedHostedVisualSpool(input);
 }
 
-/** Verifies one manifest revision against its exact settled batch image evidence. */
+/**
+ * Verifies that a scene revision matches exactly one image in its durably settled hosted-generation spool.
+ *
+ * @param input - The scene index, revision, cost reservation, and hosted-generation spool evidence to verify.
+ * @throws SafeExitError If the revision is not a hosted generation, settlement is incomplete, or the revision differs from its settled spool evidence.
+ */
 export function requireHostedVisualSceneSpoolMatch(input: {
   sceneIndex: number;
   revision: VisualRevision;
@@ -99,6 +116,13 @@ export function requireHostedVisualSceneSpoolMatch(input: {
   }
 }
 
+/**
+ * Requires a settled hosted visual operation to provide its result digest.
+ *
+ * @param value - The durable result digest associated with the operation
+ * @returns The provided result digest
+ * @throws SafeExitError If the result digest is missing
+ */
 export function requireHostedVisualResultDigest(value: string | undefined): string {
   if (!value) {
     throw new SafeExitError("Settled hosted visual operation is missing its result digest.");

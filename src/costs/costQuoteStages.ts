@@ -11,11 +11,12 @@ import { estimateElevenLabsMaximumTtsUsd } from "./elevenLabsPricing.js";
 import { defaultStagePricing, type StagePricing } from "./pricing.js";
 
 /**
- * Builds stage pricing entries with provider-based enablement and optional run-specific ElevenLabs TTS pricing.
+ * Builds stage pricing entries with provider-based enablement and run-specific cost estimates.
  *
- * @param run - The run whose voiceover artifact is used to estimate TTS cost
- * @param config - Provider configuration used to determine enabled stages and TTS pricing
- * @returns Stage pricing entries, including an estimated maximum cost for ElevenLabs TTS when configured
+ * @param run - The run whose artifacts and settled stages may affect pricing
+ * @param config - Provider configuration governing stage enablement and pricing
+ * @param options - Options for reusing settled stage pricing or suppressing completed paid stages
+ * @returns Stage pricing entries with enabled status and applicable estimated maximum costs
  */
 export async function quoteCostStages(
   run: RunRecord,
@@ -126,10 +127,11 @@ export async function quoteCostStages(
 }
 
 /**
- * Determines whether a production stage is enabled by the provider configuration.
+ * Determines whether a production stage is enabled under the provider configuration.
  *
- * @param stage - The stage whose enabled status to determine
- * @returns `true` if the stage's provider is enabled or the stage has no provider-specific setting, `false` otherwise
+ * @param stage - The production stage to evaluate
+ * @param config - Provider configuration used to determine stage availability
+ * @returns `true` for enabled TTS, Black Forest Labs image generation, or YouTube upload stages, and for stages without provider-specific rules; `false` otherwise
  */
 function isStageEnabled(stage: string, config: ProducerConfig): boolean {
   switch (stage) {

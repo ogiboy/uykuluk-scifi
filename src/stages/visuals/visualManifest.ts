@@ -90,6 +90,14 @@ export async function readApprovedVisualManifestEvidence(
   }
 }
 
+/**
+ * Verifies that visual manifest evidence belongs to the run and matches its current production package, scenes, assets, and contact sheet.
+ *
+ * @param projectRoot - The project root containing the run artifacts and project assets.
+ * @param run - The run whose production package and registered artifacts are validated.
+ * @param manifest - The visual manifest to validate.
+ * @throws SafeExitError If the manifest is owned by another run, is stale or inconsistent with the production package, references changed or missing assets, lacks an active revision, or the visual contact sheet is missing.
+ */
 async function assertManifestMatchesRun(
   projectRoot: string,
   run: RunRecord,

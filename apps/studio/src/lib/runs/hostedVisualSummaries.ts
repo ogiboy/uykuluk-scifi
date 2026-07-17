@@ -34,6 +34,14 @@ export type StudioHostedVisualSummary = Readonly<{
   }>;
 }>;
 
+/**
+ * Reads the hosted visual generation state and cost evidence for a run.
+ *
+ * @param root - The project root containing configuration and run artifacts
+ * @param run - The visual production run to summarize
+ * @param rejectedCount - The number of rejected scenes available for regeneration
+ * @returns The run's hosted visual generation mode, plan, quote, approval, and execution state
+ */
 export async function readStudioHostedVisualSummary(
   root: string,
   run: NonNullable<Awaited<ReturnType<typeof readCoreVisualRunRecord>>>,
@@ -151,6 +159,11 @@ export async function readStudioHostedVisualSummary(
   }
 }
 
+/**
+ * Creates an empty hosted visual summary with no available plan, quote, approval, or execution.
+ *
+ * @returns A baseline summary representing unavailable hosted visual generation state
+ */
 export function emptyHostedVisualSummary(): StudioHostedVisualSummary {
   return {
     allowedPlanPurpose: null,
@@ -163,6 +176,14 @@ export function emptyHostedVisualSummary(): StudioHostedVisualSummary {
   };
 }
 
+/**
+ * Determines which hosted visual generation plan purpose is allowed for the current run state.
+ *
+ * @param lifecycle - The hosted plan lifecycle state.
+ * @param state - The current run state.
+ * @param eligibleRejectedCount - The number of rejected scenes eligible for regeneration.
+ * @returns `"initial"` for a missing plan at the production-package stage, `"regenerate-rejected"` for a settled plan with eligible rejected scenes in an approved workflow state, or `null` otherwise.
+ */
 function allowedHostedPlanPurpose(
   lifecycle: "fresh" | "missing" | "settled",
   state: string,

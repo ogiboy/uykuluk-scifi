@@ -1,9 +1,9 @@
 import { canonicalJsonDigest } from "../../../utils/canonicalJsonDigest.js";
 
 /**
- * Computes a key-order-independent SHA-256 digest for validated JSON evidence.
+ * Computes a key-order-independent SHA-256 digest for JSON voice evidence.
  *
- * @param value - The JSON evidence to digest
+ * @param value - The evidence value to canonicalize and digest
  * @returns The SHA-256 digest of the canonicalized evidence
  */
 export function canonicalVoiceEvidenceDigest(value: unknown): string {

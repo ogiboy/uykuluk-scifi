@@ -21,7 +21,19 @@ import {
 } from "./visualPersistence.js";
 import { hostedVisualRevision } from "./visualRevisions.js";
 
-/** Promotes a settled hosted batch into active scene revisions without copying provider bytes. */
+/**
+ * Promotes a settled, provider-approved hosted visual batch into active scene revisions without copying provider bytes.
+ *
+ * Validates the run state, cost reservation, plan, and result evidence before applying revisions. Updates the
+ * visual manifest, records referenced artifacts, invalidates visual consumers, and queues an artifact-revised
+ * ledger event. Repeated application of the same batch is idempotent; partial application or changes after
+ * approval require operator repair.
+ *
+ * @param input - The run, approved generation plan, settled result spool, and matching cost reservation.
+ * @returns The updated visual manifest.
+ * @throws SafeExitError If the run is ineligible, settlement evidence does not match, the batch is partially
+ * applied, or approved scene or manifest data has changed.
+ */
 export async function applySettledHostedVisuals(input: {
   runId: string;
   plan: LoadedHostedVisualGenerationPlan;

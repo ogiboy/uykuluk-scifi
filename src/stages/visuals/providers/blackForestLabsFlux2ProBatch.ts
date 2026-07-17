@@ -33,7 +33,15 @@ export type BlackForestLabsFlux2ProBatchDependencies = BlackForestLabsFlux2ProDe
   executeScene?: ExecuteScene;
 };
 
-/** Creates one sequential reservation-bound adapter for every target in an exact visual plan. */
+/**
+ * Creates a reservation-bound adapter that executes each scene in the exact visual plan sequentially.
+ *
+ * The adapter preserves the supplied binding digest and reports consolidated scene results,
+ * provider-request evidence, cost usage, and indeterminate outcomes through its execution contract.
+ *
+ * @param input - The visual plan, binding digest, and optional scene execution dependencies.
+ * @returns An adapter configured for the Black Forest Labs Flux 2 Pro batch model.
+ */
 export function createBlackForestLabsFlux2ProBatchAdapter(input: {
   plan: HostedVisualGenerationPlan;
   bindingDigest: string;
@@ -47,6 +55,16 @@ export function createBlackForestLabsFlux2ProBatchAdapter(input: {
   };
 }
 
+/**
+ * Executes the planned scenes sequentially and aggregates their results and provider evidence.
+ *
+ * The batch remains within the authorized budget and returns an indeterminate outcome when
+ * execution status, request identity, evidence, or accumulated cost cannot be established.
+ *
+ * @param input - The scene plan, reservation binding, and optional scene execution dependencies.
+ * @returns A successful batch with per-scene images, request evidence, total cost, and deterministic
+ * batch identity, or an outcome describing an unconfirmed or unsent execution.
+ */
 async function executeBatch(
   input: {
     plan: HostedVisualGenerationPlan;

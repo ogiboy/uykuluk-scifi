@@ -31,7 +31,15 @@ export type RecoveredHostedVisualGeneration = Readonly<{
   spool: LoadedHostedVisualGenerationSpool;
 }>;
 
-/** Recovers an exact committed hosted batch without requiring another provider request or key. */
+/**
+ * Recovers a committed hosted visual generation from persisted plans, approvals, reservation, and spool evidence without issuing another provider request.
+ *
+ * Validates the approved execution identity and committed result evidence, and settles a pending cost reservation when necessary. Returns `null` when recovery cannot be proven from the persisted evidence.
+ *
+ * @param input - The execution confirmation and run containing the persisted approval and recovery evidence.
+ * @returns The recovered generation plan, settled reservation, and validated spool, or `null` when matching recovery evidence is unavailable.
+ * @throws `SafeExitError` If reservation evidence is ambiguous or does not match the approved execution plan.
+ */
 export async function recoverCommittedHostedVisualGeneration(input: {
   confirmation: HostedVisualExecutionConfirmation;
   run: RunRecord;

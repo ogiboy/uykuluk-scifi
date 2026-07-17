@@ -23,7 +23,18 @@ type Props = Readonly<{
   selectedCount: number;
 }>;
 
-/** Shows the small Studio-first FLUX.2 Pro plan, quote, and exact execution control. */
+/**
+ * Provides the Studio-first FLUX.2 Pro planning, approval, and generation workflow.
+ *
+ * Displays configuration or evidence blocking states, prevents invalid beat selections from being
+ * planned, and requires confirmation of the exact approved plan, quote, and execution identity
+ * before generation. Rejected-beat regeneration also requires reviewer attribution and revision
+ * notes.
+ *
+ * @param props - Control state, hosted operation data, and workflow callbacks.
+ * @returns The hosted visual generation controls, a blocking alert, or `null` when the hosted mode
+ * is unsupported.
+ */
 export function RunHostedVisualGenerationControl({
   attributionReady,
   busy,

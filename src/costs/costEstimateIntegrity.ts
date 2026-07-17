@@ -7,9 +7,10 @@ import { readSettledHostedVisualQuoteStage } from "./costQuoteCompletion.js";
 import { quoteCostStages } from "./costQuoteStages.js";
 
 /**
- * Checks whether a cost estimate remains structurally consistent with the current run and configuration.
+ * Validates that a cost estimate remains consistent with the current run, configuration, and executable cost stages.
  *
- * @returns A list of integrity failure reasons; an empty array indicates that the estimate is current.
+ * @param quoteDigest - Optional digest used to preserve a settled hosted visual quote stage during validation.
+ * @returns Integrity failure reasons; an empty array indicates that the estimate is current. If current stage pricing cannot be computed, contains a reason describing the validation failure.
  */
 export async function validateCostEstimateIntegrity(
   run: RunRecord,
@@ -43,7 +44,13 @@ export async function validateCostEstimateIntegrity(
   return validateCostEstimateIntegrityWithStages(run, config, estimate, currentStages);
 }
 
-/** Validates estimate integrity against one already-resolved executable stage snapshot. */
+/**
+ * Validates a cost estimate against run, configuration, budget, and executable-stage evidence.
+ *
+ * @param estimate - The previously generated cost estimate to validate.
+ * @param currentStages - The resolved executable stages used as the current pricing snapshot.
+ * @returns Integrity failure reasons; an empty array indicates that the estimate remains valid.
+ */
 export async function validateCostEstimateIntegrityWithStages(
   run: RunRecord,
   config: ProducerConfig,

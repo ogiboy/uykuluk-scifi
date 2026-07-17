@@ -45,11 +45,14 @@ export type BlackForestLabsFlux2ProDependencies = Readonly<{
 }>;
 
 /**
- * Creates one reservation-bound FLUX.2 Pro scene adapter from an immutable hosted-visual plan.
+ * Creates a reservation-bound adapter for executing one FLUX.2 Pro scene.
  *
- * The adapter performs exactly one submit request. Once submit begins, every malformed, failed,
- * timed-out, or over-cap outcome is reported as uncertain so callers cannot retry a possibly
- * billable request blindly.
+ * The adapter preserves the plan, selected scene, and binding digest for execution. Provider
+ * approval and cost limits are enforced during execution; post-submission failures produce
+ * uncertain outcomes with provider request evidence to prevent unsafe retries.
+ *
+ * @param input - The hosted-visual plan, scene selection, binding digest, and optional execution dependencies.
+ * @returns An adapter configured for Black Forest Labs FLUX.2 Pro execution.
  */
 export function createBlackForestLabsFlux2ProAdapter(input: {
   plan: HostedVisualGenerationPlan;
@@ -65,7 +68,17 @@ export function createBlackForestLabsFlux2ProAdapter(input: {
   };
 }
 
-/** Executes a single FLUX.2 Pro scene request for later sequential batch orchestration. */
+/**
+ * Executes one approved FLUX.2 Pro scene within its reservation and records the resulting provider evidence.
+ *
+ * The request is submitted only when the plan, scene, provider binding, and spending limit are valid.
+ * Successful execution returns the validated image and billing details; pre-send validation or cancellation
+ * produces a definitive unsent outcome, while provider, transport, timeout, or response-validation failures
+ * produce an uncertain outcome with available request evidence.
+ *
+ * @param input - The scene plan, binding, execution context, and optional provider dependencies.
+ * @returns The successful image result or an outcome describing whether execution was unsent, uncertain, or timed out.
+ */
 export async function executeBlackForestLabsFlux2ProScene(input: {
   plan: HostedVisualGenerationPlan;
   sceneIndex: number;

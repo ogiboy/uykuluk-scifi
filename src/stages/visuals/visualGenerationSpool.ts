@@ -20,7 +20,19 @@ import {
 
 export type { LoadedHostedVisualGenerationSpool } from "./visualGenerationSpoolContracts.js";
 
-/** Persists a fully successful hosted visual batch before reservation settlement. */
+/**
+ * Commits a fully validated hosted visual generation batch to the run's artifact directory.
+ *
+ * Validates the approved plan, operation binding, provider evidence, and actual cost before
+ * writing the plan snapshot, generated images, and spool manifest. The committed artifacts are
+ * reloaded and integrity-checked before settlement can proceed.
+ *
+ * @param input - The approved generation plan, quote and reservation bindings, provider evidence,
+ * and generated image batch to persist.
+ * @returns The committed spool manifest and verified generated image buffers.
+ * @throws SafeExitError If the run, plan, operation binding, provider evidence, cost, or artifact
+ * integrity checks fail.
+ */
 export async function persistHostedVisualGenerationSpool(input: {
   runId: string;
   operationId: string;
@@ -102,7 +114,14 @@ export async function persistHostedVisualGenerationSpool(input: {
   });
 }
 
-/** Loads a committed hosted image spool and verifies every referenced image byte. */
+/**
+ * Loads a committed hosted image spool and verifies its identity, manifest digest, plan snapshot, and referenced image bytes.
+ *
+ * @param runId - The run owning the persisted spool artifacts
+ * @param rawReference - The spool reference containing its operation id, manifest path, and expected digest
+ * @returns The verified spool reference, manifest, and image buffers
+ * @throws SafeExitError If the spool identity, digest, plan snapshot, or any referenced image is invalid
+ */
 export async function loadHostedVisualGenerationSpool(
   runId: string,
   rawReference: HostedVisualGenerationSpoolReference,
@@ -147,7 +166,14 @@ export async function loadHostedVisualGenerationSpool(
   return { reference, spool, images };
 }
 
-/** Resolves a committed spool from its deterministic operation directory. */
+/**
+ * Resolves and verifies the committed hosted visual generation spool for an operation.
+ *
+ * @param runId - The run containing the committed spool
+ * @param rawOperationId - The operation identifier used to derive the spool path
+ * @param expectedDigest - The expected digest of the committed spool manifest
+ * @returns The verified spool manifest and referenced image buffers
+ */
 export async function loadHostedVisualGenerationSpoolForOperation(
   runId: string,
   rawOperationId: string,
@@ -158,6 +184,12 @@ export async function loadHostedVisualGenerationSpoolForOperation(
   return loadHostedVisualGenerationSpool(runId, { operationId, path, digest: expectedDigest });
 }
 
+/**
+ * Validates provider batch evidence against the approved visual generation plan and declared cost.
+ *
+ * @param input - The approved plan, its artifact digest, declared cost, and provider batch evidence.
+ * @throws SafeExitError If image or request evidence is incomplete, plan bindings or checksums differ, provider details are unsupported, billing differs, or the plan digest is invalid.
+ */
 function assertBatchMatchesPlan(input: {
   plan: HostedVisualGenerationPlan;
   planDigest: string;

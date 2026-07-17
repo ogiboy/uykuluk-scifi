@@ -10,7 +10,15 @@ import {
 
 type SpoolExecutionValue = Readonly<{ spool: LoadedHostedVisualGenerationSpool }>;
 
-/** Commits successful hosted image bytes before their reservation is settled. */
+/**
+ * Wraps a reserved provider adapter to persist successful hosted visual results before recording reservation cost evidence.
+ *
+ * Non-successful outcomes pass through unchanged. A successful outcome without a provider request ID becomes indeterminate.
+ *
+ * @param adapter - The provider adapter whose successful results are persisted.
+ * @param input - Run, operation, plan, digest, and approved quote details used to associate the persisted result with its reservation and cost evidence.
+ * @returns An adapter whose successful value contains the persisted spool and its evidence digest.
+ */
 export function spoolPaidHostedVisualResult(
   adapter: ReservedProviderAdapter<BlackForestLabsFlux2ProBatchResult>,
   input: {

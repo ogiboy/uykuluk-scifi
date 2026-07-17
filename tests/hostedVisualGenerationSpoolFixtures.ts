@@ -10,6 +10,14 @@ import type { persistHostedVisualGenerationSpool } from "../src/stages/visuals/v
 import { deterministicVisualMotion } from "../src/stages/visuals/visualMotion";
 import { sha256 } from "../src/utils/hash";
 
+/**
+ * Builds a settled cost reservation summary for a hosted visual generation operation.
+ *
+ * @param loaded - Persisted spool data containing reservation and result evidence details
+ * @param planDigest - Digest binding the reservation to the generation plan
+ * @param approvedQuote - Approved quote identifiers associated with the reservation
+ * @returns A settled cost reservation summary
+ */
 export function settledReservation(
   loaded: Awaited<ReturnType<typeof persistHostedVisualGenerationSpool>>,
   planDigest: string,
@@ -35,6 +43,11 @@ export function settledReservation(
   };
 }
 
+/**
+ * Builds a deterministic hosted visual generation plan fixture for testing.
+ *
+ * @returns A hosted visual generation plan containing static scene data and image generation configuration.
+ */
 export function generationPlan() {
   const manifest = {
     schemaVersion: 1 as const,
@@ -83,6 +96,14 @@ export function generationPlan() {
   });
 }
 
+/**
+ * Creates an operation identifier for a hosted visual generation request.
+ *
+ * @param runId - The run identifier.
+ * @param planDigest - The digest of the generation plan.
+ * @param approvedQuote - The approved quote identifiers used for the operation.
+ * @returns The generated operation identifier.
+ */
 export function operationId(
   runId: string,
   planDigest: string,
@@ -91,6 +112,12 @@ export function operationId(
   return createHostedVisualGenerationOperationId({ runId, planDigest, ...approvedQuote });
 }
 
+/**
+ * Builds a deterministic batch result with per-scene image outputs, provider request metadata, and billing details.
+ *
+ * @param plan - The hosted visual generation plan whose scenes determine the batch entries.
+ * @returns The generated image results and corresponding provider request records.
+ */
 export function batchResult(
   plan: ReturnType<typeof generationPlan>,
 ): BlackForestLabsFlux2ProBatchResult {
@@ -132,6 +159,12 @@ export function batchResult(
   };
 }
 
+/**
+ * Computes a deterministic digest for a generated plan artifact.
+ *
+ * @param plan - The generated plan to digest
+ * @returns The SHA-256 digest of the plan's formatted JSON representation
+ */
 export function planArtifactDigest(plan: ReturnType<typeof generationPlan>): string {
   return sha256(`${JSON.stringify(plan, null, 2)}\n`);
 }

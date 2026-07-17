@@ -49,7 +49,13 @@ export type StudioVisualSummary = Readonly<{
   updatedAt?: string;
 }>;
 
-/** Projects the current validated visual manifest into the Studio review surface. */
+/**
+ * Projects a validated visual run and manifest into the Studio review surface.
+ *
+ * @param root - Repository root containing the run records and visual artifacts
+ * @param runId - Identifier of the visual run to review
+ * @returns The visual review summary, including scene data, hosted visual status, approval counts, and workflow-allowed actions
+ */
 export async function readStudioVisualSummary(
   root: string,
   runId: string,
@@ -135,6 +141,11 @@ export async function readStudioVisualSummary(
   }
 }
 
+/**
+ * Resolves available Studio visual actions to their routed service bindings.
+ *
+ * @returns A binding for each visual action with a routed service endpoint, or `null` when no routed endpoint is available.
+ */
 function visualActionBindings(): Record<StudioVisualActionId, StudioVisualActionBinding | null> {
   const summaries = getStudioActionServiceStatus().summaries;
   const binding = (actionId: StudioVisualActionId): StudioVisualActionBinding | null => {
@@ -164,6 +175,14 @@ function noVisualActions(): Record<StudioVisualActionId, null> {
   };
 }
 
+/**
+ * Determines which visual mutation actions are available for the current workflow state.
+ *
+ * @param state - The current visual production workflow state.
+ * @param actions - Available action bindings keyed by visual action ID.
+ * @param rejectedCount - Number of rejected visual scenes.
+ * @returns Action bindings enabled for the state, with unavailable actions set to `null`.
+ */
 function visualMutationActions(
   state: string,
   actions: Record<StudioVisualActionId, StudioVisualActionBinding | null>,
@@ -191,6 +210,14 @@ function visualMutationActions(
   return noVisualActions();
 }
 
+/**
+ * Creates an invalid or missing visual summary with empty scene, decision, and hosted-visual data.
+ *
+ * @param kind - Indicates whether the visual data is invalid or missing
+ * @param message - Explains why the visual summary is unavailable
+ * @param actions - Available operator actions for the current workflow state
+ * @returns A visual summary containing the provided status, message, and actions with empty result data
+ */
 function visualSummary(
   kind: "invalid" | "missing",
   message: string,

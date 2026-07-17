@@ -9,13 +9,15 @@ import { requireState } from "../safeguards/approvalGuard.js";
 import { createId, nowIso } from "../utils/time.js";
 
 /**
- * Records an approval for a run's paid-generation cost after validating the estimate.
+ * Records explicit approval for a valid paid-generation cost estimate and advances the run to the approved state.
  *
- * Verifies the run is in COST_ESTIMATED state and validates that the cost estimate is current, not blocked by hard budget constraints, and requires explicit approval. On success, persists the approval record and transitions the run to PAID_GENERATION_COST_APPROVED state.
+ * The approval references the validated estimate digest and is persisted with a ledger record. Approval fails when
+ * the estimate is stale, invalid, hard-blocked by budget constraints, or does not require explicit approval; failures
+ * are recorded as blocked guard outcomes before being rethrown.
  *
  * @param runId - The ID of the run to approve
  * @returns The newly created approval record
- * @throws If validation fails (invalid estimate, hard budget block, or approval not required) or if the run is not in COST_ESTIMATED state
+ * @throws If the run is not in `COST_ESTIMATED` state, the estimate fails validation, or approval is unavailable
  */
 export async function approvePaidGenerationCost(runId: string): Promise<ApprovalRecord> {
   const config = await loadConfig();

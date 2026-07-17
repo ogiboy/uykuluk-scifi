@@ -4,6 +4,13 @@ const maximumJsonBytes = 64 * 1024;
 export type FetchLike = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
 export type WaitForPoll = (milliseconds: number, signal: AbortSignal) => Promise<void>;
 
+/**
+ * Parses a Black Forest Labs response body as JSON after validating its content type and size.
+ *
+ * @param response - The provider response to read.
+ * @returns The parsed JSON value.
+ * @throws Error if the response is not JSON or exceeds the permitted body size.
+ */
 export async function readBlackForestLabsJsonResponse(response: Response): Promise<unknown> {
   if (normalizedContentType(response.headers.get("content-type")) !== "application/json") {
     throw new Error("Provider response was not JSON.");
@@ -12,6 +19,13 @@ export async function readBlackForestLabsJsonResponse(response: Response): Promi
   return JSON.parse(bytes.toString("utf8")) as unknown;
 }
 
+/**
+ * Reads and validates an image response from Black Forest Labs.
+ *
+ * @param input - The provider response and requested output format.
+ * @returns The image response body as a `Buffer`.
+ * @throws `Error` if the response is unsuccessful or has an unexpected content type.
+ */
 export async function readBlackForestLabsImageResponse(input: {
   response: Response;
   outputFormat: "jpeg" | "png";
@@ -26,10 +40,22 @@ export async function readBlackForestLabsImageResponse(input: {
   return readBoundedBody(input.response, maximumImageBytes);
 }
 
+/**
+ * Determines the image content type for an output format.
+ *
+ * @param outputFormat - The requested image format.
+ * @returns `image/jpeg` for `jpeg`, or `image/png` for `png`.
+ */
 export function expectedImageContentType(outputFormat: "jpeg" | "png"): "image/jpeg" | "image/png" {
   return outputFormat === "jpeg" ? "image/jpeg" : "image/png";
 }
 
+/**
+ * Validates whether a URL is an approved Black Forest Labs polling endpoint.
+ *
+ * @param value - The URL to validate.
+ * @returns `true` if the URL uses HTTPS, contains no credentials, and has a `bfl.ai` hostname, `false` otherwise.
+ */
 export function isTrustedBflPollingUrl(value: string): boolean {
   const url = new URL(value);
   return (
@@ -40,6 +66,12 @@ export function isTrustedBflPollingUrl(value: string): boolean {
   );
 }
 
+/**
+ * Determines whether a provider result URL uses an approved secure delivery host.
+ *
+ * @param value - The URL to validate
+ * @returns `true` if the URL uses HTTPS, contains no credentials, and targets an approved delivery host, `false` otherwise.
+ */
 export function isSecureProviderResultUrl(value: string): boolean {
   const url = new URL(value);
   return (
@@ -52,6 +84,13 @@ export function isSecureProviderResultUrl(value: string): boolean {
   );
 }
 
+/**
+ * Waits for the specified polling interval and supports cancellation through an abort signal.
+ *
+ * @param milliseconds - The duration to wait before resolving.
+ * @param signal - The signal used to cancel the wait.
+ * @throws A `DOMException` with name `AbortError` if the signal is already aborted or aborts during the wait.
+ */
 export async function waitForBlackForestLabsPoll(
   milliseconds: number,
   signal: AbortSignal,

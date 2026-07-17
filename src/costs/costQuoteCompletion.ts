@@ -10,10 +10,13 @@ import type { StagePricing } from "./pricing.js";
 type QuotedStage = StagePricing & { enabled: boolean };
 
 /**
- * Proves whether the active quote's hosted-image line has already settled exactly once.
+ * Verifies whether the hosted visual quote stage has settled exactly once and its evidence matches the approved quote.
  *
- * A settled line remains the valid approved snapshot after applying its generated revision, even
- * though that application intentionally changes the active visual manifest.
+ * @param run - Run record containing the approval and operation identifiers.
+ * @param quoteDigest - Digest identifying the approved cost quote.
+ * @param stages - Quoted stages containing the hosted visual stage definition.
+ * @returns The settled actual cost in USD micros, or `null` when no matching reservation exists.
+ * @throws SafeExitError If the reservation is incomplete or ambiguous, or if the approval, quote stage, or result evidence is inconsistent.
  */
 export async function readSettledHostedVisualQuoteStage(
   run: RunRecord,
@@ -67,7 +70,15 @@ export async function readSettledHostedVisualQuoteStage(
   return { actualUsdMicros: reservation.actualUsdMicros };
 }
 
-/** Proves whether the exact quote's TTS line has already settled once. */
+/**
+ * Verifies that the exact TTS quote has one settled reservation and matching completion evidence.
+ *
+ * @param quoteDigest - Digest identifying the approved quote.
+ * @param stages - Quoted stages containing the enabled TTS cost line.
+ * @param projectRoot - Project root containing reservation and result evidence data.
+ * @returns The settled actual cost in USD micros, or `null` when no active reservation matches the quote.
+ * @throws SafeExitError If the reservation is incomplete or ambiguous, the TTS quote line is unavailable or disabled, or completion evidence does not match the reservation.
+ */
 export async function readSettledTtsQuoteStage(
   run: RunRecord,
   quoteDigest: string,
@@ -90,7 +101,15 @@ export async function readSettledTtsQuoteStage(
   return { actualUsdMicros: result.actualUsdMicros };
 }
 
-/** Replaces a durably settled TTS line with explicit zero-cost completion evidence. */
+/**
+ * Replaces a durably settled TTS stage with disabled, zero-cost completion evidence.
+ *
+ * @param run - Run record containing the approval and reservation history.
+ * @param stages - Quoted stages to update.
+ * @param projectRoot - Project root containing cost reservations and execution evidence.
+ * @returns A new stage array with settled TTS evidence embedded in the replacement stage.
+ * @throws `SafeExitError` if the TTS reservation is active, uncertain, duplicated, incomplete, or inconsistent with its quote or execution evidence.
+ */
 export async function suppressSettledTtsStage(
   run: RunRecord,
   stages: readonly QuotedStage[],
@@ -146,6 +165,16 @@ export async function suppressSettledTtsStage(
   );
 }
 
+/**
+ * Verifies a settled TTS reservation and its execution evidence against the approved quote.
+ *
+ * @param run - Run containing the approval for the paid generation cost.
+ * @param reservation - Settled TTS reservation whose cost and evidence are being verified.
+ * @param quoteLine - TTS quote stage that must match the reservation binding.
+ * @param projectRoot - Project root containing the execution result spool.
+ * @returns The settled actual cost in USD micros and the digest identifying its result evidence.
+ * @throws SafeExitError If the approval, reservation, quote binding, or result spool is invalid or inconsistent.
+ */
 async function requireSettledTtsResult(
   run: RunRecord,
   reservation: Awaited<ReturnType<typeof readCostReservationSummariesAtProjectRoot>>[number],

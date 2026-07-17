@@ -77,7 +77,14 @@ export const hostedVisualGenerationRevisionSchema = z.strictObject({
 
 export type HostedVisualGenerationRevision = z.infer<typeof hostedVisualGenerationRevisionSchema>;
 
-/** Reads a hosted visual revision and verifies its archived plan, quote, and source identities. */
+/**
+ * Verifies and loads a hosted visual revision and its archived plan, approved quote, source evidence, and settled reservations.
+ *
+ * @param runId - Identifier of the run containing the registered revision artifacts.
+ * @param revisionId - Identifier of the revision to validate.
+ * @returns The validated hosted visual generation revision.
+ * @throws SafeExitError If the revision is unregistered, inconsistent with its path, or fails plan, quote, approval, source, evidence, or reservation checks.
+ */
 export async function readHostedVisualGenerationRevision(
   runId: string,
   revisionId: string,
@@ -218,6 +225,13 @@ export async function readHostedVisualGenerationRevision(
   return revision;
 }
 
+/**
+ * Verifies that a hosted visual source is backed by matching settled reservation evidence.
+ *
+ * @param source - The hosted-generation source whose approval, plan, quote, operation, and result evidence must match.
+ * @param reservation - The reservation summary to validate.
+ * @throws SafeExitError If the reservation is missing, unsettled, or does not match the source evidence.
+ */
 export function assertSettledSource(
   source: Extract<VisualRevision["source"], { kind: "hosted-generation" }>,
   reservation: CostReservationSummary | undefined,

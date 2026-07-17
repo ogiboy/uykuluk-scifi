@@ -28,6 +28,12 @@ export type StudioMutationSubmitResult = Readonly<
 export const studioMutationFetchTimeoutMs = 30_000;
 export const hostedVisualMutationFetchTimeoutMs = 4 * 60 * 60 * 1_000 + 2 * 60 * 1_000;
 
+/**
+ * Selects the client wait timeout for a Studio mutation action.
+ *
+ * @param actionId - The identifier of the mutation action.
+ * @returns The extended timeout for hosted visual generation, or the default mutation timeout for other actions.
+ */
 export function studioMutationFetchTimeoutForAction(actionId: string): number {
   return actionId === "visuals.generate-hosted"
     ? hostedVisualMutationFetchTimeoutMs
@@ -35,10 +41,10 @@ export function studioMutationFetchTimeoutForAction(actionId: string): number {
 }
 
 /**
- * Posts a guarded same-origin Studio mutation request with a local session proof.
+ * Submits a guarded same-origin Studio mutation and classifies its outcome for operator workflows.
  *
- * @param input - The Studio action route, action id, JSON body, and fallback error copy.
- * @returns A success marker or operator-facing error message.
+ * @param input - The action route, action identifier, JSON-serializable payload, and fallback error message.
+ * @returns A success, blocked, or error result with any record summary, warnings, or HTTP status.
  */
 export async function submitStudioJsonMutation(input: {
   actionId: string;
@@ -124,6 +130,12 @@ export async function submitStudioJsonMutation(input: {
   };
 }
 
+/**
+ * Determines whether an error represents an aborted operation.
+ *
+ * @param error - The value to inspect.
+ * @returns `true` if the value is an error named `AbortError`, `false` otherwise.
+ */
 function isAbortError(error: unknown): boolean {
   return error instanceof Error && error.name === "AbortError";
 }

@@ -48,7 +48,13 @@ export type VisualDecisionInput = Readonly<{
 }> &
   VisualMutationExpectation;
 
-/** Creates a pending scene manifest using deterministic committed background assets. */
+/**
+ * Creates a pending scene visual manifest from deterministic committed background assets for review.
+ *
+ * @param runId - The run whose production package and scenes provide the manifest evidence.
+ * @returns The prepared visual manifest.
+ * @throws SafeExitError if a visual manifest already exists or the run is not eligible for preparation.
+ */
 export async function prepareStaticVisuals(runId: string): Promise<VisualManifest> {
   await reconcileRunLedgerOutbox(runId);
   const config = await loadConfig();
@@ -114,7 +120,18 @@ export async function prepareStaticVisuals(runId: string): Promise<VisualManifes
   return manifest;
 }
 
-/** Records attributed approve/reject decisions for active scene revisions. */
+/**
+ * Records attributed approval or rejection decisions for active visual revisions.
+ *
+ * The decision is permitted only during an eligible production or manual-production
+ * state and requires reviewer attribution, notes, and existing scene indexes matching
+ * the supplied mutation expectation. Updates the visual manifest, invalidates dependent
+ * consumers, and records an operator-visible ledger event.
+ *
+ * @param input - Decision status, reviewer attribution, notes, scene indexes, and expected manifest evidence.
+ * @returns The updated visual manifest.
+ * @throws SafeExitError If review is blocked by the run state, required attribution or notes are missing, a scene does not exist, or the input expectation is stale.
+ */
 export async function decideVisuals(input: VisualDecisionInput): Promise<VisualManifest> {
   await reconcileRunLedgerOutbox(input.runId);
   const reviewedBy = input.reviewedBy.trim();
@@ -177,6 +194,13 @@ async function readProductionScenes(runId: string) {
   return z.array(productionSceneSchema).min(1).parse(parsed.scenes);
 }
 
+/**
+ * Enforces the state gate for visual review and records the outcome in the run ledger.
+ *
+ * @param run - The run whose current state must permit visual review
+ * @param stage - The pipeline stage being guarded
+ * @throws SafeExitError if the run is not in an allowed visual review state
+ */
 async function requireVisualReviewState(run: RunRecord, stage: string): Promise<void> {
   const allowed = [
     "PRODUCTION_PACKAGE_GENERATED",

@@ -15,12 +15,16 @@ import { microsToUsd, usdToMicros } from "./money.js";
 import type { ProviderRequestEvidence } from "./providerRequestEvidence.js";
 
 /**
- * Loads an approved quote line for a specified stage of a production-ready run.
+ * Loads an approved, integrity-validated quote line for a production stage.
+ *
+ * The run must be in a state permitted for the requested stage, and the quote
+ * must have an exact matching paid-generation approval. The quote line must be
+ * enabled and have a positive estimated cost.
  *
  * @param runId - The production run identifier
- * @param stage - The stage whose quote line to load
+ * @param stage - The production stage whose quote line to load
  * @returns The run, configuration, approval ID, quote digest, provider, model, optional binding details, and maximum cost in micros
- * @throws SafeExitError If the run is not ready, the quote is stale, approval is missing, or the quote line is unavailable or disabled
+ * @throws SafeExitError If the run state is not permitted, the quote is stale, the exact approval is missing, or the quote line is unavailable or has no positive cost
  */
 export async function loadApprovedQuoteLine(runId: string, stage: string) {
   const run = await loadRun(runId);

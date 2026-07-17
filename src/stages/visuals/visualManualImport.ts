@@ -20,7 +20,18 @@ import {
 import { ManualImportVisualProvider } from "./visualProvider.js";
 import { manualVisualRevision, visualRevisionPath } from "./visualRevisions.js";
 
-/** Imports a new manual image revision for one scene and invalidates stale render planning. */
+/**
+ * Imports a manual visual revision for a scene and invalidates dependent visual consumers.
+ *
+ * The operation requires the run to be ready for visual mutations and the supplied
+ * mutation expectation to match the current manifest. It writes the source image,
+ * activates the new revision, clears the scene decision, records rollback metadata,
+ * and queues an artifact revision ledger event.
+ *
+ * @param input - The run, scene, source image path, and expected manifest state.
+ * @returns The updated visual manifest.
+ * @throws SafeExitError If the manual provider returns an unexpected result or the scene does not exist.
+ */
 export async function importManualVisual(
   input: { runId: string; sceneIndex: number; sourcePath: string } & VisualMutationExpectation,
 ): Promise<VisualManifest> {

@@ -14,7 +14,12 @@ export type ArchivedCostEstimate = Readonly<{
   markdownPath: string;
 }>;
 
-/** Archives the active exact quote pair and removes only its active aliases. */
+/**
+ * Archives the active exact quote and removes its active alias artifacts.
+ *
+ * @param input - The project, run record, and stage whose quote artifacts are archived.
+ * @returns The updated run record, loaded quote, and digest-scoped archive paths.
+ */
 export async function archiveActiveCostEstimate(input: {
   projectRoot?: string;
   run: RunRecord;
@@ -40,6 +45,12 @@ export async function archiveActiveCostEstimate(input: {
   return { run, quote, archive };
 }
 
+/**
+ * Derives the digest-scoped artifact paths for an archived cost estimate.
+ *
+ * @param digest - The estimate digest used to identify the archive directory.
+ * @returns The digest and corresponding JSON and Markdown artifact paths.
+ */
 export function costEstimateArchivePaths(digest: string): ArchivedCostEstimate {
   return {
     digest,

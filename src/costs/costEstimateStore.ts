@@ -13,7 +13,14 @@ export type LoadedCostEstimate = Readonly<{
   digest: string;
 }>;
 
-/** Reads and verifies the active quote beneath an explicit producer project root. */
+/**
+ * Loads and verifies the active cost quote from the specified producer project root.
+ *
+ * @param projectRoot - The producer project root containing the quote artifacts
+ * @param run - The run record whose registered artifacts define the evidence available for loading
+ * @returns The validated cost estimate, persisted text, and canonical digest
+ * @throws SafeExitError If the active JSON or Markdown artifact is missing, malformed, or inconsistent
+ */
 export async function readCostEstimateAtProjectRoot(
   projectRoot: string,
   run: Pick<RunRecord, "runId" | "artifacts">,
@@ -28,7 +35,15 @@ export async function readCostEstimateAtProjectRoot(
   return parseCostEstimateBytes(jsonBytes, markdownBytes);
 }
 
-/** Resolves an exact active or archived registered quote by its JSON/Markdown pair digest. */
+/**
+ * Resolves an approved cost quote by verifying its canonical digest against active or archived evidence.
+ *
+ * @param projectRoot - The project root containing the registered cost quote artifacts
+ * @param run - The run record whose registered artifacts identify eligible quote evidence
+ * @param expectedDigest - The canonical digest of the required JSON/Markdown quote pair
+ * @returns The verified cost estimate, source texts, and computed digest
+ * @throws SafeExitError If the digest is unavailable or archived bytes do not match their canonical digest path
+ */
 export async function readCostEstimateByDigestAtProjectRoot(
   projectRoot: string,
   run: RunRecord,
@@ -58,6 +73,14 @@ export async function readCostEstimateByDigestAtProjectRoot(
   );
 }
 
+/**
+ * Validates a persisted cost quote and its deterministic Markdown representation.
+ *
+ * @param jsonBytes - The serialized cost quote JSON bytes.
+ * @param markdownBytes - The persisted Markdown rendering of the cost quote.
+ * @returns The validated estimate, decoded source texts, and canonical digest.
+ * @throws `SafeExitError` if the JSON is malformed or invalid, or if the Markdown does not match the quote.
+ */
 function parseCostEstimateBytes(jsonBytes: Buffer, markdownBytes: Buffer): LoadedCostEstimate {
   const text = jsonBytes.toString("utf8");
   const markdownText = markdownBytes.toString("utf8");

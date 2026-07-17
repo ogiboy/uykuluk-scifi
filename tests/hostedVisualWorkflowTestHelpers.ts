@@ -13,6 +13,11 @@ import { loadHostedVisualGenerationPlan } from "../src/stages/visuals/visualGene
 import { sha256 } from "../src/utils/hash";
 import { preparePackagedVisualRun } from "./visualTestHelpers";
 
+/**
+ * Prepares a hosted visual generation run with approved cost and readiness checks.
+ *
+ * @returns The identifier of the prepared run
+ */
 export async function prepareApprovedHostedVisualRun(): Promise<string> {
   await writeFile(
     "producer.config.json",
@@ -44,10 +49,24 @@ export async function prepareApprovedHostedVisualRun(): Promise<string> {
   return runId;
 }
 
+/**
+ * Loads the current hosted visual generation plan for a run.
+ *
+ * @param runId - The identifier of the run whose plan should be loaded
+ * @returns The current hosted visual generation plan
+ */
 export async function currentHostedVisualPlan(runId: string) {
   return loadHostedVisualGenerationPlan(await loadRun(runId), await loadConfig());
 }
 
+/**
+ * Finds the paid-generation approval matching an exact quote digest.
+ *
+ * @param run - The loaded workflow run containing approval records.
+ * @param quoteDigest - The quote digest that the approval must reference.
+ * @returns The matching paid-generation approval.
+ * @throws Error if no matching approval exists.
+ */
 export function exactCostApproval(run: Awaited<ReturnType<typeof loadRun>>, quoteDigest: string) {
   const approval = run.approvals.find(
     (item) => item.target === "paid-generation-cost" && item.approvedRef === quoteDigest,
@@ -56,6 +75,14 @@ export function exactCostApproval(run: Awaited<ReturnType<typeof loadRun>>, quot
   return approval;
 }
 
+/**
+ * Creates a deterministic mock executor for hosted scene generation.
+ *
+ * @param batch - Identifier used to derive generated buffers and provider request IDs.
+ * @param billableCredits - Credits reported for each generated scene.
+ * @returns A mock executor that produces successful image-generation results with deterministic metadata.
+ * @throws Error when the requested scene has no planned prompt.
+ */
 export function hostedSceneExecutor(batch: string, billableCredits = 9) {
   return vi.fn(
     async ({ plan, sceneIndex }: { plan: HostedVisualGenerationPlan; sceneIndex: number }) => {
