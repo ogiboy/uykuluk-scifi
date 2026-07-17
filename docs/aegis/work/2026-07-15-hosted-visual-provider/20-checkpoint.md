@@ -21,14 +21,16 @@
 - Completed: `pnpm model:start` now resolves absolute paths, explicit repository-relative paths, and
   bare `models/llm` names with an optional `.gguf` suffix while preserving `config.model` as the
   served alias and listing attempted paths on failure.
-- Completed final local verification: `pnpm check` passed 252 files/1,122 tests, both supported
+- Completed final local verification: `pnpm check` passed 252 files/1,139 tests, both supported
   TypeScript toolchains, the Webpack Studio production build, modularity, secret, release, and
-  formatting gates. Product UAT passed with report
-  `.ai/qa/artifacts/product-uat-20260717-190950/qa-report.md`; the production Chromium suite passed
-  9/9 routes after separating compact action-rail layout from Sheet close context.
+  formatting gates; coverage passed the same 1,139 tests. Usage and product UAT passed with reports
+  `.ai/qa/artifacts/usage-smoke-20260717-194304/qa-report.md` and
+  `.ai/qa/artifacts/product-uat-20260717-194440/qa-report.md`; the production Chromium suite passed
+  9/9 routes after separating compact action-rail layout from Sheet close context. Dependency audit
+  found no known high-severity vulnerability and the release plan remains minor (`v0.84.0`).
 - Completed: current remote PR plus local closure union remains within the 150-file review limit.
-- Active: commit and push the final review fixes, then use hosted PR Sonar/CI because the local
-  SonarCloud Keychain credential is unavailable.
+- Active: push the final review fixes, then use hosted PR Sonar/CI because the local SonarCloud
+  Keychain credential is unavailable.
 - External proof deferred from this PR: the current ElevenLabs Free API plan lists 10,000 included
   Multilingual v2/v3 characters, so a later short diagnostic-only v3 timestamps smoke may run after
   subscription inspection; it grants no commercial rights. BFL credit/entitlement remains
