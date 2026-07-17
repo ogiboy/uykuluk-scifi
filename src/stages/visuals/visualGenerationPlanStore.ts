@@ -58,18 +58,19 @@ export async function prepareHostedVisualGenerationPlan(
   const config = await loadConfig();
   if (input.purpose === "regenerate-rejected") {
     const current = await loadRun(input.runId);
-    if (!input.reason?.trim() || !input.reviewedBy?.trim()) {
-      throw new SafeExitError(
-        "Rejected hosted visual regeneration requires reviewer attribution and a reason.",
-      );
-    }
-    const expectation = visualMutationExpectationSchema.parse({
-      expectedActiveRevisions: input.expectedActiveRevisions,
-      expectedManifestDigest: input.expectedManifestDigest,
-    });
-    const loadedManifest = await loadVisualManifest(current);
+    let expectation: VisualMutationExpectation;
     let plan: HostedVisualGenerationPlan;
     try {
+      if (!input.reason?.trim() || !input.reviewedBy?.trim()) {
+        throw new SafeExitError(
+          "Rejected hosted visual regeneration requires reviewer attribution and a reason.",
+        );
+      }
+      expectation = visualMutationExpectationSchema.parse({
+        expectedActiveRevisions: input.expectedActiveRevisions,
+        expectedManifestDigest: input.expectedManifestDigest,
+      });
+      const loadedManifest = await loadVisualManifest(current);
       assertVisualMutationExpectation(loadedManifest, expectation);
       plan = buildHostedVisualGenerationPlan({
         runId: current.runId,

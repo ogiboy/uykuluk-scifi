@@ -98,17 +98,21 @@ async function submitScene(
   const parsed = blackForestLabsSubmitResponseSchema.safeParse(
     await readBlackForestLabsJsonResponse(response),
   );
-  if (!parsed.success || !isTrustedBflPollingUrl(parsed.data.polling_url)) {
+  if (!parsed.success) {
     return { kind: "unknown", reason: "indeterminate" };
+  }
+  const requestEvidence = [
+    blackForestLabsProviderEvidence(prepared.scene, parsed.data.id, parsed.data.cost),
+  ];
+  if (!isTrustedBflPollingUrl(parsed.data.polling_url)) {
+    return blackForestLabsUnknownOutcome("indeterminate", parsed.data.id, requestEvidence);
   }
   return {
     kind: "submitted",
     providerRequestId: parsed.data.id,
     pollingUrl: parsed.data.polling_url,
     submittedCost: parsed.data.cost,
-    requestEvidence: [
-      blackForestLabsProviderEvidence(prepared.scene, parsed.data.id, parsed.data.cost),
-    ],
+    requestEvidence,
   };
 }
 

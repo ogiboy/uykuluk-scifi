@@ -120,9 +120,16 @@ describe("Black Forest Labs FLUX.2 Pro reserved adapter", () => {
         jsonResponse(submitResponse("https://attacker.invalid/get_result?id=task-123")),
       );
 
-    await expect(executeBflAdapter(fetchMock)).resolves.toEqual({
+    await expect(executeBflAdapter(fetchMock)).resolves.toMatchObject({
       kind: "unknown",
       reason: "indeterminate",
+      providerRequestId: "task-123",
+      requestEvidence: [
+        expect.objectContaining({
+          requestIdHash: expect.stringMatching(/^[a-f0-9]{64}$/),
+          reportedUnits: 9,
+        }),
+      ],
     });
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
