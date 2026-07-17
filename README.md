@@ -37,17 +37,17 @@ publishing bot. Studio is the operator experience; CLI/core remains the source o
 
 ## Current Product Status
 
-| Area                             | Status                                                        |
-| -------------------------------- | ------------------------------------------------------------- |
-| Local mock workflow              | Available without paid credentials                            |
-| Studio guarded workflow          | Available; normal operator surface                            |
-| ElevenLabs v3 contracts          | Implemented: catalog through recovery and settlement          |
-| ElevenLabs live production proof | Pending one approved commercial synthesis smoke               |
-| Aligned subtitles                | Implemented and bound into exact render approval              |
-| Voice audition in Studio         | Implemented; real Studio browser UAT passed                   |
-| Visual production                | Candidate: 12–24 static/manual beats with review/regeneration |
-| Private YouTube upload           | Pending v1 controlled-distribution slice                      |
-| Public or scheduled publish      | Unavailable and out of v1                                     |
+| Area                             | Status                                                       |
+| -------------------------------- | ------------------------------------------------------------ |
+| Local mock workflow              | Available without paid credentials                           |
+| Studio guarded workflow          | Available; normal operator surface                           |
+| ElevenLabs v3 contracts          | Implemented: catalog through recovery and settlement         |
+| ElevenLabs live production proof | Pending; a free diagnostic does not grant commercial rights  |
+| Aligned subtitles                | Implemented and bound into exact render approval             |
+| Voice audition in Studio         | Implemented; real Studio browser UAT passed                  |
+| Visual production                | Static/manual; experimental BFL hosted path is mock-verified |
+| Private YouTube upload           | Pending v1 controlled-distribution slice                     |
+| Public or scheduled publish      | Unavailable and out of v1                                    |
 
 ## Screenshots
 
@@ -62,7 +62,8 @@ publishing bot. Studio is the operator experience; CLI/core remains the source o
 - FFmpeg and `ffprobe` for rendering
 - Optional: Ollama or llama.cpp for local generation
 - Optional: Python `uv` and Piper for local Turkish speech
-- Optional: ElevenLabs credentials for explicitly requested hosted voice operations
+- Optional: ElevenLabs and BFL credentials for explicitly approved hosted media operations;
+  configured keys do not prove entitlement or available provider credit
 
 ## Five-Minute Setup
 
@@ -96,8 +97,9 @@ doctor -> idea -> approval -> script review -> package -> voice audition
 
 Opening the voice panel performs no provider call. Candidate and preview work begins only from an
 operator action, and preview playback uses validated local run media rather than provider URLs. The
-visual panel prepares a deterministic 12–24 beat fallback, supports batch decisions, manual PNG/JPEG
-revisions, and rejected-only regeneration before the approved manifest enters rendering.
+visual panel prepares a deterministic 12–24 beat fallback, supports batch decisions and manual
+PNG/JPEG revisions, or exposes a provider-neutral hosted-generation action backed today only by the
+experimental, disabled-by-default FLUX.2 Pro adapter with rejected-only regeneration.
 
 Private upload and processing review will extend this journey in a later v1 slice. Public and
 scheduled publishing remain inaccessible.
@@ -113,9 +115,15 @@ Full operator guide: [Studio workflow](docs/operator-guide/studio-workflow.md).
 | Deterministic local | Reference timing and pipeline audio                 | None                   |
 | Piper               | Offline Turkish voice fallback                      | None after model setup |
 | ElevenLabs v3       | Hosted audition and approval-bound production voice | Server-side key        |
+| FLUX.2 Pro          | Hosted scene stills and rejected-only regeneration  | Server-side key        |
 
-Read [local model setup](docs/providers/local-models.md) and
-[voice provider contracts](docs/providers/voice.md) before changing provider mode.
+Eleven Creative image/video is not an integrated provider; externally created media enters only via
+attributable manual import because no public generation API is integrated. Local MFLUX is the next
+planned visual-provider slice and is not yet available. A configured hosted-provider key reports
+credential presence only, not commercial entitlement, available credit, or production readiness.
+
+Read [local model setup](docs/providers/local-models.md) and [voice](docs/providers/voice.md) or
+[visual provider contracts](docs/providers/visuals.md) before changing provider mode.
 
 ## Safety Boundaries
 
@@ -143,14 +151,6 @@ See [Security and operating model](docs/security/operating-model.md).
 Documentation remains versioned Markdown; a docs site is deferred until navigation stabilizes.
 
 ## Development
-
-```bash
-pnpm test
-pnpm check
-pnpm qa:product
-pnpm qa:browser
-pnpm version:plan
-```
 
 Use focused tests while developing; at PR readiness run the
 [full quality gates](docs/release/quality-gates.md). Paid calls do not run in CI.

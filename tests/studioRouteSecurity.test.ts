@@ -87,7 +87,9 @@ describe("Studio route security contract", () => {
         "actions/run-voice/route.ts",
         "actions/session/route.ts",
         "actions/visuals-decide/route.ts",
+        "actions/visuals-generate-hosted/route.ts",
         "actions/visuals-import/route.ts",
+        "actions/visuals-plan-hosted/route.ts",
         "actions/visuals-prepare/route.ts",
         "actions/visuals-regenerate/route.ts",
         "actions/voice-candidates/route.ts",
@@ -202,6 +204,12 @@ describe("Studio route security contract", () => {
           path: "/actions/run-channel-handoff",
           requiredApproval: "workflow",
           serviceContractId: "channel-handoff.run",
+        }),
+        expect.objectContaining({
+          path: "/actions/visuals-generate-hosted",
+          requiredApproval: "cost",
+          risk: "external-side-effect",
+          serviceContractId: "visuals.generate-hosted",
         }),
         expect.objectContaining({
           path: "/actions/visuals-regenerate",

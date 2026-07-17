@@ -2,9 +2,10 @@ import { table } from "../utils/markdown.js";
 import type { CostEstimate } from "./costEstimate.js";
 
 /**
- * Renders a cost estimate as a markdown-formatted report.
+ * Formats a cost estimate and its approval, budget, blocking, and execution-binding details as a Markdown report.
  *
- * @returns A markdown string containing the cost estimate.
+ * @param estimate - The cost estimate containing stage costs, budgets, approval state, blocks, and execution evidence.
+ * @returns A Markdown report showing estimated costs, spending gates, blocked reasons, and available execution-binding details.
  */
 export function renderCostEstimateMarkdown(estimate: CostEstimate): string {
   const sections = [
@@ -43,17 +44,42 @@ export function renderCostEstimateMarkdown(estimate: CostEstimate): string {
     );
     for (const stage of boundStages) {
       if (!stage.bindingSummary) continue;
-      sections.push(
-        "",
-        `### ${stage.stage} selected voice`,
-        "",
-        `- Selection digest: \`${stage.bindingSummary.selectionDigest}\``,
-        `- Voice ID: \`${stage.bindingSummary.voiceId}\``,
-        `- Model ID: \`${stage.bindingSummary.modelId}\``,
-        `- Pricing digest: \`${stage.bindingSummary.pricingDigest}\``,
-        `- Expected discounted rate: ${stage.bindingSummary.expectedUsdPerThousandCharacters.toFixed(6)} USD / 1K characters`,
-        `- Approved maximum rate: ${stage.bindingSummary.maximumUsdPerThousandCharacters.toFixed(6)} USD / 1K characters`,
-      );
+      if (stage.bindingSummary.kind === "selected-voice") {
+        sections.push(
+          "",
+          `### ${stage.stage} selected voice`,
+          "",
+          `- Selection digest: \`${stage.bindingSummary.selectionDigest}\``,
+          `- Voice ID: \`${stage.bindingSummary.voiceId}\``,
+          `- Model ID: \`${stage.bindingSummary.modelId}\``,
+          `- Pricing digest: \`${stage.bindingSummary.pricingDigest}\``,
+          `- Expected discounted rate: ${stage.bindingSummary.expectedUsdPerThousandCharacters.toFixed(6)} USD / 1K characters`,
+          `- Approved maximum rate: ${stage.bindingSummary.maximumUsdPerThousandCharacters.toFixed(6)} USD / 1K characters`,
+        );
+      } else if (stage.bindingSummary.kind === "hosted-visual-generation") {
+        sections.push(
+          "",
+          `### ${stage.stage} hosted visual generation`,
+          "",
+          `- Plan digest: \`${stage.bindingSummary.planDigest}\``,
+          `- Visual manifest digest: \`${stage.bindingSummary.visualManifestDigest}\``,
+          `- Pricing digest: \`${stage.bindingSummary.pricingDigest}\``,
+          `- Targeted scenes: ${stage.bindingSummary.targetedSceneIndexes.join(", ")}`,
+          `- Maximum per image: ${stage.bindingSummary.maximumUsdPerImage.toFixed(6)} USD`,
+          `- Total maximum: ${stage.bindingSummary.totalMaximumUsd.toFixed(6)} USD`,
+        );
+      } else {
+        sections.push(
+          "",
+          `### ${stage.stage} settled paid stage`,
+          "",
+          `- Original quote digest: \`${stage.bindingSummary.originalQuoteDigest}\``,
+          `- Original approval: \`${stage.bindingSummary.originalApprovalId}\``,
+          `- Reservation: \`${stage.bindingSummary.reservationId}\``,
+          `- Result evidence: \`${stage.bindingSummary.resultEvidenceDigest}\``,
+          `- Settled actual: ${(stage.bindingSummary.actualUsdMicros / 1_000_000).toFixed(6)} USD`,
+        );
+      }
     }
   }
   return sections.join("\n");

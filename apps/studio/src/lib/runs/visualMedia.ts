@@ -9,7 +9,17 @@ export type StudioVisualMediaResult =
   | Readonly<{ status: 404 }>
   | Readonly<{ status: 416 }>;
 
-/** Reads one active, digest-verified visual revision for browser display. */
+/**
+ * Serves the active, integrity-verified visual revision for a scene.
+ *
+ * @param root - Project root used to locate the visual run and media asset
+ * @param runId - Identifier of the visual run
+ * @param sceneIndex - Scene index whose active revision should be served
+ * @param expectedManifestDigest - Expected SHA-256 digest of the visual manifest
+ * @param expectedRevision - Expected revision number for the scene's active revision
+ * @param rangeHeader - Optional HTTP byte-range request
+ * @returns A full or partial media response, `404` when the run, manifest, revision, or asset is unavailable or fails verification, or `416` for an invalid range
+ */
 export async function readStudioVisualMedia(
   root: string,
   runId: string,
@@ -35,9 +45,9 @@ export async function readStudioVisualMedia(
     const scene = loaded.manifest.scenes.find((item) => item.sceneIndex === sceneIndex);
     const active = scene?.revisions.find((item) => item.revision === scene.activeRevision);
     if (active?.revision !== expectedRevision) return { status: 404 };
-    const body = active.asset.path.startsWith("production/")
-      ? await readRegisteredArtifactBytesAtProjectRoot(root, run, active.asset.path)
-      : await readProjectAssetBytesAtProjectRoot(root, active.asset.path);
+    const body = active.asset.path.startsWith("assets/")
+      ? await readProjectAssetBytesAtProjectRoot(root, active.asset.path)
+      : await readRegisteredArtifactBytesAtProjectRoot(root, run, active.asset.path);
     if (!body) return { status: 404 };
     if (createHash("sha256").update(body).digest("hex") !== active.asset.digest) {
       return { status: 404 };

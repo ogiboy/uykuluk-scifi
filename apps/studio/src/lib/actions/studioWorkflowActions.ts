@@ -40,14 +40,30 @@ const workflowActionStepDefinitions = [
     summary: "Create package artifacts, revise bounded package files, and review render planning.",
   },
   {
-    actionIds: ["estimate.run", "evidence.run", "readiness.run"],
+    actionIds: ["estimate.run", "cost.approve", "evidence.run", "readiness.run"],
     label: "Proof and readiness",
-    summary: "Regenerate cost, evidence, and readiness proof before production work.",
+    summary: "Review exact cost, record approval, and refresh readiness proof before production.",
+  },
+  {
+    actionIds: [
+      "voice.candidates",
+      "voice.preview",
+      "voice.select",
+      "voice.reselect",
+      "visuals.prepare",
+      "visuals.import",
+      "visuals.decide",
+      "visuals.regenerate",
+      "visuals.plan-hosted",
+    ],
+    label: "Voice and visual audition",
+    summary: "Compare voice and scene media, record decisions, and prepare exact provider plans.",
   },
   {
     actionIds: [
       "voice.run",
       "voice.review",
+      "visuals.generate-hosted",
       "render.approve",
       "render.run",
       "render.review",
@@ -55,7 +71,7 @@ const workflowActionStepDefinitions = [
     ],
     label: "Production media review",
     summary:
-      "Generate and review configured voiceover plus the local draft render after explicit approval.",
+      "Generate and review approved voiceover and scene images, then create the local draft render.",
   },
   {
     actionIds: [

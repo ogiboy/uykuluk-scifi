@@ -1,0 +1,131 @@
+import { SafeExitError } from "../../core/errors.js";
+import type { CostReservationSummary } from "../../costs/costReservationStore.js";
+import type { VisualRevision } from "./visualContracts.js";
+import type { LoadedHostedVisualGenerationSpool } from "./visualGenerationSpool.js";
+
+type ExactHostedVisualSpoolIdentity = Readonly<{
+  approvedQuote: { approvalId: string; quoteDigest: string };
+  planDigest: string;
+  reservation: CostReservationSummary;
+  spool: LoadedHostedVisualGenerationSpool;
+}>;
+
+/**
+ * Verifies that a hosted visual result is durably committed and matches its settlement evidence.
+ *
+ * @param input - The reservation, approval, plan, and loaded result spool to verify.
+ * @returns The verified hosted visual generation spool.
+ * @throws SafeExitError If settlement evidence is incomplete or the reservation and spool do not match.
+ */
+export function requireCommittedHostedVisualSpool(
+  input: ExactHostedVisualSpoolIdentity,
+): LoadedHostedVisualGenerationSpool {
+  const actualUsdMicros = input.reservation.actualUsdMicros;
+  if (
+    !["SETTLEMENT_PENDING", "SETTLED"].includes(input.reservation.status) ||
+    actualUsdMicros === undefined
+  ) {
+    throw new SafeExitError("Hosted visual provider result is not durably committed.");
+  }
+  if (
+    input.reservation.runId !== input.spool.spool.runId ||
+    input.reservation.provider !== input.spool.spool.provider.service ||
+    input.reservation.model !== input.spool.spool.provider.modelId ||
+    input.reservation.operationId !== input.spool.spool.operationId ||
+    input.reservation.bindingDigest !== input.planDigest ||
+    input.reservation.quoteDigest !== input.approvedQuote.quoteDigest ||
+    input.reservation.approvalId !== input.approvedQuote.approvalId ||
+    input.spool.spool.plan.digest !== input.planDigest ||
+    input.spool.spool.approvedQuote.approvalId !== input.approvedQuote.approvalId ||
+    input.spool.spool.approvedQuote.quoteDigest !== input.approvedQuote.quoteDigest ||
+    input.spool.spool.reservationId !== input.reservation.reservationId ||
+    input.spool.spool.actualUsdMicros !== actualUsdMicros ||
+    input.spool.spool.providerRequestIdHash !== input.reservation.providerRequestIdHash ||
+    input.spool.reference.digest !==
+      requireHostedVisualResultDigest(input.reservation.resultEvidenceDigest)
+  ) {
+    throw new SafeExitError(
+      "Committed hosted visual operation does not match its durable result spool.",
+    );
+  }
+  return input.spool;
+}
+
+/**
+ * Verifies that a hosted visual spool has durable settlement evidence and matches its reservation.
+ *
+ * @param input - The reservation and hosted visual spool evidence to validate.
+ * @returns The verified hosted visual generation spool.
+ * @throws SafeExitError If settlement is incomplete or the spool does not match its committed evidence.
+ */
+export function requireSettledHostedVisualSpool(
+  input: ExactHostedVisualSpoolIdentity,
+): LoadedHostedVisualGenerationSpool {
+  if (input.reservation.status !== "SETTLED") {
+    throw new SafeExitError("Hosted visual settlement is not durably complete.");
+  }
+  return requireCommittedHostedVisualSpool(input);
+}
+
+/**
+ * Verifies that a scene revision matches exactly one image in its durably settled hosted-generation spool.
+ *
+ * @param input - The scene index, revision, cost reservation, and hosted-generation spool evidence to verify.
+ * @throws SafeExitError If the revision is not a hosted generation, settlement is incomplete, or the revision differs from its settled spool evidence.
+ */
+export function requireHostedVisualSceneSpoolMatch(input: {
+  sceneIndex: number;
+  revision: VisualRevision;
+  reservation: CostReservationSummary;
+  spool: LoadedHostedVisualGenerationSpool;
+}): void {
+  const source = input.revision.source;
+  if (source.kind !== "hosted-generation" || input.revision.provider !== source.service) {
+    throw new SafeExitError(`Hosted visual scene ${input.sceneIndex} has no hosted revision.`);
+  }
+  requireSettledHostedVisualSpool({
+    spool: input.spool,
+    reservation: input.reservation,
+    planDigest: source.planDigest,
+    approvedQuote: { approvalId: source.approvalId, quoteDigest: source.quoteDigest },
+  });
+  const images = input.spool.spool.images.filter((image) => image.sceneIndex === input.sceneIndex);
+  const image = images[0];
+  if (
+    images.length !== 1 ||
+    !image ||
+    source.operationId !== input.spool.spool.operationId ||
+    source.reservationId !== input.reservation.reservationId ||
+    source.resultSpool.path !== input.spool.reference.path ||
+    source.resultSpool.digest !== input.spool.reference.digest ||
+    source.service !== input.spool.spool.provider.service ||
+    source.modelId !== input.spool.spool.provider.modelId ||
+    source.providerRequestIdHash !== image.providerRequest.requestIdHash ||
+    source.billableCredits !== image.billing.billableCredits ||
+    source.actualUsdMicros !== image.billing.derivedUsdMicros ||
+    input.revision.asset.path !== image.asset.path ||
+    input.revision.asset.digest !== image.asset.sha256 ||
+    input.revision.media?.bytes !== image.media.bytes ||
+    input.revision.media.format !== image.media.format ||
+    input.revision.media.height !== image.media.height ||
+    input.revision.media.width !== image.media.width
+  ) {
+    throw new SafeExitError(
+      `Hosted visual scene ${input.sceneIndex} does not match its settled spool image.`,
+    );
+  }
+}
+
+/**
+ * Requires a settled hosted visual operation to provide its result digest.
+ *
+ * @param value - The durable result digest associated with the operation
+ * @returns The provided result digest
+ * @throws SafeExitError If the result digest is missing
+ */
+export function requireHostedVisualResultDigest(value: string | undefined): string {
+  if (!value) {
+    throw new SafeExitError("Settled hosted visual operation is missing its result digest.");
+  }
+  return value;
+}

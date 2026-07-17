@@ -63,6 +63,24 @@ pnpm producer voice --run <run_id> \
 The four hosted confirmation options are all-or-none. Core revalidates selection, quote, approval,
 reservation, eligibility, and metadata before provider execution.
 
+## Scene Visuals
+
+```bash
+pnpm producer visuals prepare --run <run_id>
+pnpm producer visuals plan-hosted --run <run_id> --scenes 1,2,3
+pnpm producer estimate --run <run_id>
+pnpm producer approve cost --run <run_id>
+pnpm producer visuals generate-hosted --run <run_id> \
+  --binding-digest <sha256> --quote-digest <sha256> --approval-id <approval_id> \
+  --confirm-paid-operation
+pnpm producer visuals plan-hosted --run <run_id> --scenes 2,7 \
+  --purpose regenerate-rejected --reviewed-by <operator> --reason "<reason>"
+```
+
+Hosted planning is explicit and makes no provider request. The generation command revalidates the
+exact plan, quote, approval, reservation, and server-only credential. Rejected-only planning
+archives the spent plan and quote before a new estimate; accepted scenes are retained unchanged.
+
 ## Render and Review
 
 ```bash

@@ -144,11 +144,11 @@ async function artifactCheck(
 }
 
 /**
- * Checks whether the run's cost estimate satisfies readiness requirements.
+ * Validates the run's cost estimate against current requirements and any required paid-generation approval.
  *
- * @param run - The run being evaluated
+ * @param run - The run whose cost estimate is being evaluated
  * @param config - The loaded configuration used to validate the estimate
- * @returns A readiness check for the cost estimate
+ * @returns A readiness check that passes when the estimate is current, within hard budgets, and has required exact-cost approval; otherwise, a blocking check with an operator action when applicable
  */
 async function budgetEstimateCheck(
   run: RunRecord,
@@ -166,7 +166,7 @@ async function budgetEstimateCheck(
   }
   try {
     const { estimate, digest } = await readCostEstimate(run.runId);
-    const validationReasons = await validateCurrentCostEstimate(run, config, estimate);
+    const validationReasons = await validateCurrentCostEstimate(run, config, estimate, digest);
     if (validationReasons.length > 0) {
       return {
         name: "budget not exceeded",

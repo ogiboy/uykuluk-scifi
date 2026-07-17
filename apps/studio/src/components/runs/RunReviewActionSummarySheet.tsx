@@ -93,7 +93,7 @@ export function RunReviewActionSummarySheet({ run }: RunReviewActionSummarySheet
               />
             </div>
 
-            <RunPrimaryActionPanel compact run={run} />
+            <RunPrimaryActionPanel closeRailOnNavigate compact run={run} />
 
             {run.blockedActions.length > 0 ? (
               <div className='grid gap-3'>

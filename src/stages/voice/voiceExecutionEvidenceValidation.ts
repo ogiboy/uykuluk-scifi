@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 import { artifactPathAtProjectRoot } from "../../core/artifactPaths.js";
 import { SafeExitError } from "../../core/errors.js";
 import type { RunRecord } from "../../core/state.js";
-import { readCostEstimateAtProjectRoot } from "../../costs/costEstimate.js";
+import { readCostEstimateByDigestAtProjectRoot } from "../../costs/costEstimateStore.js";
 import { readCostEventsAtProjectRoot } from "../../costs/costLedger.js";
 import { readCostReservationSummariesAtProjectRoot } from "../../costs/costReservationStore.js";
 import { usdToMicros } from "../../costs/money.js";
@@ -35,7 +35,18 @@ export async function assertPaidVoiceExecutionEvidence(
   return assertPaidVoiceExecutionEvidenceAtProjectRoot(process.cwd(), run, meta);
 }
 
-/** Validates paid voice evidence beneath an explicit producer project root. */
+/**
+ * Validates paid ElevenLabs voice execution evidence against the prepared input, approval, cost
+ * reservation, provider spool, and final output.
+ *
+ * Validation is skipped for other voice modes. A `SafeExitError` is thrown when required evidence
+ * is missing or any persisted evidence, approval, settlement, cost event, or output digest
+ * mismatches.
+ *
+ * @param projectRoot - The project root containing the run's persisted artifacts and cost records.
+ * @param run - The run record containing approvals and artifact registrations.
+ * @param meta - The voice output metadata and paid execution evidence to validate.
+ */
 export async function assertPaidVoiceExecutionEvidenceAtProjectRoot(
   projectRoot: string,
   run: RunRecord,
@@ -58,7 +69,7 @@ export async function assertPaidVoiceExecutionEvidenceAtProjectRoot(
   await requirePinnedBindingArtifacts(projectRoot, run, binding);
   requireMatchingBinding(meta, paid, binding);
 
-  const quote = await readCostEstimateAtProjectRoot(projectRoot, run.runId);
+  const quote = await readCostEstimateByDigestAtProjectRoot(projectRoot, run, paid.quoteDigest);
   const quoteLine = quote.estimate.stages.find((stage) => stage.stage === "tts");
   if (
     paid.quoteDigest !== quote.digest ||

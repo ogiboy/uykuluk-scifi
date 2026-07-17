@@ -18,6 +18,7 @@ hosted documentation site is deferred until this structure stabilizes.
 - [Local models](providers/local-models.md): mock, Ollama, llama.cpp, prompt overrides, and
   evaluation.
 - [Voice providers](providers/voice.md): deterministic reference, Piper, and ElevenLabs v3.
+- [Visual providers](providers/visuals.md): static/manual fallback and approval-bound FLUX.2 Pro.
 - [Provider and artifact troubleshooting](troubleshooting/provider-and-artifacts.md).
 
 ## Engineering

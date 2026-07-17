@@ -28,6 +28,12 @@ export type VoiceQuoteReadResult = Readonly<{
 type VoiceQuoteEstimate = Awaited<ReturnType<typeof readCostEstimateAtProjectRoot>>["estimate"];
 type VoiceQuoteStage = VoiceQuoteEstimate["stages"][number] | undefined;
 
+/**
+ * Reads and validates the voice production cost quote for the current run.
+ * @param root - The project root containing the quote artifacts.
+ * @param run - The voice audition run associated with the quote.
+ * @param config - Producer configuration used to validate quote currency.
+ */
 export async function readVoiceQuoteSummary(
   root: string,
   run: VoiceAuditionRun,
@@ -40,7 +46,7 @@ export async function readVoiceQuoteSummary(
   }
   try {
     assertVoiceQuoteArtifactsRegistered(run, jsonPath, markdownPath);
-    const { estimate, digest } = await readCostEstimateAtProjectRoot(root, run.runId);
+    const { estimate, digest } = await readCostEstimateAtProjectRoot(root, run);
     const ttsStage = estimate.stages.find((stage) => stage.stage === "tts");
     assertVoiceQuoteIsCurrent(estimate, run, config, ttsStage);
     return readyVoiceQuoteResult(estimate, digest, ttsStage, jsonPath, markdownPath);

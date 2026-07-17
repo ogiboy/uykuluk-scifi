@@ -30,6 +30,8 @@ export const studioCliMutationActionIds = [
   "script.run",
   "visuals.decide",
   "visuals.import",
+  "visuals.plan-hosted",
+  "visuals.generate-hosted",
   "visuals.prepare",
   "visuals.regenerate",
   "voice.candidates",
@@ -61,6 +63,8 @@ export type RunOnlyCliActionId = Exclude<
   | "script.revise"
   | "visuals.decide"
   | "visuals.import"
+  | "visuals.plan-hosted"
+  | "visuals.generate-hosted"
   | "visuals.regenerate"
   | "voice.preview"
   | "voice.reselect"

@@ -28,6 +28,21 @@ const visualMediaSchema = z.strictObject({
   width: z.int().positive(),
 });
 
+export const hostedVisualSourceSchema = z.strictObject({
+  kind: z.literal("hosted-generation"),
+  service: z.literal("black-forest-labs"),
+  modelId: z.literal("flux-2-pro"),
+  operationId: z.string().regex(/^image_[a-f0-9]{64}$/),
+  planDigest: digestSchema,
+  quoteDigest: digestSchema,
+  approvalId: z.string().min(1).max(200),
+  reservationId: z.string().min(1).max(200),
+  resultSpool: z.strictObject({ path: canonicalPathSchema, digest: digestSchema }),
+  providerRequestIdHash: digestSchema,
+  billableCredits: z.number().nonnegative(),
+  actualUsdMicros: z.int().nonnegative(),
+});
+
 const visualSourceSchema = z.discriminatedUnion("kind", [
   z.strictObject({
     kind: z.literal("static-fallback"),
@@ -39,17 +54,33 @@ const visualSourceSchema = z.discriminatedUnion("kind", [
     originalFileName: z.string().min(1).max(240),
     sourceDigest: digestSchema,
   }),
+  hostedVisualSourceSchema,
 ]);
 
-export const visualRevisionSchema = z.strictObject({
-  revision: z.int().positive(),
-  provider: z.enum(["static", "manual-import"]),
-  createdAt: z.iso.datetime(),
-  asset: visualAssetSchema,
-  media: visualMediaSchema.optional(),
-  motion: visualMotionPresetSchema,
-  source: visualSourceSchema,
-});
+export const visualRevisionSchema = z
+  .strictObject({
+    revision: z.int().positive(),
+    provider: z.enum(["static", "manual-import", "black-forest-labs"]),
+    createdAt: z.iso.datetime(),
+    asset: visualAssetSchema,
+    media: visualMediaSchema.optional(),
+    motion: visualMotionPresetSchema,
+    source: visualSourceSchema,
+  })
+  .superRefine((revision, context) => {
+    const providerBySource = {
+      "static-fallback": "static",
+      "manual-import": "manual-import",
+      "hosted-generation": "black-forest-labs",
+    } as const;
+    if (revision.provider !== providerBySource[revision.source.kind]) {
+      context.addIssue({
+        code: "custom",
+        message: "Visual revision provider does not match its source kind.",
+        path: ["provider"],
+      });
+    }
+  });
 
 export const visualDecisionSchema = z.strictObject({
   revision: z.int().positive(),

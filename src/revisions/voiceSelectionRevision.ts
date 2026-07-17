@@ -5,6 +5,7 @@ import { SafeExitError } from "../core/errors.js";
 import { appendLedgerEvent } from "../core/ledger.js";
 import { loadRun, mutateRun } from "../core/runStore.js";
 import { assertTransition } from "../core/transitions.js";
+import { readCostEstimate } from "../costs/costEstimate.js";
 import { withCostReservationLock } from "../costs/costReservationLock.js";
 import { readCostReservationSummaries } from "../costs/costReservationStore.js";
 import { filesystemSegmentSchema } from "../stages/voice/catalog/voiceCatalogContracts.js";
@@ -80,10 +81,8 @@ export type VoiceSelectionRevision = z.infer<typeof voiceSelectionRevisionSchema
 
 /**
  * Reads a voice-selection revision and verifies its archived artifacts.
- *
- * @param runId - The run containing the revision
- * @param revisionId - The revision to read
- * @returns The validated voice-selection revision
+ * @param runId - The run containing the revision.
+ * @param revisionId - The revision to read.
  */
 export async function readVoiceSelectionRevision(
   runId: string,
@@ -107,7 +106,9 @@ export async function readVoiceSelectionRevision(
 }
 
 /**
- * Creates a voice-selection revision and moves the run back to the explicit selection gate.
+ * Creates a voice-selection revision and moves the run to `PRODUCTION_PACKAGE_GENERATED` for explicit reselection.
+ *
+ * The operation requires a revisable run with no active or attempted TTS reservations and no voice synthesis artifacts. It archives the prior selection and quote evidence, invalidates approvals tied to the active quote, and records the state change and revision in the ledger. Failures before the run mutation commits restore archived sources.
  *
  * @param rawInput - The run identifier, revision reason, and reviewer identity.
  * @param options - Optional hooks invoked after reservation checks and after the run mutation commits.
@@ -160,17 +161,23 @@ export async function reviseVoiceSelection(
         }
 
         const previousSelection = await readVoiceSelectionWithPath(run.runId);
+        const activeQuote = await readCostEstimate(run.runId);
         const archive = await archiveVoiceSelectionRevisionSources({ run, revisionDir, stage });
         run = archive.run;
         archivedSources.push(...archive.archivedSources);
 
         const invalidatedApprovals = run.approvals
-          .filter((approval) => approval.target === "paid-generation-cost")
+          .filter(
+            (approval) =>
+              approval.target === "paid-generation-cost" &&
+              approval.approvedRef === activeQuote.digest,
+          )
           .map((approval) => ({
             approvalId: approval.approvalId,
             ...(approval.approvedRef ? { approvedRef: approval.approvedRef } : {}),
             createdAt: approval.createdAt,
           }));
+        const invalidatedApprovalIds = invalidatedApprovals.map(({ approvalId }) => approvalId);
         const revision = voiceSelectionRevisionSchema.parse({
           schemaVersion: 1,
           revisionId,
@@ -183,7 +190,7 @@ export async function reviseVoiceSelection(
             path: previousSelection.path,
             digest: previousSelection.selection.selectionDigest,
           },
-          invalidatedApprovalIds: invalidatedApprovals.map((approval) => approval.approvalId),
+          invalidatedApprovalIds,
           supersededReleasedReservationIds: ttsReservations.map(
             (reservation) => reservation.reservationId,
           ),
@@ -200,7 +207,7 @@ export async function reviseVoiceSelection(
             ...run,
             state: "PRODUCTION_PACKAGE_GENERATED" as const,
             approvals: run.approvals.filter(
-              (approval) => approval.target !== "paid-generation-cost",
+              (approval) => !invalidatedApprovalIds.includes(approval.approvalId),
             ),
           },
           value: revision,

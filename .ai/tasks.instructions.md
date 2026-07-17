@@ -81,17 +81,25 @@
 
 - Maintain the merged aligned-SRT/render-binding and guarded Studio voice flow without weakening
   deterministic-local/Piper `linear-fallback` timing or making a paid CI call.
-- Keep live ElevenLabs production validation separate from implementation completion. Free-tier
-  metadata/catalog/preview smoke is allowed only where the provider permits it and never proves
-  production rights. Production synthesis requires commercial eligibility, exact quote, persisted
-  approval, reservation, bounded execution, and settlement; until then report it as pending.
-- Close the active static/manual visual candidate: 12–24 deterministic beats, contact-sheet review,
-  manual import, rejected-only regeneration, exact mutation snapshots, and visual-bound render
-  approval are implemented. Complete product/browser UAT, PR gates, main reconciliation, and merge.
-- Then run the bounded three-scene hosted image bake-off and choose at most one adapter. Add exact
-  quote/reservation/settlement, provider provenance, and rejected-scene regeneration without
-  weakening the credential-free static/manual fallback. Mastering and thumbnail JPG polish remain
-  in the same production-quality workstream after hosted still reliability is proven.
+- Keep live ElevenLabs production validation separate from implementation completion. The current
+  Free API plan advertises 10,000 included Multilingual v2/v3 characters, but live subscription
+  metadata is authoritative. One short Turkish v3 timestamps request may be diagnostic-only; Free
+  output has no commercial production rights. Production synthesis still requires commercial
+  eligibility, exact quote, persisted approval, reservation, bounded execution, and settlement.
+- Preserve the merged `v0.83.0` static/manual visual fallback and exact render binding.
+- Close the active experimental, disabled-by-default FLUX.2 Pro slice as the sole hosted visual
+  adapter: exact scene-plan quote/approval/reservation, bounded async execution, provider credit
+  settlement, durable local spools, provider-neutral Studio confirmation, rejected-only quote/plan
+  archival, combined voice recovery, product/browser UAT, and PR gates. Live BFL credit and
+  entitlement remain unverified; configured credentials do not imply readiness. Static/manual stays
+  credential-free.
+- Keep Eleven Creative image/video outside the provider registry until a public generation API is
+  integrated and separately approved. Externally created media uses the existing attributable
+  `manual-import` path only.
+- Take local MFLUX as the next visual-provider slice. Reuse the current plan, review, provenance, and
+  render-binding contracts; do not treat it as another hosted adapter or broaden paid-provider scope.
+- Then harden exact render/media quality: pacing and motion, subtitle readability, popup density,
+  audio mastering, licensed music/SFX evidence, and final thumbnail JPG.
 - Then add sequential multi-model script audition and editorial quality: immutable shared brief and
   prompt/settings snapshots, side-by-side selection, retained alternatives, inline review, operator-
   curated source/claim provenance, and a minimum-publishable scorecard.
@@ -172,6 +180,9 @@
   `llama.cpp` mode, keep `/v1/models` preflight and served-model mismatch checks fail-closed so one
   loaded GGUF cannot masquerade as another candidate. `llama.cpp` support is the local
   OpenAI-compatible runtime path for this work; live model runs remain manual/local and outside CI.
+- Keep the current `pnpm model:start` path repair: absolute paths and explicit repository-relative
+  paths resolve exactly, bare names resolve through the project root and `models/llm` with an optional
+  `.gguf` suffix, attempted paths stay visible on failure, and `config.model` remains the served alias.
 - Preserve Qwen/Ollama regressions as known-bad safety evidence. Current blockers reject repeated
   fit frames, generic boilerplate, repeated uncertainty openers, generic unknown-species phrasing,
   weak premise action frames, English scientific leftovers, malformed labels, repeated sentence

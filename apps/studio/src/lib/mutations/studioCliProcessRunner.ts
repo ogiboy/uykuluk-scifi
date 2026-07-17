@@ -12,10 +12,16 @@ import {
 export type StudioCliResult = Readonly<{ stderr: string; stdout: string; status: number }>;
 
 const studioCliTimeoutMs = 20 * 60 * 1000;
+const hostedVisualCliTimeoutMs = 4 * 60 * 60 * 1_000 + 60 * 1_000;
 const studioCliKillGraceMs = 5_000;
 const studioCliOutputLimitChars = 128_000;
 
-/** Runs the canonical producer CLI under Studio's bounded local process contract. */
+/**
+ * Runs the canonical producer CLI within Studio's bounded local process contract.
+ *
+ * @param args - Arguments passed to the producer CLI
+ * @returns Captured standard output, standard error, and termination status
+ */
 export function runProducerCli(args: readonly string[]): Promise<StudioCliResult> {
   return new Promise((resolve, reject) => {
     const sourceRoot = sourceProjectRoot();
@@ -48,12 +54,10 @@ export function runProducerCli(args: readonly string[]): Promise<StudioCliResult
         studioCliKillGraceMs,
       );
     };
+    const timeoutMs = studioCliTimeoutForArgs(args);
     const timeout = setTimeout(() => {
-      terminate(
-        "timeout",
-        `Studio mutation CLI exceeded ${studioCliTimeoutMs}ms and was terminated.`,
-      );
-    }, studioCliTimeoutMs);
+      terminate("timeout", `Studio mutation CLI exceeded ${timeoutMs}ms and was terminated.`);
+    }, timeoutMs);
     child.stdin?.end();
     child.stdout.setEncoding("utf8");
     child.stderr.setEncoding("utf8");
@@ -86,6 +90,24 @@ export function runProducerCli(args: readonly string[]): Promise<StudioCliResult
   });
 }
 
+/**
+ * Selects the timeout for a Studio CLI invocation based on its arguments.
+ *
+ * @param args - The CLI arguments
+ * @returns The hosted visuals timeout for `visuals generate-hosted` invocations; the standard CLI timeout otherwise
+ */
+export function studioCliTimeoutForArgs(args: readonly string[]): number {
+  return args[0] === "visuals" && args[1] === "generate-hosted"
+    ? hostedVisualCliTimeoutMs
+    : studioCliTimeoutMs;
+}
+
+/**
+ * Terminates the Studio CLI process and its child processes using platform-specific process-tree handling.
+ *
+ * @param child - The spawned CLI process to terminate.
+ * @param signal - The signal to send to the process tree.
+ */
 function terminateStudioCliProcessTree(child: ChildProcess, signal: NodeJS.Signals): void {
   if (!child.pid) {
     child.kill(signal);

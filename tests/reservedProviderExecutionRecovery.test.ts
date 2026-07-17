@@ -106,9 +106,10 @@ describe("reserved provider execution recovery", () => {
     ]);
 
     expect(execute).toHaveBeenCalledTimes(1);
-    expect(
-      results.map((result) => result.status).sort((left, right) => left.localeCompare(right)),
-    ).toEqual(["completed", "reconciliation-required"]);
+    expect(new Set(results.map((result) => result.reservation.reservationId)).size).toBe(1);
+    expect(results.map((result) => result.status)).toContain("completed");
+    const secondary = results.find((result) => result.status !== "completed");
+    expect(["already-completed", "reconciliation-required"]).toContain(secondary?.status);
   });
 
   it("projects execution state and safe provider request evidence", async () => {

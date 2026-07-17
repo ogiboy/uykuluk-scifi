@@ -14,6 +14,7 @@ import { CopyableCommand } from "../studio/CopyableCommand";
 import { RunQuickStageActionButton } from "./RunQuickStageActionButton";
 
 type RunPrimaryActionPanelProps = Readonly<{
+  closeRailOnNavigate?: boolean;
   compact?: boolean;
   railHref?: string;
   run: StudioRunPrimaryActionRun;
@@ -22,11 +23,13 @@ type RunPrimaryActionPanelProps = Readonly<{
 /**
  * Renders the primary web-first operator action for run detail and mobile review surfaces.
  *
- * @param compact - Whether the panel is rendered inside the mobile action sheet.
+ * @param closeRailOnNavigate - Whether rail navigation is rendered inside an active review sheet.
+ * @param compact - Whether the panel uses the compact card layout.
  * @param railHref - Optional route to the full approval or decision rail.
  * @param run - The run projection used to choose the current action affordance.
  */
 export function RunPrimaryActionPanel({
+  closeRailOnNavigate = false,
   compact = false,
   railHref = "#review-decision",
   run,
@@ -42,7 +45,7 @@ export function RunPrimaryActionPanel({
         </div>
         <PrimaryActionBody
           action={action}
-          closeRailAction={compact}
+          closeRailAction={closeRailOnNavigate}
           railHref={railHref}
           run={run}
         />

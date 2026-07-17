@@ -30,7 +30,10 @@ function isMutationRisk(risk: StudioRouteRisk): boolean {
  */
 function enabledActionFindings(contract: StudioRouteSecurityContract): string[] {
   const findings = commonMutationFindings(contract);
-  if (contract.risk === "publish-risk" || contract.risk === "external-side-effect") {
+  if (
+    contract.risk === "publish-risk" ||
+    (contract.risk === "external-side-effect" && contract.requiredApproval !== "cost")
+  ) {
     findings.push(`${contract.id} exposes external or publish risk from Studio.`);
   }
   if (contract.allowedMethods.length !== 1 || contract.allowedMethods[0] !== "POST") {

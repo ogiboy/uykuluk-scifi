@@ -8,6 +8,8 @@ import {
   writeTemporaryInputFile,
 } from "./studioCliMutationTempFile";
 import {
+  parseHostedVisualGenerationPayload,
+  parseHostedVisualPlanPayload,
   parseVisualDecisionPayload,
   parseVisualImportPayload,
   parseVisualRegenerationPayload,
@@ -15,19 +17,93 @@ import {
 
 type StudioVisualCliMutationActionId = Extract<
   StudioCliMutationActionId,
-  "visuals.decide" | "visuals.import" | "visuals.regenerate"
+  | "visuals.decide"
+  | "visuals.generate-hosted"
+  | "visuals.import"
+  | "visuals.plan-hosted"
+  | "visuals.regenerate"
 >;
 
-/** Builds guarded CLI arguments for visual import, decision, and regeneration mutations. */
+/**
+ * Builds guarded CLI arguments for the requested visual mutation action.
+ *
+ * @param actionId - The visual mutation action to prepare
+ * @param payload - The action payload to validate and convert into CLI arguments
+ * @returns Prepared CLI arguments and any required temporary-resource cleanup
+ */
 export async function visualCliArgsForAction(
   actionId: StudioVisualCliMutationActionId,
   payload: unknown,
 ): Promise<StudioPreparedCliArgs> {
   if (actionId === "visuals.import") return visualImportCliArgs(payload);
   if (actionId === "visuals.decide") return visualDecisionCliArgs(payload);
-  return visualRegenerationCliArgs(payload);
+  if (actionId === "visuals.regenerate") return visualRegenerationCliArgs(payload);
+  if (actionId === "visuals.plan-hosted") return hostedVisualPlanCliArgs(payload);
+  return hostedVisualGenerationCliArgs(payload);
 }
 
+/**
+ * Builds guarded CLI arguments for planning a hosted visual mutation.
+ *
+ * @param payload - The untyped hosted visual plan request.
+ * @returns Prepared CLI arguments, including temporary expectation-file cleanup when applicable.
+ */
+async function hostedVisualPlanCliArgs(payload: unknown): Promise<StudioPreparedCliArgs> {
+  const input = parseHostedVisualPlanPayload(payload);
+  const expectationTemp = input.expectedActiveRevisions
+    ? await writeVisualExpectationSnapshot(input.expectedActiveRevisions)
+    : null;
+  return prepared(
+    [
+      "visuals",
+      "plan-hosted",
+      "--run",
+      input.runId,
+      "--scenes",
+      Array.from(new Set(input.sceneIndexes)).join(","),
+      "--purpose",
+      input.purpose,
+      ...(input.reviewedBy ? ["--reviewed-by", input.reviewedBy] : []),
+      ...(input.reason ? ["--reason", input.reason] : []),
+      ...(input.expectedManifestDigest && expectationTemp
+        ? visualExpectationArgs(input.expectedManifestDigest, expectationTemp.filePath)
+        : []),
+      "--json",
+    ],
+    expectationTemp?.cleanup,
+  );
+}
+
+/**
+ * Builds guarded CLI arguments for generating a hosted visual.
+ *
+ * @param payload - The untyped mutation payload containing the run and approval details.
+ * @returns Prepared CLI arguments for the hosted visual generation command.
+ */
+function hostedVisualGenerationCliArgs(payload: unknown): StudioPreparedCliArgs {
+  const input = parseHostedVisualGenerationPayload(payload);
+  return prepared([
+    "visuals",
+    "generate-hosted",
+    "--run",
+    input.runId,
+    "--binding-digest",
+    input.bindingDigest,
+    "--quote-digest",
+    input.quoteDigest,
+    "--approval-id",
+    input.approvalId,
+    "--confirm-paid-operation",
+    "--json",
+  ]);
+}
+
+/**
+ * Prepares guarded CLI arguments for importing a visual asset.
+ *
+ * @param payload - The untyped visual import mutation payload.
+ * @returns Prepared CLI arguments and cleanup for the temporary import and expectation files.
+ */
 async function visualImportCliArgs(payload: unknown): Promise<StudioPreparedCliArgs> {
   const input = parseVisualImportPayload(payload);
   const content = Buffer.from(input.contentBase64, "base64");

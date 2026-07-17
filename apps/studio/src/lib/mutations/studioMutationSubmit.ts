@@ -26,12 +26,25 @@ export type StudioMutationSubmitResult = Readonly<
 >;
 
 export const studioMutationFetchTimeoutMs = 30_000;
+export const hostedVisualMutationFetchTimeoutMs = 4 * 60 * 60 * 1_000 + 2 * 60 * 1_000;
 
 /**
- * Posts a guarded same-origin Studio mutation request with a local session proof.
+ * Selects the client wait timeout for a Studio mutation action.
  *
- * @param input - The Studio action route, action id, JSON body, and fallback error copy.
- * @returns A success marker or operator-facing error message.
+ * @param actionId - The identifier of the mutation action.
+ * @returns The extended timeout for hosted visual generation, or the default mutation timeout for other actions.
+ */
+export function studioMutationFetchTimeoutForAction(actionId: string): number {
+  return actionId === "visuals.generate-hosted"
+    ? hostedVisualMutationFetchTimeoutMs
+    : studioMutationFetchTimeoutMs;
+}
+
+/**
+ * Submits a guarded same-origin Studio mutation and classifies its outcome for operator workflows.
+ *
+ * @param input - The action route, action identifier, JSON-serializable payload, and fallback error message.
+ * @returns A success, blocked, or error result with any record summary, warnings, or HTTP status.
  */
 export async function submitStudioJsonMutation(input: {
   actionId: string;
@@ -56,7 +69,10 @@ export async function submitStudioJsonMutation(input: {
   }
   let response: Response;
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), studioMutationFetchTimeoutMs);
+  const timeout = setTimeout(
+    () => controller.abort(),
+    studioMutationFetchTimeoutForAction(input.actionId),
+  );
   try {
     response = await fetch(input.routePath, {
       body,
@@ -70,7 +86,13 @@ export async function submitStudioJsonMutation(input: {
       boundary: "client-mutation",
       routePath: input.routePath,
     });
-    return { kind: "error", message: input.fallbackError };
+    return {
+      kind: "error",
+      message:
+        input.actionId === "visuals.generate-hosted" && isAbortError(error)
+          ? "Hosted visual execution exceeded the Studio wait window. Its durable operation may still require reconciliation; refresh this run before retrying."
+          : input.fallbackError,
+    };
   } finally {
     clearTimeout(timeout);
   }
@@ -106,6 +128,16 @@ export async function submitStudioJsonMutation(input: {
     recordSummary: summarizeStudioMutationRecord(payload?.record),
     warnings,
   };
+}
+
+/**
+ * Determines whether an error represents an aborted operation.
+ *
+ * @param error - The value to inspect.
+ * @returns `true` if the value is an error named `AbortError`, `false` otherwise.
+ */
+function isAbortError(error: unknown): boolean {
+  return error instanceof Error && error.name === "AbortError";
 }
 
 function messageWithWarnings(message: string, warnings: readonly string[]): string {

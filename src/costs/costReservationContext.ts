@@ -2,6 +2,7 @@ import { loadConfig } from "../config/config.js";
 import { SafeExitError } from "../core/errors.js";
 import { appendLedgerEvent } from "../core/ledger.js";
 import { loadRun } from "../core/runStore.js";
+import type { RunState } from "../core/state.js";
 import { createId, nowIso } from "../utils/time.js";
 import { readCostEstimate, validateCostEstimateIntegrity } from "./costEstimate.js";
 import { appendCostEvent, readCostEvents } from "./costLedger.js";
@@ -14,23 +15,31 @@ import { microsToUsd, usdToMicros } from "./money.js";
 import type { ProviderRequestEvidence } from "./providerRequestEvidence.js";
 
 /**
- * Loads an approved quote line for a specified stage of a production-ready run.
+ * Loads an approved, integrity-validated quote line for a production stage.
+ *
+ * The run must be in a state permitted for the requested stage, and the quote
+ * must have an exact matching paid-generation approval. The quote line must be
+ * enabled and have a positive estimated cost.
  *
  * @param runId - The production run identifier
- * @param stage - The stage whose quote line to load
+ * @param stage - The production stage whose quote line to load
  * @returns The run, configuration, approval ID, quote digest, provider, model, optional binding details, and maximum cost in micros
- * @throws SafeExitError If the run is not ready, the quote is stale, approval is missing, or the quote line is unavailable or disabled
+ * @throws SafeExitError If the run state is not permitted, the quote is stale, the exact approval is missing, or the quote line is unavailable or has no positive cost
  */
 export async function loadApprovedQuoteLine(runId: string, stage: string) {
   const run = await loadRun(runId);
-  if (run.state !== "READY_FOR_MANUAL_PRODUCTION") {
+  const allowedStates: readonly RunState[] =
+    stage === "imageGeneration"
+      ? (["PAID_GENERATION_COST_APPROVED", "READY_FOR_MANUAL_PRODUCTION"] as const)
+      : (["READY_FOR_MANUAL_PRODUCTION"] as const);
+  if (!allowedStates.includes(run.state)) {
     throw new SafeExitError(
-      `Blocked: cost reservation requires state READY_FOR_MANUAL_PRODUCTION; current state is ${run.state}.`,
+      `Blocked: ${stage} cost reservation requires state ${allowedStates.join(" or ")}; current state is ${run.state}.`,
     );
   }
   const config = await loadConfig();
   const { estimate, digest } = await readCostEstimate(runId);
-  const reasons = await validateCostEstimateIntegrity(run, config, estimate);
+  const reasons = await validateCostEstimateIntegrity(run, config, estimate, digest);
   if (reasons.length > 0) {
     throw new SafeExitError(`Blocked: approved quote is stale. ${reasons.join(" ")}`);
   }

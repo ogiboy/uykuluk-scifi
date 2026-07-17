@@ -4,8 +4,15 @@ import {
   studioCliHttpStatus,
   studioCliResultStatus,
 } from "../apps/studio/src/lib/mutations/studioCliProcessLimits";
+import { studioCliTimeoutForArgs } from "../apps/studio/src/lib/mutations/studioCliProcessRunner";
 
 describe("Studio CLI process limits", () => {
+  it("allows the bounded hosted visual provider window without widening other actions", () => {
+    expect(studioCliTimeoutForArgs(["script", "run"])).toBe(20 * 60 * 1_000);
+    expect(studioCliTimeoutForArgs(["visuals", "generate-hosted"])).toBe(
+      4 * 60 * 60 * 1_000 + 60 * 1_000,
+    );
+  });
   it("retains output up to the configured limit without silently dropping its prefix", () => {
     expect(appendBoundedStudioCliOutput("abc", "def", 5)).toEqual({
       exceeded: true,

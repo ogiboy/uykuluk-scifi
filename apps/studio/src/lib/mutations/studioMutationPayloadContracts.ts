@@ -3,6 +3,8 @@ import { isValidRunId } from "../../../../../src/core/runId";
 import { channelHandoffDecisionValues } from "../../../../../src/stages/channel/channelHandoffDecisionContracts";
 import { renderDecisionValues } from "../../../../../src/stages/render/renderDecisionCommands";
 import {
+  hostedVisualGenerationRequestSchema,
+  hostedVisualPlanRequestSchema,
   runOnlyRequestSchema,
   visualDecisionRequestSchema,
   visualImportRequestSchema,
@@ -138,12 +140,48 @@ export function parseVisualDecisionPayload(
   return visualDecisionRequestSchema.parse(payload);
 }
 
+/**
+ * Validates a visual regeneration request payload.
+ *
+ * @param payload - The unknown payload to validate
+ * @returns The validated visual regeneration request
+ */
 export function parseVisualRegenerationPayload(
   payload: unknown,
 ): z.infer<typeof visualRegenerationRequestSchema> {
   return visualRegenerationRequestSchema.parse(payload);
 }
 
+/**
+ * Validates a hosted visual plan mutation payload.
+ *
+ * @param payload - The unknown payload to validate
+ * @returns The validated hosted visual plan payload
+ */
+export function parseHostedVisualPlanPayload(
+  payload: unknown,
+): z.infer<typeof hostedVisualPlanRequestSchema> {
+  return hostedVisualPlanRequestSchema.parse(payload);
+}
+
+/**
+ * Validates a hosted visual generation request payload.
+ *
+ * @param payload - The untrusted payload to validate
+ * @returns The validated hosted visual generation request
+ */
+export function parseHostedVisualGenerationPayload(
+  payload: unknown,
+): z.infer<typeof hostedVisualGenerationRequestSchema> {
+  return hostedVisualGenerationRequestSchema.parse(payload);
+}
+
+/**
+ * Validates a voice run request payload.
+ *
+ * @param payload - The payload to validate.
+ * @returns The validated voice run request.
+ */
 export function parseVoiceRunPayload(payload: unknown): z.infer<typeof voiceRunRequestSchema> {
   return voiceRunRequestSchema.parse(payload);
 }

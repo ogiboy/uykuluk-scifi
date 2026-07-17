@@ -1,6 +1,6 @@
 import { SafeExitError } from "../../core/errors.js";
 import type { RunRecord } from "../../core/state.js";
-import { readCostEstimate } from "../../costs/costEstimate.js";
+import { readCostEstimateByDigestAtProjectRoot } from "../../costs/costEstimateStore.js";
 import { settleCostReservation } from "../../costs/costReservationService.js";
 import {
   readCostReservationSummaries,
@@ -30,47 +30,51 @@ export type RecoveredVoiceExecution = {
 /**
  * Recovers a durably committed ElevenLabs voice execution without credentials or live provider requests.
  *
+ * Matching requires an approved paid-generation quote and a reservation whose cost and execution evidence
+ * match the committed voice spool. Pending settlement is completed before the recovered execution is returned.
+ *
  * @param input - The run and source digest identifying the execution to recover.
- * @returns The recovered voice execution, or `undefined` when no matching committed execution is available.
+ * @returns The recovered voice execution, or `undefined` when no matching execution is available or its reservation is still reserved.
+ * @throws `SafeExitError` if matching reservations are ambiguous, execution commitment is uncertain, or historical approval, cost, evidence, or operation identifiers do not match.
  */
 export async function recoverCommittedVoiceExecution(input: {
   run: RunRecord;
   sourceDigest: string;
 }): Promise<RecoveredVoiceExecution | undefined> {
-  const quote = await readCostEstimate(input.run.runId);
-  const quoteLine = quote.estimate.stages.find((stage) => stage.stage === "tts");
-  if (quoteLine?.provider !== "elevenlabs" || !quoteLine.model || !quoteLine.bindingDigest) {
-    return undefined;
+  const candidates: Array<{ reservation: CostReservationSummary; model: string }> = [];
+  for (const reservation of (await readCostReservationSummaries(input.run.runId)).filter(
+    (item) => item.stage === "tts" && item.status !== "RELEASED",
+  )) {
+    const hasApproval = input.run.approvals.some(
+      (item) =>
+        item.approvalId === reservation.approvalId &&
+        item.target === "paid-generation-cost" &&
+        item.approvedRef === reservation.quoteDigest,
+    );
+    if (!hasApproval) continue;
+    const quote = await readCostEstimateByDigestAtProjectRoot(
+      process.cwd(),
+      input.run,
+      reservation.quoteDigest,
+    );
+    const quoteLine = quote.estimate.stages.find((stage) => stage.stage === "tts");
+    if (
+      quoteLine?.provider !== reservation.provider ||
+      !quoteLine.model ||
+      quoteLine.model !== reservation.model ||
+      !quoteLine.bindingDigest ||
+      quoteLine.bindingDigest !== reservation.bindingDigest
+    ) {
+      throw new SafeExitError("Paid voice recovery quote does not match its reservation.");
+    }
+    candidates.push({ reservation, model: quoteLine.model });
   }
-  const approvalIds = new Set(
-    input.run.approvals
-      .filter(
-        (approval) =>
-          approval.target === "paid-generation-cost" && approval.approvedRef === quote.digest,
-      )
-      .map((approval) => approval.approvalId),
-  );
-  if (approvalIds.size === 0) return undefined;
-  const reservations = (await readCostReservationSummaries(input.run.runId)).filter(
-    (reservation) =>
-      reservation.stage === "tts" &&
-      reservation.provider === quoteLine.provider &&
-      reservation.model === quoteLine.model &&
-      reservation.bindingDigest === quoteLine.bindingDigest &&
-      reservation.quoteDigest === quote.digest &&
-      approvalIds.has(reservation.approvalId),
-  );
-  if (reservations.length === 0) return undefined;
-  if (reservations.length !== 1) {
+  if (candidates.length === 0) return undefined;
+  if (candidates.length !== 1) {
     throw new SafeExitError("Paid voice recovery found multiple matching execution reservations.");
   }
-  const reservation = reservations[0];
+  const { reservation, model } = candidates[0];
   if (reservation.status === "RESERVED") return undefined;
-  if (reservation.status === "RELEASED") {
-    throw new SafeExitError(
-      "ElevenLabs TTS was not sent; create a fresh voice selection, cost quote, and approval.",
-    );
-  }
   if (reservation.status === "UNCERTAIN" || reservation.status === "EXECUTION_STARTED") {
     throw new SafeExitError(
       "ElevenLabs TTS outcome is not durably committed; explicit cost reconciliation is required.",
@@ -82,7 +86,7 @@ export async function recoverCommittedVoiceExecution(input: {
     reservation.operationId,
     resultEvidenceDigest,
   );
-  const binding = requireRecoveryBinding(spool, reservation, quoteLine.model, input.sourceDigest);
+  const binding = requireRecoveryBinding(spool, reservation, model, input.sourceDigest);
   const approvedQuote = {
     quoteDigest: reservation.quoteDigest,
     approvalId: reservation.approvalId,

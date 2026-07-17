@@ -36,11 +36,7 @@ export async function createLlamaCppLaunchPlan(
     throw new Error("pnpm model:start supports only a local http:// llama.cpp endpoint.");
   }
 
-  const modelPath = path.isAbsolute(config.model) ? config.model : path.resolve(root, config.model);
-  const modelStat = await stat(modelPath).catch(() => undefined);
-  if (!modelStat?.isFile()) {
-    throw new Error(`Configured llama.cpp model file is missing: ${modelPath}`);
-  }
+  const modelPath = await resolveModelPath(root, config.model);
 
   const contextSize = positiveInteger(
     environment.LLAMA_CPP_CTX_SIZE,
@@ -69,6 +65,38 @@ export async function createLlamaCppLaunchPlan(
       "1",
     ],
   };
+}
+
+async function resolveModelPath(root: string, model: string): Promise<string> {
+  const attemptedPaths = modelPathCandidates(root, model);
+  for (const candidate of attemptedPaths) {
+    const modelStat = await stat(candidate).catch(() => undefined);
+    if (modelStat?.isFile()) {
+      return candidate;
+    }
+  }
+
+  throw new Error(
+    [
+      "Configured llama.cpp model file is missing. Tried:",
+      ...attemptedPaths.map((candidate) => `- ${candidate}`),
+    ].join("\n"),
+  );
+}
+
+function modelPathCandidates(root: string, model: string): string[] {
+  if (path.isAbsolute(model)) {
+    return [model];
+  }
+  if (/[\\/]/.test(model)) {
+    return [path.resolve(root, model)];
+  }
+
+  const legacyRootPath = path.resolve(root, model);
+  const localModelPath = path.join(root, "models", "llm", model);
+  return model.endsWith(".gguf")
+    ? [legacyRootPath, localModelPath]
+    : [legacyRootPath, localModelPath, `${localModelPath}.gguf`];
 }
 
 async function startServer(): Promise<void> {
