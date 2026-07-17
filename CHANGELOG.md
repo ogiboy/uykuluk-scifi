@@ -11,6 +11,46 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.84.0 (2026-07-17)
+
+### Documentation
+
+- update final regression evidence (bee93b6)
+- record final local verification (167b2b1)
+- keep generated contracts within module bounds (7764713)
+- align hosted provider product truth (77a1d6f)
+- document controlled hosted image workflow (2a41ea4)
+
+### Fixes
+
+- preserve regeneration and submit evidence (0a7ca6d)
+- preserve TypeScript target compatibility (c30c04a)
+- resolve llama.cpp models from local inventory (4aec7ae)
+- clarify hosted visual operator flow (b182adc)
+- close hosted generation review findings (72bd2e6)
+- apply CodeRabbit auto-fixes (120df58)
+- resolve hosted generation review findings (125a7e4)
+- bind settled regeneration to exact evidence (3329e71)
+
+### Styles
+
+- format visual contract matrix (ee4e4b4)
+
+### Tests
+
+- accept safe concurrent terminal timing (8bd3a6b)
+- keep final bundle checks within fail-fast bounds (3b7658e)
+
+### Chores
+
+- refresh encrypted provider vault metadata (270b636)
+- bump actions/setup-node (f5270b9)
+
+### Features
+
+- add hosted visual planning and generation controls (eb63d6c)
+- add approval-bound hosted image generation (a76fddd)
+
 ## v0.83.0 (2026-07-14)
 
 ### Fixes
