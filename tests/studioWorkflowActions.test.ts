@@ -36,13 +36,10 @@ describe("Studio workflow action matrix", () => {
     expect(
       steps.flatMap((step) => step.actions).filter((action) => action.status === "unrouted"),
     ).toEqual([]);
-    const actualActionIds = steps
-      .flatMap((step) => step.actions)
-      .map((action) => action.actionId)
-      .toSorted((left, right) => left.localeCompare(right, "en"));
-    const expectedActionIds = studioMutationActionIds.toSorted((left, right) =>
-      left.localeCompare(right, "en"),
-    );
+    const actualActionIds = steps.flatMap((step) => step.actions).map((action) => action.actionId);
+    const expectedActionIds = [...studioMutationActionIds];
+    actualActionIds.sort((left, right) => left.localeCompare(right, "en"));
+    expectedActionIds.sort((left, right) => left.localeCompare(right, "en"));
     expect(actualActionIds).toEqual(expectedActionIds);
   });
 });
