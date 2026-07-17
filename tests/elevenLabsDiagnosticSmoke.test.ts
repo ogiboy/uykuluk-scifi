@@ -98,6 +98,11 @@ describe("ElevenLabs diagnostic smoke", () => {
     ).rejects.toThrow(/included-credit entitlement/i);
 
     expect(convertWithTimestamps).not.toHaveBeenCalled();
+    expect(JSON.parse(await readFile(evidencePath(root), "utf8"))).toMatchObject({
+      status: "blocked",
+      reason: "entitlement",
+      requestSent: false,
+    });
   });
 
   it("persists only redacted provider rejection diagnostics and never retries", async () => {

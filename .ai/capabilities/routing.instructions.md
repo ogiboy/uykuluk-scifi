@@ -195,7 +195,16 @@ model. Offensive or exploit-oriented skills require explicit authorization and a
   checks must inspect hosted check status plus PR conversation/review comments, including
   non-blocking CodeRabbit fix suggestions that may appear even when the bot status is green.
 - PR batching: group related slices into fewer coherent PRs; treat CodeRabbit review quota and CI
-  time as limited engineering budget, not free feedback on every tiny change.
+  time as limited engineering budget, not free feedback on every tiny change. Keep every PR at no
+  more than 120 changed files overall and no more than 100 CodeRabbit-in-scope files. The latter is
+  hosted integration limit observed for this repository on 2026-07-17. CodeRabbit classified the
+  public repository review as OSS while exposing a Pro feature bundle; its current public plan
+  table makes OSS file limits dynamic at 50-150 files based on project community and popularity,
+  without publishing the scoring formula. Split vertical slices before opening a PR when either
+  local cap would be exceeded. Path filters may exclude generated output, lockfiles, binaries, or
+  media, but must not hide reviewable source.
+- Git naming: use conventional product-intent branch names and PR titles. Do not include AI agent,
+  vendor, or tool names such as `codex` in either surface.
 - Completion: Aegis verification-before-completion and project quality gates.
 - Release/changelog/version workflow drift: compare this repo's scripts with `agentic-trader` only
   as design reference; keep Producer's release policy conventional-commit based and deterministic.

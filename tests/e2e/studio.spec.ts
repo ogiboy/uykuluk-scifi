@@ -73,10 +73,9 @@ test("studio exposes the read-only run index route", async ({ page }) => {
   await page.goto("/runs");
 
   await expect(page.getByRole("heading", { name: /producer runs/i })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Create episode" })).toHaveAttribute(
-    "href",
-    "/ideas/new",
-  );
+  await expect(
+    page.locator("header").getByRole("link", { name: "Create episode" }),
+  ).toHaveAttribute("href", "/ideas/new");
   await expect(page.getByRole("button", { name: "Tune review view" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Studio home" })).toBeVisible();
 });
@@ -92,7 +91,7 @@ test("studio localizes the run index and keeps the episode brief entry visible i
   await page.goto("/runs");
 
   await expect(page.getByRole("heading", { name: "Üretim bölümleri" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Bölüm oluştur" })).toHaveAttribute(
+  await expect(page.locator("header").getByRole("link", { name: "Bölüm oluştur" })).toHaveAttribute(
     "href",
     "/ideas/new",
   );

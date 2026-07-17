@@ -37,7 +37,12 @@ export function StudioNavigationLinks({
 function sectionIsActive(id: string, href: string, pathname: string): boolean {
   if (id === "dashboard") return pathname === "/";
   if (id === "episodes") {
-    return pathname.startsWith("/runs") || pathname.startsWith("/ideas");
+    return (
+      pathname === "/runs" ||
+      pathname.startsWith("/runs/") ||
+      pathname === "/ideas" ||
+      pathname.startsWith("/ideas/")
+    );
   }
   return pathname === href || pathname.startsWith(`${href}/`);
 }

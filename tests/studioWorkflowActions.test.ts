@@ -25,7 +25,6 @@ describe("Studio workflow action matrix", () => {
       "promptProfiles.save",
       "episodes.create",
       "providers.elevenlabs.smoke",
-      "ideas.run",
       "idea.approve",
     ]);
     expect(
@@ -41,7 +40,9 @@ describe("Studio workflow action matrix", () => {
       steps.flatMap((step) => step.actions).filter((action) => action.status === "unrouted"),
     ).toEqual([]);
     const actualActionIds = steps.flatMap((step) => step.actions).map((action) => action.actionId);
-    const expectedActionIds = [...studioMutationActionIds];
+    const expectedActionIds = studioMutationActionIds.filter(
+      (actionId) => actionId !== "ideas.run",
+    );
     actualActionIds.sort((left, right) => left.localeCompare(right, "en"));
     expectedActionIds.sort((left, right) => left.localeCompare(right, "en"));
     expect(actualActionIds).toEqual(expectedActionIds);

@@ -112,7 +112,10 @@ export const analyticsSourceFileNameSchema = z
   .refine(
     (value) => !value.includes("/") && !value.includes("\\") && value !== "." && value !== "..",
     { message: "Analytics source file name must not contain path separators." },
-  );
+  )
+  .refine((value) => !hasUnsafeControlCharacters(value), {
+    message: "Analytics source file name contains unsafe controls.",
+  });
 export const analyticsImportRequestSchema = z.strictObject({
   content: analyticsImportContentSchema,
   format: z.enum(["csv", "json"]),

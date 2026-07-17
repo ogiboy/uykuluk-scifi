@@ -2,6 +2,20 @@ import type { StudioLocale } from "@/i18n/locales";
 import type { RunQueueFilter } from "@/lib/runs/runQueueFilters";
 import type { RunQueueSort } from "@/lib/runs/runQueueWorkbench";
 
+type RunQueueTableColumn =
+  | "actions"
+  | "blockedActionCount"
+  | "channelHandoff"
+  | "evidenceStatus"
+  | "finalBundle"
+  | "nextAction"
+  | "operatorAction"
+  | "readinessStatus"
+  | "renderDecision"
+  | "runId"
+  | "state"
+  | "updatedAt";
+
 type RunQueueCopy = Readonly<{
   allColumns: string;
   cliOnly: string;
@@ -9,7 +23,7 @@ type RunQueueCopy = Readonly<{
   createEpisode: string;
   emptyFiltered: Readonly<{ heading: string; message: string }>;
   emptyRuns: Readonly<{ heading: string; message: string }>;
-  filters: Record<RunQueueFilter, string>;
+  filters: Readonly<Record<RunQueueFilter, string>>;
   hiddenByBlocker: (count: number) => string;
   indexDescription: string;
   indexTitle: string;
@@ -32,10 +46,10 @@ type RunQueueCopy = Readonly<{
   sortLabel: string;
   sortBy: (label: string) => string;
   sortPlaceholder: string;
-  sorts: Record<RunQueueSort, string>;
+  sorts: Readonly<Record<RunQueueSort, string>>;
   summary: string;
   tableCaption: string;
-  tableColumns: Readonly<Record<string, string>>;
+  tableColumns: Readonly<Record<RunQueueTableColumn, string>>;
   tableEmpty: string;
   tableFallback: string;
   title: string;
@@ -138,8 +152,8 @@ const EN_COPY: RunQueueCopy = {
     trigger: "Tune review view",
   },
   visibleColumns: "Visible columns",
-  webAction: (count) => `${count} web action`,
-  review: (count) => `${count} review`,
+  webAction: (count) => `${count} web ${count === 1 ? "action" : "actions"}`,
+  review: (count) => `${count} ${count === 1 ? "review" : "reviews"}`,
 };
 
 const TR_COPY: RunQueueCopy = {

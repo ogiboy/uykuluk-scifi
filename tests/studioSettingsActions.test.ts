@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { POST as runElevenLabsSmoke } from "../apps/studio/src/app/actions/elevenlabs-smoke/route";
 import { POST as createEpisode } from "../apps/studio/src/app/actions/episode-create/route";
@@ -147,6 +147,7 @@ async function expectTemporaryJsonArgs(
   try {
     expect(prepared.args).toEqual([...command, "--file", expect.any(String), "--json"]);
     const filePath = prepared.args[3]!;
+    await expect(stat(filePath).then((file) => file.mode & 0o777)).resolves.toBe(0o600);
     await expect(
       readFile(filePath, "utf8").then((content) => JSON.parse(content)),
     ).resolves.toEqual(payload);

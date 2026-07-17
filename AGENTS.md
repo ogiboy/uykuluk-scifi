@@ -13,7 +13,9 @@ This file is the repository-local operating contract for AI agents working on Uy
 
 ## Development Rules
 
-- Prefer module-scoped branches after the initial repository bootstrap.
+- Prefer module-scoped conventional branches after the initial repository bootstrap. Use product
+  intent prefixes such as `feat/`, `fix/`, `docs/`, or `chore/`; do not put an AI agent, vendor, or
+  tool name in branch names or pull-request titles.
 - Keep files small and owned by clear modules.
 - Add abstractions only when they reduce real duplication or match the existing architecture.
 - Use structured parsers and typed interfaces instead of ad hoc text mutation when practical.

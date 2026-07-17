@@ -57,7 +57,7 @@ test("custom brief profile visibly requires operator input before idea creation"
   await page.getByRole("option", { name: "Kendi Fikrini Yaz" }).click();
   await expect(page.getByText("Bu profil için fikir metni zorunludur.")).toBeVisible();
   await expect(page.getByRole("button", { name: "Fikir oluştur" })).toBeDisabled();
-  await page.getByLabel("Bölüm fikri (isteğe bağlı)").fill("Satürn halkalarında kayıp bir sonda.");
+  await page.getByLabel("Bölüm fikri (zorunlu)").fill("Satürn halkalarında kayıp bir sonda.");
   await expect(page.getByRole("button", { name: "Fikir oluştur" })).toBeEnabled();
 });
 

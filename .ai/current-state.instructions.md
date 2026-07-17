@@ -440,6 +440,11 @@ If the shell lacks `node` or `pnpm`, use bundled Node or restore Corepack/PATH b
 
 ## Known Limits
 
+- Delivery policy caps each PR at 120 changed files overall and 100 CodeRabbit-in-scope files. The
+  100-file cap reflects the hosted check observed for this public OSS repository on 2026-07-17.
+  CodeRabbit's current public plan table assigns OSS projects a dynamic 50-150 file limit based on
+  community and popularity without publishing the scoring formula. Branch and PR names describe
+  product intent and omit AI agent or tool names.
 - Ollama and `llama.cpp` doctor checks verify local server reachability and configured model
   inventory, but live local-model QA is environment-dependent and not part of CI. Historical qwen3
   runs proved the safety architecture but not production-quality output. A live Gemma 3 12B GGUF

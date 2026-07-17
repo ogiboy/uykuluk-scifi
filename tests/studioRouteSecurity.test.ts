@@ -46,6 +46,7 @@ describe("Studio route security contract", () => {
           "/forbidden",
           "/prompts",
           "/settings",
+          "/provider-smokes/elevenlabs/[operationId]/audio",
           "/unauthorized",
         ].map((path) => expect.objectContaining({ path })),
       ]),

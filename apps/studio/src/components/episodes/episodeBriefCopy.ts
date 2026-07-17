@@ -64,6 +64,7 @@ export function episodeBriefCopy(locale: StudioLocale, requiresBrief: boolean): 
 
   return {
     ...copy,
+    optionalBriefLabel: locale === "tr" ? "Bölüm fikri (zorunlu)" : "Episode idea (required)",
     optionalBriefHelp:
       locale === "tr"
         ? "Bu profil için fikir metni zorunludur."

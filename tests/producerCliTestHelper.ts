@@ -2,6 +2,7 @@ import { spawnSync } from "node:child_process";
 import path from "node:path";
 
 const sourceRoot = process.cwd();
+const defaultProducerCliTestTimeoutMs = 30_000;
 
 export type ProducerCliTestResult = Readonly<{
   status: number | null;
@@ -32,9 +33,15 @@ export function runProducerCliForTest(
       cwd: options.cwd ?? process.cwd(),
       encoding: "utf8",
       env: options.env,
-      timeout: options.timeout,
+      timeout: options.timeout ?? defaultProducerCliTestTimeoutMs,
     },
   );
+
+  if (result.error) {
+    throw new Error("Producer CLI test process failed before returning a result.", {
+      cause: result.error,
+    });
+  }
 
   return {
     status: result.status,

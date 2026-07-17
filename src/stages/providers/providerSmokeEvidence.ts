@@ -61,18 +61,24 @@ export const providerSmokeEvidenceSchema = z.discriminatedUnion("status", [
     reportedBillableCredits: z.number().nonnegative(),
   }),
   providerSmokeBaseSchema.extend({
-    status: z.enum(["blocked", "failed", "unknown"]),
-    reason: z.enum([
-      "configuration",
-      "entitlement",
-      "provider-rejected",
-      "provider-timeout",
-      "response-invalid",
-      "in-progress",
-    ]),
+    status: z.literal("blocked"),
+    requestSent: z.literal(false),
+    reason: z.enum(["configuration", "entitlement", "provider-rejected"]),
+    message: z.string().min(1).max(300),
+  }),
+  providerSmokeBaseSchema.extend({
+    status: z.literal("failed"),
+    requestSent: z.literal(true),
+    reason: z.enum(["provider-rejected", "provider-timeout", "response-invalid"]),
     message: z.string().min(1).max(300),
     providerStatusCode: z.int().min(400).max(599).optional(),
     providerErrorCategory: providerSmokeErrorCategorySchema.optional(),
+  }),
+  providerSmokeBaseSchema.extend({
+    status: z.literal("unknown"),
+    requestSent: z.literal(true),
+    reason: z.literal("in-progress"),
+    message: z.string().min(1).max(300),
   }),
 ]);
 

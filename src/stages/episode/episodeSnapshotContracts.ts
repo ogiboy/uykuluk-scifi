@@ -34,9 +34,29 @@ const operationSettingsSnapshotBodySchema = z.strictObject({
   profileDigest: digestSchema,
 });
 
-export const operationSettingsSnapshotSchema = operationSettingsSnapshotBodySchema.extend({
-  digest: digestSchema,
-});
+export const operationSettingsSnapshotSchema = operationSettingsSnapshotBodySchema
+  .extend({ digest: digestSchema })
+  .superRefine((snapshot, context) => {
+    if (snapshot.configDigest !== digest(snapshot.config)) {
+      context.addIssue({
+        code: "custom",
+        message: "Operation settings config digest does not match.",
+      });
+    }
+    if (snapshot.profileDigest !== promptProfileDigest(snapshot.profile)) {
+      context.addIssue({
+        code: "custom",
+        message: "Operation settings profile digest does not match.",
+      });
+    }
+    const { digest: snapshotDigest, ...body } = snapshot;
+    if (snapshotDigest !== operationSettingsSnapshotDigest(body)) {
+      context.addIssue({
+        code: "custom",
+        message: "Operation settings snapshot digest does not match.",
+      });
+    }
+  });
 
 const episodeBriefSnapshotBodySchema = z.strictObject({
   schemaVersion: z.literal(1),
@@ -48,9 +68,17 @@ const episodeBriefSnapshotBodySchema = z.strictObject({
   operationSettingsDigest: digestSchema,
 });
 
-export const episodeBriefSnapshotSchema = episodeBriefSnapshotBodySchema.extend({
-  digest: digestSchema,
-});
+export const episodeBriefSnapshotSchema = episodeBriefSnapshotBodySchema
+  .extend({ digest: digestSchema })
+  .superRefine((snapshot, context) => {
+    const { digest: snapshotDigest, ...body } = snapshot;
+    if (snapshotDigest !== episodeBriefSnapshotDigest(body)) {
+      context.addIssue({
+        code: "custom",
+        message: "Episode brief snapshot digest does not match.",
+      });
+    }
+  });
 
 export type EpisodeCreationRequest = z.infer<typeof episodeCreationRequestSchema>;
 export type OperationSettingsSnapshot = z.infer<typeof operationSettingsSnapshotSchema>;

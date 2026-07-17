@@ -31,7 +31,6 @@ const workflowActionStepDefinitions = [
       "promptProfiles.save",
       "episodes.create",
       "providers.elevenlabs.smoke",
-      "ideas.run",
       "idea.approve",
     ],
     label: "Idea intake",

@@ -120,7 +120,6 @@ export async function runElevenLabsDiagnosticSmoke(
     }
     const relativeAudioPath = diagnosticAudioRelativePath(operationId);
     const absoluteAudioPath = path.join(projectRoot, relativeAudioPath);
-    await writeBinaryFile(absoluteAudioPath, audio);
     const evidence = providerSmokeEvidenceSchema.parse({
       ...preflightBase,
       completedAt: (dependencies.now ?? nowIso)(),
@@ -137,6 +136,7 @@ export async function runElevenLabsDiagnosticSmoke(
       alignmentDigest: sha256(JSON.stringify(alignment)),
       reportedBillableCredits: response.characterCost,
     });
+    await writeBinaryFile(absoluteAudioPath, audio);
     try {
       await writeJsonFile(evidencePath, evidence);
     } catch (error) {
@@ -178,7 +178,7 @@ async function persistFailure(
   const evidence = providerSmokeEvidenceSchema.parse({
     ...base,
     completedAt: nowIso(),
-    status: reason === "configuration" || reason === "entitlement" ? "blocked" : "failed",
+    status: base.requestSent === false ? "blocked" : "failed",
     reason,
     message,
   });

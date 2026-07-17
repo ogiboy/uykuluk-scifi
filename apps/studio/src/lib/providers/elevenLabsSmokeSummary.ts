@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
-import { readFile, readdir } from "node:fs/promises";
+import { constants } from "node:fs";
+import { lstat, open, readdir } from "node:fs/promises";
 import path from "node:path";
 import {
   providerSmokeEvidenceSchema,
@@ -26,7 +27,7 @@ export async function readLatestElevenLabsSmoke(
   for (const candidate of candidates) {
     try {
       return providerSmokeEvidenceSchema.parse(
-        JSON.parse(await readFile(path.join(directory, candidate), "utf8")),
+        JSON.parse(await readContainedSmokeText(projectRoot, candidate)),
       );
     } catch {
       continue;
@@ -43,14 +44,12 @@ export async function readElevenLabsSmokeAudio(
   if (!operationIdPattern.test(operationId)) return null;
   try {
     const evidence = providerSmokeEvidenceSchema.parse(
-      JSON.parse(
-        await readFile(path.join(smokeDirectory(projectRoot), `${operationId}.json`), "utf8"),
-      ),
+      JSON.parse(await readContainedSmokeText(projectRoot, `${operationId}.json`)),
     );
     if (evidence.status !== "succeeded" || evidence.operationId !== operationId) return null;
     const expectedPath = `diagnostics/provider-smokes/elevenlabs/${operationId}.wav`;
     if (evidence.audio.path !== expectedPath) return null;
-    const audio = await readFile(path.join(projectRoot, expectedPath));
+    const audio = await readContainedSmokeFile(projectRoot, `${operationId}.wav`);
     return createHash("sha256").update(audio).digest("hex") === evidence.audio.digest
       ? audio
       : null;
@@ -66,4 +65,39 @@ export function elevenLabsSmokeAudioUrl(operationId: string): string {
 
 function smokeDirectory(projectRoot: string): string {
   return path.join(projectRoot, "diagnostics", "provider-smokes", "elevenlabs");
+}
+
+async function readContainedSmokeText(projectRoot: string, fileName: string): Promise<string> {
+  return (await readContainedSmokeFile(projectRoot, fileName)).toString("utf8");
+}
+
+/** Reads a diagnostic file only when every existing component is a safe, contained regular file. */
+async function readContainedSmokeFile(projectRoot: string, fileName: string): Promise<Buffer> {
+  const target = path.join(smokeDirectory(projectRoot), fileName);
+  const safeComponents = [
+    path.resolve(projectRoot),
+    ...["diagnostics", "provider-smokes", "elevenlabs", fileName],
+  ];
+  for (let index = 0; index < safeComponents.length; index += 1) {
+    const component = path.join(...safeComponents.slice(0, index + 1));
+    const info = await lstat(component);
+    if (info.isSymbolicLink()) throw new Error("Diagnostic smoke path contains a symbolic link.");
+    if (index < safeComponents.length - 1 && !info.isDirectory()) {
+      throw new Error("Diagnostic smoke path contains a non-directory component.");
+    }
+    if (index === safeComponents.length - 1 && (!info.isFile() || info.nlink !== 1)) {
+      throw new Error("Diagnostic smoke path must be a safe regular file.");
+    }
+  }
+  let handle;
+  try {
+    handle = await open(target, constants.O_RDONLY | (constants.O_NOFOLLOW ?? 0));
+    const info = await handle.stat();
+    if (!info.isFile() || info.nlink !== 1) {
+      throw new Error("Diagnostic smoke path must be a safe regular file.");
+    }
+    return await handle.readFile();
+  } finally {
+    await handle?.close();
+  }
 }

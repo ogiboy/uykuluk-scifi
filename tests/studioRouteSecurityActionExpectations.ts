@@ -3,6 +3,7 @@ import { expect } from "vitest";
 import {
   disabledStudioActionRoutes,
   enabledStudioActionRoutes,
+  readOnlyStudioRoutes,
   routeSecurityFindings,
   studioSessionRoutes,
 } from "../apps/studio/src/lib/routeSecurity";
@@ -61,6 +62,17 @@ export async function expectStudioActionRouteContract(appRoot: string): Promise<
     ].map((routePath) => path.join(appRoot, routePath)),
   );
   expect(routeSecurityFindings()).toEqual([]);
+  expect(readOnlyStudioRoutes).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        allowedMethods: ["GET"],
+        enabled: true,
+        path: "/provider-smokes/elevenlabs/[operationId]/audio",
+        requiredApproval: "none",
+        risk: "read-only",
+      }),
+    ]),
+  );
   expect(enabledStudioActionRoutes).toEqual(
     expect.arrayContaining([
       expect.objectContaining({

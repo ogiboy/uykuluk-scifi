@@ -34,12 +34,12 @@ export function SettingsBasics({
 
   return (
     <div className='grid gap-4 sm:grid-cols-3'>
-      <Field label={copy.locale}>
+      <Field controlId='settings-locale' label={copy.locale}>
         <Select
           value={draft.studio.locale}
           onValueChange={(value) => updateStudio("locale", value as StudioLocale)}
         >
-          <SelectTrigger className='w-full'>
+          <SelectTrigger className='w-full' id='settings-locale'>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -48,14 +48,14 @@ export function SettingsBasics({
           </SelectContent>
         </Select>
       </Field>
-      <Field label={copy.theme}>
+      <Field controlId='settings-theme' label={copy.theme}>
         <Select
           value={draft.studio.theme}
           onValueChange={(value) =>
             updateStudio("theme", value as ProducerConfig["studio"]["theme"])
           }
         >
-          <SelectTrigger className='w-full'>
+          <SelectTrigger className='w-full' id='settings-theme'>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -65,8 +65,9 @@ export function SettingsBasics({
           </SelectContent>
         </Select>
       </Field>
-      <Field label={labels.port}>
+      <Field controlId='settings-port' label={labels.port}>
         <Input
+          id='settings-port'
           inputMode='numeric'
           min={1024}
           max={65535}

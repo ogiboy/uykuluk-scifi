@@ -4,7 +4,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import type { StudioLocale } from "@/i18n/locales";
 import type { StudioGuardedActionSubmitState } from "@/lib/mutations/useStudioGuardedActionSubmit";
-import type { ProviderSmokeEvidence } from "../../../../../src/stages/providers/providerSmokeEvidence";
+import type {
+  ProviderSmokeErrorCategory,
+  ProviderSmokeEvidence,
+} from "../../../../../src/stages/providers/providerSmokeEvidence";
 import { StudioMutationResultPanel } from "../studio/StudioMutationResultPanel";
 import { Field } from "./settingsFormPrimitives";
 import {
@@ -20,9 +23,6 @@ import {
   voiceIdLabel,
   voiceIdPlaceholder,
 } from "./settingsLabels";
-
-const unavailableDiagnosticTranscript =
-  "data:text/vtt;charset=utf-8,WEBVTT%0A%0A00%3A00.000%20--%3E%2023%3A59%3A59.999%0ADiagnostic%20recording.%20A%20transcript%20is%20unavailable.";
 
 export function ElevenLabsDiagnosticCard({
   evidence,
@@ -73,16 +73,18 @@ export function ElevenLabsDiagnosticCard({
           <p className='text-muted-foreground text-sm'>{diagnosticDescription(locale)}</p>
         </header>
         <div className='grid gap-4 md:grid-cols-[minmax(0,0.65fr)_minmax(0,1.35fr)]'>
-          <Field label={voiceIdLabel(locale)}>
+          <Field controlId='elevenlabs-diagnostic-voice-id' label={voiceIdLabel(locale)}>
             <Input
               autoComplete='off'
+              id='elevenlabs-diagnostic-voice-id'
               placeholder={voiceIdPlaceholder(locale)}
               value={voiceId}
               onChange={(event) => onVoiceIdChange(event.target.value)}
             />
           </Field>
-          <Field label={diagnosticTextLabel(locale)}>
+          <Field controlId='elevenlabs-diagnostic-text' label={diagnosticTextLabel(locale)}>
             <Textarea
+              id='elevenlabs-diagnostic-text'
               maxLength={180}
               rows={3}
               value={text}
@@ -144,7 +146,11 @@ function diagnosticEvidenceMessage(
   if (evidence.status === "succeeded" && evidence.audioUrl) {
     return <DiagnosticAudio audioUrl={evidence.audioUrl} locale={locale} />;
   }
-  if ("message" in evidence) return <p className='text-sm'>{evidence.message}</p>;
+  if ("reason" in evidence) {
+    const category =
+      "providerErrorCategory" in evidence ? evidence.providerErrorCategory : undefined;
+    return <p className='text-sm'>{diagnosticFailureCopy(evidence.reason, category, locale)}</p>;
+  }
   return null;
 }
 
@@ -153,17 +159,61 @@ function DiagnosticAudio({
   locale,
 }: Readonly<{ audioUrl: string; locale: StudioLocale }>) {
   const label = locale === "tr" ? "ElevenLabs tanı kaydı" : "ElevenLabs diagnostic recording";
-  const trackLabel = locale === "tr" ? "Metin durumu" : "Transcript status";
+  const unavailableCopy =
+    locale === "tr"
+      ? "Bu tanı kaydı için konuşma metni mevcut değil."
+      : "A transcript is not available for this diagnostic recording.";
   return (
-    <audio aria-label={label} className='w-full' controls preload='metadata' src={audioUrl}>
-      <track
-        kind='captions'
-        label={trackLabel}
-        src={unavailableDiagnosticTranscript}
-        srcLang='en'
-      />
-    </audio>
+    <div className='grid gap-2'>
+      <audio aria-label={label} className='w-full' controls preload='metadata' src={audioUrl} />
+      <p className='text-muted-foreground text-xs'>{unavailableCopy}</p>
+    </div>
   );
+}
+
+function diagnosticFailureCopy(
+  reason: Extract<ProviderSmokeEvidence, { status: "blocked" | "failed" | "unknown" }>["reason"],
+  category: ProviderSmokeErrorCategory | undefined,
+  locale: StudioLocale,
+) {
+  const reasons =
+    locale === "tr"
+      ? {
+          configuration: "Yapılandırma eksik veya geçersiz.",
+          entitlement: "Dahil kredi veya kullanım hakkı doğrulanamadı.",
+          "provider-rejected": "Sağlayıcı isteği reddetti.",
+          "provider-timeout": "Sağlayıcı yanıtı zaman aşımına uğradı.",
+          "response-invalid": "Sağlayıcı yanıtı doğrulanamadı.",
+          "in-progress": "Tanı işlemi hâlâ sürüyor.",
+        }
+      : {
+          configuration: "Configuration is missing or invalid.",
+          entitlement: "Included credits or entitlement could not be verified.",
+          "provider-rejected": "The provider rejected the request.",
+          "provider-timeout": "The provider response timed out.",
+          "response-invalid": "The provider response could not be verified.",
+          "in-progress": "The diagnostic is still in progress.",
+        };
+  if (!category) return reasons[reason];
+  const categories =
+    locale === "tr"
+      ? {
+          authentication: "Kimlik doğrulama",
+          "access-denied": "Erişim reddedildi",
+          "invalid-request": "Geçersiz istek",
+          "rate-limited": "İstek sınırı",
+          "provider-unavailable": "Sağlayıcı kullanılamıyor",
+          timeout: "Zaman aşımı",
+        }
+      : {
+          authentication: "Authentication",
+          "access-denied": "Access denied",
+          "invalid-request": "Invalid request",
+          "rate-limited": "Rate limited",
+          "provider-unavailable": "Provider unavailable",
+          timeout: "Timeout",
+        };
+  return `${reasons[reason]} ${categories[category]}.`;
 }
 
 function MutationResult({ state }: Readonly<{ state: StudioGuardedActionSubmitState }>) {

@@ -81,9 +81,10 @@
 
 - Maintain the merged aligned-SRT/render-binding and guarded Studio voice flow without weakening
   deterministic-local/Piper `linear-fallback` timing or making a paid CI call.
-- Keep live ElevenLabs production validation separate from implementation completion. The current
-  Free API plan advertises 10,000 included Multilingual v2/v3 characters, but live subscription
-  metadata is authoritative. One short Turkish v3 timestamps diagnostic was attempted after
+- Keep live ElevenLabs production validation separate from implementation completion. A Studio
+  entitlement check observed 10,000 included Multilingual v2/v3 characters on 2026-07-16, but live
+  subscription metadata remains authoritative and plan terms may change. One short Turkish v3
+  timestamps diagnostic was attempted after
   entitlement preflight and rejected safely by the provider; do not call it production validation.
   Free output has no commercial production rights. Production synthesis still requires commercial
   eligibility, exact quote, persisted approval, reservation, bounded execution, and settlement.

@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { mkdtemp, rm } from "node:fs/promises";
+import { link, mkdtemp, rm, symlink } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
@@ -42,6 +42,43 @@ describe("Studio ElevenLabs diagnostic summary", () => {
     await writeBinaryFile(path.join(root, relativeAudioPath), Buffer.from("tampered"));
     await expect(readElevenLabsSmokeAudio(root, operationId)).resolves.toBeNull();
     await expect(readElevenLabsSmokeAudio(root, "../producer.config.json")).resolves.toBeNull();
+  });
+
+  it("rejects linked diagnostic audio even when its bytes match the evidence digest", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "studio-elevenlabs-smoke-"));
+    roots.push(root);
+    const audio = Buffer.from("linked diagnostic wav fixture");
+    const relativeAudioPath = `diagnostics/provider-smokes/elevenlabs/${operationId}.wav`;
+    const source = path.join(root, "outside.wav");
+    await writeBinaryFile(source, audio);
+    await writeJsonFile(
+      path.join(root, "diagnostics", "provider-smokes", "elevenlabs", `${operationId}.json`),
+      successEvidence(relativeAudioPath, audio),
+    );
+
+    await symlink(source, path.join(root, relativeAudioPath));
+    await expect(readElevenLabsSmokeAudio(root, operationId)).resolves.toBeNull();
+
+    await rm(path.join(root, relativeAudioPath));
+    await link(source, path.join(root, relativeAudioPath));
+    await expect(readElevenLabsSmokeAudio(root, operationId)).resolves.toBeNull();
+
+    const evidencePath = path.join(
+      root,
+      "diagnostics",
+      "provider-smokes",
+      "elevenlabs",
+      `${operationId}.json`,
+    );
+    const evidenceSource = path.join(root, "outside.json");
+    await writeJsonFile(evidenceSource, successEvidence(relativeAudioPath, audio));
+    await rm(evidencePath);
+    await symlink(evidenceSource, evidencePath);
+    await expect(readLatestElevenLabsSmoke(root)).resolves.toBeNull();
+
+    await rm(evidencePath);
+    await link(evidenceSource, evidencePath);
+    await expect(readLatestElevenLabsSmoke(root)).resolves.toBeNull();
   });
 });
 

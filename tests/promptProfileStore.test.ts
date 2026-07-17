@@ -10,7 +10,15 @@ describe("prompt profiles", () => {
     const science = selectPromptProfile("science-space");
     expect(science.labels.tr).toBe("Bilim ve Uzay");
     expect(science.genre).toBe("science-space");
-    expect(promptProfileDigest(science)).toMatch(/^[a-f0-9]{64}$/);
+    expect(promptProfileDigest(science)).toBe(
+      "8aa19d4d645a349755cf503d58c175827019e43f10e7c71fad6c66c3caee5438",
+    );
+    expect(
+      promptProfileDigest({
+        ...science,
+        generationPrompt: `${science.generationPrompt} Değiştirilmiş içerik.`,
+      }),
+    ).not.toBe(promptProfileDigest(science));
     expect(promptProfiles).toHaveLength(5);
   });
 

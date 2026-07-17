@@ -3,23 +3,29 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { StudioSettingsCopy } from "./settingsCopy";
 
-export function Field({ children, label }: Readonly<{ children: React.ReactNode; label: string }>) {
+export function Field({
+  children,
+  controlId,
+  label,
+}: Readonly<{ children: React.ReactNode; controlId: string; label: string }>) {
   return (
     <div className='grid gap-2'>
-      <Label>{label}</Label>
+      <Label htmlFor={controlId}>{label}</Label>
       {children}
     </div>
   );
 }
 
 export function BudgetInput({
+  id,
   label,
   onChange,
   value,
-}: Readonly<{ label: string; onChange: (value: number) => void; value: number }>) {
+}: Readonly<{ id: string; label: string; onChange: (value: number) => void; value: number }>) {
   return (
-    <Field label={label}>
+    <Field controlId={id} label={label}>
       <Input
+        id={id}
         min={0}
         step='0.01'
         type='number'

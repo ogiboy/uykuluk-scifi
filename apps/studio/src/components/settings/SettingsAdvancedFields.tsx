@@ -33,14 +33,14 @@ export function LlmSettings({
 }>) {
   return (
     <div className='grid gap-4 md:grid-cols-3'>
-      <Field label={copy.provider}>
+      <Field controlId='settings-llm-provider' label={copy.provider}>
         <Select
           value={draft.providers.llm.mode}
           onValueChange={(value) =>
             updateLlm("mode", value as ProducerConfig["providers"]["llm"]["mode"])
           }
         >
-          <SelectTrigger className='w-full'>
+          <SelectTrigger className='w-full' id='settings-llm-provider'>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -50,14 +50,16 @@ export function LlmSettings({
           </SelectContent>
         </Select>
       </Field>
-      <Field label={copy.model}>
+      <Field controlId='settings-llm-model' label={copy.model}>
         <Input
+          id='settings-llm-model'
           value={draft.providers.llm.model}
           onChange={(event) => updateLlm("model", event.target.value)}
         />
       </Field>
-      <Field label={timeoutLabel}>
+      <Field controlId='settings-llm-timeout' label={timeoutLabel}>
         <Input
+          id='settings-llm-timeout'
           min={1}
           type='number'
           value={Math.round(draft.providers.llm.requestTimeoutMs / 1000)}
@@ -85,14 +87,14 @@ export function DefaultProviderSettings({
 }>) {
   return (
     <div className='grid gap-4 md:grid-cols-2'>
-      <Field label={voiceLabel}>
+      <Field controlId='settings-default-voice' label={voiceLabel}>
         <Select
           value={activeTtsMode(draft)}
           onValueChange={(value) =>
             setTts(value as "disabled" | ProducerConfig["providers"]["tts"]["mode"])
           }
         >
-          <SelectTrigger className='w-full'>
+          <SelectTrigger className='w-full' id='settings-default-voice'>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -103,14 +105,14 @@ export function DefaultProviderSettings({
           </SelectContent>
         </Select>
       </Field>
-      <Field label={visualLabel}>
+      <Field controlId='settings-default-visual' label={visualLabel}>
         <Select
           value={activeVisualMode(draft)}
           onValueChange={(value) =>
             setVisual(value as "disabled" | ProducerConfig["providers"]["imageGeneration"]["mode"])
           }
         >
-          <SelectTrigger className='w-full'>
+          <SelectTrigger className='w-full' id='settings-default-visual'>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -136,21 +138,25 @@ export function BudgetSettings({
   return (
     <div className='grid gap-4 md:grid-cols-4'>
       <BudgetInput
+        id='settings-budget-episode'
         label={budgetLabel(locale, "episode")}
         value={draft.budgets.perVideoUsd}
         onChange={(value) => updateBudget("perVideoUsd", value)}
       />
       <BudgetInput
+        id='settings-budget-daily'
         label={budgetLabel(locale, "daily")}
         value={draft.budgets.dailyUsd}
         onChange={(value) => updateBudget("dailyUsd", value)}
       />
       <BudgetInput
+        id='settings-budget-weekly'
         label={budgetLabel(locale, "weekly")}
         value={draft.budgets.weeklyUsd}
         onChange={(value) => updateBudget("weeklyUsd", value)}
       />
       <BudgetInput
+        id='settings-budget-approval'
         label={budgetLabel(locale, "approval")}
         value={draft.budgets.requireApprovalAboveUsd}
         onChange={(value) => updateBudget("requireApprovalAboveUsd", value)}

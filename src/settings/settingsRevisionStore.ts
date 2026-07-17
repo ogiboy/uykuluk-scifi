@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto";
+import { lstat, mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { z } from "zod";
 import { ProducerConfig, producerConfigSchema } from "../config/schema.js";
@@ -9,6 +11,12 @@ import { createId, nowIso } from "../utils/time.js";
 
 const configFileName = "producer.config.json";
 const digestPattern = /^[a-f0-9]{64}$/;
+const settingsLockSettings = {
+  timeoutMs: 5_000,
+  retryMs: 20,
+  staleMs: 30_000,
+  hardStaleMs: 5 * 60_000,
+};
 
 export type SettingsRevision = Readonly<{
   revisionId: string;
@@ -63,52 +71,58 @@ export async function readSettingsRevision(
   const target = path.join(projectRoot, "producer.config.revisions", `${revisionId}.json`);
   if (!(await pathExists(target)))
     throw new SafeExitError(`Settings revision not found: ${revisionId}`);
-  return settingsRevisionSchema.parse(await readJsonFile<unknown>(target));
+  const revision = settingsRevisionSchema.parse(await readJsonFile<unknown>(target));
+  if (revision.configDigest !== configDigest(revision.config)) {
+    throw new SafeExitError("Settings revision config digest does not match its config.");
+  }
+  return revision;
 }
 
 export async function saveSettingsRevision(
   input: SaveSettingsRevisionInput,
 ): Promise<SettingsRevision> {
   validateSaveInput(input);
-  const current = await readCurrentSettings(input.projectRoot);
-  if (current.digest !== input.expectedCurrentDigest) {
-    throw new SafeExitError(
-      "Settings changed before this save could be applied; reload and review the current config.",
+  return withSettingsSaveLock(input.projectRoot, async () => {
+    const current = await readCurrentSettings(input.projectRoot);
+    if (current.digest !== input.expectedCurrentDigest) {
+      throw new SafeExitError(
+        "Settings changed before this save could be applied; reload and review the current config.",
+      );
+    }
+    const requested = producerConfigSchema.parse(input.config);
+    const candidate = producerConfigSchema.parse({
+      ...requested,
+      settingsRevision: current.config.settingsRevision,
+    });
+    rejectSecretLikeValues(candidate);
+    const changedPaths = collectChangedPaths(current.config, candidate);
+    if (changedPaths.length === 0)
+      throw new SafeExitError("Settings revision must change the current config.");
+    const config = producerConfigSchema.parse({
+      ...candidate,
+      settingsRevision: current.config.settingsRevision + 1,
+    });
+    const revisionId = createId("settings");
+    const revision: SettingsRevision = {
+      revisionId,
+      createdAt: nowIso(),
+      editor: input.editor.trim(),
+      note: input.note.trim(),
+      previousDigest: current.digest,
+      configDigest: configDigest(config),
+      changedPaths,
+      restartRequired: changedPaths.some((changed) =>
+        (input.restartPaths ?? ["studio.port"]).includes(changed),
+      ),
+      config,
+    };
+    await writeJsonFile(
+      path.join(input.projectRoot, "producer.config.revisions", `${revisionId}.json`),
+      revision,
     );
-  }
-  const requested = producerConfigSchema.parse(input.config);
-  const candidate = producerConfigSchema.parse({
-    ...requested,
-    settingsRevision: current.config.settingsRevision,
+    await writeJsonFile(path.join(input.projectRoot, configFileName), config);
+    return revision;
   });
-  rejectSecretLikeValues(candidate);
-  const changedPaths = collectChangedPaths(current.config, candidate);
-  if (changedPaths.length === 0)
-    throw new SafeExitError("Settings revision must change the current config.");
-  const config = producerConfigSchema.parse({
-    ...candidate,
-    settingsRevision: current.config.settingsRevision + 1,
-  });
-  const revisionId = createId("settings");
-  const revision: SettingsRevision = {
-    revisionId,
-    createdAt: nowIso(),
-    editor: input.editor.trim(),
-    note: input.note.trim(),
-    previousDigest: current.digest,
-    configDigest: configDigest(config),
-    changedPaths,
-    restartRequired: changedPaths.some((changed) =>
-      (input.restartPaths ?? ["studio.port"]).includes(changed),
-    ),
-    config,
-  };
-  await writeJsonFile(
-    path.join(input.projectRoot, "producer.config.revisions", `${revisionId}.json`),
-    revision,
-  );
-  await writeJsonFile(path.join(input.projectRoot, configFileName), config);
-  return revision;
 }
 
 const settingsRevisionSchema = z.object({
@@ -154,6 +168,108 @@ function hasOnlySafeControlCharacters(value: string): boolean {
     const code = character.codePointAt(0) ?? 0;
     return code >= 32 || character === "\n" || character === "\r" || character === "\t";
   });
+}
+
+async function withSettingsSaveLock<T>(projectRoot: string, task: () => Promise<T>): Promise<T> {
+  const target = path.join(path.resolve(projectRoot), ".settings-mutation.lock");
+  const token = randomUUID();
+  await acquireSettingsLock(target, token);
+  let taskFailed = false;
+  try {
+    return await task();
+  } catch (error) {
+    taskFailed = true;
+    throw error;
+  } finally {
+    if (taskFailed) {
+      await releaseSettingsLock(target, token).catch(() => undefined);
+    } else {
+      await releaseSettingsLock(target, token);
+    }
+  }
+}
+
+async function acquireSettingsLock(target: string, token: string): Promise<void> {
+  const startedAt = Date.now();
+  while (true) {
+    try {
+      await mkdir(target);
+      try {
+        await writeFile(
+          path.join(target, "owner.json"),
+          `${JSON.stringify({ token, pid: process.pid, createdAt: new Date().toISOString() })}\n`,
+          "utf8",
+        );
+      } catch (error) {
+        await rm(target, { recursive: true, force: true });
+        throw error;
+      }
+      return;
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "EEXIST") throw error;
+      if (await reclaimStaleSettingsLock(target)) continue;
+      if (Date.now() - startedAt >= settingsLockSettings.timeoutMs) {
+        throw new SafeExitError("Timed out waiting for the settings mutation lock.");
+      }
+      await delay(settingsLockSettings.retryMs);
+    }
+  }
+}
+
+async function reclaimStaleSettingsLock(target: string): Promise<boolean> {
+  try {
+    const info = await lstat(target);
+    if (info.isSymbolicLink() || !info.isDirectory()) {
+      throw new SafeExitError("Settings mutation lock path is unsafe.");
+    }
+    const ageMs = Date.now() - info.mtimeMs;
+    if (ageMs <= settingsLockSettings.staleMs) return false;
+    const owner = await readSettingsLockOwner(target);
+    if (ageMs <= settingsLockSettings.hardStaleMs && isProcessAlive(owner?.pid)) return false;
+    const quarantine = `${target}.stale.${randomUUID()}`;
+    await rename(target, quarantine);
+    await rm(quarantine, { recursive: true, force: true });
+    return true;
+  } catch (error) {
+    const code = (error as NodeJS.ErrnoException).code;
+    if (code === "ENOENT" || code === "EEXIST") return true;
+    throw error;
+  }
+}
+
+async function readSettingsLockOwner(
+  target: string,
+): Promise<{ pid?: number; token?: string } | undefined> {
+  try {
+    return JSON.parse(await readFile(path.join(target, "owner.json"), "utf8")) as {
+      pid?: number;
+      token?: string;
+    };
+  } catch (error) {
+    if (error instanceof SyntaxError || (error as NodeJS.ErrnoException).code === "ENOENT") {
+      return undefined;
+    }
+    throw error;
+  }
+}
+
+function isProcessAlive(pid: number | undefined): boolean {
+  if (typeof pid !== "number" || !Number.isSafeInteger(pid) || pid <= 0) return false;
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    return (error as NodeJS.ErrnoException).code !== "ESRCH";
+  }
+}
+
+async function releaseSettingsLock(target: string, token: string): Promise<void> {
+  const owner = await readSettingsLockOwner(target);
+  if (owner?.token === token) await rm(target, { recursive: true, force: true });
+}
+
+async function delay(ms: number): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function collectChangedPaths(before: unknown, after: unknown, prefix = ""): string[] {

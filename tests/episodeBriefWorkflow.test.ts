@@ -58,6 +58,19 @@ describe("episode brief idea generation", () => {
     await expect(readdir("runs")).resolves.toEqual([]);
   });
 
+  it("rejects stale settings submissions before creating a run", async () => {
+    const profile = selectPromptProfile("sci-fi", defaultConfig.editorial.profiles);
+    await expect(
+      runIdeas({
+        profileId: profile.id,
+        expectedProfileDigest: promptProfileDigest(profile),
+        expectedSettingsDigest: "0".repeat(64),
+      }),
+    ).rejects.toThrow("Settings changed before idea generation");
+
+    await expect(readdir("runs")).resolves.toEqual([]);
+  });
+
   it("requires an operator brief for the custom profile", async () => {
     const profile = selectPromptProfile("custom-brief", defaultConfig.editorial.profiles);
     const expectedSettingsDigest = configDigest(await loadConfig());

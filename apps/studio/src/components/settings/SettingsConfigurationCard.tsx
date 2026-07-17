@@ -41,22 +41,31 @@ export function SettingsConfigurationCard({
       <CardHeader>
         <CardTitle>{copy.settings}</CardTitle>
       </CardHeader>
-      <CardContent className='grid gap-6'>
-        <SettingsBasics copy={copy} draft={draft} locale={locale} updateDraft={updateDraft} />
-        <SettingsAdvanced copy={copy} draft={draft} locale={locale} updateDraft={updateDraft} />
-        <SettingsSubmitFields
-          copy={copy}
-          editor={editor}
-          note={note}
-          onEditorChange={onEditorChange}
-          onNoteChange={onNoteChange}
-        />
-        <div className='flex flex-wrap items-center gap-3'>
-          <Button disabled={disabled} type='button' onClick={onSave}>
-            {saving ? savingLabel(locale) : copy.saveSettings}
-          </Button>
-        </div>
-        {state.kind === "idle" ? null : <StudioMutationResultPanel state={state} />}
+      <CardContent>
+        <form
+          className='grid gap-6'
+          onSubmit={(event) => {
+            event.preventDefault();
+            onSave();
+          }}
+        >
+          <SettingsBasics copy={copy} draft={draft} locale={locale} updateDraft={updateDraft} />
+          <SettingsAdvanced copy={copy} draft={draft} locale={locale} updateDraft={updateDraft} />
+          <SettingsSubmitFields
+            copy={copy}
+            editor={editor}
+            idPrefix='settings'
+            note={note}
+            onEditorChange={onEditorChange}
+            onNoteChange={onNoteChange}
+          />
+          <div className='flex flex-wrap items-center gap-3'>
+            <Button disabled={disabled} type='submit'>
+              {saving ? savingLabel(locale) : copy.saveSettings}
+            </Button>
+          </div>
+          {state.kind === "idle" ? null : <StudioMutationResultPanel state={state} />}
+        </form>
       </CardContent>
     </Card>
   );

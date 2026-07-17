@@ -56,46 +56,56 @@ export function PromptProfileCard({
         <CardTitle>{copy.profile}</CardTitle>
         <CardDescription>{copy.briefDescription}</CardDescription>
       </CardHeader>
-      <CardContent className='grid gap-5'>
-        <Field label={copy.profile}>
-          <Select value={profileId} onValueChange={onProfileChange}>
-            <SelectTrigger className='w-full'>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {profiles.map((profile) => (
-                <SelectItem key={profile.id} value={profile.id}>
-                  {profile.labels[locale]}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </Field>
-        <Field label={copy.generationPrompt}>
-          <Textarea
-            value={prompt}
-            rows={6}
-            onChange={(event) => onPromptChange(event.target.value)}
+      <CardContent>
+        <form
+          className='grid gap-5'
+          onSubmit={(event) => {
+            event.preventDefault();
+            onSave();
+          }}
+        >
+          <Field controlId='prompt-profile' label={copy.profile}>
+            <Select value={profileId} onValueChange={onProfileChange}>
+              <SelectTrigger className='w-full' id='prompt-profile'>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {profiles.map((profile) => (
+                  <SelectItem key={profile.id} value={profile.id}>
+                    {profile.labels[locale]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+          <Field controlId='prompt-profile-generation-prompt' label={copy.generationPrompt}>
+            <Textarea
+              id='prompt-profile-generation-prompt'
+              value={prompt}
+              rows={6}
+              onChange={(event) => onPromptChange(event.target.value)}
+            />
+          </Field>
+          {activeProfile.requiresOperatorBrief ? (
+            <p className='rounded-lg border border-(--accent)/30 bg-(--accent)/10 p-3 text-sm'>
+              {profileBriefRequiredCopy(locale)}
+            </p>
+          ) : null}
+          <SettingsSubmitFields
+            copy={copy}
+            editor={editor}
+            idPrefix='prompt-profile'
+            note={note}
+            onEditorChange={onEditorChange}
+            onNoteChange={onNoteChange}
           />
-        </Field>
-        {activeProfile.requiresOperatorBrief ? (
-          <p className='rounded-lg border border-(--accent)/30 bg-(--accent)/10 p-3 text-sm'>
-            {profileBriefRequiredCopy(locale)}
-          </p>
-        ) : null}
-        <SettingsSubmitFields
-          copy={copy}
-          editor={editor}
-          note={note}
-          onEditorChange={onEditorChange}
-          onNoteChange={onNoteChange}
-        />
-        <div className='flex flex-wrap items-center gap-3'>
-          <Button disabled={disabled} type='button' variant='secondary' onClick={onSave}>
-            {saving ? savingLabel(locale) : copy.saveProfile}
-          </Button>
-        </div>
-        {state.kind === "idle" ? null : <StudioMutationResultPanel state={state} />}
+          <div className='flex flex-wrap items-center gap-3'>
+            <Button disabled={disabled} type='submit' variant='secondary'>
+              {saving ? savingLabel(locale) : copy.saveProfile}
+            </Button>
+          </div>
+          {state.kind === "idle" ? null : <StudioMutationResultPanel state={state} />}
+        </form>
       </CardContent>
     </Card>
   );
