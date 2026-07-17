@@ -31,7 +31,7 @@ export type StudioVisualSceneSummary = Readonly<{
   motion: string;
   productionSceneIndexes: readonly number[];
   prompt: string;
-  provider: "black-forest-labs" | "manual-import" | "static";
+  providerId: string;
   reviewedBy?: string;
   revisionCount: number;
   sceneIndex: number;
@@ -97,7 +97,7 @@ export async function readStudioVisualSummary(
         motion: active.motion.kind,
         productionSceneIndexes: scene.productionSceneIndexes,
         prompt: scene.visualPrompt,
-        provider: active.provider,
+        providerId: active.provider,
         reviewedBy: scene.decision?.reviewedBy,
         revisionCount: scene.revisions.length,
         sceneIndex: scene.sceneIndex,

@@ -54,7 +54,7 @@ export function RunVisualSceneCard({
 
       <div className='grid gap-3 p-4 pt-1'>
         <div className='flex flex-wrap items-center gap-2 text-xs'>
-          <Badge variant='outline'>{scene.provider}</Badge>
+          <Badge variant='outline'>{providerLabel(scene.providerId)}</Badge>
           <Badge variant='outline'>revision {scene.activeRevision}</Badge>
           <Badge variant='outline'>{scene.motion}</Badge>
           <span className='text-muted-foreground'>
@@ -117,4 +117,11 @@ function decisionVariant(
 function formatSceneRange(indexes: readonly number[]): string {
   if (indexes.length === 1) return String(indexes[0]);
   return `${indexes[0]}-${indexes.at(-1)}`;
+}
+
+function providerLabel(providerId: string): string {
+  if (providerId === "static") return "Static fallback";
+  if (providerId === "manual-import") return "Manual import";
+  if (providerId === "black-forest-labs") return "Black Forest Labs";
+  return providerId;
 }

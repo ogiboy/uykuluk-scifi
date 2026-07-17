@@ -22,8 +22,8 @@ export function useRunVisualReviewActions(runId: string, summary: StudioVisualSu
     "Visual actions are explicit and refresh persisted run evidence after completion.",
   );
   const [selected, setSelected] = useState<Set<number>>(() => new Set());
-  const [reviewedBy, setReviewedBy] = useState("operator");
-  const [notes, setNotes] = useState("Reviewed in the Studio visual contact sheet.");
+  const [reviewedBy, setReviewedBy] = useState("");
+  const [notes, setNotes] = useState("");
   const [fileError, setFileError] = useState<string | null>(null);
   const [confirmedHostedIdentity, setConfirmedHostedIdentity] = useState<string | null>(null);
   const busy = state.kind === "submitting";
@@ -170,7 +170,7 @@ export function useRunVisualReviewActions(runId: string, summary: StudioVisualSu
         sceneIndexes: [...selected],
       },
       errorToastTitle: "Hosted visual plan blocked",
-      fallbackError: "Studio could not persist the selected FLUX.2 Pro plan.",
+      fallbackError: "Studio could not persist the selected hosted visual plan.",
       routePath: action.routePath,
       submittingMessage:
         purpose === "regenerate-rejected"

@@ -23,6 +23,34 @@ import { currentVisualExpectation } from "./visualTestHelpers";
 describe("Studio hosted visual summary", () => {
   useTempProject();
 
+  it("projects hosted provider readiness without exposing credentials", async () => {
+    const initialApiKey = process.env.BFL_API_KEY;
+    try {
+      delete process.env.BFL_API_KEY;
+      const runId = await prepareApprovedHostedVisualRun();
+      const missingCredential = await readStudioVisualSummary(process.cwd(), runId);
+      expect(missingCredential.hosted).toMatchObject({
+        mode: "hosted",
+        provider: {
+          credentialStatus: "missing",
+          modelId: "flux-2-pro",
+          providerId: "black-forest-labs",
+          readiness: "experimental",
+        },
+      });
+      expect(missingCredential.hosted.execution).toBeTruthy();
+      expect(missingCredential.actions["visuals.generate-hosted"]).toBeTruthy();
+
+      process.env.BFL_API_KEY = "configured-for-summary-test";
+      const configured = await readStudioVisualSummary(process.cwd(), runId);
+      expect(configured.hosted.provider?.credentialStatus).toBe("configured");
+      expect(configured.actions["visuals.generate-hosted"]).toBeTruthy();
+    } finally {
+      if (initialApiKey === undefined) delete process.env.BFL_API_KEY;
+      else process.env.BFL_API_KEY = initialApiKey;
+    }
+  });
+
   it("offers rejected-scene regeneration after settlement and disables replanning once committed", async () => {
     const runId = await prepareApprovedHostedVisualRun();
     const quote = await readCostEstimate(runId);

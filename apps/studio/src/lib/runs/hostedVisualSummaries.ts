@@ -19,7 +19,8 @@ export type StudioHostedVisualSummary = Readonly<{
   execution: Readonly<{ approvalId: string; bindingDigest: string; quoteDigest: string }> | null;
   blockedReason?: string;
   eligibleRejectedSceneIndexes: readonly number[];
-  mode: "black-forest-labs" | "static-manual" | "unknown";
+  mode: "hosted" | "static-manual" | "unknown";
+  provider: StudioVisualProviderSummary | null;
   allowedPlanPurpose: "initial" | "regenerate-rejected" | null;
   plan: Readonly<{
     digest?: string;
@@ -32,6 +33,16 @@ export type StudioHostedVisualSummary = Readonly<{
     estimatedUsd?: number;
     status: "blocked" | "missing" | "ready";
   }>;
+}>;
+
+export type StudioVisualProviderSummary = Readonly<{
+  credentialStatus: "configured" | "missing";
+  kind: "hosted";
+  label: string;
+  modelId: string;
+  modelLabel: string;
+  providerId: string;
+  readiness: "experimental";
 }>;
 
 /**
@@ -63,11 +74,13 @@ export async function readStudioHostedVisualSummary(
   ) {
     return { ...emptyHostedVisualSummary(), mode: "static-manual" };
   }
+  const provider = blackForestLabsProviderSummary();
   if (!run.artifacts.includes(hostedVisualGenerationPlanPath)) {
     return {
       ...emptyHostedVisualSummary(),
       allowedPlanPurpose: allowedHostedPlanPurpose("missing", run.state, rejectedCount),
-      mode: "black-forest-labs",
+      mode: "hosted",
+      provider,
     };
   }
   try {
@@ -93,7 +106,8 @@ export async function readStudioHostedVisualSummary(
         eligibleRejectedSceneIndexes.length,
       ),
       eligibleRejectedSceneIndexes,
-      mode: "black-forest-labs" as const,
+      mode: "hosted" as const,
+      provider,
       plan: {
         digest: persisted.digest,
         purpose: persisted.plan.purpose,
@@ -152,8 +166,9 @@ export async function readStudioHostedVisualSummary(
       approval: { status: "blocked" },
       blockedReason:
         error instanceof Error ? error.message : "Hosted visual evidence could not be validated.",
-      mode: "black-forest-labs",
+      mode: "hosted",
       plan: { sceneIndexes: [], status: "blocked" },
+      provider,
       quote: { status: "blocked" },
     };
   }
@@ -171,8 +186,21 @@ export function emptyHostedVisualSummary(): StudioHostedVisualSummary {
     eligibleRejectedSceneIndexes: [],
     execution: null,
     mode: "unknown",
+    provider: null,
     plan: { sceneIndexes: [], status: "missing" },
     quote: { status: "missing" },
+  };
+}
+
+function blackForestLabsProviderSummary(): StudioVisualProviderSummary {
+  return {
+    credentialStatus: process.env.BFL_API_KEY?.trim() ? "configured" : "missing",
+    kind: "hosted",
+    label: "Black Forest Labs",
+    modelId: "flux-2-pro",
+    modelLabel: "FLUX.2 Pro",
+    providerId: "black-forest-labs",
+    readiness: "experimental",
   };
 }
 

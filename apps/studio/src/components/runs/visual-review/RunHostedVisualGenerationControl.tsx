@@ -24,7 +24,7 @@ type Props = Readonly<{
 }>;
 
 /**
- * Provides the Studio-first FLUX.2 Pro planning, approval, and generation workflow.
+ * Provides the Studio-first hosted visual planning, approval, and generation workflow.
  *
  * Displays configuration or evidence blocking states, prevents invalid beat selections from being
  * planned, and requires confirmation of the exact approved plan, quote, and execution identity
@@ -57,25 +57,49 @@ export function RunHostedVisualGenerationControl({
       </Alert>
     );
   }
-  if (hosted.mode !== "black-forest-labs") return null;
+  if (hosted.mode !== "hosted" || !hosted.provider) return null;
   const executionReady = Boolean(hosted.execution);
+  const credentialReady = hosted.provider.credentialStatus === "configured";
   return (
     <section className='border-primary/25 bg-primary/5 grid gap-3 rounded-lg border p-4'>
       <div className='flex flex-wrap items-start justify-between gap-3'>
         <div>
-          <h3 className='font-semibold'>FLUX.2 Pro scene generation</h3>
+          <h3 className='font-semibold'>Hosted scene generation</h3>
           <p className='text-muted-foreground mt-1 max-w-3xl text-sm'>
-            Select visual beats, persist one exact plan, then use the normal cost approval step.
-            Studio submits only the displayed approved identity; rejected hosted beats reopen as an
-            attributed revision.
+            Select visual beats, persist one exact provider plan, then use the normal cost approval
+            step. Rejected hosted beats reopen as an attributed revision.
           </p>
         </div>
         <div className='flex flex-wrap gap-2'>
           <Badge variant='outline'>Plan: {hosted.plan.status}</Badge>
           <Badge variant='outline'>Quote: {hosted.quote.status}</Badge>
           <Badge variant='outline'>Approval: {hosted.approval.status}</Badge>
+          <Badge variant='outline'>{hosted.provider.modelLabel}</Badge>
+          <Badge variant='outline'>{hosted.provider.readiness}</Badge>
+          <Badge variant={credentialReady ? "secondary" : "destructive"}>
+            {credentialReady ? "credential configured" : "credential missing"}
+          </Badge>
         </div>
       </div>
+
+      <dl className='grid gap-1 text-sm sm:grid-cols-2 lg:grid-cols-4'>
+        <div>Provider: {hosted.provider.label}</div>
+        <div>Model: {hosted.provider.modelId}</div>
+        <div>Scenes: {hosted.plan.sceneIndexes.length || selectedCount}</div>
+        <div>Purpose: {hosted.plan.purpose ?? "new plan"}</div>
+      </dl>
+
+      {credentialReady ? (
+        <p className='text-muted-foreground text-sm'>
+          Credential presence only. Balance, entitlement, usage rights, and provider availability
+          are not confirmed until the provider responds.
+        </p>
+      ) : (
+        <p className='text-muted-foreground text-sm'>
+          A new hosted request needs a server-side credential. Recovery from an already committed
+          result remains available without sending the provider request again.
+        </p>
+      )}
 
       {hosted.quote.estimatedUsd !== undefined ? (
         <p className='text-sm'>Quoted batch cap: ${hosted.quote.estimatedUsd.toFixed(2)}</p>
@@ -99,8 +123,7 @@ export function RunHostedVisualGenerationControl({
           }
           onClick={onPlan}
         >
-          {regenerateSelected ? "Regenerate rejected" : "Plan selected"} with FLUX.2 Pro (
-          {selectedCount})
+          {regenerateSelected ? "Regenerate rejected" : "Plan selected"} ({selectedCount})
         </Button>
       </div>
       {mixedSelection ? (
@@ -133,7 +156,9 @@ export function RunHostedVisualGenerationControl({
               onCheckedChange={(checked) => onConfirmedChange(checked === true)}
             />
             <Label className='leading-snug' htmlFor='confirm-paid-hosted-visual-operation'>
-              I confirm this exact plan binding, quote, and approval for hosted image generation.
+              I confirm {hosted.provider.modelLabel} for {hosted.plan.sceneIndexes.length} scene(s)
+              with a maximum quoted batch cost of ${hosted.quote.estimatedUsd?.toFixed(2) ?? "0.00"}
+              .
             </Label>
           </div>
           <Button
