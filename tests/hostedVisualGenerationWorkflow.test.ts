@@ -35,7 +35,7 @@ describe("hosted visual generation workflow", () => {
     expect(readySummary.hosted).toMatchObject({
       approval: { approvalId: approval!.approvalId, status: "approved" },
       execution: { approvalId: approval!.approvalId, bindingDigest: plan.planDigest, quoteDigest },
-      mode: "black-forest-labs",
+      mode: "hosted",
       plan: { status: "ready" },
       quote: { estimatedUsd: 0.18, status: "ready" },
     });

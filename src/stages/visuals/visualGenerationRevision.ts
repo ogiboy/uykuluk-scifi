@@ -37,6 +37,7 @@ import {
 } from "./visualGenerationRevisionEvidence.js";
 import {
   hostedVisualRevisionBlocked as blocked,
+  findHostedVisualQuoteApproval,
   hostedVisualRevisionPaths,
   persistHostedVisualRevisionBlock,
   requireRejectedHostedVisualScenes,
@@ -146,7 +147,7 @@ export async function reopenRejectedHostedVisualGeneration(
         const selectedSources: HostedVisualGenerationRevision["selectedSources"] = [];
         for (const scene of rejectedScenes) {
           const active = scene.revisions.find((item) => item.revision === scene.activeRevision);
-          if (!active || active.source.kind !== "hosted-generation") {
+          if (active?.source.kind !== "hosted-generation") {
             throw await blocked(
               current.runId,
               `Rejected scene ${scene.sceneIndex} is not backed by settled hosted-generation evidence.`,
@@ -167,16 +168,10 @@ export async function reopenRejectedHostedVisualGeneration(
           );
         }
         const planDigest = createHash("sha256").update(planBytes).digest("hex");
-        const activeQuoteApproval = current.approvals.find(
-          (approval) =>
-            approval.target === "paid-generation-cost" &&
-            reservations.some(
-              (reservation) =>
-                reservation.status === "SETTLED" &&
-                reservation.bindingDigest === planDigest &&
-                reservation.approvalId === approval.approvalId &&
-                reservation.quoteDigest === approval.approvedRef,
-            ),
+        const activeQuoteApproval = findHostedVisualQuoteApproval(
+          current.approvals,
+          reservations,
+          planDigest,
         );
         if (!activeQuoteApproval?.approvedRef) {
           throw await blocked(

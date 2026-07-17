@@ -179,6 +179,7 @@ export async function reviseVoiceSelection(
             ...(approval.approvedRef ? { approvedRef: approval.approvedRef } : {}),
             createdAt: approval.createdAt,
           }));
+        const invalidatedApprovalIds = invalidatedApprovals.map(({ approvalId }) => approvalId);
         const revision = voiceSelectionRevisionSchema.parse({
           schemaVersion: 1,
           revisionId,
@@ -191,7 +192,7 @@ export async function reviseVoiceSelection(
             path: previousSelection.path,
             digest: previousSelection.selection.selectionDigest,
           },
-          invalidatedApprovalIds: invalidatedApprovals.map((approval) => approval.approvalId),
+          invalidatedApprovalIds,
           supersededReleasedReservationIds: ttsReservations.map(
             (reservation) => reservation.reservationId,
           ),
@@ -208,8 +209,7 @@ export async function reviseVoiceSelection(
             ...run,
             state: "PRODUCTION_PACKAGE_GENERATED" as const,
             approvals: run.approvals.filter(
-              (approval) =>
-                !invalidatedApprovals.some((item) => item.approvalId === approval.approvalId),
+              (approval) => !invalidatedApprovalIds.includes(approval.approvalId),
             ),
           },
           value: revision,

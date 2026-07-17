@@ -80,7 +80,7 @@ export function requireHostedVisualSceneSpoolMatch(input: {
   spool: LoadedHostedVisualGenerationSpool;
 }): void {
   const source = input.revision.source;
-  if (input.revision.provider !== "black-forest-labs" || source.kind !== "hosted-generation") {
+  if (source.kind !== "hosted-generation" || input.revision.provider !== source.service) {
     throw new SafeExitError(`Hosted visual scene ${input.sceneIndex} has no hosted revision.`);
   }
   requireSettledHostedVisualSpool({

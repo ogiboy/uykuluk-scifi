@@ -84,12 +84,12 @@ export function hostedVisualRevision(
   });
   const imageIndex = spool.spool.images.findIndex((image) => image.sceneIndex === sceneIndex);
   const image = spool.spool.images[imageIndex];
-  if (!image || !image.providerRequest.requestIdHash || reservation.status !== "SETTLED") {
+  if (!image?.providerRequest.requestIdHash || reservation.status !== "SETTLED") {
     throw new SafeExitError(`Hosted visual scene ${sceneIndex} has no settled spool image.`);
   }
   return {
     revision,
-    provider: "black-forest-labs",
+    provider: spool.spool.provider.service,
     createdAt: nowIso(),
     asset: { role: "scene-visual", path: image.asset.path, digest: image.asset.sha256 },
     media: image.media,

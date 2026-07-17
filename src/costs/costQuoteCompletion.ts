@@ -35,14 +35,14 @@ export async function readSettledHostedVisualQuoteStage(
   }
   const reservation = matching[0];
   const quoteLine = stages.find((stage) => stage.stage === "imageGeneration");
-  const approval = run.approvals.find(
+  const hasApproval = run.approvals.some(
     (item) =>
       item.approvalId === reservation.approvalId &&
       item.target === "paid-generation-cost" &&
       item.approvedRef === quoteDigest,
   );
   if (
-    !approval ||
+    !hasApproval ||
     !quoteLine?.enabled ||
     quoteLine.estimatedUsd <= 0 ||
     quoteLine.provider !== reservation.provider ||
@@ -65,7 +65,7 @@ export async function readSettledHostedVisualQuoteStage(
     spool,
     reservation,
     planDigest: quoteLine.bindingDigest,
-    approvedQuote: { approvalId: approval.approvalId, quoteDigest },
+    approvedQuote: { approvalId: reservation.approvalId, quoteDigest },
   });
   return { actualUsdMicros: reservation.actualUsdMicros };
 }
@@ -181,7 +181,7 @@ async function requireSettledTtsResult(
   quoteLine: QuotedStage,
   projectRoot: string,
 ): Promise<{ actualUsdMicros: number; resultEvidenceDigest: string }> {
-  const approval = run.approvals.find(
+  const hasApproval = run.approvals.some(
     (item) =>
       item.approvalId === reservation.approvalId &&
       item.target === "paid-generation-cost" &&
@@ -189,7 +189,7 @@ async function requireSettledTtsResult(
   );
   if (
     reservation.status !== "SETTLED" ||
-    !approval ||
+    !hasApproval ||
     quoteLine.provider !== reservation.provider ||
     quoteLine.model !== reservation.model ||
     quoteLine.bindingDigest !== reservation.bindingDigest ||

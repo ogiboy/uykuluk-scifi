@@ -91,7 +91,7 @@ export async function readHostedVisualGenerationRevision(
 ): Promise<HostedVisualGenerationRevision> {
   const safeRevisionId = z
     .string()
-    .regex(/^revision_[a-zA-Z0-9_]+$/)
+    .regex(/^revision_\w+$/)
     .parse(revisionId);
   const revisionPath = `revisions/hosted-visual/${safeRevisionId}/revision.json`;
   const run = await loadRun(runId);
@@ -136,7 +136,7 @@ export async function readHostedVisualGenerationRevision(
   ) {
     throw new SafeExitError("Hosted visual revision quote archive does not match.");
   }
-  const approval = run.approvals.find(
+  const approval = run.approvals.some(
     (item) =>
       item.approvalId === revision.previousQuote.approvalId &&
       item.target === "paid-generation-cost" &&

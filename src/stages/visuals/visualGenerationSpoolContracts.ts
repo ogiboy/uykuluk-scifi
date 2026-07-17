@@ -10,7 +10,7 @@ const operationDirectoryPattern = "operations/image-generation/image_[a-f0-9]{64
 
 export const hostedVisualGenerationSpoolReferenceSchema = z.strictObject({
   operationId: hostedVisualOperationIdSchema,
-  path: z.string().regex(new RegExp(`^${operationDirectoryPattern}/result\\.json$`)),
+  path: z.string().regex(new RegExp(String.raw`^${operationDirectoryPattern}/result\.json$`)),
   digest: digestSchema,
 });
 
@@ -34,7 +34,7 @@ export const hostedVisualGenerationSpoolSchema = z.strictObject({
   operationId: hostedVisualOperationIdSchema,
   plan: z.strictObject({
     sourcePath: z.literal(hostedVisualGenerationPlanPath),
-    path: z.string().regex(new RegExp(`^${operationDirectoryPattern}/plan\\.json$`)),
+    path: z.string().regex(new RegExp(String.raw`^${operationDirectoryPattern}/plan\.json$`)),
     digest: digestSchema,
     bindingDigest: digestSchema,
   }),
@@ -58,7 +58,7 @@ export const hostedVisualGenerationSpoolSchema = z.strictObject({
         asset: z.strictObject({
           path: z
             .string()
-            .regex(new RegExp(`^${operationDirectoryPattern}/scene_\\d{3}\\.(jpg|png)$`)),
+            .regex(new RegExp(String.raw`^${operationDirectoryPattern}/scene_\d{3}\.(jpg|png)$`)),
           sha256: digestSchema,
           bytes: z.int().positive(),
         }),

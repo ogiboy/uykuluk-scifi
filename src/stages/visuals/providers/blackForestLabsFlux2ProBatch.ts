@@ -29,6 +29,17 @@ export type BlackForestLabsFlux2ProBatchResult = Readonly<{
 
 type ExecuteScene = typeof executeBlackForestLabsFlux2ProScene;
 
+type BatchImage = BlackForestLabsFlux2ProBatchResult["images"][number];
+type SceneOutcome = Awaited<ReturnType<ExecuteScene>>;
+type SuccessfulSceneOutcome = Extract<SceneOutcome, { kind: "success" }>;
+
+type BatchAccumulator = {
+  images: BatchImage[];
+  providerRequests: ProviderRequestEvidence;
+  providerRequestIds: string[];
+  actualUsdMicros: number;
+};
+
 export type BlackForestLabsFlux2ProBatchDependencies = BlackForestLabsFlux2ProDependencies & {
   executeScene?: ExecuteScene;
 };
@@ -74,10 +85,12 @@ async function executeBatch(
   context: ReservedProviderCallContext,
 ): Promise<ReservedProviderOutcome<BlackForestLabsFlux2ProBatchResult>> {
   const executeScene = input.dependencies?.executeScene ?? executeBlackForestLabsFlux2ProScene;
-  const images: BlackForestLabsFlux2ProBatchResult["images"][number][] = [];
-  const providerRequests: ProviderRequestEvidence = [];
-  const providerRequestIds: string[] = [];
-  let actualUsdMicros = 0;
+  const accumulator: BatchAccumulator = {
+    images: [],
+    providerRequests: [],
+    providerRequestIds: [],
+    actualUsdMicros: 0,
+  };
 
   for (const scene of input.plan.scenes) {
     const outcome = await executeScene({
@@ -88,43 +101,19 @@ async function executeBatch(
       dependencies: input.dependencies,
     });
     if (outcome.kind !== "success") {
-      if (outcome.kind === "definitely-not-sent" && images.length === 0) return outcome;
-      return {
-        kind: "unknown",
-        reason: outcome.kind === "unknown" ? outcome.reason : "indeterminate",
-        ...(outcome.kind === "unknown" && outcome.providerRequestId
-          ? { providerRequestId: outcome.providerRequestId }
-          : {}),
-        requestEvidence: [
-          ...providerRequests,
-          ...(outcome.kind === "unknown" ? (outcome.requestEvidence ?? []) : []),
-        ],
-      };
+      return incompleteBatchOutcome(outcome, accumulator);
     }
-    if (!outcome.providerRequestId) {
-      return { kind: "unknown", reason: "indeterminate", requestEvidence: providerRequests };
-    }
-    providerRequestIds.push(outcome.providerRequestId);
-    providerRequests.push({
-      requestIndex: providerRequests.length,
-      inputDigest: outcome.value.providerRequest.inputDigest,
-      requestIdHash: outcome.value.providerRequest.requestIdHash,
-      reportedUnits: outcome.value.providerBilling.billableCredits,
-    });
-    actualUsdMicros += outcome.actualUsdMicros;
-    if (!Number.isSafeInteger(actualUsdMicros) || actualUsdMicros > context.maxUsdMicros) {
-      return { kind: "unknown", reason: "indeterminate", requestEvidence: providerRequests };
-    }
-    images.push({
-      sceneIndex: scene.sceneIndex,
-      promptDigest: scene.promptDigest,
-      seed: scene.seed,
-      result: outcome.value,
-    });
+    const accumulationFailure = accumulateSuccessfulScene(
+      accumulator,
+      scene,
+      outcome,
+      context.maxUsdMicros,
+    );
+    if (accumulationFailure) return accumulationFailure;
   }
 
   const resultEvidenceDigest = canonicalVisualGenerationDigest(
-    images.map((image) => ({
+    accumulator.images.map((image) => ({
       sceneIndex: image.sceneIndex,
       digest: image.result.digest,
       billing: image.result.providerBilling,
@@ -133,9 +122,65 @@ async function executeBatch(
   );
   return {
     kind: "success",
-    value: { images, providerRequests },
-    actualUsdMicros,
-    providerRequestId: `batch_${sha256(providerRequestIds.join("\0"))}`,
+    value: { images: accumulator.images, providerRequests: accumulator.providerRequests },
+    actualUsdMicros: accumulator.actualUsdMicros,
+    providerRequestId: `batch_${sha256(accumulator.providerRequestIds.join("\0"))}`,
     resultEvidenceDigest,
   };
+}
+
+function incompleteBatchOutcome(
+  outcome: Exclude<SceneOutcome, { kind: "success" }>,
+  accumulator: BatchAccumulator,
+): ReservedProviderOutcome<BlackForestLabsFlux2ProBatchResult> {
+  if (outcome.kind === "definitely-not-sent" && accumulator.images.length === 0) return outcome;
+  const unknownOutcome = outcome.kind === "unknown" ? outcome : undefined;
+  return {
+    kind: "unknown",
+    reason: unknownOutcome?.reason ?? "indeterminate",
+    ...(unknownOutcome?.providerRequestId
+      ? { providerRequestId: unknownOutcome.providerRequestId }
+      : {}),
+    requestEvidence: [...accumulator.providerRequests, ...(unknownOutcome?.requestEvidence ?? [])],
+  };
+}
+
+function accumulateSuccessfulScene(
+  accumulator: BatchAccumulator,
+  scene: HostedVisualGenerationPlan["scenes"][number],
+  outcome: SuccessfulSceneOutcome,
+  maximumUsdMicros: number,
+): ReservedProviderOutcome<BlackForestLabsFlux2ProBatchResult> | undefined {
+  if (!outcome.providerRequestId) {
+    return {
+      kind: "unknown",
+      reason: "indeterminate",
+      requestEvidence: accumulator.providerRequests,
+    };
+  }
+  accumulator.providerRequestIds.push(outcome.providerRequestId);
+  accumulator.providerRequests.push({
+    requestIndex: accumulator.providerRequests.length,
+    inputDigest: outcome.value.providerRequest.inputDigest,
+    requestIdHash: outcome.value.providerRequest.requestIdHash,
+    reportedUnits: outcome.value.providerBilling.billableCredits,
+  });
+  accumulator.actualUsdMicros += outcome.actualUsdMicros;
+  if (
+    !Number.isSafeInteger(accumulator.actualUsdMicros) ||
+    accumulator.actualUsdMicros > maximumUsdMicros
+  ) {
+    return {
+      kind: "unknown",
+      reason: "indeterminate",
+      requestEvidence: accumulator.providerRequests,
+    };
+  }
+  accumulator.images.push({
+    sceneIndex: scene.sceneIndex,
+    promptDigest: scene.promptDigest,
+    seed: scene.seed,
+    result: outcome.value,
+  });
+  return undefined;
 }

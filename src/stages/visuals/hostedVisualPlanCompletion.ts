@@ -79,7 +79,7 @@ export async function requireSettledAppliedHostedVisualPlan(input: {
       continue;
     }
     const active = scene.revisions.find((item) => item.revision === scene.activeRevision);
-    if (!active || active.source.kind !== "hosted-generation") continue;
+    if (active?.source.kind !== "hosted-generation") continue;
     const sourceReservation = reservationsById.get(active.source.reservationId);
     if (sourceReservation?.status !== "SETTLED" || !sourceReservation.resultEvidenceDigest) {
       throw new SafeExitError(

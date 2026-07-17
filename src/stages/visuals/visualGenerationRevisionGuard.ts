@@ -1,5 +1,7 @@
 import { SafeExitError } from "../../core/errors.js";
 import { appendLedgerEvent } from "../../core/ledger.js";
+import type { RunRecord } from "../../core/state.js";
+import type { CostReservationSummary } from "../../costs/costReservationStore.js";
 import type { VisualScene } from "./visualContracts.js";
 import { hostedVisualGenerationPlanPath } from "./visualGenerationPlanContracts.js";
 
@@ -17,10 +19,36 @@ export async function hostedVisualRevisionBlocked(
 }
 
 /**
+ * Finds the cost approval whose settled reservation is bound to the hosted visual plan.
+ *
+ * @param approvals - Persisted run approvals available for matching.
+ * @param reservations - Cost reservations that may prove completed execution.
+ * @param planDigest - Exact hosted visual plan binding digest.
+ * @returns The matching paid-generation approval, or `undefined` when no settled binding exists.
+ */
+export function findHostedVisualQuoteApproval(
+  approvals: RunRecord["approvals"],
+  reservations: readonly CostReservationSummary[],
+  planDigest: string,
+): RunRecord["approvals"][number] | undefined {
+  return approvals.find(
+    (approval) =>
+      approval.target === "paid-generation-cost" &&
+      reservations.some(
+        (reservation) =>
+          reservation.status === "SETTLED" &&
+          reservation.bindingDigest === planDigest &&
+          reservation.approvalId === approval.approvalId &&
+          reservation.quoteDigest === approval.approvedRef,
+      ),
+  );
+}
+
+/**
  * Builds the filesystem paths for a hosted visual revision and its archived generation plan.
  *
- * @param revisionId - The hosted visual revision identifier
- * @returns The archived generation plan path and revision metadata path
+ * @param revisionId - The hosted visual revision identifier.
+ * @returns The archived generation plan path and revision metadata path.
  */
 export function hostedVisualRevisionPaths(revisionId: string): {
   archivedPlanPath: string;

@@ -73,17 +73,7 @@ async function acquireLock(
   let contentionReported = false;
   while (true) {
     try {
-      await mkdir(target);
-      try {
-        await writeFile(
-          path.join(target, "owner.json"),
-          `${JSON.stringify({ token, pid: process.pid, createdAt: new Date().toISOString() })}\n`,
-          "utf8",
-        );
-      } catch (error) {
-        await rm(target, { recursive: true, force: true });
-        throw error;
-      }
+      await createOwnedLock(target, token);
       return;
     } catch (error) {
       const code = (error as NodeJS.ErrnoException).code;
@@ -102,6 +92,20 @@ async function acquireLock(
       }
       await delay(settings.retryMs);
     }
+  }
+}
+
+async function createOwnedLock(target: string, token: string): Promise<void> {
+  await mkdir(target);
+  try {
+    await writeFile(
+      path.join(target, "owner.json"),
+      `${JSON.stringify({ token, pid: process.pid, createdAt: new Date().toISOString() })}\n`,
+      "utf8",
+    );
+  } catch (error) {
+    await rm(target, { recursive: true, force: true });
+    throw error;
   }
 }
 

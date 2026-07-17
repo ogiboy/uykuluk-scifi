@@ -31,9 +31,15 @@ function canonicalJson(value: unknown, messages: CanonicalJsonErrorMessages): st
     const record = value as Record<string, unknown>;
     return `{${Object.keys(record)
       .filter((key) => record[key] !== undefined)
-      .sort()
+      .sort(compareUtf16CodeUnits)
       .map((key) => `${JSON.stringify(key)}:${canonicalJson(record[key], messages)}`)
       .join(",")}}`;
   }
   throw new TypeError(messages.unsupportedValue);
+}
+
+function compareUtf16CodeUnits(left: string, right: string): number {
+  if (left < right) return -1;
+  if (left > right) return 1;
+  return 0;
 }

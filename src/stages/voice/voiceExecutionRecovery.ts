@@ -45,13 +45,13 @@ export async function recoverCommittedVoiceExecution(input: {
   for (const reservation of (await readCostReservationSummaries(input.run.runId)).filter(
     (item) => item.stage === "tts" && item.status !== "RELEASED",
   )) {
-    const approval = input.run.approvals.find(
+    const hasApproval = input.run.approvals.some(
       (item) =>
         item.approvalId === reservation.approvalId &&
         item.target === "paid-generation-cost" &&
         item.approvedRef === reservation.quoteDigest,
     );
-    if (!approval) continue;
+    if (!hasApproval) continue;
     const quote = await readCostEstimateByDigestAtProjectRoot(
       process.cwd(),
       input.run,

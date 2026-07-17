@@ -95,7 +95,7 @@ export async function persistHostedVisualGenerationSpool(input: {
     },
     approvedQuote: input.approvedQuote,
     reservationId: input.reservationId,
-    provider: { service: "black-forest-labs" as const, modelId: "flux-2-pro" as const },
+    provider: { service: input.plan.provider, modelId: input.plan.model },
     actualUsdMicros: input.actualUsdMicros,
     providerRequestIdHash: sha256(input.providerRequestId),
     images: images.map(({ buffer: _buffer, ...image }) => image),
@@ -220,8 +220,8 @@ function assertBatchMatchesPlan(input: {
       image.seed !== scene.seed ||
       image.result.digest !== createHash("sha256").update(image.result.buffer).digest("hex") ||
       image.result.media.bytes !== image.result.buffer.byteLength ||
-      image.result.provider.service !== "black-forest-labs" ||
-      image.result.provider.modelId !== "flux-2-pro" ||
+      image.result.provider.service !== input.plan.provider ||
+      image.result.provider.modelId !== input.plan.model ||
       image.result.provider.outputFormat !== image.result.media.format ||
       request.requestIndex !== index ||
       request.inputDigest !== image.result.providerRequest.inputDigest ||

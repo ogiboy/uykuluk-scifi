@@ -10,10 +10,7 @@ import {
   stagesDigest,
   validateCostEstimateIntegrityWithStages,
 } from "./costEstimateIntegrity.js";
-import {
-  readCostEstimateAtProjectRoot,
-  readCostEstimateByDigestAtProjectRoot,
-} from "./costEstimateStore.js";
+import { readCostEstimateAtProjectRoot } from "./costEstimateStore.js";
 import {
   readSettledHostedVisualQuoteStage,
   readSettledTtsQuoteStage,
@@ -23,7 +20,8 @@ import { usdToMicros } from "./money.js";
 
 export { costEstimateSchema } from "./costEstimateContracts.js";
 export type { CostEstimate } from "./costEstimateContracts.js";
-export { readCostEstimateAtProjectRoot, readCostEstimateByDigestAtProjectRoot };
+export { readCostEstimateByDigestAtProjectRoot } from "./costEstimateStore.js";
+export { readCostEstimateAtProjectRoot };
 
 /**
  * Builds the run's current cost estimate and determines whether the next paid-generation step is allowed.
@@ -102,28 +100,11 @@ export async function validateCurrentCostEstimate(
   estimate: CostEstimate,
   quoteDigest?: string,
 ): Promise<string[]> {
-  let currentStages: CostEstimate["stages"];
   const settledStages = new Map<string, { actualUsdMicros: number }>();
+  let currentStages: CostEstimate["stages"];
   try {
-    if (quoteDigest) {
-      const [tts, imageGeneration] = await Promise.all([
-        readSettledTtsQuoteStage(run, quoteDigest, estimate.stages),
-        readSettledHostedVisualQuoteStage(run, quoteDigest, estimate.stages),
-      ]);
-      if (tts) settledStages.set("tts", tts);
-      if (imageGeneration) settledStages.set("imageGeneration", imageGeneration);
-    }
-    currentStages = await quoteCostStages(run, config, {
-      ...(settledStages.has("imageGeneration")
-        ? {
-            preserveSettledQuoteStages: {
-              stages: estimate.stages,
-              stageNames: ["imageGeneration"],
-            },
-          }
-        : {}),
-      suppressCompletedPaidStages: estimateHasCompletedPaidStages(estimate),
-    });
+    await collectSettledQuoteStages(run, estimate, quoteDigest, settledStages);
+    currentStages = await quoteCurrentStages(run, config, estimate, settledStages);
   } catch (error) {
     return [
       `Active execution plan could not be validated: ${error instanceof Error ? error.message : String(error)}`,
@@ -135,11 +116,7 @@ export async function validateCurrentCostEstimate(
     estimate,
     currentStages,
   );
-  const remainingTotal = currentStages.reduce(
-    (sum, stage) =>
-      sum + (stage.enabled && !settledStages.has(stage.stage) ? stage.estimatedUsd : 0),
-    0,
-  );
+  const remainingTotal = remainingQuotedCost(currentStages, settledStages);
   const budget = await checkBudget({
     run,
     config,
@@ -158,14 +135,7 @@ export async function validateCurrentCostEstimate(
   if (estimate.approvalRequired !== approvalRequired) {
     reasons.push("Live approval threshold changed after the cost estimate.");
   }
-  const expectedCumulativeMicros = [...settledStages.entries()].reduce(
-    (total, [stageName, settlement]) => {
-      const quotedMaximum =
-        estimate.stages.find((stage) => stage.stage === stageName)?.estimatedUsd ?? 0;
-      return total - usdToMicros(quotedMaximum) + settlement.actualUsdMicros;
-    },
-    usdToMicros(estimate.cumulativeEstimatedRunCost),
-  );
+  const expectedCumulativeMicros = expectedCumulativeCostMicros(estimate, settledStages);
   if (expectedCumulativeMicros !== usdToMicros(budget.cumulativeEstimatedRunCostUsd)) {
     reasons.push("Live cumulative run cost changed after the cost estimate.");
   }
@@ -183,6 +153,57 @@ export async function validateCurrentCostEstimate(
     reasons.push("Quoted next-step decision does not match the current budget decision.");
   }
   return reasons;
+}
+
+async function collectSettledQuoteStages(
+  run: RunRecord,
+  estimate: CostEstimate,
+  quoteDigest: string | undefined,
+  settledStages: Map<string, { actualUsdMicros: number }>,
+): Promise<void> {
+  if (!quoteDigest) return;
+  const [tts, imageGeneration] = await Promise.all([
+    readSettledTtsQuoteStage(run, quoteDigest, estimate.stages),
+    readSettledHostedVisualQuoteStage(run, quoteDigest, estimate.stages),
+  ]);
+  if (tts) settledStages.set("tts", tts);
+  if (imageGeneration) settledStages.set("imageGeneration", imageGeneration);
+}
+
+async function quoteCurrentStages(
+  run: RunRecord,
+  config: ProducerConfig,
+  estimate: CostEstimate,
+  settledStages: Map<string, { actualUsdMicros: number }>,
+): Promise<CostEstimate["stages"]> {
+  return quoteCostStages(run, config, {
+    ...(settledStages.has("imageGeneration")
+      ? { preserveSettledQuoteStages: { stages: estimate.stages, stageNames: ["imageGeneration"] } }
+      : {}),
+    suppressCompletedPaidStages: estimateHasCompletedPaidStages(estimate),
+  });
+}
+
+function remainingQuotedCost(
+  currentStages: CostEstimate["stages"],
+  settledStages: Map<string, { actualUsdMicros: number }>,
+): number {
+  return currentStages.reduce(
+    (sum, stage) =>
+      sum + (stage.enabled && !settledStages.has(stage.stage) ? stage.estimatedUsd : 0),
+    0,
+  );
+}
+
+function expectedCumulativeCostMicros(
+  estimate: CostEstimate,
+  settledStages: Map<string, { actualUsdMicros: number }>,
+): number {
+  return [...settledStages.entries()].reduce((total, [stageName, settlement]) => {
+    const quotedMaximum =
+      estimate.stages.find((stage) => stage.stage === stageName)?.estimatedUsd ?? 0;
+    return total - usdToMicros(quotedMaximum) + settlement.actualUsdMicros;
+  }, usdToMicros(estimate.cumulativeEstimatedRunCost));
 }
 
 function estimateHasCompletedPaidStages(estimate: CostEstimate): boolean {
