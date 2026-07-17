@@ -50,13 +50,10 @@ describe("visual revision contracts", () => {
     ["static", "static-fallback"],
     ["manual-import", "manual-import"],
     ["black-forest-labs", "hosted-generation"],
-  ] as const)(
-    "accepts valid provider %s with source %s",
-    (provider, sourceKind) => {
-      const revision = { ...baseRevision, provider, source: sources[sourceKind] };
-      expect(() => visualRevisionSchema.parse(revision)).not.toThrow();
-    },
-  );
+  ] as const)("accepts valid provider %s with source %s", (provider, sourceKind) => {
+    const revision = { ...baseRevision, provider, source: sources[sourceKind] };
+    expect(() => visualRevisionSchema.parse(revision)).not.toThrow();
+  });
 
   it.each([
     ["static", "manual-import"],
@@ -65,13 +62,10 @@ describe("visual revision contracts", () => {
     ["manual-import", "hosted-generation"],
     ["black-forest-labs", "static-fallback"],
     ["black-forest-labs", "manual-import"],
-  ] as const)(
-    "rejects mismatched provider %s with source %s",
-    (provider, sourceKind) => {
-      const revision = { ...baseRevision, provider, source: sources[sourceKind] };
-      expect(() => visualRevisionSchema.parse(revision)).toThrow(
-        "Visual revision provider does not match its source kind",
-      );
-    },
-  );
+  ] as const)("rejects mismatched provider %s with source %s", (provider, sourceKind) => {
+    const revision = { ...baseRevision, provider, source: sources[sourceKind] };
+    expect(() => visualRevisionSchema.parse(revision)).toThrow(
+      "Visual revision provider does not match its source kind",
+    );
+  });
 });
