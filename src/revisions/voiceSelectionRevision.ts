@@ -81,10 +81,8 @@ export type VoiceSelectionRevision = z.infer<typeof voiceSelectionRevisionSchema
 
 /**
  * Reads a voice-selection revision and verifies its archived artifacts.
- *
- * @param runId - The run containing the revision
- * @param revisionId - The revision to read
- * @returns The validated voice-selection revision
+ * @param runId - The run containing the revision.
+ * @param revisionId - The revision to read.
  */
 export async function readVoiceSelectionRevision(
   runId: string,

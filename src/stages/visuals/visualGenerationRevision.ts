@@ -53,20 +53,9 @@ export {
 } from "./visualGenerationRevisionEvidence.js";
 
 /**
- * Reopens rejected hosted visual scenes and records a new generation revision.
- *
- * Validates the replacement plan against the current rejected-scene snapshot and
- * requires settled image-generation reservations with matching plan, quote, and
- * approval evidence. Archives the prior plan and cost evidence, removes derived
- * artifacts, installs the replacement plan, updates the run ledger, and restores
- * the run to `PRODUCTION_PACKAGE_GENERATED`. Failed mutation checks are persisted
- * as a blocked revision outcome.
- *
- * @param rawInput - The run, rejected scene indexes, reason, and reviewer identity
- *   for the reopening request.
- * @param options - The replacement plan and an optional hook invoked after
- *   reservation checks and before artifact mutation.
- * @returns The persisted hosted visual generation revision.
+ * Reopens rejected scenes only after exact scene, reservation, quote, approval, and plan evidence.
+ * @param rawInput - Run identity, rejected scenes, reason, and reviewer attribution.
+ * @param options - Replacement plan and optional post-reservation test hook.
  */
 export async function reopenRejectedHostedVisualGeneration(
   rawInput: HostedVisualGenerationRevisionInput,
