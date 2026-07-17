@@ -29,6 +29,10 @@ The deterministic production foundation is no longer only scaffold. A real local
 manual channel handoff run has completed without upload or publish. That run also proved the
 revision loop by rejecting and archiving faulty drafts before fresh approval.
 
+The current closure also repairs `pnpm model:start` model discovery: absolute and explicit
+repository-relative paths remain exact, while bare names resolve through the project root and
+`models/llm` with an optional `.gguf` suffix without changing the configured served-model alias.
+
 The next product question is operational, not architectural: can the same documented workflow
 produce two publish-quality channel episodes without source edits, hidden state repair, or manual
 assembly? Work in this milestone should prioritize:
@@ -64,9 +68,10 @@ Current voice checkpoint:
   voice/render/FFmpeg/caption binding, plus guarded Studio candidate, preview, selection,
   reselection, and exact hosted-execution confirmation. Required CI, Sonar, CodeQL, product/browser
   QA, and real Studio browser UAT passed before merge.
-- Live production validation pending: no paid production synthesis has run. Free-tier access may be
-  used only for provider-permitted metadata/catalog/preview smoke and does not establish production
-  rights. Exact commercial eligibility, quote, persisted approval, and reservation remain mandatory.
+- Live production validation pending: the current Free API plan lists 10,000 included Multilingual
+  v2/v3 characters, so one short diagnostic-only Turkish v3 timestamps smoke is allowed after live
+  subscription/quota inspection. Free output has no commercial rights. Production still requires
+  paid eligibility, exact quote, persisted approval, reservation, and settlement.
 - Offline fallback remains part of v1: deterministic-local keeps reference timing, Piper remains the
   production-capable local voice path, and both use an explicit linear subtitle timing mode rather
   than pretending to have provider alignment.
@@ -81,15 +86,20 @@ Current visual checkpoint:
   newer manifest.
 - Render-plan v2, render approval v3, and draft manifest v10 bind the approved visual manifest;
   legacy evidence remains readable but cannot be newly approved or rendered without the binding.
-- Targeted for `v0.84.0`: one FLUX.2 Pro adapter with exact scene-plan quote/approval/reservation,
-  bounded asynchronous execution, provider-credit settlement, durable local image spools, Studio
-  confirmation, and rejected-only re-quote/regeneration. Mocked request/poll/recovery and combined
-  ElevenLabs-plus-visual workflow validation are implemented; live BFL production proof remains
-  pending explicit approval and credentials.
+- Targeted for `v0.84.0`: the sole hosted visual adapter, Black Forest Labs FLUX.2 Pro, remains
+  experimental and disabled by default while providing exact scene-plan quote/approval/reservation,
+  bounded asynchronous execution, provider-credit settlement, durable local image spools,
+  provider-neutral Studio confirmation, and rejected-only re-quote/regeneration. Mocked
+  request/poll/recovery and combined ElevenLabs-plus-visual workflow validation are implemented. No
+  live BFL generation smoke has run; available credit and entitlement remain unverified, and a
+  configured credential does not establish readiness.
+- Eleven Creative image/video is manual-import only because this product integrates no public
+  generation API for it. The next visual-provider slice is local MFLUX behind the same plan, review,
+  provenance, and render-binding contracts; BFL remains the only hosted adapter.
 
-After this hosted visual candidate closes, delivery order is: exact render/media polish; script
-audition and editorial provenance; resumable private-only upload; then persistent settings, prompt
-profiles, onboarding, documentation productization, and real-episode acceptance.
+After this hosted visual candidate closes, delivery order is: local MFLUX; exact render/media
+polish; script audition and editorial provenance; resumable private-only upload; then persistent
+settings, prompt profiles, onboarding, documentation productization, and real-episode acceptance.
 
 ## Phase A - Safe Core Stabilization
 

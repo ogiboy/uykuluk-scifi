@@ -4,9 +4,8 @@
 
 - TypeScript CLI project.
 - Mock-first provider layer with Ollama and local OpenAI-compatible `llama.cpp` adapters.
-- Managed `pnpm model:start` / `pnpm model:stop` commands read ignored llama.cpp config, validate the
-  configured GGUF, preserve the served-model alias, bind the configured loopback endpoint, use one
-  parallel slot, and keep the PID under ignored diagnostics.
+- Managed model commands resolve absolute, repository-relative, and bare `models/llm` GGUF names with
+  an optional suffix while preserving the served alias, loopback bind, one slot, and diagnostics PID.
 - Typed runtime loading of tracked `prompts/defaults/` product prompt defaults plus explicit ignored
   `prompts/local/*.md` overrides for ideas, scripts, and production packages, with prompt
   key/source/hash provenance.
@@ -362,11 +361,16 @@
   Operator decisions stay prominent; paths, digests, and CLI fallback remain under Advanced.
 - Render plan, approval, FFmpeg motion, and draft evidence bind the approved visual manifest. Legacy
   evidence remains readable but cannot enter a new approval/render without that binding.
-- Main includes this fallback as `v0.83.0`. The active follow-up adds one FLUX.2 Pro hosted provider:
-  exact plan/quote/approval/reservation, bounded async request/poll/download, credit reconciliation,
-  durable local spools, Studio confirmation, and rejected-only revision/quote archival. Mocked
-  two-round and combined voice-plus-visual workflows pass; live BFL production remains unverified.
-- Mastering/thumbnail polish and real-episode acceptance remain subsequent work.
+- Main includes this fallback as `v0.83.0`. The active follow-up adds the sole hosted visual adapter,
+  Black Forest Labs FLUX.2 Pro, as experimental and disabled by default: exact
+  plan/quote/approval/reservation, bounded async request/poll/download, credit reconciliation,
+  durable local spools, Studio confirmation, and rejected-only revision/quote archival. Studio keeps
+  the operator workflow provider-neutral while exact provider/model identity remains visible in
+  evidence. Mocked two-round and combined voice-plus-visual workflows pass.
+- Live ElevenLabs production TTS and BFL image generation remain unverified; configured keys do not
+  prove credit, entitlement, or readiness. Eleven Creative is manual-import only because no public
+  generation API is integrated. Local MFLUX is next behind the same plan/review/render contracts;
+  mastering, thumbnails, and real-episode acceptance follow.
 
 ## Current Commands
 
@@ -447,13 +451,9 @@ If the shell lacks `node` or `pnpm`, use bundled Node or restore Corepack/PATH b
   candidates continue through the same approval, JSON, repetition, Turkish-label, spoken-word, and
   operator-quality gates.
 - Ollama and `llama.cpp` configuration accepts only credential-free loopback HTTP(S) origins, preventing local adapters from silently becoming arbitrary outbound endpoints; hosted or LAN provider support needs a separately reviewed adapter boundary.
-- ElevenLabs is the only approved hosted production provider currently implemented. It remains
-  disabled without explicit config, server-only credentials, exact quote approval, reservation,
-  commercial production rights, and operator-triggered synthesis; no live paid call has run. A free
-  account may support permitted audition metadata/previews but cannot prove production eligibility.
-  FLUX.2 Pro is the only hosted visual adapter and remains disabled by default; no live paid image
-  generation has run. No private-upload adapter is enabled; public/scheduled publish remains out of
-  scope.
+- Hosted keys indicate presence only; proof, credit, rights, approval, reservation, execution, and
+  settlement stay separate. ElevenLabs is TTS; experimental BFL is hosted visuals; Eleven Creative is manual-import only.
+- No private-upload adapter is enabled; public/scheduled publish remains out of scope.
 - Current local-first Studio combines read/review pages and grouped artifact metadata with guarded mutations backed by canonical CLI/core contracts. Stage and Studio-lib roots retain stable public entrypoints while domain helpers live in named subfolders. Route security covers page reads, short-lived session proof, same-origin actions, and disabled upload/publish; generation and local render run only through guarded contracts.
 - Studio voice review now exposes guarded catalog refresh, persisted local previews, A/B comparison,
   attributable selection/reselection, quote/quota state, and exact hosted execution confirmation;
