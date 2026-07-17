@@ -55,9 +55,9 @@ export async function prepareHostedVisualGenerationPlan(
       expectedManifestDigest: input.expectedManifestDigest,
     });
     const loadedManifest = await loadVisualManifest(current);
-    assertVisualMutationExpectation(loadedManifest, expectation);
     let plan: HostedVisualGenerationPlan;
     try {
+      assertVisualMutationExpectation(loadedManifest, expectation);
       plan = buildHostedVisualGenerationPlan({
         runId: current.runId,
         createdAt: nowIso(),

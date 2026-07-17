@@ -22,6 +22,9 @@ export function requireCommittedHostedVisualSpool(
     throw new SafeExitError("Hosted visual provider result is not durably committed.");
   }
   if (
+    input.reservation.runId !== input.spool.spool.runId ||
+    input.reservation.provider !== input.spool.spool.provider.service ||
+    input.reservation.model !== input.spool.spool.provider.modelId ||
     input.reservation.operationId !== input.spool.spool.operationId ||
     input.reservation.bindingDigest !== input.planDigest ||
     input.reservation.quoteDigest !== input.approvedQuote.quoteDigest ||

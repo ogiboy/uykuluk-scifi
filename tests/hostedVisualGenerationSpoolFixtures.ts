@@ -25,7 +25,7 @@ export function settledReservation(
     provider: "black-forest-labs",
     model: "flux-2-pro",
     bindingDigest: planDigest,
-    maxUsdMicros: loaded.spool.actualUsdMicros,
+    maxUsdMicros: loaded.spool.actualUsdMicros + 1,
     status: "SETTLED",
     actualUsdMicros: loaded.spool.actualUsdMicros,
     providerRequestIdHash: loaded.spool.providerRequestIdHash,

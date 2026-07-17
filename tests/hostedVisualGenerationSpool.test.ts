@@ -108,10 +108,17 @@ describe("hosted visual generation spool", () => {
   });
 
   it.each([
+    ["runId", { runId: "run_other" }],
+    ["provider", { provider: "other-provider" as const }],
+    ["model", { model: "other-model" }],
     ["operation", { operationId: `image_${"e".repeat(64)}` }],
     ["binding", { bindingDigest: "e".repeat(64) }],
     ["quote", { quoteDigest: "e".repeat(64) }],
     ["approval", { approvalId: "approval_other" }],
+    ["reservationId", { reservationId: "reservation_other" }],
+    ["actualUsdMicros", { actualUsdMicros: 1 }],
+    ["providerRequestIdHash", { providerRequestIdHash: "e".repeat(64) }],
+    ["resultEvidenceDigest", { resultEvidenceDigest: "e".repeat(64) }],
   ])("rejects a settled reservation with a mismatched %s identity", async (_label, patch) => {
     const plan = generationPlan();
     const planDigest = planArtifactDigest(plan);
