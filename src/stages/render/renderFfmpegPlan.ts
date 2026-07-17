@@ -93,7 +93,7 @@ export function buildFfmpegArgs(input: {
       "-t",
       String(item.durationSeconds),
       "-i",
-      path.join(process.cwd(), item.asset.path),
+      resolveSceneAssetPath(input.runId, item.asset.path),
     );
   }
   args.push("-i", audio);
@@ -124,6 +124,12 @@ export function buildFfmpegArgs(input: {
     input.ffmpegOutputPath,
   );
   return args;
+}
+
+function resolveSceneAssetPath(runId: string, relativePath: string): string {
+  return relativePath.startsWith("assets/")
+    ? path.join(process.cwd(), relativePath)
+    : artifactPath(runId, relativePath);
 }
 
 function sceneInputFilter(

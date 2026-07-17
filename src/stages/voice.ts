@@ -5,7 +5,7 @@ import { artifactPath } from "../core/artifacts.js";
 import { SafeExitError } from "../core/errors.js";
 import { appendLedgerEvent } from "../core/ledger.js";
 import { loadRun } from "../core/runStore.js";
-import { requireApproval, requireState } from "../safeguards/approvalGuard.js";
+import { requireApproval } from "../safeguards/approvalGuard.js";
 import { verifyProductionPackage } from "./production/productionPackageIntegrity.js";
 import { readRenderPlanEvidence } from "./renderPlan.js";
 import type { HostedVoiceExecutionConfirmation } from "./voice/voiceExecutionConfirmation.js";
@@ -36,7 +36,7 @@ export async function generateVoiceoverAudio(
 ): Promise<VoiceoverAudioMeta> {
   const config = await loadConfig();
   const run = await loadRun(runId);
-  await requireState(run, "READY_FOR_MANUAL_PRODUCTION", "voice");
+  await requireVoiceExecutionState(run);
   await requireApproval(run, "script", "voice");
   await verifyProductionPackage(run);
   const renderPlan = await readRenderPlanEvidence(run);
@@ -69,6 +69,7 @@ export async function generateVoiceoverAudio(
     preparation = recovered.preparation;
     synthesis = recovered.synthesis;
   } else {
+    await requireFreshVoiceExecutionState(run);
     if (!config.providers.tts.enabled) {
       await appendLedgerEvent({
         runId: run.runId,
@@ -115,6 +116,46 @@ export async function generateVoiceoverAudio(
     preparation,
     synthesis,
     renderPlanDigest: renderPlan.digest,
+  });
+}
+
+async function requireFreshVoiceExecutionState(
+  run: Awaited<ReturnType<typeof loadRun>>,
+): Promise<void> {
+  const expected = "READY_FOR_MANUAL_PRODUCTION" as const;
+  if (run.state === expected) return;
+  await appendLedgerEvent({
+    runId: run.runId,
+    type: "GUARD_BLOCKED",
+    stage: "voice",
+    message: `Fresh voice execution requires state ${expected}; got ${run.state}.`,
+    data: { actual: run.state, expected },
+  });
+  throw new SafeExitError(
+    `Blocked: fresh voice execution requires state ${expected}; current state is ${run.state}.`,
+  );
+}
+
+async function requireVoiceExecutionState(run: Awaited<ReturnType<typeof loadRun>>): Promise<void> {
+  const allowed = ["PAID_GENERATION_COST_APPROVED", "READY_FOR_MANUAL_PRODUCTION"] as const;
+  if (!allowed.includes(run.state as (typeof allowed)[number])) {
+    await appendLedgerEvent({
+      runId: run.runId,
+      type: "GUARD_BLOCKED",
+      stage: "voice",
+      message: `Voice execution requires state ${allowed.join(" or ")}; got ${run.state}.`,
+      data: { actual: run.state, expected: allowed },
+    });
+    throw new SafeExitError(
+      `Blocked: voice requires state ${allowed.join(" or ")}; current state is ${run.state}.`,
+    );
+  }
+  await appendLedgerEvent({
+    runId: run.runId,
+    type: "GUARD_PASSED",
+    stage: "voice",
+    message: `Voice execution state gate passed: ${run.state}.`,
+    data: { actual: run.state, expected: allowed },
   });
 }
 

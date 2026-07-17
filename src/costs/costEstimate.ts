@@ -1,23 +1,29 @@
-import { readFile } from "node:fs/promises";
 import { ProducerConfig } from "../config/schema.js";
-import { artifactPathAtProjectRoot } from "../core/artifactPaths.js";
-import { SafeExitError } from "../core/errors.js";
+import { loadRun } from "../core/runStore.js";
 import { RunRecord } from "../core/state.js";
 import { checkBudget } from "../safeguards/budgetGuard.js";
-import { sha256 } from "../utils/hash.js";
 import { nowIso } from "../utils/time.js";
-import { costEstimateSchema, type CostEstimate } from "./costEstimateContracts.js";
+import { type CostEstimate } from "./costEstimateContracts.js";
 import {
   currentProductionPackageDigest,
   relevantConfigDigest,
   stagesDigest,
-  validateCostEstimateIntegrity,
+  validateCostEstimateIntegrityWithStages,
 } from "./costEstimateIntegrity.js";
-import { renderCostEstimateMarkdown } from "./costEstimatePresentation.js";
+import {
+  readCostEstimateAtProjectRoot,
+  readCostEstimateByDigestAtProjectRoot,
+} from "./costEstimateStore.js";
+import {
+  readSettledHostedVisualQuoteStage,
+  readSettledTtsQuoteStage,
+} from "./costQuoteCompletion.js";
 import { quoteCostStages } from "./costQuoteStages.js";
+import { usdToMicros } from "./money.js";
 
 export { costEstimateSchema } from "./costEstimateContracts.js";
 export type { CostEstimate } from "./costEstimateContracts.js";
+export { readCostEstimateAtProjectRoot, readCostEstimateByDigestAtProjectRoot };
 
 /**
  * Builds a cost estimate using the current run, configuration, budgets, pricing, and production package.
@@ -30,7 +36,7 @@ export async function buildCostEstimate(
   run: RunRecord,
   config: ProducerConfig,
 ): Promise<CostEstimate> {
-  const stages = await quoteCostStages(run, config);
+  const stages = await quoteCostStages(run, config, { suppressCompletedPaidStages: true });
   const estimatedStageCost = stages.reduce(
     (sum, stage) => sum + (stage.enabled ? stage.estimatedUsd : 0),
     0,
@@ -43,7 +49,8 @@ export async function buildCostEstimate(
     estimatedUsd: estimatedStageCost,
     recordCostEvent: false,
   });
-  const approvalRequired = budget.approvalRequired;
+  const approvalRequired =
+    budget.approvalRequired || requiresConfiguredProviderApproval(config, stages);
   const hardBlockedReasons = budget.blockedReasons;
   return {
     schemaVersion: 1,
@@ -72,28 +79,7 @@ export async function buildCostEstimate(
 export async function readCostEstimate(
   runId: string,
 ): Promise<{ estimate: CostEstimate; text: string; markdownText: string; digest: string }> {
-  return readCostEstimateAtProjectRoot(process.cwd(), runId);
-}
-
-/** Reads and verifies a quote beneath an explicit producer project root. */
-export async function readCostEstimateAtProjectRoot(
-  projectRoot: string,
-  runId: string,
-): Promise<{ estimate: CostEstimate; text: string; markdownText: string; digest: string }> {
-  const text = await readFile(
-    artifactPathAtProjectRoot(projectRoot, runId, "costs/estimate.json"),
-    "utf8",
-  );
-  const markdownText = await readFile(
-    artifactPathAtProjectRoot(projectRoot, runId, "costs/estimate.md"),
-    "utf8",
-  );
-  const estimate = costEstimateSchema.parse(JSON.parse(text) as unknown);
-  const expectedMarkdown = `${renderCostEstimateMarkdown(estimate)}\n`;
-  if (markdownText !== expectedMarkdown) {
-    throw new SafeExitError("Cost quote Markdown does not match the persisted JSON quote.");
-  }
-  return { estimate, text, markdownText, digest: sha256(`${text}\0${markdownText}`) };
+  return readCostEstimateAtProjectRoot(process.cwd(), await loadRun(runId));
 }
 
 /**
@@ -108,11 +94,44 @@ export async function validateCurrentCostEstimate(
   run: RunRecord,
   config: ProducerConfig,
   estimate: CostEstimate,
+  quoteDigest?: string,
 ): Promise<string[]> {
-  const reasons = await validateCostEstimateIntegrity(run, config, estimate);
-  const currentStages = await quoteCostStages(run, config);
-  const currentTotal = currentStages.reduce(
-    (sum, stage) => sum + (stage.enabled ? stage.estimatedUsd : 0),
+  let currentStages: CostEstimate["stages"];
+  const settledStages = new Map<string, { actualUsdMicros: number }>();
+  try {
+    if (quoteDigest) {
+      const [tts, imageGeneration] = await Promise.all([
+        readSettledTtsQuoteStage(run, quoteDigest, estimate.stages),
+        readSettledHostedVisualQuoteStage(run, quoteDigest, estimate.stages),
+      ]);
+      if (tts) settledStages.set("tts", tts);
+      if (imageGeneration) settledStages.set("imageGeneration", imageGeneration);
+    }
+    currentStages = await quoteCostStages(run, config, {
+      ...(settledStages.has("imageGeneration")
+        ? {
+            preserveSettledQuoteStages: {
+              stages: estimate.stages,
+              stageNames: ["imageGeneration"],
+            },
+          }
+        : {}),
+      suppressCompletedPaidStages: estimateHasCompletedPaidStages(estimate),
+    });
+  } catch (error) {
+    return [
+      `Active execution plan could not be validated: ${error instanceof Error ? error.message : String(error)}`,
+    ];
+  }
+  const reasons = await validateCostEstimateIntegrityWithStages(
+    run,
+    config,
+    estimate,
+    currentStages,
+  );
+  const remainingTotal = currentStages.reduce(
+    (sum, stage) =>
+      sum + (stage.enabled && !settledStages.has(stage.stage) ? stage.estimatedUsd : 0),
     0,
   );
   const budget = await checkBudget({
@@ -120,16 +139,28 @@ export async function validateCurrentCostEstimate(
     config,
     stage: "cost-approval-validation",
     provider: "local-estimator",
-    estimatedUsd: currentTotal,
+    estimatedUsd: remainingTotal,
     recordCostEvent: false,
   });
   if (estimate.budgetAllowed !== budget.allowed) {
     reasons.push("Live hard-budget decision changed after the cost estimate.");
   }
-  if (estimate.approvalRequired !== budget.approvalRequired) {
+  const approvalRequired =
+    budget.approvalRequired ||
+    requiresConfiguredProviderApproval(config, currentStages) ||
+    (settledStages.size > 0 && estimate.approvalRequired);
+  if (estimate.approvalRequired !== approvalRequired) {
     reasons.push("Live approval threshold changed after the cost estimate.");
   }
-  if (estimate.cumulativeEstimatedRunCost !== budget.cumulativeEstimatedRunCostUsd) {
+  const expectedCumulativeMicros = [...settledStages.entries()].reduce(
+    (total, [stageName, settlement]) => {
+      const quotedMaximum =
+        estimate.stages.find((stage) => stage.stage === stageName)?.estimatedUsd ?? 0;
+      return total - usdToMicros(quotedMaximum) + settlement.actualUsdMicros;
+    },
+    usdToMicros(estimate.cumulativeEstimatedRunCost),
+  );
+  if (expectedCumulativeMicros !== usdToMicros(budget.cumulativeEstimatedRunCostUsd)) {
     reasons.push("Live cumulative run cost changed after the cost estimate.");
   }
   if (JSON.stringify(estimate.hardBlockedReasons) !== JSON.stringify(budget.blockedReasons)) {
@@ -137,15 +168,29 @@ export async function validateCurrentCostEstimate(
   }
   const expectedBlockedReasons = [
     ...budget.blockedReasons,
-    ...(budget.approvalRequired ? ["Explicit paid-generation cost approval required."] : []),
+    ...(approvalRequired ? ["Explicit paid-generation cost approval required."] : []),
   ];
   if (JSON.stringify(estimate.blockedReasons) !== JSON.stringify(expectedBlockedReasons)) {
     reasons.push("Quoted block reasons do not match the current budget decision.");
   }
-  if (estimate.nextStepAllowed !== (budget.allowed && !budget.approvalRequired)) {
+  if (estimate.nextStepAllowed !== (budget.allowed && !approvalRequired)) {
     reasons.push("Quoted next-step decision does not match the current budget decision.");
   }
   return reasons;
+}
+
+function estimateHasCompletedPaidStages(estimate: CostEstimate): boolean {
+  return estimate.stages.some((stage) => stage.bindingSummary?.kind === "settled-paid-stage");
+}
+
+function requiresConfiguredProviderApproval(
+  config: ProducerConfig,
+  stages: CostEstimate["stages"],
+): boolean {
+  return (
+    config.providers.imageGeneration.requiresApproval &&
+    stages.some((stage) => stage.stage === "imageGeneration" && stage.enabled)
+  );
 }
 
 /**

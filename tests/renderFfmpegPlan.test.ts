@@ -154,4 +154,23 @@ describe("draft render FFmpeg planning", () => {
     expect(renderedArgs).toContain("assets/intro/frames/intro_frame_00.jpg");
     expect(renderedArgs).not.toContain("assets/intro/title_card.jpg");
   });
+
+  it("resolves operation-owned hosted scene images beneath the run artifact root", () => {
+    const renderPlan = createTwoSceneRenderPlan({ bookends: false, overlays: false });
+    renderPlan.scenes[0]!.backgroundAsset.path =
+      "operations/image-generation/image_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/scene_001.jpg";
+
+    const renderedArgs = buildFfmpegArgs({
+      durationSeconds: 2,
+      ffmpegOutputPath: "draft.mp4",
+      renderPlan,
+      runId: "run_test",
+      subtitleArtifactPath: fallbackSubtitlePath,
+      subtitleTiming: linearSubtitleTiming(2),
+    }).join("\n");
+
+    expect(renderedArgs).toContain(
+      "runs/run_test/operations/image-generation/image_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/scene_001.jpg",
+    );
+  });
 });

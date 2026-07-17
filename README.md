@@ -45,7 +45,7 @@ publishing bot. Studio is the operator experience; CLI/core remains the source o
 | ElevenLabs live production proof | Pending one approved commercial synthesis smoke               |
 | Aligned subtitles                | Implemented and bound into exact render approval              |
 | Voice audition in Studio         | Implemented; real Studio browser UAT passed                   |
-| Visual production                | Candidate: 12–24 static/manual beats with review/regeneration |
+| Visual production                | Static/manual plus mock-verified FLUX.2 Pro hosted generation |
 | Private YouTube upload           | Pending v1 controlled-distribution slice                      |
 | Public or scheduled publish      | Unavailable and out of v1                                     |
 
@@ -62,7 +62,7 @@ publishing bot. Studio is the operator experience; CLI/core remains the source o
 - FFmpeg and `ffprobe` for rendering
 - Optional: Ollama or llama.cpp for local generation
 - Optional: Python `uv` and Piper for local Turkish speech
-- Optional: ElevenLabs credentials for explicitly requested hosted voice operations
+- Optional: ElevenLabs and BFL credentials for explicitly approved hosted media operations
 
 ## Five-Minute Setup
 
@@ -96,8 +96,8 @@ doctor -> idea -> approval -> script review -> package -> voice audition
 
 Opening the voice panel performs no provider call. Candidate and preview work begins only from an
 operator action, and preview playback uses validated local run media rather than provider URLs. The
-visual panel prepares a deterministic 12–24 beat fallback, supports batch decisions, manual PNG/JPEG
-revisions, and rejected-only regeneration before the approved manifest enters rendering.
+visual panel prepares a deterministic 12–24 beat fallback, supports batch decisions and manual
+PNG/JPEG revisions, or runs an exact approved FLUX.2 Pro batch with rejected-only regeneration.
 
 Private upload and processing review will extend this journey in a later v1 slice. Public and
 scheduled publishing remain inaccessible.
@@ -113,9 +113,10 @@ Full operator guide: [Studio workflow](docs/operator-guide/studio-workflow.md).
 | Deterministic local | Reference timing and pipeline audio                 | None                   |
 | Piper               | Offline Turkish voice fallback                      | None after model setup |
 | ElevenLabs v3       | Hosted audition and approval-bound production voice | Server-side key        |
+| FLUX.2 Pro          | Hosted scene stills and rejected-only regeneration  | Server-side key        |
 
-Read [local model setup](docs/providers/local-models.md) and
-[voice provider contracts](docs/providers/voice.md) before changing provider mode.
+Read [local model setup](docs/providers/local-models.md) and [voice](docs/providers/voice.md) or
+[visual provider contracts](docs/providers/visuals.md) before changing provider mode.
 
 ## Safety Boundaries
 

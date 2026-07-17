@@ -35,9 +35,9 @@ export async function readStudioVisualMedia(
     const scene = loaded.manifest.scenes.find((item) => item.sceneIndex === sceneIndex);
     const active = scene?.revisions.find((item) => item.revision === scene.activeRevision);
     if (active?.revision !== expectedRevision) return { status: 404 };
-    const body = active.asset.path.startsWith("production/")
-      ? await readRegisteredArtifactBytesAtProjectRoot(root, run, active.asset.path)
-      : await readProjectAssetBytesAtProjectRoot(root, active.asset.path);
+    const body = active.asset.path.startsWith("assets/")
+      ? await readProjectAssetBytesAtProjectRoot(root, active.asset.path)
+      : await readRegisteredArtifactBytesAtProjectRoot(root, run, active.asset.path);
     if (!body) return { status: 404 };
     if (createHash("sha256").update(body).digest("hex") !== active.asset.digest) {
       return { status: 404 };

@@ -5,6 +5,7 @@ import { SafeExitError } from "../core/errors.js";
 import { appendLedgerEvent } from "../core/ledger.js";
 import { loadRun, mutateRun } from "../core/runStore.js";
 import { assertTransition } from "../core/transitions.js";
+import { readCostEstimate } from "../costs/costEstimate.js";
 import { withCostReservationLock } from "../costs/costReservationLock.js";
 import { readCostReservationSummaries } from "../costs/costReservationStore.js";
 import { filesystemSegmentSchema } from "../stages/voice/catalog/voiceCatalogContracts.js";
@@ -160,12 +161,17 @@ export async function reviseVoiceSelection(
         }
 
         const previousSelection = await readVoiceSelectionWithPath(run.runId);
+        const activeQuote = await readCostEstimate(run.runId);
         const archive = await archiveVoiceSelectionRevisionSources({ run, revisionDir, stage });
         run = archive.run;
         archivedSources.push(...archive.archivedSources);
 
         const invalidatedApprovals = run.approvals
-          .filter((approval) => approval.target === "paid-generation-cost")
+          .filter(
+            (approval) =>
+              approval.target === "paid-generation-cost" &&
+              approval.approvedRef === activeQuote.digest,
+          )
           .map((approval) => ({
             approvalId: approval.approvalId,
             ...(approval.approvedRef ? { approvedRef: approval.approvedRef } : {}),
@@ -200,7 +206,8 @@ export async function reviseVoiceSelection(
             ...run,
             state: "PRODUCTION_PACKAGE_GENERATED" as const,
             approvals: run.approvals.filter(
-              (approval) => approval.target !== "paid-generation-cost",
+              (approval) =>
+                !invalidatedApprovals.some((item) => item.approvalId === approval.approvalId),
             ),
           },
           value: revision,

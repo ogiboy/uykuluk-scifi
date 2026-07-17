@@ -12,7 +12,7 @@ doctor
   -> script generation, review, revision, and approval
   -> production package and render plan
   -> voice audition, selection, quote, approval, synthesis, and subtitle review
-  -> visual and render review
+  -> visual planning, generation, review, and rejected-only regeneration
   -> exact render approval and FFmpeg MP4
   -> final review and manual channel handoff
 ```
@@ -64,6 +64,18 @@ not silently fall back.
 
 Piper and deterministic-local keep explicit `linear-fallback` timing. Deterministic audio is a
 pipeline/reference voice, not a production-quality claim.
+
+## Scene Visuals
+
+The static/manual provider remains the credential-free path. When FLUX.2 Pro is explicitly enabled,
+Studio lets the operator select beats, persist one exact generation plan, review its quote and
+approval, confirm the displayed paid-operation identity, and play the settled results into the same
+contact sheet. Opening the run does not call the provider.
+
+Rejected hosted beats are reopened as an attributable revision. The previous plan and quote are
+archived, settled voice work is not quoted again, and only rejected scene indexes enter the next
+batch. Pending/approved and rejected beats cannot be mixed in one regeneration plan. Provider result
+URLs never become client input; Studio serves only persisted local image artifacts.
 
 ## Revision and Recovery
 

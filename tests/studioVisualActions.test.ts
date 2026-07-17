@@ -92,6 +92,104 @@ describe("Studio visual mutation actions", () => {
     );
   });
 
+  it("builds exact hosted plan and paid execution CLI arguments", async () => {
+    const planPayload = { purpose: "initial" as const, runId, sceneIndexes: [1, 2, 2] };
+    const executionPayload = {
+      approvalId: "approval_visual",
+      bindingDigest: "b".repeat(64),
+      confirmPaidOperation: true as const,
+      executionMode: "hosted" as const,
+      quoteDigest: "c".repeat(64),
+      runId,
+    };
+    expect(parseStudioMutationRequest("visuals.plan-hosted", planPayload)).toEqual(planPayload);
+    expect(parseStudioMutationRequest("visuals.generate-hosted", executionPayload)).toEqual(
+      executionPayload,
+    );
+    const planArgs = await cliArgsForAction("visuals.plan-hosted", planPayload);
+    expect(planArgs.args).toEqual([
+      "visuals",
+      "plan-hosted",
+      "--run",
+      runId,
+      "--scenes",
+      "1,2",
+      "--purpose",
+      "initial",
+      "--json",
+    ]);
+    const regenerationPayload = {
+      ...expectation,
+      purpose: "regenerate-rejected" as const,
+      reason: "Replace the rejected scientific composition.",
+      reviewedBy: "visual director",
+      runId,
+      sceneIndexes: [2],
+    };
+    expect(parseStudioMutationRequest("visuals.plan-hosted", regenerationPayload)).toEqual(
+      regenerationPayload,
+    );
+    const regenerationArgs = await cliArgsForAction("visuals.plan-hosted", regenerationPayload);
+    try {
+      expect(regenerationArgs).toMatchObject({
+        args: [
+          "visuals",
+          "plan-hosted",
+          "--run",
+          runId,
+          "--scenes",
+          "2",
+          "--purpose",
+          "regenerate-rejected",
+          "--reviewed-by",
+          "visual director",
+          "--reason",
+          "Replace the rejected scientific composition.",
+          "--expected-manifest-digest",
+          expectation.expectedManifestDigest,
+          "--expected-active-revisions-file",
+          expect.any(String),
+          "--json",
+        ],
+      });
+      const snapshotPath = regenerationArgs.args.at(-2);
+      expect(snapshotPath).toBeTruthy();
+      await expect(
+        readFile(snapshotPath!, "utf8").then((content) => JSON.parse(content) as unknown),
+      ).resolves.toEqual(expectedActiveRevisions);
+    } finally {
+      await regenerationArgs.cleanup();
+    }
+    expect(() =>
+      parseStudioMutationRequest("visuals.plan-hosted", {
+        purpose: "regenerate-rejected",
+        runId,
+        sceneIndexes: [2],
+      }),
+    ).toThrow(/reviewer|reason/i);
+    const executionArgs = await cliArgsForAction("visuals.generate-hosted", executionPayload);
+    expect(executionArgs.args).toEqual([
+      "visuals",
+      "generate-hosted",
+      "--run",
+      runId,
+      "--binding-digest",
+      executionPayload.bindingDigest,
+      "--quote-digest",
+      executionPayload.quoteDigest,
+      "--approval-id",
+      executionPayload.approvalId,
+      "--confirm-paid-operation",
+      "--json",
+    ]);
+    expect(() =>
+      parseStudioMutationRequest("visuals.generate-hosted", {
+        ...executionPayload,
+        confirmPaidOperation: false,
+      }),
+    ).toThrow();
+  });
+
   it("rejects stale snapshots and wrong action headers at the guarded route", async () => {
     const packagedRunId = await preparePackagedVisualRun();
     await prepareStaticVisuals(packagedRunId);

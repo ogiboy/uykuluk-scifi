@@ -362,8 +362,11 @@
   Operator decisions stay prominent; paths, digests, and CLI fallback remain under Advanced.
 - Render plan, approval, FFmpeg motion, and draft evidence bind the approved visual manifest. Legacy
   evidence remains readable but cannot enter a new approval/render without that binding.
-- Hosted image generation, provider cost/provenance, mastering/thumbnail polish, and real-episode
-  acceptance remain subsequent work; this fallback slice adds no hosted image provider.
+- Main includes this fallback as `v0.83.0`. The active follow-up adds one FLUX.2 Pro hosted provider:
+  exact plan/quote/approval/reservation, bounded async request/poll/download, credit reconciliation,
+  durable local spools, Studio confirmation, and rejected-only revision/quote archival. Mocked
+  two-round and combined voice-plus-visual workflows pass; live BFL production remains unverified.
+- Mastering/thumbnail polish and real-episode acceptance remain subsequent work.
 
 ## Current Commands
 
@@ -448,8 +451,9 @@ If the shell lacks `node` or `pnpm`, use bundled Node or restore Corepack/PATH b
   disabled without explicit config, server-only credentials, exact quote approval, reservation,
   commercial production rights, and operator-triggered synthesis; no live paid call has run. A free
   account may support permitted audition metadata/previews but cannot prove production eligibility.
-  No hosted visual provider or private-upload adapter is enabled; public/scheduled publish remains
-  out of scope.
+  FLUX.2 Pro is the only hosted visual adapter and remains disabled by default; no live paid image
+  generation has run. No private-upload adapter is enabled; public/scheduled publish remains out of
+  scope.
 - Current local-first Studio combines read/review pages and grouped artifact metadata with guarded mutations backed by canonical CLI/core contracts. Stage and Studio-lib roots retain stable public entrypoints while domain helpers live in named subfolders. Route security covers page reads, short-lived session proof, same-origin actions, and disabled upload/publish; generation and local render run only through guarded contracts.
 - Studio voice review now exposes guarded catalog refresh, persisted local previews, A/B comparison,
   attributable selection/reselection, quote/quota state, and exact hosted execution confirmation;
@@ -460,18 +464,14 @@ If the shell lacks `node` or `pnpm`, use bundled Node or restore Corepack/PATH b
   and recorded in provenance. Editing UI remains future work; tracked defaults stay read-only, and
   full translation catalogs plus a language selector are deferred.
 - Approved settings/prompt editing is not implemented. Saves affect the next command; in-flight work stays pinned; listener/build-time settings restart; secrets stay env-only.
-- Initial package artifact revision contracts cover subtitles, scenes, popup-card package Markdown,
-  and YouTube metadata. They are limited to `PRODUCTION_PACKAGE_GENERATED`, refresh the manifest,
-  and invalidate stale evidence/readiness/render-plan artifacts; richer per-field editing UX and
-  post-estimate repair flows remain future work.
+- Initial package artifact revisions cover subtitles, scenes, popup-card Markdown, and YouTube
+  metadata; they refresh the manifest and invalidate stale downstream evidence and plans.
 - Render planning does not render media, approve execution, or reserve spend; it is a local review/planning artifact only.
-- Local TTS provides deterministic/reference WAV, Piper shell-out, ignored-model setup, digest
-  provenance, and review Markdown. It does not commit voice models, approve render execution,
-  upload, or publish. Deterministic-local evidence is timing proof only; production voice quality
-  still requires operator listening.
-- FFmpeg draft render creates a local review MP4 from intro/outro sources, scene-timed plates,
-  audio-bound subtitles, overlays, voiceover, evidence, a read-only review command, and checklist.
-  Rejected drafts archive safely; reusable clips, exact TTS alignment, and polish remain follow-up.
+- Local TTS provides deterministic/reference WAV, Piper shell-out, ignored-model setup, provenance,
+  and review Markdown. Deterministic evidence proves timing only; production quality still requires
+  operator listening and no voice path approves render, upload, or publish by itself.
+- FFmpeg draft render creates a local review MP4 from scene-timed plates, aligned subtitles,
+  overlays, voiceover, evidence, and bookends. Rejected drafts archive safely; polish remains.
 - Private upload remains a disabled v1 controlled-distribution placeholder. Public/scheduled publish
   is unavailable and out of scope; manual/Studio analytics are local-only without richer APIs.
 - Run-path containment blocks pre-existing symlinks; concurrent replacement remains a local TOCTOU limitation because portable Node APIs lack directory-handle `openat` semantics.

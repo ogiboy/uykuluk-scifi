@@ -40,7 +40,7 @@ export async function readVoiceQuoteSummary(
   }
   try {
     assertVoiceQuoteArtifactsRegistered(run, jsonPath, markdownPath);
-    const { estimate, digest } = await readCostEstimateAtProjectRoot(root, run.runId);
+    const { estimate, digest } = await readCostEstimateAtProjectRoot(root, run);
     const ttsStage = estimate.stages.find((stage) => stage.stage === "tts");
     assertVoiceQuoteIsCurrent(estimate, run, config, ttsStage);
     return readyVoiceQuoteResult(estimate, digest, ttsStage, jsonPath, markdownPath);

@@ -2,6 +2,7 @@ import { loadConfig } from "../config/config.js";
 import { SafeExitError } from "../core/errors.js";
 import { appendLedgerEvent } from "../core/ledger.js";
 import { loadRun } from "../core/runStore.js";
+import type { RunState } from "../core/state.js";
 import { createId, nowIso } from "../utils/time.js";
 import { readCostEstimate, validateCostEstimateIntegrity } from "./costEstimate.js";
 import { appendCostEvent, readCostEvents } from "./costLedger.js";
@@ -23,14 +24,18 @@ import type { ProviderRequestEvidence } from "./providerRequestEvidence.js";
  */
 export async function loadApprovedQuoteLine(runId: string, stage: string) {
   const run = await loadRun(runId);
-  if (run.state !== "READY_FOR_MANUAL_PRODUCTION") {
+  const allowedStates: readonly RunState[] =
+    stage === "imageGeneration"
+      ? (["PAID_GENERATION_COST_APPROVED", "READY_FOR_MANUAL_PRODUCTION"] as const)
+      : (["READY_FOR_MANUAL_PRODUCTION"] as const);
+  if (!allowedStates.includes(run.state)) {
     throw new SafeExitError(
-      `Blocked: cost reservation requires state READY_FOR_MANUAL_PRODUCTION; current state is ${run.state}.`,
+      `Blocked: ${stage} cost reservation requires state ${allowedStates.join(" or ")}; current state is ${run.state}.`,
     );
   }
   const config = await loadConfig();
   const { estimate, digest } = await readCostEstimate(runId);
-  const reasons = await validateCostEstimateIntegrity(run, config, estimate);
+  const reasons = await validateCostEstimateIntegrity(run, config, estimate, digest);
   if (reasons.length > 0) {
     throw new SafeExitError(`Blocked: approved quote is stale. ${reasons.join(" ")}`);
   }

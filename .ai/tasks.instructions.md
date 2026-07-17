@@ -85,13 +85,13 @@
   metadata/catalog/preview smoke is allowed only where the provider permits it and never proves
   production rights. Production synthesis requires commercial eligibility, exact quote, persisted
   approval, reservation, bounded execution, and settlement; until then report it as pending.
-- Close the active static/manual visual candidate: 12–24 deterministic beats, contact-sheet review,
-  manual import, rejected-only regeneration, exact mutation snapshots, and visual-bound render
-  approval are implemented. Complete product/browser UAT, PR gates, main reconciliation, and merge.
-- Then run the bounded three-scene hosted image bake-off and choose at most one adapter. Add exact
-  quote/reservation/settlement, provider provenance, and rejected-scene regeneration without
-  weakening the credential-free static/manual fallback. Mastering and thumbnail JPG polish remain
-  in the same production-quality workstream after hosted still reliability is proven.
+- Preserve the merged `v0.83.0` static/manual visual fallback and exact render binding.
+- Close the active FLUX.2 Pro slice: exact scene-plan quote/approval/reservation, bounded async
+  execution, provider credit settlement, durable local spools, Studio confirmation, rejected-only
+  quote/plan archival, combined voice recovery, product/browser UAT, and PR gates. Live BFL proof
+  remains a separately approved smoke; static/manual stays credential-free.
+- Then harden exact render/media quality: pacing and motion, subtitle readability, popup density,
+  audio mastering, licensed music/SFX evidence, and final thumbnail JPG.
 - Then add sequential multi-model script audition and editorial quality: immutable shared brief and
   prompt/settings snapshots, side-by-side selection, retained alternatives, inline review, operator-
   curated source/claim provenance, and a minimum-publishable scorecard.

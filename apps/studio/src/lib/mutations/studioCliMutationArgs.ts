@@ -168,6 +168,8 @@ export async function cliArgsForAction(
     }
     case "visuals.import":
     case "visuals.decide":
+    case "visuals.generate-hosted":
+    case "visuals.plan-hosted":
     case "visuals.regenerate":
       return visualCliArgsForAction(actionId, payload);
     case "voice.preview": {

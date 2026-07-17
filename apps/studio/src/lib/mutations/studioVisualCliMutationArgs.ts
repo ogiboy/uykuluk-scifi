@@ -8,6 +8,8 @@ import {
   writeTemporaryInputFile,
 } from "./studioCliMutationTempFile";
 import {
+  parseHostedVisualGenerationPayload,
+  parseHostedVisualPlanPayload,
   parseVisualDecisionPayload,
   parseVisualImportPayload,
   parseVisualRegenerationPayload,
@@ -15,7 +17,11 @@ import {
 
 type StudioVisualCliMutationActionId = Extract<
   StudioCliMutationActionId,
-  "visuals.decide" | "visuals.import" | "visuals.regenerate"
+  | "visuals.decide"
+  | "visuals.generate-hosted"
+  | "visuals.import"
+  | "visuals.plan-hosted"
+  | "visuals.regenerate"
 >;
 
 /** Builds guarded CLI arguments for visual import, decision, and regeneration mutations. */
@@ -25,7 +31,53 @@ export async function visualCliArgsForAction(
 ): Promise<StudioPreparedCliArgs> {
   if (actionId === "visuals.import") return visualImportCliArgs(payload);
   if (actionId === "visuals.decide") return visualDecisionCliArgs(payload);
-  return visualRegenerationCliArgs(payload);
+  if (actionId === "visuals.regenerate") return visualRegenerationCliArgs(payload);
+  if (actionId === "visuals.plan-hosted") return hostedVisualPlanCliArgs(payload);
+  return hostedVisualGenerationCliArgs(payload);
+}
+
+async function hostedVisualPlanCliArgs(payload: unknown): Promise<StudioPreparedCliArgs> {
+  const input = parseHostedVisualPlanPayload(payload);
+  const expectationTemp = input.expectedActiveRevisions
+    ? await writeVisualExpectationSnapshot(input.expectedActiveRevisions)
+    : null;
+  return prepared(
+    [
+      "visuals",
+      "plan-hosted",
+      "--run",
+      input.runId,
+      "--scenes",
+      Array.from(new Set(input.sceneIndexes)).join(","),
+      "--purpose",
+      input.purpose,
+      ...(input.reviewedBy ? ["--reviewed-by", input.reviewedBy] : []),
+      ...(input.reason ? ["--reason", input.reason] : []),
+      ...(input.expectedManifestDigest && expectationTemp
+        ? visualExpectationArgs(input.expectedManifestDigest, expectationTemp.filePath)
+        : []),
+      "--json",
+    ],
+    expectationTemp?.cleanup,
+  );
+}
+
+function hostedVisualGenerationCliArgs(payload: unknown): StudioPreparedCliArgs {
+  const input = parseHostedVisualGenerationPayload(payload);
+  return prepared([
+    "visuals",
+    "generate-hosted",
+    "--run",
+    input.runId,
+    "--binding-digest",
+    input.bindingDigest,
+    "--quote-digest",
+    input.quoteDigest,
+    "--approval-id",
+    input.approvalId,
+    "--confirm-paid-operation",
+    "--json",
+  ]);
 }
 
 async function visualImportCliArgs(payload: unknown): Promise<StudioPreparedCliArgs> {

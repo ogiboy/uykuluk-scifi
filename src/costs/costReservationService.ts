@@ -32,99 +32,105 @@ export {
  * @returns The created or existing cost reservation summary.
  * @throws SafeExitError If the adapter identity does not match the approved quote, the operation ID is bound to different details, the quote line was already consumed, budget validation fails, or `stage` or `operationId` is empty.
  */
-export async function reserveApprovedCost(input: {
-  runId: string;
-  stage: string;
-  operationId: string;
-  adapterIdentity: ProviderAdapterIdentity;
-}): Promise<CostReservationSummary> {
+export async function reserveApprovedCost(
+  input: {
+    runId: string;
+    stage: string;
+    operationId: string;
+    adapterIdentity: ProviderAdapterIdentity;
+  },
+  options: Readonly<{ onLockContention?: () => void }> = {},
+): Promise<CostReservationSummary> {
   requireReservationText(input.stage, "stage");
   requireReservationText(input.operationId, "operation id");
-  return withCostReservationLock(async () => {
-    const context = await loadApprovedQuoteLine(input.runId, input.stage);
-    if (!providerAdapterIdentitiesMatch(input.adapterIdentity, context)) {
-      throw new SafeExitError(
-        `Blocked: adapter provider/model/binding does not match the approved quote for ${input.stage}.`,
-      );
-    }
-    const all = await readAllCostReservationSummaries();
-    let sameOperation: CostReservationSummary | null = null;
-    for (const item of all) {
-      if (item.operationId === input.operationId) {
-        sameOperation = item;
-        break;
+  return withCostReservationLock(
+    async () => {
+      const context = await loadApprovedQuoteLine(input.runId, input.stage);
+      if (!providerAdapterIdentitiesMatch(input.adapterIdentity, context)) {
+        throw new SafeExitError(
+          `Blocked: adapter provider/model/binding does not match the approved quote for ${input.stage}.`,
+        );
       }
-    }
-    if (sameOperation) {
-      if (
-        sameOperation.runId === input.runId &&
-        sameOperation.stage === input.stage &&
-        sameOperation.approvalId === context.approvalId &&
-        sameOperation.quoteDigest === context.quoteDigest &&
-        sameOperation.provider === context.provider &&
-        sameOperation.model === context.model &&
-        sameOperation.bindingDigest === context.bindingDigest
-      ) {
-        return sameOperation;
+      const all = await readAllCostReservationSummaries();
+      let sameOperation: CostReservationSummary | null = null;
+      for (const item of all) {
+        if (item.operationId === input.operationId) {
+          sameOperation = item;
+          break;
+        }
       }
-      throw new SafeExitError(`Operation id is already bound: ${input.operationId}.`);
-    }
-    const consumed = all.some(
-      (item) =>
-        item.runId === input.runId &&
-        item.approvalId === context.approvalId &&
-        item.stage === input.stage,
-    );
-    if (consumed) {
-      throw new SafeExitError(
-        `Approved quote line ${input.stage} is already consumed; create a new quote and approval.`,
+      if (sameOperation) {
+        if (
+          sameOperation.runId === input.runId &&
+          sameOperation.stage === input.stage &&
+          sameOperation.approvalId === context.approvalId &&
+          sameOperation.quoteDigest === context.quoteDigest &&
+          sameOperation.provider === context.provider &&
+          sameOperation.model === context.model &&
+          sameOperation.bindingDigest === context.bindingDigest
+        ) {
+          return sameOperation;
+        }
+        throw new SafeExitError(`Operation id is already bound: ${input.operationId}.`);
+      }
+      const consumed = all.some(
+        (item) =>
+          item.runId === input.runId &&
+          item.approvalId === context.approvalId &&
+          item.stage === input.stage,
       );
-    }
-    const budget = await checkBudget({
-      run: context.run,
-      config: context.config,
-      stage: `reserve-${input.stage}`,
-      provider: context.provider,
-      model: context.model,
-      estimatedUsd: microsToUsd(context.maxUsdMicros),
-      recordCostEvent: false,
-    });
-    if (!budget.allowed) {
-      throw new SafeExitError(
-        `Blocked: reservation budget failed. ${budget.blockedReasons.join(" ")}`,
-      );
-    }
-    const reservationId = createId("reservation");
-    await appendCostReservationEvent({
-      eventId: createId("reservation_event"),
-      reservationId,
-      runId: input.runId,
-      type: "RESERVED",
-      operationId: input.operationId,
-      approvalId: context.approvalId,
-      quoteDigest: context.quoteDigest,
-      stage: input.stage,
-      provider: context.provider,
-      model: context.model,
-      ...(context.bindingDigest ? { bindingDigest: context.bindingDigest } : {}),
-      ...(context.bindingSummary ? { bindingSummary: context.bindingSummary } : {}),
-      maxUsdMicros: context.maxUsdMicros,
-      createdAt: nowIso(),
-    });
-    await appendLedgerEvent({
-      runId: input.runId,
-      type: "COST_RESERVED",
-      stage: input.stage,
-      message: "Approved cost quote line reserved.",
-      data: {
+      if (consumed) {
+        throw new SafeExitError(
+          `Approved quote line ${input.stage} is already consumed; create a new quote and approval.`,
+        );
+      }
+      const budget = await checkBudget({
+        run: context.run,
+        config: context.config,
+        stage: `reserve-${input.stage}`,
+        provider: context.provider,
+        model: context.model,
+        estimatedUsd: microsToUsd(context.maxUsdMicros),
+        recordCostEvent: false,
+      });
+      if (!budget.allowed) {
+        throw new SafeExitError(
+          `Blocked: reservation budget failed. ${budget.blockedReasons.join(" ")}`,
+        );
+      }
+      const reservationId = createId("reservation");
+      await appendCostReservationEvent({
+        eventId: createId("reservation_event"),
         reservationId,
+        runId: input.runId,
+        type: "RESERVED",
         operationId: input.operationId,
+        approvalId: context.approvalId,
+        quoteDigest: context.quoteDigest,
+        stage: input.stage,
+        provider: context.provider,
+        model: context.model,
         ...(context.bindingDigest ? { bindingDigest: context.bindingDigest } : {}),
+        ...(context.bindingSummary ? { bindingSummary: context.bindingSummary } : {}),
         maxUsdMicros: context.maxUsdMicros,
-      },
-    });
-    return requireReservation(input.runId, reservationId);
-  });
+        createdAt: nowIso(),
+      });
+      await appendLedgerEvent({
+        runId: input.runId,
+        type: "COST_RESERVED",
+        stage: input.stage,
+        message: "Approved cost quote line reserved.",
+        data: {
+          reservationId,
+          operationId: input.operationId,
+          ...(context.bindingDigest ? { bindingDigest: context.bindingDigest } : {}),
+          maxUsdMicros: context.maxUsdMicros,
+        },
+      });
+      return requireReservation(input.runId, reservationId);
+    },
+    { onContention: options.onLockContention },
+  );
 }
 
 /**

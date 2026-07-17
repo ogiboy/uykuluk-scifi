@@ -12,6 +12,7 @@ import {
 export type StudioCliResult = Readonly<{ stderr: string; stdout: string; status: number }>;
 
 const studioCliTimeoutMs = 20 * 60 * 1000;
+const hostedVisualCliTimeoutMs = 4 * 60 * 60 * 1_000 + 60 * 1_000;
 const studioCliKillGraceMs = 5_000;
 const studioCliOutputLimitChars = 128_000;
 
@@ -48,12 +49,10 @@ export function runProducerCli(args: readonly string[]): Promise<StudioCliResult
         studioCliKillGraceMs,
       );
     };
+    const timeoutMs = studioCliTimeoutForArgs(args);
     const timeout = setTimeout(() => {
-      terminate(
-        "timeout",
-        `Studio mutation CLI exceeded ${studioCliTimeoutMs}ms and was terminated.`,
-      );
-    }, studioCliTimeoutMs);
+      terminate("timeout", `Studio mutation CLI exceeded ${timeoutMs}ms and was terminated.`);
+    }, timeoutMs);
     child.stdin?.end();
     child.stdout.setEncoding("utf8");
     child.stderr.setEncoding("utf8");
@@ -84,6 +83,12 @@ export function runProducerCli(args: readonly string[]): Promise<StudioCliResult
       resolve({ stderr, stdout, status: studioCliResultStatus(terminationReason, code) });
     });
   });
+}
+
+export function studioCliTimeoutForArgs(args: readonly string[]): number {
+  return args[0] === "visuals" && args[1] === "generate-hosted"
+    ? hostedVisualCliTimeoutMs
+    : studioCliTimeoutMs;
 }
 
 function terminateStudioCliProcessTree(child: ChildProcess, signal: NodeJS.Signals): void {
