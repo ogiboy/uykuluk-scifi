@@ -21,6 +21,7 @@ minimumReleaseAgeExclude:
   - "@sentry/server-utils@10.65.0"
   - "@sentry/vercel-edge@10.65.0"
 overrides:
+  adm-zip: 0.6.0
   axios: ^1.16.0
   diff: ^5.2.2
   postcss: ^8.5.16

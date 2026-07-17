@@ -50,8 +50,8 @@ assembly? Work in this milestone should prioritize:
   unavailable;
 - a concise minimum-publishable-episode scorecard, operator-curated source/claim provenance, and two
   repeatable real-episode runs;
-- guarded Studio parity, persistent settings/prompt profiles, and one-command local onboarding so
-  ordinary operation does not require source edits or hidden repair.
+- guarded Studio parity, revisioned settings/prompt profiles, Studio episode briefs, and one-command
+  local onboarding so ordinary operation does not require source edits or hidden repair.
 
 Do not add provider sprawl, queues, public publishing, or generic agent infrastructure. Add only the
 approved ElevenLabs path, one hosted still-image provider after a bounded bake-off, and private
@@ -68,10 +68,11 @@ Current voice checkpoint:
   voice/render/FFmpeg/caption binding, plus guarded Studio candidate, preview, selection,
   reselection, and exact hosted-execution confirmation. Required CI, Sonar, CodeQL, product/browser
   QA, and real Studio browser UAT passed before merge.
-- Live production validation pending: the current Free API plan lists 10,000 included Multilingual
-  v2/v3 characters, so one short diagnostic-only Turkish v3 timestamps smoke is allowed after live
-  subscription/quota inspection. Free output has no commercial rights. Production still requires
-  paid eligibility, exact quote, persisted approval, reservation, and settlement.
+- Live production validation pending: subscription preflight observed a Free account with 10,000
+  included credits and sent one bounded Turkish v3 timestamps diagnostic. The provider rejected that
+  request safely; no production voice was produced or verified. Free output has no commercial
+  rights. Production still requires paid eligibility, exact quote, persisted approval, reservation,
+  and settlement.
 - Offline fallback remains part of v1: deterministic-local keeps reference timing, Piper remains the
   production-capable local voice path, and both use an explicit linear subtitle timing mode rather
   than pretending to have provider alignment.
@@ -86,7 +87,7 @@ Current visual checkpoint:
   newer manifest.
 - Render-plan v2, render approval v3, and draft manifest v10 bind the approved visual manifest;
   legacy evidence remains readable but cannot be newly approved or rendered without the binding.
-- Targeted for `v0.84.0`: the sole hosted visual adapter, Black Forest Labs FLUX.2 Pro, remains
+- Delivered in `v0.84.0`: the sole hosted visual adapter, Black Forest Labs FLUX.2 Pro, remains
   experimental and disabled by default while providing exact scene-plan quote/approval/reservation,
   bounded asynchronous execution, provider-credit settlement, durable local image spools,
   provider-neutral Studio confirmation, and rejected-only re-quote/regeneration. Mocked
@@ -97,9 +98,11 @@ Current visual checkpoint:
   generation API for it. The next visual-provider slice is local MFLUX behind the same plan, review,
   provenance, and render-binding contracts; BFL remains the only hosted adapter.
 
-After this hosted visual candidate closes, delivery order is: local MFLUX; exact render/media
-polish; script audition and editorial provenance; resumable private-only upload; then persistent
-settings, prompt profiles, onboarding, documentation productization, and real-episode acceptance.
+The current Studio-first slice adds revisioned settings, prompt profiles, episode-brief snapshots,
+Turkish-default/English Studio, a one-command launcher, and a diagnostic-only ElevenLabs smoke.
+After it closes, delivery order is: local MFLUX and visual audition; exact render/media polish;
+script audition and editorial provenance; resumable private-only upload; then settings/prompt
+history polish, documentation productization, and real-episode acceptance.
 
 ## Phase A - Safe Core Stabilization
 
@@ -224,17 +227,15 @@ Priority order:
 - maintain the read-only producer doctor diagnostics page backed by ignored local doctor artifacts;
 - maintain the explicit guarded doctor refresh action as a canonical workflow-read-only CLI
   diagnostic that may write ignored diagnostics but is not a configuration or workflow mutation;
-- evolve the existing `/prompts` inventory into a guarded prompt-profile editor: show tracked and
-  local content/diffs, require an operator note and expected revision/hash, persist immutable local
-  revisions through CLI/core, support rollback, and keep save separate from generation/approval;
-- add a guarded settings surface over canonical CLI/core config commands for safe provider/model,
-  TTS, budget, asset, and channel settings. Saves are persistent, visible immediately, and effective
-  for the next command while in-flight work remains pinned to its starting snapshot;
+- maintain the implemented revisioned prompt-profile editor and guarded settings surface over
+  CLI/core config commands. Saves are persistent, visible immediately, and effective for the next
+  command while in-flight work remains pinned to its starting snapshot; defer rollback/diff polish
+  until productization;
 - label Studio listener ports, `NEXT_PUBLIC_*`, Sentry source-map settings, and other build-time or
   listener settings as restart-required instead of claiming live application;
-- add genre/profile selection and an editable run-scoped idea brief before `ideas.run`; preserve
-  UykulukSciFi scientific-sci-fi as the default and bind the exact preset/prompt/brief digests into
-  the run without turning the desk into a generic content farm;
+- maintain the implemented genre/profile selection and editable run-scoped episode brief before
+  `ideas.run`; scientific sci-fi remains the default and the exact profile/prompt/settings/brief
+  snapshots are bound into the run without turning the desk into a generic content farm;
 - maintain mutation-service status so operators can see which local approval/review actions are
   guarded and which upload/publish actions remain disabled;
 - maintain guarded local model evaluation refresh actions without starting/downloading models or

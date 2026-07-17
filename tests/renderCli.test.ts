@@ -1,4 +1,3 @@
-import { spawnSync } from "node:child_process";
 import { mkdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
@@ -18,6 +17,7 @@ import { generateScript } from "../src/stages/script";
 import { generateVoiceoverAudio } from "../src/stages/voice";
 import { pathExists } from "../src/utils/fs";
 import { useTempProject } from "./helpers";
+import { runProducerCliForTest } from "./producerCliTestHelper";
 import {
   createFakeFfmpeg,
   createFakeFfprobe,
@@ -26,8 +26,6 @@ import {
   renderToolRoot,
 } from "./renderTestHelpers";
 import { prepareApprovedStaticVisuals } from "./visualTestHelpers";
-
-const repoRoot = process.cwd();
 
 describe("producer render CLI", () => {
   useTempProject();
@@ -183,16 +181,7 @@ function runCli(
   args: string[],
   env: Partial<NodeJS.ProcessEnv> = {},
 ): { status: number | null; stderr: string; stdout: string } {
-  const result = spawnSync(
-    path.join(repoRoot, "node_modules", ".bin", "tsx"),
-    [path.join(repoRoot, "src", "cli.ts"), ...args],
-    { cwd: process.cwd(), encoding: "utf8", env: { ...process.env, ...env } },
-  );
-  return {
-    status: result.status,
-    stderr: result.stderr.toString(),
-    stdout: result.stdout.toString(),
-  };
+  return runProducerCliForTest(args, { env: { ...process.env, ...env } });
 }
 
 async function prepareVoiceoverReadyRun(): Promise<string> {

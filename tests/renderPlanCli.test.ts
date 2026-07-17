@@ -1,6 +1,4 @@
-import { spawnSync } from "node:child_process";
 import { mkdir, writeFile } from "node:fs/promises";
-import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { artifactPath } from "../src/core/artifacts";
 import { loadRun } from "../src/core/runStore";
@@ -12,9 +10,8 @@ import { reviewScript } from "../src/stages/reviewScript";
 import { generateScript } from "../src/stages/script";
 import { pathExists } from "../src/utils/fs";
 import { useTempProject } from "./helpers";
+import { runProducerCliForTest } from "./producerCliTestHelper";
 import { prepareApprovedStaticVisuals } from "./visualTestHelpers";
-
-const repoRoot = process.cwd();
 
 describe("producer render-plan CLI", () => {
   useTempProject();
@@ -63,16 +60,7 @@ describe("producer render-plan CLI", () => {
 });
 
 function runCli(args: string[]): { status: number | null; stderr: string; stdout: string } {
-  const result = spawnSync(
-    path.join(repoRoot, "node_modules", ".bin", "tsx"),
-    [path.join(repoRoot, "src", "cli.ts"), ...args],
-    { cwd: process.cwd(), encoding: "utf8" },
-  );
-  return {
-    status: result.status,
-    stderr: result.stderr.toString(),
-    stdout: result.stdout.toString(),
-  };
+  return runProducerCliForTest(args);
 }
 
 async function preparePackagedRun(): Promise<string> {

@@ -1,12 +1,15 @@
 import { StudioLoadingScaffold } from "@/components/studio/StudioLoadingScaffold";
+import { normalizeStudioLocale } from "@/i18n/locales";
+import { getLocale } from "next-intl/server";
 
-export default function RunsLoading() {
+export default async function RunsLoading() {
+  const locale = normalizeStudioLocale(await getLocale());
   return (
     <StudioLoadingScaffold
-      eyebrow='Read-only local run review'
+      eyebrow={locale === "tr" ? "Üretim bölümleri" : "Production episodes"}
       layout='shell'
       railPanels={1}
-      title='Producer runs'
+      title={locale === "tr" ? "Üretim bölümleri" : "Producer runs"}
     />
   );
 }

@@ -1,18 +1,53 @@
-export const studioSections = [
-  { id: "runs", label: "Runs", href: "/runs" },
-  { id: "ideas", label: "Ideas", href: "/ideas" },
-  { id: "doctor", label: "Doctor", href: "/doctor" },
-  { id: "eval", label: "Model Eval", href: "/eval" },
-  { id: "actions", label: "Actions", href: "/actions" },
-  { id: "assets", label: "Assets", href: "/assets" },
-  { id: "analytics", label: "Analytics", href: "/analytics" },
-  { id: "prompts", label: "Prompts", href: "/prompts" },
-] as const satisfies ReadonlyArray<{
-  href?:
-    "/actions" | "/analytics" | "/assets" | "/doctor" | "/eval" | "/ideas" | "/prompts" | "/runs";
-  id: string;
-  label: string;
-}>;
+import type { StudioLocale } from "@/i18n/locales";
+
+type StudioSectionHref =
+  | "/"
+  | "/actions"
+  | "/analytics"
+  | "/assets"
+  | "/doctor"
+  | "/eval"
+  | "/prompts"
+  | "/runs"
+  | "/settings";
+
+export type StudioSection = Readonly<{ href: StudioSectionHref; id: string; label: string }>;
+
+const primarySectionDefinitions = [
+  { id: "dashboard", href: "/", en: "Dashboard", tr: "Kontrol Paneli" },
+  { id: "episodes", href: "/runs", en: "Episodes", tr: "Bölümler" },
+  { id: "library", href: "/assets", en: "Library", tr: "Kütüphane" },
+  { id: "analytics", href: "/analytics", en: "Analytics", tr: "Analitik" },
+  { id: "settings", href: "/settings", en: "Settings", tr: "Ayarlar" },
+] as const;
+
+const advancedSectionDefinitions = [
+  { id: "doctor", href: "/doctor", en: "Doctor", tr: "Sistem Kontrolü" },
+  { id: "eval", href: "/eval", en: "Model Lab", tr: "Model Laboratuvarı" },
+  { id: "actions", href: "/actions", en: "Actions", tr: "İşlemler" },
+  { id: "prompts", href: "/prompts", en: "Prompt Inventory", tr: "Prompt Envanteri" },
+] as const;
+
+export const studioSections = sectionsForLocale(primarySectionDefinitions, "en");
+export const advancedStudioSections = sectionsForLocale(advancedSectionDefinitions, "en");
+
+export function studioSectionsForLocale(locale: StudioLocale): readonly StudioSection[] {
+  return sectionsForLocale(primarySectionDefinitions, locale);
+}
+
+export function advancedStudioSectionsForLocale(locale: StudioLocale): readonly StudioSection[] {
+  return sectionsForLocale(advancedSectionDefinitions, locale);
+}
+
+function sectionsForLocale<
+  T extends readonly Readonly<{ en: string; href: StudioSectionHref; id: string; tr: string }>[],
+>(definitions: T, locale: StudioLocale): readonly StudioSection[] {
+  return definitions.map((section) => ({
+    href: section.href,
+    id: section.id,
+    label: section[locale],
+  }));
+}
 
 export const statusCards = [
   {

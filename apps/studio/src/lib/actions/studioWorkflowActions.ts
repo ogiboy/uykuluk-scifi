@@ -25,9 +25,18 @@ type StudioWorkflowActionStepDefinition = Readonly<{
 
 const workflowActionStepDefinitions = [
   {
-    actionIds: ["doctor.run", "ideas.run", "idea.approve"],
+    actionIds: [
+      "doctor.run",
+      "settings.save",
+      "promptProfiles.save",
+      "episodes.create",
+      "providers.elevenlabs.smoke",
+      "ideas.run",
+      "idea.approve",
+    ],
     label: "Idea intake",
-    summary: "Refresh diagnostics, generate non-repeating ideas, then approve one idea.",
+    summary:
+      "Refresh diagnostics, save the active profile, create a snapshot-bound episode, then approve one idea.",
   },
   {
     actionIds: ["script.run", "script.review", "script.revise", "script.approve"],

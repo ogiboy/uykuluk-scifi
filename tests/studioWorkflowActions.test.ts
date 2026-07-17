@@ -21,6 +21,10 @@ describe("Studio workflow action matrix", () => {
     ]);
     expect(steps[0].actions.map((action) => action.actionId)).toEqual([
       "doctor.run",
+      "settings.save",
+      "promptProfiles.save",
+      "episodes.create",
+      "providers.elevenlabs.smoke",
       "ideas.run",
       "idea.approve",
     ]);

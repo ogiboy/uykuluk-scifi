@@ -26,8 +26,13 @@ export function runProducerCli(args: readonly string[]): Promise<StudioCliResult
   return new Promise((resolve, reject) => {
     const sourceRoot = sourceProjectRoot();
     const child = spawn(
-      path.join(sourceRoot, "node_modules", ".bin", "tsx"),
-      [path.join(sourceRoot, "src", "cli.ts"), ...args],
+      process.execPath,
+      [
+        "--import",
+        path.join(sourceRoot, "node_modules", "tsx", "dist", "loader.mjs"),
+        path.join(sourceRoot, "src", "cli.ts"),
+        ...args,
+      ],
       {
         cwd: projectRoot(),
         detached: process.platform !== "win32",

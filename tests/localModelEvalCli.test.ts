@@ -1,10 +1,7 @@
-import { spawnSync } from "node:child_process";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
-import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { useTempProject } from "./helpers";
-
-const repoRoot = process.cwd();
+import { runProducerCliForTest } from "./producerCliTestHelper";
 
 describe("producer local-model eval CLI", () => {
   useTempProject();
@@ -127,25 +124,19 @@ function runCli(args: string[]): { status: number | null; stderr: string; stdout
     .filter(Boolean)
     .filter((option) => !option.toLowerCase().startsWith("--inspect"));
 
-  const result = spawnSync(
-    path.join(repoRoot, "node_modules", ".bin", "tsx"),
-    [path.join(repoRoot, "src", "cli.ts"), ...args],
-    {
-      cwd: process.cwd(),
-      encoding: "utf8",
-      env: {
-        ...process.env,
-        NODE_OPTIONS: nodeOptions.length > 0 ? nodeOptions.join(" ") : undefined,
-      },
+  const result = runProducerCliForTest(args, {
+    env: {
+      ...process.env,
+      NODE_OPTIONS: nodeOptions.length > 0 ? nodeOptions.join(" ") : undefined,
     },
-  );
-  const rawStderr = result.stderr.toString();
+  });
+  const rawStderr = result.stderr;
   const sanitizedStderr = rawStderr
     .split(/\r?\n/)
     .filter((line) => !isNodeInspectorNoise(line))
     .join("\n")
     .trim();
-  return { status: result.status, stderr: sanitizedStderr, stdout: result.stdout.toString() };
+  return { status: result.status, stderr: sanitizedStderr, stdout: result.stdout };
 }
 
 function isNodeInspectorNoise(line: string): boolean {

@@ -7,6 +7,7 @@ export const studioCliMutationActionIds = [
   "channel-handoff.run",
   "cost.approve",
   "doctor.run",
+  "episodes.create",
   "estimate.run",
   "evidence.run",
   "idea.approve",
@@ -14,6 +15,8 @@ export const studioCliMutationActionIds = [
   "model-eval-candidates.run",
   "model-eval.run",
   "package.run",
+  "promptProfiles.save",
+  "providers.elevenlabs.smoke",
   "package-artifact.revise",
   "readiness.run",
   "render.approve",
@@ -28,6 +31,7 @@ export const studioCliMutationActionIds = [
   "script.review",
   "script.revise",
   "script.run",
+  "settings.save",
   "visuals.decide",
   "visuals.import",
   "visuals.plan-hosted",
@@ -53,14 +57,18 @@ export type RunOnlyCliActionId = Exclude<
   | "analytics.import"
   | "analytics.report"
   | "doctor.run"
+  | "episodes.create"
   | "idea.approve"
   | "ideas.run"
   | "model-eval.run"
   | "model-eval-candidates.run"
   | "package-artifact.revise"
+  | "promptProfiles.save"
+  | "providers.elevenlabs.smoke"
   | "render.decide"
   | "script.approve"
   | "script.revise"
+  | "settings.save"
   | "visuals.decide"
   | "visuals.import"
   | "visuals.plan-hosted"

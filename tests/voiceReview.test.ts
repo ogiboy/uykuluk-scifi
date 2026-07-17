@@ -1,4 +1,3 @@
-import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -10,9 +9,8 @@ import { formatVoiceoverReviewConsole, reviewVoiceover } from "../src/stages/rev
 import type { VoiceoverAudioMeta } from "../src/stages/voice/voiceoverEvidence";
 import { renderVoiceoverReviewMarkdown } from "../src/stages/voice/voiceoverReviewMarkdown";
 import { useTempProject } from "./helpers";
+import { runProducerCliForTest } from "./producerCliTestHelper";
 import { prepareReadyRunWithoutVoiceover, prepareVoiceoverReadyRun } from "./renderPipelineHelpers";
-
-const repoRoot = process.cwd();
 
 describe("voiceover review handoff", () => {
   useTempProject();
@@ -117,16 +115,7 @@ describe("voiceover review handoff", () => {
 });
 
 function runCli(args: string[]): { status: number | null; stderr: string; stdout: string } {
-  const result = spawnSync(
-    path.join(repoRoot, "node_modules", ".bin", "tsx"),
-    [path.join(repoRoot, "src", "cli.ts"), ...args],
-    { cwd: process.cwd(), encoding: "utf8" },
-  );
-  return {
-    status: result.status,
-    stderr: result.stderr.toString(),
-    stdout: result.stdout.toString(),
-  };
+  return runProducerCliForTest(args);
 }
 
 async function writeLocalPiperVoiceover(runId: string): Promise<void> {

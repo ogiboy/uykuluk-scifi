@@ -84,9 +84,11 @@
   reservation binding, synthesis adapter, original/normalized character-alignment persistence,
   settlement, redacted diagnostics, and fail-closed recovery are implemented and documented in
   [the focused current-state note](current-state/elevenlabs-voice.instructions.md). Automated paid
-  execution remains mocked: no live production synthesis has been validated. Free-tier
-  metadata/catalog/preview access does not establish commercial production rights and must never
-  bypass exact eligibility, quote, persisted approval, reservation, or settlement gates.
+  execution remains mocked: no live production synthesis has been validated. A bounded Free-plan
+  Turkish v3 timestamp diagnostic was attempted after entitlement preflight and rejected safely by
+  the provider; it is diagnostic-only and cannot enter an episode render. Free-tier access does not
+  establish commercial production rights and must never bypass exact eligibility, quote, persisted
+  approval, reservation, or settlement gates.
 - `pnpm tts:piper:setup` downloads the pinned CPU-friendly Turkish
   `speaches-ai/piper-tr_TR-fahrettin-medium` model into ignored `models/` and prints the matching
   local config override for `local-piper`.
@@ -261,8 +263,9 @@
   upload/private/public publish config still blocks.
 - Project-local capability routing, resumable `.ai/checkpoints/`, dependency auditing, and the
   conventional-commit release workflow are documented and covered by repository quality gates.
-- Studio uses the existing Tailwind/shadcn/Radix design system and a typed `next-intl` foundation;
-  full operator-copy translation remains future work.
+- Studio uses the existing Tailwind/shadcn/Radix design system and typed Turkish/English `next-intl`
+  catalogs. New installs default to Turkish; future features must keep both locales complete rather
+  than introducing mixed operator copy.
 - Studio can list local persisted runs with counts, readiness/evidence status, remediation, and
   next-action visibility, then refine the operator queue with read-only shadcn sort, search, filter,
   blocker-limit, density, and tuning controls. Studio run detail shows a persistent action rail over
@@ -324,14 +327,7 @@
   publish, or causal claim is introduced. `producer analytics report` refreshes the ignored Markdown
   report and CSV template; Studio marks report previews as missing, stale, or current by dataset
   timestamp and source digest.
-- Roadmap and `.ai` guidance prioritize Production Loop Validation: repeat real local episodes,
-  reduce operator/media friction, keep Studio on guarded CLI/core contracts, and use manual analytics
-  before optional YouTube integrations. Prompt editing and richer production revisions remain later.
 - CodeRabbit is configured to auto-suggest and auto-assign `ogiboy` for PR review.
-- Local SonarQube configuration targets project `uykuluk-scifi`; manual SonarCloud scans target
-  `ogiboy_uykuluk-scifi`.
-- `pnpm sonar` has successfully uploaded at least one local analysis to
-  `http://localhost:9000/dashboard?id=uykuluk-scifi`.
 
 ## Voice Completion And Studio Parity
 
@@ -343,8 +339,12 @@
   QA, and production-build Studio UAT passed before merge.
 - Deterministic-local and Piper remain credential-free `linear-fallback` options. The former is
   reference timing only; Piper still requires operator listening before production use.
-- Delivery order is scene-specific visuals plus exact render, script audition and provenance,
-  resumable private-only YouTube upload, persistent settings/prompts, onboarding, documentation
+- Studio now has revisioned provider/budget/editorial settings, persisted prompt profiles, and
+  immutable episode-brief/settings snapshots. Saves are visible immediately and affect the next
+  operation; in-flight work remains pinned. New installs default to Turkish with a complete English
+  option, and `./studio` handles dependency setup, config initialization, Webpack build, and launch.
+- Delivery order is local MFLUX and visual audition, exact render/media polish, script audition and
+  provenance, resumable private-only YouTube upload, then settings/history polish, documentation
   productization, and real-episode acceptance.
 - Private-only upload is required for v1 controlled distribution. It is not implemented yet. Public
   and scheduled publishing remain unavailable and out of v1 scope.
@@ -397,8 +397,6 @@ pnpm producer status --run <run_id>
 pnpm producer status --run <run_id> --json
 pnpm producer status --latest
 pnpm producer desk
-pnpm producer desk --run <run_id>
-pnpm producer desk --plain
 pnpm producer list-runs
 pnpm producer list-runs --json
 pnpm producer voice --run <run_id> [--json]
@@ -461,9 +459,11 @@ If the shell lacks `node` or `pnpm`, use bundled Node or restore Corepack/PATH b
 - Optional Sentry captures unexpected Next.js and mutation-boundary failures without request bodies
   or artifacts; without a DSN it is disabled and never affects workflow or authorization.
 - Local prompt overrides are ignored `prompts/local/*.md` paths configured in `producer.config.json`
-  and recorded in provenance. Editing UI remains future work; tracked defaults stay read-only, and
-  full translation catalogs plus a language selector are deferred.
-- Approved settings/prompt editing is not implemented. Saves affect the next command; in-flight work stays pinned; listener/build-time settings restart; secrets stay env-only.
+  and recorded in provenance. Studio now persists bounded prompt-profile revisions and episode
+  briefs through CLI/core; broader prompt diff/rollback polish remains future work.
+- Studio settings and prompt-profile saves are implemented. They affect the next command while
+  in-flight work stays pinned; listener/build-time settings require restart/rebuild and secrets stay
+  status-only.
 - Initial package artifact revisions cover subtitles, scenes, popup-card Markdown, and YouTube
   metadata; they refresh the manifest and invalidate stale downstream evidence and plans.
 - Render planning does not render media, approve execution, or reserve spend; it is a local review/planning artifact only.

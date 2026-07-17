@@ -32,7 +32,9 @@ function enabledActionFindings(contract: StudioRouteSecurityContract): string[] 
   const findings = commonMutationFindings(contract);
   if (
     contract.risk === "publish-risk" ||
-    (contract.risk === "external-side-effect" && contract.requiredApproval !== "cost")
+    (contract.risk === "external-side-effect" &&
+      contract.requiredApproval !== "cost" &&
+      contract.requiredApproval !== "diagnostic")
   ) {
     findings.push(`${contract.id} exposes external or publish risk from Studio.`);
   }

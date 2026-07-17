@@ -9,9 +9,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const inter = Inter({ subsets: ["latin", "latin-ext"], variable: "--font-inter" });
 
-const jetBrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
+const jetBrainsMono = JetBrains_Mono({ subsets: ["latin", "latin-ext"], variable: "--font-mono" });
 
 export const metadata: Metadata = {
   title: "UykulukSciFi Producer Studio",

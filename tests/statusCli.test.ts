@@ -1,12 +1,9 @@
-import { spawnSync } from "node:child_process";
 import { mkdir, writeFile } from "node:fs/promises";
-import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { artifactPath } from "../src/core/artifacts";
 import { createRun, saveRun } from "../src/core/runStore";
 import { useTempProject } from "./helpers";
-
-const repoRoot = process.cwd();
+import { runProducerCliForTest } from "./producerCliTestHelper";
 
 describe("producer status CLI", () => {
   useTempProject();
@@ -71,14 +68,5 @@ describe("producer status CLI", () => {
 });
 
 function runCli(args: string[]): { status: number | null; stderr: string; stdout: string } {
-  const result = spawnSync(
-    path.join(repoRoot, "node_modules", ".bin", "tsx"),
-    [path.join(repoRoot, "src", "cli.ts"), ...args],
-    { cwd: process.cwd(), encoding: "utf8" },
-  );
-  return {
-    status: result.status,
-    stderr: result.stderr.toString(),
-    stdout: result.stdout.toString(),
-  };
+  return runProducerCliForTest(args);
 }

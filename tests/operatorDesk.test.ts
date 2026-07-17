@@ -1,4 +1,3 @@
-import { spawnSync } from "node:child_process";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
@@ -8,10 +7,9 @@ import { artifactPath } from "../src/core/artifacts";
 import { createRun, saveRun } from "../src/core/runStore";
 import { recordRenderDecision } from "../src/stages/renderDecision";
 import { useTempProject } from "./helpers";
+import { runProducerCliForTest } from "./producerCliTestHelper";
 import { renderLocalDraft } from "./renderPipelineHelpers";
 import { manualProductionEvidence } from "./statusOutputEvidenceFixtures";
-
-const repoRoot = process.cwd();
 
 describe("operator desk", () => {
   useTempProject();
@@ -55,11 +53,7 @@ describe("operator desk", () => {
 
   it("prints a scriptable plain CLI summary", async () => {
     const run = await createRun();
-    const result = spawnSync(
-      path.join(repoRoot, "node_modules", ".bin", "tsx"),
-      [path.join(repoRoot, "src", "cli.ts"), "desk", "--run", run.runId, "--plain"],
-      { cwd: process.cwd(), encoding: "utf8" },
-    );
+    const result = runProducerCliForTest(["desk", "--run", run.runId, "--plain"]);
 
     expect(result.status).toBe(0);
     expect(result.stdout).toContain("UykulukSciFi Operator Desk");
@@ -68,11 +62,7 @@ describe("operator desk", () => {
   });
 
   it("opens the operator desk when the root producer command has no subcommand", () => {
-    const result = spawnSync(
-      path.join(repoRoot, "node_modules", ".bin", "tsx"),
-      [path.join(repoRoot, "src", "cli.ts")],
-      { cwd: process.cwd(), encoding: "utf8" },
-    );
+    const result = runProducerCliForTest([]);
 
     expect(result.status).toBe(0);
     expect(result.stdout).toContain("UykulukSciFi Operator Desk");

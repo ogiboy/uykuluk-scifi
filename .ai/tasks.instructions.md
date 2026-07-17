@@ -83,8 +83,9 @@
   deterministic-local/Piper `linear-fallback` timing or making a paid CI call.
 - Keep live ElevenLabs production validation separate from implementation completion. The current
   Free API plan advertises 10,000 included Multilingual v2/v3 characters, but live subscription
-  metadata is authoritative. One short Turkish v3 timestamps request may be diagnostic-only; Free
-  output has no commercial production rights. Production synthesis still requires commercial
+  metadata is authoritative. One short Turkish v3 timestamps diagnostic was attempted after
+  entitlement preflight and rejected safely by the provider; do not call it production validation.
+  Free output has no commercial production rights. Production synthesis still requires commercial
   eligibility, exact quote, persisted approval, reservation, bounded execution, and settlement.
 - Preserve the merged `v0.83.0` static/manual visual fallback and exact render binding.
 - Close the active experimental, disabled-by-default FLUX.2 Pro slice as the sole hosted visual
@@ -107,11 +108,12 @@
   target-channel and MP4/metadata/thumbnail/caption digest binding, durable
   operation/offset/remote-ID evidence, and processing review. Public and scheduled publishing remain
   unavailable at schema, action-catalog, and UI levels.
-- Productization follows media and controlled distribution: implement versioned settings/history/
-  rollback, prompt profiles and editable idea briefs, one-command bootstrap/onboarding, concise
-  product documentation, local fallback rehearsal, and two real-episode acceptance runs. Saves are
-  visible immediately and affect the next command; in-flight work remains snapshot-pinned, secrets
-  remain status-only, and listener/build-time settings require restart or rebuild.
+- Productization follows media and controlled distribution: refine versioned settings/history/
+  rollback, prompt-profile and episode-brief diff UX, onboarding, concise product documentation,
+  local fallback rehearsal, and two real-episode acceptance runs. Revisioned settings, persisted
+  prompt profiles, immutable episode snapshots, Turkish-default/English Studio, and `./studio`
+  bootstrap are implemented. Saves affect the next command; in-flight work remains snapshot-pinned,
+  secrets remain status-only, and listener/build-time settings require restart or rebuild.
 - Treat Production Quality & Controlled Distribution as the active product milestone. Repeat the
   complete documented idea-to-manual-handoff workflow on real episodes and record operator/media
   friction; do not add a new platform surface unless the run exposes a concrete blocker.

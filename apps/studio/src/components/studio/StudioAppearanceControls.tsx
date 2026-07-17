@@ -48,6 +48,7 @@ export function StudioAppearanceControls({
     () => readStoredPreference(initialLocale, rawPreference),
     [initialLocale, rawPreference],
   );
+  const copy = appearanceCopy(preference.locale);
 
   useEffect(() => {
     applyAppearancePreference(preference);
@@ -78,16 +79,16 @@ export function StudioAppearanceControls({
       aria-labelledby='appearance-controls-heading'
     >
       <div>
-        <p className='text-muted-foreground text-xs'>Operator view</p>
+        <p className='text-muted-foreground text-xs'>{copy.eyebrow}</p>
         <h2 className='text-sm font-semibold' id='appearance-controls-heading'>
-          Appearance
+          {copy.heading}
         </h2>
       </div>
 
       <div className='grid gap-2'>
         <div className='grid min-w-0 gap-2'>
           <Label className='text-muted-foreground text-xs' htmlFor='studio-theme-select'>
-            Theme
+            {copy.theme}
           </Label>
           <Select value={preference.theme} onValueChange={updateTheme}>
             <SelectTrigger id='studio-theme-select' size='sm' className='w-full'>
@@ -96,7 +97,7 @@ export function StudioAppearanceControls({
             <SelectContent>
               {themeOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
-                  {option.label}
+                  {copy.themeOptions[option.value]}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -105,7 +106,7 @@ export function StudioAppearanceControls({
 
         <div className='grid min-w-0 gap-2'>
           <Label className='text-muted-foreground text-xs' htmlFor='studio-palette-select'>
-            Palette
+            {copy.palette}
           </Label>
           <Select value={preference.palette} onValueChange={updatePalette}>
             <SelectTrigger id='studio-palette-select' size='sm' className='w-full'>
@@ -114,7 +115,7 @@ export function StudioAppearanceControls({
             <SelectContent>
               {paletteOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
-                  {option.label}
+                  {copy.paletteOptions[option.value]}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -123,7 +124,7 @@ export function StudioAppearanceControls({
 
         <div className='grid min-w-0 gap-2'>
           <Label className='text-muted-foreground text-xs' htmlFor='studio-locale-select'>
-            Language
+            {copy.language}
           </Label>
           <Select value={preference.locale} onValueChange={updateLocale}>
             <SelectTrigger id='studio-locale-select' size='sm' className='w-full'>
@@ -141,7 +142,7 @@ export function StudioAppearanceControls({
 
         <div className='grid min-w-0 gap-2'>
           <Label className='text-muted-foreground text-xs' id='studio-density-label'>
-            Density
+            {copy.density}
           </Label>
           <ToggleGroup
             aria-labelledby='studio-density-label'
@@ -162,7 +163,7 @@ export function StudioAppearanceControls({
                 key={option.value}
                 value={option.value}
               >
-                {option.label}
+                {copy.densityOptions[option.value]}
               </ToggleGroupItem>
             ))}
           </ToggleGroup>
@@ -170,4 +171,31 @@ export function StudioAppearanceControls({
       </div>
     </section>
   );
+}
+
+function appearanceCopy(locale: StudioLocale) {
+  if (locale === "tr") {
+    return {
+      density: "Yoğunluk",
+      densityOptions: { compact: "Sıkı", standard: "Standart", wide: "Geniş" },
+      eyebrow: "Operatör görünümü",
+      heading: "Görünüm",
+      language: "Dil",
+      palette: "Palet",
+      paletteOptions: { amber: "Kehribar", cyan: "Camgöbeği", violet: "Menekşe" },
+      theme: "Tema",
+      themeOptions: { dark: "Koyu", light: "Açık", system: "Sistem" },
+    } as const;
+  }
+  return {
+    density: "Density",
+    densityOptions: { compact: "Compact", standard: "Standard", wide: "Wide" },
+    eyebrow: "Operator view",
+    heading: "Appearance",
+    language: "Language",
+    palette: "Palette",
+    paletteOptions: { amber: "Amber", cyan: "Cyan", violet: "Violet" },
+    theme: "Theme",
+    themeOptions: { dark: "Dark", light: "Light", system: "System" },
+  } as const;
 }

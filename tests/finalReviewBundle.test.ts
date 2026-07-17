@@ -1,6 +1,4 @@
-import { spawnSync } from "node:child_process";
 import { readFile, writeFile } from "node:fs/promises";
-import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { buildOperatorDeskViewModel, formatOperatorDeskPlain } from "../src/cli/operatorDeskModel";
 import { artifactPath } from "../src/core/artifacts";
@@ -14,9 +12,8 @@ import {
 import { recordRenderDecision, renderDecisionArtifactPaths } from "../src/stages/renderDecision";
 import { formatRunStatus, readRunStatus } from "../src/stages/status";
 import { useTempProject } from "./helpers";
+import { runProducerCliForTest } from "./producerCliTestHelper";
 import { renderLocalDraft } from "./renderPipelineHelpers";
-
-const repoRoot = process.cwd();
 
 describe("local final review bundle", () => {
   useTempProject();
@@ -191,14 +188,5 @@ describe("local final review bundle", () => {
 });
 
 function runCli(args: string[]): { status: number | null; stderr: string; stdout: string } {
-  const result = spawnSync(
-    path.join(repoRoot, "node_modules", ".bin", "tsx"),
-    [path.join(repoRoot, "src", "cli.ts"), ...args],
-    { cwd: process.cwd(), encoding: "utf8" },
-  );
-  return {
-    status: result.status,
-    stderr: result.stderr.toString(),
-    stdout: result.stdout.toString(),
-  };
+  return runProducerCliForTest(args);
 }

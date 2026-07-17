@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import type { StudioLocale } from "@/i18n/locales";
 import { runReviewHrefFromSummary } from "@/lib/runs/runReviewNavigation";
 import {
   formatRunChannelHandoff,
@@ -51,7 +52,7 @@ export function RunReadinessCell({ run }: RunSummaryCellProps) {
         <small className='text-muted-foreground line-clamp-2'>{run.readinessMessage}</small>
       )}
       {run.readinessNextAction ? (
-        <small className='text-muted-foreground line-clamp-1 break-words'>
+        <small className='text-muted-foreground line-clamp-1 wrap-break-word'>
           {run.readinessNextAction}
         </small>
       ) : null}
@@ -112,8 +113,11 @@ export function RunBlockedActionCell({ run }: RunSummaryCellProps) {
   );
 }
 
-export function RunUpdatedCell({ run }: RunSummaryCellProps) {
-  return formatRunDate(run.updatedAt);
+export function RunUpdatedCell({
+  locale,
+  run,
+}: RunSummaryCellProps & Readonly<{ locale: StudioLocale }>) {
+  return formatRunDate(locale, run.updatedAt);
 }
 
 export function RunFinalBundleCell({ run }: RunSummaryCellProps) {
@@ -145,13 +149,13 @@ export function RunChannelHandoffCell({ run }: RunSummaryCellProps) {
 
 export function RunNextActionCell({ run }: RunSummaryCellProps) {
   return (
-    <span className='block max-w-96 break-words'>
+    <span className='block max-w-96 wrap-break-word'>
       {run.nextRecommendedCommand ?? "Generate evidence"}
     </span>
   );
 }
 
-function formatRunDate(value: string): string {
+function formatRunDate(locale: StudioLocale, value: string): string {
   if (!value) {
     return "unknown";
   }
@@ -159,7 +163,7 @@ function formatRunDate(value: string): string {
   if (Number.isNaN(date.getTime())) {
     return value;
   }
-  return date.toLocaleString("tr-TR", {
+  return date.toLocaleString(locale === "tr" ? "tr-TR" : "en-US", {
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",

@@ -10,6 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import type { StudioLocale } from "@/i18n/locales";
 import type { RunQueueDensity } from "@/lib/runs/runQueueWorkbench";
 import type { StudioRunSummary } from "@/lib/runSummaries";
 import {
@@ -22,6 +23,7 @@ import {
   type VisibilityState,
 } from "@tanstack/react-table";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { runQueueCopy } from "./runQueueCopy";
 import { runColumnClassName, runSummaryColumns } from "./RunSummaryTableColumns";
 import {
   ColumnVisibilityMenu,
@@ -34,6 +36,7 @@ type RunSummaryTableProps = Readonly<{
   density?: RunQueueDensity;
   emptyAction?: ReactNode;
   emptyState?: Readonly<{ heading: string; message: string }>;
+  locale: StudioLocale;
   runs: readonly StudioRunSummary[];
 }>;
 
@@ -54,18 +57,18 @@ const initialPagination = { pageIndex: 0, pageSize: 10 } as const satisfies Pagi
 export function RunSummaryTable({
   density = "comfortable",
   emptyAction,
-  emptyState = {
-    heading: "No runs yet",
-    message: "Use the Start idea run control to create the first local production run.",
-  },
+  emptyState,
+  locale,
   runs,
 }: RunSummaryTableProps) {
+  const copy = runQueueCopy(locale);
+  const resolvedEmptyState = emptyState ?? copy.emptyRuns;
   const [columnVisibility, setColumnVisibility] =
     useState<VisibilityState>(initialColumnVisibility);
   const [pagination, setPagination] = useState<PaginationState>(initialPagination);
   const [sorting, setSorting] = useState<SortingState>([]);
   const data = useMemo(() => [...runs], [runs]);
-  const columns = useMemo(() => runSummaryColumns(), []);
+  const columns = useMemo(() => runSummaryColumns(locale), [locale]);
   // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table is the selected headless grid engine; the table instance is kept local to this component.
   const table = useReactTable({
     columns,
@@ -97,8 +100,8 @@ export function RunSummaryTable({
       <section aria-labelledby='runs-empty-heading'>
         <Card>
           <CardHeader>
-            <CardTitle id='runs-empty-heading'>{emptyState.heading}</CardTitle>
-            <CardDescription>{emptyState.message}</CardDescription>
+            <CardTitle id='runs-empty-heading'>{resolvedEmptyState.heading}</CardTitle>
+            <CardDescription>{resolvedEmptyState.message}</CardDescription>
           </CardHeader>
           {emptyAction ? <CardContent>{emptyAction}</CardContent> : null}
         </Card>
@@ -111,17 +114,12 @@ export function RunSummaryTable({
       <Card>
         <CardHeader className='gap-4 sm:grid-cols-[1fr_auto]'>
           <div className='space-y-2'>
-            <CardTitle id='runs-index-heading'>Run Index</CardTitle>
-            <CardDescription>
-              Data-grid projection over local CLI/core run summaries. Header sorting and column
-              toggles are read-only.
-            </CardDescription>
+            <CardTitle id='runs-index-heading'>{copy.indexTitle}</CardTitle>
+            <CardDescription>{copy.indexDescription}</CardDescription>
           </div>
           <div className='flex flex-wrap items-center gap-2 sm:justify-end'>
-            <Badge variant='secondary'>
-              {visibleRows.length} of {totalRows} rows
-            </Badge>
-            <ColumnVisibilityMenu table={table} />
+            <Badge variant='secondary'>{copy.rows(visibleRows.length, totalRows)}</Badge>
+            <ColumnVisibilityMenu locale={locale} table={table} />
           </div>
         </CardHeader>
         <CardContent className='space-y-4'>
@@ -129,9 +127,7 @@ export function RunSummaryTable({
             className={`min-w-230 max-[1100px]:min-w-160 ${density === "compact" ? "text-xs" : ""}`}
             data-density={density}
           >
-            <TableCaption className='sr-only'>
-              Saved producer runs and their next safe actions
-            </TableCaption>
+            <TableCaption className='sr-only'>{copy.tableCaption}</TableCaption>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow className='hover:bg-transparent' key={headerGroup.id}>
@@ -141,7 +137,7 @@ export function RunSummaryTable({
                       key={header.id}
                       scope='col'
                     >
-                      <RunSortableHeader header={header} />
+                      <RunSortableHeader header={header} locale={locale} />
                     </TableHead>
                   ))}
                 </TableRow>
@@ -154,20 +150,20 @@ export function RunSummaryTable({
                     className='text-muted-foreground px-3 py-6 text-center text-sm'
                     colSpan={visibleColumnCount}
                   >
-                    The current queue view changed. Resetting to the first page.
+                    {copy.tableFallback}
                   </td>
                 </TableRow>
               ) : null}
               {visibleRows.map((row) => (
                 <TableRow key={row.id}>
                   {row.getVisibleCells().map((cell) => (
-                    <RunTableCell key={cell.id} cell={cell} />
+                    <RunTableCell cell={cell} key={cell.id} locale={locale} />
                   ))}
                 </TableRow>
               ))}
             </TableBody>
           </Table>
-          <RunTablePagination table={table} />
+          <RunTablePagination locale={locale} table={table} />
         </CardContent>
       </Card>
     </section>

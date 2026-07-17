@@ -1,37 +1,36 @@
+import { runQueueCopy } from "@/components/runs/runQueueCopy";
 import { RunQueueExplorer } from "@/components/runs/RunQueueExplorer";
-import { StartIdeasActionPanel } from "@/components/studio/StartIdeasActionPanel";
 import { StudioCommandPalette } from "@/components/studio/StudioCommandPalette";
 import { StudioPageHeader } from "@/components/studio/StudioPageHeader";
 import { StudioShell } from "@/components/studio/StudioShell";
 import { Badge } from "@/components/ui/badge";
-import { startIdeasReadinessFromDoctor } from "@/lib/actions/startIdeasReadiness";
-import { getStudioDoctorOverview } from "@/lib/doctorOverview";
+import { Button } from "@/components/ui/button";
+import { normalizeStudioLocale } from "@/i18n/locales";
 import { listStudioRuns } from "@/lib/runSummaries";
+import { getLocale } from "next-intl/server";
+import Link from "next/link";
 
 export default async function RunsPage() {
-  const [doctorOverview, runs] = await Promise.all([getStudioDoctorOverview(), listStudioRuns()]);
-  const startIdeasReadiness = startIdeasReadinessFromDoctor(doctorOverview);
+  const [runs, locale] = await Promise.all([listStudioRuns(), getLocale()]);
+  const studioLocale = normalizeStudioLocale(locale);
+  const copy = runQueueCopy(studioLocale);
 
   return (
     <StudioShell>
       <StudioPageHeader
         actions={
           <>
-            <StartIdeasActionPanel
-              buttonLabel='Start idea run'
-              presentation='button'
-              readiness={startIdeasReadiness}
-              showResult={false}
-              variant='default'
-            />
+            <Button asChild>
+              <Link href='/ideas/new'>{copy.createEpisode}</Link>
+            </Button>
             <StudioCommandPalette runs={runs} />
-            <Badge variant='secondary'>Local core verified</Badge>
+            <Badge variant='secondary'>{copy.localCoreVerified}</Badge>
           </>
         }
-        eyebrow='Read-only local run review'
-        title='Producer runs'
+        eyebrow={studioLocale === "tr" ? "Üretim bölümleri" : "Production episodes"}
+        title={copy.title}
       />
-      <RunQueueExplorer runs={runs} startIdeasReadiness={startIdeasReadiness} />
+      <RunQueueExplorer locale={studioLocale} runs={runs} />
     </StudioShell>
   );
 }
