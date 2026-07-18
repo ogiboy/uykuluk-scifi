@@ -11,7 +11,7 @@
 Studio-first production desk for original Turkish YouTube episodes.
 ```
 
-[![CI](https://github.com/ogiboy/uykuluk-scifi/actions/workflows/ci.yml/badge.svg)](https://github.com/ogiboy/uykuluk-scifi/actions/workflows/ci.yml)
+[![CircleCI](https://dl.circleci.com/status-badge/img/circleci/UrHMrDx1PVKhCgH85sybLu/2yPmwJdK8sXCwiXHPNtgiT/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/circleci/UrHMrDx1PVKhCgH85sybLu/2yPmwJdK8sXCwiXHPNtgiT/tree/main)
 [![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=ogiboy_uykuluk-scifi)](https://sonarcloud.io/summary/new_code?id=ogiboy_uykuluk-scifi)
 [![License: LGPL-3.0](https://img.shields.io/badge/license-LGPL--3.0-blue.svg)](LICENSE)
 
