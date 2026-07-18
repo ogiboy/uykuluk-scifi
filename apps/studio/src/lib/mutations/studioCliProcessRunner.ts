@@ -1,7 +1,7 @@
 import { spawn, type ChildProcess } from "node:child_process";
 import { existsSync } from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { projectRoot } from "../projectRoot";
 import {
   appendBoundedStudioCliOutput,
@@ -26,8 +26,13 @@ export function runProducerCli(args: readonly string[]): Promise<StudioCliResult
   return new Promise((resolve, reject) => {
     const sourceRoot = sourceProjectRoot();
     const child = spawn(
-      path.join(sourceRoot, "node_modules", ".bin", "tsx"),
-      [path.join(sourceRoot, "src", "cli.ts"), ...args],
+      process.execPath,
+      [
+        "--import",
+        pathToFileURL(path.join(sourceRoot, "node_modules", "tsx", "dist", "loader.mjs")).href,
+        path.join(sourceRoot, "src", "cli.ts"),
+        ...args,
+      ],
       {
         cwd: projectRoot(),
         detached: process.platform !== "win32",

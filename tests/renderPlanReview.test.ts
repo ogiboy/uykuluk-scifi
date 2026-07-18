@@ -1,15 +1,12 @@
-import { spawnSync } from "node:child_process";
 import { writeFile } from "node:fs/promises";
-import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { artifactPath } from "../src/core/artifacts";
 import { createRun } from "../src/core/runStore";
 import { formatRenderPlanReviewConsole, reviewRenderPlan } from "../src/stages/reviewRenderPlan";
 import { readJsonFile } from "../src/utils/json";
 import { useTempProject } from "./helpers";
+import { runProducerCliForTest } from "./producerCliTestHelper";
 import { prepareReadyRunWithoutVoiceover } from "./renderPipelineHelpers";
-
-const repoRoot = process.cwd();
 
 describe("render-plan operator review", () => {
   useTempProject();
@@ -148,14 +145,5 @@ describe("render-plan operator review", () => {
 });
 
 function runCli(args: string[]): { status: number | null; stderr: string; stdout: string } {
-  const result = spawnSync(
-    path.join(repoRoot, "node_modules", ".bin", "tsx"),
-    [path.join(repoRoot, "src", "cli.ts"), ...args],
-    { cwd: process.cwd(), encoding: "utf8" },
-  );
-  return {
-    status: result.status,
-    stderr: result.stderr.toString(),
-    stdout: result.stdout.toString(),
-  };
+  return runProducerCliForTest(args);
 }

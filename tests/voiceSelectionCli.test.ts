@@ -1,18 +1,15 @@
-import { spawnSync } from "node:child_process";
-import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { generateVoiceCandidates } from "../src/stages/voiceCandidates";
 import { generateVoicePreview } from "../src/stages/voicePreview";
 import { prepareApprovedSelectedVoiceRun } from "./elevenLabsVoiceWorkflowFixtures";
 import { useTempProject } from "./helpers";
+import { runProducerCliForTest } from "./producerCliTestHelper";
 import {
   configureElevenLabs,
   preparePackagedRun,
   successfulCatalogProvider,
   successfulPreviewProvider,
 } from "./voiceCatalogStageFixtures";
-
-const repoRoot = process.cwd();
 
 describe("producer voice selection CLI", () => {
   useTempProject();
@@ -75,14 +72,5 @@ describe("producer voice selection CLI", () => {
 });
 
 function runCli(args: string[]): { status: number | null; stderr: string; stdout: string } {
-  const result = spawnSync(
-    path.join(repoRoot, "node_modules", ".bin", "tsx"),
-    [path.join(repoRoot, "src", "cli.ts"), ...args],
-    { cwd: process.cwd(), encoding: "utf8" },
-  );
-  return {
-    status: result.status,
-    stderr: result.stderr.toString(),
-    stdout: result.stdout.toString(),
-  };
+  return runProducerCliForTest(args);
 }

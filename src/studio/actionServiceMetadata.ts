@@ -2,6 +2,7 @@
 export const studioMutationActionIds = [
   "idea.approve", "script.approve", "cost.approve", "render.approve", "render.decide",
   "channel-handoff.decide", "analytics.import", "analytics.report", "doctor.run", "ideas.run",
+  "settings.save", "promptProfiles.save", "episodes.create", "providers.elevenlabs.smoke",
   "model-eval.run", "model-eval-candidates.run", "script.run", "script.review", "script.revise", "package.run",
   "package-artifact.revise", "render-plan.run", "render-plan.review", "estimate.run", "evidence.run", "readiness.run",
   "visuals.prepare", "visuals.plan-hosted", "visuals.generate-hosted", "visuals.import", "visuals.decide", "visuals.regenerate",
@@ -44,6 +45,10 @@ const studioMutationServiceRows = [
   ["model-eval.run", readyForCli, "pnpm producer eval local-model", "runLocalModelEval", "src/diagnostics/localModelEval.ts", "Refresh single-model local parser-contract evaluation evidence."],
   ["model-eval-candidates.run", readyForCli, "pnpm producer eval local-model-candidates --candidate <model>", "runLocalModelCandidateEval", "src/diagnostics/localModelCandidateEval.ts", "Compare local model candidates through parser-contract checks without mutating config."],
   ["ideas.run", readyForCli, "pnpm producer ideas", "runIdeas", "src/stages/ideas.ts", "Start a new local idea-generation run through the canonical workflow."],
+  ["settings.save", readyForCli, "pnpm producer settings save --file <temp_json>", "saveSettingsRevision", "src/settings/settingsRevisionStore.ts", "Save one attributed, revisioned producer settings snapshot."],
+  ["promptProfiles.save", readyForCli, "pnpm producer prompt-profiles save --file <temp_json>", "saveSettingsRevision", "src/settings/settingsRevisionStore.ts", "Save one prompt profile revision through the canonical settings history."],
+  ["episodes.create", readyForCli, "pnpm producer episodes create --file <temp_json>", "runIdeas", "src/stages/ideas.ts", "Create a new episode from an exact prompt-profile and settings snapshot."],
+  ["providers.elevenlabs.smoke", readyForCli, "pnpm producer provider-smoke elevenlabs --file <temp_json>", "runElevenLabsDiagnosticSmoke", "src/stages/voice/elevenLabsDiagnosticSmoke.ts", "Create one diagnostic-only Eleven v3 audio sample after an included-credit entitlement preflight."],
   ["script.run", readyForCli, "pnpm producer script --run <run_id>", "generateScript", "src/stages/script.ts", "Generate a script for an approved idea through the canonical workflow."],
   ["script.review", readyForCli, "pnpm producer review script --run <run_id>", "reviewScript", "src/stages/reviewScript.ts", "Run the local script review and persist review evidence for operator approval."],
   ["script.revise", readyForCli, "pnpm producer revise script --run <run_id> --file <temp_file> --json", "reviseScript", "src/revisions/scriptRevision.ts", "Record a script revision and invalidate stale review evidence."],

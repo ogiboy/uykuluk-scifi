@@ -1,5 +1,3 @@
-import { spawnSync } from "node:child_process";
-import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { loadRun } from "../src/core/runStore";
 import { approveIdea } from "../src/stages/approveIdea";
@@ -8,8 +6,7 @@ import { runIdeas } from "../src/stages/ideas";
 import { reviewScript } from "../src/stages/reviewScript";
 import { generateScript } from "../src/stages/script";
 import { useTempProject } from "./helpers";
-
-const repoRoot = process.cwd();
+import { runProducerCliForTest } from "./producerCliTestHelper";
 
 describe("producer package CLI", () => {
   useTempProject();
@@ -37,16 +34,7 @@ describe("producer package CLI", () => {
 });
 
 function runCli(args: string[]): { status: number | null; stderr: string; stdout: string } {
-  const result = spawnSync(
-    path.join(repoRoot, "node_modules", ".bin", "tsx"),
-    [path.join(repoRoot, "src", "cli.ts"), ...args],
-    { cwd: process.cwd(), encoding: "utf8" },
-  );
-  return {
-    status: result.status,
-    stderr: result.stderr.toString(),
-    stdout: result.stdout.toString(),
-  };
+  return runProducerCliForTest(args);
 }
 
 async function prepareApprovedScriptRun(): Promise<string> {

@@ -6,8 +6,10 @@ import { registerDecisionCommands } from "./cli/decisionCommands.js";
 import { registerEvaluationCommands } from "./cli/evaluationCommands.js";
 import { registerGenerationCommands } from "./cli/generationCommands.js";
 import { registerOperatorDeskCommand } from "./cli/operatorDeskCommand.js";
+import { registerProviderSmokeCommands } from "./cli/providerSmokeCommands.js";
 import { registerReviewCommands } from "./cli/reviewCommands.js";
 import { registerRevisionCommands } from "./cli/revisionCommands.js";
+import { registerSettingsCommands } from "./cli/settingsCommands.js";
 import { resolveStatusRunId } from "./cli/statusRunSelector.js";
 import { readCliVersion } from "./cli/version.js";
 import { registerVisualCommands } from "./cli/visualCommands.js";
@@ -66,11 +68,13 @@ registerDecisionCommands(program, wrap);
 registerEvaluationCommands(program, wrap);
 registerGenerationCommands(program, wrap);
 registerOperatorDeskCommand(program, wrap);
+registerProviderSmokeCommands(program, wrap);
 registerReviewCommands(program, wrap);
 registerVoiceCommands(program, wrap);
 registerVisualCommands(program, wrap);
 
 registerRevisionCommands(program, wrap);
+registerSettingsCommands(program, wrap);
 
 program
   .command("readiness")

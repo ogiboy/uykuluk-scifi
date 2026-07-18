@@ -1,4 +1,3 @@
-import { spawnSync } from "node:child_process";
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
@@ -11,8 +10,8 @@ import {
   readAllCostReservationSummaries,
 } from "../src/costs/costReservationStore";
 import { useTempProject } from "./helpers";
+import { runProducerCliForTest } from "./producerCliTestHelper";
 
-const repoRoot = process.cwd();
 const windowsPathSeparator = String.fromCodePoint(92);
 const posixPathSeparator = String.fromCodePoint(47);
 const currentPathSegment = ["."].join("");
@@ -118,16 +117,7 @@ describe("run id validation", () => {
 });
 
 function runCli(args: string[]): { status: number | null; stderr: string; stdout: string } {
-  const result = spawnSync(
-    path.join(repoRoot, "node_modules", ".bin", "tsx"),
-    [path.join(repoRoot, "src", "cli.ts"), ...args],
-    { cwd: process.cwd(), encoding: "utf8" },
-  );
-  return {
-    status: result.status,
-    stderr: result.stderr.toString(),
-    stdout: result.stdout.toString(),
-  };
+  return runProducerCliForTest(args);
 }
 
 function posixAbsolutePath(...segments: string[]): string {

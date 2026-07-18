@@ -15,6 +15,7 @@ export type StudioRouteSecurityContract = {
   requiredApproval:
     | "analytics"
     | "cost"
+    | "diagnostic"
     | "idea"
     | "none"
     | "publish"
@@ -44,12 +45,15 @@ export const readOnlyStudioRoutes = [
   route("runs.media", "/runs/[runId]/media/[...artifactPath]"),
   route("runs.visual", "/runs/[runId]/visuals/[sceneIndex]"),
   route("ideas.index", "/ideas"),
+  route("ideas.new", "/ideas/new"),
   route("assets.index", "/assets"),
   route("analytics.index", "/analytics"),
   route("doctor.index", "/doctor"),
   route("eval.index", "/eval"),
   route("forbidden.boundary", "/forbidden"),
   route("prompts.index", "/prompts"),
+  route("settings.index", "/settings"),
+  route("provider-smokes.elevenlabs.audio", "/provider-smokes/elevenlabs/[operationId]/audio"),
   route("unauthorized.boundary", "/unauthorized"),
 ] as const satisfies readonly StudioRouteSecurityContract[];
 
@@ -83,6 +87,22 @@ export const enabledStudioActionRoutes = [
     true,
   ),
   action("ideas.run", "/actions/run-ideas", "workflow", "local-mutation", true),
+  action("settings.save", "/actions/settings-save", "workflow", "local-mutation", true),
+  action(
+    "promptProfiles.save",
+    "/actions/prompt-profiles-save",
+    "workflow",
+    "local-mutation",
+    true,
+  ),
+  action("episodes.create", "/actions/episode-create", "workflow", "local-mutation", true),
+  action(
+    "providers.elevenlabs.smoke",
+    "/actions/elevenlabs-smoke",
+    "diagnostic",
+    "external-side-effect",
+    true,
+  ),
   action("script.run", "/actions/run-script", "workflow", "local-mutation", true),
   action("script.review", "/actions/review-script", "workflow", "local-mutation", true),
   action("script.revise", "/actions/revise-script", "script", "local-mutation", true),

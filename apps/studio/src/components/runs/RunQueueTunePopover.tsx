@@ -5,22 +5,20 @@ import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Slider } from "@/components/ui/slider";
+import type { StudioLocale } from "@/i18n/locales";
 import { type RunQueueDensity, runQueueDensityValues } from "@/lib/runs/runQueueWorkbench";
+import { runQueueCopy } from "./runQueueCopy";
 
 export const maxBlockedActionSliderValue = 5;
 
 type RunQueueTunePopoverProps = Readonly<{
   density: RunQueueDensity;
   highestBlockedActionCount: number;
+  locale: StudioLocale;
   maxBlockedActions: number;
   onDensityChange: (density: RunQueueDensity) => void;
   onMaxBlockedActionsChange: (value: number) => void;
 }>;
-
-const densityLabels = { compact: "Compact", comfortable: "Comfortable" } as const satisfies Record<
-  RunQueueDensity,
-  string
->;
 
 /**
  * Renders read-only queue display tuning controls for the Studio run workbench.
@@ -34,28 +32,32 @@ const densityLabels = { compact: "Compact", comfortable: "Comfortable" } as cons
 export function RunQueueTunePopover({
   density,
   highestBlockedActionCount,
+  locale,
   maxBlockedActions,
   onDensityChange,
   onMaxBlockedActionsChange,
 }: RunQueueTunePopoverProps) {
+  const copy = runQueueCopy(locale);
+  const densityLabels = {
+    compact: copy.tune.compact,
+    comfortable: copy.tune.comfortable,
+  } satisfies Record<RunQueueDensity, string>;
   return (
     <Popover>
       <PopoverTrigger asChild>
         <Button className='min-h-10' type='button' variant='secondary'>
-          Tune review surface
+          {copy.tune.trigger}
         </Button>
       </PopoverTrigger>
       <PopoverContent align='end' className='w-[min(360px,calc(100vw-2rem))]'>
         <div className='grid gap-3'>
           <div>
-            <h3 className='font-semibold'>Review surface</h3>
-            <p className='text-muted-foreground text-sm leading-relaxed'>
-              Local projection only. These controls never approve, render, upload, or mutate.
-            </p>
+            <h3 className='font-semibold'>{copy.tune.reviewSurface}</h3>
+            <p className='text-muted-foreground text-sm leading-relaxed'>{copy.tune.localOnly}</p>
           </div>
           <div className='grid gap-3'>
             <div className='flex items-center justify-between gap-3'>
-              <Label htmlFor='max-blocked-actions'>Max blockers shown</Label>
+              <Label htmlFor='max-blocked-actions'>{copy.tune.maxBlockers}</Label>
               <strong className='text-primary font-mono'>{maxBlockedActions}</strong>
             </div>
             <Slider
@@ -67,12 +69,11 @@ export function RunQueueTunePopover({
               onValueChange={(value) => onMaxBlockedActionsChange(value[0] ?? 0)}
             />
             <small className='text-muted-foreground text-sm leading-relaxed'>
-              Current data reaches {highestBlockedActionCount}. Set 0 to review only fully unblocked
-              runs.
+              {copy.tune.showOnlyUnblocked(highestBlockedActionCount)}
             </small>
           </div>
           <div className='grid gap-3'>
-            <Label id='queue-density-label'>Table density</Label>
+            <Label id='queue-density-label'>{copy.tune.density}</Label>
             <RadioGroup
               aria-labelledby='queue-density-label'
               className='grid grid-cols-2 gap-2'

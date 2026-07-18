@@ -15,7 +15,7 @@ describe("producer visuals CLI", () => {
   it("binds decisions to the fresh manifest snapshot", async () => {
     const runId = await preparePackagedVisualRun();
     const prepared = runCli(["visuals", "prepare", "--run", runId, "--json"]);
-    expect(prepared.status).toBe(0);
+    expectCliSuccess(prepared);
     const preparedExpectation = await visualMutationCliArgs(runId);
 
     const rejected = runCli([
@@ -34,7 +34,7 @@ describe("producer visuals CLI", () => {
       ...preparedExpectation,
       "--json",
     ]);
-    expect(rejected.status).toBe(0);
+    expectCliSuccess(rejected);
     const rejectedManifest = JSON.parse(rejected.stdout) as { scenes: unknown[] };
     expect(rejectedManifest.scenes[0]).toMatchObject({
       sceneIndex: 1,
@@ -44,9 +44,9 @@ describe("producer visuals CLI", () => {
 
   it("binds regeneration to the fresh rejected manifest snapshot", async () => {
     const runId = await preparePackagedVisualRun();
-    expect(runCli(["visuals", "prepare", "--run", runId]).status).toBe(0);
+    expectCliSuccess(runCli(["visuals", "prepare", "--run", runId]));
     const preparedExpectation = await visualMutationCliArgs(runId);
-    expect(
+    expectCliSuccess(
       runCli([
         "visuals",
         "decide",
@@ -61,8 +61,8 @@ describe("producer visuals CLI", () => {
         "--notes",
         "Request the next deterministic fallback.",
         ...preparedExpectation,
-      ]).status,
-    ).toBe(0);
+      ]),
+    );
 
     const rejectedExpectation = await visualMutationCliArgs(runId);
     const regenerated = runCli([
@@ -75,7 +75,7 @@ describe("producer visuals CLI", () => {
       ...rejectedExpectation,
       "--json",
     ]);
-    expect(regenerated.status).toBe(0);
+    expectCliSuccess(regenerated);
     const regeneratedManifest = JSON.parse(regenerated.stdout) as { scenes: unknown[] };
     expect(regeneratedManifest.scenes[0]).toMatchObject({
       sceneIndex: 1,
@@ -89,7 +89,7 @@ describe("producer visuals CLI", () => {
 
   it("binds manual import to the fresh manifest snapshot", async () => {
     const runId = await preparePackagedVisualRun();
-    expect(runCli(["visuals", "prepare", "--run", runId]).status).toBe(0);
+    expectCliSuccess(runCli(["visuals", "prepare", "--run", runId]));
     await writeTestPng("manual.png");
     const preparedExpectation = await visualMutationCliArgs(runId);
     const imported = runCli([
@@ -104,7 +104,7 @@ describe("producer visuals CLI", () => {
       ...preparedExpectation,
       "--json",
     ]);
-    expect(imported.status).toBe(0);
+    expectCliSuccess(imported);
     const importedManifest = JSON.parse(imported.stdout) as { scenes: unknown[] };
     expect(importedManifest.scenes[0]).toMatchObject({
       sceneIndex: 1,
@@ -117,7 +117,7 @@ describe("producer visuals CLI", () => {
 
   it("keeps regeneration fail-closed when a scene is not rejected", async () => {
     const runId = await preparePackagedVisualRun();
-    expect(runCli(["visuals", "prepare", "--run", runId]).status).toBe(0);
+    expectCliSuccess(runCli(["visuals", "prepare", "--run", runId]));
     const expectation = await visualMutationCliArgs(runId);
 
     const result = runCli([
@@ -136,7 +136,7 @@ describe("producer visuals CLI", () => {
 
   it("rejects a stale browser snapshot instead of rebinding to current visuals", async () => {
     const runId = await preparePackagedVisualRun();
-    expect(runCli(["visuals", "prepare", "--run", runId]).status).toBe(0);
+    expectCliSuccess(runCli(["visuals", "prepare", "--run", runId]));
     const staleExpectation = await visualMutationCliArgs(runId);
 
     const first = runCli([
@@ -154,7 +154,7 @@ describe("producer visuals CLI", () => {
       "Reject once.",
       ...staleExpectation,
     ]);
-    expect(first.status).toBe(0);
+    expectCliSuccess(first);
 
     const stale = runCli([
       "visuals",
@@ -199,9 +199,10 @@ async function visualMutationCliArgs(runId: string): Promise<string[]> {
 }
 
 function runCli(args: string[]): { status: number | null; stderr: string; stdout: string } {
+  const tsxLoader = path.join(repoRoot, "node_modules", "tsx", "dist", "loader.mjs");
   const result = spawnSync(
-    path.join(repoRoot, "node_modules", ".bin", "tsx"),
-    [path.join(repoRoot, "src", "cli.ts"), ...args],
+    process.execPath,
+    ["--import", tsxLoader, path.join(repoRoot, "src", "cli.ts"), ...args],
     { cwd: process.cwd(), encoding: "utf8", timeout: 30_000 },
   );
   return {
@@ -209,4 +210,9 @@ function runCli(args: string[]): { status: number | null; stderr: string; stdout
     stderr: result.stderr.toString(),
     stdout: result.stdout.toString(),
   };
+}
+
+function expectCliSuccess(result: ReturnType<typeof runCli>): void {
+  const diagnostics = [result.stderr.trim(), result.stdout.trim()].filter(Boolean).join("\n");
+  expect(result.status, diagnostics).toBe(0);
 }

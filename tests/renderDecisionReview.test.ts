@@ -1,5 +1,3 @@
-import { spawnSync } from "node:child_process";
-import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { recordRenderDecision } from "../src/stages/renderDecision";
 import {
@@ -8,9 +6,8 @@ import {
   type RenderDecisionReviewHandoff,
 } from "../src/stages/reviewRenderDecision";
 import { useTempProject } from "./helpers";
+import { runProducerCliForTest } from "./producerCliTestHelper";
 import { renderLocalDraft } from "./renderPipelineHelpers";
-
-const repoRoot = process.cwd();
 
 describe("render-decision review command", () => {
   useTempProject();
@@ -86,14 +83,5 @@ describe("render-decision review command", () => {
 });
 
 function runCli(args: string[]): { status: number | null; stderr: string; stdout: string } {
-  const result = spawnSync(
-    path.join(repoRoot, "node_modules", ".bin", "tsx"),
-    [path.join(repoRoot, "src", "cli.ts"), ...args],
-    { cwd: process.cwd(), encoding: "utf8" },
-  );
-  return {
-    status: result.status,
-    stderr: result.stderr.toString(),
-    stdout: result.stdout.toString(),
-  };
+  return runProducerCliForTest(args);
 }

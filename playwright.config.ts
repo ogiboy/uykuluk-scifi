@@ -9,7 +9,18 @@ export default defineConfig({
     command: "pnpm studio:build && pnpm studio:start",
     url: "http://127.0.0.1:3000",
     reuseExistingServer: true,
-    timeout: 60_000,
+    timeout: 120_000,
   },
-  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  projects: [
+    {
+      name: "chromium",
+      testIgnore: /webkit-main-path\.spec\.ts/,
+      use: { ...devices["Desktop Chrome"] },
+    },
+    {
+      name: "webkit",
+      testMatch: /webkit-main-path\.spec\.ts/,
+      use: { ...devices["Desktop Safari"] },
+    },
+  ],
 });

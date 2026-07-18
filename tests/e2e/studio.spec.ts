@@ -1,5 +1,11 @@
 import { expect, test } from "@playwright/test";
 
+test.beforeEach(async ({ context }) => {
+  await context.addCookies([
+    { name: "uykuluk_studio_locale", value: "en", url: "http://127.0.0.1:3000" },
+  ]);
+});
+
 test("studio shell renders operator surfaces", async ({ page }) => {
   const response = await page.goto("/");
 
@@ -67,7 +73,29 @@ test("studio exposes the read-only run index route", async ({ page }) => {
   await page.goto("/runs");
 
   await expect(page.getByRole("heading", { name: /producer runs/i })).toBeVisible();
+  await expect(
+    page.locator("header").getByRole("link", { name: "Create episode" }),
+  ).toHaveAttribute("href", "/ideas/new");
+  await expect(page.getByRole("button", { name: "Tune review view" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Studio home" })).toBeVisible();
+});
+
+test("studio localizes the run index and keeps the episode brief entry visible in Turkish", async ({
+  context,
+  page,
+}) => {
+  await context.addCookies([
+    { name: "uykuluk_studio_locale", value: "tr", url: "http://127.0.0.1:3000" },
+  ]);
+
+  await page.goto("/runs");
+
+  await expect(page.getByRole("heading", { name: "Üretim bölümleri" })).toBeVisible();
+  await expect(page.locator("header").getByRole("link", { name: "Bölüm oluştur" })).toHaveAttribute(
+    "href",
+    "/ideas/new",
+  );
+  await expect(page.getByRole("button", { name: "İnceleme görünümünü ayarla" })).toBeVisible();
 });
 
 test("studio exposes the read-only idea history route", async ({ page }) => {

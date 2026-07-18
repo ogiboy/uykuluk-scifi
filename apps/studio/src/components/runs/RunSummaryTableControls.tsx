@@ -16,32 +16,35 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { TableCell } from "@/components/ui/table";
+import type { StudioLocale } from "@/i18n/locales";
 import type { StudioRunSummary } from "@/lib/runSummaries";
 import { flexRender, type Cell, type Header, type Table } from "@tanstack/react-table";
 import { runColumnClassName, runColumnLabel } from "./RunSummaryTableColumns";
+import { runQueueCopy } from "./runQueueCopy";
 
 type RunTableCellModel = Cell<StudioRunSummary, unknown>;
 type RunTableHeader = Header<StudioRunSummary, unknown>;
 
-type ColumnVisibilityMenuProps = Readonly<{ table: Table<StudioRunSummary> }>;
+type ColumnVisibilityMenuProps = Readonly<{ locale: StudioLocale; table: Table<StudioRunSummary> }>;
 
-type RunSortableHeaderProps = Readonly<{ header: RunTableHeader }>;
+type RunSortableHeaderProps = Readonly<{ header: RunTableHeader; locale: StudioLocale }>;
 
-type RunTableCellProps = Readonly<{ cell: RunTableCellModel }>;
+type RunTableCellProps = Readonly<{ cell: RunTableCellModel; locale: StudioLocale }>;
 
 const pageSizeOptions = [10, 25, 50] as const;
 
-export function ColumnVisibilityMenu({ table }: ColumnVisibilityMenuProps) {
+export function ColumnVisibilityMenu({ locale, table }: ColumnVisibilityMenuProps) {
+  const copy = runQueueCopy(locale);
   const hideableColumns = table.getAllLeafColumns().filter((column) => column.getCanHide());
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button type='button' variant='secondary'>
-          Columns
+          {copy.columns}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align='end'>
-        <DropdownMenuLabel>Visible columns</DropdownMenuLabel>
+        <DropdownMenuLabel>{copy.visibleColumns}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {hideableColumns.map((column) => (
           <DropdownMenuCheckboxItem
@@ -49,7 +52,7 @@ export function ColumnVisibilityMenu({ table }: ColumnVisibilityMenuProps) {
             key={column.id}
             onCheckedChange={(checked) => column.toggleVisibility(checked === true)}
           >
-            {runColumnLabel(column.columnDef.meta)}
+            {runColumnLabel(column.columnDef.meta, locale)}
           </DropdownMenuCheckboxItem>
         ))}
       </DropdownMenuContent>
@@ -57,7 +60,8 @@ export function ColumnVisibilityMenu({ table }: ColumnVisibilityMenuProps) {
   );
 }
 
-export function RunTablePagination({ table }: ColumnVisibilityMenuProps) {
+export function RunTablePagination({ locale, table }: ColumnVisibilityMenuProps) {
+  const copy = runQueueCopy(locale);
   const pagination = table.getState().pagination;
   const totalRows = table.getPrePaginationRowModel().rows.length;
   const currentRows = table.getRowModel().rows.length;
@@ -68,10 +72,11 @@ export function RunTablePagination({ table }: ColumnVisibilityMenuProps) {
   return (
     <div
       className='text-muted-foreground flex flex-col gap-3 text-sm sm:flex-row sm:items-center sm:justify-between'
-      aria-label='Run table pagination'
+      aria-label={`${copy.indexTitle} ${copy.pagination(firstRow, lastRow, totalRows)}`}
     >
       <p aria-live='polite'>
-        Rows {firstRow}-{lastRow} of {totalRows}. Page {pagination.pageIndex + 1} of {pageCount}.
+        {copy.pagination(firstRow, lastRow, totalRows)}{" "}
+        {copy.page(pagination.pageIndex + 1, pageCount)}
       </p>
       <div className='flex flex-wrap items-center gap-2'>
         <Button
@@ -80,7 +85,7 @@ export function RunTablePagination({ table }: ColumnVisibilityMenuProps) {
           type='button'
           variant='secondary'
         >
-          First
+          {copy.first}
         </Button>
         <Button
           disabled={!table.getCanPreviousPage()}
@@ -88,7 +93,7 @@ export function RunTablePagination({ table }: ColumnVisibilityMenuProps) {
           type='button'
           variant='secondary'
         >
-          Previous
+          {copy.previous}
         </Button>
         <Button
           disabled={!table.getCanNextPage()}
@@ -96,7 +101,7 @@ export function RunTablePagination({ table }: ColumnVisibilityMenuProps) {
           type='button'
           variant='secondary'
         >
-          Next
+          {copy.next}
         </Button>
         <Button
           disabled={!table.getCanNextPage()}
@@ -104,20 +109,20 @@ export function RunTablePagination({ table }: ColumnVisibilityMenuProps) {
           type='button'
           variant='secondary'
         >
-          Last
+          {copy.last}
         </Button>
         <Select
           value={String(pagination.pageSize)}
           onValueChange={(value) => setPageSize(table, value)}
         >
-          <SelectTrigger className='w-32' aria-label='Rows per page'>
-            <SelectValue placeholder='Rows per page' />
+          <SelectTrigger className='w-32' aria-label={copy.rowsPerPage}>
+            <SelectValue placeholder={copy.rowsPerPage} />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
               {pageSizeOptions.map((pageSize) => (
                 <SelectItem key={pageSize} value={String(pageSize)}>
-                  {pageSize} rows
+                  {pageSize} {copy.rowUnit}
                 </SelectItem>
               ))}
             </SelectGroup>
@@ -128,12 +133,12 @@ export function RunTablePagination({ table }: ColumnVisibilityMenuProps) {
   );
 }
 
-export function RunSortableHeader({ header }: RunSortableHeaderProps) {
+export function RunSortableHeader({ header, locale }: RunSortableHeaderProps) {
   if (header.isPlaceholder) {
     return null;
   }
   const sorted = header.column.getIsSorted();
-  const label = runColumnLabel(header.column.columnDef.meta);
+  const label = runColumnLabel(header.column.columnDef.meta, locale);
   if (!header.column.getCanSort()) {
     return flexRender(header.column.columnDef.header, header.getContext());
   }
@@ -141,7 +146,7 @@ export function RunSortableHeader({ header }: RunSortableHeaderProps) {
     <button
       className='hover:bg-muted focus-visible:ring-ring inline-flex w-full items-center justify-between gap-2 rounded-md px-2 py-1 text-left transition-colors focus-visible:ring-2 focus-visible:outline-none'
       type='button'
-      aria-label={`Sort by ${label}`}
+      aria-label={runQueueCopy(locale).sortBy(label)}
       onClick={header.column.getToggleSortingHandler()}
     >
       <span>{flexRender(header.column.columnDef.header, header.getContext())}</span>
@@ -152,8 +157,8 @@ export function RunSortableHeader({ header }: RunSortableHeaderProps) {
   );
 }
 
-export function RunTableCell({ cell }: RunTableCellProps) {
-  const label = runColumnLabel(cell.column.columnDef.meta);
+export function RunTableCell({ cell, locale }: RunTableCellProps) {
+  const label = runColumnLabel(cell.column.columnDef.meta, locale);
   const className = runColumnClassName(cell.column.id);
   if (cell.column.id === "runId") {
     return (

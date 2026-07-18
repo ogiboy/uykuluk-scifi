@@ -1,11 +1,13 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { loadConfig } from "../config/config.js";
+import type { ProducerConfig } from "../config/schema.js";
 import { SafeExitError } from "../core/errors.js";
 import { promptOverridePath } from "./catalog.js";
 import { PROMPT_TEMPLATE_DEFINITIONS, type PromptKey } from "./definitions.js";
 
 export type RenderedPrompt = { key: PromptKey; source: string; text: string };
+export type PromptRenderOptions = Readonly<{ overrides?: ProducerConfig["prompts"]["overrides"] }>;
 
 /**
  * Renders the ideas prompt template.
@@ -13,8 +15,11 @@ export type RenderedPrompt = { key: PromptKey; source: string; text: string };
  * @param context - Optional compact runtime context to append after the planner template.
  * @returns A `RenderedPrompt` containing the ideas prompt.
  */
-export async function renderIdeasPrompt(context: string[] = []): Promise<RenderedPrompt> {
-  return renderDefaultPrompt("ideas", "IDEAS_JSON", context);
+export async function renderIdeasPrompt(
+  context: string[] = [],
+  options: PromptRenderOptions = {},
+): Promise<RenderedPrompt> {
+  return renderDefaultPrompt("ideas", "IDEAS_JSON", context, options);
 }
 
 /**
@@ -53,8 +58,9 @@ async function renderDefaultPrompt(
   key: PromptKey,
   contractMarker: string,
   context: string[] = [],
+  options: PromptRenderOptions = {},
 ): Promise<RenderedPrompt> {
-  const source = await readPromptTemplateSource(key);
+  const source = await readPromptTemplateSource(key, options);
   return {
     key,
     source: source.path,
@@ -64,9 +70,11 @@ async function renderDefaultPrompt(
 
 async function readPromptTemplateSource(
   key: PromptKey,
+  options: PromptRenderOptions,
 ): Promise<{ path: string; template: string }> {
   let template: string;
-  const overridePath = promptOverridePath(key, (await loadConfig()).prompts.overrides);
+  const overrides = options.overrides ?? (await loadConfig()).prompts.overrides;
+  const overridePath = promptOverridePath(key, overrides);
   if (overridePath) {
     try {
       template = (await readFile(path.join(process.cwd(), overridePath), "utf8")).trim();

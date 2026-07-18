@@ -3,9 +3,13 @@ import { isValidRunId } from "../../../../../src/core/runId";
 import { channelHandoffDecisionValues } from "../../../../../src/stages/channel/channelHandoffDecisionContracts";
 import { renderDecisionValues } from "../../../../../src/stages/render/renderDecisionCommands";
 import {
+  elevenLabsDiagnosticSmokeRequestSchema,
+  episodeCreationRequestSchema,
   hostedVisualGenerationRequestSchema,
   hostedVisualPlanRequestSchema,
+  promptProfileSaveRequestSchema,
   runOnlyRequestSchema,
+  settingsSaveRequestSchema,
   visualDecisionRequestSchema,
   visualImportRequestSchema,
   visualRegenerationRequestSchema,
@@ -122,6 +126,30 @@ export function parseAnalyticsImportPayload(
   payload: unknown,
 ): z.infer<typeof analyticsImportPayloadSchema> {
   return analyticsImportPayloadSchema.parse(payload);
+}
+
+export function parseSettingsSavePayload(
+  payload: unknown,
+): z.infer<typeof settingsSaveRequestSchema> {
+  return settingsSaveRequestSchema.parse(payload);
+}
+
+export function parsePromptProfileSavePayload(
+  payload: unknown,
+): z.infer<typeof promptProfileSaveRequestSchema> {
+  return promptProfileSaveRequestSchema.parse(payload);
+}
+
+export function parseElevenLabsDiagnosticSmokePayload(
+  payload: unknown,
+): z.infer<typeof elevenLabsDiagnosticSmokeRequestSchema> {
+  return elevenLabsDiagnosticSmokeRequestSchema.parse(payload);
+}
+
+export function parseEpisodeCreationPayload(
+  payload: unknown,
+): z.infer<typeof episodeCreationRequestSchema> {
+  return episodeCreationRequestSchema.parse(payload);
 }
 
 export function parseRunOnlyPayload(payload: unknown): z.infer<typeof runOnlyRequestSchema> {

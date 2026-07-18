@@ -1,19 +1,15 @@
-import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { readCliVersion } from "../src/cli/version";
+import { runProducerCliForTest } from "./producerCliTestHelper";
 
 const repoRoot = process.cwd();
 
 describe("CLI version", () => {
   it("uses the package version for the root producer command", () => {
     const packageVersion = packageJsonVersion();
-    const result = spawnSync(
-      path.join(repoRoot, "node_modules", ".bin", "tsx"),
-      [path.join(repoRoot, "src", "cli.ts"), "--version"],
-      { cwd: repoRoot, encoding: "utf8" },
-    );
+    const result = runProducerCliForTest(["--version"], { cwd: repoRoot });
 
     expect(readCliVersion()).toBe(packageVersion);
     expect(result.status).toBe(0);

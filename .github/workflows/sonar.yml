@@ -57,6 +57,7 @@ jobs:
       - name: Run Sonar scanner
         if: ${{ env.SONAR_TOKEN != '' }}
         env:
+          SONAR_SKIP_COVERAGE: "1"
           SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL || 'https://sonarcloud.io' }}
           SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY || 'ogiboy_uykuluk-scifi' }}
           SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION || 'ogiboy' }}

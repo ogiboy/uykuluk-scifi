@@ -14,7 +14,7 @@ type RunLedgerIntentInput = Readonly<{
 /** Adds a durable, fixed-identity ledger intent to the run mutation being committed. */
 export function queueRunLedgerEvent(run: RunRecord, input: RunLedgerIntentInput): RunRecord {
   const event = ledgerEventSchema.parse({
-    eventId: createId("evt"),
+    eventId: createId("evt", 8),
     runId: run.runId,
     type: input.type,
     stage: input.stage,

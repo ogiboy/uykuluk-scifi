@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import type { StartIdeasReadinessSummary } from "@/lib/actions/startIdeasReadiness";
+import type { StudioLocale } from "@/i18n/locales";
 import { countStudioActionWorkbench } from "@/lib/actions/studioActionWorkbenchCounts";
 import {
   countStudioRunQueueFilters,
@@ -25,37 +25,33 @@ import {
 import {
   applyRunQueueWorkbenchControls,
   type RunQueueDensity,
-  runQueueEmptyState,
   type RunQueueSort,
   runQueueSortValues,
 } from "@/lib/runs/runQueueWorkbench";
 import type { StudioRunSummary } from "@/lib/runSummaries";
 import { applyEnumSelectValue } from "@/lib/utils";
+import Link from "next/link";
 import { useMemo, useState } from "react";
-import { StartIdeasActionPanel } from "../studio/StartIdeasActionPanel";
+import { runQueueCopy } from "./runQueueCopy";
 import {
   defaultRunQueueDensity,
   defaultRunQueueFilter,
   defaultRunQueueSort,
-  filterLabels,
-  sortLabels,
 } from "./runQueueExplorerOptions";
 import { maxBlockedActionSliderValue, RunQueueTunePopover } from "./RunQueueTunePopover";
 import { RunSummaryTable } from "./RunSummaryTable";
 
-type RunQueueExplorerProps = Readonly<{
-  runs: readonly StudioRunSummary[];
-  startIdeasReadiness?: StartIdeasReadinessSummary;
-}>;
+type RunQueueExplorerProps = Readonly<{ locale: StudioLocale; runs: readonly StudioRunSummary[] }>;
 
 /**
  * Renders a filterable operator queue for persisted Studio runs.
  *
+ * @param locale - The active Studio locale for operator-facing queue copy.
  * @param runs - Persisted local run summaries, newest first.
- * @param startIdeasReadiness - Optional doctor-derived context for the first-run web action.
  * @returns The interactive run queue explorer.
  */
-export function RunQueueExplorer({ runs, startIdeasReadiness }: RunQueueExplorerProps) {
+export function RunQueueExplorer({ locale, runs }: RunQueueExplorerProps) {
+  const copy = runQueueCopy(locale);
   const highestBlockedActionCount = Math.max(
     0,
     ...runs.map((run) => Math.min(run.blockedActionCount, maxBlockedActionSliderValue)),
@@ -82,15 +78,13 @@ export function RunQueueExplorer({ runs, startIdeasReadiness }: RunQueueExplorer
     maxBlockedActions !== maxBlockedActionSliderValue ||
     query.trim() !== "" ||
     sort !== defaultRunQueueSort;
-  const emptyState = runQueueEmptyState(runs.length, matchingRuns.length, filteredRuns.length);
   const emptyAction =
-    runs.length === 0 && startIdeasReadiness ? (
-      <StartIdeasActionPanel
-        buttonLabel='Start idea run'
-        description='Create the first local idea run from Studio while CLI/core keeps provider, budget, and parser guards authoritative.'
-        readiness={startIdeasReadiness}
-      />
+    runs.length === 0 ? (
+      <Button asChild>
+        <Link href='/ideas/new'>{copy.createEpisode}</Link>
+      </Button>
     ) : null;
+  const localizedEmptyState = runs.length === 0 ? copy.emptyRuns : copy.emptyFiltered;
 
   function resetQueueView() {
     setDensity(defaultRunQueueDensity);
@@ -106,30 +100,32 @@ export function RunQueueExplorer({ runs, startIdeasReadiness }: RunQueueExplorer
         <CardHeader className='gap-4 sm:grid-cols-[1fr_auto]'>
           <div className='space-y-2'>
             <p className='text-muted-foreground text-xs font-semibold tracking-[0.28em] uppercase'>
-              Operator queue
+              {copy.operatorQueue}
             </p>
-            <CardTitle id='runs-queue-heading'>Find the next safe run action</CardTitle>
+            <CardTitle id='runs-queue-heading'>
+              {locale === "tr"
+                ? "Sonraki güvenli bölüm adımını bulun"
+                : "Find the next safe episode action"}
+            </CardTitle>
           </div>
           <output
             className='flex flex-wrap items-center gap-2 sm:justify-end'
-            aria-label='Queue result summary'
+            aria-label={copy.queueResultSummary}
           >
-            <Badge variant='secondary'>{filteredRuns.length} shown</Badge>
+            <Badge variant='secondary'>{copy.shown(filteredRuns.length)}</Badge>
             {hiddenByBlockerControl > 0 ? (
-              <Badge variant='outline'>{hiddenByBlockerControl} hidden by blocker limit</Badge>
+              <Badge variant='outline'>{copy.hiddenByBlocker(hiddenByBlockerControl)}</Badge>
             ) : null}
             {actionCounts.webAction > 0 ? (
-              <Badge variant='secondary'>{actionCounts.webAction} web action</Badge>
+              <Badge variant='secondary'>{copy.webAction(actionCounts.webAction)}</Badge>
             ) : null}
             {actionCounts.blockedCli > 0 ? (
-              <Badge variant='destructive'>{actionCounts.blockedCli} blocked CLI</Badge>
+              <Badge variant='destructive'>{copy.blockedCli(actionCounts.blockedCli)}</Badge>
             ) : null}
             {actionCounts.needsReview > 0 ? (
-              <Badge variant='outline'>{actionCounts.needsReview} review</Badge>
+              <Badge variant='outline'>{copy.review(actionCounts.needsReview)}</Badge>
             ) : null}
-            {actionCounts.cliOnly > 0 ? (
-              <Badge variant='outline'>{actionCounts.cliOnly} CLI-only</Badge>
-            ) : null}
+            {actionCounts.cliOnly > 0 ? <Badge variant='outline'>{copy.cliOnly}</Badge> : null}
           </output>
         </CardHeader>
         <CardContent className='space-y-5'>
@@ -138,38 +134,38 @@ export function RunQueueExplorer({ runs, startIdeasReadiness }: RunQueueExplorer
             type='single'
             value={filter}
             variant='outline'
-            aria-label='Run queue filter'
+            aria-label={copy.operatorQueue}
             onValueChange={(value) => applyEnumSelectValue(value, runQueueFilterValues, setFilter)}
           >
             {runQueueFilterValues.map((value) => (
               <ToggleGroupItem key={value} value={value}>
-                {filterLabels[value]} <span>{counts[value]}</span>
+                {copy.filters[value]} <span>{counts[value]}</span>
               </ToggleGroupItem>
             ))}
           </ToggleGroup>
           <div className='grid gap-3 md:grid-cols-[minmax(0,1fr)_180px_auto_auto] md:items-end'>
             <Label className='grid gap-2'>
-              <span>Search runs</span>
+              <span>{copy.searchLabel}</span>
               <Input
-                placeholder='run id, state, readiness, next command'
+                placeholder={copy.searchPlaceholder}
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
               />
             </Label>
             <div className='grid gap-2'>
-              <Label htmlFor='queue-sort'>Sort queue</Label>
+              <Label htmlFor='queue-sort'>{copy.sortLabel}</Label>
               <Select
                 value={sort}
                 onValueChange={(value) => applyEnumSelectValue(value, runQueueSortValues, setSort)}
               >
-                <SelectTrigger id='queue-sort' aria-label='Sort run queue'>
-                  <SelectValue placeholder='Sort queue' />
+                <SelectTrigger id='queue-sort' aria-label={copy.sortLabel}>
+                  <SelectValue placeholder={copy.sortPlaceholder} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
                     {runQueueSortValues.map((value) => (
                       <SelectItem key={value} value={value}>
-                        {sortLabels[value]}
+                        {copy.sorts[value]}
                       </SelectItem>
                     ))}
                   </SelectGroup>
@@ -179,6 +175,7 @@ export function RunQueueExplorer({ runs, startIdeasReadiness }: RunQueueExplorer
             <RunQueueTunePopover
               density={density}
               highestBlockedActionCount={highestBlockedActionCount}
+              locale={locale}
               maxBlockedActions={maxBlockedActions}
               onDensityChange={setDensity}
               onMaxBlockedActionsChange={setMaxBlockedActions}
@@ -189,19 +186,17 @@ export function RunQueueExplorer({ runs, startIdeasReadiness }: RunQueueExplorer
               type='button'
               variant='secondary'
             >
-              Reset view
+              {copy.resetView}
             </Button>
           </div>
-          <p className='text-muted-foreground text-sm'>
-            Filters are read-only projections over persisted CLI/core run summaries. Approvals and
-            render decisions remain on each guarded run detail page.
-          </p>
+          <p className='text-muted-foreground text-sm'>{copy.summary}</p>
         </CardContent>
       </Card>
       <RunSummaryTable
         density={density}
         emptyAction={emptyAction}
-        emptyState={emptyState}
+        emptyState={localizedEmptyState}
+        locale={locale}
         runs={filteredRuns}
       />
     </section>

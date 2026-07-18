@@ -1,0 +1,166 @@
+import type { ProducerConfig } from "../../config/schema.js";
+import { SafeExitError } from "../../core/errors.js";
+import { appendLedgerEvent } from "../../core/ledger.js";
+import { createPromptProvenance } from "../../prompts/provenance.js";
+import type { RenderedPrompt } from "../../prompts/templates.js";
+import type { GenerateTextResult, LlmProvider } from "../../providers/llmProvider.js";
+import {
+  ideaListEditorialWarnings,
+  type IdeaListEditorialWarning,
+} from "../provider/providerIdeaListQuality.js";
+import { parseIdeasProviderPayload } from "../provider/providerPayloads.js";
+import { ideasResponseFormat } from "../provider/providerResponseFormats.js";
+import type { VideoIdea } from "../types.js";
+import { historicalIdeaTitleIssue, type IdeaHistoryEntry } from "./ideaHistory.js";
+import { ideasValidationSummary, renderIdeaRepairPrompt } from "./ideaRepairPrompt.js";
+
+const ideaRepairPromptSource = "src/stages/idea/ideaRepairPrompt.ts";
+const maxIdeaRepairAttempts = 2;
+
+export type IdeaRepairEvidence = {
+  attempted: boolean;
+  attempts: number;
+  prompt?: ReturnType<typeof createPromptProvenance>;
+  validationErrors: string[];
+};
+
+export type IdeaGenerationOutcome = {
+  ideas: VideoIdea[];
+  qualityWarnings: IdeaListEditorialWarning[];
+  repairPromptText?: string;
+  repair: IdeaRepairEvidence;
+  result: GenerateTextResult;
+};
+
+const noIdeaRepair: IdeaRepairEvidence = { attempted: false, attempts: 0, validationErrors: [] };
+
+export async function generateIdeasWithRepair(input: {
+  config: ProducerConfig;
+  ideaHistory: readonly IdeaHistoryEntry[];
+  prompt: RenderedPrompt;
+  provider: LlmProvider;
+  runId: string;
+}): Promise<IdeaGenerationOutcome> {
+  const results: GenerateTextResult[] = [];
+  const validationErrors: string[] = [];
+  let promptText = input.prompt.text;
+  for (let attempt = 0; attempt <= maxIdeaRepairAttempts; attempt += 1) {
+    const result = await requestIdeas(input.provider, input.config, promptText);
+    results.push(result);
+    try {
+      const ideas = parseIdeasProviderPayload(result.text);
+      const historyIssue = historicalIdeaTitleIssue(ideas, input.ideaHistory);
+      if (historyIssue) {
+        throw new SafeExitError(`Invalid ideas provider response: ${historyIssue}`);
+      }
+      return {
+        ideas,
+        qualityWarnings: ideaListEditorialWarnings(ideas),
+        repairPromptText: validationErrors.length ? promptText : undefined,
+        repair: repairEvidence(validationErrors),
+        result: combineProviderResults(results),
+      };
+    } catch (error) {
+      if (!isIdeasValidationError(error)) throw error;
+      if (attempt >= maxIdeaRepairAttempts) {
+        throw new SafeExitError(
+          `Invalid ideas provider response after repair attempt: ${ideasValidationSummary(error.message)}`,
+        );
+      }
+      validationErrors.push(error.message);
+      await appendIdeaRepairWarning(input.runId, validationErrors);
+      promptText = renderIdeaRepairPrompt(input.prompt.text, validationErrors);
+    }
+  }
+  throw new SafeExitError("Ideas provider did not return a parseable response.");
+}
+
+export function repairEvidenceWithPrompt(
+  key: RenderedPrompt["key"],
+  generation: IdeaGenerationOutcome,
+): IdeaRepairEvidence {
+  if (!generation.repair.attempted || !generation.repairPromptText) return generation.repair;
+  return {
+    ...generation.repair,
+    prompt: createPromptProvenance(
+      key,
+      generation.repairPromptText,
+      "ideas.json",
+      ideaRepairPromptSource,
+    ),
+  };
+}
+
+export function renderIdeasMarkdown(ideas: VideoIdea[]): string {
+  return [
+    "# UykulukSciFi Ideas",
+    "",
+    ...ideas.map((idea) =>
+      [
+        `## ${idea.id}: ${idea.title}`,
+        "",
+        `- Premise: ${idea.premise}`,
+        `- Target duration: ${idea.targetDuration}`,
+        `- Style: ${idea.style}`,
+        `- Estimated difficulty: ${idea.estimatedDifficulty}`,
+        `- Risk level: ${idea.riskLevel}`,
+        `- Why it fits: ${idea.fit}`,
+        "",
+      ].join("\n"),
+    ),
+  ].join("\n");
+}
+
+function repairEvidence(validationErrors: string[]): IdeaRepairEvidence {
+  return validationErrors.length
+    ? { attempted: true, attempts: validationErrors.length, validationErrors }
+    : noIdeaRepair;
+}
+
+async function appendIdeaRepairWarning(runId: string, validationErrors: string[]): Promise<void> {
+  const validationError = validationErrors.at(-1) ?? "unknown ideas validation error";
+  await appendLedgerEvent({
+    runId,
+    type: "WARNING",
+    stage: "ideas",
+    message: `Ideas provider response failed validation; retrying repair attempt ${validationErrors.length}/${maxIdeaRepairAttempts}.`,
+    data: { validationError, validationErrors },
+  });
+}
+
+function requestIdeas(
+  provider: LlmProvider,
+  config: ProducerConfig,
+  prompt: string,
+): Promise<GenerateTextResult> {
+  return provider.generateText({
+    model: config.providers.llm.model,
+    temperature: 0.7,
+    maxTokens: config.providers.llm.maxOutputTokens.ideas,
+    responseFormat: ideasResponseFormat,
+    prompt,
+  });
+}
+
+function isIdeasValidationError(error: unknown): error is Error {
+  return error instanceof Error && error.message.startsWith("Invalid ideas provider response");
+}
+
+function combineProviderResults(results: GenerateTextResult[]): GenerateTextResult {
+  const last = results.at(-1);
+  if (!last) throw new SafeExitError("Ideas provider did not return a result.");
+  return {
+    text: last.text,
+    provider: last.provider,
+    model: last.model,
+    inputTokensApprox: sumOptionalNumbers(results.map((result) => result.inputTokensApprox)),
+    outputTokensApprox: sumOptionalNumbers(results.map((result) => result.outputTokensApprox)),
+    durationMs: results.reduce((sum, result) => sum + result.durationMs, 0),
+  };
+}
+
+function sumOptionalNumbers(values: Array<number | undefined>): number | undefined {
+  return values.every((value): value is number => typeof value === "number")
+    ? values.reduce((sum, value) => sum + value, 0)
+    : undefined;
+}

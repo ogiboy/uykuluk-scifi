@@ -1,8 +1,51 @@
 {
+  "schemaVersion": 1,
+  "settingsRevision": 0,
+  "studio": { "port": 3000, "locale": "tr", "theme": "system" },
   "channel": {
     "name": "UykulukSciFi",
     "language": "tr",
     "defaultTone": "cinematic, scientifically careful, accessible Turkish narration"
+  },
+  "editorial": {
+    "activeProfileId": "sci-fi",
+    "profiles": [
+      {
+        "id": "sci-fi",
+        "labels": { "tr": "Bilim Kurgu", "en": "Science Fiction" },
+        "genre": "science-fiction",
+        "generationPrompt": "Bilimsel tutarlılığı koruyan, sinematik fakat anlaşılır Türkçe bilimkurgu fikirleri üret. Spekülasyonu doğrulanmış bilimden açıkça ayır.",
+        "requiresOperatorBrief": false
+      },
+      {
+        "id": "science-space",
+        "labels": { "tr": "Bilim ve Uzay", "en": "Science and Space" },
+        "genre": "science-space",
+        "generationPrompt": "Bilim ve uzay odağında fikirler üret. Gözlem, kanıt ve belirsizliği ayır; doğrulanamayan iddiaları kesin gerçek gibi sunma.",
+        "requiresOperatorBrief": false
+      },
+      {
+        "id": "technology",
+        "labels": { "tr": "Teknoloji", "en": "Technology" },
+        "genre": "technology",
+        "generationPrompt": "Teknoloji odağında fikirler üret. Mekanizmayı, sınırları ve gerçek dünya etkisini dengeli, erişilebilir Türkçe ile açıkla.",
+        "requiresOperatorBrief": false
+      },
+      {
+        "id": "history-mystery",
+        "labels": { "tr": "Tarih ve Gizem", "en": "History and Mystery" },
+        "genre": "history-mystery",
+        "generationPrompt": "Tarih ve gizem odağında fikirler üret. Kaynaklı gerçekleri spekülasyondan ayır; gizemi uydurma kesinlikle çözme.",
+        "requiresOperatorBrief": false
+      },
+      {
+        "id": "custom-brief",
+        "labels": { "tr": "Kendi Fikrini Yaz", "en": "Write Your Own Idea" },
+        "genre": "custom",
+        "generationPrompt": "Operatörün verdiği özel konu, kapsam, ton ve doğruluk sınırlarına bağlı fikirler üret.",
+        "requiresOperatorBrief": true
+      }
+    ]
   },
   "prompts": { "overrides": {} },
   "providers": {

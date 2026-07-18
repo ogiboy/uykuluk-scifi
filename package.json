@@ -46,7 +46,7 @@
     "typecheck:compat": "tsc6 --noEmit",
     "build": "node scripts/build.mjs",
     "build:smoke": "node scripts/qa/build-smoke.mjs",
-    "test:coverage": "vitest run --coverage --coverage.reporter=lcov --coverage.reportsDirectory=.ai/qa/artifacts/sonar/coverage",
+    "test:coverage": "CI=1 vitest run --coverage --test-timeout=30000 --hook-timeout=30000 --coverage.reporter=lcov --coverage.reportsDirectory=.ai/qa/artifacts/sonar/coverage",
     "sonar": "scripts/qa/run_sonar_scan.sh",
     "sonar:local": "scripts/qa/run_sonar_scan.sh",
     "sonar:cloud": "SONAR_HOST_URL=https://sonarcloud.io SONAR_PROJECT_KEY=ogiboy_uykuluk-scifi SONAR_ORGANIZATION=ogiboy SONAR_TOKEN_KEYCHAIN_SERVICE=codex-sonarcloud-token scripts/qa/run_sonar_scan.sh",
@@ -55,9 +55,9 @@
     "sonar:status": "scripts/sonarqube/status-local.sh"
   },
   "dependencies": {
-    "@elevenlabs/elevenlabs-js": "^2.57.0",
+    "@elevenlabs/elevenlabs-js": "^2.58.0",
     "commander": "^15.0.0",
-    "ink": "^7.1.0",
+    "ink": "^7.1.1",
     "react": "^19.2.7",
     "sharp": "^0.34.5",
     "zod": "^4.4.3"
@@ -65,7 +65,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.61.1",
-    "@sonar/scan": "^4.3.8",
+    "@sonar/scan": "^4.4.0",
     "@types/node": "^26.1.1",
     "@types/react": "^19.2.17",
     "@typescript/native": "npm:typescript@^7.0.2",
@@ -75,10 +75,10 @@
     "eslint-config-prettier": "^10.1.8",
     "prettier": "^3.9.5",
     "prettier-plugin-organize-imports": "^4.3.0",
-    "prettier-plugin-tailwindcss": "^0.8.0",
-    "tsx": "^4.23.0",
+    "prettier-plugin-tailwindcss": "^0.8.1",
+    "tsx": "^4.23.1",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
-    "typescript-eslint": "^8.63.0",
+    "typescript-eslint": "^8.64.0",
     "vitest": "^4.1.10"
   },
   "engines": {

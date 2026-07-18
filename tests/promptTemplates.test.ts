@@ -66,7 +66,7 @@ describe("runtime prompt defaults", () => {
     );
     expect(ideasArtifact.prompt).toEqual({
       key: "ideas",
-      hash: sha256(["IDEAS_JSON", plannerTemplate].join("\n\n")),
+      hash: sha256(["IDEAS_JSON", plannerTemplate, defaultEpisodeDirection()].join("\n\n")),
       artifact: "ideas.json",
       source: "prompts/defaults/planner-task.md",
     });
@@ -133,7 +133,7 @@ describe("runtime prompt defaults", () => {
     );
     expect(ideasArtifact.prompt).toEqual({
       key: "ideas",
-      hash: sha256(["IDEAS_JSON", localPrompt].join("\n\n")),
+      hash: sha256(["IDEAS_JSON", localPrompt, defaultEpisodeDirection()].join("\n\n")),
       artifact: "ideas.json",
       source: "prompts/local/planner.md",
     });
@@ -157,4 +157,18 @@ async function defaultPrompt(filename: string): Promise<string> {
 
 async function writeConfig(config: typeof defaultConfig): Promise<void> {
   await writeFile("producer.config.json", `${JSON.stringify(config, null, 2)}\n`, "utf8");
+}
+
+function defaultEpisodeDirection(): string {
+  const profile = defaultConfig.editorial.profiles.find(
+    (candidate) => candidate.id === defaultConfig.editorial.activeProfileId,
+  );
+  if (!profile) {
+    throw new Error("The default editorial profile must exist.");
+  }
+  return [
+    "## Episode Direction",
+    `Genre: ${profile.genre}`,
+    `Profile: ${profile.generationPrompt}`,
+  ].join("\n");
 }

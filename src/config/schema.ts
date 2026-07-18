@@ -1,4 +1,10 @@
 import { z } from "zod";
+import {
+  promptProfileIdSchema,
+  promptProfiles,
+  promptProfileSchema,
+} from "../prompts/profiles/promptProfileStore.js";
+import { imageGenerationConfigSchema } from "./imageGenerationSchema.js";
 
 const elevenLabsOutputFormatSchema = z.enum([
   "wav_16000",
@@ -9,89 +15,30 @@ const elevenLabsOutputFormatSchema = z.enum([
   "wav_48000",
 ]);
 
-const flux2ProConfigSchema = z
+const editorialConfigSchema = z
   .strictObject({
-    model: z.literal("flux-2-pro").default("flux-2-pro"),
-    endpoint: z
-      .literal("https://api.bfl.ai/v1/flux-2-pro")
-      .default("https://api.bfl.ai/v1/flux-2-pro"),
-    width: z.int().min(64).max(8_192).default(1_920),
-    height: z.int().min(64).max(8_192).default(1_080),
-    outputFormat: z.enum(["jpeg", "png"]).default("jpeg"),
-    safetyTolerance: z.int().min(0).max(5).default(2),
-    timeoutMs: z.int().min(1_000).max(600_000).default(300_000),
-    pollIntervalMs: z.int().min(250).max(10_000).default(1_000),
-    maxPollAttempts: z.int().positive().max(2_400).default(300),
-    pricing: z
-      .strictObject({
-        snapshotId: z.string().min(1).max(128).default("bfl-flux-2-pro-2026-07-15"),
-        usdPerMegapixel: z.number().positive().max(100).default(0.03),
-        usdPerCredit: z.literal(0.01).default(0.01),
-        maximumUsdPerImage: z.number().positive().max(100).default(0.09),
-      })
-      .default({
-        snapshotId: "bfl-flux-2-pro-2026-07-15",
-        usdPerMegapixel: 0.03,
-        usdPerCredit: 0.01,
-        maximumUsdPerImage: 0.09,
-      }),
+    activeProfileId: promptProfileIdSchema.default("sci-fi"),
+    profiles: z
+      .array(promptProfileSchema)
+      .min(1)
+      .max(32)
+      .default([...promptProfiles]),
   })
-  .default({
-    model: "flux-2-pro",
-    endpoint: "https://api.bfl.ai/v1/flux-2-pro",
-    width: 1_920,
-    height: 1_080,
-    outputFormat: "jpeg",
-    safetyTolerance: 2,
-    timeoutMs: 300_000,
-    pollIntervalMs: 1_000,
-    maxPollAttempts: 300,
-    pricing: {
-      snapshotId: "bfl-flux-2-pro-2026-07-15",
-      usdPerMegapixel: 0.03,
-      usdPerCredit: 0.01,
-      maximumUsdPerImage: 0.09,
-    },
-  })
-  .superRefine((config, context) => {
-    if (config.width * config.height > 4_000_000) {
+  .default({ activeProfileId: "sci-fi", profiles: [...promptProfiles] })
+  .superRefine((editorial, context) => {
+    const ids = editorial.profiles.map((profile) => profile.id);
+    if (new Set(ids).size !== ids.length) {
       context.addIssue({
         code: "custom",
-        message: "FLUX.2 Pro images may not exceed 4 megapixels.",
-        path: ["width"],
+        message: "Prompt profile ids must be unique.",
+        path: ["profiles"],
       });
     }
-    if (config.pollIntervalMs * config.maxPollAttempts > config.timeoutMs) {
+    if (!ids.includes(editorial.activeProfileId)) {
       context.addIssue({
         code: "custom",
-        message: "FLUX.2 Pro polling bounds must fit within timeoutMs.",
-        path: ["maxPollAttempts"],
-      });
-    }
-    const snapshotEstimate =
-      Math.ceil((config.width * config.height) / 1_000_000) * config.pricing.usdPerMegapixel;
-    if (config.pricing.maximumUsdPerImage < snapshotEstimate) {
-      context.addIssue({
-        code: "custom",
-        message: "FLUX.2 Pro maximumUsdPerImage must cover the configured megapixel price.",
-        path: ["pricing", "maximumUsdPerImage"],
-      });
-    }
-  });
-
-const imageGenerationConfigSchema = z
-  .strictObject({
-    enabled: z.boolean(),
-    requiresApproval: z.boolean(),
-    mode: z.enum(["static-manual", "black-forest-labs"]).default("static-manual"),
-    flux2Pro: flux2ProConfigSchema,
-  })
-  .superRefine((config, context) => {
-    if (config.enabled && config.mode === "black-forest-labs" && !config.requiresApproval) {
-      context.addIssue({
-        code: "custom",
-        message: "Enabled Black Forest Labs generation requires exact cost approval.",
-        path: ["requiresApproval"],
+        message: "The active prompt profile must exist in editorial.profiles.",
+        path: ["activeProfileId"],
       });
     }
   });
@@ -148,7 +95,17 @@ export const localProviderBaseUrlSchema = z
   .transform((value) => new URL(value).origin);
 
 export const producerConfigSchema = z.object({
+  schemaVersion: z.literal(1).default(1),
+  settingsRevision: z.int().nonnegative().default(0),
+  studio: z
+    .strictObject({
+      port: z.int().min(1_024).max(65_535).default(3_000),
+      locale: z.enum(["tr", "en"]).default("tr"),
+      theme: z.enum(["dark", "light", "system"]).default("system"),
+    })
+    .default({ port: 3_000, locale: "tr", theme: "system" }),
   channel: z.object({ name: z.string(), language: z.string(), defaultTone: z.string() }),
+  editorial: editorialConfigSchema,
   prompts: z
     .object({
       overrides: z

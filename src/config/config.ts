@@ -1,5 +1,6 @@
 import { copyFile } from "node:fs/promises";
 import path from "node:path";
+import { promptProfiles } from "../prompts/profiles/promptProfileStore.js";
 import { ensureDir, pathExists } from "../utils/fs.js";
 import { readJsonFile } from "../utils/json.js";
 import { ProducerConfig, producerConfigSchema } from "./schema.js";
@@ -7,6 +8,10 @@ import { ProducerConfig, producerConfigSchema } from "./schema.js";
 const defaultConfigTemplateUrl = new URL("../../producer.config.example.json", import.meta.url);
 
 export const defaultConfig: ProducerConfig = {
+  schemaVersion: 1,
+  settingsRevision: 0,
+  studio: { port: 3_000, locale: "tr", theme: "system" },
+  editorial: { activeProfileId: "sci-fi", profiles: [...promptProfiles] },
   channel: {
     name: "UykulukSciFi",
     language: "tr",

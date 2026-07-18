@@ -1,3 +1,4 @@
+import type { StudioLocale } from "@/i18n/locales";
 import {
   formatRunChannelHandoff,
   formatRunChannelHandoffDecision,
@@ -6,6 +7,7 @@ import {
 } from "@/lib/runs/runSummaryCopy";
 import type { StudioRunSummary } from "@/lib/runSummaries";
 import type { ColumnDef } from "@tanstack/react-table";
+import { runQueueCopy } from "./runQueueCopy";
 import { operatorActionForRun, operatorActionSearchText } from "./runSummaryOperatorAction";
 import { RunSummaryRowActions } from "./RunSummaryRowActions";
 import {
@@ -24,61 +26,71 @@ import {
 
 type RunTableColumnMeta = Readonly<{ label: string }>;
 
-export function runSummaryColumns(): ColumnDef<StudioRunSummary>[] {
+export function runSummaryColumns(locale: StudioLocale): ColumnDef<StudioRunSummary>[] {
+  const copy = runQueueCopy(locale);
   return [
-    textColumn("runId", "Run", ({ row }) => <RunIdCell run={row.original} />, false),
-    textColumn("state", "State", ({ row }) => <RunStateCell run={row.original} />),
-    textColumn("readinessStatus", "Readiness", ({ row }) => (
+    textColumn(
+      "runId",
+      copy.tableColumns.runId,
+      ({ row }) => <RunIdCell run={row.original} />,
+      false,
+    ),
+    textColumn("state", copy.tableColumns.state, ({ row }) => <RunStateCell run={row.original} />),
+    textColumn("readinessStatus", copy.tableColumns.readinessStatus, ({ row }) => (
       <RunReadinessCell run={row.original} />
     )),
-    textColumn("evidenceStatus", "Evidence", ({ row }) => <RunEvidenceCell run={row.original} />),
+    textColumn("evidenceStatus", copy.tableColumns.evidenceStatus, ({ row }) => (
+      <RunEvidenceCell run={row.original} />
+    )),
     {
       accessorFn: (run) => operatorActionSearchText(operatorActionForRun(run)),
       cell: ({ row }) => <RunOperatorActionCell run={row.original} />,
-      header: "Operator action",
+      header: copy.tableColumns.operatorAction,
       id: "operatorAction",
-      meta: { label: "Operator action" } satisfies RunTableColumnMeta,
+      meta: { label: copy.tableColumns.operatorAction } satisfies RunTableColumnMeta,
     },
     {
       accessorFn: (run) =>
         `${formatRunRenderDecision(run)} ${formatRunChannelHandoffDecision(run)}`,
       cell: ({ row }) => <RunDecisionCell run={row.original} />,
-      header: "Decision",
+      header: copy.tableColumns.renderDecision,
       id: "renderDecision",
-      meta: { label: "Render decision" } satisfies RunTableColumnMeta,
+      meta: { label: copy.tableColumns.renderDecision } satisfies RunTableColumnMeta,
     },
-    textColumn("blockedActionCount", "Blocks", ({ row }) => (
+    textColumn("blockedActionCount", copy.tableColumns.blockedActionCount, ({ row }) => (
       <RunBlockedActionCell run={row.original} />
     )),
-    textColumn("updatedAt", "Updated", ({ row }) => <RunUpdatedCell run={row.original} />),
+    textColumn("updatedAt", copy.tableColumns.updatedAt, ({ row }) => (
+      <RunUpdatedCell locale={locale} run={row.original} />
+    )),
     {
       accessorFn: (run) => formatRunFinalReviewBundle(run),
       cell: ({ row }) => <RunFinalBundleCell run={row.original} />,
-      header: "Final bundle",
+      header: copy.tableColumns.finalBundle,
       id: "finalBundle",
-      meta: { label: "Final bundle" } satisfies RunTableColumnMeta,
+      meta: { label: copy.tableColumns.finalBundle } satisfies RunTableColumnMeta,
     },
     {
       accessorFn: (run) => formatRunChannelHandoff(run),
       cell: ({ row }) => <RunChannelHandoffCell run={row.original} />,
-      header: "Channel handoff",
+      header: copy.tableColumns.channelHandoff,
       id: "channelHandoff",
-      meta: { label: "Channel handoff" } satisfies RunTableColumnMeta,
+      meta: { label: copy.tableColumns.channelHandoff } satisfies RunTableColumnMeta,
     },
     {
       accessorFn: (run) => run.nextRecommendedCommand ?? "Generate evidence",
       cell: ({ row }) => <RunNextActionCell run={row.original} />,
-      header: "Next action",
+      header: copy.tableColumns.nextAction,
       id: "nextAction",
-      meta: { label: "Next action" } satisfies RunTableColumnMeta,
+      meta: { label: copy.tableColumns.nextAction } satisfies RunTableColumnMeta,
     },
     {
       cell: ({ row }) => <RunSummaryRowActions run={row.original} />,
       enableHiding: false,
       enableSorting: false,
-      header: "Actions",
+      header: copy.tableColumns.actions,
       id: "actions",
-      meta: { label: "Actions" } satisfies RunTableColumnMeta,
+      meta: { label: copy.tableColumns.actions } satisfies RunTableColumnMeta,
     },
   ];
 }
@@ -111,11 +123,11 @@ export function runColumnClassName(columnId: string): string {
   }
 }
 
-export function runColumnLabel(meta: unknown): string {
+export function runColumnLabel(meta: unknown, locale: StudioLocale): string {
   if (meta && typeof meta === "object" && "label" in meta && typeof meta.label === "string") {
     return meta.label;
   }
-  return "Column";
+  return runQueueCopy(locale).allColumns;
 }
 
 function textColumn(

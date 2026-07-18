@@ -6,50 +6,39 @@ import { appendLedgerEvent } from "../core/ledger.js";
 import { createRun, setRunState } from "../core/runStore.js";
 import { assertTransition } from "../core/transitions.js";
 import { defaultStagePricing } from "../costs/pricing.js";
+import {
+  promptProfileDigest,
+  selectPromptProfile,
+  type PromptProfile,
+} from "../prompts/profiles/promptProfileStore.js";
 import { createPromptProvenance } from "../prompts/provenance.js";
-import { renderIdeasPrompt, type RenderedPrompt } from "../prompts/templates.js";
+import { renderIdeasPrompt } from "../prompts/templates.js";
 import { createLlmProvider } from "../providers/index.js";
-import type { GenerateTextResult, LlmProvider } from "../providers/llmProvider.js";
 import { enforceBudget } from "../safeguards/budgetGuard.js";
+import { configDigest } from "../settings/settingsRevisionStore.js";
+import {
+  buildEpisodeBriefSnapshot,
+  buildOperationSettingsSnapshot,
+  episodeBriefPath,
+  episodeCreationRequestSchema,
+  ideasOperationSettingsPath,
+  type EpisodeCreationRequest,
+} from "./episode/episodeSnapshotContracts.js";
 import { recordIdeaEditorialWarnings } from "./idea/ideaEditorialWarnings.js";
 import { persistIdeaGenerationFailure } from "./idea/ideaFailureDiagnostics.js";
 import {
-  historicalIdeaTitleIssue,
+  generateIdeasWithRepair,
+  renderIdeasMarkdown,
+  repairEvidenceWithPrompt,
+} from "./idea/ideaGeneration.js";
+import {
   ideaHistoryEvidence,
   ideaHistoryPromptBlock,
   readIdeaHistory,
-  type IdeaHistoryEntry,
 } from "./idea/ideaHistory.js";
-import { ideasValidationSummary, renderIdeaRepairPrompt } from "./idea/ideaRepairPrompt.js";
-import {
-  ideaListEditorialWarnings,
-  type IdeaListEditorialWarning,
-} from "./provider/providerIdeaListQuality.js";
-import { parseIdeasProviderPayload } from "./provider/providerPayloads.js";
-import { ideasResponseFormat } from "./provider/providerResponseFormats.js";
 import { VideoIdea } from "./types.js";
 
 export { renderIdeaRepairPrompt } from "./idea/ideaRepairPrompt.js";
-
-const ideaRepairPromptSource = "src/stages/idea/ideaRepairPrompt.ts";
-
-type IdeaRepairEvidence = {
-  attempted: boolean;
-  attempts: number;
-  prompt?: ReturnType<typeof createPromptProvenance>;
-  validationErrors: string[];
-};
-
-type IdeaGenerationOutcome = {
-  ideas: VideoIdea[];
-  qualityWarnings: IdeaListEditorialWarning[];
-  repairPromptText?: string;
-  repair: IdeaRepairEvidence;
-  result: GenerateTextResult;
-};
-
-const noIdeaRepair: IdeaRepairEvidence = { attempted: false, attempts: 0, validationErrors: [] };
-const maxIdeaRepairAttempts = 2;
 
 /**
  * Generates a set of video ideas using an LLM and writes formatted artifacts to the run.
@@ -57,12 +46,19 @@ const maxIdeaRepairAttempts = 2;
  * @returns An object containing the run ID and the generated video ideas (up to 10).
  * @throws When generation or artifact writing fails.
  */
-export async function runIdeas(): Promise<{ runId: string; ideas: VideoIdea[] }> {
+export async function runIdeas(
+  input?: EpisodeCreationRequest,
+): Promise<{ runId: string; ideas: VideoIdea[] }> {
   const config = await loadConfig();
+  const { profile, request } = resolveEpisodeCreation(config, input);
   let run = await createRun();
   assertTransition(run.state, "IDEAS_GENERATED");
   const provider = createLlmProvider(config);
   try {
+    const settingsSnapshot = buildOperationSettingsSnapshot({ config, profile, runId: run.runId });
+    const briefSnapshot = buildEpisodeBriefSnapshot({ request, settings: settingsSnapshot });
+    run = await writeRunJson(run, "ideas", ideasOperationSettingsPath, settingsSnapshot);
+    run = await writeRunJson(run, "ideas", episodeBriefPath, briefSnapshot);
     const estimatedUsd = defaultStagePricing.ideas.estimatedUsd;
     await enforceBudget({
       run,
@@ -74,7 +70,13 @@ export async function runIdeas(): Promise<{ runId: string; ideas: VideoIdea[] }>
     });
     const ideaHistory = await readIdeaHistory({ excludeRunId: run.runId });
     const promptContext = ideaHistoryPromptBlock(ideaHistory);
-    const prompt = await renderIdeasPrompt(promptContext ? [promptContext] : []);
+    const prompt = await renderIdeasPrompt(
+      [
+        episodeDirectionPromptBlock(profile, request.operatorBrief),
+        ...(promptContext ? [promptContext] : []),
+      ],
+      { overrides: config.prompts.overrides },
+    );
     const generation = await generateIdeasWithRepair({
       config,
       ideaHistory,
@@ -116,141 +118,41 @@ export async function runIdeas(): Promise<{ runId: string; ideas: VideoIdea[] }>
   }
 }
 
-async function generateIdeasWithRepair(input: {
-  config: ProducerConfig;
-  ideaHistory: readonly IdeaHistoryEntry[];
-  prompt: RenderedPrompt;
-  provider: LlmProvider;
-  runId: string;
-}): Promise<IdeaGenerationOutcome> {
-  const results: GenerateTextResult[] = [];
-  const validationErrors: string[] = [];
-  let promptText = input.prompt.text;
-  for (let attempt = 0; attempt <= maxIdeaRepairAttempts; attempt += 1) {
-    const result = await requestIdeas(input.provider, input.config, promptText);
-    results.push(result);
-    try {
-      const ideas = parseIdeasProviderPayload(result.text);
-      const historyIssue = historicalIdeaTitleIssue(ideas, input.ideaHistory);
-      if (historyIssue) {
-        throw new SafeExitError(`Invalid ideas provider response: ${historyIssue}`);
-      }
-      return {
-        ideas,
-        qualityWarnings: ideaListEditorialWarnings(ideas),
-        repairPromptText: validationErrors.length ? promptText : undefined,
-        repair: repairEvidence(validationErrors),
-        result: combineProviderResults(results),
-      };
-    } catch (error) {
-      if (!isIdeasValidationError(error)) {
-        throw error;
-      }
-      if (attempt >= maxIdeaRepairAttempts) {
-        throw new SafeExitError(
-          `Invalid ideas provider response after repair attempt: ${ideasValidationSummary(
-            error.message,
-          )}`,
-        );
-      }
-      validationErrors.push(error.message);
-      await appendIdeaRepairWarning(input.runId, validationErrors);
-      promptText = renderIdeaRepairPrompt(input.prompt.text, validationErrors);
-    }
-  }
-  throw new SafeExitError("Ideas provider did not return a parseable response.");
-}
-
-function repairEvidenceWithPrompt(
-  key: RenderedPrompt["key"],
-  generation: IdeaGenerationOutcome,
-): IdeaRepairEvidence {
-  if (!generation.repair.attempted || !generation.repairPromptText) {
-    return generation.repair;
-  }
-  return {
-    ...generation.repair,
-    prompt: createPromptProvenance(
-      key,
-      generation.repairPromptText,
-      "ideas.json",
-      ideaRepairPromptSource,
-    ),
-  };
-}
-
-function repairEvidence(validationErrors: string[]): IdeaRepairEvidence {
-  return validationErrors.length
-    ? { attempted: true, attempts: validationErrors.length, validationErrors }
-    : noIdeaRepair;
-}
-
-async function appendIdeaRepairWarning(runId: string, validationErrors: string[]): Promise<void> {
-  const validationError = validationErrors.at(-1) ?? "unknown ideas validation error";
-  await appendLedgerEvent({
-    runId,
-    type: "WARNING",
-    stage: "ideas",
-    message: `Ideas provider response failed validation; retrying repair attempt ${validationErrors.length}/${maxIdeaRepairAttempts}.`,
-    data: { validationError, validationErrors },
-  });
-}
-
-function requestIdeas(
-  provider: LlmProvider,
+function resolveEpisodeCreation(
   config: ProducerConfig,
-  prompt: string,
-): Promise<GenerateTextResult> {
-  return provider.generateText({
-    model: config.providers.llm.model,
-    temperature: 0.7,
-    maxTokens: config.providers.llm.maxOutputTokens.ideas,
-    responseFormat: ideasResponseFormat,
-    prompt,
-  });
-}
-
-function isIdeasValidationError(error: unknown): error is Error {
-  return error instanceof Error && error.message.startsWith("Invalid ideas provider response");
-}
-
-function combineProviderResults(results: GenerateTextResult[]): GenerateTextResult {
-  const last = results.at(-1);
-  if (!last) {
-    throw new SafeExitError("Ideas provider did not return a result.");
+  input?: EpisodeCreationRequest,
+): Readonly<{ profile: PromptProfile; request: EpisodeCreationRequest }> {
+  const selectedId = input?.profileId ?? config.editorial.activeProfileId;
+  const profile = selectPromptProfile(selectedId, config.editorial.profiles);
+  const currentProfileDigest = promptProfileDigest(profile);
+  const request = episodeCreationRequestSchema.parse(
+    input ?? {
+      profileId: profile.id,
+      expectedProfileDigest: currentProfileDigest,
+      expectedSettingsDigest: configDigest(config),
+    },
+  );
+  if (request.expectedProfileDigest !== currentProfileDigest) {
+    throw new SafeExitError(
+      "Prompt profile changed before idea generation; reload the episode brief and try again.",
+    );
   }
-  return {
-    text: last.text,
-    provider: last.provider,
-    model: last.model,
-    inputTokensApprox: sumOptionalNumbers(results.map((result) => result.inputTokensApprox)),
-    outputTokensApprox: sumOptionalNumbers(results.map((result) => result.outputTokensApprox)),
-    durationMs: results.reduce((sum, result) => sum + result.durationMs, 0),
-  };
+  if (request.expectedSettingsDigest !== configDigest(config)) {
+    throw new SafeExitError(
+      "Settings changed before idea generation; reload the episode brief and try again.",
+    );
+  }
+  if (profile.requiresOperatorBrief && !request.operatorBrief) {
+    throw new SafeExitError("The selected prompt profile requires an operator brief.");
+  }
+  return { profile, request };
 }
 
-function sumOptionalNumbers(values: Array<number | undefined>): number | undefined {
-  return values.every((value): value is number => typeof value === "number")
-    ? values.reduce((sum, value) => sum + value, 0)
-    : undefined;
-}
-
-function renderIdeasMarkdown(ideas: VideoIdea[]): string {
+function episodeDirectionPromptBlock(profile: PromptProfile, operatorBrief?: string): string {
   return [
-    "# UykulukSciFi Ideas",
-    "",
-    ...ideas.map((idea) =>
-      [
-        `## ${idea.id}: ${idea.title}`,
-        "",
-        `- Premise: ${idea.premise}`,
-        `- Target duration: ${idea.targetDuration}`,
-        `- Style: ${idea.style}`,
-        `- Estimated difficulty: ${idea.estimatedDifficulty}`,
-        `- Risk level: ${idea.riskLevel}`,
-        `- Why it fits: ${idea.fit}`,
-        "",
-      ].join("\n"),
-    ),
+    "## Episode Direction",
+    `Genre: ${profile.genre}`,
+    `Profile: ${profile.generationPrompt}`,
+    ...(operatorBrief ? ["Operator brief:", operatorBrief] : []),
   ].join("\n");
 }

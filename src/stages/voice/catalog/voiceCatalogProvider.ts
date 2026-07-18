@@ -112,6 +112,10 @@ export type CatalogSubscription = {
   characterLimit: number;
   currency?: string;
   hasOpenInvoices: boolean;
+  maxCreditLimitExtension?: number | "unlimited";
+  canExtendCharacterLimit?: boolean;
+  currentOverage?: { amount: string; currency: string };
+  nextCharacterCountResetUnix?: number;
 };
 
 export interface ElevenLabsCatalogClient {

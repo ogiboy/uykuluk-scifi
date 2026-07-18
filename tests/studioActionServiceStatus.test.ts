@@ -6,13 +6,13 @@ describe("Studio action service status", () => {
     const status = getStudioActionServiceStatus();
 
     expect(status).toMatchObject({
-      actionCount: 41,
+      actionCount: 45,
       cliFallbackCount: 0,
       disabledRouteCount: 2,
       findings: [],
-      readyForCliCount: 39,
+      readyForCliCount: 43,
       riskyExternalCount: 2,
-      webReadyCount: 39,
+      webReadyCount: 43,
       webMutationsEnabled: true,
     });
     expect(status.summaries).toContainEqual(
@@ -85,6 +85,16 @@ describe("Studio action service status", () => {
         routePath: "/actions/review-voice",
       }),
     );
+    for (const actionId of [
+      "settings.save",
+      "promptProfiles.save",
+      "episodes.create",
+      "providers.elevenlabs.smoke",
+    ]) {
+      expect(status.summaries).toContainEqual(
+        expect.objectContaining({ actionId, availability: "ready-for-cli" }),
+      );
+    }
     expect(status.summaries).toContainEqual(
       expect.objectContaining({
         actionId: "publish.schedule",
