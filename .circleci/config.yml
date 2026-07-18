@@ -197,6 +197,9 @@ jobs:
 
 workflows:
   quality:
+    when:
+      pipeline.event.name == "api" or pipeline.event.name == "pull_request" or (pipeline.event.name
+      == "push" and pipeline.git.branch == "main")
     jobs:
       - quality-core
       - studio-browser

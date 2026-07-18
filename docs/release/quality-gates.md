@@ -68,6 +68,10 @@ repository's existing redacted Sonar wrapper. The public Sonar orb is not used b
 policy disallows it; the migration does not weaken that organization-wide setting. `quality-gate`
 fans in `sonar-cloud` and `studio-browser`.
 
+The GitHub App workflow accepts pull-request events, pushes to `main`, and explicit API triggers.
+Feature-branch push events do not start a second full workflow, so opening or updating a PR produces
+one integration run per revision instead of parallel push and pull-request duplicates.
+
 Cold and warm pnpm plus Next.js caches keep the pipeline bounded. GitHub Actions retains CodeQL,
 Dependabot, and the main-branch release gate only; release polls the `ci/circleci: quality-gate`
 status for the triggering `main` SHA, installs only the dependencies required by the release script,
