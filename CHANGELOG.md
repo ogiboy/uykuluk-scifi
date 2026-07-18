@@ -11,6 +11,16 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.85.3 (2026-07-18)
+
+### Tests
+
+- stabilize streamed route readiness (#166) (ebd935b)
+
+### Documentation
+
+- align project capability routing (#165) (e42a248)
+
 ## v0.85.2 (2026-07-18)
 
 ### CI
