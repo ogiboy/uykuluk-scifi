@@ -6,6 +6,16 @@ import process from "node:process";
 import { fileURLToPath } from "node:url";
 
 export const reviewableFileLimit = 100;
+export const fullCiLanes = [
+  "delivery-policy",
+  "static-quality",
+  "unit-tests",
+  "unit-results",
+  "usage-smoke",
+  "product-uat",
+  "studio-browser",
+  "sonar-cloud",
+];
 
 const generatedToolingFiles = new Set(["skills-lock.json"]);
 const generatedToolingPrefixes = [
@@ -69,10 +79,9 @@ export function summarizeDeliveryScope(changedFiles, options = {}) {
     left.localeCompare(right, "en"),
   );
   const reviewableFiles = files.filter((file) => fileScopes[file] !== "generated-tooling");
-  const productRequired = options.forceProduct === true || scopes.includes("product");
-  const requiredLanes = productRequired
-    ? ["delivery-policy", "quality-core", "sonar-cloud", "studio-browser"]
-    : ["delivery-policy"];
+  const fullCiRequired =
+    options.forceProduct === true || scopes.includes("product") || scopes.includes("ci");
+  const requiredLanes = fullCiRequired ? fullCiLanes : ["delivery-policy"];
 
   return {
     schemaVersion: 1,

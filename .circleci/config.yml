@@ -61,7 +61,7 @@ jobs:
           path: .ci/delivery-scope.json
           destination: delivery/delivery-scope.json
 
-  quality-core:
+  static-quality:
     executor:
       name: node/default
       tag: "22.23.0"
@@ -69,7 +69,7 @@ jobs:
     steps:
       - checkout
       - halt-unless-lane-required:
-          lane: quality-core
+          lane: static-quality
       - run:
           name: Fetch full Git history
           command: |
@@ -96,20 +96,64 @@ jobs:
           name: Run static quality checks
           command: pnpm check:static
       - run:
-          name: Run unit tests with coverage and JUnit output
-          command: pnpm test:ci
-      - run:
           name: Audit high-severity dependencies
           command: pnpm security:dependencies
       - run:
-          name: Run operator usage smoke
-          command: pnpm qa:usage
-      - run:
-          name: Run product UAT
-          command: pnpm qa:product
-      - run:
           name: Print version plan
           command: pnpm version:plan
+
+  unit-tests:
+    executor:
+      name: node/default
+      tag: "22.23.0"
+    parallelism: 2
+    steps:
+      - checkout
+      - halt-unless-lane-required:
+          lane: unit-tests
+      - setup-pnpm
+      - run:
+          name: Verify Node 22.23.x
+          command: node --version | grep -E '^v22\.23\.'
+      - restore_cache:
+          keys:
+            - pnpm-store-v2-node22.23-pnpm11.9-{{ arch }}-{{ checksum "pnpm-lock.yaml" }}
+      - run:
+          name: Install dependencies
+          command: pnpm install --frozen-lockfile
+      - run:
+          name: Run Vitest shard with coverage blob report
+          command: pnpm test:ci:shard
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .ai/qa/artifacts/vitest
+
+  unit-results:
+    executor:
+      name: node/default
+      tag: "22.23.0"
+    steps:
+      - checkout
+      - halt-unless-lane-required:
+          lane: unit-results
+      - setup-pnpm
+      - run:
+          name: Verify Node 22.23.x
+          command: node --version | grep -E '^v22\.23\.'
+      - restore_cache:
+          keys:
+            - pnpm-store-v2-node22.23-pnpm11.9-{{ arch }}-{{ checksum "pnpm-lock.yaml" }}
+      - run:
+          name: Install dependencies
+          command: pnpm install --frozen-lockfile
+      - run:
+          name: Merge Vitest reports into JUnit and LCOV
+          command: |
+            mkdir -p .ai/qa/artifacts/junit
+            pnpm test:ci:merge
+            pnpm test:ci:list > .ai/qa/artifacts/junit/vitest-files.txt
+            pnpm test:ci:verify
       - persist_to_workspace:
           root: .
           paths:
@@ -120,10 +164,57 @@ jobs:
           path: .ai/qa/artifacts/sonar/coverage
           destination: coverage
 
+  usage-smoke:
+    executor:
+      name: node/default
+      tag: "22.23.0"
+    steps:
+      - checkout
+      - halt-unless-lane-required:
+          lane: usage-smoke
+      - setup-pnpm
+      - run:
+          name: Verify Node 22.23.x
+          command: node --version | grep -E '^v22\.23\.'
+      - restore_cache:
+          keys:
+            - pnpm-store-v2-node22.23-pnpm11.9-{{ arch }}-{{ checksum "pnpm-lock.yaml" }}
+      - run:
+          name: Install dependencies
+          command: pnpm install --frozen-lockfile
+      - run:
+          name: Run operator usage smoke
+          command: pnpm qa:usage
+
+  product-uat:
+    executor:
+      name: node/default
+      tag: "22.23.0"
+    resource_class: large
+    steps:
+      - checkout
+      - halt-unless-lane-required:
+          lane: product-uat
+      - setup-pnpm
+      - run:
+          name: Verify Node 22.23.x
+          command: node --version | grep -E '^v22\.23\.'
+      - restore_cache:
+          keys:
+            - pnpm-store-v2-node22.23-pnpm11.9-{{ arch }}-{{ checksum "pnpm-lock.yaml" }}
+      - run:
+          name: Install dependencies
+          command: pnpm install --frozen-lockfile
+      - run:
+          name: Run product UAT
+          command: pnpm qa:product
+
   sonar-cloud:
     executor:
       name: node/default
       tag: "22.23.0"
+    environment:
+      SONAR_USER_HOME: /tmp/sonar-user-home
     steps:
       - checkout:
           # Sonar's SCM blame requires historical blobs that a blobless checkout may omit.
@@ -142,6 +233,10 @@ jobs:
       - restore_cache:
           keys:
             - pnpm-store-v2-node22.23-pnpm11.9-{{ arch }}-{{ checksum "pnpm-lock.yaml" }}
+      - restore_cache:
+          keys:
+            - sonar-user-home-v1-{{ arch }}-{{ checksum "pnpm-lock.yaml" }}
+            - sonar-user-home-v1-{{ arch }}-
       - run:
           name: Install dependencies
           command: pnpm install --frozen-lockfile
@@ -166,6 +261,11 @@ jobs:
               SONAR_PROJECT_KEY=ogiboy_uykuluk-scifi \
               SONAR_ORGANIZATION=ogiboy \
               pnpm sonar:cloud
+      - save_cache:
+          key: sonar-user-home-v1-{{ arch }}-{{ checksum "pnpm-lock.yaml" }}
+          paths:
+            - /tmp/sonar-user-home/cache
+            - /tmp/sonar-user-home/native-sonar-scanner
 
   studio-browser:
     docker:
@@ -218,7 +318,9 @@ jobs:
     steps:
       - run:
           name: Confirm all quality jobs completed
-          command: echo 'quality-core, studio-browser, and sonar-cloud passed.'
+          command:
+            echo 'static-quality, unit-tests, usage-smoke, product-uat, studio-browser, and
+            sonar-cloud passed.'
 
   preview-deploy-marker:
     # Explicitly gated scaffold; intentionally not included in a workflow.
@@ -254,7 +356,19 @@ workflows:
       == "push" and pipeline.git.branch == "main")
     jobs:
       - delivery-policy
-      - quality-core:
+      - static-quality:
+          requires:
+            - delivery-policy
+      - unit-tests:
+          requires:
+            - delivery-policy
+      - unit-results:
+          requires:
+            - unit-tests
+      - usage-smoke:
+          requires:
+            - delivery-policy
+      - product-uat:
           requires:
             - delivery-policy
       - studio-browser:
@@ -263,10 +377,13 @@ workflows:
       - sonar-cloud:
           context: SonarCloud
           requires:
-            - quality-core
+            - unit-results
       - quality-gate:
           name: quality-gate
           requires:
-            - quality-core
+            - static-quality
+            - unit-results
+            - usage-smoke
+            - product-uat
             - studio-browser
             - sonar-cloud

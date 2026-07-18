@@ -13,7 +13,7 @@ describe("release workflow", () => {
     expect(helper).toContain("Release is superseded");
   });
 
-  it("waits for the CircleCI main quality gate before the main-only publish boundary", () => {
+  it("plans before waiting for the CircleCI main quality gate and skips the wait when no release is needed", () => {
     const workflow = readFileSync(".github/workflows/release.yml", "utf8");
     const pkg = JSON.parse(readFileSync("package.json", "utf8")) as {
       scripts?: Record<string, string>;
@@ -24,11 +24,25 @@ describe("release workflow", () => {
     expect(workflow).toContain("github.actor != 'github-actions[bot]'");
     expect(workflow).toContain("github.ref == 'refs/heads/main'");
     expect(workflow).toContain("id: circleci_quality");
+    expect(workflow).toContain("id: version_plan");
+    expect(workflow).toContain("pnpm --silent version:plan");
+    expect(workflow).toContain("release_needed=${release_needed}");
+    expect(workflow).toContain("if: ${{ steps.version_plan.outputs.release_needed == 'true' }}");
+    expect(workflow.indexOf("id: version_plan")).toBeLessThan(
+      workflow.indexOf("id: circleci_quality"),
+    );
     expect(workflow).toContain('QUALITY_CONTEXT: "ci/circleci: quality-gate"');
+    expect(workflow).toContain('QUALITY_GATE_TIMEOUT_SECONDS: "1800"');
+    expect(workflow).toContain('QUALITY_GATE_DELAY_SECONDS: "20"');
+    expect(workflow).toContain(
+      'deadline_epoch="$(( $(date +%s) + QUALITY_GATE_TIMEOUT_SECONDS ))"',
+    );
+    expect(workflow).toContain('--max-time "${request_timeout_seconds}"');
     expect(workflow).toContain('main_sha="${GITHUB_SHA}"');
     expect(workflow).toContain("/commits/${main_sha}/statuses?per_page=100");
     expect(workflow).not.toContain("/commits/main");
     expect(workflow).toContain("Timed out waiting for CircleCI quality gate");
+    expect(workflow).toContain("cancelled|error|failure");
     expect(workflow).toContain("pnpm install --frozen-lockfile");
     expect(workflow).not.toContain("pnpm check");
     expect(workflow).not.toContain("pnpm security:dependencies");
