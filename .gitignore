@@ -40,6 +40,7 @@ runs/*
 next-env.d.ts
 .DS_Store
 .gh-cache/
+.ci/
 .pnpm-store/
 
 # Local agent/vector database artifacts.
@@ -48,7 +49,8 @@ agentdb.rvf.lock
 ruvector.db
 
 /.understand-anything/
-.agents/
+.agents/skills/*/*
+.swarm/
 
 .env*
 .flaskenv*
@@ -64,3 +66,5 @@ ruvector.db
 .claude-flow/
 .claude/.proven-config-version
 .claude/proven-config.json
+
+.claude/skills/*

@@ -13,8 +13,54 @@ commands:
             corepack prepare pnpm@11.9.0 --activate
             pnpm config set store-dir /tmp/pnpm-store
             pnpm --version | grep -E '^11\.9\.0$'
+  halt-unless-lane-required:
+    parameters:
+      lane:
+        type: string
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Check delivery scope for << parameters.lane >>
+          environment:
+            DELIVERY_LANE: << parameters.lane >>
+          command: |
+            if node -e 'const fs = require("node:fs"); const scope = JSON.parse(fs.readFileSync(".ci/delivery-scope.json", "utf8")); process.exit(scope.requiredLanes.includes(process.env.DELIVERY_LANE) ? 0 : 1);'; then
+              echo "Delivery lane ${DELIVERY_LANE} is required."
+            else
+              echo "Delivery lane ${DELIVERY_LANE} is not required for this change set."
+              circleci-agent step halt
+            fi
 
 jobs:
+  delivery-policy:
+    executor:
+      name: node/default
+      tag: "22.23.0"
+    steps:
+      - checkout
+      - run:
+          name: Fetch comparison history
+          command: |
+            git fetch --no-tags --prune --depth=2147483647 origin \
+              '+refs/heads/*:refs/remotes/origin/*'
+      - run:
+          name: Verify delivery-scope contracts
+          command: node --test scripts/qa/delivery-scope.test.mjs
+      - run:
+          name: Classify changed files and enforce review budget
+          environment:
+            DELIVERY_SCOPE_TRIGGER: << pipeline.event.name >>
+            DELIVERY_SCOPE_OUTPUT: .ci/delivery-scope.json
+          command: node scripts/qa/delivery-scope.mjs
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .ci/delivery-scope.json
+      - store_artifacts:
+          path: .ci/delivery-scope.json
+          destination: delivery/delivery-scope.json
+
   quality-core:
     executor:
       name: node/default
@@ -22,6 +68,8 @@ jobs:
     resource_class: large
     steps:
       - checkout
+      - halt-unless-lane-required:
+          lane: quality-core
       - run:
           name: Fetch full Git history
           command: |
@@ -80,6 +128,8 @@ jobs:
       - checkout:
           # Sonar's SCM blame requires historical blobs that a blobless checkout may omit.
           method: full
+      - halt-unless-lane-required:
+          lane: sonar-cloud
       - run:
           name: Fetch full Git history
           command: |
@@ -95,8 +145,6 @@ jobs:
       - run:
           name: Install dependencies
           command: pnpm install --frozen-lockfile
-      - attach_workspace:
-          at: .
       - run:
           name: Configure ephemeral SonarCloud CI properties
           command: |
@@ -126,6 +174,8 @@ jobs:
       caches: 7d
     steps:
       - checkout
+      - halt-unless-lane-required:
+          lane: studio-browser
       - node/install:
           node-version: "22.23.0"
           use-nvm-cache: false
@@ -203,8 +253,13 @@ workflows:
       pipeline.event.name == "api" or pipeline.event.name == "pull_request" or (pipeline.event.name
       == "push" and pipeline.git.branch == "main")
     jobs:
-      - quality-core
-      - studio-browser
+      - delivery-policy
+      - quality-core:
+          requires:
+            - delivery-policy
+      - studio-browser:
+          requires:
+            - delivery-policy
       - sonar-cloud:
           context: SonarCloud
           requires:

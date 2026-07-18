@@ -7,6 +7,13 @@ paths:
   - .github/workflows
 
 paths-ignore:
+  - ".agents/**"
+  - ".claude/**"
+  - ".claude-flow/**"
+  - ".omx/**"
+  - ".ruflo/**"
+  - ".swarm/**"
+  - "skills-lock.json"
   - ".ai/qa/artifacts/**"
   - "assets/**"
   - "runs/**"

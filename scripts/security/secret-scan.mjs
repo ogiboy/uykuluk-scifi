@@ -20,8 +20,14 @@ const textExtensions = new Set([
 ]);
 
 const excludedPrefixes = [
+  ".agents/",
   ".ai/qa/artifacts/",
+  ".claude/",
+  ".claude-flow/",
+  ".omx/",
+  ".ruflo/",
   ".scannerwork/",
+  ".swarm/",
   "assets/source-docs/",
   "node_modules/",
   "runs/",
