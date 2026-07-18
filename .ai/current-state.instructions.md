@@ -264,8 +264,9 @@
 - Project-local capability routing, resumable `.ai/checkpoints/`, and the conventional-commit
   release workflow are documented. CircleCI owns parallel core/browser quality, the downstream
   repository-wrapped Sonar scan, and their `quality-gate` fan-in. GitHub retains CodeQL, Dependabot,
-  and a release gate that waits for the triggering SHA's CircleCI status. GitHub App event filtering
-  keeps PR revisions to one full CircleCI workflow while preserving `main` and explicit API runs.
+  and a release gate that waits for the triggering SHA's CircleCI status. Three disjoint GitHub App
+  triggers cover PR opens, updates to open non-draft PRs, and `main`; the legacy OAuth project is
+  disabled so each revision receives one full workflow. Explicit API runs remain available.
 - Chunk 0.7 is configured as a bounded inner-loop companion: automatic commit/stop hooks run only
   root and Studio primary typechecks, while static and coverage profiles remain explicit. Frozen
   installs and full integration gates stay owned by bootstrap/CircleCI rather than every agent step.

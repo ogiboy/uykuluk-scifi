@@ -64,13 +64,15 @@ CircleCI is the primary quality pipeline. `quality-core` and `studio-browser` ru
 core job owns `pnpm check:static`, one Vitest run with LCOV and JUnit, usage/product checks,
 dependency audit, and version planning; the browser job owns the production Studio build and test.
 After core succeeds, the narrow `sonar-cloud` job restores its coverage artifact and invokes the
-repository's existing redacted Sonar wrapper. The public Sonar orb is not used because organization
-policy disallows it; the migration does not weaken that organization-wide setting. `quality-gate`
-fans in `sonar-cloud` and `studio-browser`.
+repository's existing redacted Sonar wrapper. That job uses CircleCI's `checkout: method: full`
+because Sonar SCM blame needs historical blobs that the default blobless checkout may omit. The
+public Sonar orb is not used because organization policy disallows it; the migration does not weaken
+that organization-wide setting. `quality-gate` fans in `sonar-cloud` and `studio-browser`.
 
-The GitHub App workflow accepts pull-request events, pushes to `main`, and explicit API triggers.
-Feature-branch push events do not start a second full workflow, so opening or updating a PR produces
-one integration run per revision instead of parallel push and pull-request duplicates.
+Three disjoint GitHub App triggers own integration events: PR opened, pushes to open non-draft PRs,
+and pushes to the default branch. The legacy GitHub OAuth project is disabled. The workflow also
+accepts explicit API triggers. This keeps opening or updating a PR to one integration run per
+revision instead of parallel OAuth push and GitHub App pull-request duplicates.
 
 Cold and warm pnpm plus Next.js caches keep the pipeline bounded. GitHub Actions retains CodeQL,
 Dependabot, and the main-branch release gate only; release polls the `ci/circleci: quality-gate`
