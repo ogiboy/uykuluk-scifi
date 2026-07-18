@@ -9,8 +9,8 @@ synthesis; free-tier voices stay preview-only. `producer voice-preview` accepts 
 candidate id, refetches exact metadata, and writes a bounded local MP3/WAV plus digest evidence
 without raw URLs, headers, keys, or request ids. `producer voice-select` records an attributable
 exact catalog/preview/model/pricing/settings selection, archives valid prior selections, and
-requires explicit production-rights confirmation on paid tiers. Failed catalog or preview
-refreshes remove stale active evidence.
+requires explicit production-rights confirmation on paid tiers. Failed catalog or preview refreshes
+remove stale active evidence.
 
 Full synthesis cannot use an implicit voice: the exact selected snapshot is visible in the quote,
 carried through reservation and a quote-bound operation id, revalidated with bounded metadata GETs,

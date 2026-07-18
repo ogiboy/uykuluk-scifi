@@ -4,8 +4,9 @@
 
 - TypeScript CLI project.
 - Mock-first provider layer with Ollama and local OpenAI-compatible `llama.cpp` adapters.
-- Managed model commands resolve absolute, repository-relative, and bare `models/llm` GGUF names with
-  an optional suffix while preserving the served alias, loopback bind, one slot, and diagnostics PID.
+- Managed model commands resolve absolute, repository-relative, and bare `models/llm` GGUF names
+  with an optional suffix while preserving the served alias, loopback bind, one slot, and
+  diagnostics PID.
 - Typed runtime loading of tracked `prompts/defaults/` product prompt defaults plus explicit ignored
   `prompts/local/*.md` overrides for ideas, scripts, and production packages, with prompt
   key/source/hash provenance.
@@ -70,16 +71,15 @@
   local Piper binary and ignored model path. Local Piper metadata, evidence, and review Markdown now
   record the model/config SHA-256 digests used for the generated WAV. Piper PCM16 output is
   deterministically peak-normalized to -1 dBFS before hashing/persistence and records source peak,
-  target peak, and applied gain. The review Markdown includes
-  an explicit listen-before-render decision boundary, render-approval scope, and exact next safe
-  commands. Evidence, readiness, status, and blocked-action summaries mark deterministic-local WAVs
-  as timing/reference only until reviewed local Piper audio exists. Next-action guidance explicitly
-  says render approval with deterministic-local audio is only for a local timing draft.
-  `producer review voice` gives operators a read-only handoff from validated voiceover evidence
-  before render approval, including the exact approval command and whether the scope is
-  `timing-draft-only` or `production-voice-candidate`, while Studio production-media rows surface
-  the same review command, render approval command, and approval scope without adding a web
-  mutation.
+  target peak, and applied gain. The review Markdown includes an explicit listen-before-render
+  decision boundary, render-approval scope, and exact next safe commands. Evidence, readiness,
+  status, and blocked-action summaries mark deterministic-local WAVs as timing/reference only until
+  reviewed local Piper audio exists. Next-action guidance explicitly says render approval with
+  deterministic-local audio is only for a local timing draft. `producer review voice` gives
+  operators a read-only handoff from validated voiceover evidence before render approval, including
+  the exact approval command and whether the scope is `timing-draft-only` or
+  `production-voice-candidate`, while Studio production-media rows surface the same review command,
+  render approval command, and approval scope without adding a web mutation.
 - ElevenLabs v3 catalog, bounded preview, attributable selection/reselection, exact quote and
   reservation binding, synthesis adapter, original/normalized character-alignment persistence,
   settlement, redacted diagnostics, and fail-closed recovery are implemented and documented in
@@ -96,17 +96,16 @@
   path/content problems, disabled TTS, deterministic reference audio, valid local Piper config, and
   local Piper remediation.
 - Approval-gated local FFmpeg draft render. Exact render-plan, canonical voice evidence, active
-  subtitle descriptor/timing mode, and voice classification approval are required before writing
-  the MP4, schema-v9 manifest, review, and manifest-bound chapter artifacts. The concat timeline uses
+  subtitle descriptor/timing mode, and voice classification approval are required before writing the
+  MP4, schema-v9 manifest, review, and manifest-bound chapter artifacts. The concat timeline uses
   bookends, scenes, and available source frames; audio/subtitles stay outside bookends, SRT timing
-  maps to actual voice duration, and
-  lower-third/waveform/popup overlays stay scene-scoped. Sample popup copy is masked before plain
-  wrapped runtime text is drawn. The manifest records timing, cadence, overlay placement, approval,
-  execution/review commands, and `ffprobe` evidence. CLI, evidence, and Studio expose local review
-  and durable decision guidance only when current render evidence passes; upload and public or
-  scheduled publish remain disabled.
-- `producer revise render` closes the fail-closed recovery loop after `needs-revision` or `rejected`:
-  it archives the current MP4, manifest, decision, evidence, and readiness under
+  maps to actual voice duration, and lower-third/waveform/popup overlays stay scene-scoped. Sample
+  popup copy is masked before plain wrapped runtime text is drawn. The manifest records timing,
+  cadence, overlay placement, approval, execution/review commands, and `ffprobe` evidence. CLI,
+  evidence, and Studio expose local review and durable decision guidance only when current render
+  evidence passes; upload and public or scheduled publish remain disabled.
+- `producer revise render` closes the fail-closed recovery loop after `needs-revision` or
+  `rejected`: it archives the current MP4, manifest, decision, evidence, and readiness under
   `revisions/render/<revision_id>/`, invalidates the stale render approval, transitions back to
   `READY_FOR_MANUAL_PRODUCTION`, and requires a fresh exact approval. If current render evidence is
   unreadable after a contract upgrade, explicit reason/reviewer attribution plus the persisted MP4
@@ -128,7 +127,8 @@
   downloading models, calling hosted APIs, or weakening parser gates.
 - Studio reads ignored local model evaluation JSON/Markdown artifacts on home and `/eval`, including
   missing, malformed, schema-invalid, passing, and blocked reports. A guarded action refreshes the
-  canonical CLI evaluation without editing providers, starting servers, downloading models, calling hosted APIs, or weakening parser gates.
+  canonical CLI evaluation without editing providers, starting servers, downloading models, calling
+  hosted APIs, or weakening parser gates.
 - Script generation uses bounded section calls and continuation passes, carries accepted expansion
   context forward, and writes `script.sections.json` receipts before assembling `script.md`. Up to
   three continuations target at least 1,100 spoken narration words for an 8-12 minute draft;
@@ -241,8 +241,8 @@
   for selected-thumbnail/manual prep surfaced without YouTube APIs or upload/publish approval.
 - Studio run detail shows guarded approval, workflow-stage/review/revision, render-decision, and
   channel-handoff decision routes over CLI/core evidence contracts. Home can start ideas, and
-  home/queue can run no-extra-input workflow-stage actions only when CLI/core recommends them.
-  A non-accepted draft's canonical `revise render` next command maps to a guarded Studio route;
+  home/queue can run no-extra-input workflow-stage actions only when CLI/core recommends them. A
+  non-accepted draft's canonical `revise render` next command maps to a guarded Studio route;
   explicitly attributed invalid-evidence recovery remains CLI-only. Guarded action panels show
   compact producer record summaries after completion. Upload/publish stay disabled.
 - Readiness diagnostics that strictly parse and revalidate persisted cost quotes, live hard budgets,
@@ -262,14 +262,28 @@
   `nextAction` remediation guidance in terminal, JSON, and Markdown output; risky
   upload/private/public publish config still blocks.
 - Project-local capability routing, resumable `.ai/checkpoints/`, and the conventional-commit
-  release workflow are documented. CircleCI owns parallel core/browser quality, the downstream
-  repository-wrapped Sonar scan, and their `quality-gate` fan-in. GitHub retains CodeQL, Dependabot,
-  and a release gate that waits for the triggering SHA's CircleCI status. Three disjoint GitHub App
-  triggers cover PR opens, updates to open non-draft PRs, and `main`; the legacy OAuth project is
-  disabled so each revision receives one full workflow. Explicit API runs remain available.
-- Chunk 0.7 is configured as a bounded inner-loop companion: automatic commit/stop hooks run only
-  root and Studio primary typechecks, while static and coverage profiles remain explicit. Frozen
-  installs and full integration gates stay owned by bootstrap/CircleCI rather than every agent step.
+  release workflow are documented. CircleCI first classifies delivery scope, then starts
+  `static-quality`, two-shard `unit-tests`, `usage-smoke`, `product-uat`, and `studio-browser` in
+  parallel. `unit-results` merges and verifies JUnit/LCOV, publishes JUnit, and persists LCOV;
+  `sonar-cloud` receives the LCOV through the shared workspace without rerunning Vitest.
+  `quality-gate` explicitly waits for both jobs and the other required lanes. GitHub retains CodeQL,
+  Dependabot, and a release gate that skips waiting when no release is planned and otherwise waits
+  up to 30 minutes for the exact main SHA. PR #164 passed in 7m27s; earlier runs took 7m02s and
+  8m37s, versus former 13m08s GitHub and 17m56s pre-parallel Circle medians.
+- Chunk 0.7.119 is a bounded companion, not CI proof. `quick-local` checks changed JavaScript/
+  TypeScript files with installed ESLint and Prettier; `static-local` runs root/Studio lint and
+  primary typechecks; authenticated `parity-remote` runs `pnpm check:static` on a sidecar. Frozen
+  installs, full tests, browser UAT, and Sonar remain CircleCI-owned. The Node 22.23/pnpm 11.9
+  remote snapshot refresh is pending explicit approval because tracked encrypted vault ciphertext
+  would be copied to the private snapshot; plaintext `.env` files are never included.
+- GitHub Issues is configured for Matt engineering-skill intake with the canonical `needs-triage`,
+  `needs-info`, `ready-for-agent`, `ready-for-human`, and `wontfix` labels. The repository
+  deliberately uses one lazy domain-document context. `skills-lock.json` records 40 Matt entries,
+  but only 17 active engineering bodies are default routes; in-progress, deprecated, and ancillary
+  entries remain opt-in metadata.
+- The verified NVM-owned orchestration CLI baseline is `ruflo 3.32.7` and `claude-flow 3.32.2`.
+  Their npm `latest` tags differ, and `claude-flow@3.32.7` does not exist; do not force a false
+  cross-package version match.
 - Studio uses the existing Tailwind/shadcn/Radix design system and typed Turkish/English `next-intl`
   catalogs. New installs default to Turkish; future features must keep both locales complete rather
   than introducing mixed operator copy.
@@ -342,8 +356,8 @@
   verified subtitle descriptor through voice evidence, render approval/manifest, FFmpeg, and Studio.
   Incomplete ElevenLabs evidence never silently falls back to linear timing.
 - Studio exposes guarded candidate, preview, select/reselect, and exact hosted-production actions
-  over CLI/core owners; provider URLs and secrets stay server-side. CI, Sonar, CodeQL, product/browser
-  QA, and production-build Studio UAT passed before merge.
+  over CLI/core owners; provider URLs and secrets stay server-side. CI, Sonar, CodeQL,
+  product/browser QA, and production-build Studio UAT passed before merge.
 - Deterministic-local and Piper remain credential-free `linear-fallback` options. The former is
   reference timing only; Piper still requires operator listening before production use.
 - Studio now has revisioned provider/budget/editorial settings, persisted prompt profiles, and
@@ -359,8 +373,8 @@
 ## Visual Provider Manual Fallback And Exact Render Candidate
 
 - The candidate adds a replaceable deterministic-static/manual PNG/JPEG boundary. Production scenes
-  become 12–24 duration-preserving beats with revisions, contact-sheet evidence, deterministic motion,
-  and active-asset digests.
+  become 12–24 duration-preserving beats with revisions, contact-sheet evidence, deterministic
+  motion, and active-asset digests.
 - CLI/core and Studio support prepare, batch review, manual import, and rejected-only regeneration.
   Mutations carry exact snapshots; rollback revalidates containment, while an idempotent run outbox
   reconciles committed visual events after an interrupted ledger append.
@@ -368,8 +382,8 @@
   Operator decisions stay prominent; paths, digests, and CLI fallback remain under Advanced.
 - Render plan, approval, FFmpeg motion, and draft evidence bind the approved visual manifest. Legacy
   evidence remains readable but cannot enter a new approval/render without that binding.
-- Main includes this fallback as `v0.83.0`. The active follow-up adds the sole hosted visual adapter,
-  Black Forest Labs FLUX.2 Pro, as experimental and disabled by default: exact
+- Main includes this fallback as `v0.83.0`. The active follow-up adds the sole hosted visual
+  adapter, Black Forest Labs FLUX.2 Pro, as experimental and disabled by default: exact
   plan/quote/approval/reservation, bounded async request/poll/download, credit reconciliation,
   durable local spools, Studio confirmation, and rejected-only revision/quote archival. Studio keeps
   the operator workflow provider-neutral while exact provider/model identity remains visible in
@@ -436,35 +450,43 @@ pnpm version:plan
 Use:
 
 ```bash
-pnpm lint
+chunk validate quick-local
 pnpm typecheck
-pnpm test
-pnpm qa:usage
-pnpm qa:browser
+pnpm studio:typecheck
 ```
 
-If the shell lacks `node` or `pnpm`, use bundled Node or restore Corepack/PATH before treating failures as product failures.
+Run the smallest focused test that proves a changed behavior. CircleCI owns the full unit shards,
+usage/product UAT, production Studio build/browser suite, dependency audit, and Sonar gate.
+
+If the shell lacks `node` or `pnpm`, use bundled Node or restore Corepack/PATH before treating
+failures as product failures.
 
 ## Known Limits
 
-- Delivery policy caps each PR at 120 changed files overall and 100 CodeRabbit-in-scope files. The
-  100-file cap reflects the hosted check observed for this public OSS repository on 2026-07-17.
-  CodeRabbit's current public plan table assigns OSS projects a dynamic 50-150 file limit based on
-  community and popularity without publishing the scoring formula. Branch and PR names describe
-  product intent and omit AI agent or tool names.
+- Delivery policy caps each PR at 100 reviewable changed files. Exact generated-tooling paths can
+  exceed 100 raw files only in a dedicated catalog change while both counts remain visible; unknown
+  paths are reviewable product scope. Hosted review capacity may be lower or adaptive. Branch and PR
+  names describe product intent and omit AI agent, vendor, or tool names.
 - Ollama and `llama.cpp` doctor checks verify local server reachability and configured model
   inventory, but live local-model QA is environment-dependent and not part of CI. Historical qwen3
-  runs proved the safety architecture but not production-quality output. A live Gemma 3 12B GGUF
-  run completed the full idea-to-manual-handoff loop after bounded script continuation and
-  attributable operator revisions; that is useful workstation evidence, not proof that every draft
-  is production-ready or that operator review can be removed. Qwen stays a regression target while
+  runs proved the safety architecture but not production-quality output. A live Gemma 3 12B GGUF run
+  completed the full idea-to-manual-handoff loop after bounded script continuation and attributable
+  operator revisions; that is useful workstation evidence, not proof that every draft is
+  production-ready or that operator review can be removed. Qwen stays a regression target while
   candidates continue through the same approval, JSON, repetition, Turkish-label, spoken-word, and
   operator-quality gates.
-- Ollama and `llama.cpp` configuration accepts only credential-free loopback HTTP(S) origins, preventing local adapters from silently becoming arbitrary outbound endpoints; hosted or LAN provider support needs a separately reviewed adapter boundary.
+- Ollama and `llama.cpp` configuration accepts only credential-free loopback HTTP(S) origins,
+  preventing local adapters from silently becoming arbitrary outbound endpoints; hosted or LAN
+  provider support needs a separately reviewed adapter boundary.
 - Hosted keys indicate presence only; proof, credit, rights, approval, reservation, execution, and
-  settlement stay separate. ElevenLabs is TTS; experimental BFL is hosted visuals; Eleven Creative is manual-import only.
+  settlement stay separate. ElevenLabs is TTS; experimental BFL is hosted visuals; Eleven Creative
+  is manual-import only.
 - No private-upload adapter is enabled; public/scheduled publish remains out of scope.
-- Current local-first Studio combines read/review pages and grouped artifact metadata with guarded mutations backed by canonical CLI/core contracts. Stage and Studio-lib roots retain stable public entrypoints while domain helpers live in named subfolders. Route security covers page reads, short-lived session proof, same-origin actions, and disabled upload/publish; generation and local render run only through guarded contracts.
+- Current local-first Studio combines read/review pages and grouped artifact metadata with guarded
+  mutations backed by canonical CLI/core contracts. Stage and Studio-lib roots retain stable public
+  entrypoints while domain helpers live in named subfolders. Route security covers page reads,
+  short-lived session proof, same-origin actions, and disabled upload/publish; generation and local
+  render run only through guarded contracts.
 - Studio voice review now exposes guarded catalog refresh, persisted local previews, A/B comparison,
   attributable selection/reselection, quote/quota state, and exact hosted execution confirmation;
   CLI/core remains authoritative for every state, approval, cost, and provider transition.
@@ -478,7 +500,8 @@ If the shell lacks `node` or `pnpm`, use bundled Node or restore Corepack/PATH b
   status-only.
 - Initial package artifact revisions cover subtitles, scenes, popup-card Markdown, and YouTube
   metadata; they refresh the manifest and invalidate stale downstream evidence and plans.
-- Render planning does not render media, approve execution, or reserve spend; it is a local review/planning artifact only.
+- Render planning does not render media, approve execution, or reserve spend; it is a local
+  review/planning artifact only.
 - Local TTS provides deterministic/reference WAV, Piper shell-out, ignored-model setup, provenance,
   and review Markdown. Deterministic evidence proves timing only; production quality still requires
   operator listening and no voice path approves render, upload, or publish by itself.
@@ -486,6 +509,11 @@ If the shell lacks `node` or `pnpm`, use bundled Node or restore Corepack/PATH b
   overlays, voiceover, evidence, and bookends. Rejected drafts archive safely; polish remains.
 - Private upload remains a disabled v1 controlled-distribution placeholder. Public/scheduled publish
   is unavailable and out of scope; manual/Studio analytics are local-only without richer APIs.
-- Run-path containment blocks pre-existing symlinks; concurrent replacement remains a local TOCTOU limitation because portable Node APIs lack directory-handle `openat` semantics.
-- Brand, overlay, thumbnail, background, transition, icon, waveform, intro-frame, and outro-frame assets are present; the local renderer consumes intro/outro frames when available. Editable sources, reusable rendered clips, and font licensing notes remain useful additions.
-- Stable tags define the release base, and planning fails when `package.json` drifts from the latest reachable stable tag. Sonar upload requires `SONAR_TOKEN` or Keychain; tokens must never be tracked.
+- Run-path containment blocks pre-existing symlinks; concurrent replacement remains a local TOCTOU
+  limitation because portable Node APIs lack directory-handle `openat` semantics.
+- Brand, overlay, thumbnail, background, transition, icon, waveform, intro-frame, and outro-frame
+  assets are present; the local renderer consumes intro/outro frames when available. Editable
+  sources, reusable rendered clips, and font licensing notes remain useful additions.
+- Stable tags define the release base, and planning fails when `package.json` drifts from the latest
+  reachable stable tag. Sonar upload requires `SONAR_TOKEN` or Keychain; tokens must never be
+  tracked.

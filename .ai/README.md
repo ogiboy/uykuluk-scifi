@@ -12,6 +12,11 @@ Rules:
 - Guard failures must be saved as reviewable ledger evidence.
 - File existence never implies approval.
 
+Agent startup is progressive: read the relevant product truth under `.ai/`, inspect only the
+`.claude/` tool surface needed for the task, then load the full bodies of one to three selected
+skills. Repository tracker, triage-label, and lazy domain-document conventions live under
+`docs/agents/`; generated catalogs and lock files remain development metadata.
+
 Durable project guidance:
 
 - `rules.instructions.md` - project-wide working rules.
@@ -31,3 +36,4 @@ Durable project guidance:
 - `workflows/` - feature, frontend, QA, security, and tooling workflows.
 - `agents/` - development-only review lenses.
 - `security/` - threat models and development-time security review evidence.
+- `../docs/agents/` - issue tracker, triage vocabulary, and domain-document consumer rules.

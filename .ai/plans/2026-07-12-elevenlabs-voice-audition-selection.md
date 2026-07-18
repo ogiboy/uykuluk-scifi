@@ -46,9 +46,9 @@ ledger utilities, Commander, Next.js App Router, Vitest, and Playwright. No new 
   separate provider mutation and is out of scope.
 - `eleven_v3` reports Turkish support, TTS capability, no Speaker Boost, and a live 5,000-character
   request cap.
-- The models response provides character-cost and discount multipliers. No exact TTS preflight
-  quote endpoint or public custom-rate formula is documented; unknown/custom-rate pricing must
-  block production selection.
+- The models response provides character-cost and discount multipliers. No exact TTS preflight quote
+  endpoint or public custom-rate formula is documented; unknown/custom-rate pricing must block
+  production selection.
 - Free-tier output lacks the production commercial-rights basis required by this workflow. Free
   accounts may use catalog/preview, but production synthesis remains blocked until the current
   subscription snapshot is eligible.
@@ -97,12 +97,13 @@ ledger utilities, Commander, Next.js App Router, Vitest, and Playwright. No new 
 - selected model capability/language/request-cap/rate metadata and digest;
 - base unit price source, known multipliers, effective maximum quote rate, and exactness status;
 - up to 24 candidates with voice ID/name/category, bounded labels/description, Turkish verification,
-  sharing/legacy/availability flags, metadata digest, preview availability/source, and URL hash only;
+  sharing/legacy/availability flags, metadata digest, preview availability/source, and URL hash
+  only;
 - no raw preview URL, API key, provider body, invoice detail, or unbounded labels.
 
 Preview evidence records candidate/catalog/model metadata digests, local path, byte count, SHA-256,
-detected MP3/WAV type, provider URL hash, source-host classification, fetch time, and request-id hash
-when present. It never records the raw URL or headers.
+detected MP3/WAV type, provider URL hash, source-host classification, fetch time, and request-id
+hash when present. It never records the raw URL or headers.
 
 `voice_selection.json` records operator/reason, catalog and preview digests, exact voice/model,
 language/output/settings/chunk-plan inputs, pricing/subscription eligibility, and a canonical
@@ -116,7 +117,8 @@ Files:
 - create normalized schemas/paths/provider boundary below `src/stages/voice/catalog/`;
 - add `src/stages/voice/providers/elevenLabsVoiceCatalogProvider.ts`;
 - add a stage entrypoint and CLI command registration;
-- add `tests/elevenLabsVoiceCatalogProvider.test.ts`, `tests/voiceCandidates.test.ts`, and CLI tests.
+- add `tests/elevenLabsVoiceCatalogProvider.test.ts`, `tests/voiceCandidates.test.ts`, and CLI
+  tests.
 
 Steps:
 
@@ -162,8 +164,9 @@ Steps:
 3. Enforce timeout and a 5 MiB streamed byte cap. Detect ID3/MP3 frame or RIFF/WAVE magic instead of
    trusting provider content type; persist `.mp3` or `.wav` atomically.
 4. Require the current catalog/voice metadata digest and write redacted preview evidence.
-5. Add `producer voice-preview --run <id> --voice <id>` and `producer voice-select --run <id>
-   --voice <id> --reviewed-by <name> --notes <text>`; bind selection to a valid local preview.
+5. Add `producer voice-preview --run <id> --voice <id>` and
+   `producer voice-select --run <id> --voice <id> --reviewed-by <name> --notes <text>`; bind
+   selection to a valid local preview.
 6. Archive earlier pre-quote selections for audit while keeping one canonical selection pointer.
 
 Verification:
@@ -188,13 +191,14 @@ Files:
 
 Steps:
 
-1. Add optional canonical `bindingDigest` to quoted stages, approved quote context, adapter identity,
-   reservation events/summaries, and execution claims; include it in mismatch and idempotency checks.
+1. Add optional canonical `bindingDigest` to quoted stages, approved quote context, adapter
+   identity, reservation events/summaries, and execution claims; include it in mismatch and
+   idempotency checks.
 2. Require current selection for an enabled ElevenLabs TTS quote. Quote prepared text and chunk plan
    using selection model limits, known model/discount multipliers, base unit price, and a documented
    conservative maximum; include selection digest in pricing/config validation.
-3. Block estimate/production when subscription is free/non-commercial, the catalog is stale,
-   current quota is insufficient, or pricing/custom-rate status is uncertain.
+3. Block estimate/production when subscription is free/non-commercial, the catalog is stale, current
+   quota is insufficient, or pricing/custom-rate status is uncertain.
 4. Before reservation, re-read current voice/model/subscription metadata with bounded GET behavior.
    Any capability, availability, rate, tier, or selection digest change makes approval stale and
    prevents TTS dispatch.
@@ -205,7 +209,8 @@ Steps:
 7. Add a safe pre-spend reselection recovery that archives stale quote/approval evidence and returns
    to the package/selection boundary. Active, uncertain, or settled reservations and synthesis
    evidence block recovery. The sole exception is a `RELEASED` reservation whose durable meaning is
-   that no provider request was sent; recovery still requires a fresh selection, quote, and approval.
+   that no provider request was sent; recovery still requires a fresh selection, quote, and
+   approval.
 
 Verification:
 
@@ -274,8 +279,8 @@ Commit: `feat(studio): add guarded voice audition and selection`
 
 - Provider preview hosts may evolve. Add hosts only from official/current provider evidence and keep
   URL input provider-owned, never operator-supplied.
-- Shared Voice Library browse/add, custom rates, live moderation, voice cloning, and voice design are
-  deferred.
+- Shared Voice Library browse/add, custom rates, live moderation, voice cloning, and voice design
+  are deferred.
 - Default/premade provider voices may change or retire; selection revalidation must remain current.
 - Production alignment-to-SRT is the next voice slice after selection binding; this plan preserves
   the existing character alignment artifact but does not claim subtitle completion.

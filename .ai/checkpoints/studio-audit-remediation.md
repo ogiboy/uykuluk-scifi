@@ -35,7 +35,8 @@ close still-valid review findings, and keep Studio a guarded local operator surf
 
 - CLI/core remains the only workflow/state/approval/cost/evidence authority.
 - Studio may run guarded local CLI/core-backed actions, including doctor and local model evaluation;
-  affected read-only-only documentation must be corrected instead of removing intentional web actions.
+  affected read-only-only documentation must be corrected instead of removing intentional web
+  actions.
 - Sentry is append-only observability. It must never gate progression, inspect artifact bodies, or
   become required for local operation.
 - `.ai`, security skills, and their review evidence remain development-only.
@@ -56,18 +57,16 @@ close still-valid review findings, and keep Studio a guarded local operator surf
 - Full quality chain completed through 171 test files / 762 tests and Studio production build; the
   only first-pass failure was a three-line documentation modularity excess, corrected before the
   standalone modularity/security/release/format remainder passed.
-- `pnpm qa:usage` report:
-  `.ai/qa/artifacts/usage-smoke-20260710-233927/qa-report.md`.
-- `pnpm qa:product` report:
-  `.ai/qa/artifacts/product-uat-20260710-234014/qa-report.md`.
+- `pnpm qa:usage` report: `.ai/qa/artifacts/usage-smoke-20260710-233927/qa-report.md`.
+- `pnpm qa:product` report: `.ai/qa/artifacts/product-uat-20260710-234014/qa-report.md`.
 - `pnpm qa:browser` passed all nine browser scenarios; settled visual evidence is under
   `.ai/qa/artifacts/studio-audit/`.
 - Local Sonar scan log: `.ai/qa/artifacts/sonar/sonar-npm.log`; the post-remediation quality gate
   reported OK with zero open issues.
 - Final uncommitted review command: `coderabbit review --agent --type uncommitted`; valid findings
   were either remediated or covered by focused regression tests.
-- The final remediation commit SHA is intentionally recorded by Git and the pull request rather
-  than embedded into this pre-commit checkpoint.
+- The final remediation commit SHA is intentionally recorded by Git and the pull request rather than
+  embedded into this pre-commit checkpoint.
 
 ## Remaining Work
 
@@ -76,7 +75,8 @@ close still-valid review findings, and keep Studio a guarded local operator surf
 
 ## Blockers And Risks
 
-- `origin/main` changed dependency versions after this branch diverged; merge conflicts are possible.
+- `origin/main` changed dependency versions after this branch diverged; merge conflicts are
+  possible.
 - Open Dependabot PRs #140/#141 currently fail quality gates and should not be folded in blindly.
 - Local Sentry source-map upload still requires operator-owned credentials outside the workspace.
 - Real provider/model execution is intentionally outside this audit unless a regression requires it.

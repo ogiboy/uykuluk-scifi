@@ -43,7 +43,8 @@ queried.
 
 - `/` returned 200.
 - `/actions/session` with matching local Origin returned 200.
-- Session cookie was `HttpOnly`, `SameSite=Strict`, scoped to `/actions`, and limited to 900 seconds.
+- Session cookie was `HttpOnly`, `SameSite=Strict`, scoped to `/actions`, and limited to 900
+  seconds.
 - Cross-origin session request returned 403.
 - Cross-site originless session request returned 403.
 - Mutation route called with GET returned 405.
@@ -145,13 +146,14 @@ queried.
 
 - Studio mutation routes are POST-only and reject missing session proof, cross-origin requests, and
   unsupported content types.
-- Session tokens use cryptographic randomness, short expiry, HttpOnly cookie storage, SameSite=Strict,
-  and timing-safe header/cookie comparison.
+- Session tokens use cryptographic randomness, short expiry, HttpOnly cookie storage,
+  SameSite=Strict, and timing-safe header/cookie comparison.
 - Payloads use strict schema parsing before CLI argument construction.
 - CLI mutation execution is allowlisted, uses `shell: false`, and has bounded output/time limits.
 - Artifact/run path contracts reject traversal and unsafe link boundaries.
 - GitHub Actions permissions and action pinning follow the selected workflow-hardening skill.
-- Tracked history contains no Gitleaks finding; TruffleHog matches were unverified fixtures/defaults.
+- Tracked history contains no Gitleaks finding; TruffleHog matches were unverified
+  fixtures/defaults.
 - Upload and public/scheduled publish remain disabled and fail closed.
 - Studio remains an operator surface over CLI/core, not a second workflow engine.
 
@@ -167,8 +169,8 @@ queried.
 ## Do-Not-Do Boundaries
 
 - Do not import, bundle, or read `.agents/skills` or `.ai` at runtime.
-- Do not run exploit tools, public-target probes, malware detonation, namespace claiming, or outbound
-  secret verification.
+- Do not run exploit tools, public-target probes, malware detonation, namespace claiming, or
+  outbound secret verification.
 - Do not weaken approval, cost, artifact, provider, upload, or publish guards for testing.
 - Do not add OAuth, cloud providers, upload, publish, or new Studio mutations as a security-review
   side effect.
@@ -199,7 +201,7 @@ publish remain disabled.
 The four actionable findings from the side-task review are remediated and covered by targeted tests
 or browser checks. The remaining items are deliberate constraints rather than open defects: the
 session cookie cannot use `Secure` while Studio is intentionally loopback HTTP, Sentry release-age
-exceptions remain exact and reviewed, and upload/public/scheduled publishing remain unavailable.
-The immutable hashes above bind this report to the skill catalog and lock used during the review;
-the pull request and Git history bind the final remediation commit without creating a
-self-referential document hash.
+exceptions remain exact and reviewed, and upload/public/scheduled publishing remain unavailable. The
+immutable hashes above bind this report to the skill catalog and lock used during the review; the
+pull request and Git history bind the final remediation commit without creating a self-referential
+document hash.

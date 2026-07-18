@@ -8,6 +8,28 @@ below documents the optional Claude/Ruflo development surface and is never a run
 verified local CLI baseline is `ruflo 3.32.7` with `claude-flow 3.32.2`; use the installed commands
 directly instead of floating `npx ...@latest` invocations.
 
+Start each task with the relevant `.ai/` product truth, inspect only the `.claude/` tool surface
+needed for that task, then load the full bodies of the selected one to three skills. Generated agent
+catalogs and `skills-lock.json` are discovery metadata, not runtime contracts or proof that a skill
+is callable.
+
+## Agent skills
+
+### Issue tracker
+
+Issues and PRDs are tracked in GitHub Issues; pull requests are not a request surface. See
+`docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Triage uses the five canonical state labels provisioned for this repository. See
+`docs/agents/triage-labels.md`.
+
+### Domain docs
+
+The repository deliberately uses a single domain context with lazy root `CONTEXT.md` and `docs/adr/`
+documents. See `docs/agents/domain.md`.
+
 ## Rules
 
 - Do what has been asked; nothing more, nothing less

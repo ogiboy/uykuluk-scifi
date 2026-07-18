@@ -1,84 +1,78 @@
-# CircleCI Primary CI Migration
+# Primary CI And Fast-Parity Checkpoint
 
 ## Objective
 
-Make CircleCI the primary project quality pipeline without duplicating Vitest, Studio build, or
-Sonar coverage work. Preserve GitHub-native CodeQL, Dependabot, and release/tag automation. Keep
-deployment markers disabled until a real preview deployment exists.
+Keep one fast, evidence-rich primary quality pipeline without duplicating Vitest, Studio build, or
+Sonar work. Preserve GitHub-native CodeQL, Dependabot, and release/tag automation. Use Chunk only as
+a bounded local or remote parity companion.
 
 ## Completion Criteria
 
-- [x] PR #159 merged before the CI branches were rewritten.
-- [x] PR #161 merged into #160 with conventional naming and a working Next build cache.
-- [x] CircleCI runs `quality-core` and `studio-browser` in parallel, runs narrow `sonar-cloud` after
-  core, then fans `sonar-cloud` and `studio-browser` into `quality-gate`.
-- [x] SonarCloud uses the `SonarCloud` context and the existing redacted repository wrapper; the
-  public orb remains disabled by organization policy without weakening the organization-wide
-  setting.
-- [x] GitHub Actions retains CodeQL, Dependabot, and release ownership without repeating project
-  gates.
-- [ ] PR #160 stays below 120 changed files and passes final local and hosted quality gates.
-- [ ] One final cold-cache and one warm-cache run prove dependency, Next cache, Sonar, and fan-in
-  behavior.
+- [x] The primary pipeline classifies delivery scope before opening expensive lanes.
+- [x] Static, two-shard unit, usage, product, and browser work starts in parallel.
+- [x] Unit artifacts merge into verified JUnit and LCOV; CircleCI stores JUnit and Sonar consumes
+      the persisted LCOV without rerunning Vitest.
+- [x] Studio builds once per workflow and Playwright uses the prebuilt output.
+- [x] The final gate waits for every required lane and reports one exact-SHA status.
+- [x] pnpm, Next, and Sonar caches show warm hits without caching `node_modules` or build output.
+- [x] Release planning skips the Circle gate when no release is needed and otherwise waits at most
+      30 minutes for the exact main SHA.
+- [x] PR #164 merged after final CircleCI, Sonar, and CodeQL success.
+- [ ] Refresh the optional remote parity snapshot to Node 22.23/pnpm 11.9 after explicit approval
+      for the tracked encrypted vault ciphertext transfer.
 
 ## Current State
 
-- Branch/worktree: `circleci-project-setup` in the isolated `63dc` worktree.
-- PR #159 merged to main at `a98af5f4`.
-- PR #161 merged into #160 at `567d042a` after a green CircleCI run.
-- The first live run exposed an empty 16-byte Next cache because only the core build ran. The fixed
-  run `a27fa8f5-8948-4b90-ad3f-a58bb2f1b2d6` built Studio with webpack and stored a 29 MiB cache.
-- The worktree now implements parallel `quality-core` and `studio-browser`, downstream
-  `sonar-cloud`, and the final `quality-gate` fan-in. Core produces one Vitest LCOV/JUnit result;
-  browser owns its production build/test and Next cache.
-- Sonar uses `pnpm sonar:cloud`, the repository's redacted wrapper, because organization policy
-  rejects the public orb. No organization-wide security setting was relaxed.
-- GitHub's duplicate project CI and Sonar workflows are removed. CodeQL and Dependabot remain, and
-  release waits for the exact triggering SHA's `ci/circleci: quality-gate` status before applying.
-- CircleCI OAuth now has a read-only deploy checkout key, the project is followed, and GitHub has
-  an active CircleCI push/pull-request webhook.
-- Verified commands: `circleci auth me`, `circleci config validate --json`,
-  `circleci config process .circleci/config.yml`, `circleci run get`, `circleci job get`,
-  `circleci job output get`, `circleci context secret list SonarCloud`, and live GitHub PR/check
-  inspection.
-- The final pre-commit CircleCI config digest is
-  `676b839ccb57b9ad2d4b61c04f4780dde8b197122522825af2f10e953731706e`; authenticated
-  `circleci config validate --json` returned `valid: true`, and `circleci config process` expanded
-  its cache, workspace, Node 22.23.0, Sonar, and fan-in steps successfully.
-- External project settings are pinned to auto-cancel enabled, GitHub status enabled, fork builds
-  and fork secrets disabled, and dynamic/unversioned config disabled.
-- The CircleCI `SonarCloud` context contains `SONAR_TOKEN`; its value must never enter repository
-  artifacts or logs.
-- Final local evidence on Node 22.22.3: `pnpm check:static`, 261 Vitest files / 1168 tests with LCOV
-  and JUnit, the webpack Studio build, 15 Playwright tests, usage smoke, product UAT, dependency
-  audit, and version planning all passed. An earlier Node 26 run produced transient missing-module
-  errors; both affected tests and the full suite passed after returning to the supported Node 22
-  runtime. A redundant final `pnpm check` rerun was intentionally stopped after these component
-  gates were already green.
+- PR #164 merged to main as `434b0e772c3947056e8e6a7047b1cef93ef45170` on 2026-07-18.
+- `delivery-policy` writes `.ci/delivery-scope.json`. Product and CI changes run `static-quality`,
+  two-executor `unit-tests`, `usage-smoke`, `product-uat`, and `studio-browser` in parallel.
+  `unit-results` merges and verifies JUnit/LCOV, publishes JUnit, and persists LCOV. `sonar-cloud`
+  receives that LCOV through the shared workspace without rerunning tests. `quality-gate` explicitly
+  waits for both `unit-results` and Sonar alongside the other required work.
+- Policy-only changes prove their scope and halt the unneeded heavy lanes. Unknown paths default to
+  reviewable product scope. The limit is 100 reviewable files; exact generated-tooling prefixes can
+  exceed 100 raw files only while both counts remain visible.
+- Successful full workflows measured 7m02s, 8m37s, and 7m27s. The former medians were about 13m08s
+  on GitHub Actions and 17m56s on the original serial CircleCI graph.
+- Warm runs restored a roughly 224 MiB pnpm cache, a roughly 31 MiB Next compiler cache, and the
+  Sonar runtime cache. Only the designated lanes write each immutable cache.
+- A repeated warm run exposed one real WebKit timing flake. Its trace showed `/ideas/new` returned
+  HTTP 200 with no failed assets, but the streamed UI appeared about 0.6 seconds after the former
+  five-second assertion expired. The fix pins Turkish locale and widens only that route assertion;
+  the final browser lane passed.
+- GitHub Actions owns CodeQL, Dependabot, and release automation. Release runs `version:plan` before
+  polling `ci/circleci: quality-gate`, exits immediately when no release is planned, and bounds a
+  releaseable SHA wait to 30 minutes.
+- External project settings retain auto-cancel and GitHub statuses, disable fork-secret transfer,
+  dynamic config, and unversioned config, and leave the deployment marker detached.
+- The `SonarCloud` context contains `SONAR_TOKEN`; its value never enters repository artifacts or
+  logs. The repository's redacted wrapper and full checkout remain the scanner boundary.
+- `quick-local` is the automatic changed-file hook, `static-local` is the intentional local static
+  profile, and `parity-remote` is the authenticated sidecar `pnpm check:static` profile. None is a
+  substitute for the hosted quality gate.
 
 ## Decisions
 
-- TDD Route: `Mode: off / Decision: skipped`; use proportional config, script, and hosted CI
-  verification rather than a forced strict TDD loop.
-- CircleCI owns project checks, browser QA, coverage, the repository-wrapped SonarCloud scan, and
-  the final status fan-in.
-- GitHub Actions owns CodeQL, Dependabot, and release/tag automation.
-- Cache only the pnpm store and `apps/studio/.next/cache`; never cache `node_modules` or build output.
-- `build-prs-only` remains disabled; the OAuth project override now identifies `main`.
-- No new CI provider, runtime provider, deployment adapter, or public publishing path is in scope.
+- Heavy suites run once in CircleCI. Local iteration uses focused tests, direct lint/typecheck, or a
+  bounded Chunk profile.
+- CircleCI owns project integration, browser QA, coverage, Sonar, and final fan-in. GitHub owns
+  CodeQL, dependency updates, and release/tag mutation.
+- Cache only the pnpm store, `apps/studio/.next/cache`, and Sonar runtime downloads.
+- Keep the deployment marker disabled until a real preview deployment exists.
+- CodeRabbit review quota failures are not product-quality evidence and should not be retriggered
+  repeatedly; actual comments are resolved, while CircleCI and CodeQL remain the completion proof.
 
 ## Remaining Work
 
-1. Prove one final cold-cache and one warm-cache hosted run, including `sonar-cloud`, browser
-   artifacts, cache evidence, and the `ci/circleci: quality-gate` commit status.
-2. Close the final spec/code-quality review and keep PR #160 within the 120-file delivery cap.
-3. Merge #160 only after successful hosted CI, then verify the `main` pipeline and release gate.
+1. Complete and merge the capability-routing documentation slice so all agents use the actual lane
+   and Chunk profile names.
+2. Refresh and verify the optional sidecar image only after the operator explicitly accepts transfer
+   of tracked encrypted vault ciphertext to the private snapshot. Do not sync plaintext `.env`.
+3. Continue measuring warm PR latency; investigate if the median exceeds 10 minutes again.
 
-## Blockers And Risks
+## Blocker
 
-- The initial OAuth project existed without a follower, checkout key, or webhook. That external
-  setup is repaired; future push-trigger verification is still required on the final #160 commit.
-- The organization blocks the public Sonar orb. The repository wrapper is the approved narrow
-  alternative; it must keep token and endpoint details redacted in artifacts and logs.
-- Required GitHub status rules are not changed in this slice because the existing release bot
-  performs a direct main push and has no narrowly scoped bypass.
+The existing sidecar snapshot predates the Node 22.23/pnpm 11.9 target. Creating its replacement
+would copy tracked encrypted `.env.vault` ciphertext to a private third-party snapshot. The transfer
+remains paused until the operator gives explicit risk-aware approval; no workaround or hidden sync
+is permitted.

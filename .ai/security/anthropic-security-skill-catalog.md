@@ -9,19 +9,20 @@ not runtime configuration and must never be read or imported by CLI/Studio code.
 2. Read frontmatter/README only for likely candidates.
 3. Load at most 1–3 full skill bodies for one bounded review pass.
 4. Apply guidance only to this repository or another explicitly authorized local target.
-5. Never run exploit tooling, public-target probes, malware detonation, credential attacks, phishing,
-   network scanning, or destructive red-team workflows.
+5. Never run exploit tooling, public-target probes, malware detonation, credential attacks,
+   phishing, network scanning, or destructive red-team workflows.
 
 ## Active Review Map
 
 ### Studio routes, sessions, and HTTP boundaries
 
-- `implementing-api-schema-validation-security` — active. Check strict request schemas, unknown-field
-  rejection, size bounds, enums, and response-data minimization.
+- `implementing-api-schema-validation-security` — active. Check strict request schemas,
+  unknown-field rejection, size bounds, enums, and response-data minimization.
 - `performing-security-headers-audit` — active for local Studio responses. Check CSP, frame defense,
   referrer policy, permissions policy, HSTS applicability, and cookie attributes.
 - `testing-for-host-header-injection` — checklist-only. Use static/local request review for Host and
-  forwarded-host trust; do not run its attacker-domain, SSRF, cache-poisoning, or public probing steps.
+  forwarded-host trust; do not run its attacker-domain, SSRF, cache-poisoning, or public probing
+  steps.
 
 ### LLM, provider, and agent-input boundaries
 
@@ -32,8 +33,9 @@ not runtime configuration and must never be read or imported by CLI/Studio code.
   exists.
 - `auditing-mcp-servers-for-tool-poisoning` — conditional. Apply before adding or changing an MCP
   server used by development agents; do not make MCP scanning part of application runtime.
-- `defending-llms-with-guardrails` and `implementing-llm-guardrails-for-security` — reserve references
-  when provider output validation or tool execution expands beyond current structured parsers.
+- `defending-llms-with-guardrails` and `implementing-llm-guardrails-for-security` — reserve
+  references when provider output validation or tool execution expands beyond current structured
+  parsers.
 
 ### Secrets and credentials
 
@@ -52,8 +54,9 @@ not runtime configuration and must never be read or imported by CLI/Studio code.
   untrusted expression interpolation, fork handling, environment approvals, and secret exposure.
 - `detecting-dependency-confusion` — active static review. Inventory workspace package names and
   registry configuration; never claim public namespaces as a test.
-- `detecting-malicious-npm-packages` — active static review for lifecycle scripts, unexpected network
-  installers, typosquatting, and lockfile anomalies. Do not detonate packages on the workstation.
+- `detecting-malicious-npm-packages` — active static review for lifecycle scripts, unexpected
+  network installers, typosquatting, and lockfile anomalies. Do not detonate packages on the
+  workstation.
 - `detecting-typosquatting-packages-in-npm-pypi` — optional name-only follow-up during dependency
   additions.
 - `analyzing-sbom-for-supply-chain-vulnerabilities` — conditional if the release workflow begins
@@ -81,7 +84,8 @@ not runtime configuration and must never be read or imported by CLI/Studio code.
 ## Sequential Review Passes
 
 1. **Route pass:** schema validation + security headers + host/forwarded-host checklist.
-2. **LLM pass:** direct prompt injection + indirect prompt injection + current structured-output gates.
+2. **LLM pass:** direct prompt injection + indirect prompt injection + current structured-output
+   gates.
 3. **Supply-chain pass:** GitHub Actions + dependency confusion + malicious npm static triage.
 4. **Secrets pass:** existing scanner coverage + optional installed local scanners.
 5. **Deferred external-action pass:** OAuth scopes + API keys only when private upload or cloud
