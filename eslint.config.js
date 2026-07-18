@@ -5,7 +5,20 @@ import tseslint from "typescript-eslint";
 export default [
   js.configs.recommended,
   ...tseslint.configs.recommended,
-  { ignores: ["dist/**", "runs/**", "node_modules/**", "apps/**/.next/**"] },
+  {
+    ignores: [
+      ".agents/**",
+      ".claude/**",
+      ".claude-flow/**",
+      ".omx/**",
+      ".ruflo/**",
+      ".swarm/**",
+      "dist/**",
+      "runs/**",
+      "node_modules/**",
+      "apps/**/.next/**",
+    ],
+  },
   {
     languageOptions: {
       globals: {

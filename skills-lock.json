@@ -583,6 +583,12 @@
       "skillPath": "skills/benchmarking-kubernetes-with-kube-bench/SKILL.md",
       "computedHash": "b8f4c93692e494d68cf643ec213b44acf0169823abd478090d7bf0fe7063543d"
     },
+    "brandkit": {
+      "source": "Leonxlnx/taste-skill",
+      "sourceType": "github",
+      "skillPath": "skills/brandkit/SKILL.md",
+      "computedHash": "b63012f3c3d21197e0185d3e9cc7ec40c589fb10e0b5a32a561739de31aa3f20"
+    },
     "building-adversary-infrastructure-tracking-system": {
       "source": "mukul975/Anthropic-Cybersecurity-Skills",
       "sourceType": "github",
@@ -1176,6 +1182,18 @@
       "sourceType": "github",
       "skillPath": "skills/deploying-tailscale-for-zero-trust-vpn/SKILL.md",
       "computedHash": "b1fd9512f6cd1e2df30132318aa5e8751cfdfba59d534d38627a82ec8ba73abc"
+    },
+    "design-taste-frontend": {
+      "source": "Leonxlnx/taste-skill",
+      "sourceType": "github",
+      "skillPath": "skills/taste-skill/SKILL.md",
+      "computedHash": "6d838b246d0e35d0b53f4f23f98ba7a1dd561937e64f7d0c7553b0928e376c3e"
+    },
+    "design-taste-frontend-v1": {
+      "source": "Leonxlnx/taste-skill",
+      "sourceType": "github",
+      "skillPath": "skills/taste-skill-v1/SKILL.md",
+      "computedHash": "d704ab912c4d0ca954ffa858983da755ae4cd5cad9ba22554db5557382f5bd34"
     },
     "designing-adversary-engagement-with-mitre-engage": {
       "source": "mukul975/Anthropic-Cybersecurity-Skills",
@@ -2065,6 +2083,12 @@
       "skillPath": "skills/fleet-hunting-with-velociraptor/SKILL.md",
       "computedHash": "8903fc4ffb94f70ea86e7c326da9a902f8a6d007c3f36f5c7ff1addf6a457bbb"
     },
+    "full-output-enforcement": {
+      "source": "Leonxlnx/taste-skill",
+      "sourceType": "github",
+      "skillPath": "skills/output-skill/SKILL.md",
+      "computedHash": "26bd29ce4c5e02c7666b2d503609bf466bd32290822e91f0e984147048dbb924"
+    },
     "generating-and-analyzing-sboms": {
       "source": "mukul975/Anthropic-Cybersecurity-Skills",
       "sourceType": "github",
@@ -2082,6 +2106,18 @@
       "sourceType": "github",
       "skillPath": "skills/generating-threat-intelligence-reports/SKILL.md",
       "computedHash": "d5adbbe3f30dd2e17ddcf731ea1e4a1e903597ef501bd80ba724f57d4ebf9ccb"
+    },
+    "gpt-taste": {
+      "source": "Leonxlnx/taste-skill",
+      "sourceType": "github",
+      "skillPath": "skills/gpt-tasteskill/SKILL.md",
+      "computedHash": "cc8f0c601d8240a124e1d11634351a2be7b8a72fd807c75e5b6bf7afcd5ddee0"
+    },
+    "grill-me": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/productivity/grill-me/SKILL.md",
+      "computedHash": "f361db4e15e6bfd562a9282b1dccda513910a50061f9e838ce017be9c69dde3f"
     },
     "hardening-docker-containers-for-production": {
       "source": "mukul975/Anthropic-Cybersecurity-Skills",
@@ -2106,6 +2142,12 @@
       "sourceType": "github",
       "skillPath": "skills/hardening-windows-endpoint-with-cis-benchmark/SKILL.md",
       "computedHash": "22a78207b9a54d576ffb111ac16f5dffecb069df3abe4b9215cdb15fa1b6b4b7"
+    },
+    "high-end-visual-design": {
+      "source": "Leonxlnx/taste-skill",
+      "sourceType": "github",
+      "skillPath": "skills/soft-skill/SKILL.md",
+      "computedHash": "7db385e4c5370e5a7fca9704a1361b056e4504ea6a03924bb86f33a4f00b5c73"
     },
     "hunting-advanced-persistent-threats": {
       "source": "mukul975/Anthropic-Cybersecurity-Skills",
@@ -2328,6 +2370,24 @@
       "sourceType": "github",
       "skillPath": "skills/hunting-saas-sso-token-abuse/SKILL.md",
       "computedHash": "f5a11754fb66da3e765863550fe274ba3febe174f6e4c316467871300ee68126"
+    },
+    "image-to-code": {
+      "source": "Leonxlnx/taste-skill",
+      "sourceType": "github",
+      "skillPath": "skills/image-to-code-skill/SKILL.md",
+      "computedHash": "58517b03b2a01f4c9ba65861559d03df931400871bbc200978c975b24bb92c73"
+    },
+    "imagegen-frontend-mobile": {
+      "source": "Leonxlnx/taste-skill",
+      "sourceType": "github",
+      "skillPath": "skills/imagegen-frontend-mobile/SKILL.md",
+      "computedHash": "9ab7f4f6ce66a3cff02bbf5894e5bd5af50bf5d6ef0adffdc88e8fab772fe44f"
+    },
+    "imagegen-frontend-web": {
+      "source": "Leonxlnx/taste-skill",
+      "sourceType": "github",
+      "skillPath": "skills/imagegen-frontend-web/SKILL.md",
+      "computedHash": "65f5ae59fa317567809438310b1c54f78cd133426deb43e4d3d4ca4c8f541628"
     },
     "implementing-aes-encryption-for-data-at-rest": {
       "source": "mukul975/Anthropic-Cybersecurity-Skills",
@@ -3337,6 +3397,12 @@
       "skillPath": "skills/implementing-zero-trust-with-hashicorp-boundary/SKILL.md",
       "computedHash": "dc4696d5e9073f9547b624d2fa1f3e4acb08bf8a8db53da09c1cad0a83ef0b4c"
     },
+    "industrial-brutalist-ui": {
+      "source": "Leonxlnx/taste-skill",
+      "sourceType": "github",
+      "skillPath": "skills/brutalist-skill/SKILL.md",
+      "computedHash": "8fc355c4aadb7d29c53ca28bc41be3cd6eea765d121e3737c4dc2d0f90a8effa"
+    },
     "integrating-dast-with-owasp-zap-in-pipeline": {
       "source": "mukul975/Anthropic-Cybersecurity-Skills",
       "sourceType": "github",
@@ -3408,6 +3474,12 @@
       "sourceType": "github",
       "skillPath": "skills/migrating-to-post-quantum-cryptography/SKILL.md",
       "computedHash": "9c07a796153ae710d3eea1355a2413e23f51e30a8e4e7df1129d50a51543a49f"
+    },
+    "minimalist-ui": {
+      "source": "Leonxlnx/taste-skill",
+      "sourceType": "github",
+      "skillPath": "skills/minimalist-skill/SKILL.md",
+      "computedHash": "08873a3131d3be27bef9bf3304b310b16b44ca6e3561aebe532797be3443f6bd"
     },
     "modeling-threats-with-opencti": {
       "source": "mukul975/Anthropic-Cybersecurity-Skills",
@@ -4537,6 +4609,12 @@
       "skillPath": "skills/red-teaming-llms-with-garak/SKILL.md",
       "computedHash": "dbcee2674543c9d736f1bccd2c1195ec91e5b4e027a3d2617e44f9b8369627ac"
     },
+    "redesign-existing-projects": {
+      "source": "Leonxlnx/taste-skill",
+      "sourceType": "github",
+      "skillPath": "skills/redesign-skill/SKILL.md",
+      "computedHash": "b405eee0e0e80fc243f731d9aa368bca307e356db7e6157d27101d369dac6726"
+    },
     "relaying-ntlm-for-adcs-esc8": {
       "source": "mukul975/Anthropic-Cybersecurity-Skills",
       "sourceType": "github",
@@ -4704,6 +4782,12 @@
       "sourceType": "github",
       "skillPath": "skills/securing-serverless-functions/SKILL.md",
       "computedHash": "4bbcb50518030c7b103199dcad5536d0af73400d4007c56169ba3c6bb529f4c7"
+    },
+    "stitch-design-taste": {
+      "source": "Leonxlnx/taste-skill",
+      "sourceType": "github",
+      "skillPath": "skills/stitch-skill/SKILL.md",
+      "computedHash": "13322f38406cd3abf16ba45e35bdc9b18002d0153a79b4612b97aefc65d5a335"
     },
     "testing-android-intents-for-vulnerabilities": {
       "source": "mukul975/Anthropic-Cybersecurity-Skills",

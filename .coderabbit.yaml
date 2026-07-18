@@ -62,6 +62,13 @@ reviews:
 
   path_filters:
     - "!**/.DS_Store"
+    - "!.agents/**"
+    - "!.claude/**"
+    - "!.claude-flow/**"
+    - "!.omx/**"
+    - "!.ruflo/**"
+    - "!.swarm/**"
+    - "!skills-lock.json"
     - "!**/node_modules/**"
     - "!**/.next/**"
     - "!**/out/**"
