@@ -54,3 +54,13 @@ ruvector.db
 .flaskenv*
 !.env.project
 !.env.vault
+
+# Chunk local runtime state
+.chunk/sidecar.json
+.chunk/sidecar.*.json
+.chunk/hooks-disabled
+
+# Generated local agent harness state
+.claude-flow/
+.claude/.proven-config-version
+.claude/proven-config.json

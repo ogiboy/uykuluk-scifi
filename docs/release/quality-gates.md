@@ -16,6 +16,32 @@ pnpm studio:typecheck:compat
 Exercise the real Studio/browser journey when UI or route behavior changes. Passing unit tests alone
 does not prove the operator workflow.
 
+### Chunk inner loop
+
+Chunk is intentionally narrower than the PR gate. The generated commit and session-stop hooks run
+only the primary root and Studio typechecks. The quick profile invokes installed binaries directly,
+so it cannot turn a commit hook into an implicit dependency reinstall:
+
+```bash
+chunk validate quick
+```
+
+Use the broader profiles deliberately rather than after every edit:
+
+```bash
+chunk validate static # lint, compatibility typechecks, builds, policy and format checks
+chunk validate test   # one CI-shaped Vitest run with coverage and JUnit output
+```
+
+`chunk validate` without a profile runs every configured command and is therefore reserved for an
+explicit pre-PR or sidecar check. Dependency installation is not a commit hook; the normal project
+bootstrap and CircleCI jobs own frozen installs. The Stop hook retries a failing unchanged diff at
+most once. CircleCI remains the integration authority and should not be duplicated with repeated
+local full-suite runs.
+
+This setup follows the official
+[Chunk v0.7 hook contract](https://github.com/CircleCI-Public/chunk-cli/blob/v0.7.119/docs/HOOKS.md).
+
 ## PR-Ready Gates
 
 ```bash

@@ -9,7 +9,9 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Chores
+
+- add bounded Chunk validation profiles and lightweight agent hooks
 
 ## v0.85.0 (2026-07-18)
 

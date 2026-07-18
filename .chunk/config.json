@@ -1,0 +1,15 @@
+{
+  "commands": [
+    {
+      "name": "quick",
+      "run": "node_modules/.bin/tsc --noEmit && cd apps/studio && node scripts/prepare-typecheck.mjs && node_modules/.bin/next typegen && node_modules/.bin/tsc --noEmit",
+      "role": "gate",
+      "timeout": 180,
+      "limit": 1
+    },
+    { "name": "static", "run": "pnpm check:static", "role": "gate", "timeout": 360, "limit": 1 },
+    { "name": "test", "run": "pnpm test:ci", "role": "gate", "timeout": 900, "limit": 1 }
+  ],
+  "stopHookMaxAttempts": 1,
+  "vcs": { "org": "ogiboy", "repo": "uykuluk-scifi" }
+}
