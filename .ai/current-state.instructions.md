@@ -261,8 +261,10 @@
 - Blocked `producer doctor` provider and publish-default diagnostics include operator-facing
   `nextAction` remediation guidance in terminal, JSON, and Markdown output; risky
   upload/private/public publish config still blocks.
-- Project-local capability routing, resumable `.ai/checkpoints/`, dependency auditing, and the
-  conventional-commit release workflow are documented and covered by repository quality gates.
+- Project-local capability routing, resumable `.ai/checkpoints/`, and the conventional-commit
+  release workflow are documented. CircleCI owns parallel core/browser quality, the downstream
+  repository-wrapped Sonar scan, and their `quality-gate` fan-in. GitHub retains CodeQL, Dependabot,
+  and a release gate that waits for the triggering SHA's CircleCI status.
 - Studio uses the existing Tailwind/shadcn/Radix design system and typed Turkish/English `next-intl`
   catalogs. New installs default to Turkish; future features must keep both locales complete rather
   than introducing mixed operator copy.

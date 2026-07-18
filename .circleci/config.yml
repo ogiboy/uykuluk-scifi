@@ -1,0 +1,212 @@
+version: 2.1
+
+orbs:
+  node: circleci/node@7.2.1
+
+commands:
+  setup-pnpm:
+    steps:
+      - run:
+          name: Activate pnpm 11.9.0
+          command: |
+            corepack enable
+            corepack prepare pnpm@11.9.0 --activate
+            pnpm config set store-dir /tmp/pnpm-store
+            pnpm --version | grep -E '^11\.9\.0$'
+
+jobs:
+  quality-core:
+    executor:
+      name: node/default
+      tag: "22.23.0"
+    resource_class: large
+    steps:
+      - checkout
+      - run:
+          name: Fetch full Git history
+          command: |
+            git fetch --no-tags --prune --depth=2147483647 origin \
+              '+refs/heads/*:refs/remotes/origin/*'
+      - setup-pnpm
+      - run:
+          name: Verify Node 22.23.x
+          command: node --version | grep -E '^v22\.23\.'
+      - restore_cache:
+          keys:
+            - pnpm-store-v2-node22.23-pnpm11.9-{{ arch }}-{{ checksum "pnpm-lock.yaml" }}
+      - run:
+          name: Install dependencies
+          command: pnpm install --frozen-lockfile
+      - save_cache:
+          key: pnpm-store-v2-node22.23-pnpm11.9-{{ arch }}-{{ checksum "pnpm-lock.yaml" }}
+          paths:
+            - /tmp/pnpm-store
+      - run:
+          name: Enforce pull request file cap
+          command: pnpm qa:pr-size
+      - run:
+          name: Run static quality checks
+          command: pnpm check:static
+      - run:
+          name: Run unit tests with coverage and JUnit output
+          command: pnpm test:ci
+      - run:
+          name: Audit high-severity dependencies
+          command: pnpm security:dependencies
+      - run:
+          name: Run operator usage smoke
+          command: pnpm qa:usage
+      - run:
+          name: Run product UAT
+          command: pnpm qa:product
+      - run:
+          name: Print version plan
+          command: pnpm version:plan
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .ai/qa/artifacts/sonar/coverage/lcov.info
+      - store_test_results:
+          path: .ai/qa/artifacts/junit
+      - store_artifacts:
+          path: .ai/qa/artifacts/sonar/coverage
+          destination: coverage
+
+  sonar-cloud:
+    executor:
+      name: node/default
+      tag: "22.23.0"
+    steps:
+      - checkout
+      - run:
+          name: Fetch full Git history
+          command: |
+            git fetch --no-tags --prune --depth=2147483647 origin \
+              '+refs/heads/*:refs/remotes/origin/*'
+      - setup-pnpm
+      - run:
+          name: Verify Node 22.23.x
+          command: node --version | grep -E '^v22\.23\.'
+      - restore_cache:
+          keys:
+            - pnpm-store-v2-node22.23-pnpm11.9-{{ arch }}-{{ checksum "pnpm-lock.yaml" }}
+      - run:
+          name: Install dependencies
+          command: pnpm install --frozen-lockfile
+      - attach_workspace:
+          at: .
+      - run:
+          name: Configure ephemeral SonarCloud CI properties
+          command: |
+            printf '%s\n' \
+              'sonar.qualitygate.wait=true' \
+              'sonar.qualitygate.timeout=300' >> sonar-project.properties
+            if [ -n "${CIRCLE_PULL_REQUEST:-}" ]; then
+              pr_key="${CIRCLE_PULL_REQUEST##*/}"
+              printf '%s\n' \
+                "sonar.pullrequest.key=$pr_key" \
+                "sonar.pullrequest.branch=${CIRCLE_BRANCH}" \
+                'sonar.pullrequest.base=main' >> sonar-project.properties
+            fi
+      - run:
+          name: Scan SonarCloud and wait for its quality gate
+          command: |
+            SONAR_SKIP_COVERAGE=1 \
+              SONAR_HOST_URL=https://sonarcloud.io \
+              SONAR_PROJECT_KEY=ogiboy_uykuluk-scifi \
+              SONAR_ORGANIZATION=ogiboy \
+              pnpm sonar:cloud
+
+  studio-browser:
+    docker:
+      - image: mcr.microsoft.com/playwright:v1.61.1-noble@sha256:5b8f294aff9041b7191c34a4bab3ac270157a28774d4b0660e9743297b697e48
+    retention:
+      caches: 7d
+    steps:
+      - checkout
+      - node/install:
+          node-version: "22.23.0"
+          use-nvm-cache: false
+      - run:
+          name: Verify Node 22.23.x
+          command: node --version | grep -E '^v22\.23\.'
+      - setup-pnpm
+      - restore_cache:
+          keys:
+            - pnpm-store-v2-node22.23-pnpm11.9-{{ arch }}-{{ checksum "pnpm-lock.yaml" }}
+      - restore_cache:
+          keys:
+            - studio-next-cache-v2-{{ checksum "pnpm-lock.yaml" }}-{{ .Revision }}
+            - studio-next-cache-v2-{{ checksum "pnpm-lock.yaml" }}-
+      - run:
+          name: Install dependencies
+          command: pnpm install --frozen-lockfile
+      - run:
+          name: Build Studio once with webpack
+          command: pnpm studio:build
+      - run:
+          name: Run Playwright against the prebuilt Studio
+          command: pnpm qa:browser:built
+      - save_cache:
+          key: studio-next-cache-v2-{{ checksum "pnpm-lock.yaml" }}-{{ .Revision }}
+          paths:
+            - apps/studio/.next/cache
+      - store_test_results:
+          path: test-results
+      - store_artifacts:
+          path: test-results
+          destination: playwright/test-results
+      - store_artifacts:
+          path: playwright-report
+          destination: playwright/report
+
+  quality-gate:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - run:
+          name: Confirm all quality jobs completed
+          command: echo 'quality-core, studio-browser, and sonar-cloud passed.'
+
+  preview-deploy-marker:
+    # Explicitly gated scaffold; intentionally not included in a workflow.
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - run:
+          name: Verify preview deploy marker prerequisites
+          command: |
+            if [ "${PREVIEW_DEPLOY_ENABLED:-}" != "true" ]; then
+              echo "PREVIEW_DEPLOY_ENABLED=true is required to run preview deploy markers."
+              exit 1
+            fi
+            if [ ! -x scripts/deploy/preview.sh ]; then
+              echo "scripts/deploy/preview.sh must exist and be executable."
+              exit 1
+            fi
+      - run:
+          name: Plan preview deployment marker
+          command: scripts/deploy/preview.sh plan-marker
+      - run:
+          name: Update preview deployment marker
+          command: scripts/deploy/preview.sh update-marker
+      - run:
+          name: Run preview deployment marker
+          command: scripts/deploy/preview.sh run-marker
+
+workflows:
+  quality:
+    jobs:
+      - quality-core
+      - studio-browser
+      - sonar-cloud:
+          context: SonarCloud
+          requires:
+            - quality-core
+      - quality-gate:
+          name: quality-gate
+          requires:
+            - quality-core
+            - studio-browser
+            - sonar-cloud

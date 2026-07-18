@@ -3,6 +3,7 @@ set -euo pipefail
 
 branch="${GITHUB_REF_NAME:-main}"
 max_attempts="${RELEASE_PUSH_MAX_ATTEMPTS:-3}"
+expected_sha="${RELEASE_EXPECTED_SHA:-}"
 
 if [[ ! "${max_attempts}" =~ ^[1-9][0-9]*$ ]]; then
   echo "RELEASE_PUSH_MAX_ATTEMPTS must be a positive integer." >&2
@@ -17,6 +18,12 @@ parse_plan_field() {
 for attempt in $(seq 1 "${max_attempts}"); do
   echo "Preparing release attempt ${attempt}/${max_attempts} from origin/${branch}."
   git fetch origin "${branch}" --tags
+
+  if [[ -n "${expected_sha}" && "$(git rev-parse "origin/${branch}")" != "${expected_sha}" ]]; then
+    echo "Release is superseded because origin/${branch} no longer matches verified ${expected_sha}."
+    exit 0
+  fi
+
   git reset --hard "origin/${branch}"
 
   plan="$(pnpm --silent version:plan)"

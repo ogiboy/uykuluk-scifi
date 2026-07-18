@@ -58,7 +58,8 @@ redacted diagnostics, and recovery evidence. Unknown provider outcomes do not be
 │   └── youtube/          # disabled/current future distribution boundary
 ├── tests/                # Vitest contracts and regressions
 ├── .ai/                  # development-only guidance and checkpoints
-└── .github/              # CI, CodeQL, Dependabot, Sonar, release
+├── .circleci/            # primary project quality, browser, and Sonar pipeline
+└── .github/              # CodeQL, Dependabot configuration, and release automation
 ```
 
 ## Runtime and Development Separation
