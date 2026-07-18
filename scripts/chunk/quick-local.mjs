@@ -25,11 +25,11 @@ const changedFiles = [
   ...git(["ls-files", "--others", "--exclude-standard"]),
 ];
 const uniqueFiles = [...new Set(changedFiles)];
-const sourceFiles = uniqueFiles.filter((file) => /\.(?:[cm]?js|tsx?)$/.test(file));
+const sourceFiles = uniqueFiles.filter((file) => /\.(?:[cm]?js|jsx|tsx?)$/.test(file));
 const studioFiles = sourceFiles.filter((file) => file.startsWith("apps/studio/"));
 const rootFiles = sourceFiles.filter((file) => !file.startsWith("apps/studio/"));
 const formatFiles = uniqueFiles.filter((file) =>
-  /\.(?:[cm]?js|tsx?|json|md|ya?ml|css)$/.test(file),
+  /\.(?:[cm]?js|jsx|tsx?|json|md|ya?ml|css)$/.test(file),
 );
 
 const run = (command, args, options = {}) => {
@@ -48,9 +48,7 @@ if (rootFiles.length > 0) {
 }
 
 if (studioFiles.length > 0) {
-  run("node_modules/.bin/eslint", studioFiles, {
-    env: { ...process.env, ESLINT_USE_FLAT_CONFIG: "true" },
-  });
+  run("node_modules/.bin/eslint", studioFiles);
 }
 
 if (formatFiles.length > 0) {

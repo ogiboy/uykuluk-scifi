@@ -37,14 +37,22 @@ if (missingFiles.length > 0 || unexpectedFiles.length > 0) {
   );
 }
 
-const totals = junit.match(
-  /<testsuites\b[^>]*\btests="(\d+)"[^>]*\bfailures="(\d+)"[^>]*\berrors="(\d+)"/,
-);
-if (!totals) {
+const totalsTag = /<testsuites\b[^>]*>/.exec(junit)?.[0];
+if (!totalsTag) {
   fail("JUnit totals are missing");
 }
 
-const [, tests, failures, errors] = totals.map(Number);
+const readTotal = (pattern, name) => {
+  const value = pattern.exec(totalsTag)?.[1];
+  if (value === undefined) {
+    fail(`JUnit ${name} total is missing`);
+  }
+  return Number(value);
+};
+
+const tests = readTotal(/\btests="(\d+)"/, "tests");
+const failures = readTotal(/\bfailures="(\d+)"/, "failures");
+const errors = readTotal(/\berrors="(\d+)"/, "errors");
 if (tests <= 0 || failures !== 0 || errors !== 0) {
   fail(`invalid JUnit totals: tests=${tests}, failures=${failures}, errors=${errors}`);
 }
