@@ -18,13 +18,25 @@ jobs:
   build-node:
     # Build node project
     executor: node/default
+    retention:
+      caches: 7d
     steps:
       - checkout
       - node/install-packages:
           cache-path: ~/project/node_modules
           override-ci-command: npm install
+      - restore_cache:
+          keys:
+            - studio-next-cache-v1-{{ checksum "pnpm-lock.yaml" }}-{{ .Revision }}
+            - studio-next-cache-v1-{{ checksum "pnpm-lock.yaml" }}-
       - run:
-          command: npm run build
+          command: |
+            npm run build
+            npm run build --workspace=@uykulukscifi/studio
+      - save_cache:
+          key: studio-next-cache-v1-{{ checksum "pnpm-lock.yaml" }}-{{ .Revision }}
+          paths:
+            - apps/studio/.next/cache
       - run:
           name: Create the ~/artifacts directory if it doesn't exist
           command: mkdir -p ~/artifacts
@@ -35,18 +47,32 @@ jobs:
       - store_artifacts:
           path: ~/artifacts
           destination: node-build
-  deploy:
-    # This is an example deploy job, not actually used by the workflow
+  preview-deploy-marker:
+    # Explicitly gated scaffold; intentionally not included in a workflow.
     docker:
       - image: cimg/base:stable
     steps:
-      # Replace this with steps to deploy to users
+      - checkout
       - run:
-          name: deploy
-          command: '#e.g. ./deploy.sh'
+          name: Verify preview deploy marker prerequisites
+          command: |
+            if [ "${PREVIEW_DEPLOY_ENABLED:-}" != "true" ]; then
+              echo "PREVIEW_DEPLOY_ENABLED=true is required to run preview deploy markers."
+              exit 1
+            fi
+            if [ ! -x scripts/deploy/preview.sh ]; then
+              echo "scripts/deploy/preview.sh must exist and be executable."
+              exit 1
+            fi
       - run:
-          name: found github actions config
-          command: ':'
+          name: Plan preview deployment marker
+          command: scripts/deploy/preview.sh plan-marker
+      - run:
+          name: Update preview deployment marker
+          command: scripts/deploy/preview.sh update-marker
+      - run:
+          name: Run preview deployment marker
+          command: scripts/deploy/preview.sh run-marker
 workflows:
   build-and-test:
     jobs:
@@ -54,6 +80,3 @@ workflows:
       - build-node:
           requires:
             - test-node
-    # - deploy:
-    #     requires:
-    #       - build-node
