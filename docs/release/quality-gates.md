@@ -16,6 +16,32 @@ pnpm studio:typecheck:compat
 Exercise the real Studio/browser journey when UI or route behavior changes. Passing unit tests alone
 does not prove the operator workflow.
 
+### Chunk inner loop
+
+Chunk is intentionally narrower than the PR gate. The generated commit and session-stop hooks run
+only the primary root and Studio typechecks. The quick profile invokes installed binaries directly,
+so it cannot turn a commit hook into an implicit dependency reinstall:
+
+```bash
+chunk validate quick
+```
+
+Use the broader profiles deliberately rather than after every edit:
+
+```bash
+chunk validate static # lint, compatibility typechecks, builds, policy and format checks
+chunk validate test   # one CI-shaped Vitest run with coverage and JUnit output
+```
+
+`chunk validate` without a profile runs every configured command and is therefore reserved for an
+explicit pre-PR or sidecar check. Dependency installation is not a commit hook; the normal project
+bootstrap and CircleCI jobs own frozen installs. The Stop hook retries a failing unchanged diff at
+most once. CircleCI remains the integration authority and should not be duplicated with repeated
+local full-suite runs.
+
+This setup follows the official
+[Chunk v0.7 hook contract](https://github.com/CircleCI-Public/chunk-cli/blob/v0.7.119/docs/HOOKS.md).
+
 ## PR-Ready Gates
 
 ```bash
@@ -38,9 +64,15 @@ CircleCI is the primary quality pipeline. `quality-core` and `studio-browser` ru
 core job owns `pnpm check:static`, one Vitest run with LCOV and JUnit, usage/product checks,
 dependency audit, and version planning; the browser job owns the production Studio build and test.
 After core succeeds, the narrow `sonar-cloud` job restores its coverage artifact and invokes the
-repository's existing redacted Sonar wrapper. The public Sonar orb is not used because organization
-policy disallows it; the migration does not weaken that organization-wide setting. `quality-gate`
-fans in `sonar-cloud` and `studio-browser`.
+repository's existing redacted Sonar wrapper. That job uses CircleCI's `checkout: method: full`
+because Sonar SCM blame needs historical blobs that the default blobless checkout may omit. The
+public Sonar orb is not used because organization policy disallows it; the migration does not weaken
+that organization-wide setting. `quality-gate` fans in `sonar-cloud` and `studio-browser`.
+
+Three disjoint GitHub App triggers own integration events: PR opened, pushes to open non-draft PRs,
+and pushes to the default branch. The legacy GitHub OAuth project is disabled. The workflow also
+accepts explicit API triggers. This keeps opening or updating a PR to one integration run per
+revision instead of parallel OAuth push and GitHub App pull-request duplicates.
 
 Cold and warm pnpm plus Next.js caches keep the pipeline bounded. GitHub Actions retains CodeQL,
 Dependabot, and the main-branch release gate only; release polls the `ci/circleci: quality-gate`

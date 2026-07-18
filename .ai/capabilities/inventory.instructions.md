@@ -45,6 +45,7 @@ until a task explicitly routes to them and verifies availability.
 | Ruflo selected modules          | Persistent goals, explicit swarm coordination, cost/observability, ADRs, test-gap analysis          |
 | Context7 MCP                    | Current library/framework/API documentation                                                         |
 | SonarQube MCP and scripts       | Static quality and maintainability evidence                                                         |
+| Chunk CLI 0.7                   | Bounded inner-loop validation and optional authenticated CircleCI sidecars                           |
 | Firecrawl MCP                   | External discovery and extraction when normal web/browser research is insufficient                  |
 | Hugging Face 1.0.0              | Model, dataset, paper, evaluation, and local inference research when roadmap-relevant               |
 | Primary runtime document tools  | Spreadsheets, reports, PDFs, and presentations when a deliverable needs them                        |

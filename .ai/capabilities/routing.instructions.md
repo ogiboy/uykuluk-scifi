@@ -186,6 +186,9 @@ model. Offensive or exploit-oriented skills require explicit authorization and a
 ## Testing, Review, And Release
 
 - Behavior change: Aegis TDD when selected, Vitest, then broader gates.
+- Chunk 0.7 uses `chunk validate quick` for automatic inner-loop hooks. Run its `static` or `test`
+  profiles only at an intentional slice/PR boundary; do not repeat CircleCI's full gate after every
+  edit. Remote sidecars are optional and require an explicit authenticated invocation.
 - Operator workflow: `pnpm qa:usage`.
 - Studio behavior: Playwright and Browser; avoid redundant concurrent browser runners.
 - Visual/chart behavior: screenshot or image-diff evidence when stable.

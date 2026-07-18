@@ -9,7 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Chores
+
+- add bounded Chunk validation profiles and lightweight agent hooks
+- consolidate CircleCI GitHub App triggers and make Sonar checkout historical-blob complete
 
 ## v0.85.0 (2026-07-18)
 
