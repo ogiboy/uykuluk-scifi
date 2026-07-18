@@ -6,6 +6,16 @@ import process from "node:process";
 import { fileURLToPath } from "node:url";
 
 export const reviewableFileLimit = 100;
+export const fullCiLanes = [
+  "delivery-policy",
+  "static-quality",
+  "unit-tests",
+  "unit-results",
+  "usage-smoke",
+  "product-uat",
+  "studio-browser",
+  "sonar-cloud",
+];
 
 const generatedToolingFiles = new Set(["skills-lock.json"]);
 const generatedToolingPrefixes = [
@@ -60,6 +70,13 @@ export function classifyDeliveryFile(file) {
   return "product";
 }
 
+/**
+ * Summarize changed files by delivery scope and determine required CI lanes.
+ * @param {string[]} changedFiles - File paths changed by the delivery.
+ * @param {Object} [options] - Summary options.
+ * @param {boolean} [options.forceProduct] - Whether to require the full CI lane set.
+ * @returns {Object} A delivery summary containing classified files, scope counts, required lanes, and reviewable-file limit status.
+ */
 export function summarizeDeliveryScope(changedFiles, options = {}) {
   const files = [...new Set(changedFiles.filter(Boolean))].sort((left, right) =>
     left.localeCompare(right, "en"),
@@ -69,10 +86,9 @@ export function summarizeDeliveryScope(changedFiles, options = {}) {
     left.localeCompare(right, "en"),
   );
   const reviewableFiles = files.filter((file) => fileScopes[file] !== "generated-tooling");
-  const productRequired = options.forceProduct === true || scopes.includes("product");
-  const requiredLanes = productRequired
-    ? ["delivery-policy", "quality-core", "sonar-cloud", "studio-browser"]
-    : ["delivery-policy"];
+  const fullCiRequired =
+    options.forceProduct === true || scopes.includes("product") || scopes.includes("ci");
+  const requiredLanes = fullCiRequired ? fullCiLanes : ["delivery-policy"];
 
   return {
     schemaVersion: 1,

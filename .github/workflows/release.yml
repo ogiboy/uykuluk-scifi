@@ -20,51 +20,6 @@ jobs:
     if: ${{ github.actor != 'github-actions[bot]' && github.ref == 'refs/heads/main' }}
 
     steps:
-      - name: Wait for CircleCI quality gate
-        id: circleci_quality
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          QUALITY_CONTEXT: "ci/circleci: quality-gate"
-          QUALITY_GATE_MAX_ATTEMPTS: "30"
-          QUALITY_GATE_DELAY_SECONDS: "20"
-        run: |
-          set -euo pipefail
-
-          main_sha="${GITHUB_SHA}"
-
-          for attempt in $(seq 1 "${QUALITY_GATE_MAX_ATTEMPTS}"); do
-            state="$(curl --fail --silent --show-error --location \
-              --header "Accept: application/vnd.github+json" \
-              --header "Authorization: Bearer ${GITHUB_TOKEN}" \
-              --header "X-GitHub-Api-Version: 2022-11-28" \
-              "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/commits/${main_sha}/statuses?per_page=100" \
-              | node -e 'let body = ""; process.stdin.on("data", (chunk) => (body += chunk)).on("end", () => { const expected = process.env.QUALITY_CONTEXT; const statuses = JSON.parse(body).filter((status) => status.context === expected); statuses.sort((a, b) => Date.parse(b.updated_at) - Date.parse(a.updated_at)); process.stdout.write(statuses[0]?.state ?? "missing"); });')"
-
-            case "${state}" in
-              success)
-                echo "CircleCI quality gate passed for ${main_sha}."
-                echo "sha=${main_sha}" >> "${GITHUB_OUTPUT}"
-                exit 0
-                ;;
-              error|failure)
-                echo "CircleCI quality gate finished with ${state} for ${main_sha}." >&2
-                exit 1
-                ;;
-              pending|missing)
-                echo "Waiting for CircleCI quality gate on ${main_sha} (${attempt}/${QUALITY_GATE_MAX_ATTEMPTS}; ${state})."
-                ;;
-              *)
-                echo "CircleCI quality gate returned unexpected state '${state}' for ${main_sha}." >&2
-                exit 1
-                ;;
-            esac
-
-            sleep "${QUALITY_GATE_DELAY_SECONDS}"
-          done
-
-          echo "Timed out waiting for CircleCI quality gate on ${main_sha}." >&2
-          exit 1
-
       - name: Check out repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
         with:
@@ -84,12 +39,79 @@ jobs:
       - name: Install release dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Plan release
+        id: version_plan
+        run: |
+          set -euo pipefail
+
+          plan="$(pnpm --silent version:plan)"
+          echo "${plan}"
+          release_needed="$(node -e 'let body = ""; process.stdin.on("data", (chunk) => (body += chunk)).on("end", () => { const plan = JSON.parse(body); if (typeof plan.releaseNeeded !== "boolean") process.exit(1); process.stdout.write(String(plan.releaseNeeded)); });' <<<"${plan}")"
+          echo "release_needed=${release_needed}" >> "${GITHUB_OUTPUT}"
+
+      - name: Wait for CircleCI quality gate
+        id: circleci_quality
+        if: ${{ steps.version_plan.outputs.release_needed == 'true' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          QUALITY_CONTEXT: "ci/circleci: quality-gate"
+          QUALITY_GATE_TIMEOUT_SECONDS: "1800"
+          QUALITY_GATE_DELAY_SECONDS: "20"
+        run: |
+          set -euo pipefail
+
+          main_sha="${GITHUB_SHA}"
+          deadline_epoch="$(( $(date +%s) + QUALITY_GATE_TIMEOUT_SECONDS ))"
+          attempt=0
+
+          while (( $(date +%s) < deadline_epoch )); do
+            attempt="$(( attempt + 1 ))"
+            remaining_seconds="$(( deadline_epoch - $(date +%s) ))"
+            (( remaining_seconds > 0 )) || break
+            request_timeout_seconds="$(( remaining_seconds < QUALITY_GATE_DELAY_SECONDS ? remaining_seconds : QUALITY_GATE_DELAY_SECONDS ))"
+            state="$(curl --fail --silent --show-error --location \
+              --max-time "${request_timeout_seconds}" \
+              --header "Accept: application/vnd.github+json" \
+              --header "Authorization: Bearer ${GITHUB_TOKEN}" \
+              --header "X-GitHub-Api-Version: 2022-11-28" \
+              "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/commits/${main_sha}/statuses?per_page=100" \
+              | node -e 'let body = ""; process.stdin.on("data", (chunk) => (body += chunk)).on("end", () => { const expected = process.env.QUALITY_CONTEXT; const statuses = JSON.parse(body).filter((status) => status.context === expected); statuses.sort((a, b) => Date.parse(b.updated_at) - Date.parse(a.updated_at)); process.stdout.write(statuses[0]?.state ?? "missing"); });')"
+
+            case "${state}" in
+              success)
+                echo "CircleCI quality gate passed for ${main_sha}."
+                echo "sha=${main_sha}" >> "${GITHUB_OUTPUT}"
+                exit 0
+                ;;
+              cancelled|error|failure)
+                echo "CircleCI quality gate finished with ${state} for ${main_sha}." >&2
+                exit 1
+                ;;
+              pending|missing)
+                echo "Waiting for CircleCI quality gate on ${main_sha} (${attempt}; ${state})."
+                ;;
+              *)
+                echo "CircleCI quality gate returned unexpected state '${state}' for ${main_sha}." >&2
+                exit 1
+                ;;
+            esac
+
+            remaining_seconds="$(( deadline_epoch - $(date +%s) ))"
+            (( remaining_seconds > 0 )) || break
+            sleep "$(( remaining_seconds < QUALITY_GATE_DELAY_SECONDS ? remaining_seconds : QUALITY_GATE_DELAY_SECONDS ))"
+          done
+
+          echo "Timed out waiting for CircleCI quality gate on ${main_sha}." >&2
+          exit 1
+
       - name: Configure release Git identity
+        if: ${{ steps.version_plan.outputs.release_needed == 'true' }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Apply, commit, tag, and publish release
+        if: ${{ steps.version_plan.outputs.release_needed == 'true' }}
         env:
           RELEASE_EXPECTED_SHA: ${{ steps.circleci_quality.outputs.sha }}
         run: scripts/release/apply-and-push-release.sh

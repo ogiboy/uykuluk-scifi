@@ -1,15 +1,42 @@
 {
   "commands": [
     {
-      "name": "quick",
-      "run": "node_modules/.bin/tsc --noEmit && cd apps/studio && node scripts/prepare-typecheck.mjs && node_modules/.bin/next typegen && node_modules/.bin/tsc --noEmit",
+      "name": "quick-local",
+      "run": "node scripts/chunk/quick-local.mjs",
       "role": "gate",
-      "timeout": 180,
+      "timeout": 30,
       "limit": 1
     },
-    { "name": "static", "run": "pnpm check:static", "role": "gate", "timeout": 360, "limit": 1 },
-    { "name": "test", "run": "pnpm test:ci", "role": "gate", "timeout": 900, "limit": 1 }
+    {
+      "name": "static-local",
+      "run": "pnpm lint && pnpm studio:lint && pnpm typecheck && pnpm studio:typecheck",
+      "role": "gate",
+      "timeout": 240,
+      "limit": 1
+    },
+    {
+      "name": "parity-remote",
+      "run": "pnpm check:static",
+      "role": "gate",
+      "timeout": 360,
+      "limit": 1,
+      "remote": true
+    }
   ],
+  "vcs": { "org": "ogiboy", "repo": "uykuluk-scifi" },
+  "validation": { "sidecarImage": "9176d08c-7b68-42be-a34e-362dcc0f12ce" },
+  "orgID": "e188453a-9467-442d-97fc-733f0d84086a",
   "stopHookMaxAttempts": 1,
-  "vcs": { "org": "ogiboy", "repo": "uykuluk-scifi" }
+  "environment": {
+    "stack": "typescript",
+    "setup": [
+      {
+        "name": "pnpm",
+        "command": "corepack enable && corepack prepare pnpm@11.9.0 --activate && pnpm --version | grep -E '^11\\.9\\.0$'"
+      },
+      { "name": "install", "command": "pnpm install --frozen-lockfile" }
+    ],
+    "image": "cimg/node",
+    "image_version": "22.23.0"
+  }
 }

@@ -2,7 +2,7 @@ name: CodeQL
 
 on:
   push:
-    branches: [main, "feature/**", "feat/**", "fix/**", "ci/**"]
+    branches: [main]
     paths-ignore:
       - ".ai/qa/artifacts/**"
       - "assets/**"
