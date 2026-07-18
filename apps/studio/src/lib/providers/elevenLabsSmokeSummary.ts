@@ -76,7 +76,10 @@ async function readContainedSmokeFile(projectRoot: string, fileName: string): Pr
   const target = path.join(smokeDirectory(projectRoot), fileName);
   const safeComponents = [
     path.resolve(projectRoot),
-    ...["diagnostics", "provider-smokes", "elevenlabs", fileName],
+    "diagnostics",
+    "provider-smokes",
+    "elevenlabs",
+    fileName,
   ];
   for (let index = 0; index < safeComponents.length; index += 1) {
     const component = path.join(...safeComponents.slice(0, index + 1));

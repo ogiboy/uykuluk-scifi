@@ -27,7 +27,7 @@ export async function appendLedgerEvent(input: {
   data?: unknown;
 }): Promise<LedgerEvent> {
   const event: LedgerEvent = {
-    eventId: createId("evt"),
+    eventId: createId("evt", 8),
     runId: input.runId,
     type: input.type,
     stage: input.stage,

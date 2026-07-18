@@ -3,6 +3,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   configDigest,
+  listSettingsRevisions,
   readCurrentSettings,
   readSettingsRevision,
   saveSettingsRevision,
@@ -99,6 +100,56 @@ describe("settings revision store", () => {
     await expect(readCurrentSettings(root)).resolves.toMatchObject({
       config: { settingsRevision: current.config.settingsRevision + 1 },
     });
+  });
+
+  it("rejects invalid save metadata and unchanged settings before persistence", async () => {
+    const root = process.cwd();
+    const current = await readCurrentSettings(root);
+    const save = (overrides: Partial<Parameters<typeof saveSettingsRevision>[0]> = {}) =>
+      saveSettingsRevision({
+        projectRoot: root,
+        expectedCurrentDigest: current.digest,
+        config: current.config,
+        editor: "operator",
+        note: "validation",
+        ...overrides,
+      });
+
+    await expect(save({ expectedCurrentDigest: "invalid" })).rejects.toThrow(
+      "Expected settings digest is invalid",
+    );
+    await expect(save({ editor: "\u0000" })).rejects.toThrow(
+      "Settings editor is missing or unsafe",
+    );
+    await expect(save({ note: "" })).rejects.toThrow("Settings revision note is missing or unsafe");
+    await expect(save()).rejects.toThrow("Settings revision must change");
+  });
+
+  it("validates revision lookup and lists persisted revisions", async () => {
+    const root = process.cwd();
+    await expect(listSettingsRevisions(root)).resolves.toEqual([]);
+    await expect(readSettingsRevision(root, "../unsafe")).rejects.toThrow(
+      "Settings revision id is invalid",
+    );
+    await expect(readSettingsRevision(root, "settings_missing")).rejects.toThrow(
+      "Settings revision not found",
+    );
+
+    const current = await readCurrentSettings(root);
+    const saved = await saveSettingsRevision({
+      projectRoot: root,
+      expectedCurrentDigest: current.digest,
+      config: {
+        ...current.config,
+        channel: { ...current.config.channel, name: "Listelenen Kanal" },
+      },
+      editor: "operator",
+      note: "revision listing",
+    });
+
+    await expect(listSettingsRevisions(root)).resolves.toEqual([
+      expect.objectContaining({ revisionId: saved.revisionId }),
+    ]);
   });
 });
 
