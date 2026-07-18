@@ -11,28 +11,34 @@ layer so agents can discover broadly once, then load narrowly per task.
 
 ## Required Selection Flow
 
-1. Read the current task and the relevant project contract under `.ai/`.
-2. Classify the task using `.ai/capabilities/routing.instructions.md`.
-3. For security-sensitive work, load `.ai/capabilities/security-skills.instructions.md` and follow its limits before opening security tools.
-4. Check availability and exclusions in `.ai/capabilities/inventory.instructions.md`.
-5. Choose the smallest useful capability set:
-   - one primary workflow or planning skill;
-   - normally one specialist skill;
+1. Read the current task and the relevant product contracts under `.ai/`.
+2. Inspect only the `.claude/` development-tool surface relevant to the task; generated catalogs do
+   not replace `.ai/` product truth.
+3. Classify the task using `.ai/capabilities/routing.instructions.md`.
+4. For security-sensitive work, load `.ai/capabilities/security-skills.instructions.md` and follow
+   its limits before opening security tools.
+5. Check availability and exclusions in `.ai/capabilities/inventory.instructions.md`.
+6. Choose one to three skill bodies in total:
+   - at most one primary workflow or planning skill;
+   - normally at most one specialist skill;
    - at most one frontend taste skill;
    - only the MCP/connector needed for the next concrete action.
-6. For multi-step or delegated work, apply `.ai/capabilities/orchestration.instructions.md`.
-7. Load the full `SKILL.md` body only for capabilities actually selected.
-8. Record a durable checkpoint before a long task approaches a context reset.
+7. For multi-step or delegated work, apply `.ai/capabilities/orchestration.instructions.md`.
+8. Load the full `SKILL.md` body only for the capabilities actually selected.
+9. Record a durable checkpoint before a long task approaches a context reset.
 
 ## Context Budget
 
 - Do not enumerate the complete installed skill, plugin, connector, or MCP catalog in a task thread.
 - Do not load every skill in a plugin family.
-- Default initial budget: at most two skill bodies per agent, one specialist MCP family, and one
-  browser control surface.
+- Default initial budget: one to three selected skill bodies per agent, one specialist MCP family,
+  and one browser control surface.
 - Use deferred tool discovery only for the current task family.
 - Prefer project docs and repository evidence over repeatedly reading host-global metadata.
 - If no route fits, inspect metadata for the missing category, update the catalog, then continue.
+- Treat `skills-lock.json`, generated Claude/Ruflo catalogs, and host inventories as discovery
+  metadata only. They are never product/runtime contracts and do not prove that a body is installed
+  or callable in the active agent environment.
 
 ## Precedence
 

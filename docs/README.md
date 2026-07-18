@@ -27,8 +27,10 @@ hosted documentation site is deferred until this structure stabilizes.
   layout.
 - [Security model](security/operating-model.md): approvals, costs, secrets, routes, and external
   effects.
-- [Quality and releases](release/quality-gates.md): tests, static analysis, Sonar, and release
-  policy.
+- [Quality and releases](release/quality-gates.md): local/remote validation ownership, CircleCI
+  failure routing, caches, static analysis, Sonar, and release policy.
+- [Agent setup](agents/issue-tracker.md): GitHub issue intake, triage labels, and lazy domain
+  documentation conventions for optional engineering skills.
 - [Screenshot inventory](images/README.md): production-build Studio captures from browser UAT.
 
 The current delivery order and product scope live in [ROADMAP.md](../ROADMAP.md). Development-only

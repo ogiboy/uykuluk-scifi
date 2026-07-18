@@ -15,9 +15,9 @@ evidence, provider uncertainty, or ambiguous paid execution must fail closed.
 
 ## Completion Criteria
 
-- Studio exposes the complete brief/script-selection, source/claim review, voice audition,
-  cost approval, production voice/aligned subtitle, visual review/regeneration, render review,
-  private upload, and processing-review journey.
+- Studio exposes the complete brief/script-selection, source/claim review, voice audition, cost
+  approval, production voice/aligned subtitle, visual review/regeneration, render review, private
+  upload, and processing-review journey.
 - Voice, aligned subtitle, visual, music/SFX, thumbnail, metadata, caption, and final media digests
   are bound into their exact approval/evidence owners.
 - One hosted TTS path and one hosted still-image path remain replaceable providers behind the same
@@ -63,10 +63,10 @@ evidence, provider uncertainty, or ambiguous paid execution must fail closed.
   test files / 95 tests also passed for that stabilization checkpoint.
 - The integrated voice candidate now passes 214 files / 991 tests twice locally, the same 214 / 991
   in CI mode, focused subtitle/render/voice/Studio suites, all four native/compatibility core and
-  Studio TypeScript lanes at the implementation checkpoint, `studio:build`, `qa:usage`, `qa:product`,
-  and `qa:browser` (9/9). Real browser UAT verified dashboard, run detail, local A/B selection,
-  exact approval/binding/quote confirmation, local-only preview media, and a clean console; captures
-  are committed under `docs/images/`.
+  Studio TypeScript lanes at the implementation checkpoint, `studio:build`, `qa:usage`,
+  `qa:product`, and `qa:browser` (9/9). Real browser UAT verified dashboard, run detail, local A/B
+  selection, exact approval/binding/quote confirmation, local-only preview media, and a clean
+  console; captures are committed under `docs/images/`.
 
 ## Decisions
 
@@ -88,10 +88,10 @@ evidence, provider uncertainty, or ambiguous paid execution must fail closed.
 
 - Intent lock: finish the exact Studio-first production journey while preserving local fallback and
   fail-closed paid/external effects.
-- Scope fence for the active PR: test stability, doctor/next-action truth, aligned subtitle evidence,
-  exact render binding, guarded Studio voice audition/selection/reselection/production review, and
-  roadmap/current-state/task/checkpoint reconciliation, plus the concise product README and initial
-  versioned Markdown documentation migration. A hosted docs site remains deferred.
+- Scope fence for the active PR: test stability, doctor/next-action truth, aligned subtitle
+  evidence, exact render binding, guarded Studio voice audition/selection/reselection/production
+  review, and roadmap/current-state/task/checkpoint reconciliation, plus the concise product README
+  and initial versioned Markdown documentation migration. A hosted docs site remains deferred.
 - Baseline lock: `origin/main` `b88a30c3` (`v0.81.0`); existing ElevenLabs operation spool,
   reservation, settlement, and selection evidence remain authoritative.
 - Compatibility boundary: existing local runs remain readable through explicit linear subtitle
@@ -99,8 +99,8 @@ evidence, provider uncertainty, or ambiguous paid execution must fail closed.
 - Test obligations: focused producer/consumer regression, two consecutive local full suites,
   CI-shaped full suite, TypeScript native/compat, product/browser UAT, and PR-ready security/release
   gates.
-- Review gate: spec compliance before code-quality review for each coherent implementation slice;
-  no completion claim from unit tests alone.
+- Review gate: spec compliance before code-quality review for each coherent implementation slice; no
+  completion claim from unit tests alone.
 - Drift/rewind rule: a new provider, state machine, unapproved paid call, public upload surface, or
   new persistent owner outside this checkpoint requires plan refresh before implementation.
 
@@ -138,8 +138,9 @@ Ordered slices after `v0.82.0`:
 - Current evidence: 214 files / 991 tests passed twice locally and once in CI mode; focused
   producer/consumer tests, four typecheck lanes, production Studio build, usage/product/browser QA,
   and real browser UAT passed. Browser captures are under `docs/images/`.
-- Explicit next-slice boundary: after PR closeout, begin the static/manual `VisualProvider` and exact
-  render slice. Do not add multiple hosted adapters, ComfyUI, short clips, upload, or public publish.
+- Explicit next-slice boundary: after PR closeout, begin the static/manual `VisualProvider` and
+  exact render slice. Do not add multiple hosted adapters, ComfyUI, short clips, upload, or public
+  publish.
 - Next verification: fresh post-documentation typecheck/check, coverage, dependency/version, Sonar
   Cloud, then final diff review and PR creation.
 

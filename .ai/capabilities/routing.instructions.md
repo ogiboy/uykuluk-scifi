@@ -39,6 +39,24 @@ for the current slice, but do not load both families unless a concrete conflict 
 Do not let any workflow family make `.ai/`, `.planning/`, agent artifacts, or QA outputs runtime
 dependencies. They are development-state only.
 
+### Matt Engineering Skills
+
+The active Matt engineering skills are optional, narrow routes and do not displace Aegis as the
+default workflow:
+
+| Need                                | Route             | Repository contract                        |
+| ----------------------------------- | ----------------- | ------------------------------------------ |
+| GitHub issue intake and readiness   | `triage`          | `docs/agents/issue-tracker.md` and labels  |
+| Turn an issue into an approved spec | `to-spec`         | preserve issue history and product truth   |
+| Split an approved spec into tickets | `to-tickets`      | GitHub Issues, dependency-aware sequencing |
+| Resolve domain terms or decisions   | `domain-modeling` | lazy `CONTEXT.md` and `docs/adr/` updates  |
+| Navigate a broad uncertain effort   | `wayfinder`       | one map issue with bounded child work      |
+
+Use `implement`, `tdd`, `code-review`, or the other active engineering bodies only when that skill
+is deliberately selected for the current task. The tracker, label, and domain-doc semantics in
+`docs/agents/` remain authoritative. Skills marked in-progress, deprecated, or ancillary in the
+inventory are not default routes.
+
 ## Studio, UX, And Visual Design
 
 | Task                          | Primary route                             | Add when needed                                  | Evidence                                |
@@ -186,9 +204,10 @@ model. Offensive or exploit-oriented skills require explicit authorization and a
 ## Testing, Review, And Release
 
 - Behavior change: Aegis TDD when selected, Vitest, then broader gates.
-- Chunk 0.7 uses `chunk validate quick` for automatic inner-loop hooks. Run its `static` or `test`
-  profiles only at an intentional slice/PR boundary; do not repeat CircleCI's full gate after every
-  edit. Remote sidecars are optional and require an explicit authenticated invocation.
+- Chunk 0.7 uses `chunk validate quick-local` for automatic changed-file hooks. Run
+  `chunk validate static-local` only for an intentional local static boundary, and use authenticated
+  `chunk validate parity-remote` only when remote Linux/toolchain parity is useful. None of these is
+  proof that CircleCI's full quality gate passed.
 - Operator workflow: `pnpm qa:usage`.
 - Studio behavior: Playwright and Browser; avoid redundant concurrent browser runners.
 - Visual/chart behavior: screenshot or image-diff evidence when stable.
@@ -198,14 +217,12 @@ model. Offensive or exploit-oriented skills require explicit authorization and a
   checks must inspect hosted check status plus PR conversation/review comments, including
   non-blocking CodeRabbit fix suggestions that may appear even when the bot status is green.
 - PR batching: group related slices into fewer coherent PRs; treat CodeRabbit review quota and CI
-  time as limited engineering budget, not free feedback on every tiny change. Keep every PR at no
-  more than 120 changed files overall and no more than 100 CodeRabbit-in-scope files. The latter is
-  hosted integration limit observed for this repository on 2026-07-17. CodeRabbit classified the
-  public repository review as OSS while exposing a Pro feature bundle; its current public plan
-  table makes OSS file limits dynamic at 50-150 files based on project community and popularity,
-  without publishing the scoring formula. Split vertical slices before opening a PR when either
-  local cap would be exceeded. Path filters may exclude generated output, lockfiles, binaries, or
-  media, but must not hide reviewable source.
+  time as limited engineering budget, not free feedback on every tiny change. Keep each PR at no
+  more than 100 reviewable changed files. A dedicated generated-tooling catalog may exceed 100 raw
+  files only through the exact central allowlist; always report raw and reviewable counts. Unknown
+  paths fail into the reviewable product scope. Hosted review limits can be lower or adaptive, so
+  split a slice earlier when the service reports a smaller current allowance. Path filters must not
+  hide reviewable source, CI, policy, or product files.
 - Git naming: use conventional product-intent branch names and PR titles. Do not include AI agent,
   vendor, or tool names such as `codex` in either surface.
 - Completion: Aegis verification-before-completion and project quality gates.

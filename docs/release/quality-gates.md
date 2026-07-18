@@ -18,26 +18,25 @@ does not prove the operator workflow.
 
 ### Chunk inner loop
 
-Chunk is intentionally narrower than the PR gate. The generated commit and session-stop hooks run
-only the primary root and Studio typechecks. The quick profile invokes installed binaries directly,
-so it cannot turn a commit hook into an implicit dependency reinstall:
+Chunk is intentionally narrower than the PR gate. The commit and session-stop hooks run the
+changed-file profile through installed binaries, so they cannot turn an ordinary edit into an
+implicit dependency reinstall:
 
 ```bash
-chunk validate quick
+chunk validate quick-local # changed JS/TS lint plus Prettier checks
 ```
 
 Use the broader profiles deliberately rather than after every edit:
 
 ```bash
-chunk validate static # lint, compatibility typechecks, builds, policy and format checks
-chunk validate test   # one CI-shaped Vitest run with coverage and JUnit output
+chunk validate static-local  # root/Studio lint and primary typechecks
+chunk validate parity-remote # authenticated sidecar run of pnpm check:static
 ```
 
-`chunk validate` without a profile runs every configured command and is therefore reserved for an
-explicit pre-PR or sidecar check. Dependency installation is not a commit hook; the normal project
-bootstrap and CircleCI jobs own frozen installs. The Stop hook retries a failing unchanged diff at
-most once. CircleCI remains the integration authority and should not be duplicated with repeated
-local full-suite runs.
+`parity-remote` is an intentional Linux/toolchain parity check, not the normal edit loop. A Chunk
+result never substitutes for the hosted CircleCI quality gate. Dependency installation is not a
+commit hook; the normal bootstrap and CircleCI jobs own frozen installs. Full Vitest, browser UAT,
+dependency analysis, and Sonar should not be repeated locally after every small change.
 
 This setup follows the official
 [Chunk v0.7 hook contract](https://github.com/CircleCI-Public/chunk-cli/blob/v0.7.119/docs/HOOKS.md).
@@ -58,26 +57,56 @@ pnpm sonar:cloud
 `pnpm check` includes lint, both TypeScript lanes, builds, smoke tests, Vitest, Studio checks,
 modularity, secret scanning, changelog validation, release validation, and formatting.
 
+These commands remain the complete local contract for exceptional offline or merge-adjacent
+verification. Normal pull requests run the heavy integration work once in CircleCI; during edits,
+use focused tests, direct lint/typecheck, or the bounded Chunk profiles above.
+
 ## CI Ownership
 
-CircleCI is the primary quality pipeline. `quality-core` and `studio-browser` run in parallel: the
-core job owns `pnpm check:static`, one Vitest run with LCOV and JUnit, usage/product checks,
-dependency audit, and version planning; the browser job owns the production Studio build and test.
-After core succeeds, the narrow `sonar-cloud` job restores its coverage artifact and invokes the
-repository's existing redacted Sonar wrapper. That job uses CircleCI's `checkout: method: full`
-because Sonar SCM blame needs historical blobs that the default blobless checkout may omit. The
-public Sonar orb is not used because organization policy disallows it; the migration does not weaken
-that organization-wide setting. `quality-gate` fans in `sonar-cloud` and `studio-browser`.
+CircleCI is the primary integration pipeline. `delivery-policy` classifies the diff and writes
+`.ci/delivery-scope.json`. Product or CI changes start these independent lanes in parallel:
+
+1. `static-quality`: lint, both TypeScript toolchains, core build, dependency audit, and static QA.
+2. `unit-tests`: two Vitest shard executors, each producing blob and coverage artifacts.
+3. `usage-smoke`: only `pnpm qa:usage`.
+4. `product-uat`: only `pnpm qa:product`.
+5. `studio-browser`: one webpack production build followed by prebuilt Playwright tests.
+
+`unit-results` merges the two shard reports into one verified JUnit and LCOV result. It publishes
+JUnit to CircleCI test results and persists LCOV to the shared workspace. `sonar-cloud` attaches
+that workspace through the common lane guard, skips a duplicate coverage run, and passes the
+persisted LCOV to the repository's redacted scanner wrapper with full Git history. `quality-gate`
+waits for both `unit-results` and Sonar explicitly, in addition to static quality, usage, product
+UAT, and Studio browser. Policy-only documentation changes halt unneeded lanes after the scope
+artifact proves the skip.
 
 Three disjoint GitHub App triggers own integration events: PR opened, pushes to open non-draft PRs,
 and pushes to the default branch. The legacy GitHub OAuth project is disabled. The workflow also
 accepts explicit API triggers. This keeps opening or updating a PR to one integration run per
 revision instead of parallel OAuth push and GitHub App pull-request duplicates.
 
-Cold and warm pnpm plus Next.js caches keep the pipeline bounded. GitHub Actions retains CodeQL,
-Dependabot, and the main-branch release gate only; release polls the `ci/circleci: quality-gate`
-status for the triggering `main` SHA, installs only the dependencies required by the release script,
-and never reruns checks, builds, browser tests, or paid provider calls.
+Only one lane writes the immutable pnpm-store cache. The browser lane restores and saves
+`apps/studio/.next/cache`; Sonar restores its scanner/JRE cache. `node_modules`, complete `.next`
+output, and browser binaries are not cached. GitHub Actions retains CodeQL, Dependabot, and the
+main-branch release gate only. Release runs `version:plan` first: a no-release SHA exits without
+waiting, while a releaseable SHA waits up to 30 minutes for its exact `ci/circleci: quality-gate`
+status and never reruns project tests or builds.
+
+Measured PR evidence on 2026-07-18 was 7m02s, 8m37s, and 7m27s for successful full workflows. The
+former medians were approximately 13m08s on GitHub Actions and 17m56s on the original serial
+CircleCI graph. Warm runs confirmed pnpm, Next, and Sonar cache hits.
+
+## Failure Routing
+
+1. Inspect the hosted failing SHA and job before reproducing anything locally.
+2. Read `.ci/delivery-scope.json` to distinguish an expected halted lane from a failure.
+3. Reproduce the exact job command or smallest failing test, not the full repository gate.
+4. Use `quick-local` for changed-file feedback, `static-local` for a broader local static boundary,
+   and authenticated `parity-remote` only for deliberate remote parity.
+5. Inspect stored JUnit, LCOV, Playwright trace/screenshot/video, and Sonar evidence before changing
+   timeouts or retrying a flaky check.
+
+Chunk green means the selected local/sidecar profile passed. It is not CircleCI quality-gate proof.
 
 For an operator investigation, reproduce the relevant local command, then use
 `pnpm producer readiness --run <run_id>`, `pnpm producer evidence --run <run_id>`, or
@@ -96,7 +125,9 @@ dependencies onto an unsupported compiler.
 ## Test Stability
 
 Local Vitest uses bounded workers and the fail-fast timeout. CI uses its explicit worker and timeout
-profile. Do not hide flaky timeouts by increasing limits without a root-cause check.
+profile. Do not hide flaky timeouts by increasing limits without a root-cause check. For browser
+timing failures, inspect the Playwright trace and keep any widened timeout route- and
+browser-scoped.
 
 ## Branch and Commits
 
@@ -106,7 +137,9 @@ profile. Do not hide flaky timeouts by increasing limits without a root-cause ch
 - Use Conventional Commits.
 - Preserve unrelated user changes in dirty worktrees.
 - Keep coherent vertical slices and small green commits.
-- Keep each PR at or below 120 changed files.
+- Keep each PR at or below 100 reviewable changed files. A dedicated generated-tooling catalog may
+  exceed 100 raw files only through the exact central allowlist; raw and reviewable counts must both
+  remain visible.
 - Do not bump package versions manually on feature branches.
 
 ## Version Planning

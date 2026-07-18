@@ -107,8 +107,8 @@ Constraints:
 
 - `needs-revision` or `rejected` decisions allow `producer revise render` to archive the canonical
   draft, manifest, decision, evidence, and readiness under a versioned revision path.
-- The previous render approval is invalidated and the run returns to
-  `READY_FOR_MANUAL_PRODUCTION`; a fresh explicit approval is always required.
+- The previous render approval is invalidated and the run returns to `READY_FOR_MANUAL_PRODUCTION`;
+  a fresh explicit approval is always required.
 - Contract-upgrade recovery without a readable decision requires explicit reason/reviewer
   attribution and must still verify the persisted MP4 digest and active approval binding.
 - Accepted drafts cannot use the revision path.

@@ -3,8 +3,8 @@
 ## Goal
 
 Give the operator a guarded Studio surface for persistent safe settings and prompt profiles, with
-one-command fresh-clone onboarding, without moving workflow authority out of CLI/core or changing
-an in-flight operation beneath its approvals.
+one-command fresh-clone onboarding, without moving workflow authority out of CLI/core or changing an
+in-flight operation beneath its approvals.
 
 ## Approved Behavior
 
@@ -97,12 +97,7 @@ filesystem temp-file/rename utilities, Vitest, and Playwright. No new runtime de
 The v1 on-disk envelope is:
 
 ```json
-{
-  "schemaVersion": 1,
-  "revision": 1,
-  "updatedAt": "2026-07-12T00:00:00.000Z",
-  "config": {}
-}
+{ "schemaVersion": 1, "revision": 1, "updatedAt": "2026-07-12T00:00:00.000Z", "config": {} }
 ```
 
 The returned runtime snapshot contains the parsed inner config plus `schemaVersion`, `revision`,
@@ -126,8 +121,8 @@ numbers. `expectedRevision` conflicts fail without writes.
 
 Files:
 
-- modify `src/config/config.ts`, `src/config/schema.ts`, `.env.example`,
-  `apps/studio/.env.example`, `producer.config.example.json`, and `README.md`;
+- modify `src/config/config.ts`, `src/config/schema.ts`, `.env.example`, `apps/studio/.env.example`,
+  `producer.config.example.json`, and `README.md`;
 - create `src/config/configPath.ts` and `src/config/configDocument.ts`;
 - add `tests/configDocument.test.ts`, `tests/configPath.test.ts`, and
   `tests/defaultConfigParity.test.ts`.
@@ -161,8 +156,7 @@ Files:
 - create `src/config/configMutation.ts`, `src/config/configHistory.ts`, and
   `src/config/configSnapshot.ts`;
 - modify CLI registration under `src/cli/`;
-- add `tests/configMutation.test.ts`, `tests/configSnapshot.test.ts`, and
-  `tests/configCli.test.ts`.
+- add `tests/configMutation.test.ts`, `tests/configSnapshot.test.ts`, and `tests/configCli.test.ts`.
 
 Steps:
 
@@ -194,8 +188,7 @@ Commit: `feat(config): add guarded revisions and rollback`
 
 Files:
 
-- create `src/prompts/profiles.ts`, `src/prompts/revisions.ts`, and
-  `src/prompts/promptSnapshot.ts`;
+- create `src/prompts/profiles.ts`, `src/prompts/revisions.ts`, and `src/prompts/promptSnapshot.ts`;
 - modify `src/prompts/templates.ts`, `src/stages/ideas.ts`, and CLI generation commands;
 - add tracked preset metadata under `prompts/defaults/` without moving parser markers into editable
   content;
@@ -207,8 +200,8 @@ Steps:
 1. Add stable tracked profile IDs and the default scientific-sci-fi profile.
 2. Add bounded content-addressed local save/history/rollback with operator attribution and expected
    current hash.
-3. Snapshot selected prompt bytes, rendered prompt, profile, and optional idea brief before
-   provider execution; preserve them when generation fails.
+3. Snapshot selected prompt bytes, rendered prompt, profile, and optional idea brief before provider
+   execution; preserve them when generation fails.
 4. Extend CLI `ideas` input with strict `--profile` and `--brief-file` inputs; never place large
    prompt text or briefs in argv/history.
 5. Keep structured-output markers/parser instructions server-owned and non-editable.
@@ -296,9 +289,9 @@ Commit: `feat(onboarding): add one-command local setup`
 - Focused tests and TS7/TS6 checks run after each task; heavy build/browser commands stay
   sequential.
 - Studio route work receives a defensive schema/route-security review and negative fixtures.
-- Before PR-ready handoff run `pnpm check`, `pnpm qa:usage`, `pnpm qa:product`,
-  `pnpm qa:browser`, `pnpm security:dependencies`, and `pnpm version:plan`; run Sonar when the local
-  service is available.
+- Before PR-ready handoff run `pnpm check`, `pnpm qa:usage`, `pnpm qa:product`, `pnpm qa:browser`,
+  `pnpm security:dependencies`, and `pnpm version:plan`; run Sonar when the local service is
+  available.
 - Exercise save, conflict, rollback, next-command reload, in-flight immutability, restart labels,
   prompt use-once/save distinction, and clean-copy bootstrap in the real app.
 

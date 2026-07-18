@@ -1,15 +1,15 @@
 # Capability Inventory
 
-Snapshot date: 2026-06-25
+Snapshot date: 2026-07-18
 
 ## Scan Coverage
 
 The routing inventory has been refreshed from names, descriptions, plugin directories, and MCP
 configuration only. It intentionally does not vendor or preload full skill bodies.
 
-- metadata for 1,497 installed `SKILL.md` files under `~/.codex/skills`, `~/.agents/skills`, and
+- metadata for 964 installed `SKILL.md` files under `~/.codex/skills`, `~/.agents/skills`, and
   `~/.codex/plugins/cache`;
-- 75 installed plugin/version directories;
+- 94 installed plugin/version directories;
 - configured MCP server declarations in `~/.codex/config.toml`;
 - native subagent role metadata exposed by deferred tool discovery, including default
   `explorer`/`worker` roles and installed GSD specialist roles;
@@ -18,7 +18,7 @@ configuration only. It intentionally does not vendor or preload full skill bodie
 This is a routing inventory, not a vendored copy of host instructions. Skill bodies remain
 host-owned and must be loaded only after routing selects them.
 
-The latest lightweight refresh on 2026-06-25 confirmed installed plugin families for Aegis,
+The latest lightweight refresh on 2026-07-18 confirmed installed plugin families for Aegis,
 Superpowers, Simple Man, Codex Security, GitHub, Hugging Face, Product Design, Creative Production,
 Build Web Apps, Browser/Chrome/Computer Use, CodeRabbit, Vercel, Jam, and Ruflo. It also confirmed
 configured MCP declarations for `context7`, `sonarqube`, `firecrawl`, `node_repl`, `ruflo`,
@@ -29,23 +29,23 @@ until a task explicitly routes to them and verifies availability.
 
 | Family                          | Preferred use                                                                                       |
 | ------------------------------- | --------------------------------------------------------------------------------------------------- |
-| Aegis 2.2.0                     | Default project workflow: framing, plans, TDD, debugging, review, verification, branch finishing    |
-| Superpowers 6.0.3               | Equivalent lightweight engineering skills when explicitly named or surfaced by host routing         |
+| Aegis 2.4.7                     | Default project workflow: framing, plans, TDD, debugging, review, verification, branch finishing    |
+| Superpowers 6.1.1               | Equivalent lightweight engineering skills when explicitly named or surfaced by host routing         |
 | Simple Man 0.1.0                | Communication compression only; use for terse status/final output, not as an engineering substitute |
 | GSD personal skills             | Heavy phase/milestone workflow, UAT, `.planning/` lifecycle, or explicit user request               |
 | Build Web Apps 0.1.2            | Studio implementation, React quality, shadcn composition, rendered frontend QA                      |
-| Product Design 0.1.47           | UX research, design brief, audit, visual ideation, prototypes, design QA                            |
+| Product Design 0.1.50           | UX research, design brief, audit, visual ideation, prototypes, design QA                            |
 | Frontend taste skills           | Public-facing visual direction, redesign critique, cinematic landing pages, Stitch design docs      |
-| Creative Production 0.1.23      | Positioning, moodboards, channel creative, offers, ads, scenes, shots, identity exploration         |
+| Creative Production 0.1.25      | Positioning, moodboards, channel creative, offers, ads, scenes, shots, identity exploration         |
 | Web Data Visualization          | Analytics dashboards, uncertainty-aware charts, accessibility, visualization testing                |
-| Codex Security 0.1.10           | Threat models, scoped/repository scans, diff scans, finding validation and repair                   |
+| Codex Security 0.1.11           | Threat models, scoped/repository scans, diff scans, finding validation and repair                   |
 | CodeRabbit 1.1.4                | Independent code and PR review                                                                      |
-| GitHub 0.1.5                    | PR/issue orientation, CI diagnosis, review comments, intentional publish flow                       |
+| GitHub 0.1.8                    | PR/issue orientation, CI diagnosis, review comments, intentional publish flow                       |
 | Browser / Chrome / Computer Use | Local browser QA, authenticated browser state, native app UI respectively                           |
 | Ruflo selected modules          | Persistent goals, explicit swarm coordination, cost/observability, ADRs, test-gap analysis          |
 | Context7 MCP                    | Current library/framework/API documentation                                                         |
 | SonarQube MCP and scripts       | Static quality and maintainability evidence                                                         |
-| Chunk CLI 0.7                   | Bounded inner-loop validation and optional authenticated CircleCI sidecars                           |
+| Chunk CLI 0.7                   | Bounded inner-loop validation and optional authenticated CircleCI sidecars                          |
 | Firecrawl MCP                   | External discovery and extraction when normal web/browser research is insufficient                  |
 | Hugging Face 1.0.0              | Model, dataset, paper, evaluation, and local inference research when roadmap-relevant               |
 | Primary runtime document tools  | Spreadsheets, reports, PDFs, and presentations when a deliverable needs them                        |
@@ -67,6 +67,28 @@ do not stack them for ceremony.
 GSD is useful for large phase governance but is intentionally not the default for Producer runtime
 work. The product already uses `.ai/` as development memory; do not make GSD, `.planning/`, or any
 skill-generated files part of application execution.
+
+### Matt Pocock Engineering Catalog
+
+`skills-lock.json` records 40 entries from `mattpocock/skills`. The lock is integrity and discovery
+metadata; an active agent must still verify that a selected body is installed and then read it in
+full.
+
+The 17 active engineering routes are:
+
+- `ask-matt`, `code-review`, `codebase-design`, `diagnosing-bugs`, `domain-modeling`;
+- `grill-with-docs`, `implement`, `improve-codebase-architecture`, `prototype`, `research`;
+- `resolving-merge-conflicts`, `setup-matt-pocock-skills`, `tdd`, `to-spec`, `to-tickets`, `triage`,
+  and `wayfinder`.
+
+The nine `in-progress` bodies are not default routes: `batch-grill-me`, `claude-handoff`, `loop-me`,
+`setup-ts-deep-modules`, `to-questionnaire`, `wizard`, `writing-beats`, `writing-fragments`, and
+`writing-shape`.
+
+The four deprecated bodies are compatibility-only: `design-an-interface`, `qa`,
+`request-refactor-plan`, and `ubiquitous-language`. The remaining ten personal, productivity, or
+miscellaneous records are ancillary and outside the Producer engineering default. Tracker, triage,
+and domain semantics live in `docs/agents/`.
 
 ### Native Subagent Role Map
 

@@ -5,6 +5,10 @@
 Use one primary agent for small, sequential, or tightly coupled work. Multi-agent execution is a
 tool for independent uncertainty or disjoint ownership, not a default ceremony.
 
+Every agent follows the same progressive start order: relevant `.ai/` product truth, only the
+relevant `.claude/` development-tool surface, then the full bodies of one to three selected skills.
+Generated catalogs and lock metadata do not expand the runtime or task scope by themselves.
+
 For this project, ordinary implementation should stay lightweight:
 
 - use Aegis/Superpowers for the current slice only;
@@ -39,6 +43,10 @@ For this repo, useful native roles are usually:
 
 Do not use GSD roles merely because GSD is installed. Prefer single-agent work for small fixes,
 Sonar cleanups, docs-only updates, and sequential file edits.
+
+The repository's single-context `CONTEXT.md` and `docs/adr/` layout is a documentation-consumption
+rule, not an orchestration topology. Missing domain docs are handled silently and never justify
+spawning an agent or creating empty placeholders.
 
 ## Topology
 

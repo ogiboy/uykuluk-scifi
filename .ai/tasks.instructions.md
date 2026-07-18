@@ -75,6 +75,16 @@
   shares the same inode.
 - Keep the capability inventory current when plugin/MCP versions or project phases materially
   change.
+- Keep the capability startup order explicit: relevant `.ai/` truth, relevant `.claude/` tool
+  surface, then one to three selected skill bodies. Never treat a generated catalog or
+  `skills-lock.json` entry as runtime availability.
+- Keep Matt engineering routes bound to `docs/agents/`, GitHub Issues, the five canonical triage
+  labels, and lazy single-context domain docs. Exclude in-progress, deprecated, and ancillary Matt
+  bodies from default routing.
+- Keep Chunk hook and documentation names synchronized with `quick-local`, `static-local`, and
+  `parity-remote`; a local or sidecar pass is not evidence that the CircleCI quality gate passed.
+- Keep CircleCI ownership documentation aligned with delivery scope, the five parallel product
+  lanes, two-shard result merge, downstream Sonar, cache behavior, and exact-SHA release waiting.
 - Keep long-running goals resumable from Git state and `.ai/checkpoints/`, not chat history alone.
 
 ## Next
@@ -84,10 +94,10 @@
 - Keep live ElevenLabs production validation separate from implementation completion. A Studio
   entitlement check observed 10,000 included Multilingual v2/v3 characters on 2026-07-16, but live
   subscription metadata remains authoritative and plan terms may change. One short Turkish v3
-  timestamps diagnostic was attempted after
-  entitlement preflight and rejected safely by the provider; do not call it production validation.
-  Free output has no commercial production rights. Production synthesis still requires commercial
-  eligibility, exact quote, persisted approval, reservation, bounded execution, and settlement.
+  timestamps diagnostic was attempted after entitlement preflight and rejected safely by the
+  provider; do not call it production validation. Free output has no commercial production rights.
+  Production synthesis still requires commercial eligibility, exact quote, persisted approval,
+  reservation, bounded execution, and settlement.
 - Preserve the merged `v0.83.0` static/manual visual fallback and exact render binding.
 - Close the active experimental, disabled-by-default FLUX.2 Pro slice as the sole hosted visual
   adapter: exact scene-plan quote/approval/reservation, bounded async execution, provider credit
@@ -98,8 +108,9 @@
 - Keep Eleven Creative image/video outside the provider registry until a public generation API is
   integrated and separately approved. Externally created media uses the existing attributable
   `manual-import` path only.
-- Take local MFLUX as the next visual-provider slice. Reuse the current plan, review, provenance, and
-  render-binding contracts; do not treat it as another hosted adapter or broaden paid-provider scope.
+- Take local MFLUX as the next visual-provider slice. Reuse the current plan, review, provenance,
+  and render-binding contracts; do not treat it as another hosted adapter or broaden paid-provider
+  scope.
 - Then harden exact render/media quality: pacing and motion, subtitle readability, popup density,
   audio mastering, licensed music/SFX evidence, and final thumbnail JPG.
 - Then add sequential multi-model script audition and editorial quality: immutable shared brief and
@@ -184,8 +195,9 @@
   loaded GGUF cannot masquerade as another candidate. `llama.cpp` support is the local
   OpenAI-compatible runtime path for this work; live model runs remain manual/local and outside CI.
 - Keep the current `pnpm model:start` path repair: absolute paths and explicit repository-relative
-  paths resolve exactly, bare names resolve through the project root and `models/llm` with an optional
-  `.gguf` suffix, attempted paths stay visible on failure, and `config.model` remains the served alias.
+  paths resolve exactly, bare names resolve through the project root and `models/llm` with an
+  optional `.gguf` suffix, attempted paths stay visible on failure, and `config.model` remains the
+  served alias.
 - Preserve Qwen/Ollama regressions as known-bad safety evidence. Current blockers reject repeated
   fit frames, generic boilerplate, repeated uncertainty openers, generic unknown-species phrasing,
   weak premise action frames, English scientific leftovers, malformed labels, repeated sentence
@@ -218,8 +230,8 @@
   call the canonical local CLI evaluation, but must not edit provider config, start/download models,
   generate production runs, call hosted providers, or weaken fail-closed parser checks.
 - Keep optional Studio observability best-effort and privacy-minimal. Sentry must remain disabled
-  without DSN configuration, exclude mutation payloads and artifact contents, and never affect
-  route authorization, workflow outcomes, approvals, evidence, or retries.
+  without DSN configuration, exclude mutation payloads and artifact contents, and never affect route
+  authorization, workflow outcomes, approvals, evidence, or retries.
 - Keep Studio evidence panels conservative: missing, malformed, or stale evidence must point back to
   `producer evidence --run <run_id>` and must not imply blocked actions are absent or media is
   review-proof.
