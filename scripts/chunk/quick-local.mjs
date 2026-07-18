@@ -2,6 +2,9 @@ import { spawnSync } from "node:child_process";
 
 const git = (args) => {
   const result = spawnSync("/usr/bin/git", args, { encoding: "utf8" });
+  if (result.error) {
+    throw new Error(`Unable to start git: ${result.error.message}`, { cause: result.error });
+  }
   if (result.status !== 0) {
     throw new Error(result.stderr.trim() || `git ${args.join(" ")} failed`);
   }
@@ -31,6 +34,10 @@ const formatFiles = uniqueFiles.filter((file) =>
 
 const run = (command, args, options = {}) => {
   const result = spawnSync(command, args, { stdio: "inherit", ...options });
+  if (result.error) {
+    console.error(`Unable to start ${command}: ${result.error.message}`);
+    process.exit(1);
+  }
   if (result.status !== 0) {
     process.exit(result.status ?? 1);
   }
