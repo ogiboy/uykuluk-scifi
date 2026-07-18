@@ -11,6 +11,18 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.85.0 (2026-07-18)
+
+### Fixes
+
+- close Sonar coverage and duplication gaps (aec4090)
+- stabilize identifiers and modularity gate (8d04375)
+- address review and CI findings (d77cecb)
+
+### Features
+
+- add revisioned settings and episode briefs (eed1df4)
+
 ## v0.84.0 (2026-07-17)
 
 ### Documentation
