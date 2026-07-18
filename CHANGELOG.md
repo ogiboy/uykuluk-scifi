@@ -11,6 +11,12 @@ future generated release notes can be inserted predictably.
 
 _No unreleased changes yet._
 
+## v0.85.2 (2026-07-18)
+
+### CI
+
+- reduce quality-gate latency and align local parity (#164) (434b0e7)
+
 ## v0.85.1 (2026-07-18)
 
 ### Chores
