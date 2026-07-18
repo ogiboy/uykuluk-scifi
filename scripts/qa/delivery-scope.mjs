@@ -70,6 +70,13 @@ export function classifyDeliveryFile(file) {
   return "product";
 }
 
+/**
+ * Summarize changed files by delivery scope and determine required CI lanes.
+ * @param {string[]} changedFiles - File paths changed by the delivery.
+ * @param {Object} [options] - Summary options.
+ * @param {boolean} [options.forceProduct] - Whether to require the full CI lane set.
+ * @returns {Object} A delivery summary containing classified files, scope counts, required lanes, and reviewable-file limit status.
+ */
 export function summarizeDeliveryScope(changedFiles, options = {}) {
   const files = [...new Set(changedFiles.filter(Boolean))].sort((left, right) =>
     left.localeCompare(right, "en"),
