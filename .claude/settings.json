@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cd \"${CLAUDE_WORKING_DIR:-${CLAUDE_PROJECT_DIR:-.}}\" && CHUNK_NO_TELEMETRY=1 chunk validate quick",
+            "command": "cd \"${CLAUDE_WORKING_DIR:-${CLAUDE_PROJECT_DIR:-.}}\" && CHUNK_NO_TELEMETRY=1 chunk validate quick-local",
             "timeout": 180
           }
         ]
@@ -28,7 +28,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cd \"${CLAUDE_WORKING_DIR:-${CLAUDE_PROJECT_DIR:-.}}\" && CHUNK_NO_TELEMETRY=1 chunk validate quick",
+            "command": "cd \"${CLAUDE_WORKING_DIR:-${CLAUDE_PROJECT_DIR:-.}}\" && CHUNK_NO_TELEMETRY=1 chunk validate quick-local",
             "timeout": 180
           }
         ]
