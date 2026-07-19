@@ -12,6 +12,8 @@ import {
   parseEpisodeCreationPayload,
   parseIdeaApprovalPayload,
   parseLocalModelCandidateEvalPayload,
+  parseLocalModelExecutePayload,
+  parseLocalModelPreparePayload,
   parsePackageArtifactRevisionPayload,
   parsePromptProfileSavePayload,
   parseRenderDecisionPayload,
@@ -20,6 +22,13 @@ import {
   parseSettingsSavePayload,
 } from "./studioMutationPayloadContracts";
 
+/**
+ * Maps a studio mutation action and payload to prepared CLI arguments.
+ *
+ * @param actionId - The mutation action to prepare
+ * @param payload - The action payload to parse and pass to the CLI
+ * @returns Prepared CLI arguments for supported actions, or `undefined` for unrecognized actions
+ */
 export async function specialCliArgsForAction(
   actionId: StudioCliMutationActionId,
   payload: unknown,
@@ -63,6 +72,22 @@ export async function specialCliArgsForAction(
       return ideaApprovalCliArgs(payload);
     case "model-eval-candidates.run":
       return localModelCandidateEvalCliArgs(payload);
+    case "localModels.prepare":
+      return fileBackedCliArgs(
+        payload,
+        parseLocalModelPreparePayload,
+        "uykuluk-studio-local-model-",
+        "local-model-prepare.json",
+        ["local-model", "prepare"],
+      );
+    case "localModels.execute":
+      return fileBackedCliArgs(
+        payload,
+        parseLocalModelExecutePayload,
+        "uykuluk-studio-local-model-",
+        "local-model-execute.json",
+        ["local-model", "execute"],
+      );
     case "script.approve":
       return scriptApprovalCliArgs(payload);
     case "script.revise":

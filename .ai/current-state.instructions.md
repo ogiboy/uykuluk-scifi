@@ -126,9 +126,11 @@
   config is never mutated. Studio can refresh and read these reports without starting servers,
   downloading models, calling hosted APIs, or weakening parser gates.
 - Studio reads ignored local model evaluation JSON/Markdown artifacts on home and `/eval`, including
-  missing, malformed, schema-invalid, passing, and blocked reports. A guarded action refreshes the
-  canonical CLI evaluation without editing providers, starting servers, downloading models, calling
-  hosted APIs, or weakening parser gates.
+  malformed, blocked, and passing reports. Its guarded refresh never edits providers, starts
+  servers, downloads models, calls hosted APIs, or weakens parser gates.
+- Studio-managed `mflux-flux2-klein-4b-q4` readiness includes exact preflight/approval/recovery and
+  locked `tools/mflux` Python ownership. The 6.5 GB setup and 1024x576 smoke await workstation
+  approval outside CI.
 - Script generation uses bounded section calls and continuation passes, carries accepted expansion
   context forward, and writes `script.sections.json` receipts before assembling `script.md`. Up to
   three continuations target at least 1,100 spoken narration words for an 8-12 minute draft;
@@ -387,10 +389,9 @@
   durable local spools, Studio confirmation, and rejected-only revision/quote archival. Studio keeps
   the operator workflow provider-neutral while exact provider/model identity remains visible in
   evidence. Mocked two-round and combined voice-plus-visual workflows pass.
-- Live ElevenLabs production TTS and BFL image generation remain unverified; configured keys do not
-  prove credit, entitlement, or readiness. Eleven Creative is manual-import only because no public
-  generation API is integrated. Local MFLUX is next behind the same plan/review/render contracts;
-  mastering, thumbnails, and real-episode acceptance follow.
+- Live ElevenLabs production TTS and BFL image generation remain unverified; keys prove neither
+  credit nor entitlement, and Eleven Creative is manual-import only. Local MFLUX now generates
+  sequential revisions; real setup/smoke, mastering, thumbnails, and episode acceptance follow.
 
 ## Current Commands
 

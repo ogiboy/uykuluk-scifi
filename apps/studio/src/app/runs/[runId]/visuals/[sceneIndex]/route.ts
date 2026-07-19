@@ -3,7 +3,7 @@ import { readStudioVisualMedia } from "../../../../../lib/runs/visualSummaries";
 
 type VisualRouteContext = Readonly<{ params: Promise<{ runId: string; sceneIndex: string }> }>;
 
-/** Serves one current digest-verified visual revision for local Studio review. */
+/** Serves one manifest-listed digest-verified visual revision for local Studio review. */
 export async function GET(request: Request, context: VisualRouteContext): Promise<Response> {
   const { runId, sceneIndex } = await context.params;
   const searchParams = new URL(request.url).searchParams;

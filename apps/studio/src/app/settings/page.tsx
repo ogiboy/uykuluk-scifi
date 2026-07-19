@@ -5,6 +5,10 @@ import {
 import { StudioPageHeader } from "@/components/studio/StudioPageHeader";
 import { StudioShell } from "@/components/studio/StudioShell";
 import { normalizeStudioLocale } from "@/i18n/locales";
+import {
+  readStudioLocalModelOverview,
+  unavailableStudioLocalModelOverview,
+} from "@/lib/localModels/localModelOverview";
 import { projectRoot } from "@/lib/projectRoot";
 import {
   elevenLabsSmokeAudioUrl,
@@ -20,15 +24,25 @@ import {
 
 export const dynamic = "force-dynamic";
 
-/** Renders persistent Studio settings and prompt profile controls. */
+/**
+ * Renders the Studio settings workspace with current configuration, recent revisions, model status, and localized controls.
+ */
 export default async function SettingsPage() {
   const root = projectRoot();
-  const [config, locale, revisions, latestElevenLabsSmoke] = await Promise.all([
+  const [config, locale, revisions, latestElevenLabsSmoke, localModelResult] = await Promise.all([
     loadConfigAtProjectRoot(root),
     getLocale(),
     listSettingsRevisions(root),
     readLatestElevenLabsSmoke(root),
+    readStudioLocalModelOverview(root).then(
+      (overview) => ({ status: "fulfilled" as const, overview }),
+      () => ({ status: "rejected" as const }),
+    ),
   ]);
+  const localModelOverview =
+    localModelResult.status === "fulfilled"
+      ? localModelResult.overview
+      : unavailableStudioLocalModelOverview(root);
   const studioLocale = normalizeStudioLocale(locale);
   const revisionSummaries: StudioSettingsRevisionSummary[] = revisions
     .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
@@ -68,6 +82,7 @@ export default async function SettingsPage() {
               }
             : null
         }
+        localModelOverview={localModelOverview}
         profileDigests={Object.fromEntries(
           config.editorial.profiles.map((profile) => [profile.id, promptProfileDigest(profile)]),
         )}

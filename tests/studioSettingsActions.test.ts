@@ -2,6 +2,8 @@ import { readFile, stat } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { POST as runElevenLabsSmoke } from "../apps/studio/src/app/actions/elevenlabs-smoke/route";
 import { POST as createEpisode } from "../apps/studio/src/app/actions/episode-create/route";
+import { POST as executeLocalModel } from "../apps/studio/src/app/actions/local-models-execute/route";
+import { POST as prepareLocalModel } from "../apps/studio/src/app/actions/local-models-prepare/route";
 import { POST as savePromptProfile } from "../apps/studio/src/app/actions/prompt-profiles-save/route";
 import { POST as saveSettings } from "../apps/studio/src/app/actions/settings-save/route";
 import { cliArgsForAction } from "../apps/studio/src/lib/mutations/studioCliMutationArgs";
@@ -87,6 +89,16 @@ describe("Studio settings and episode actions", () => {
       profileId: profile.id,
     };
     const smoke = { text: "Kısa tanı.", voiceId: "voice_test" };
+    const localModelPreparation = {
+      operation: "setup" as const,
+      packageId: "mflux-flux2-klein-4b-q4" as const,
+    };
+    const localModelExecution = {
+      approvedBy: "operator",
+      bindingDigest: "a".repeat(64),
+      confirmExecution: true as const,
+      runId: "run_studio_local_model",
+    };
 
     await expectTemporaryJsonArgs("settings.save", settings, ["settings", "save"]);
     await expectTemporaryJsonArgs("promptProfiles.save", profileSave, ["prompt-profiles", "save"]);
@@ -94,6 +106,14 @@ describe("Studio settings and episode actions", () => {
     await expectTemporaryJsonArgs("providers.elevenlabs.smoke", smoke, [
       "provider-smoke",
       "elevenlabs",
+    ]);
+    await expectTemporaryJsonArgs("localModels.prepare", localModelPreparation, [
+      "local-model",
+      "prepare",
+    ]);
+    await expectTemporaryJsonArgs("localModels.execute", localModelExecution, [
+      "local-model",
+      "execute",
     ]);
   });
 
@@ -130,11 +150,29 @@ describe("Studio settings and episode actions", () => {
         { actionHeader: "doctor.run" },
       ),
     );
+    const localModelHeaderMismatch = prepareLocalModel(
+      studioJsonMutationRequest(
+        "/actions/local-models-prepare",
+        "localModels.prepare",
+        {},
+        { actionHeader: "localModels.execute" },
+      ),
+    );
+    const localModelMissingSession = executeLocalModel(
+      studioJsonMutationRequest(
+        "/actions/local-models-execute",
+        "localModels.execute",
+        {},
+        { cookieToken: null, sessionToken: null },
+      ),
+    );
 
     await expect(invalidSettings.then((response) => response.status)).resolves.toBe(403);
     await expect(missingSession.then((response) => response.status)).resolves.toBe(401);
     await expect(crossOrigin.then((response) => response.status)).resolves.toBe(403);
     await expect(diagnosticHeaderMismatch.then((response) => response.status)).resolves.toBe(403);
+    await expect(localModelHeaderMismatch.then((response) => response.status)).resolves.toBe(403);
+    await expect(localModelMissingSession.then((response) => response.status)).resolves.toBe(401);
   });
 });
 

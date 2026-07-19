@@ -1,8 +1,16 @@
 {
+  "python.defaultInterpreterPath": "${workspaceFolder}/tools/mflux/.venv/bin/python",
+  "python-envs.defaultEnvManager": "ms-python.python:venv",
+  "python-envs.defaultPackageManager": "ms-python.python:uv",
+  "python-envs.pythonProjects": [{ "path": "tools/mflux", "envManager": "ms-python.python:venv" }],
+  "python-envs.workspaceSearchPaths": ["./tools/mflux/.venv"],
+  "python.analysis.autoImportCompletions": true,
+  "python.languageServer": "Pylance",
   "sonarlint.connectedMode.project": {
     "connectionId": "local server",
     "projectKey": "uykulukscifi-producer"
   },
+  "python.terminal.useEnvFile": false,
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": { "source.organizeImports": "explicit" },
   "editor.cursorStyle": "underline",
@@ -34,6 +42,10 @@
   "[instructions]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
   "[jsonc]": { "editor.defaultFormatter": "vscode.json-language-features" },
   "[typescriptreact]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.codeActionsOnSave": { "source.organizeImports": "explicit" }
+  },
   "[tailwindcss]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
   "css.lint.importStatement": "ignore",
   "css.lint.boxModel": "ignore",
@@ -48,5 +60,19 @@
   "prettier.printWidth": 120,
   "prettier.requireConfig": true,
   "prettier.semi": false,
-  "prettier.singleQuote": true
+  "prettier.singleQuote": true,
+  "[toml]": { "editor.defaultFormatter": "tamasfe.even-better-toml" },
+  "evenBetterToml.formatter.allowedBlankLines": 2,
+  "evenBetterToml.formatter.columnWidth": 2,
+  "evenBetterToml.semanticTokens": true,
+  "evenBetterToml.schema.links": true,
+  "evenBetterToml.formatter.indentTables": true,
+  "evenBetterToml.formatter.inlineTableExpand": true,
+  "evenBetterToml.formatter.reorderArrays": true,
+  "evenBetterToml.formatter.reorderInlineTables": true,
+  "evenBetterToml.formatter.reorderKeys": true,
+  "evenBetterToml.formatter.trailingNewline": true,
+  "evenBetterToml.rules": [],
+  "isort.check": true,
+  "isort.args": ["--profile", "black"]
 }

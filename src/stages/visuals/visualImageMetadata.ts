@@ -7,8 +7,19 @@ const minimumVisualWidth = 1280;
 const minimumVisualHeight = 720;
 const maximumVisualPixels = 40_000_000;
 
-/** Validates and decodes a bounded JPEG or PNG import before returning trusted media facts. */
-export async function inspectVisualImage(bytes: Buffer): Promise<VisualMedia> {
+/**
+ * Validates and decodes a JPEG or PNG image before returning trusted media facts.
+ *
+ * @param bytes - The raw image data to validate.
+ * @param minimum - Optional minimum required image dimensions; defaults to 1280×720.
+ * @returns The image byte size, format, width, and height.
+ * @throws SafeExitError If the image is empty, exceeds size or pixel limits, cannot be decoded, uses an unsupported format, or is smaller than the required dimensions.
+ */
+export async function inspectVisualImage(
+  bytes: Buffer,
+  minimum?: Readonly<{ height: number; width: number }>,
+): Promise<VisualMedia> {
+  const required = minimum ?? { width: minimumVisualWidth, height: minimumVisualHeight };
   if (bytes.byteLength === 0 || bytes.byteLength > maximumVisualBytes) {
     throw new SafeExitError("Manual visual import must be between 1 byte and 25 MiB.");
   }
@@ -31,9 +42,9 @@ export async function inspectVisualImage(bytes: Buffer): Promise<VisualMedia> {
   ) {
     throw new SafeExitError("Manual visual import must be a supported PNG or JPEG image.");
   }
-  if (metadata.width < minimumVisualWidth || metadata.height < minimumVisualHeight) {
+  if (metadata.width < required.width || metadata.height < required.height) {
     throw new SafeExitError(
-      `Manual visual import must be at least ${minimumVisualWidth}x${minimumVisualHeight}.`,
+      `${minimum ? "Generated visual" : "Manual visual import"} must be at least ${required.width}x${required.height}.`,
     );
   }
   return {

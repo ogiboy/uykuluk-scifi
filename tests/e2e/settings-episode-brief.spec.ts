@@ -2,6 +2,15 @@ import { expect, test } from "@playwright/test";
 
 test("fresh Studio settings default to complete Turkish copy", async ({ context, page }) => {
   await context.clearCookies();
+  const localModelMutations: string[] = [];
+  page.on("request", (request) => {
+    if (
+      request.method() === "POST" &&
+      /\/actions\/local-models-(prepare|execute)$/.test(new URL(request.url()).pathname)
+    ) {
+      localModelMutations.push(request.url());
+    }
+  });
   await page.goto("/settings");
 
   await expect(page.locator("html")).toHaveAttribute("lang", "tr");
@@ -14,6 +23,13 @@ test("fresh Studio settings default to complete Turkish copy", async ({ context,
   await expect(page.getByTestId("settings-advanced").locator("summary")).toHaveText("Gelişmiş");
   await expect(page.getByRole("heading", { name: "Görünüm" })).toBeVisible();
   await expect(page.getByText("Türkçe", { exact: true }).first()).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Yerel Modeller" })).toBeVisible();
+  await expect(page.getByText("MFLUX gerçek yerel görsel üretimi için zorunludur")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Kurulum planını incele" })).toBeVisible();
+  await expect(
+    page.getByText(/Mock tanı ve manuel içe aktarma alternatif iş akışlarıdır/),
+  ).toBeVisible();
+  expect(localModelMutations).toEqual([]);
   await expect(page.getByRole("link", { name: "Ayarlar" })).toHaveAttribute("aria-current", "page");
 });
 

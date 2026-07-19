@@ -6,7 +6,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$ROOT_DIR"
 
 step() {
-  printf '\n[%s/4] %s\n' "$1" "$2"
+  printf '\n[%s/5] %s\n' "$1" "$2"
 }
 
 if ! command -v node >/dev/null 2>&1; then
@@ -28,14 +28,17 @@ fi
 step 1 'Installing project dependencies'
 "${PNPM[@]}" install --frozen-lockfile --prefer-offline
 
-step 2 'Preparing local configuration and workspace folders'
+step 2 'Checking the optional Studio-managed Python environment'
+scripts/mflux-env.sh status
+
+step 3 'Preparing local configuration and workspace folders'
 "${PNPM[@]}" producer init
 
-step 3 'Building Producer Studio with Webpack'
+step 4 'Building Producer Studio with Webpack'
 "${PNPM[@]}" studio:build
 
 STUDIO_PORT="$(node -e 'const fs=require("node:fs"); const config=JSON.parse(fs.readFileSync("producer.config.json", "utf8")); process.stdout.write(String(config.studio?.port ?? 3000));')"
 
-step 4 "Starting Producer Studio at http://127.0.0.1:${STUDIO_PORT}"
+step 5 "Starting Producer Studio at http://127.0.0.1:${STUDIO_PORT}"
 export PORT="$STUDIO_PORT"
 exec "${PNPM[@]}" studio:start

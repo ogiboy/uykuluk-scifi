@@ -7,9 +7,13 @@ import {
   episodeCreationRequestSchema,
   hostedVisualGenerationRequestSchema,
   hostedVisualPlanRequestSchema,
+  localModelExecuteRequestSchema,
+  localModelPrepareRequestSchema,
+  localVisualGenerationRequestSchema,
   promptProfileSaveRequestSchema,
   runOnlyRequestSchema,
   settingsSaveRequestSchema,
+  visualActivateRevisionRequestSchema,
   visualDecisionRequestSchema,
   visualImportRequestSchema,
   visualRegenerationRequestSchema,
@@ -178,6 +182,54 @@ export function parseVisualRegenerationPayload(
   payload: unknown,
 ): z.infer<typeof visualRegenerationRequestSchema> {
   return visualRegenerationRequestSchema.parse(payload);
+}
+
+/**
+ * Validates a local visual generation request payload.
+ *
+ * @param payload - The value to validate against the local visual generation request schema.
+ * @returns The validated local visual generation request.
+ */
+export function parseLocalVisualGenerationPayload(
+  payload: unknown,
+): z.infer<typeof localVisualGenerationRequestSchema> {
+  return localVisualGenerationRequestSchema.parse(payload);
+}
+
+/**
+ * Validates and parses a payload for activating a visual revision.
+ *
+ * @param payload - The unknown payload to validate.
+ * @returns The validated visual revision activation payload.
+ */
+export function parseVisualActivateRevisionPayload(
+  payload: unknown,
+): z.infer<typeof visualActivateRevisionRequestSchema> {
+  return visualActivateRevisionRequestSchema.parse(payload);
+}
+
+/**
+ * Validates a local model preparation request payload.
+ *
+ * @param payload - The untrusted request payload to validate.
+ * @returns The validated local model preparation request.
+ */
+export function parseLocalModelPreparePayload(
+  payload: unknown,
+): z.infer<typeof localModelPrepareRequestSchema> {
+  return localModelPrepareRequestSchema.parse(payload);
+}
+
+/**
+ * Validates and parses a local model execution request payload.
+ *
+ * @param payload - The untrusted request payload to validate
+ * @returns The validated local model execution request
+ */
+export function parseLocalModelExecutePayload(
+  payload: unknown,
+): z.infer<typeof localModelExecuteRequestSchema> {
+  return localModelExecuteRequestSchema.parse(payload);
 }
 
 /**

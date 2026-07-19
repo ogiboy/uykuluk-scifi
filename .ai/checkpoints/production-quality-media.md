@@ -30,8 +30,10 @@ evidence, provider uncertainty, or ambiguous paid execution must fail closed.
 
 ## Current State
 
-- Worktree: `/Users/ogiboy/.codex/worktrees/63dc/uykuluk-scifi`; the current delivery audit branch
-  is based on `origin/main` tag `v0.85.3` (`e1b2b5d2`).
+- Repository checkpoint: `.ai/checkpoints/production-quality-media.md`; delivery audit branch
+  `fix/delivery-proof` source `3e971d02` was merged to `origin/main` as `371e2b16`. Validation is
+  reproducible from Git state plus this checkpoint, including portable JSON verification of the
+  processed CircleCI quality graph and cache steps.
 - `v0.82.0` released aligned Turkish SRT, exact render binding, and guarded Studio voice audition,
   selection, reselection, quote confirmation, production execution, and review. Deterministic-local
   and Piper remain available fallbacks.
@@ -50,13 +52,14 @@ evidence, provider uncertainty, or ambiguous paid execution must fail closed.
 - Real commercial ElevenLabs production synthesis remains unverified. The bounded Free-plan v3
   diagnostic was attempted and rejected safely; it did not create production evidence.
 - Private YouTube upload remains unavailable. Public and scheduled publishing remain unreachable.
-- The next product gap is not another generic provider framework: it is Studio-managed local-model
-  readiness, resumable MFLUX setup, local generation provenance, revision audition, and explicit
-  canonical scene selection.
+- The active local visual slice is Studio-managed MFLUX readiness, resumable setup, local generation
+  provenance, revision audition, and explicit canonical scene selection. Real install and smoke
+  evidence are still pending exact operator approval outside CI.
 
 ## Decisions
 
-- The active product slice is local-model readiness plus MFLUX generation and visual audition.
+- The active product slice is local-model readiness plus MFLUX generation and visual audition; it is
+  implemented through the guarded Studio path and remains unproven on a real target machine.
 - Local Vitest uses four workers with the existing five-second fail-fast timeout. CI keeps two
   workers and 15-second test/hook timeouts.
 - ElevenLabs original alignment is the timing authority; normalized alignment is diagnostic only.
@@ -79,14 +82,13 @@ evidence, provider uncertainty, or ambiguous paid execution must fail closed.
 
 - Intent lock: finish the exact Studio-first production journey while preserving local fallback and
   fail-closed paid/external effects.
-- Scope fence for the delivery-proof PR: preserve the accepted domain/design documents, make the
-  local toolchain and compiled CI validation reproducible, close generated runtime ignore gaps, and
-  record current hosted evidence. It must not add product runtime behavior.
-- Scope fence for the following product PR: local capability overview, curated MFLUX
+- Scope fence for the current product slice: local capability overview, curated MFLUX
   install/verify/recovery, sequential local image generation, visual revision comparison and
-  activation, guarded Studio actions, and focused browser evidence.
-- Baseline lock: `origin/main` `e1b2b5d2` (`v0.85.3`). Existing voice and hosted visual operation,
-  spool, reservation, settlement, manifest, revision, and render evidence remain authoritative.
+  activation, guarded Studio actions, and focused contract evidence. Processed-CircleCI validation
+  remains portable and JSON-verifiable; it is delivery evidence, not local-model execution proof.
+- Baseline lock: `origin/main` `371e2b16` (post-`v0.85.3` delivery-proof merge). Existing voice and
+  hosted visual operation, spool, reservation, settlement, manifest, revision, and render evidence
+  remain authoritative.
 - Compatibility boundary: static/manual and BFL visual revisions must remain readable. Local MFLUX
   adds provenance and candidates without reusing hosted cost semantics.
 - Test obligations: focused core and Studio contracts locally; typecheck/lint and browser smoke at
@@ -99,44 +101,44 @@ evidence, provider uncertainty, or ambiguous paid execution must fail closed.
 
 ## Remaining Work
 
-1. Close the delivery-proof PR with reproducible local toolchain/config checks and current hosted
-   evidence.
-2. Implement the Studio-managed MFLUX/local-model readiness vertical slice. Run one real M2 Pro
-   install/verify/1024x576 smoke outside CI only after the mocked worker and browser path are
-   stable.
-3. Finish exact render/media quality: 12-24 accepted scene images, deterministic motion, subtitle
+1. Run the real MFLUX setup/verify and bounded 1024x576 smoke on the target machine only after
+   Studio presents the exact no-cost preflight covering estimated cost, time, and disk use
+   (including the 6.5 GB conservative setup estimate) and an identified operator explicitly approves
+   its binding digest. Persist durable QA and security evidence for every attempt under
+   `runs/<run_id>`; keep the real execution outside CI and distinguish it from mocked worker,
+   offline-manifest, and browser/contract evidence.
+2. Finish exact render/media quality: 12-24 accepted scene images, deterministic motion, subtitle
    readability, mastering, licensed music/SFX provenance, and final thumbnail JPG.
-4. Add script audition and editorial quality: sequential candidates, side-by-side selection,
+3. Add script audition and editorial quality: sequential candidates, side-by-side selection,
    streamlined review, operator-curated source/claim provenance, and the minimum-publishable
    scorecard.
-5. Add controlled distribution: resumable private-only YouTube upload with target-channel and media/
+4. Add controlled distribution: resumable private-only YouTube upload with target-channel and media/
    metadata/thumbnail/caption binding plus processing review; keep public/scheduled paths
    unreachable.
-6. Complete productization and real proof: settings/prompt rollback, onboarding, documentation,
+5. Complete productization and real proof: settings/prompt rollback, onboarding, documentation,
    stabilize documentation navigation and evaluate a docs site only after content settles, run the
    local fallback rehearsal and one approved commercial voice smoke, and complete two real episode
    acceptance runs.
 
 ## Active Resume Hint
 
-- Current todo: merge the delivery-proof PR, then begin MFLUX/local-model readiness from the new
-  main SHA.
-- Current evidence: latest main exact-SHA CircleCI quality gate, SonarCloud, CodeQL, delivery-scope
-  contracts, Chunk auth/profile discovery, Ruflo doctor, and matched Ruflo/Claude Flow CLI versions
-  are verified. Record the first PR's final run URL and status before merge.
-- Explicit next-slice boundary: implement one curated MFLUX package and one local visual adapter;
-  preserve static/manual/BFL revisions and do not add ComfyUI, SSD-1B, another hosted provider,
-  video generation, upload, or public publishing.
-- Next verification: focused delivery contracts, local lint/typecheck, compiled CI config proof,
-  remote parity when the configured sidecar is healthy, then hosted quality gate.
+- Current todo: execute the exact operator-approved MFLUX setup/verify/smoke outside CI, then record
+  model/runtime identity, install-manifest verification, measured duration, and durable QA/security
+  evidence under `runs/<run_id>`. Preserve static/manual/BFL revisions and do not add another
+  provider, video generation, upload, or public publishing.
+- Current evidence: focused local-model, worker-boundary, visual-generation, and Studio contract
+  tests plus portable JSON verification of the processed CircleCI config. These do not prove a real
+  install or generation smoke.
+- Next verification: target-machine preflight approval, real setup/verify, bounded smoke, and
+  evidence/readiness review; then exact render/media quality and real-episode acceptance.
 
 ## Blockers And Risks
 
 - Free ElevenLabs access does not establish commercial production rights. Live synthesis remains
   blocked until account eligibility, exact quote, persisted approval, and reservation are all valid.
 - BFL remains experimental until a three-scene live quality/cost bake-off passes its rubric.
-- MFLUX upstream CLI/model/revision and `uv` lock must be confirmed from current official sources
-  before implementation; do not invent flags or download URLs.
+- MFLUX `0.18.0`, the pinned model revision, and the locked `uv` project were confirmed from current
+  official sources. Reconfirm them only when upgrading; do not invent flags or download URLs.
 - Heavy tests, browser runs, Sonar, and local model processes can overload the machine and must run
   sequentially.
 - Codex currently reports a broad plugin-skill context-budget warning despite the completed security

@@ -50,6 +50,18 @@ export const defaultConfig: ProducerConfig = {
       enabled: false,
       requiresApproval: true,
       mode: "static-manual",
+      mflux: {
+        runtimeVersion: "0.18.0",
+        modelId: "mlx-community/flux2-klein-4b-4bit",
+        modelRevision: "860e87183ceb29e39627c0612ebd66d8ea66e68c",
+        quantization: "q4",
+        width: 1_024,
+        height: 576,
+        steps: 4,
+        guidance: 1,
+        timeoutMs: 300_000,
+        seedBase: 42_000,
+      },
       flux2Pro: {
         model: "flux-2-pro",
         endpoint: "https://api.bfl.ai/v1/flux-2-pro",
@@ -97,6 +109,11 @@ export function configPathAtProjectRoot(projectRoot: string): string {
 }
 
 export async function loadConfig(): Promise<ProducerConfig> {
+  return loadConfigSnapshot();
+}
+
+/** Loads one validated configuration snapshot for a command entry point. */
+export async function loadConfigSnapshot(): Promise<ProducerConfig> {
   return loadConfigAtProjectRoot(process.cwd());
 }
 

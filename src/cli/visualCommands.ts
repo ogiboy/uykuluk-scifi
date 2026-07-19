@@ -1,7 +1,12 @@
 import { Command } from "commander";
+import { loadConfigSnapshot } from "../config/config.js";
+import { SafeExitError } from "../core/errors.js";
+import { createMfluxVisualGenerationBoundary } from "../localModels/mfluxVisualGenerationBoundary.js";
 import {
+  activateVisualRevision,
   decideVisuals,
   generateHostedVisuals,
+  generateLocalVisuals,
   importManualVisual,
   prepareHostedVisualGenerationPlan,
   prepareStaticVisuals,
@@ -21,9 +26,9 @@ import {
 type Wrap = <T extends unknown[]>(handler: (...args: T) => Promise<void>) => (...args: T) => void;
 
 /**
- * Registers the `visuals` command group for preparing, importing, approving, rejecting, and regenerating scene visual evidence.
+ * Registers the `visuals` command group for preparing, importing, generating, activating, reviewing, and regenerating scene visual evidence.
  *
- * Hosted generation requires an approved plan, matching digests, and explicit paid-operation confirmation. Mutating commands persist revisions or decisions and report JSON or operator-facing status messages.
+ * Hosted generation requires an approved plan, matching manifest and revision digests, and explicit paid-operation confirmation. Mutating commands persist revisions or review decisions, while failures propagate through `wrap` and results are reported as JSON or operator-facing status messages.
  *
  * @param program - The Commander program to which the `visuals` command group is added.
  * @param wrap - The action-handler wrapper used for command execution and failure propagation.
@@ -117,6 +122,62 @@ export function registerVisualCommands(program: Command, wrap: Wrap): void {
           );
         },
       ),
+    );
+
+  visuals
+    .command("activate-revision")
+    .requiredOption("--run <run_id>")
+    .requiredOption("--scene <number>")
+    .requiredOption("--revision <number>")
+    .requiredOption("--expected-manifest-digest <sha256>")
+    .requiredOption("--expected-active-revisions-file <path>")
+    .option("--json", "Print the updated visual manifest JSON.")
+    .description("Activate an existing visual revision and reopen its review decision.")
+    .action(
+      wrap(async (options: VisualMutationCliOptions & { revision: string; scene: string }) => {
+        const manifest = await activateVisualRevision({
+          runId: options.run,
+          sceneIndex: positiveSceneIndex(options.scene),
+          revision: positiveSceneIndex(options.revision),
+          ...(await readVisualMutationExpectation(options)),
+        });
+        console.log(
+          options.json
+            ? JSON.stringify(manifest, null, 2)
+            : `Activated revision ${options.revision} for scene ${options.scene}; review is required again.`,
+        );
+      }),
+    );
+
+  visuals
+    .command("generate-local")
+    .requiredOption("--run <run_id>")
+    .requiredOption("--scenes <list>")
+    .requiredOption("--expected-manifest-digest <sha256>")
+    .requiredOption("--expected-active-revisions-file <path>")
+    .option("--json", "Print the updated visual manifest JSON.")
+    .description("Generate selected scene revisions with the installed local MFLUX runtime.")
+    .action(
+      wrap(async (options: VisualMutationCliOptions & { scenes: string }) => {
+        const config = await loadConfigSnapshot();
+        const imageGeneration = config.providers.imageGeneration;
+        if (!imageGeneration.enabled || imageGeneration.mode !== "mflux-local") {
+          throw new SafeExitError(
+            "Local visual generation must be enabled and selected in Studio Settings.",
+          );
+        }
+        const expectation = await readVisualMutationExpectation(options);
+        const sceneIndexes = parseSceneIndexes(options.scenes, expectation.expectedActiveRevisions);
+        const manifest = await generateLocalVisuals(
+          { runId: options.run, sceneIndexes, ...expectation },
+          createMfluxVisualGenerationBoundary(process.cwd(), imageGeneration.mflux),
+        );
+        console.log(
+          options.json
+            ? JSON.stringify(manifest, null, 2)
+            : `Generated ${sceneIndexes.length} local visual revision(s) for review.`,
+        );
+      }),
     );
 
   visuals

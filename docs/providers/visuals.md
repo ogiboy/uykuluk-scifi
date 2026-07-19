@@ -63,12 +63,20 @@ public generation API contract for it. Any externally created Eleven Creative im
 reviewed and added through the existing attributable `manual-import` workflow. It receives no hosted
 execution, quote, credential, or entitlement status inside Producer.
 
-## Next Local Slice
+## Local MFLUX audition
 
-Local MFLUX is the next visual-provider slice. It must reuse the existing deterministic plan,
-revision review, provenance, and exact render-binding contracts. It is a local adapter candidate,
-not a second hosted provider, and remains unavailable until that focused slice is implemented and
-verified.
+Studio manages the curated local MFLUX runtime through an exact setup/verify/smoke preflight and
+approval flow. The detached worker reports durable progress and recovery state; offline verification
+uses the pinned install manifest. Readiness is unavailable until setup or verification succeeds.
+Real installation and the bounded 1024x576 smoke remain pending an exact operator-approved run on
+the target machine and are not CI evidence.
+
+When ready, local generation runs sequentially for selected scene indexes and writes revisioned PNG
+media into the existing manifest. Provenance includes MFLUX model/runtime revisions, quantization,
+deterministic seed, prompt/settings digests, dimensions, operation ID, and measured duration.
+Operators compare revisions in Studio and explicitly activate the canonical scene revision;
+activation clears the prior scene decision and invalidates dependent render consumers. Static/manual
+and BFL revisions remain readable and compatible.
 
 ## Validation Status
 

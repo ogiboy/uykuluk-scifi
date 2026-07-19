@@ -208,6 +208,10 @@
   - Disk, runtime ownership, and evidence freshness remain visible as supporting truth.
   - Raw manifests, paths, digests, and diagnostics stay in Advanced disclosure.
 - Interaction rules:
+  - Installation and generation-smoke actions first show an exact cost, time, and disk preflight;
+    execution requires attributed operator approval of the persisted binding.
+  - Approved setup and smoke operations expose their durable `runs/<run_id>/` evidence summary in
+    Advanced rather than raw process output.
   - One heavyweight download or managed-runtime operation runs at a time.
   - Studio submits package and action identities from a curated catalog; it never submits arbitrary
     download URLs, shell commands, runtime flags, or destination paths.

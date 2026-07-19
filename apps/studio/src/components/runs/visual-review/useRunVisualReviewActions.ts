@@ -1,21 +1,35 @@
 "use client";
 
+import type { StudioLocale } from "@/i18n/locales";
 import { useStudioGuardedActionSubmit } from "@/lib/mutations/useStudioGuardedActionSubmit";
 import type { StudioVisualSummary } from "@/lib/runs/visualSummaries";
 import { useState } from "react";
+import { localVisualGenerationCopy } from "./localVisualGenerationCopy";
 import { visualFileProblem } from "./visualFileValidation";
 import { encodeVisualImportFile } from "./visualImportFile";
+import { visualReviewCopy } from "./visualReviewCopy";
 
 /**
- * Manages guarded visual review actions and selection state for a run.
- * Coordinates review, import, regeneration, and hosted execution against persisted evidence.
+ * Coordinates guarded visual-review actions and selection state for a run.
+ * Actions use persisted revision and manifest evidence to protect review, import,
+ * regeneration, and hosted execution workflows.
+ *
  * @param runId - Identifier of the run whose visuals are being reviewed.
- * @param summary - Current visual review state and available workflow actions.
- * @returns Selection state, field setters, helpers, and guarded action handlers.
+ * @param summary - Current visual-review state and available workflow actions.
+ * @param locale - Locale used for action feedback and UI messages.
+ * @returns Selection state, review fields, derived status, setters, and guarded action handlers.
  */
-export function useRunVisualReviewActions(runId: string, summary: StudioVisualSummary) {
+export function useRunVisualReviewActions(
+  runId: string,
+  summary: StudioVisualSummary,
+  locale: StudioLocale,
+) {
+  const localCopy = localVisualGenerationCopy(locale);
+  const copy = visualReviewCopy(locale);
   const { reportError, state, submit } = useStudioGuardedActionSubmit(
-    "Visual actions are explicit and refresh persisted run evidence after completion.",
+    locale === "tr"
+      ? "Görsel eylemler açıktır ve tamamlandığında kalıcı bölüm kanıtını yeniler."
+      : "Visual actions are explicit and refresh persisted run evidence after completion.",
   );
   const [selected, setSelected] = useState<Set<number>>(() => new Set());
   const [reviewedBy, setReviewedBy] = useState("");
@@ -40,12 +54,12 @@ export function useRunVisualReviewActions(runId: string, summary: StudioVisualSu
     await submit({
       actionId: action.actionId,
       body: { runId },
-      errorToastTitle: "Visual preparation blocked",
-      fallbackError: "Studio could not prepare scene visuals.",
+      errorToastTitle: copy.prepareBlocked,
+      fallbackError: copy.prepareFallback,
       routePath: action.routePath,
-      submittingMessage: "Preparing deterministic scene visuals...",
-      successMessage: "Scene visuals were prepared and are ready for review.",
-      successToastTitle: "Visuals prepared",
+      submittingMessage: copy.prepareSubmitting,
+      successMessage: copy.prepareSuccess,
+      successToastTitle: copy.prepareTitle,
     });
   }
 
@@ -63,14 +77,35 @@ export function useRunVisualReviewActions(runId: string, summary: StudioVisualSu
         sceneIndexes: [...selected],
         status,
       },
-      errorToastTitle: "Visual decision blocked",
-      fallbackError: "Studio could not record the visual decision.",
+      errorToastTitle: copy.decisionBlocked,
+      fallbackError: copy.decisionFallback,
       routePath: action.routePath,
-      submittingMessage: `Recording ${status} for ${selected.size} visual beats...`,
-      successMessage: `Recorded ${status} for ${selected.size} visual beats.`,
-      successToastTitle: "Visual decision recorded",
+      submittingMessage: copy.decisionSubmitting(copy.status[status], selected.size),
+      successMessage: copy.decisionSuccess(copy.status[status], selected.size),
+      successToastTitle: copy.decisionTitle,
     });
     if (result.kind === "success") setSelected(new Set());
+  }
+
+  async function activateRevision(sceneIndex: number, revision: number): Promise<void> {
+    const action = summary.actions["visuals.activate-revision"];
+    if (!action || !summary.manifestDigest) return;
+    await submit({
+      actionId: action.actionId,
+      body: {
+        expectedActiveRevisions: summary.activeRevisions,
+        expectedManifestDigest: summary.manifestDigest,
+        revision,
+        runId,
+        sceneIndex,
+      },
+      errorToastTitle: copy.activateBlocked,
+      fallbackError: copy.activateFallback,
+      routePath: action.routePath,
+      submittingMessage: copy.activateSubmitting(revision, sceneIndex),
+      successMessage: copy.activateSuccess(revision, sceneIndex),
+      successToastTitle: copy.activateTitle,
+    });
   }
 
   async function importVisual(sceneIndex: number, file: File): Promise<boolean> {
@@ -93,12 +128,12 @@ export function useRunVisualReviewActions(runId: string, summary: StudioVisualSu
         sceneIndex,
         sourceFileName: file.name,
       },
-      errorToastTitle: "Visual import blocked",
-      fallbackError: "Studio could not import the visual revision.",
+      errorToastTitle: copy.importBlocked,
+      fallbackError: copy.importFallback,
       routePath: action.routePath,
-      submittingMessage: `Importing visual beat ${sceneIndex}...`,
-      successMessage: `Visual beat ${sceneIndex} now has a new pending revision.`,
-      successToastTitle: "Visual revision imported",
+      submittingMessage: copy.importSubmitting(sceneIndex),
+      successMessage: copy.importSuccess(sceneIndex),
+      successToastTitle: copy.importTitle,
     });
     if (result.kind !== "success") return false;
     setFileError(null);
@@ -120,12 +155,33 @@ export function useRunVisualReviewActions(runId: string, summary: StudioVisualSu
         runId,
         sceneIndexes,
       },
-      errorToastTitle: "Visual regeneration blocked",
-      fallbackError: "Studio could not regenerate the rejected visual beats.",
+      errorToastTitle: copy.regenerationBlocked,
+      fallbackError: copy.regenerationFallback,
       routePath: action.routePath,
-      submittingMessage: `Regenerating ${sceneIndexes.length} rejected visual beats...`,
-      successMessage: `Regenerated ${sceneIndexes.length} rejected visual beats as pending revisions.`,
-      successToastTitle: "Rejected visuals regenerated",
+      submittingMessage: copy.regenerationSubmitting(sceneIndexes.length),
+      successMessage: copy.regenerationSuccess(sceneIndexes.length),
+      successToastTitle: copy.regenerationTitle,
+    });
+    if (result.kind === "success") setSelected(new Set());
+  }
+
+  async function generateLocal(): Promise<void> {
+    const action = summary.actions["visuals.generate-local"];
+    if (!action || !summary.manifestDigest || selected.size === 0) return;
+    const result = await submit({
+      actionId: action.actionId,
+      body: {
+        expectedActiveRevisions: summary.activeRevisions,
+        expectedManifestDigest: summary.manifestDigest,
+        runId,
+        sceneIndexes: [...selected],
+      },
+      errorToastTitle: localCopy.blocked,
+      fallbackError: localCopy.fallbackError,
+      routePath: action.routePath,
+      submittingMessage: localCopy.submitting(selected.size),
+      successMessage: localCopy.success,
+      successToastTitle: localCopy.successTitle,
     });
     if (result.kind === "success") setSelected(new Set());
   }
@@ -137,18 +193,18 @@ export function useRunVisualReviewActions(runId: string, summary: StudioVisualSu
     if (hostedSelectionBlocked) {
       reportError({
         actionId: action.actionId,
-        message: "This workflow state can only plan rejected hosted beats for regeneration.",
+        message: copy.hostedMixedSelection,
         routePath: action.routePath,
-        toastTitle: "Hosted visual selection blocked",
+        toastTitle: copy.hostedSelectionBlocked,
       });
       return;
     }
     if (purpose === "regenerate-rejected" && (!reviewedBy.trim() || !notes.trim())) {
       reportError({
         actionId: action.actionId,
-        message: "Reviewer attribution and revision notes are required for hosted regeneration.",
+        message: copy.hostedNeedsAttribution,
         routePath: action.routePath,
-        toastTitle: "Hosted visual attribution required",
+        toastTitle: copy.hostedSelectionBlocked,
       });
       return;
     }
@@ -165,18 +221,15 @@ export function useRunVisualReviewActions(runId: string, summary: StudioVisualSu
         runId,
         sceneIndexes: [...selected],
       },
-      errorToastTitle: "Hosted visual plan blocked",
-      fallbackError: "Studio could not persist the selected hosted visual plan.",
+      errorToastTitle: copy.hostedPlanBlocked,
+      fallbackError: copy.hostedPlanFallback,
       routePath: action.routePath,
-      submittingMessage:
-        purpose === "regenerate-rejected"
-          ? `Archiving prior evidence and planning ${selected.size} rejected visual beats...`
-          : `Binding ${selected.size} visual beats to an exact hosted plan...`,
-      successMessage:
-        purpose === "regenerate-rejected"
-          ? "Rejected hosted beats reopened with revision evidence. Continue with estimate and approval."
-          : "Hosted visual plan persisted. Continue with estimate and approval.",
-      successToastTitle: "Hosted visual plan ready",
+      submittingMessage: copy.hostedPlanSubmitting(
+        selected.size,
+        purpose === "regenerate-rejected",
+      ),
+      successMessage: copy.hostedPlanReady,
+      successToastTitle: copy.hostedPlanReady,
     });
   }
 
@@ -189,12 +242,12 @@ export function useRunVisualReviewActions(runId: string, summary: StudioVisualSu
     const result = await submit({
       actionId: action.actionId,
       body: { executionMode: "hosted", runId, ...execution, confirmPaidOperation: true },
-      errorToastTitle: "Hosted visual generation blocked",
-      fallbackError: "Studio could not execute the approved hosted visual batch.",
+      errorToastTitle: copy.generateHostedBlocked,
+      fallbackError: copy.generateHostedFallback,
       routePath: action.routePath,
-      submittingMessage: "Generating the exact approved hosted visual batch...",
-      successMessage: "Hosted scene images were settled and opened for visual review.",
-      successToastTitle: "Hosted visuals generated",
+      submittingMessage: copy.generateHostedSubmitting,
+      successMessage: copy.generateHostedSuccess,
+      successToastTitle: copy.generateHostedTitle,
     });
     if (result.kind === "success") setSelected(new Set());
   }
@@ -210,11 +263,13 @@ export function useRunVisualReviewActions(runId: string, summary: StudioVisualSu
   }
 
   return {
+    activateRevision,
     busy,
     clearSelection: () => setSelected(new Set()),
     confirmedHosted: confirmedHostedIdentity === hostedExecutionIdentity(summary.hosted.execution),
     decide,
     fileError,
+    generateLocal,
     generateHosted,
     hostedSelectionBlocked,
     importVisual,

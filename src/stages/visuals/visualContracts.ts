@@ -43,6 +43,39 @@ export const hostedVisualSourceSchema = z.strictObject({
   actualUsdMicros: z.int().nonnegative(),
 });
 
+/**
+ * Provenance retained for a locally generated scene image.
+ *
+ * The local-model service owns installation and process management. A visual
+ * revision retains only the immutable generation facts needed for review and
+ * render evidence.
+ */
+export const localVisualSourceSchema = z.strictObject({
+  kind: z.literal("local-generation"),
+  service: z.literal("mflux"),
+  modelId: z.string().trim().min(1).max(240),
+  modelRevision: z.string().trim().min(1).max(240),
+  runtimeRevision: z.string().trim().min(1).max(240),
+  operationId: z
+    .string()
+    .trim()
+    .regex(/^local_image_[a-z0-9_-]{8,160}$/),
+  settingsDigest: digestSchema,
+  promptDigest: digestSchema,
+  quantization: z.literal("q4"),
+  seed: z.int().nonnegative().max(2_147_483_647),
+  steps: z.int().positive().max(100),
+  guidance: z.number().min(0).max(50),
+  dimensions: z.strictObject({
+    width: z.int().min(1024).max(7680),
+    height: z.int().min(576).max(4320),
+  }),
+  durationMs: z
+    .int()
+    .nonnegative()
+    .max(30 * 60 * 1_000),
+});
+
 const visualSourceSchema = z.discriminatedUnion("kind", [
   z.strictObject({
     kind: z.literal("static-fallback"),
@@ -55,12 +88,13 @@ const visualSourceSchema = z.discriminatedUnion("kind", [
     sourceDigest: digestSchema,
   }),
   hostedVisualSourceSchema,
+  localVisualSourceSchema,
 ]);
 
 export const visualRevisionSchema = z
   .strictObject({
     revision: z.int().positive(),
-    provider: z.enum(["static", "manual-import", "black-forest-labs"]),
+    provider: z.enum(["static", "manual-import", "black-forest-labs", "mflux-local"]),
     createdAt: z.iso.datetime(),
     asset: visualAssetSchema,
     media: visualMediaSchema.optional(),
@@ -72,6 +106,7 @@ export const visualRevisionSchema = z
       "static-fallback": "static",
       "manual-import": "manual-import",
       "hosted-generation": "black-forest-labs",
+      "local-generation": "mflux-local",
     } as const;
     if (revision.provider !== providerBySource[revision.source.kind]) {
       context.addIssue({

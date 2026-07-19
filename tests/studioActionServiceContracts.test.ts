@@ -139,7 +139,13 @@ describe("Studio mutation service contracts", () => {
   });
 
   it("documents exact snapshot flags for every visual revision mutation", () => {
-    for (const actionId of ["visuals.import", "visuals.decide", "visuals.regenerate"] as const) {
+    for (const actionId of [
+      "visuals.import",
+      "visuals.decide",
+      "visuals.regenerate",
+      "visuals.generate-local",
+      "visuals.activate-revision",
+    ] as const) {
       const command = getStudioMutationServiceContract(actionId)?.cliCommand;
       expect(command).toContain("--expected-manifest-digest <sha256>");
       expect(command).toContain("--expected-active-revisions-file <temp_json>");

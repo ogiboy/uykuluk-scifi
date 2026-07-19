@@ -1,4 +1,5 @@
 import { TabsContent } from "@/components/ui/tabs";
+import type { StudioLocale } from "@/i18n/locales";
 import { defaultRunReviewTab, type RunReviewTab } from "@/lib/runs/runReviewNavigation";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import { RunProductionMediaPanel } from "./production-media/RunProductionMediaPanel";
@@ -21,13 +22,15 @@ const reviewWorkspaceClass =
 /**
  * Renders a read-only detail view for a run.
  *
- * @param initialTab - The run review tab selected from URL or run-state projection.
+ * @param initialTab - The run review tab selected from the URL or run state.
+ * @param locale - The locale used for visual review content.
  * @param run - The run data to display.
  */
 export function RunDetailView({
   initialTab,
+  locale,
   run,
-}: Readonly<{ initialTab?: RunReviewTab; run: StudioRunDetail }>) {
+}: Readonly<{ initialTab?: RunReviewTab; locale: StudioLocale; run: StudioRunDetail }>) {
   const defaultTab = initialTab ?? defaultRunReviewTab(run);
   return (
     <div className='grid min-w-0 gap-4'>
@@ -55,7 +58,7 @@ export function RunDetailView({
             </div>
           </TabsContent>
           <TabsContent value='visuals'>
-            <RunVisualReviewPanel runId={run.runId} summary={run.visuals} />
+            <RunVisualReviewPanel locale={locale} runId={run.runId} summary={run.visuals} />
           </TabsContent>
           <TabsContent value='voice'>
             <div className={reviewWorkspaceClass}>

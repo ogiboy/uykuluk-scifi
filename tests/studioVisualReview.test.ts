@@ -4,8 +4,10 @@ import { describe, expect, it } from "vitest";
 import { GET as getVisualMedia } from "../apps/studio/src/app/runs/[runId]/visuals/[sceneIndex]/route";
 import { readCoreVisualRunRecord } from "../apps/studio/src/lib/runs/visualRunRecord";
 import { readStudioVisualSummary } from "../apps/studio/src/lib/runs/visualSummaries";
+import { defaultConfig } from "../src/config/config";
 import { artifactPath } from "../src/core/artifacts";
 import { loadRun, saveRun, statePath } from "../src/core/runStore";
+import { localModelStatePaths, writeLocalModelReady } from "../src/localModels/localModelStore";
 import { decideVisuals, importManualVisual, prepareStaticVisuals } from "../src/stages/visuals";
 import { useTempProject } from "./helpers";
 import {
@@ -49,7 +51,42 @@ describe("Studio visual review read model", () => {
     expect(ready.actions).toMatchObject({
       "visuals.decide": { routePath: "/actions/visuals-decide" },
       "visuals.generate-hosted": null,
+      "visuals.generate-local": null,
       "visuals.plan-hosted": null,
+    });
+    expect(ready.local).toMatchObject({
+      enabled: false,
+      mode: "static-manual",
+      readiness: "absent",
+    });
+
+    const localPaths = localModelStatePaths(process.cwd());
+    await mkdir(localPaths.runtimePath, { recursive: true });
+    await writeFile(localPaths.installManifestPath, "{}\n", "utf8");
+    await writeLocalModelReady(localPaths.readyPath);
+    await writeFile(
+      "producer.config.json",
+      `${JSON.stringify(
+        {
+          ...defaultConfig,
+          providers: {
+            ...defaultConfig.providers,
+            imageGeneration: {
+              ...defaultConfig.providers.imageGeneration,
+              enabled: true,
+              mode: "mflux-local",
+            },
+          },
+        },
+        null,
+        2,
+      )}\n`,
+      "utf8",
+    );
+    const localReady = await readStudioVisualSummary(process.cwd(), runId);
+    expect(localReady).toMatchObject({
+      actions: { "visuals.generate-local": { routePath: "/actions/visuals-generate-local" } },
+      local: { enabled: true, mode: "mflux-local", readiness: "ready" },
     });
     await decideVisuals({
       ...(await currentVisualExpectation(runId)),
@@ -70,10 +107,12 @@ describe("Studio visual review read model", () => {
     });
     await saveRun({ ...(await loadRun(runId)), state: "COST_ESTIMATED" });
     const unavailable = await readStudioVisualSummary(process.cwd(), runId);
-    expect(Object.values(unavailable.actions)).toEqual([null, null, null, null, null, null]);
+    expect(Object.values(unavailable.actions)).toEqual(
+      Array.from({ length: Object.keys(unavailable.actions).length }, () => null),
+    );
   });
 
-  it("supports ranges and rejects missing, stale, traversal-shaped, or tampered media requests", async () => {
+  it("serves verified revision history and rejects missing, stale, traversal-shaped, or tampered media requests", async () => {
     const runId = await preparePackagedVisualRun();
     await prepareStaticVisuals(runId);
     await writeTestPng("manual.png");
@@ -85,6 +124,12 @@ describe("Studio visual review read model", () => {
     });
     const summary = await readStudioVisualSummary(process.cwd(), runId);
     const scene = summary.scenes[0]!;
+    const historical = scene.revisions.find((revision) => revision.revision === 1);
+    expect(historical).toMatchObject({
+      providerId: "static",
+      revision: 1,
+      sourceKind: "static-fallback",
+    });
 
     const full = await visualResponse(scene.mediaUrl, runId, scene.sceneIndex);
     expect(full.status).toBe(200);
@@ -99,6 +144,10 @@ describe("Studio visual review read model", () => {
     expect(Buffer.from(await partial.arrayBuffer())).toEqual(
       Buffer.from(await full.arrayBuffer()).subarray(0, 4),
     );
+
+    const historicalResponse = await visualResponse(historical!.mediaUrl, runId, scene.sceneIndex);
+    expect(historicalResponse.status).toBe(200);
+    expect(historicalResponse.headers.get("content-type")).toMatch(/^image\//);
 
     await expect(visualResponse(`/runs/${runId}/visuals/1`, runId, 1)).resolves.toMatchObject({
       status: 404,
