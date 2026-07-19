@@ -31,8 +31,11 @@ type LocalModelWorkerLaunchDependencies = Readonly<{
  * Starts a detached curated MFLUX worker for a project.
  *
  * @param projectRoot - The project root used as the worker's working directory.
- * @returns The process ID of the detached worker.
- * @throws SafeExitError If the worker process cannot be started.
+ * @param operationId - The queued operation that this worker must claim.
+ * @param dependencies - Test-only spawn, overview, and startup timing overrides.
+ * @returns The detached worker PID after the exact operation has been claimed.
+ * @throws SafeExitError If spawning fails, the child exits or errors before claiming, or the
+ * startup timeout expires.
  */
 export async function launchLocalModelWorker(
   projectRoot: string,
