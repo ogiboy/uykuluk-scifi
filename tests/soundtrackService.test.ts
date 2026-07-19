@@ -73,6 +73,19 @@ describe("soundtrack service", () => {
       },
       sfx: [],
     });
+    await writeFile(
+      artifactPath(runId, "production/audio/soundtrack/assets/bed.wav"),
+      Buffer.from([9, 9, 9, 9]),
+    );
+    await expect(
+      analyzeSoundtrackLoudness({
+        runId,
+        expectedManifestDigest: mixed.digest,
+        expectedRevision: mixed.manifest.revision,
+        ffmpeg: async () => ({ stderr: "" }),
+      }),
+    ).rejects.toThrow(/digest does not match/i);
+    await writeFile(artifactPath(runId, "production/audio/soundtrack/assets/bed.wav"), source);
     const analyzed = await analyzeSoundtrackLoudness({
       runId,
       expectedManifestDigest: mixed.digest,
@@ -86,6 +99,21 @@ describe("soundtrack service", () => {
         };
       },
     });
+    await writeFile(
+      artifactPath(runId, "production/audio/soundtrack/assets/bed.wav"),
+      Buffer.from([9, 9, 9, 9]),
+    );
+    await expect(
+      decideSoundtrack({
+        runId,
+        expectedManifestDigest: analyzed.digest,
+        expectedRevision: analyzed.manifest.revision,
+        status: "approved",
+        reviewedBy: "operator",
+        notes: "Voice remains intelligible.",
+      }),
+    ).rejects.toThrow(/digest does not match/i);
+    await writeFile(artifactPath(runId, "production/audio/soundtrack/assets/bed.wav"), source);
     const approved = await decideSoundtrack({
       runId,
       expectedManifestDigest: analyzed.digest,

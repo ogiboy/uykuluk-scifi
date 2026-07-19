@@ -145,7 +145,7 @@ describe("producer doctor", () => {
     expect(report.passed).toBe(true);
     expect(report.checks.find((check) => check.name === "render toolchain")).toMatchObject({
       status: "pass",
-      message: "FFmpeg and ffprobe are available for local draft render.",
+      message: "FFmpeg, ffprobe, and two-pass loudnorm are available for local draft render.",
     });
   });
 
@@ -161,6 +161,18 @@ describe("producer doctor", () => {
       message: expect.stringContaining("FFmpeg, ffprobe unavailable"),
       nextAction:
         "Install FFmpeg/ffprobe, ensure both commands are on PATH, then rerun pnpm producer doctor.",
+    });
+  });
+
+  it("warns when FFmpeg lacks the loudnorm mastering filter", async () => {
+    const binDir = await writeFakeRenderTools(false);
+    vi.stubEnv("PATH", binDir);
+
+    const report = await runDoctor();
+
+    expect(report.checks.find((check) => check.name === "render toolchain")).toMatchObject({
+      status: "warn",
+      message: expect.stringContaining("loudnorm filter is unavailable"),
     });
   });
 
@@ -235,15 +247,23 @@ async function useOllamaConfig(): Promise<void> {
   );
 }
 
-async function writeFakeRenderTools(): Promise<string> {
+async function writeFakeRenderTools(withLoudnorm = true): Promise<string> {
   const binDir = path.join(process.cwd(), ".tmp", "render-tools", "doctor");
   await mkdir(binDir, { recursive: true });
-  await writeFakeExecutable(path.join(binDir, "ffmpeg"));
+  await writeFakeExecutable(
+    path.join(binDir, "ffmpeg"),
+    withLoudnorm
+      ? "#!/bin/sh\nprintf '%s\\n' '... loudnorm EBU R128 loudness normalization'\n"
+      : "#!/bin/sh\nprintf '%s\\n' 'ffmpeg without mastering filter'\n",
+  );
   await writeFakeExecutable(path.join(binDir, "ffprobe"));
   return binDir;
 }
 
-async function writeFakeExecutable(target: string): Promise<void> {
-  await writeFile(target, "#!/bin/sh\nprintf '%s\\n' fake-tool\n", "utf8");
+async function writeFakeExecutable(
+  target: string,
+  body = "#!/bin/sh\nprintf '%s\\n' fake-tool\n",
+): Promise<void> {
+  await writeFile(target, body, "utf8");
   await chmod(target, 0o755);
 }

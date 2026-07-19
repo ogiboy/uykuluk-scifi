@@ -11,6 +11,7 @@ import { registerProviderSmokeCommands } from "./cli/providerSmokeCommands.js";
 import { registerReviewCommands } from "./cli/reviewCommands.js";
 import { registerRevisionCommands } from "./cli/revisionCommands.js";
 import { registerSettingsCommands } from "./cli/settingsCommands.js";
+import { registerSoundtrackCommands } from "./cli/soundtrackCommands.js";
 import { resolveStatusRunId } from "./cli/statusRunSelector.js";
 import { readCliVersion } from "./cli/version.js";
 import { registerVisualCommands } from "./cli/visualCommands.js";
@@ -74,6 +75,7 @@ registerProviderSmokeCommands(program, wrap);
 registerReviewCommands(program, wrap);
 registerVoiceCommands(program, wrap);
 registerVisualCommands(program, wrap);
+registerSoundtrackCommands(program, wrap);
 
 registerRevisionCommands(program, wrap);
 registerSettingsCommands(program, wrap);

@@ -3,6 +3,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { readFile, rename, rm, stat } from "node:fs/promises";
 import path from "node:path";
 import { artifactPath, recordRunArtifact, writeRunJson, writeRunText } from "../core/artifacts.js";
+import { captureRunArtifactRollback } from "../core/artifactRollback.js";
 import { SafeExitError } from "../core/errors.js";
 import { appendLedgerEvent } from "../core/ledger.js";
 import { loadRun, setRunState } from "../core/runStore.js";
@@ -46,6 +47,7 @@ import {
   DraftRenderManifest,
   draftRenderChaptersJsonPath,
   draftRenderChaptersMarkdownPath,
+  draftRenderArtifactPaths,
   draftRenderManifestPath,
   draftRenderManifestSchema,
   draftRenderPath,
@@ -78,6 +80,7 @@ export async function renderDraft(
 ): Promise<DraftRenderManifest> {
   let run = await loadRun(runId);
   let temporaryOutput: string | undefined;
+  let rollbackArtifacts: ((failure: unknown) => Promise<void>) | undefined;
   await requireApproval(run, "render", "render");
   await requireState(run, "RENDER_APPROVED", "render");
   try {
@@ -98,6 +101,10 @@ export async function renderDraft(
     if (!firstPass) {
       throw new SafeExitError("Draft render requires current soundtrack loudness analysis.");
     }
+    rollbackArtifacts = await captureRunArtifactRollback(run.runId, "render", [
+      ...draftRenderArtifactPaths,
+      audioMasteringEvidencePath,
+    ]);
     const approval = run.approvals.find((item) => item.target === "render");
     const currentApprovalRef = renderApprovalRef({
       renderPlanDigest: renderPlanEvidence.digest,
@@ -302,11 +309,18 @@ export async function renderDraft(
     if (temporaryOutput) {
       await rm(temporaryOutput, { force: true }).catch(() => undefined);
     }
+    let rollbackDiagnostic = "";
+    try {
+      await rollbackArtifacts?.(error);
+    } catch (rollbackError) {
+      const detail = rollbackError instanceof Error ? rollbackError.message : String(rollbackError);
+      rollbackDiagnostic = ` Artifact rollback also failed: ${detail}`;
+    }
     await appendLedgerEvent({
       runId: run.runId,
       type: "ERROR",
       stage: "render",
-      message: error instanceof Error ? error.message : String(error),
+      message: `${error instanceof Error ? error.message : String(error)}${rollbackDiagnostic}`,
     });
     throw error;
   }

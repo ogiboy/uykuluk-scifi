@@ -35,7 +35,7 @@ const finalReviewBundleV1Schema = z.looseObject({
   draftRender: z.looseObject({ chapters: z.undefined().optional() }),
 });
 
-export const finalReviewBundleSchema = z.strictObject({
+export const finalReviewBundleV2Schema = z.strictObject({
   schemaVersion: z.literal(2),
   runId: z.string().min(1),
   createdAt: z.iso.datetime(),
@@ -98,8 +98,74 @@ export const finalReviewBundleSchema = z.strictObject({
   blockedActions: z.array(z.string().min(1)),
 });
 
-export type FinalReviewBundle = z.infer<typeof finalReviewBundleSchema>;
+const digestSchema = z.string().regex(/^[a-f0-9]{64}$/);
+
+const finalReviewBundleV3MediaSchema = z.strictObject({
+  soundtrack: z.strictObject({
+    manifestPath: z.literal("production/audio/soundtrack/manifest.json"),
+    manifestDigest: digestSchema,
+    mode: z.enum(["voice-only", "mixed"]),
+    revision: z.int().positive(),
+    decision: z.strictObject({
+      status: z.literal("approved"),
+      decidedAt: z.iso.datetime(),
+    }),
+  }),
+  rightsProvenance: z.strictObject({
+    assetCount: z.int().nonnegative(),
+    musicAssetCount: z.int().nonnegative(),
+    sfxAssetCount: z.int().nonnegative(),
+    rightsBases: z.array(
+      z.strictObject({
+        basis: z.enum(["owned", "licensed", "public-domain", "permission-granted"]),
+        assetCount: z.int().positive(),
+      }),
+    ),
+  }),
+  mastering: z.strictObject({
+    evidencePath: z.literal("production/render/audio_mastering.json"),
+    evidenceSha256: digestSchema,
+    target: z.strictObject({
+      integratedLufs: z.literal(-14),
+      toleranceLufs: z.literal(1),
+      normalizationTruePeakDbtp: z.literal(-1.5),
+      maxOutputTruePeakDbtp: z.literal(-1),
+      loudnessRangeLufs: z.literal(11),
+    }),
+    output: z.strictObject({
+      integratedLufs: z.number().finite(),
+      truePeakDbtp: z.number().finite(),
+      loudnessRangeLufs: z.number().finite().nonnegative(),
+    }),
+    passed: z.literal(true),
+  }),
+  encoding: z.strictObject({
+    container: z.literal("mp4"),
+    videoCodec: z.literal("h264"),
+    audioCodec: z.literal("aac"),
+    audioSampleRateHz: z.literal(48_000),
+    audioChannels: z.literal(2),
+  }),
+  renderApproval: z.strictObject({
+    approvalId: z.string().min(1),
+    approvedRef: digestSchema,
+    contractVersion: z.literal(4),
+  }),
+});
+
+export const finalReviewBundleSchema = finalReviewBundleV2Schema.extend({
+  schemaVersion: z.literal(3),
+  media: finalReviewBundleV3MediaSchema,
+});
+
+export type CurrentFinalReviewBundle = z.infer<typeof finalReviewBundleSchema>;
+export type FinalReviewBundleV2 = z.infer<typeof finalReviewBundleV2Schema>;
+export type FinalReviewBundle = CurrentFinalReviewBundle | FinalReviewBundleV2;
 
 export function isLegacyFinalReviewBundle(value: unknown): boolean {
   return finalReviewBundleV1Schema.safeParse(value).success;
+}
+
+export function isV2FinalReviewBundle(value: unknown): boolean {
+  return finalReviewBundleV2Schema.safeParse(value).success;
 }

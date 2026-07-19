@@ -25,7 +25,7 @@ describe("local final review bundle", () => {
 
     expect(bundle).toMatchObject({
       runId,
-      schemaVersion: 2,
+      schemaVersion: 3,
       status: "decision-pending",
       renderDecision: { kind: "missing", nextAction: expect.stringContaining(`--run ${runId}`) },
       draftRender: {
@@ -39,6 +39,30 @@ describe("local final review bundle", () => {
         media: { audioCodec: "aac", videoCodec: "h264", width: 1280, height: 720 },
       },
       voiceover: { path: "production/audio/voiceover.wav", productionVoiceCandidate: false },
+      media: {
+        soundtrack: {
+          manifestPath: "production/audio/soundtrack/manifest.json",
+          manifestDigest: expect.stringMatching(/^[a-f0-9]{64}$/),
+          mode: "voice-only",
+          decision: { status: "approved" },
+        },
+        rightsProvenance: { assetCount: 0, musicAssetCount: 0, sfxAssetCount: 0, rightsBases: [] },
+        mastering: {
+          evidencePath: "production/render/audio_mastering.json",
+          evidenceSha256: expect.stringMatching(/^[a-f0-9]{64}$/),
+          target: { integratedLufs: -14, maxOutputTruePeakDbtp: -1, loudnessRangeLufs: 11 },
+          output: { integratedLufs: -14, truePeakDbtp: -1.2, loudnessRangeLufs: 5 },
+          passed: true,
+        },
+        encoding: {
+          container: "mp4",
+          videoCodec: "h264",
+          audioCodec: "aac",
+          audioSampleRateHz: 48_000,
+          audioChannels: 2,
+        },
+        renderApproval: { contractVersion: 4 },
+      },
     });
     expect(bundle.artifacts.map((artifact) => artifact.path)).toEqual(
       expect.arrayContaining([
@@ -68,6 +92,9 @@ describe("local final review bundle", () => {
     expect(markdown).toContain("production/render/youtube_chapters.md");
     expect(markdown).toContain("Timestamped map");
     expect(markdown).toContain("Decision: pending");
+    expect(markdown).toContain("## Soundtrack, Rights, and Mastering");
+    expect(markdown).toContain("Mastered output");
+    expect(markdown).toContain("Render approval");
     expect(markdown.toLowerCase()).toContain("upload");
     expect(markdown.toLowerCase()).toContain("publish");
   });
@@ -121,6 +148,15 @@ describe("local final review bundle", () => {
     await expect(createFinalReviewBundle(runId)).rejects.toThrow(/different draft render digest/);
   });
 
+  it("requires the approved soundtrack still bound to v11 render evidence", async () => {
+    const runId = await renderLocalDraft("final-review-soundtrack-binding");
+    await writeFile(artifactPath(runId, "production/audio/soundtrack/manifest.json"), "{}", "utf8");
+
+    await expect(createFinalReviewBundle(runId)).rejects.toThrow(
+      /soundtrack manifest does not match manifest evidence/i,
+    );
+  });
+
   it("treats legacy schema v1 final-review bundles as stale instead of invalid", async () => {
     const runId = await renderLocalDraft("final-review-legacy");
     const bundle = await createFinalReviewBundle(runId);
@@ -139,6 +175,25 @@ describe("local final review bundle", () => {
     expect(status.finalReviewBundle).toMatchObject({
       kind: "stale",
       message: expect.stringContaining("legacy schema version 1"),
+    });
+  });
+
+  it("keeps v2 bundles readable as stale regeneration inputs", async () => {
+    const runId = await renderLocalDraft("final-review-v2-legacy");
+    const bundle = await createFinalReviewBundle(runId);
+    const { media: _media, ...v2Bundle } = bundle;
+    await writeFile(
+      artifactPath(runId, finalReviewBundleJsonPath),
+      JSON.stringify({ ...v2Bundle, schemaVersion: 2 }),
+      "utf8",
+    );
+
+    const status = await readRunStatus(runId);
+
+    expect(status.finalReviewBundle).toMatchObject({
+      kind: "stale",
+      message: expect.stringContaining("legacy schema version 2"),
+      nextAction: expect.stringContaining(`--run ${runId}`),
     });
   });
 

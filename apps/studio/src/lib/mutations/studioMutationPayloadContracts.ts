@@ -13,6 +13,11 @@ import {
   promptProfileSaveRequestSchema,
   runOnlyRequestSchema,
   settingsSaveRequestSchema,
+  soundtrackAnalyzeRequestSchema,
+  soundtrackConfigureRequestSchema,
+  soundtrackDecisionRequestSchema,
+  soundtrackImportRequestSchema,
+  soundtrackPrepareRequestSchema,
   visualActivateRevisionRequestSchema,
   visualDecisionRequestSchema,
   visualImportRequestSchema,
@@ -164,6 +169,36 @@ export function parseVisualImportPayload(
   payload: unknown,
 ): z.infer<typeof visualImportRequestSchema> {
   return visualImportRequestSchema.parse(payload);
+}
+
+export function parseSoundtrackPreparePayload(
+  payload: unknown,
+): z.infer<typeof soundtrackPrepareRequestSchema> {
+  return soundtrackPrepareRequestSchema.parse(payload);
+}
+
+export function parseSoundtrackImportPayload(
+  payload: unknown,
+): z.infer<typeof soundtrackImportRequestSchema> {
+  return soundtrackImportRequestSchema.parse(payload);
+}
+
+export function parseSoundtrackConfigurePayload(
+  payload: unknown,
+): z.infer<typeof soundtrackConfigureRequestSchema> {
+  return soundtrackConfigureRequestSchema.parse(payload);
+}
+
+export function parseSoundtrackAnalyzePayload(
+  payload: unknown,
+): z.infer<typeof soundtrackAnalyzeRequestSchema> {
+  return soundtrackAnalyzeRequestSchema.parse(payload);
+}
+
+export function parseSoundtrackDecisionPayload(
+  payload: unknown,
+): z.infer<typeof soundtrackDecisionRequestSchema> {
+  return soundtrackDecisionRequestSchema.parse(payload);
 }
 
 export function parseVisualDecisionPayload(

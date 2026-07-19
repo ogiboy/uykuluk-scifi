@@ -34,6 +34,11 @@ export const studioCliMutationActionIds = [
   "script.revise",
   "script.run",
   "settings.save",
+  "soundtrack.prepare",
+  "soundtrack.import",
+  "soundtrack.configure",
+  "soundtrack.analyze",
+  "soundtrack.decide",
   "visuals.decide",
   "visuals.import",
   "visuals.plan-hosted",
@@ -75,6 +80,11 @@ export type RunOnlyCliActionId = Exclude<
   | "script.approve"
   | "script.revise"
   | "settings.save"
+  | "soundtrack.prepare"
+  | "soundtrack.import"
+  | "soundtrack.configure"
+  | "soundtrack.analyze"
+  | "soundtrack.decide"
   | "visuals.decide"
   | "visuals.import"
   | "visuals.plan-hosted"

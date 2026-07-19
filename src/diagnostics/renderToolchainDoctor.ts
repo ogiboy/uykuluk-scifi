@@ -21,10 +21,19 @@ export function renderToolchainCheck(): DoctorCheck {
     .map((tool) => tool.label);
 
   if (unavailable.length === 0) {
+    if (!ffmpegSupportsLoudnorm()) {
+      return {
+        name: "render toolchain",
+        status: "warn",
+        message:
+          "FFmpeg and ffprobe are available, but the required FFmpeg loudnorm filter is unavailable.",
+        nextAction: renderToolSetupCommand,
+      };
+    }
     return {
       name: "render toolchain",
       status: "pass",
-      message: "FFmpeg and ffprobe are available for local draft render.",
+      message: "FFmpeg, ffprobe, and two-pass loudnorm are available for local draft render.",
     };
   }
 
@@ -34,6 +43,14 @@ export function renderToolchainCheck(): DoctorCheck {
     message: `${unavailable.join(", ")} unavailable; local draft render will fail until the toolchain is installed.`,
     nextAction: renderToolSetupCommand,
   };
+}
+
+function ffmpegSupportsLoudnorm(): boolean {
+  const result = spawnSync("ffmpeg", ["-hide_banner", "-filters"], {
+    encoding: "utf8",
+    timeout: renderToolTimeoutMs,
+  });
+  return result.status === 0 && /\bloudnorm\b/u.test(`${result.stdout}${result.stderr}`);
 }
 
 function isRenderToolAvailable(binary: string): boolean {

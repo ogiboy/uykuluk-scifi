@@ -190,6 +190,7 @@ export async function analyzeSoundtrackLoudness(
   const current = await loadSoundtrackManifest(run.value);
   assertExpectation(current, input);
   await requireCurrentVoiceover(run.value, current.manifest);
+  await validateRegisteredSoundtrackAssets(run.value, current.manifest);
   const graph = await buildSoundtrackAnalysisGraph(run.value, current.manifest);
   const ffmpeg = await input.ffmpeg({
     args: buildSoundtrackAnalysisArgs(graph),
@@ -241,6 +242,7 @@ export async function decideSoundtrack(
     const current = await loadSoundtrackManifest(run);
     assertExpectation(current, input);
     await requireCurrentVoiceover(run, current.manifest);
+    await validateRegisteredSoundtrackAssets(run, current.manifest);
     if (input.status === "approved" && !current.manifest.analysis) {
       throw new SafeExitError("Approved soundtrack decision requires current loudness analysis.");
     }
@@ -283,14 +285,7 @@ export async function requireApprovedSoundtrackManifest(
   run: RunRecord,
 ): Promise<SoundtrackManifestEvidence> {
   const evidence = await loadSoundtrackManifest(run);
-  await validateSoundtrackManifest(evidence.manifest, {
-    runId: run.runId,
-    readBytes: async (relativePath) => {
-      const bytes = await readRegisteredArtifactBytes(run, relativePath);
-      if (!bytes) throw new SafeExitError(`Soundtrack asset is missing: ${relativePath}.`);
-      return bytes;
-    },
-  });
+  await validateRegisteredSoundtrackAssets(run, evidence.manifest);
   await requireCurrentVoiceover(run, evidence.manifest);
   if (
     evidence.manifest.decision?.status !== "approved" ||
@@ -301,6 +296,20 @@ export async function requireApprovedSoundtrackManifest(
   if (!evidence.manifest.analysis)
     throw new SafeExitError("Approved soundtrack manifest is missing loudness analysis.");
   return evidence;
+}
+
+async function validateRegisteredSoundtrackAssets(
+  run: RunRecord,
+  manifest: SoundtrackManifest,
+): Promise<void> {
+  await validateSoundtrackManifest(manifest, {
+    runId: run.runId,
+    readBytes: async (relativePath) => {
+      const bytes = await readRegisteredArtifactBytes(run, relativePath);
+      if (!bytes) throw new SafeExitError(`Soundtrack asset is missing: ${relativePath}.`);
+      return bytes;
+    },
+  });
 }
 
 async function loadSoundtrackManifest(run: RunRecord): Promise<SoundtrackManifestEvidence> {

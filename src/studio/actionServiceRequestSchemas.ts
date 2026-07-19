@@ -15,6 +15,13 @@ import { hostedVoiceExecutionConfirmationSchema } from "../stages/voice/voiceExe
 export { episodeCreationRequestSchema } from "../stages/episode/episodeSnapshotContracts.js";
 export { elevenLabsDiagnosticSmokeRequestSchema } from "../stages/voice/elevenLabsDiagnosticSmoke.js";
 export {
+  soundtrackAnalyzeRequestSchema,
+  soundtrackConfigureRequestSchema,
+  soundtrackDecisionRequestSchema,
+  soundtrackImportRequestSchema,
+  soundtrackPrepareRequestSchema,
+} from "./soundtrackActionRequestSchemas.js";
+export {
   hostedVisualGenerationRequestSchema,
   hostedVisualPlanRequestSchema,
   localVisualGenerationRequestSchema,
