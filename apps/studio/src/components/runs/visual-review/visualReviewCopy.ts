@@ -112,7 +112,12 @@ type VisualReviewTextCopy = Omit<
   "hostedPurposeLabel" | "hostedStatusLabel" | "visualActionStatusLabel"
 >;
 
-/** Returns locale-bound visual-review copy and status-label helpers. */
+/**
+ * Selects the visual review copy for the requested locale.
+ *
+ * @param locale - The locale used to select the localized copy.
+ * @returns The Turkish copy for `"tr"`; English copy for all other locales.
+ */
 export function visualReviewCopy(locale: StudioLocale): VisualReviewCopy {
   return {
     ...(locale === "tr" ? turkishCopy : englishCopy),

@@ -48,6 +48,7 @@ export function useRunVisualReviewActions(
     selected.size > 0 &&
     selectedHostedEligibleCount !== selected.size;
 
+  /** Prepares the run for visual review through the guarded action boundary. */
   async function prepare(): Promise<void> {
     const action = summary.actions["visuals.prepare"];
     if (!action) return;
@@ -63,6 +64,11 @@ export function useRunVisualReviewActions(
     });
   }
 
+  /**
+   * Records an approval or rejection decision for the selected scenes using the current review state.
+   *
+   * @param status - The decision to record for the selected scenes.
+   */
   async function decide(status: "approved" | "rejected"): Promise<void> {
     const action = summary.actions["visuals.decide"];
     if (!action || selected.size === 0 || !summary.manifestDigest) return;
@@ -87,6 +93,12 @@ export function useRunVisualReviewActions(
     if (result.kind === "success") setSelected(new Set());
   }
 
+  /**
+   * Activates a specific visual revision for a scene using the current run state.
+   *
+   * @param sceneIndex - The scene whose revision should be activated
+   * @param revision - The revision to activate
+   */
   async function activateRevision(sceneIndex: number, revision: number): Promise<void> {
     const action = summary.actions["visuals.activate-revision"];
     if (!action || !summary.manifestDigest) return;
@@ -108,6 +120,13 @@ export function useRunVisualReviewActions(
     });
   }
 
+  /**
+   * Imports a visual file for a scene after validating the file and preserving the current visual revision state.
+   *
+   * @param sceneIndex - The scene to receive the imported visual
+   * @param file - The visual file to import
+   * @returns `true` if the import succeeds, `false` otherwise
+   */
   async function importVisual(sceneIndex: number, file: File): Promise<boolean> {
     const action = summary.actions["visuals.import"];
     if (!action || !summary.manifestDigest) return false;
@@ -140,6 +159,11 @@ export function useRunVisualReviewActions(
     return true;
   }
 
+  /**
+   * Regenerates the selected rejected scenes using the current visual manifest and revision state.
+   *
+   * On successful submission, clears the scene selection.
+   */
   async function regenerateRejected(): Promise<void> {
     const action = summary.actions["visuals.regenerate"];
     if (!action || !summary.manifestDigest) return;
@@ -165,6 +189,7 @@ export function useRunVisualReviewActions(
     if (result.kind === "success") setSelected(new Set());
   }
 
+  /** Submits local visual generation for the selected scenes and clears the selection after success. */
   async function generateLocal(): Promise<void> {
     const action = summary.actions["visuals.generate-local"];
     if (!action || !summary.manifestDigest || selected.size === 0) return;
@@ -186,6 +211,11 @@ export function useRunVisualReviewActions(
     if (result.kind === "success") setSelected(new Set());
   }
 
+  /**
+   * Plans a hosted visual-generation operation for the selected scenes.
+   *
+   * Validates the hosted selection and required attribution for rejected-scene regeneration before submitting the guarded request.
+   */
   async function planHosted(): Promise<void> {
     const action = summary.actions["visuals.plan-hosted"];
     const purpose = summary.hosted.allowedPlanPurpose;
@@ -233,6 +263,11 @@ export function useRunVisualReviewActions(
     });
   }
 
+  /**
+   * Executes the confirmed hosted visual generation operation for the current run.
+   *
+   * The operation is submitted only when the hosted execution and its confirmation identity are current. A successful submission clears the scene selection.
+   */
   async function generateHosted(): Promise<void> {
     const action = summary.actions["visuals.generate-hosted"];
     const execution = summary.hosted.execution;
@@ -252,6 +287,11 @@ export function useRunVisualReviewActions(
     if (result.kind === "success") setSelected(new Set());
   }
 
+  /**
+   * Selects scenes according to their review status.
+   *
+   * @param filter - Selects all scenes, pending scenes, or rejected scenes.
+   */
   function selectBy(filter: "all" | "pending" | "rejected"): void {
     setSelected(
       new Set(
