@@ -9,6 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
+_No unreleased changes yet._
+
+## v0.85.4 (2026-07-19)
+
 ### Fixes
 
 - make local delivery-tool verification reproducible and keep generated agent runtime state ignored
