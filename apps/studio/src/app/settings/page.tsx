@@ -5,7 +5,10 @@ import {
 import { StudioPageHeader } from "@/components/studio/StudioPageHeader";
 import { StudioShell } from "@/components/studio/StudioShell";
 import { normalizeStudioLocale } from "@/i18n/locales";
-import { readStudioLocalModelOverview } from "@/lib/localModels/localModelOverview";
+import {
+  readStudioLocalModelOverview,
+  unavailableStudioLocalModelOverview,
+} from "@/lib/localModels/localModelOverview";
 import { projectRoot } from "@/lib/projectRoot";
 import {
   elevenLabsSmokeAudioUrl,
@@ -26,13 +29,20 @@ export const dynamic = "force-dynamic";
  */
 export default async function SettingsPage() {
   const root = projectRoot();
-  const [config, locale, revisions, latestElevenLabsSmoke, localModelOverview] = await Promise.all([
+  const [config, locale, revisions, latestElevenLabsSmoke, localModelResult] = await Promise.all([
     loadConfigAtProjectRoot(root),
     getLocale(),
     listSettingsRevisions(root),
     readLatestElevenLabsSmoke(root),
-    readStudioLocalModelOverview(root),
+    readStudioLocalModelOverview(root).then(
+      (overview) => ({ status: "fulfilled" as const, overview }),
+      () => ({ status: "rejected" as const }),
+    ),
   ]);
+  const localModelOverview =
+    localModelResult.status === "fulfilled"
+      ? localModelResult.overview
+      : unavailableStudioLocalModelOverview(root);
   const studioLocale = normalizeStudioLocale(locale);
   const revisionSummaries: StudioSettingsRevisionSummary[] = revisions
     .sort((left, right) => right.createdAt.localeCompare(left.createdAt))

@@ -10,6 +10,7 @@ import Image from "next/image";
 import { useRef } from "react";
 import { VisualRevisionGallery } from "./VisualRevisionGallery";
 import { visualReviewCopy } from "./visualReviewCopy";
+import { visualProviderLabel } from "./visualRevisionGalleryCopy";
 
 type RunVisualSceneCardProps = Readonly<{
   busy: boolean;
@@ -64,7 +65,7 @@ export function RunVisualSceneCard({
 
       <div className='grid gap-3 p-4 pt-1'>
         <div className='flex flex-wrap items-center gap-2 text-xs'>
-          <Badge variant='outline'>{providerLabel(locale, scene.providerId)}</Badge>
+          <Badge variant='outline'>{visualProviderLabel(locale, scene.providerId)}</Badge>
           <Badge variant='outline'>{copy.revision(scene.activeRevision)}</Badge>
           <Badge variant='outline'>{scene.motion}</Badge>
           <span className='text-muted-foreground'>
@@ -108,7 +109,7 @@ export function RunVisualSceneCard({
 
         <details className='text-muted-foreground text-xs'>
           <summary className='cursor-pointer font-medium'>{copy.advancedEvidence}</summary>
-          <dl className='mt-2 grid gap-1 break-all'>
+          <div className='mt-2 grid gap-1 break-all'>
             <div>
               {copy.asset}: {scene.assetPath}
             </div>
@@ -120,7 +121,7 @@ export function RunVisualSceneCard({
                 {copy.dimensions}: {scene.media.width}×{scene.media.height}
               </div>
             ) : null}
-          </dl>
+          </div>
         </details>
       </div>
     </article>
@@ -138,14 +139,4 @@ function decisionVariant(
 function formatSceneRange(indexes: readonly number[]): string {
   if (indexes.length === 1) return String(indexes[0]);
   return `${indexes[0]}-${indexes.at(-1)}`;
-}
-
-function providerLabel(locale: StudioLocale, providerId: string): string {
-  if (providerId === "static") return locale === "tr" ? "Statik yedek" : "Static fallback";
-  if (providerId === "manual-import") {
-    return locale === "tr" ? "Manuel içe aktarma" : "Manual import";
-  }
-  if (providerId === "black-forest-labs") return "Black Forest Labs";
-  if (providerId === "mflux-local") return "MFLUX Local";
-  return providerId;
 }

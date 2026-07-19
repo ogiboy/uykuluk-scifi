@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { z } from "zod";
@@ -27,12 +28,6 @@ export type LocalModelStatePaths = Readonly<{
   lockPath: string;
 }>;
 
-/**
- * Derives filesystem paths for local model runtime state and mutation locking from a project root.
- *
- * @param projectRoot - The project directory from which local model state paths are derived.
- * @returns The runtime, record, preparation pointer, and lock paths.
- */
 export function localModelStatePaths(projectRoot: string): LocalModelStatePaths {
   const runtimePath = path.join(path.resolve(projectRoot), ".local-models", "mflux");
   return {
@@ -45,13 +40,7 @@ export function localModelStatePaths(projectRoot: string): LocalModelStatePaths 
   };
 }
 
-/**
- * Executes a local model operation while holding the shared mutation lock.
- *
- * @param paths - Filesystem paths containing the lock location.
- * @param task - Operation to execute exclusively.
- * @returns The result produced by `task`.
- */
+/** Serializes local-model state mutations behind the shared filesystem lock. */
 export async function withLocalModelLock<T>(
   paths: LocalModelStatePaths,
   task: () => Promise<T>,
@@ -65,13 +54,6 @@ export async function withLocalModelLock<T>(
   }
 }
 
-/**
- * Reads the persisted local model operation records.
- *
- * @param target - Path to the operations record
- * @returns The stored operations, or an empty array when the record does not exist
- * @throws SafeExitError if the record contains invalid JSON or does not match the expected schema
- */
 export async function readLocalModelOperations(target: string): Promise<LocalModelOperation[]> {
   if (!(await pathExists(target))) return [];
   try {
@@ -81,12 +63,6 @@ export async function readLocalModelOperations(target: string): Promise<LocalMod
   }
 }
 
-/**
- * Persists local model operations as a versioned JSON record.
- *
- * @param target - Path of the operations file to write
- * @param operations - Operations to persist
- */
 export async function writeLocalModelOperations(
   target: string,
   operations: readonly LocalModelOperation[],
@@ -94,13 +70,6 @@ export async function writeLocalModelOperations(
   await writeFileAtomic(target, `${JSON.stringify({ schemaVersion: 1, operations }, null, 2)}\n`);
 }
 
-/**
- * Checks whether the local MFLUX readiness marker is present and valid.
- *
- * @param target - Path to the readiness marker
- * @returns `true` if the marker is valid, `false` if it is absent
- * @throws `SafeExitError` if the marker contains invalid JSON or does not match the expected schema
- */
 export async function readLocalModelReady(target: string): Promise<boolean> {
   if (!(await pathExists(target))) return false;
   try {
@@ -111,11 +80,6 @@ export async function readLocalModelReady(target: string): Promise<boolean> {
   }
 }
 
-/**
- * Writes a readiness marker for the configured local model.
- *
- * @param target - Path of the readiness marker to write.
- */
 export async function writeLocalModelReady(target: string): Promise<void> {
   const model = localModelCatalog["mflux-flux2-klein-4b-q4"];
   await writeFileAtomic(
@@ -135,21 +99,10 @@ export async function writeLocalModelReady(target: string): Promise<void> {
   );
 }
 
-/**
- * Clears the local model readiness marker at the specified path.
- *
- * @param target - Path to the readiness marker to remove
- */
 export async function clearLocalModelReady(target: string): Promise<void> {
   await rm(target, { force: true });
 }
 
-/**
- * Persists a local model operation preparation record and marks it as the latest preparation.
- *
- * @param projectRoot - The project root containing the preparation and latest-preparation records.
- * @param preparation - The preparation record to persist.
- */
 export async function writeLocalModelPreparation(
   projectRoot: string,
   preparation: LocalModelOperationPreparation,
@@ -164,14 +117,6 @@ export async function writeLocalModelPreparation(
   );
 }
 
-/**
- * Reads and verifies a local model operation preparation record.
- *
- * @param projectRoot - The project root containing the preparation record
- * @param runId - The operation run identifier
- * @returns The validated preparation record
- * @throws SafeExitError If the record is missing, invalid, or its binding digest does not match its contents
- */
 export async function readLocalModelPreparation(
   projectRoot: string,
   runId: string,
@@ -196,14 +141,6 @@ export async function readLocalModelPreparation(
   }
 }
 
-/**
- * Loads the preparation record referenced by the latest-preparation pointer.
- *
- * @param projectRoot - Project root used to locate the referenced preparation record
- * @param pointerPath - Path to the latest-preparation pointer file
- * @returns The referenced preparation record, or `undefined` if the pointer file does not exist
- * @throws `SafeExitError` if the pointer or referenced preparation is invalid or unavailable
- */
 export async function readLatestLocalModelPreparation(
   projectRoot: string,
   pointerPath: string,
@@ -220,13 +157,6 @@ export async function readLatestLocalModelPreparation(
   }
 }
 
-/**
- * Removes the latest local model preparation pointer when it references the specified run.
- *
- * @param pointerPath - Path to the latest preparation pointer
- * @param runId - Run identifier that must match the pointer before it is removed
- * @throws `SafeExitError` if the pointer contains invalid JSON or fails schema validation
- */
 export async function clearLocalModelPreparationIfMatches(
   pointerPath: string,
   runId: string,
@@ -242,12 +172,6 @@ export async function clearLocalModelPreparationIfMatches(
   }
 }
 
-/**
- * Computes the canonical integrity digest for a local model preparation record.
- *
- * @param preparation - The preparation record without its existing binding digest.
- * @returns The canonical digest of the preparation record.
- */
 export function localModelPreparationDigest(
   preparation: Omit<LocalModelOperationPreparation, "bindingDigest">,
 ): string {
@@ -257,13 +181,6 @@ export function localModelPreparationDigest(
   });
 }
 
-/**
- * Persists execution evidence for an approved local model operation.
- *
- * @param projectRoot - The project root containing the run diagnostics
- * @param runId - The run identifier associated with the evidence
- * @param evidence - The approval binding and execution details to record
- */
 export async function writeLocalModelExecutionEvidence(
   projectRoot: string,
   runId: string,
@@ -281,13 +198,6 @@ export async function writeLocalModelExecutionEvidence(
   );
 }
 
-/**
- * Records worker execution evidence for a local model operation.
- *
- * @param projectRoot - The project root containing the run diagnostics.
- * @param runId - The run identifier associated with the evidence.
- * @param evidence - Worker status, model details, diagnostics, and optional installation or smoke-test evidence.
- */
 export async function writeLocalModelWorkerEvidence(
   projectRoot: string,
   runId: string,
@@ -321,13 +231,6 @@ export async function writeLocalModelWorkerEvidence(
   );
 }
 
-/**
- * Records operator-visible evidence that a local model operation was recovered after its worker stopped running.
- *
- * @param projectRoot - The project root containing the operation run.
- * @param runId - The identifier of the operation run.
- * @param evidence - Recovery status, timestamp, reason, and operation identifier to record.
- */
 export async function writeLocalModelRecoveryEvidence(
   projectRoot: string,
   runId: string,
@@ -336,7 +239,7 @@ export async function writeLocalModelRecoveryEvidence(
     operationId: string;
     previousStatus: "queued" | "running";
     recoveredAt: string;
-    reason: "worker-not-running";
+    reason: "worker-not-running" | "worker-start-failed";
   }>,
 ): Promise<void> {
   await writeFileAtomic(
@@ -358,11 +261,67 @@ async function acquireLock(target: string): Promise<void> {
       return;
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code !== "EEXIST") throw error;
+      if (await reclaimAbandonedLock(target)) continue;
       if (Date.now() - startedAt >= lockSettings.timeoutMs) {
         throw new SafeExitError("Timed out waiting for the local model operation lock.");
       }
       await new Promise((resolve) => setTimeout(resolve, lockSettings.retryMs));
     }
+  }
+}
+
+async function reclaimAbandonedLock(target: string): Promise<boolean> {
+  const owner = await readLockOwner(target);
+  if (owner === undefined || !processIsDead(owner)) return false;
+  const markerPath = path.join(target, "reclaim");
+  const token = randomUUID();
+  if (!(await claimReclaimMarker(markerPath, token))) return false;
+  try {
+    const confirmedOwner = await readLockOwner(target);
+    if (confirmedOwner !== owner || !processIsDead(confirmedOwner)) return false;
+    await rm(target, { recursive: true, force: true });
+    return true;
+  } finally {
+    await releaseReclaimMarker(markerPath, token);
+  }
+}
+
+async function readLockOwner(target: string): Promise<number | undefined> {
+  try {
+    const owner = Number((await readFile(path.join(target, "owner"), "utf8")).trim());
+    return Number.isSafeInteger(owner) && owner > 0 ? owner : undefined;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return undefined;
+    throw error;
+  }
+}
+
+function processIsDead(pid: number): boolean {
+  try {
+    process.kill(pid, 0);
+    return false;
+  } catch (error) {
+    return (error as NodeJS.ErrnoException).code === "ESRCH";
+  }
+}
+
+async function claimReclaimMarker(markerPath: string, token: string): Promise<boolean> {
+  try {
+    await writeFile(markerPath, `${token}\n`, { encoding: "utf8", flag: "wx", mode: 0o600 });
+    return true;
+  } catch (error) {
+    const code = (error as NodeJS.ErrnoException).code;
+    if (code === "EEXIST" || code === "ENOENT") return false;
+    throw error;
+  }
+}
+
+async function releaseReclaimMarker(markerPath: string, token: string): Promise<void> {
+  try {
+    if ((await readFile(markerPath, "utf8")).trim() === token)
+      await rm(markerPath, { force: true });
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
   }
 }
 

@@ -74,13 +74,13 @@ export function RunHostedVisualGenerationControl({
         </div>
         <div className='flex flex-wrap gap-2'>
           <Badge variant='outline'>
-            {copy.plan}: {formatStatus(locale, hosted.plan.status)}
+            {copy.plan}: {copy.hostedStatusLabel(hosted.plan.status)}
           </Badge>
           <Badge variant='outline'>
-            {copy.quote}: {formatStatus(locale, hosted.quote.status)}
+            {copy.quote}: {copy.hostedStatusLabel(hosted.quote.status)}
           </Badge>
           <Badge variant='outline'>
-            {copy.approval}: {formatStatus(locale, hosted.approval.status)}
+            {copy.approval}: {copy.hostedStatusLabel(hosted.approval.status)}
           </Badge>
           <Badge variant='outline'>{hosted.provider.modelLabel}</Badge>
           <Badge variant='outline'>{hosted.provider.readiness}</Badge>
@@ -90,7 +90,7 @@ export function RunHostedVisualGenerationControl({
         </div>
       </div>
 
-      <dl className='grid gap-1 text-sm sm:grid-cols-2 lg:grid-cols-4'>
+      <div className='grid gap-1 text-sm sm:grid-cols-2 lg:grid-cols-4'>
         <div>
           {copy.provider}: {hosted.provider.label}
         </div>
@@ -101,9 +101,9 @@ export function RunHostedVisualGenerationControl({
           {copy.scenes}: {hosted.plan.sceneIndexes.length || selectedCount}
         </div>
         <div>
-          {copy.purpose}: {formatPurpose(locale, hosted.plan.purpose, copy.newPlan)}
+          {copy.purpose}: {copy.hostedPurposeLabel(hosted.plan.purpose, copy.newPlan)}
         </div>
-      </dl>
+      </div>
 
       {credentialReady ? (
         <p className='text-muted-foreground text-sm'>{copy.credentialPresentHint}</p>
@@ -155,7 +155,7 @@ export function RunHostedVisualGenerationControl({
         <div className='bg-background grid gap-3 rounded-md border p-3'>
           <details className='text-xs'>
             <summary className='cursor-pointer font-medium'>{copy.hostedIdentity}</summary>
-            <dl className='mt-2 grid gap-1 break-all'>
+            <div className='mt-2 grid gap-1 break-all'>
               <div>
                 {copy.approval}: {hosted.execution.approvalId}
               </div>
@@ -165,7 +165,7 @@ export function RunHostedVisualGenerationControl({
               <div>
                 {copy.quote}: {hosted.execution.quoteDigest}
               </div>
-            </dl>
+            </div>
           </details>
           <div className='flex items-start gap-2'>
             <Checkbox
@@ -193,27 +193,4 @@ export function RunHostedVisualGenerationControl({
       ) : null}
     </section>
   );
-}
-
-function formatStatus(locale: StudioLocale, status: string): string {
-  if (locale !== "tr") return status;
-  const labels: Readonly<Record<string, string>> = {
-    approved: "onaylandı",
-    blocked: "engellendi",
-    missing: "eksik",
-    ready: "hazır",
-    settled: "uzlaştırıldı",
-  };
-  return labels[status] ?? status;
-}
-
-function formatPurpose(
-  locale: StudioLocale,
-  purpose: string | null | undefined,
-  fallback: string,
-): string {
-  if (!purpose) return fallback;
-  if (locale === "tr" && purpose === "regenerate-rejected") return "reddedilenleri yeniden üret";
-  if (locale === "tr" && purpose === "new-production") return "yeni üretim";
-  return purpose;
 }

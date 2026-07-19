@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { loadConfig } from "../config/config.js";
+import { loadConfigSnapshot } from "../config/config.js";
 import { SafeExitError } from "../core/errors.js";
 import { createMfluxVisualGenerationBoundary } from "../localModels/mfluxVisualGenerationBoundary.js";
 import {
@@ -159,7 +159,7 @@ export function registerVisualCommands(program: Command, wrap: Wrap): void {
     .description("Generate selected scene revisions with the installed local MFLUX runtime.")
     .action(
       wrap(async (options: VisualMutationCliOptions & { scenes: string }) => {
-        const config = await loadConfig();
+        const config = await loadConfigSnapshot();
         const imageGeneration = config.providers.imageGeneration;
         if (!imageGeneration.enabled || imageGeneration.mode !== "mflux-local") {
           throw new SafeExitError(

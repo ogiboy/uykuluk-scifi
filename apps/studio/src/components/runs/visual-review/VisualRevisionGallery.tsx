@@ -17,6 +17,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { visualReviewCopy } from "./visualReviewCopy";
 import {
+  visualProviderLabel,
   visualRevisionGalleryCopy,
   type VisualRevisionGalleryCopy,
 } from "./visualRevisionGalleryCopy";
@@ -103,7 +104,7 @@ export function VisualRevisionGallery({
             </div>
             <div className='bg-background/90 absolute right-3 bottom-3 left-3 flex flex-wrap items-center justify-between gap-3 rounded-lg px-3 py-2 text-xs shadow-sm backdrop-blur-sm'>
               <div className='flex flex-wrap items-center gap-2'>
-                <Badge variant='outline'>{providerLabel(copy, current.providerId)}</Badge>
+                <Badge variant='outline'>{visualProviderLabel(locale, current.providerId)}</Badge>
                 <Badge
                   variant={current.revision === scene.activeRevision ? "secondary" : "outline"}
                 >
@@ -160,7 +161,7 @@ export function VisualRevisionGallery({
                       {canonical ? <Badge variant='secondary'>{copy.canonical}</Badge> : null}
                     </span>
                     <span className='text-muted-foreground'>
-                      {providerLabel(copy, revision.providerId)}
+                      {visualProviderLabel(locale, revision.providerId)}
                     </span>
                     <span className='text-muted-foreground'>
                       {formatCreatedAt(locale, copy, revision.createdAt)}
@@ -210,14 +211,6 @@ export function VisualRevisionGallery({
 function revisionAt(scene: StudioVisualSceneSummary, index: number): number {
   const boundedIndex = Math.max(0, Math.min(index, scene.revisions.length - 1));
   return scene.revisions[boundedIndex]?.revision ?? scene.activeRevision;
-}
-
-function providerLabel(copy: VisualRevisionGalleryCopy, providerId: string): string {
-  if (providerId === "static") return copy.staticFallback;
-  if (providerId === "manual-import") return copy.manualImport;
-  if (providerId === "black-forest-labs") return "Black Forest Labs";
-  if (providerId === "mflux-local") return copy.mfluxLocal;
-  return providerId;
 }
 
 function formatMedia(

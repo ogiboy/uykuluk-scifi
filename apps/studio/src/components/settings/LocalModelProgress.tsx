@@ -1,5 +1,6 @@
 import type { StudioLocalModelOverview } from "@/lib/localModels/localModelOverview";
 import type { LocalModelCopy } from "./localModelReadinessCopy";
+import { formatLocalModelBytes } from "./localModelReadinessFormatting";
 
 export function LocalModelProgress({
   copy,
@@ -39,14 +40,10 @@ function describeProgress(
   hasMeasuredBytes: boolean,
 ): string {
   if (percent !== null && completed !== undefined && total !== undefined) {
-    return `${percent}% · ${formatBytes(completed)} / ${formatBytes(total)}`;
+    return `${percent}% · ${formatLocalModelBytes(completed)} / ${formatLocalModelBytes(total)}`;
   }
   if (hasMeasuredBytes && completed !== undefined) {
-    return `${copy.downloaded}: ${formatBytes(completed)}`;
+    return `${copy.downloaded}: ${formatLocalModelBytes(completed)}`;
   }
   return copy.progressUnknown;
-}
-
-function formatBytes(bytes: number): string {
-  return `${(bytes / 1_000_000_000).toFixed(1)} GB`;
 }

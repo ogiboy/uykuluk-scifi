@@ -1,4 +1,4 @@
-import { spawn } from "node:child_process";
+import { spawn, type ChildProcess } from "node:child_process";
 import { createHash } from "node:crypto";
 import { readdir, readFile, stat } from "node:fs/promises";
 import path from "node:path";
@@ -7,11 +7,25 @@ import { SafeExitError } from "../core/errors.js";
 import { projectRunPath } from "../core/runPaths.js";
 import { nowIso } from "../utils/time.js";
 import { localModelCatalog } from "./localModelContracts.js";
-import { claimNextIntent, completeIntent, updateIntentProgress } from "./localModelReadiness.js";
+import {
+  claimNextIntent,
+  completeIntent,
+  readOverview,
+  updateIntentProgress,
+} from "./localModelReadiness.js";
 import { localModelStatePaths, writeLocalModelWorkerEvidence } from "./localModelStore.js";
 import { executeMfluxWorker, type MfluxWorkerResult } from "./mfluxProcess.js";
 
 const workerSourcePath = fileURLToPath(import.meta.url);
+const workerStartupTimeoutMs = 5_000;
+const workerStartupPollMs = 25;
+
+type LocalModelWorkerLaunchDependencies = Readonly<{
+  spawnWorker?: (projectRoot: string) => ChildProcess;
+  readWorkerOverview?: typeof readOverview;
+  startupTimeoutMs?: number;
+  pollIntervalMs?: number;
+}>;
 
 /**
  * Starts a detached curated MFLUX worker for a project.
@@ -20,15 +34,84 @@ const workerSourcePath = fileURLToPath(import.meta.url);
  * @returns The process ID of the detached worker.
  * @throws SafeExitError If the worker process cannot be started.
  */
-export function launchLocalModelWorker(projectRoot: string): Readonly<{ pid: number }> {
-  const child = spawn(
-    process.execPath,
-    ["--import", "tsx", workerSourcePath, "--project-root", path.resolve(projectRoot)],
-    { cwd: path.resolve(projectRoot), detached: true, stdio: "ignore" },
-  );
-  if (!child.pid) throw new SafeExitError("Local model worker could not be started.");
-  child.unref();
-  return { pid: child.pid };
+export async function launchLocalModelWorker(
+  projectRoot: string,
+  operationId: string,
+  dependencies: LocalModelWorkerLaunchDependencies = {},
+): Promise<Readonly<{ pid: number }>> {
+  const child = (dependencies.spawnWorker ?? spawnLocalModelWorker)(projectRoot);
+  if (!child.pid) {
+    child.once("error", () => undefined);
+    throw new SafeExitError("Local model worker could not be started.");
+  }
+  const pid = child.pid;
+  try {
+    await waitForWorkerClaim(projectRoot, operationId, child, {
+      readWorkerOverview: dependencies.readWorkerOverview ?? readOverview,
+      startupTimeoutMs: dependencies.startupTimeoutMs ?? workerStartupTimeoutMs,
+      pollIntervalMs: dependencies.pollIntervalMs ?? workerStartupPollMs,
+    });
+    child.unref();
+    return { pid };
+  } catch (error) {
+    if (child.exitCode === null && !child.killed) child.kill();
+    child.unref();
+    throw error;
+  }
+}
+
+function spawnLocalModelWorker(projectRoot: string): ChildProcess {
+  const root = path.resolve(projectRoot);
+  return spawn(process.execPath, ["--import", "tsx", workerSourcePath, "--project-root", root], {
+    cwd: root,
+    detached: true,
+    stdio: "ignore",
+  });
+}
+
+async function waitForWorkerClaim(
+  projectRoot: string,
+  operationId: string,
+  child: ChildProcess,
+  options: Readonly<{
+    readWorkerOverview: typeof readOverview;
+    startupTimeoutMs: number;
+    pollIntervalMs: number;
+  }>,
+): Promise<void> {
+  const workerId = `studio-${child.pid}`;
+  const deadline = Date.now() + options.startupTimeoutMs;
+  let exitDiagnostic: string | undefined;
+  const onError = (error: Error) => {
+    exitDiagnostic = `Local model worker failed before claiming the operation: ${error.message}`;
+  };
+  const onExit = (code: number | null, signal: NodeJS.Signals | null) => {
+    const detail = signal ? `signal ${signal}` : `code ${code ?? "unknown"}`;
+    exitDiagnostic = `Local model worker exited during startup (${detail}).`;
+  };
+  child.on("error", onError);
+  child.on("exit", onExit);
+  try {
+    while (true) {
+      const operation = (await options.readWorkerOverview(projectRoot)).latestOperation;
+      const expectedOperation = operation?.operationId === operationId;
+      const claimedByWorker = expectedOperation && operation.workerId === workerId;
+      if (claimedByWorker && operation.status !== "running") return;
+      if (exitDiagnostic) throw new SafeExitError(exitDiagnostic);
+      if (claimedByWorker) return;
+      if (Date.now() >= deadline) {
+        throw new SafeExitError("Local model worker did not claim the queued operation in time.");
+      }
+      await delay(options.pollIntervalMs);
+    }
+  } finally {
+    child.off("error", onError);
+    child.off("exit", onExit);
+  }
+}
+
+async function delay(ms: number): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /**

@@ -1,5 +1,5 @@
 import type { StudioLocale } from "../../../i18n/locales";
-
+import * as labels from "./visualRevisionGalleryCopy";
 export type VisualReviewCopy = Readonly<{
   activateBlocked: string;
   activateFallback: string;
@@ -53,6 +53,7 @@ export type VisualReviewCopy = Readonly<{
   importSuccess: (scene: number) => string;
   importTitle: string;
   invalidEvidence: string;
+  latestActionTitle: string;
   manifestDigest: string;
   model: string;
   newPlan: string;
@@ -97,17 +98,15 @@ export type VisualReviewCopy = Readonly<{
   summary: (approved: number, total: number, rejected: number) => string;
   updated: string;
 }>;
-
-/**
- * Selects the visual review copy for the requested locale.
- *
- * @param locale - The locale used to select the localized copy.
- * @returns The Turkish copy for `"tr"`; English copy for all other locales.
- */
-export function visualReviewCopy(locale: StudioLocale): VisualReviewCopy {
-  return locale === "tr" ? turkishCopy : englishCopy;
+/** Returns locale-bound visual-review copy and status-label helpers. */
+export function visualReviewCopy(locale: StudioLocale) {
+  return {
+    ...(locale === "tr" ? turkishCopy : englishCopy),
+    hostedPurposeLabel: labels.hostedVisualPurposeLabel.bind(undefined, locale),
+    hostedStatusLabel: labels.hostedVisualStatusLabel.bind(undefined, locale),
+    visualActionStatusLabel: labels.visualActionStatusLabel.bind(undefined, locale),
+  };
 }
-
 const englishCopy: VisualReviewCopy = {
   activateBlocked: "Visual revision selection blocked",
   activateFallback: "Studio could not make this visual revision canonical.",
@@ -173,6 +172,7 @@ const englishCopy: VisualReviewCopy = {
   importSuccess: (scene) => `Visual beat ${scene} has a new pending revision.`,
   importTitle: "Visual revision imported",
   invalidEvidence: "Visual evidence cannot be trusted",
+  latestActionTitle: "Latest visual action",
   manifestDigest: "Manifest digest",
   model: "Model",
   newPlan: "new plan",
@@ -288,6 +288,7 @@ const turkishCopy: VisualReviewCopy = {
   importSuccess: (scene) => `Görsel beat ${scene} için yeni bekleyen revizyon oluştu.`,
   importTitle: "Görsel revizyon içe aktarıldı",
   invalidEvidence: "Görsel kanıtına güvenilemiyor",
+  latestActionTitle: "Son görsel eylemi",
   manifestDigest: "Manifest özeti",
   newPlan: "yeni plan",
   notesLabel: "Görsel inceleme notları",

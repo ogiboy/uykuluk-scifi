@@ -1,14 +1,21 @@
+import type { ChildProcess } from "node:child_process";
+import { EventEmitter } from "node:events";
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { startQueuedLocalModelWorker } from "../src/cli/localModelCommands.js";
 import {
+  claimNextIntent,
   executeApprovedLocalModelOperation,
   localModelStatePaths,
   prepareLocalModelOperation,
   readOverview,
 } from "../src/localModels/localModelReadiness.js";
-import { runLocalModelWorker } from "../src/localModels/localModelWorker.js";
+import {
+  launchLocalModelWorker,
+  runLocalModelWorker,
+} from "../src/localModels/localModelWorker.js";
 import { executeMfluxWorker } from "../src/localModels/mfluxProcess.js";
 
 vi.mock("../src/localModels/mfluxProcess.js", () => ({ executeMfluxWorker: vi.fn() }));
@@ -181,7 +188,68 @@ describe("local model worker", () => {
     ) as Record<string, unknown>;
     expect(evidence).toMatchObject({ status: "failed", diagnostic: "offline verification failed" });
   });
+
+  it("rejects startup when the child exits before claiming the queued operation", async () => {
+    const root = await projectRoot();
+    const operation = await queueApprovedOperation(root, "verify");
+    const child = fakeChildProcess(2147483646);
+    queueMicrotask(() => child.emit("exit", 1, null));
+
+    await expect(
+      launchLocalModelWorker(root, operation.operationId, {
+        spawnWorker: () => child,
+        startupTimeoutMs: 50,
+        pollIntervalMs: 1,
+      }),
+    ).rejects.toThrow(/exited during startup/i);
+    await expect(readOverview(root)).resolves.toMatchObject({
+      latestOperation: { operationId: operation.operationId, status: "queued" },
+    });
+  });
+
+  it("turns a claimed worker startup failure into immediate recovery", async () => {
+    const root = await projectRoot();
+    const operation = await queueApprovedOperation(root, "verify");
+    await claimNextIntent(root, "studio-2147483647");
+
+    await expect(
+      startQueuedLocalModelWorker(root, operation.operationId, async () => {
+        throw new Error("worker bootstrap failed");
+      }),
+    ).rejects.toThrow("worker bootstrap failed");
+    await expect(readOverview(root)).resolves.toMatchObject({
+      readiness: "interrupted",
+      recoveryAvailable: false,
+      latestOperation: { operationId: operation.operationId, status: "interrupted" },
+    });
+  });
 });
+
+async function queueApprovedOperation(root: string, operation: "verify") {
+  const preparation = await prepareLocalModelOperation(root, {
+    packageId: "mflux-flux2-klein-4b-q4",
+    operation,
+  });
+  return executeApprovedLocalModelOperation(root, {
+    runId: preparation.runId,
+    bindingDigest: preparation.bindingDigest,
+    approvedBy: "Studio operator",
+    confirmExecution: true,
+  });
+}
+
+function fakeChildProcess(pid: number): ChildProcess {
+  const child = new EventEmitter() as ChildProcess;
+  Object.defineProperties(child, {
+    pid: { value: pid },
+    killed: { value: false, writable: true },
+    exitCode: { value: null, writable: true },
+    signalCode: { value: null, writable: true },
+  });
+  child.kill = vi.fn(() => true);
+  child.unref = vi.fn();
+  return child;
+}
 
 async function projectRoot(): Promise<string> {
   const root = await mkdtemp(path.join(tmpdir(), "uykulukscifi-local-worker-"));

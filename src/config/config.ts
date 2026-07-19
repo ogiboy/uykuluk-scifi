@@ -109,6 +109,11 @@ export function configPathAtProjectRoot(projectRoot: string): string {
 }
 
 export async function loadConfig(): Promise<ProducerConfig> {
+  return loadConfigSnapshot();
+}
+
+/** Loads one validated configuration snapshot for a command entry point. */
+export async function loadConfigSnapshot(): Promise<ProducerConfig> {
   return loadConfigAtProjectRoot(process.cwd());
 }
 

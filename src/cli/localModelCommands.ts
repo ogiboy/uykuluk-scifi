@@ -5,6 +5,7 @@ import {
   executeApprovedLocalModelOperation,
   prepareLocalModelOperation,
   readOverview,
+  recoverInterruptedIntents,
 } from "../localModels/localModelReadiness.js";
 import { launchLocalModelWorker } from "../localModels/localModelWorker.js";
 import {
@@ -72,8 +73,9 @@ export function registerLocalModelCommands(program: Command, wrap: Wrap): void {
     .action(
       wrap(async (options: FileOptions) => {
         const input = localModelExecuteRequestSchema.parse(await readJsonInput(options.file));
-        const operation = await executeApprovedLocalModelOperation(process.cwd(), input);
-        launchLocalModelWorker(process.cwd());
+        const root = process.cwd();
+        const operation = await executeApprovedLocalModelOperation(root, input);
+        await startQueuedLocalModelWorker(root, operation.operationId);
         console.log(
           options.json
             ? JSON.stringify({ operation, worker: { started: true } }, null, 2)
@@ -81,6 +83,31 @@ export function registerLocalModelCommands(program: Command, wrap: Wrap): void {
         );
       }),
     );
+}
+
+/** Starts one approved worker and makes any startup interruption immediately resumable. */
+export async function startQueuedLocalModelWorker(
+  projectRoot: string,
+  operationId: string,
+  launchWorker: typeof launchLocalModelWorker = launchLocalModelWorker,
+): Promise<void> {
+  try {
+    await launchWorker(projectRoot, operationId);
+  } catch (error) {
+    const exactRecovery = await recoverInterruptedIntents(projectRoot, operationId);
+    const recovered = exactRecovery || (await recoverInterruptedIntents(projectRoot));
+    const overview = await readOverview(projectRoot);
+    if (
+      recovered !== 1 ||
+      overview.latestOperation?.operationId !== operationId ||
+      overview.latestOperation.status !== "interrupted"
+    ) {
+      throw new SafeExitError(
+        "Local model worker failed to start and its queued operation could not be recovered.",
+      );
+    }
+    throw error;
+  }
 }
 
 async function readJsonInput(filePath: string): Promise<unknown> {

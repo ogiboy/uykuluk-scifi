@@ -68,7 +68,9 @@ describe("MFLUX visual generation boundary", () => {
     expect(recovered).toEqual(generated);
     expect(generated.bytes.byteLength).toBeGreaterThan(0);
     await expect(
-      readdir(path.join(root, "runs", "run_local_boundary", "diagnostics", "local-visuals")),
+      readdir(path.join(root, "runs", "run_local_boundary", "diagnostics", "local-visuals")).then(
+        (entries) => entries.sort((left, right) => left.localeCompare(right, "en")),
+      ),
     ).resolves.toEqual([`${plan.source.operationId}.json`, `${plan.source.operationId}.png`]);
     await expect(readdir(path.join(root, ".local-models", "mflux", "jobs"))).resolves.toEqual([]);
   });
@@ -132,40 +134,42 @@ describe("MFLUX visual generation boundary", () => {
     await expect(boundary.generate(plan)).rejects.toThrow(/recovery evidence is incomplete/i);
   });
 
-  it("rejects invalid, stale, and media-mismatched recovery evidence", async () => {
-    const invalidRoot = await projectRoot();
-    const invalidBoundary = successfulBoundary(invalidRoot);
-    const invalidPlan = await readyPlan(invalidBoundary, "run_invalid_recovery");
-    await invalidBoundary.generate(invalidPlan);
-    const invalidPaths = recoveryPaths(invalidRoot, invalidPlan);
-    await writeFile(invalidPaths.evidence, "not-json\n", "utf8");
-    await expect(invalidBoundary.generate(invalidPlan)).rejects.toThrow(
-      /recovery evidence is invalid/i,
-    );
+  it("rejects invalid recovery evidence", async () => {
+    const root = await projectRoot();
+    const boundary = successfulBoundary(root);
+    const plan = await readyPlan(boundary, "run_invalid_recovery");
+    await boundary.generate(plan);
+    const paths = recoveryPaths(root, plan);
+    await writeFile(paths.evidence, "not-json\n", "utf8");
 
-    const staleRoot = await projectRoot();
-    const staleBoundary = successfulBoundary(staleRoot);
-    const stalePlan = await readyPlan(staleBoundary, "run_stale_recovery");
-    await staleBoundary.generate(stalePlan);
-    const stalePaths = recoveryPaths(staleRoot, stalePlan);
-    const staleEvidence = JSON.parse(await readFile(stalePaths.evidence, "utf8")) as Record<
-      string,
-      unknown
-    >;
+    await expect(boundary.generate(plan)).rejects.toThrow(/recovery evidence is invalid/i);
+  });
+
+  it("rejects stale recovery evidence", async () => {
+    const root = await projectRoot();
+    const boundary = successfulBoundary(root);
+    const plan = await readyPlan(boundary, "run_stale_recovery");
+    await boundary.generate(plan);
+    const paths = recoveryPaths(root, plan);
+    const evidence = JSON.parse(await readFile(paths.evidence, "utf8")) as Record<string, unknown>;
     await writeFile(
-      stalePaths.evidence,
-      `${JSON.stringify({ ...staleEvidence, promptDigest: "f".repeat(64) }, null, 2)}\n`,
+      paths.evidence,
+      `${JSON.stringify({ ...evidence, promptDigest: "f".repeat(64) }, null, 2)}\n`,
       "utf8",
     );
-    await expect(staleBoundary.generate(stalePlan)).rejects.toThrow(/recovery evidence is stale/i);
 
-    const mediaRoot = await projectRoot();
-    const mediaBoundary = successfulBoundary(mediaRoot);
-    const mediaPlan = await readyPlan(mediaBoundary, "run_media_mismatch");
-    await mediaBoundary.generate(mediaPlan);
-    const mediaPaths = recoveryPaths(mediaRoot, mediaPlan);
-    await writeFile(mediaPaths.image, "tampered-image", "utf8");
-    await expect(mediaBoundary.generate(mediaPlan)).rejects.toThrow(/recovery media is invalid/i);
+    await expect(boundary.generate(plan)).rejects.toThrow(/recovery evidence is stale/i);
+  });
+
+  it("rejects media-mismatched recovery evidence", async () => {
+    const root = await projectRoot();
+    const boundary = successfulBoundary(root);
+    const plan = await readyPlan(boundary, "run_media_mismatch");
+    await boundary.generate(plan);
+    const paths = recoveryPaths(root, plan);
+    await writeFile(paths.image, "tampered-image", "utf8");
+
+    await expect(boundary.generate(plan)).rejects.toThrow(/recovery media is invalid/i);
   });
 
   it("reclaims an abandoned generation lock but rejects a live owner", async () => {

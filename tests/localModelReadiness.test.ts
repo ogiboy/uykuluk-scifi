@@ -13,6 +13,7 @@ import {
   submitIntent,
   updateIntentProgress,
 } from "../src/localModels/localModelReadiness.js";
+import { withLocalModelLock } from "../src/localModels/localModelStore.js";
 
 const projects: string[] = [];
 
@@ -245,6 +246,62 @@ describe("local MFLUX readiness", () => {
         operation: "setup",
       }),
     ).rejects.toThrow(/already in progress/i);
+  });
+
+  it("records immediate recovery evidence when an approved worker cannot start", async () => {
+    const root = await projectRoot();
+    const preparation = await prepareLocalModelOperation(root, {
+      packageId: "mflux-flux2-klein-4b-q4",
+      operation: "setup",
+    });
+    const operation = await executeApprovedLocalModelOperation(root, {
+      runId: preparation.runId,
+      bindingDigest: preparation.bindingDigest,
+      approvedBy: "operator",
+      confirmExecution: true,
+    });
+
+    await expect(recoverInterruptedIntents(root, operation.operationId)).resolves.toBe(1);
+
+    await expect(readOverview(root)).resolves.toMatchObject({
+      readiness: "interrupted",
+      latestOperation: { operationId: operation.operationId, status: "interrupted" },
+    });
+    const recovery = JSON.parse(
+      await readFile(
+        path.join(root, "runs", preparation.runId, "diagnostics", "local-models", "recovery.json"),
+        "utf8",
+      ),
+    ) as Record<string, unknown>;
+    expect(recovery).toMatchObject({
+      operationId: operation.operationId,
+      previousStatus: "queued",
+      reason: "worker-start-failed",
+    });
+  });
+
+  it("serializes two contenders reclaiming a mutation lock owned by a dead process", async () => {
+    const root = await projectRoot();
+    const paths = localModelStatePaths(root);
+    let active = 0;
+    let maximumActive = 0;
+
+    for (let attempt = 0; attempt < 20; attempt += 1) {
+      await mkdir(paths.lockPath, { recursive: true });
+      await writeFile(path.join(paths.lockPath, "owner"), "2147483647\n", "utf8");
+      await Promise.all(
+        [0, 1].map(() =>
+          withLocalModelLock(paths, async () => {
+            active += 1;
+            maximumActive = Math.max(maximumActive, active);
+            await new Promise((resolve) => setTimeout(resolve, 5));
+            active -= 1;
+          }),
+        ),
+      );
+    }
+
+    expect(maximumActive).toBe(1);
   });
 
   it("keeps app-managed model state outside run evidence", async () => {

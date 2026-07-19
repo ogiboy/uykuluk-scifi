@@ -149,33 +149,19 @@ function VisualActionStatus({
   state,
 }: Readonly<{ locale: StudioLocale; state: StudioGuardedActionSubmitState }>) {
   if (state.kind === "idle") return null;
+  const copy = visualReviewCopy(locale);
   const isProblem = state.kind === "blocked" || state.kind === "error";
-  const status = visualActionStatus(locale, state.kind);
+  const status = copy.visualActionStatusLabel(state.kind);
   return (
     <Alert
       aria-live={isProblem ? "assertive" : "polite"}
       variant={isProblem ? "destructive" : "default"}
     >
       <AlertTitle className='flex items-center justify-between gap-3'>
-        {locale === "tr" ? "Son görsel eylemi" : "Latest visual action"}
+        {copy.latestActionTitle}
         <Badge variant={isProblem ? "destructive" : "secondary"}>{status}</Badge>
       </AlertTitle>
       <AlertDescription>{state.message}</AlertDescription>
     </Alert>
   );
-}
-
-function visualActionStatus(
-  locale: StudioLocale,
-  kind: StudioGuardedActionSubmitState["kind"],
-): string {
-  if (locale !== "tr") return kind;
-  const statuses: Readonly<Record<StudioGuardedActionSubmitState["kind"], string>> = {
-    blocked: "engellendi",
-    error: "hata",
-    idle: "bekliyor",
-    submitting: "gönderiliyor",
-    success: "başarılı",
-  };
-  return statuses[kind];
 }

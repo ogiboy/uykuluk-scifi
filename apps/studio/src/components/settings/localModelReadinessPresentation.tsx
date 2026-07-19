@@ -18,15 +18,6 @@ import {
 
 type Preparation = NonNullable<StudioLocalModelOverview["preparation"]>;
 
-/**
- * Displays the active local-model operation, its progress, and available recovery action.
- *
- * @param elapsed - Optional elapsed-time display for the active operation.
- * @param guidance - Guidance shown while the operation is in progress.
- * @param overview - Current operation progress and recovery availability.
- * @param recovering - Whether recovery is currently being processed.
- * @param onRecover - Called when the user requests recovery and review.
- */
 export function LocalModelActivePanel({
   copy,
   elapsed,
@@ -71,22 +62,6 @@ export function LocalModelActivePanel({
   );
 }
 
-/**
- * Presents the local-model preflight estimates and approval controls for queuing execution.
- *
- * The execution action is enabled only when the workflow permits execution, the confirmation
- * state is satisfied, and no submission is in progress.
- *
- * @param approvedBy - Identifier of the person approving execution.
- * @param canExecute - Whether the current workflow state permits execution.
- * @param confirmed - Whether execution has been explicitly confirmed.
- * @param locale - Locale used to format the estimated duration.
- * @param onApprovedByChange - Handles changes to the approver identifier.
- * @param onConfirmedChange - Handles changes to the execution confirmation.
- * @param onExecute - Queues the approved execution.
- * @param preparation - Preflight estimates and metadata for the execution.
- * @param submitting - Whether the approval submission is in progress.
- */
 export function LocalModelPreparationPanel({
   approvedBy,
   canExecute,
@@ -154,12 +129,6 @@ export function LocalModelPreparationPanel({
   );
 }
 
-/**
- * Displays the latest guarded action result with severity appropriate to its state.
- *
- * @param state - The submission state and message to display; idle state produces no output.
- * @returns An alert for non-idle states, or `null` when no action result is available.
- */
 export function LocalModelActionStatus({
   copy,
   state,
@@ -200,12 +169,12 @@ export function LocalModelFacts({
     : copy.diskEstimate;
 
   return (
-    <div className='grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-4'>
+    <dl className='grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-4'>
       <Fact label={copy.model} value='FLUX.2 Klein 4B · q4' />
       <Fact label={copy.runtime} value='MFLUX 0.18.0 · Python 3.12' />
       <Fact label={copy.disk} value={diskEstimate} />
       <Fact label={copy.progress} value={localModelReadinessLabel(copy, overview)} />
-    </div>
+    </dl>
   );
 }
 
@@ -217,7 +186,7 @@ export function LocalModelAdvancedDetails({
   return (
     <details className='text-muted-foreground text-xs'>
       <summary className='cursor-pointer font-medium'>{copy.advanced}</summary>
-      <dl className='mt-3 grid gap-1 break-all'>
+      <div className='mt-3 grid gap-1 break-all'>
         <div>
           {copy.package}: {packageId}
         </div>
@@ -242,7 +211,12 @@ export function LocalModelAdvancedDetails({
             {copy.binding}: {overview.preparation.bindingDigest}
           </div>
         ) : null}
-      </dl>
+        {overview.readError ? (
+          <div>
+            {copy.latestDiagnostic}: {overview.readError}
+          </div>
+        ) : null}
+      </div>
     </details>
   );
 }

@@ -1,4 +1,4 @@
-import type { StudioLocale } from "@/i18n/locales";
+import type { StudioLocale } from "../../../i18n/locales";
 
 export type VisualRevisionGalleryCopy = {
   readonly canonical: string;
@@ -25,6 +25,53 @@ export type VisualRevisionGalleryCopy = {
  */
 export function visualRevisionGalleryCopy(locale: StudioLocale): VisualRevisionGalleryCopy {
   return locale === "tr" ? turkishCopy : englishCopy;
+}
+
+export function visualProviderLabel(locale: StudioLocale, providerId: string): string {
+  const copy = visualRevisionGalleryCopy(locale);
+  if (providerId === "static") return copy.staticFallback;
+  if (providerId === "manual-import") return copy.manualImport;
+  if (providerId === "black-forest-labs") return "Black Forest Labs";
+  if (providerId === "mflux-local") return copy.mfluxLocal;
+  return providerId;
+}
+
+export function hostedVisualStatusLabel(locale: StudioLocale, status: string): string {
+  if (locale !== "tr") return status;
+  return (
+    {
+      approved: "onaylandı",
+      blocked: "engellendi",
+      missing: "eksik",
+      pending: "bekliyor",
+      ready: "hazır",
+      settled: "uzlaştırıldı",
+    }[status] ?? status
+  );
+}
+
+export function hostedVisualPurposeLabel(
+  locale: StudioLocale,
+  purpose: "initial" | "regenerate-rejected" | null | undefined,
+  fallback: string,
+): string {
+  if (!purpose) return fallback;
+  if (locale !== "tr") return purpose;
+  return purpose === "regenerate-rejected" ? "reddedilenleri yeniden üret" : "yeni üretim";
+}
+
+export function visualActionStatusLabel(
+  locale: StudioLocale,
+  kind: "blocked" | "error" | "idle" | "submitting" | "success",
+): string {
+  if (locale !== "tr") return kind;
+  return {
+    blocked: "engellendi",
+    error: "hata",
+    idle: "bekliyor",
+    submitting: "gönderiliyor",
+    success: "başarılı",
+  }[kind];
 }
 
 const turkishCopy: VisualRevisionGalleryCopy = {

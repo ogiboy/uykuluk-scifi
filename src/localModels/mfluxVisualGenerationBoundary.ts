@@ -35,21 +35,7 @@ const localVisualSpoolSchema = z.strictObject({
   createdAt: z.iso.datetime(),
 });
 
-/**
- * Creates a local visual-generation boundary for sequential inference with an installed MFLUX runtime.
- *
- * The boundary requires local model readiness before producing launch plans, derives deterministic
- * operation metadata from the generation inputs and configured model settings, and serializes
- * generation through a filesystem lock. Generation recovers validated image and evidence artifacts
- * when available, otherwise invokes the local worker, persists PNG and integrity evidence, and
- * removes temporary job files. Readiness failures, concurrent generation, incomplete recovery
- * artifacts, invalid evidence, and missing worker timing evidence produce operator-visible safe
- * exits.
- *
- * @param projectRoot - Project directory used for local model state, runtime files, and recovery artifacts
- * @param config - Installed MFLUX runtime, model, generation, and timeout settings
- * @returns A boundary that prepares deterministic local launch plans and executes or recovers their generated images
- */
+/** Creates the production adapter for sequential, already-installed local MFLUX inference. */
 export function createMfluxVisualGenerationBoundary(
   projectRoot: string,
   config: MfluxLocalConfig,
@@ -151,14 +137,6 @@ export function createMfluxVisualGenerationBoundary(
   };
 }
 
-/**
- * Recovers a previously generated local visual after validating its evidence and media integrity.
- *
- * @param projectRoot - The project root containing the persisted recovery spool.
- * @param plan - The launch plan whose operation and generation metadata must match the recovered artifacts.
- * @returns The recovered image bytes, generation duration, and operation ID, or `undefined` when no recovery artifacts exist.
- * @throws `SafeExitError` if recovery artifacts are incomplete, invalid, stale, or inconsistent with the recorded media.
- */
 async function readGenerationSpool(
   projectRoot: string,
   plan: LocalVisualLaunchPlan,
@@ -199,14 +177,6 @@ async function readGenerationSpool(
   return { bytes, durationMs: evidence.durationMs, operationId: evidence.operationId };
 }
 
-/**
- * Persists generated image bytes and integrity evidence for recovery.
- *
- * @param projectRoot - The project root containing the run artifacts
- * @param plan - The launch plan associated with the generated image
- * @param generated - The image bytes, generation duration, and operation identifier
- * @throws Re-throws evidence persistence errors after removing the image artifact
- */
 async function persistGenerationSpool(
   projectRoot: string,
   plan: LocalVisualLaunchPlan,
@@ -286,14 +256,6 @@ async function withGenerationLock<T>(runtimePath: string, task: () => Promise<T>
   }
 }
 
-/**
- * Acquires an exclusive filesystem lock for local visual generation.
- *
- * @param lockPath - Path of the lock file to create
- * @param token - Ownership token recorded in the lock file
- * @throws `SafeExitError` if another active generation owns the lock
- * @throws The underlying filesystem error if lock acquisition fails for a reason other than contention
- */
 async function acquireGenerationLock(lockPath: string, token: string): Promise<void> {
   for (let attempt = 0; attempt < 2; attempt += 1) {
     let handle: Awaited<ReturnType<typeof open>> | undefined;
