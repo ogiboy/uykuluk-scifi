@@ -5,6 +5,7 @@ import {
 import { StudioPageHeader } from "@/components/studio/StudioPageHeader";
 import { StudioShell } from "@/components/studio/StudioShell";
 import { normalizeStudioLocale } from "@/i18n/locales";
+import { readStudioLocalModelOverview } from "@/lib/localModels/localModelOverview";
 import { projectRoot } from "@/lib/projectRoot";
 import {
   elevenLabsSmokeAudioUrl,
@@ -23,11 +24,12 @@ export const dynamic = "force-dynamic";
 /** Renders persistent Studio settings and prompt profile controls. */
 export default async function SettingsPage() {
   const root = projectRoot();
-  const [config, locale, revisions, latestElevenLabsSmoke] = await Promise.all([
+  const [config, locale, revisions, latestElevenLabsSmoke, localModelOverview] = await Promise.all([
     loadConfigAtProjectRoot(root),
     getLocale(),
     listSettingsRevisions(root),
     readLatestElevenLabsSmoke(root),
+    readStudioLocalModelOverview(root),
   ]);
   const studioLocale = normalizeStudioLocale(locale);
   const revisionSummaries: StudioSettingsRevisionSummary[] = revisions
@@ -68,6 +70,7 @@ export default async function SettingsPage() {
               }
             : null
         }
+        localModelOverview={localModelOverview}
         profileDigests={Object.fromEntries(
           config.editorial.profiles.map((profile) => [profile.id, promptProfileDigest(profile)]),
         )}

@@ -7,6 +7,7 @@ const requiredFragments = [
   "static-quality:",
   "unit-tests:",
   "unit-results:",
+  "python-contract:",
   "studio-browser:",
   "sonar-cloud:",
   "quality-gate:",
@@ -19,11 +20,13 @@ const missingFragments = requiredFragments.filter(
 
 if (missingFragments.length > 0) {
   console.error(
-    `Processed CircleCI config is incomplete; missing: ${missingFragments.join(", ")}.`,
+    JSON.stringify({ schemaVersion: 1, validationStatus: "incomplete", missingFragments }),
   );
   process.exitCode = 1;
 } else {
-  console.log("Processed CircleCI config contains the complete quality DAG and cache steps.");
+  console.log(
+    JSON.stringify({ schemaVersion: 1, validationStatus: "complete", missingFragments: [] }),
+  );
 }
 
 async function readStandardInput() {

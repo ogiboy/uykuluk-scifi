@@ -35,6 +35,11 @@ runs/*
 /prompts/local/*
 !/prompts/local/.gitkeep
 
+# App-managed optional MFLUX environment, package cache, and model downloads.
+/.local-models/
+tools/mflux/__pycache__/
+tools/mflux/.venv/
+
 *.log
 *.tsbuildinfo
 next-env.d.ts

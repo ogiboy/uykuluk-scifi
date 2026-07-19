@@ -11,6 +11,7 @@ export const fullCiLanes = [
   "static-quality",
   "unit-tests",
   "unit-results",
+  "python-contract",
   "usage-smoke",
   "product-uat",
   "studio-browser",

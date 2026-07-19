@@ -10,6 +10,7 @@ import {
   studioLocaleCookie,
 } from "../studio/studioAppearancePreferences";
 import { ElevenLabsDiagnosticCard } from "./ElevenLabsDiagnosticCard";
+import { LocalModelReadinessCard } from "./LocalModelReadinessCard";
 import { PromptProfileCard } from "./PromptProfileCard";
 import { SettingsConfigurationCard } from "./SettingsConfigurationCard";
 import { settingsCopy } from "./settingsCopy";
@@ -25,6 +26,7 @@ export function SettingsWorkspace({
   config,
   currentDigest,
   latestElevenLabsSmoke,
+  localModelOverview,
   locale,
   profileDigests,
   revisions,
@@ -99,6 +101,7 @@ export function SettingsWorkspace({
           )
         }
       />
+      <LocalModelReadinessCard locale={locale} overview={localModelOverview} />
       <PromptProfileCard
         activeProfile={activeProfile}
         copy={copy}

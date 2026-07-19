@@ -10,6 +10,8 @@ import {
 import {
   parseHostedVisualGenerationPayload,
   parseHostedVisualPlanPayload,
+  parseLocalVisualGenerationPayload,
+  parseVisualActivateRevisionPayload,
   parseVisualDecisionPayload,
   parseVisualImportPayload,
   parseVisualRegenerationPayload,
@@ -19,6 +21,8 @@ type StudioVisualCliMutationActionId = Extract<
   StudioCliMutationActionId,
   | "visuals.decide"
   | "visuals.generate-hosted"
+  | "visuals.generate-local"
+  | "visuals.activate-revision"
   | "visuals.import"
   | "visuals.plan-hosted"
   | "visuals.regenerate"
@@ -39,7 +43,47 @@ export async function visualCliArgsForAction(
   if (actionId === "visuals.decide") return visualDecisionCliArgs(payload);
   if (actionId === "visuals.regenerate") return visualRegenerationCliArgs(payload);
   if (actionId === "visuals.plan-hosted") return hostedVisualPlanCliArgs(payload);
+  if (actionId === "visuals.generate-local") return localVisualGenerationCliArgs(payload);
+  if (actionId === "visuals.activate-revision") return visualActivationCliArgs(payload);
   return hostedVisualGenerationCliArgs(payload);
+}
+
+async function localVisualGenerationCliArgs(payload: unknown): Promise<StudioPreparedCliArgs> {
+  const input = parseLocalVisualGenerationPayload(payload);
+  const expectationTemp = await writeVisualExpectationSnapshot(input.expectedActiveRevisions);
+  return prepared(
+    [
+      "visuals",
+      "generate-local",
+      "--run",
+      input.runId,
+      "--scenes",
+      Array.from(new Set(input.sceneIndexes)).join(","),
+      ...visualExpectationArgs(input.expectedManifestDigest, expectationTemp.filePath),
+      "--json",
+    ],
+    expectationTemp.cleanup,
+  );
+}
+
+async function visualActivationCliArgs(payload: unknown): Promise<StudioPreparedCliArgs> {
+  const input = parseVisualActivateRevisionPayload(payload);
+  const expectationTemp = await writeVisualExpectationSnapshot(input.expectedActiveRevisions);
+  return prepared(
+    [
+      "visuals",
+      "activate-revision",
+      "--run",
+      input.runId,
+      "--scene",
+      String(input.sceneIndex),
+      "--revision",
+      String(input.revision),
+      ...visualExpectationArgs(input.expectedManifestDigest, expectationTemp.filePath),
+      "--json",
+    ],
+    expectationTemp.cleanup,
+  );
 }
 
 /**

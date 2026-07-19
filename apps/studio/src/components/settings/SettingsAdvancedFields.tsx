@@ -118,6 +118,7 @@ export function DefaultProviderSettings({
           <SelectContent>
             <SelectItem value='disabled'>{disabledLabel(locale)}</SelectItem>
             <SelectItem value='static-manual'>{staticManualLabel(locale)}</SelectItem>
+            <SelectItem value='mflux-local'>{mfluxLocalLabel(locale)}</SelectItem>
             <SelectItem value='black-forest-labs'>BFL FLUX.2 Pro</SelectItem>
           </SelectContent>
         </Select>
@@ -173,4 +174,10 @@ function activeVisualMode(draft: ProducerConfig) {
   return draft.providers.imageGeneration.enabled
     ? draft.providers.imageGeneration.mode
     : "disabled";
+}
+
+function mfluxLocalLabel(locale: StudioLocale): string {
+  return locale === "tr"
+    ? "MFLUX Yerel (kimlik bilgisi gerektirmez)"
+    : "MFLUX Local (credential-free)";
 }

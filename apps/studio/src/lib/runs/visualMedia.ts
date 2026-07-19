@@ -10,13 +10,13 @@ export type StudioVisualMediaResult =
   | Readonly<{ status: 416 }>;
 
 /**
- * Serves the active, integrity-verified visual revision for a scene.
+ * Serves one manifest-listed, integrity-verified visual revision for a scene.
  *
  * @param root - Project root used to locate the visual run and media asset
  * @param runId - Identifier of the visual run
  * @param sceneIndex - Scene index whose active revision should be served
  * @param expectedManifestDigest - Expected SHA-256 digest of the visual manifest
- * @param expectedRevision - Expected revision number for the scene's active revision
+ * @param expectedRevision - Expected revision number for the scene's persisted revision history
  * @param rangeHeader - Optional HTTP byte-range request
  * @returns A full or partial media response, `404` when the run, manifest, revision, or asset is unavailable or fails verification, or `416` for an invalid range
  */
@@ -43,13 +43,13 @@ export async function readStudioVisualMedia(
     const loaded = await loadVisualManifest(run, root);
     if (loaded.digest !== expectedManifestDigest) return { status: 404 };
     const scene = loaded.manifest.scenes.find((item) => item.sceneIndex === sceneIndex);
-    const active = scene?.revisions.find((item) => item.revision === scene.activeRevision);
-    if (active?.revision !== expectedRevision) return { status: 404 };
-    const body = active.asset.path.startsWith("assets/")
-      ? await readProjectAssetBytesAtProjectRoot(root, active.asset.path)
-      : await readRegisteredArtifactBytesAtProjectRoot(root, run, active.asset.path);
+    const revision = scene?.revisions.find((item) => item.revision === expectedRevision);
+    if (!revision) return { status: 404 };
+    const body = revision.asset.path.startsWith("assets/")
+      ? await readProjectAssetBytesAtProjectRoot(root, revision.asset.path)
+      : await readRegisteredArtifactBytesAtProjectRoot(root, run, revision.asset.path);
     if (!body) return { status: 404 };
-    if (createHash("sha256").update(body).digest("hex") !== active.asset.digest) {
+    if (createHash("sha256").update(body).digest("hex") !== revision.asset.digest) {
       return { status: 404 };
     }
     const range = parseByteRange(rangeHeader, body.byteLength);
@@ -59,7 +59,7 @@ export async function readStudioVisualMedia(
     return {
       body: Uint8Array.from(responseBody).buffer,
       headers: visualMediaHeaders(
-        active.asset.path.toLowerCase().endsWith(".png") ? "image/png" : "image/jpeg",
+        revision.asset.path.toLowerCase().endsWith(".png") ? "image/png" : "image/jpeg",
         body.byteLength,
         range,
       ),

@@ -37,19 +37,19 @@ publishing bot. Studio is the operator experience; CLI/core remains the source o
 
 ## Current Product Status
 
-| Area                             | Status                                                        |
-| -------------------------------- | ------------------------------------------------------------- |
-| Local mock workflow              | Available without paid credentials                            |
-| Studio guarded workflow          | Available; normal operator surface                            |
-| Revisioned settings and briefs   | Available in Studio; next operations use pinned snapshots     |
-| ElevenLabs v3 contracts          | Implemented: catalog through recovery and settlement          |
-| ElevenLabs diagnostic smoke      | Live Free-plan request attempted; provider rejected safely    |
-| ElevenLabs live production proof | Pending; diagnostic output is not commercial production proof |
-| Aligned subtitles                | Implemented and bound into exact render approval              |
-| Voice audition in Studio         | Implemented; real Studio browser UAT passed                   |
-| Visual production                | Static/manual; experimental BFL hosted path is mock-verified  |
-| Private YouTube upload           | Pending v1 controlled-distribution slice                      |
-| Public or scheduled publish      | Unavailable and out of v1                                     |
+| Area                             | Status                                                                                                  |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| Local mock workflow              | Available without paid credentials                                                                      |
+| Studio guarded workflow          | Available; normal operator surface                                                                      |
+| Revisioned settings and briefs   | Available in Studio; next operations use pinned snapshots                                               |
+| ElevenLabs v3 contracts          | Implemented: catalog through recovery and settlement                                                    |
+| ElevenLabs diagnostic smoke      | Live Free-plan request attempted; provider rejected safely                                              |
+| ElevenLabs live production proof | Pending; diagnostic output is not commercial production proof                                           |
+| Aligned subtitles                | Implemented and bound into exact render approval                                                        |
+| Voice audition in Studio         | Implemented; real Studio browser UAT passed                                                             |
+| Visual production                | Static/manual, Studio-managed local MFLUX audition, BFL mock-verified; real local install/smoke pending |
+| Private YouTube upload           | Pending v1 controlled-distribution slice                                                                |
+| Public or scheduled publish      | Unavailable and out of v1                                                                               |
 
 ## Screenshots
 
@@ -63,7 +63,10 @@ publishing bot. Studio is the operator experience; CLI/core remains the source o
 - Corepack and the repository-pinned `pnpm@11.9.0`
 - FFmpeg and `ffprobe` for rendering
 - Optional: Ollama or llama.cpp for local generation
-- Optional: Python `uv` and Piper for local Turkish speech
+- Optional: Python `uv` on Apple Silicon for Studio-managed local MFLUX generation; Studio presents
+  the conservative 6.5 GB setup preflight before downloading. The committed Python project is
+  isolated under `tools/mflux/`; it never changes the Node workspace environment.
+- Optional: Piper for local Turkish speech
 - Optional: ElevenLabs and BFL credentials for explicitly approved hosted media operations;
   configured keys do not prove entitlement or available provider credit
 
@@ -77,9 +80,11 @@ cd uykuluk-scifi
 
 `./studio` checks Node/Corepack, installs the pinned dependencies, creates ignored
 `producer.config.json` only when absent, builds the Webpack Studio, and starts it without
-overwriting an existing configuration. Keep provider mode `mock` for the first credential-free run.
-Copy `.env.example` or `apps/studio/.env.example` only when an optional integration is needed; blank
-optional values are safe.
+overwriting an existing configuration. It reports the optional local Python environment but never
+creates it or downloads a model. Studio requires a persisted preflight and explicit approval before
+either action. Keep provider mode `mock` for the first credential-free run. Copy `.env.example` or
+`apps/studio/.env.example` only when an optional integration is needed; blank optional values are
+safe.
 
 Open the loopback Studio URL printed by Next.js. The Doctor page shows real config, provider, TTS,
 FFmpeg, asset, and safe-publishing status before a run begins.
@@ -123,10 +128,16 @@ Full operator guide: [Studio workflow](docs/operator-guide/studio-workflow.md).
 | FLUX.2 Pro          | Hosted scene stills and rejected-only regeneration               | Server-side key        |
 
 Eleven Creative image/video is not an integrated provider; externally created media enters only via
-attributable manual import because no public generation API is integrated. The next slice adds local
-MFLUX visual audition; it is not yet available. A configured hosted-provider key reports credential
-presence only, not commercial entitlement, available credit, or production readiness. The bounded
-ElevenLabs diagnostic writes non-production evidence and never enables rendering or publishing.
+attributable manual import because no public generation API is integrated. Studio now manages the
+curated local MFLUX package through exact setup/verify/smoke preflight and approval, offline
+install-manifest verification, a detached worker, readiness state, and recovery. When ready,
+selected scenes generate sequential local revisions with model/runtime revision, prompt/settings
+digests, seed, dimensions, and measured duration; operators audition revisions and explicitly
+activate one canonical scene revision. Real installation and 1024x576 smoke remain pending an exact
+operator-approved run outside CI. Static/manual and BFL revisions remain readable and compatible. A
+configured hosted-provider key reports credential presence only, not commercial entitlement,
+available credit, or production readiness. The bounded ElevenLabs diagnostic writes non-production
+evidence and never enables rendering or publishing.
 
 Read [local model setup](docs/providers/local-models.md) and [voice](docs/providers/voice.md) or
 [visual provider contracts](docs/providers/visuals.md) before changing provider mode.

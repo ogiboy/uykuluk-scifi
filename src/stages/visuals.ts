@@ -3,10 +3,8 @@ import { z } from "zod";
 import { loadConfig } from "../config/config.js";
 import { artifactPath } from "../core/artifacts.js";
 import { SafeExitError } from "../core/errors.js";
-import { appendLedgerEvent } from "../core/ledger.js";
 import { queueRunLedgerEvent, reconcileRunLedgerOutbox } from "../core/runLedgerOutbox.js";
 import { mutateRun } from "../core/runStore.js";
-import type { RunRecord } from "../core/state.js";
 import { requireState } from "../safeguards/approvalGuard.js";
 import { nowIso } from "../utils/time.js";
 import { verifyProductionPackage } from "./production/productionPackageIntegrity.js";
@@ -30,14 +28,22 @@ import {
   visualMutationRollbackPaths,
 } from "./visuals/visualPersistence.js";
 import { StaticVisualProvider } from "./visuals/visualProvider.js";
+import { requireVisualReviewState } from "./visuals/visualReviewState.js";
 import { createStaticVisualRevision } from "./visuals/visualRevisions.js";
 import { groupProductionScenesForVisuals } from "./visuals/visualSceneGroups.js";
 
 export { generateHostedVisuals } from "./visuals/hostedVisualGeneration.js";
+export {
+  generateLocalVisuals,
+  type LocalVisualGeneratedImage,
+  type LocalVisualGenerationBoundary,
+  type LocalVisualLaunchPlan,
+} from "./visuals/localVisualGeneration.js";
 export { prepareHostedVisualGenerationPlan } from "./visuals/visualGenerationPlanStore.js";
 export { importManualVisual } from "./visuals/visualManualImport.js";
 export type { VisualMutationExpectation } from "./visuals/visualMutationExpectation.js";
 export { regenerateRejectedStaticVisuals } from "./visuals/visualRegeneration.js";
+export { activateVisualRevision } from "./visuals/visualRevisionActivation.js";
 
 export type VisualDecisionInput = Readonly<{
   runId: string;
@@ -192,38 +198,4 @@ export async function decideVisuals(input: VisualDecisionInput): Promise<VisualM
 async function readProductionScenes(runId: string) {
   const parsed = JSON.parse(await readFile(artifactPath(runId, "production/scenes.json"), "utf8"));
   return z.array(productionSceneSchema).min(1).parse(parsed.scenes);
-}
-
-/**
- * Enforces the state gate for visual review and records the outcome in the run ledger.
- *
- * @param run - The run whose current state must permit visual review
- * @param stage - The pipeline stage being guarded
- * @throws SafeExitError if the run is not in an allowed visual review state
- */
-async function requireVisualReviewState(run: RunRecord, stage: string): Promise<void> {
-  const allowed = [
-    "PRODUCTION_PACKAGE_GENERATED",
-    "PAID_GENERATION_COST_APPROVED",
-    "READY_FOR_MANUAL_PRODUCTION",
-  ] as const;
-  if (!allowed.includes(run.state as (typeof allowed)[number])) {
-    await appendLedgerEvent({
-      runId: run.runId,
-      type: "GUARD_BLOCKED",
-      stage,
-      message: `Visual review requires state ${allowed.join(" or ")}; got ${run.state}.`,
-      data: { actual: run.state, expected: allowed },
-    });
-    throw new SafeExitError(
-      `Blocked: ${stage} requires state ${allowed.join(" or ")}; current state is ${run.state}.`,
-    );
-  }
-  await appendLedgerEvent({
-    runId: run.runId,
-    type: "GUARD_PASSED",
-    stage,
-    message: `Visual review state gate passed: ${run.state}.`,
-    data: { actual: run.state, expected: allowed },
-  });
 }

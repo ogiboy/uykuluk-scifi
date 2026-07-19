@@ -9,17 +9,22 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Documentation
+
+- add the accepted V1 domain and Studio design contracts
+- document Studio-managed local MFLUX readiness, provenance, revision audition, and the pending real
+  install/smoke boundary
+
+### Features
+
+- add the curated MFLUX local-model preflight, explicit approval, detached worker, offline manifest
+  verification, sequential local visual generation, and canonical revision activation
 
 ## v0.85.4 (2026-07-19)
 
 ### Fixes
 
 - make local delivery-tool verification reproducible and keep generated agent runtime state ignored
-
-### Documentation
-
-- add the accepted V1 domain and Studio design contracts
 
 ## v0.85.3 (2026-07-18)
 

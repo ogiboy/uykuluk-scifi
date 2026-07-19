@@ -2,6 +2,7 @@ import { RunDetailView } from "@/components/runs/RunDetailView";
 import { StudioPageHeader } from "@/components/studio/StudioPageHeader";
 import { StudioShell } from "@/components/studio/StudioShell";
 import { buttonVariants } from "@/components/ui/button";
+import { normalizeStudioLocale } from "@/i18n/locales";
 import {
   defaultRunReviewTab,
   runReviewTabFromSearchParams,
@@ -9,6 +10,7 @@ import {
 } from "@/lib/runs/runReviewNavigation";
 import { isRunId } from "@/lib/runs/runSummaryFiles";
 import { getStudioRunDetail } from "@/lib/runSummaries";
+import { getLocale } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -29,7 +31,10 @@ export default async function RunDetailPage({
   if (!run) {
     notFound();
   }
-  const initialTab = runReviewTabFromSearchParams(await searchParams, defaultRunReviewTab(run));
+  const [initialTab, locale] = await Promise.all([
+    runReviewTabFromSearchParams(await searchParams, defaultRunReviewTab(run)),
+    getLocale(),
+  ]);
 
   return (
     <StudioShell>
@@ -42,7 +47,7 @@ export default async function RunDetailPage({
         eyebrow='Run review workspace'
         title={run.runId}
       />
-      <RunDetailView initialTab={initialTab} run={run} />
+      <RunDetailView initialTab={initialTab} locale={normalizeStudioLocale(locale)} run={run} />
     </StudioShell>
   );
 }

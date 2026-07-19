@@ -7,9 +7,13 @@ import {
   episodeCreationRequestSchema,
   hostedVisualGenerationRequestSchema,
   hostedVisualPlanRequestSchema,
+  localModelExecuteRequestSchema,
+  localModelPrepareRequestSchema,
+  localVisualGenerationRequestSchema,
   promptProfileSaveRequestSchema,
   runOnlyRequestSchema,
   settingsSaveRequestSchema,
+  visualActivateRevisionRequestSchema,
   visualDecisionRequestSchema,
   visualImportRequestSchema,
   visualRegenerationRequestSchema,
@@ -178,6 +182,30 @@ export function parseVisualRegenerationPayload(
   payload: unknown,
 ): z.infer<typeof visualRegenerationRequestSchema> {
   return visualRegenerationRequestSchema.parse(payload);
+}
+
+export function parseLocalVisualGenerationPayload(
+  payload: unknown,
+): z.infer<typeof localVisualGenerationRequestSchema> {
+  return localVisualGenerationRequestSchema.parse(payload);
+}
+
+export function parseVisualActivateRevisionPayload(
+  payload: unknown,
+): z.infer<typeof visualActivateRevisionRequestSchema> {
+  return visualActivateRevisionRequestSchema.parse(payload);
+}
+
+export function parseLocalModelPreparePayload(
+  payload: unknown,
+): z.infer<typeof localModelPrepareRequestSchema> {
+  return localModelPrepareRequestSchema.parse(payload);
+}
+
+export function parseLocalModelExecutePayload(
+  payload: unknown,
+): z.infer<typeof localModelExecuteRequestSchema> {
+  return localModelExecuteRequestSchema.parse(payload);
 }
 
 /**

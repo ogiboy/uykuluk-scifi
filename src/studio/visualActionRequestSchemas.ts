@@ -52,6 +52,15 @@ export const visualRegenerationRequestSchema = z.strictObject({
   runId: visualRunIdSchema,
   sceneIndexes: z.array(z.int().positive().max(24)).min(1).max(24),
 });
+
+export const localVisualGenerationRequestSchema = visualRegenerationRequestSchema;
+
+export const visualActivateRevisionRequestSchema = z.strictObject({
+  ...visualMutationExpectationRequestShape,
+  revision: z.int().positive(),
+  runId: visualRunIdSchema,
+  sceneIndex: z.int().positive().max(24),
+});
 export const hostedVisualPlanRequestSchema = z
   .strictObject({
     expectedActiveRevisions: visualExpectedActiveRevisionsSchema.optional(),

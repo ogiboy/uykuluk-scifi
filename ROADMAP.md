@@ -95,14 +95,21 @@ Current visual checkpoint:
   live BFL generation smoke has run; available credit and entitlement remain unverified, and a
   configured credential does not establish readiness.
 - Eleven Creative image/video is manual-import only because this product integrates no public
-  generation API for it. The next visual-provider slice is local MFLUX behind the same plan, review,
-  provenance, and render-binding contracts; BFL remains the only hosted adapter.
+  generation API for it. Local MFLUX extends the same plan, review, provenance, and render-binding
+  contracts; BFL remains the only hosted adapter.
+- Implemented in the current slice: Studio-managed curated MFLUX setup/verify/smoke preflight with
+  exact no-cost approval, detached worker progress/recovery, offline install-manifest verification,
+  readiness markers, sequential local scene generation, provenance, revision audition, and explicit
+  canonical activation. The conservative setup estimate is 6.5 GB and 600 seconds. Real install and
+  bounded 1024x576 smoke remain pending exact operator approval on the target machine outside CI;
+  static/manual and BFL revisions remain compatible.
 
 The current Studio-first slice adds revisioned settings, prompt profiles, episode-brief snapshots,
-Turkish-default/English Studio, a one-command launcher, and a diagnostic-only ElevenLabs smoke.
-After it closes, delivery order is: local MFLUX and visual audition; exact render/media polish;
-script audition and editorial provenance; resumable private-only upload; then settings/prompt
-history polish, documentation productization, and real-episode acceptance.
+Turkish-default/English Studio, a one-command launcher, a diagnostic-only ElevenLabs smoke, and the
+Studio-managed local MFLUX audition path. After real local setup/smoke evidence is captured,
+delivery order is: exact render/media polish; script audition and editorial provenance; resumable
+private-only upload; then settings/prompt history polish, documentation productization, and
+real-episode acceptance.
 
 ## Phase A - Safe Core Stabilization
 

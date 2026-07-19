@@ -17,6 +17,8 @@ export { elevenLabsDiagnosticSmokeRequestSchema } from "../stages/voice/elevenLa
 export {
   hostedVisualGenerationRequestSchema,
   hostedVisualPlanRequestSchema,
+  localVisualGenerationRequestSchema,
+  visualActivateRevisionRequestSchema,
   visualDecisionRequestSchema,
   visualImportRequestSchema,
   visualRegenerationRequestSchema,
@@ -67,6 +69,16 @@ export const voiceReselectionRequestSchema = z.strictObject({
 
 export const emptyRequestSchema = z.strictObject({});
 const sha256DigestSchema = z.string().regex(/^[a-f0-9]{64}$/);
+export const localModelPrepareRequestSchema = z.strictObject({
+  operation: z.enum(["setup", "verify", "smoke"]),
+  packageId: z.literal("mflux-flux2-klein-4b-q4"),
+});
+export const localModelExecuteRequestSchema = z.strictObject({
+  approvedBy: z.string().trim().min(1).max(160),
+  bindingDigest: sha256DigestSchema,
+  confirmExecution: z.literal(true),
+  runId: runIdSchema,
+});
 const attributedSettingsSaveShape = {
   editor: z.string().trim().min(1).max(160),
   expectedCurrentDigest: sha256DigestSchema,

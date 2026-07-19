@@ -523,6 +523,10 @@ readiness semantics while retaining capability-specific runtimes and validation.
 - Large model packages are not downloaded implicitly during the base project dependency install.
 - Studio explains the capability enabled by each model, its approximate download size, disk
   requirements, installation progress, and readiness result.
+- A real install or generation smoke requires a persisted preflight estimate for monetary cost,
+  elapsed time, and disk use plus explicit operator approval of that exact estimate.
+- Each approved setup or smoke operation persists redacted QA and security evidence beneath its
+  canonical `runs/<run_id>/` directory.
 - A model-dependent action remains unavailable until its required package and runtime are ready.
 - While a model is absent, Studio may expose clearly labeled mock diagnostics or operator-input
   alternatives where the workflow supports them.

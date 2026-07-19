@@ -29,6 +29,8 @@ describe("Studio visual mutation actions", () => {
       status: "approved" as const,
     };
     const regeneration = { ...expectation, runId, sceneIndexes: [2] };
+    const localGeneration = { ...expectation, runId, sceneIndexes: [3] };
+    const activation = { ...expectation, revision: 2, runId, sceneIndex: 2 };
     const visualImport = {
       ...expectation,
       contentBase64: "aGVsbG8=",
@@ -39,10 +41,16 @@ describe("Studio visual mutation actions", () => {
 
     expect(parseStudioMutationRequest("visuals.decide", decision)).toEqual(decision);
     expect(parseStudioMutationRequest("visuals.regenerate", regeneration)).toEqual(regeneration);
+    expect(parseStudioMutationRequest("visuals.generate-local", localGeneration)).toEqual(
+      localGeneration,
+    );
+    expect(parseStudioMutationRequest("visuals.activate-revision", activation)).toEqual(activation);
     expect(parseStudioMutationRequest("visuals.import", visualImport)).toEqual(visualImport);
     for (const [actionId, payload] of [
       ["visuals.decide", decision],
       ["visuals.regenerate", regeneration],
+      ["visuals.generate-local", localGeneration],
+      ["visuals.activate-revision", activation],
       ["visuals.import", visualImport],
     ] as const) {
       const { expectedManifestDigest: _digest, ...withoutDigest } = payload;
@@ -78,6 +86,16 @@ describe("Studio visual mutation actions", () => {
       "visuals.regenerate",
       { ...expectation, runId, sceneIndexes: [2, 3] },
       ["visuals", "regenerate", "--run", runId, "--scenes", "2,3"],
+    );
+    await expectVisualCliArgs(
+      "visuals.generate-local",
+      { ...expectation, runId, sceneIndexes: [2, 3] },
+      ["visuals", "generate-local", "--run", runId, "--scenes", "2,3"],
+    );
+    await expectVisualCliArgs(
+      "visuals.activate-revision",
+      { ...expectation, revision: 2, runId, sceneIndex: 2 },
+      ["visuals", "activate-revision", "--run", runId, "--scene", "2", "--revision", "2"],
     );
     await expectVisualCliArgs(
       "visuals.import",

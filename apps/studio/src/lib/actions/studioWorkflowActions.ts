@@ -62,6 +62,7 @@ const workflowActionStepDefinitions = [
       "visuals.import",
       "visuals.decide",
       "visuals.regenerate",
+      "visuals.activate-revision",
       "visuals.plan-hosted",
     ],
     label: "Voice and visual audition",

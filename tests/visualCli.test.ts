@@ -134,6 +134,25 @@ describe("producer visuals CLI", () => {
     expect(result.stderr).toMatch(/must reject its active revision/i);
   });
 
+  it("registers local generation but blocks before inference when Settings has not enabled it", async () => {
+    const runId = await preparePackagedVisualRun();
+    expectCliSuccess(runCli(["visuals", "prepare", "--run", runId]));
+    const expectation = await visualMutationCliArgs(runId);
+
+    const result = runCli([
+      "visuals",
+      "generate-local",
+      "--run",
+      runId,
+      "--scenes",
+      "1",
+      ...expectation,
+    ]);
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toMatch(/enabled and selected in Studio Settings/i);
+  });
+
   it("rejects a stale browser snapshot instead of rebinding to current visuals", async () => {
     const runId = await preparePackagedVisualRun();
     expectCliSuccess(runCli(["visuals", "prepare", "--run", runId]));

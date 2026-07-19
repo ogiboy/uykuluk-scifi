@@ -44,12 +44,29 @@ describe("visual revision contracts", () => {
       billableCredits: 10,
       actualUsdMicros: 100_000,
     },
+    "local-generation": {
+      kind: "local-generation" as const,
+      service: "mflux" as const,
+      modelId: "mlx-community/flux2-klein-4b-4bit",
+      modelRevision: "860e87183ceb29e39627c0612ebd66d8ea66e68c",
+      runtimeRevision: "0.18.0",
+      operationId: "local_image_contract_test",
+      settingsDigest: digest,
+      promptDigest: digest,
+      quantization: "q4" as const,
+      seed: 42_001,
+      steps: 4,
+      guidance: 1,
+      dimensions: { width: 1024, height: 576 },
+      durationMs: 100,
+    },
   };
 
   it.each([
     ["static", "static-fallback"],
     ["manual-import", "manual-import"],
     ["black-forest-labs", "hosted-generation"],
+    ["mflux-local", "local-generation"],
   ] as const)("accepts valid provider %s with source %s", (provider, sourceKind) => {
     const revision = { ...baseRevision, provider, source: sources[sourceKind] };
     expect(() => visualRevisionSchema.parse(revision)).not.toThrow();
@@ -62,6 +79,9 @@ describe("visual revision contracts", () => {
     ["manual-import", "hosted-generation"],
     ["black-forest-labs", "static-fallback"],
     ["black-forest-labs", "manual-import"],
+    ["mflux-local", "static-fallback"],
+    ["mflux-local", "manual-import"],
+    ["mflux-local", "hosted-generation"],
   ] as const)("rejects mismatched provider %s with source %s", (provider, sourceKind) => {
     const revision = { ...baseRevision, provider, source: sources[sourceKind] };
     expect(() => visualRevisionSchema.parse(revision)).toThrow(

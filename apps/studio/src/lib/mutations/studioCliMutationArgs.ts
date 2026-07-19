@@ -38,6 +38,8 @@ function isVisualCliAction(actionId: StudioCliMutationActionId): actionId is Vis
     "visuals.import",
     "visuals.decide",
     "visuals.generate-hosted",
+    "visuals.generate-local",
+    "visuals.activate-revision",
     "visuals.plan-hosted",
     "visuals.regenerate",
   ].includes(actionId as VisualCliActionId);
@@ -57,6 +59,8 @@ type VisualCliActionId = Extract<
   | "visuals.import"
   | "visuals.decide"
   | "visuals.generate-hosted"
+  | "visuals.generate-local"
+  | "visuals.activate-revision"
   | "visuals.plan-hosted"
   | "visuals.regenerate"
 >;

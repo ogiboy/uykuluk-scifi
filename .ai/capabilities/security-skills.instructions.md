@@ -10,6 +10,7 @@ Apply this file when work affects:
 - Studio action routes and route-security contract changes.
 - Local sessions, CSRF, same-origin, and loopback checks.
 - CLI command execution and subprocess boundaries.
+- Node-to-Python local-tool request, result, environment, and dependency boundaries.
 - Temp-file and artifact read/write safety.
 - Path traversal and symlink/hardlink protections.
 - Provider adapters, network boundaries, and prompt/tool injection risks.
@@ -52,6 +53,9 @@ Recommended starting security review categories for this repository:
 - Route/session/payload review: `implementing-api-schema-validation-security`.
 - Secrets and credential review: `implementing-secrets-scanning-in-ci-cd`.
 - CI/release/supply-chain review: `securing-github-actions-workflows`.
+- Node-to-Python local tools: `implementing-api-schema-validation-security`; add
+  `detecting-typosquatting-packages-in-npm-pypi` only for an intentional Python or Node dependency
+  addition or upgrade.
 
 For file-path, provider, prompt/tool-injection, OAuth, or dependency work, search catalog names
 first and select the narrowest defensive module. Do not open unrelated skill bodies.
@@ -82,6 +86,22 @@ Security review outputs should become:
 - guards or safer defaults,
 - evidence/readiness updates,
 - or explicit deferred-in-design notes.
+
+## Managed Python tool boundary
+
+The optional `tools/mflux/` environment is a development and local-runtime tool boundary, not a
+second application service. For changes to its worker contract or dependency manifest:
+
+- validate the complete Node-to-Python request and result objects at both sides; reject unknown
+  fields, malformed values, and unbounded strings before a child process starts;
+- pass a narrowed child environment and never forward root `.env` secrets, provider credentials, or
+  arbitrary shell arguments;
+- keep the interpreter, project directory, model identity, and supported operation names pinned by
+  application configuration rather than browser input;
+- treat `pyproject.toml` plus `uv.lock` as one reviewed change. Use locked `uv` commands and inspect
+  unfamiliar package names for typosquatting or dependency-confusion signals before accepting them;
+- keep all selected security skills development-time only. They guide review and tests but are never
+  imported by Studio, CLI, Python workers, or shipped artifacts.
 
 ## Operational reminder
 

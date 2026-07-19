@@ -12,6 +12,8 @@ export const studioCliMutationActionIds = [
   "evidence.run",
   "idea.approve",
   "ideas.run",
+  "localModels.execute",
+  "localModels.prepare",
   "model-eval-candidates.run",
   "model-eval.run",
   "package.run",
@@ -36,6 +38,8 @@ export const studioCliMutationActionIds = [
   "visuals.import",
   "visuals.plan-hosted",
   "visuals.generate-hosted",
+  "visuals.generate-local",
+  "visuals.activate-revision",
   "visuals.prepare",
   "visuals.regenerate",
   "voice.candidates",
@@ -60,6 +64,8 @@ export type RunOnlyCliActionId = Exclude<
   | "episodes.create"
   | "idea.approve"
   | "ideas.run"
+  | "localModels.execute"
+  | "localModels.prepare"
   | "model-eval.run"
   | "model-eval-candidates.run"
   | "package-artifact.revise"
@@ -73,6 +79,8 @@ export type RunOnlyCliActionId = Exclude<
   | "visuals.import"
   | "visuals.plan-hosted"
   | "visuals.generate-hosted"
+  | "visuals.generate-local"
+  | "visuals.activate-revision"
   | "visuals.regenerate"
   | "voice.preview"
   | "voice.reselect"

@@ -191,6 +191,21 @@ jobs:
           name: Run operator usage smoke
           command: pnpm qa:usage
 
+  python-contract:
+    docker:
+      - image: ghcr.io/astral-sh/uv:0.11.29-python3.12-bookworm
+    steps:
+      - checkout
+      - halt-unless-lane-required:
+          lane: python-contract
+      - run:
+          name: Verify the locked local visual worker contract
+          command: |
+            uv --version | grep -E '^uv 0\.11\.29'
+            python --version | grep -E '^Python 3\.12\.'
+            uv lock --check --project tools/mflux
+            python -m py_compile tools/mflux/worker.py
+
   product-uat:
     executor:
       name: node/default
@@ -324,8 +339,8 @@ jobs:
       - run:
           name: Confirm all quality jobs completed
           command:
-            echo 'static-quality, unit-tests, usage-smoke, product-uat, studio-browser, and
-            sonar-cloud passed.'
+            echo 'static-quality, unit-tests, python-contract, usage-smoke, product-uat,
+            studio-browser, and sonar-cloud passed.'
 
   preview-deploy-marker:
     # Explicitly gated scaffold; intentionally not included in a workflow.
@@ -371,6 +386,9 @@ workflows:
       - unit-results:
           requires:
             - unit-tests
+      - python-contract:
+          requires:
+            - delivery-policy
       - usage-smoke:
           requires:
             - delivery-policy
@@ -389,6 +407,7 @@ workflows:
           requires:
             - static-quality
             - unit-results
+            - python-contract
             - usage-smoke
             - product-uat
             - studio-browser

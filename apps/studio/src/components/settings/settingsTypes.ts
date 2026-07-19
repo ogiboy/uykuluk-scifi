@@ -1,4 +1,5 @@
 import type { StudioLocale } from "@/i18n/locales";
+import type { StudioLocalModelOverview } from "@/lib/localModels/localModelOverview";
 import type { ProducerConfig } from "../../../../../src/config/schema";
 import type { ProviderSmokeEvidence } from "../../../../../src/stages/providers/providerSmokeEvidence";
 
@@ -15,6 +16,7 @@ export type SettingsWorkspaceProps = Readonly<{
   config: ProducerConfig;
   currentDigest: string;
   latestElevenLabsSmoke: (ProviderSmokeEvidence & { audioUrl: string | null }) | null;
+  localModelOverview: StudioLocalModelOverview;
   locale: StudioLocale;
   profileDigests: Readonly<Record<string, string>>;
   revisions: readonly StudioSettingsRevisionSummary[];

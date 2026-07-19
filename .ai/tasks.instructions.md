@@ -108,9 +108,12 @@
 - Keep Eleven Creative image/video outside the provider registry until a public generation API is
   integrated and separately approved. Externally created media uses the existing attributable
   `manual-import` path only.
-- Take local MFLUX as the next visual-provider slice. Reuse the current plan, review, provenance,
-  and render-binding contracts; do not treat it as another hosted adapter or broaden paid-provider
-  scope.
+- Maintain the implemented Studio-managed local MFLUX slice: exact setup/verify/smoke preflight and
+  approval, detached worker recovery, offline install-manifest verification, sequential generation,
+  provenance, revision audition, and explicit canonical activation. Keep the conservative 6.5 GB
+  setup estimate and truthful readiness boundary. Real install and 1024x576 smoke remain outside CI
+  until an operator approves the exact preflight on the target machine; static/manual and BFL
+  revisions remain compatible.
 - Then harden exact render/media quality: pacing and motion, subtitle readability, popup density,
   audio mastering, licensed music/SFX evidence, and final thumbnail JPG.
 - Then add sequential multi-model script audition and editorial quality: immutable shared brief and
