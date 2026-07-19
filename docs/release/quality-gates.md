@@ -31,6 +31,7 @@ Use the broader profiles deliberately rather than after every edit:
 ```bash
 chunk validate static-local  # root/Studio lint and primary typechecks
 chunk validate parity-remote # authenticated sidecar run of pnpm check:static
+pnpm ci:config:verify         # validate and expand the complete event-gated CircleCI DAG
 ```
 
 `parity-remote` is an intentional Linux/toolchain parity check, not the normal edit loop. A Chunk
@@ -107,6 +108,19 @@ CircleCI graph. Warm runs confirmed pnpm, Next, and Sonar cache hits.
    timeouts or retrying a flaky check.
 
 Chunk green means the selected local/sidecar profile passed. It is not CircleCI quality-gate proof.
+
+Use the repository `.nvmrc` before local parity checks:
+
+```bash
+nvm use
+corepack prepare pnpm@11.9.0 --activate
+```
+
+The normal CircleCI workflow is gated by the live pipeline event, so an unparameterized local
+`circleci config process` intentionally prunes it. `pnpm ci:config:verify` enables the dedicated
+local validation parameter and rejects a processed config that lacks the full job graph or cache
+steps. For hosted results, prefer the exact-SHA GitHub status and its linked workflow; the preview
+Circle CLI may omit some GitHub-App-triggered runs from `circleci run list`.
 
 For an operator investigation, reproduce the relevant local command, then use
 `pnpm producer readiness --run <run_id>`, `pnpm producer evidence --run <run_id>`, or

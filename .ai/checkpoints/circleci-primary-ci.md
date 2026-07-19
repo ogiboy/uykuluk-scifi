@@ -18,8 +18,8 @@ a bounded local or remote parity companion.
 - [x] Release planning skips the Circle gate when no release is needed and otherwise waits at most
       30 minutes for the exact main SHA.
 - [x] PR #164 merged after final CircleCI, Sonar, and CodeQL success.
-- [ ] Refresh the optional remote parity snapshot to Node 22.23/pnpm 11.9 after explicit approval
-      for the tracked encrypted vault ciphertext transfer.
+- [ ] Verify the configured remote parity snapshot boots with Node 22.23/pnpm 11.9 and passes the
+      named `parity-remote` profile.
 
 ## Current State
 
@@ -32,8 +32,8 @@ a bounded local or remote parity companion.
 - Policy-only changes prove their scope and halt the unneeded heavy lanes. Unknown paths default to
   reviewable product scope. The limit is 100 reviewable files; exact generated-tooling prefixes can
   exceed 100 raw files only while both counts remain visible.
-- Successful full workflows measured 7m02s, 8m37s, and 7m27s. The former medians were about 13m08s
-  on GitHub Actions and 17m56s on the original serial CircleCI graph.
+- Successful full workflows measured 7m02s, 8m37s, 7m27s, and 8m45s. The former medians were about
+  13m08s on GitHub Actions and 17m56s on the original serial CircleCI graph.
 - Warm runs restored a roughly 224 MiB pnpm cache, a roughly 31 MiB Next compiler cache, and the
   Sonar runtime cache. Only the designated lanes write each immutable cache.
 - A repeated warm run exposed one real WebKit timing flake. Its trace showed `/ideas/new` returned
@@ -50,6 +50,9 @@ a bounded local or remote parity companion.
 - `quick-local` is the automatic changed-file hook, `static-local` is the intentional local static
   profile, and `parity-remote` is the authenticated sidecar `pnpm check:static` profile. None is a
   substitute for the hosted quality gate.
+- `.nvmrc` selects the same Node 22.23.0 line used by every CircleCI job. `pnpm ci:config:verify`
+  enables an explicit local-only pipeline parameter so `circleci config process` expands the real
+  quality DAG and proves its restore/save cache steps instead of pruning the event-gated workflow.
 
 ## Decisions
 
@@ -64,15 +67,12 @@ a bounded local or remote parity companion.
 
 ## Remaining Work
 
-1. Complete and merge the capability-routing documentation slice so all agents use the actual lane
-   and Chunk profile names.
-2. Refresh and verify the optional sidecar image only after the operator explicitly accepts transfer
-   of tracked encrypted vault ciphertext to the private snapshot. Do not sync plaintext `.env`.
-3. Continue measuring warm PR latency; investigate if the median exceeds 10 minutes again.
+1. Boot the configured sidecar snapshot and prove Node 22.23/pnpm 11.9 plus `parity-remote` once.
+2. Continue measuring warm PR latency; investigate if the median exceeds 10 minutes again.
+3. Keep exact-SHA GitHub statuses plus the linked Circle workflow as the operational source of truth
+   when the preview Circle CLI omits a GitHub-App-triggered run from `run list`.
 
 ## Blocker
 
-The existing sidecar snapshot predates the Node 22.23/pnpm 11.9 target. Creating its replacement
-would copy tracked encrypted `.env.vault` ciphertext to a private third-party snapshot. The transfer
-remains paused until the operator gives explicit risk-aware approval; no workaround or hidden sync
-is permitted.
+The configured snapshot exists but has not yet been boot-verified against the current repository and
+toolchain. Plaintext `.env` files remain excluded from every sidecar sync.

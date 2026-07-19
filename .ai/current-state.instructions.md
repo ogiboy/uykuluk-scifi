@@ -268,22 +268,21 @@
   `sonar-cloud` receives the LCOV through the shared workspace without rerunning Vitest.
   `quality-gate` explicitly waits for both jobs and the other required lanes. GitHub retains CodeQL,
   Dependabot, and a release gate that skips waiting when no release is planned and otherwise waits
-  up to 30 minutes for the exact main SHA. PR #164 passed in 7m27s; earlier runs took 7m02s and
-  8m37s, versus former 13m08s GitHub and 17m56s pre-parallel Circle medians.
+  up to 30 minutes for the exact main SHA. Successful full runs measured 7m02s, 7m27s, 8m37s, and
+  8m45s, versus former 13m08s GitHub and 17m56s pre-parallel Circle medians.
 - Chunk 0.7.119 is a bounded companion, not CI proof. `quick-local` checks changed JavaScript/
   TypeScript files with installed ESLint and Prettier; `static-local` runs root/Studio lint and
   primary typechecks; authenticated `parity-remote` runs `pnpm check:static` on a sidecar. Frozen
-  installs, full tests, browser UAT, and Sonar remain CircleCI-owned. The Node 22.23/pnpm 11.9
-  remote snapshot refresh is pending explicit approval because tracked encrypted vault ciphertext
-  would be copied to the private snapshot; plaintext `.env` files are never included.
+  installs, full tests, browser UAT, and Sonar remain CircleCI-owned. A private snapshot is
+  configured but its current Node 22.23/pnpm 11.9 parity proof remains pending; plaintext `.env`
+  files are never included. The tracked `.nvmrc` selects the same Node line locally.
 - GitHub Issues is configured for Matt engineering-skill intake with the canonical `needs-triage`,
   `needs-info`, `ready-for-agent`, `ready-for-human`, and `wontfix` labels. The repository
   deliberately uses one lazy domain-document context. `skills-lock.json` records 40 Matt entries,
   but only 17 active engineering bodies are default routes; in-progress, deprecated, and ancillary
   entries remain opt-in metadata.
-- The verified NVM-owned orchestration CLI baseline is `ruflo 3.32.7` and `claude-flow 3.32.2`.
-  Their npm `latest` tags differ, and `claude-flow@3.32.7` does not exist; do not force a false
-  cross-package version match.
+- The NVM-owned orchestration CLI baseline is `ruflo 3.32.8` and `claude-flow 3.32.8`; generated
+  catalogs remain development metadata outside product runtime and general source scans.
 - Studio uses the existing Tailwind/shadcn/Radix design system and typed Turkish/English `next-intl`
   catalogs. New installs default to Turkish; future features must keep both locales complete rather
   than introducing mixed operator copy.

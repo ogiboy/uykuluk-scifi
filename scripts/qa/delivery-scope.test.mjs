@@ -1,4 +1,5 @@
 import { deepStrictEqual, ok, strictEqual } from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import {
@@ -24,6 +25,9 @@ test("generated tool catalogs do not consume the reviewable file budget", () => 
 test("project policy remains reviewable while unknown paths fail closed to product", () => {
   strictEqual(classifyDeliveryFile(".ai/capabilities.instructions.md"), "policy");
   strictEqual(classifyDeliveryFile("CLAUDE.md"), "policy");
+  strictEqual(classifyDeliveryFile("CONTEXT.md"), "policy");
+  strictEqual(classifyDeliveryFile("DESIGN.md"), "policy");
+  strictEqual(classifyDeliveryFile(".nvmrc"), "ci");
   strictEqual(classifyDeliveryFile("scripts/security/secret-scan.mjs"), "ci");
   strictEqual(classifyDeliveryFile("src/core/runState.ts"), "product");
   strictEqual(classifyDeliveryFile("unexpected/new-surface.txt"), "product");
@@ -59,4 +63,17 @@ test("manual API pipelines can force the complete product lane", () => {
   ok(summary.requiredLanes.includes("static-quality"));
   ok(summary.requiredLanes.includes("unit-results"));
   ok(summary.requiredLanes.includes("studio-browser"));
+});
+
+test("local agent runtime state stays ignored by repository policy", () => {
+  const ignorePatterns = new Set(
+    readFileSync(".gitignore", "utf8")
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean),
+  );
+
+  for (const expectedPattern of [".claude-flow/", ".omx/", ".ruflo/", ".swarm/"]) {
+    ok(ignorePatterns.has(expectedPattern), `${expectedPattern} must remain ignored`);
+  }
 });

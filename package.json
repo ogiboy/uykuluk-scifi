@@ -38,6 +38,7 @@
     "qa:pr-size": "node scripts/qa/pr-size.mjs",
     "qa:modularity": "node scripts/qa/modularity-gate.mjs --fail-on-findings",
     "qa:typescript": "node scripts/qa/typescript-toolchain.mjs",
+    "ci:config:verify": "circleci config validate --json --config .circleci/config.yml && circleci config process .circleci/config.yml --pipeline-parameters 'local_config_validation: true' | node scripts/qa/verify-circleci-processed-config.mjs",
     "security:dependencies": "pnpm audit --audit-level=high",
     "security:secrets": "node scripts/security/secret-scan.mjs",
     "security:check": "pnpm security:secrets",

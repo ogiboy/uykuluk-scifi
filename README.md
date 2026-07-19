@@ -59,7 +59,7 @@ publishing bot. Studio is the operator experience; CLI/core remains the source o
 
 ## Requirements
 
-- Node.js 22 or newer
+- Node.js 22 or newer; NVM users can run `nvm use` to select the CI-matched `22.23.0`
 - Corepack and the repository-pinned `pnpm@11.9.0`
 - FFmpeg and `ffprobe` for rendering
 - Optional: Ollama or llama.cpp for local generation

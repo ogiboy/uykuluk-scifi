@@ -71,6 +71,12 @@ inventory are not default routes.
 The Studio is an operator product, not a marketing landing page. Marketing composition skills apply
 to channel-facing assets or public product pages, not the production desk.
 
+For a large approved Studio surface, `frontend-app-builder` may translate the accepted `DESIGN.md`
+contract into the existing Next.js/shadcn implementation; it must not switch frameworks or create a
+second workflow owner. After the production build exists, use `product-design:design-qa` with real
+browser captures at the supported breakpoints. Run `ai-slop-cleaner` only on the changed file list,
+after focused behavior tests are green, and preserve intentional compatibility fallbacks.
+
 ### Frontend Taste Selection
 
 Choose exactly one taste authority only when the task needs visual-direction judgment beyond the
@@ -170,6 +176,23 @@ No marketing, browser, connector, or automation capability may bypass the disabl
 - Use OpenAI Developers only after explicit approval for an OpenAI-backed feature.
 - Prompt changes follow `.ai/workflows/prompt-management-workflow.instructions.md`.
 - Model/provider work must preserve cost, duration, provenance, failure, and approval evidence.
+- Use `best-practice-research` as a read-only handoff before version-sensitive
+  model/runtime/provider adoption; implementation starts only after the evidence and compatibility
+  boundary are explicit.
+
+Vercel AI capabilities are deferred routes, not default dependencies:
+
+- Evaluate the current AI SDK major only for a concrete future script-audition or streaming-draft
+  need, behind the existing `LlmProvider` and CLI/core evidence ownership.
+- Consider individual AI Elements source components only when they improve an approved Studio
+  comparison, source, transcript, or playback surface and pass design QA.
+- Do not add AI Gateway to V1. It is an optional remote routing/billing layer and cannot replace the
+  exact provider, quote, approval, reservation, settlement, or local-fallback contracts.
+- Use the AI generation-persistence skill as a checklist for early operation identity, durable
+  results, usage, and recovery; do not introduce a second Vercel database/blob state authority.
+- Use product-business analysis only with real provider bake-off or audience data. Keep the
+  incomplete agent-architecture placeholder inactive and route JavaScript deobfuscation only to an
+  actual defensive incident.
 
 Cloud training, hosted inference, HF Jobs, paid APIs, model uploads, dataset uploads, or credential
 setup require explicit user approval.
