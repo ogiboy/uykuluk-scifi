@@ -57,6 +57,7 @@ describe("Studio local visual generation copy", () => {
     expect(visualReviewCopy("en").confirmHosted("model", 2, "1.00")).toMatch(/2 scene.*\$1\.00/i);
     expect(visualReviewCopy("tr").latestActionTitle).toBe("Son görsel eylemi");
     expect(visualReviewCopy("tr").hostedStatusLabel("pending")).toBe("bekliyor");
+    expect(visualReviewCopy("tr").hostedStatusLabel("future-status")).toBe("future-status");
     expect(visualReviewCopy("tr").hostedPurposeLabel("regenerate-rejected", "fallback")).toMatch(
       /reddedilenleri/i,
     );

@@ -186,7 +186,11 @@ describe("local model worker", () => {
         "utf8",
       ),
     ) as Record<string, unknown>;
-    expect(evidence).toMatchObject({ status: "failed", diagnostic: "offline verification failed" });
+    expect(evidence).toMatchObject({
+      operationId: operation.operationId,
+      status: "failed",
+      diagnostic: "offline verification failed",
+    });
   });
 
   it("rejects startup when the child exits before claiming the queued operation", async () => {

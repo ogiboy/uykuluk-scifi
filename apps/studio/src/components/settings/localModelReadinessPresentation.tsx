@@ -153,10 +153,10 @@ export function LocalModelActionStatus({
 
 export function Fact({ label, value }: Readonly<{ label: string; value: string }>) {
   return (
-    <div className='grid gap-0.5'>
+    <dl className='grid gap-0.5'>
       <dt className='text-muted-foreground text-xs'>{label}</dt>
       <dd className='font-medium'>{value}</dd>
-    </div>
+    </dl>
   );
 }
 
@@ -169,12 +169,12 @@ export function LocalModelFacts({
     : copy.diskEstimate;
 
   return (
-    <dl className='grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-4'>
+    <div className='grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-4'>
       <Fact label={copy.model} value='FLUX.2 Klein 4B · q4' />
       <Fact label={copy.runtime} value='MFLUX 0.18.0 · Python 3.12' />
       <Fact label={copy.disk} value={diskEstimate} />
       <Fact label={copy.progress} value={localModelReadinessLabel(copy, overview)} />
-    </dl>
+    </div>
   );
 }
 
