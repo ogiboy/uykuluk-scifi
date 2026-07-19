@@ -101,11 +101,145 @@ describe("bounded MFLUX process", () => {
     ).rejects.toThrow(/install-manifest-missing/);
   });
 
+  it("rejects invalid diagnostics and mismatched operation results", async () => {
+    const invalidChild = fakeChild();
+    const invalidSpawn = vi.fn(() => invalidChild) as unknown as typeof spawn;
+    queueMicrotask(() => {
+      (invalidChild.stdout as PassThrough).write("not-json\n");
+      invalidChild.emit("close", 0, null);
+    });
+
+    await expect(
+      executeMfluxWorker(
+        "/project",
+        { operation: "verify", runtimePath: "/project/.local-models/mflux" },
+        2_000,
+        invalidSpawn,
+      ),
+    ).rejects.toThrow(/invalid diagnostic response/i);
+
+    const mismatchChild = fakeChild();
+    const mismatchSpawn = vi.fn(() => mismatchChild) as unknown as typeof spawn;
+    queueMicrotask(() => {
+      (mismatchChild.stdout as PassThrough).write('{"status":"ok","operation":"setup"}\n');
+      mismatchChild.emit("close", 0, null);
+    });
+
+    await expect(
+      executeMfluxWorker(
+        "/project",
+        { operation: "verify", runtimePath: "/project/.local-models/mflux" },
+        2_000,
+        mismatchSpawn,
+      ),
+    ).rejects.toThrow(/different operation/i);
+  });
+
+  it("reports bounded startup and empty-output process failures", async () => {
+    const startupChild = fakeChild();
+    const startupSpawn = vi.fn(() => startupChild) as unknown as typeof spawn;
+    queueMicrotask(() => {
+      const error = Object.assign(new Error("spawn failed"), { code: "ENOENT" });
+      startupChild.emit("error", error);
+    });
+
+    await expect(
+      executeMfluxWorker(
+        "/project",
+        { operation: "verify", runtimePath: "/project/.local-models/mflux" },
+        2_000,
+        startupSpawn,
+      ),
+    ).rejects.toThrow(/could not start \(ENOENT\)/i);
+
+    const exitChild = fakeChild();
+    const exitSpawn = vi.fn(() => exitChild) as unknown as typeof spawn;
+    queueMicrotask(() => exitChild.emit("close", 23, null));
+
+    await expect(
+      executeMfluxWorker(
+        "/project",
+        { operation: "verify", runtimePath: "/project/.local-models/mflux" },
+        2_000,
+        exitSpawn,
+      ),
+    ).rejects.toThrow(/exit code 23/i);
+  });
+
+  it("passes only generation-specific paths, seed, and approved cache environment", async () => {
+    const child = fakeChild();
+    const spawnProcess = vi.fn(() => child) as unknown as typeof spawn;
+    const previousCache = process.env.UV_CACHE_DIR;
+    process.env.UV_CACHE_DIR = "/safe/uv-cache";
+    queueMicrotask(() => {
+      (child.stdout as PassThrough).write(
+        '{"status":"ok","operation":"generate","durationMs":123}\n',
+      );
+      child.emit("close", 0, null);
+    });
+
+    try {
+      await expect(
+        executeMfluxWorker(
+          "/project",
+          {
+            operation: "generate",
+            outputPath: "/project/output.png",
+            promptPath: "/project/prompt.txt",
+            runtimePath: "/project/.local-models/mflux",
+            seed: 42,
+          },
+          2_000,
+          spawnProcess,
+        ),
+      ).resolves.toMatchObject({ operation: "generate", durationMs: 123 });
+      const [command, args, options] = vi.mocked(spawnProcess).mock.calls[0]!;
+      expect(command).toBe("uv");
+      expect(args).toEqual(
+        expect.arrayContaining([
+          "--offline",
+          "--no-sync",
+          "--output-path",
+          "/project/output.png",
+          "--prompt-path",
+          "/project/prompt.txt",
+          "--seed",
+          "42",
+        ]),
+      );
+      expect(options?.env).toMatchObject({ UV_CACHE_DIR: "/safe/uv-cache" });
+    } finally {
+      restoreEnvironment("UV_CACHE_DIR", previousCache);
+    }
+  });
+
+  it("rejects timeout values outside the supported worker window before spawning", async () => {
+    const spawnProcess = vi.fn(() => fakeChild()) as unknown as typeof spawn;
+
+    await expect(
+      executeMfluxWorker(
+        "/project",
+        { operation: "verify", runtimePath: "/project/.local-models/mflux" },
+        999,
+        spawnProcess,
+      ),
+    ).rejects.toThrow(/outside the supported bounds/i);
+    await expect(
+      executeMfluxWorker(
+        "/project",
+        { operation: "verify", runtimePath: "/project/.local-models/mflux" },
+        3_600_001,
+        spawnProcess,
+      ),
+    ).rejects.toThrow(/outside the supported bounds/i);
+    expect(spawnProcess).not.toHaveBeenCalled();
+  });
+
   it("terminates a worker that exceeds the operation timeout", async () => {
     vi.useFakeTimers();
     const child = fakeChild();
-    child.kill = vi.fn(() => {
-      queueMicrotask(() => child.emit("close", null, "SIGTERM"));
+    child.kill = vi.fn((signal) => {
+      if (signal === "SIGKILL") queueMicrotask(() => child.emit("close", null, "SIGKILL"));
       return true;
     });
     const spawnProcess = vi.fn(() => child) as unknown as typeof spawn;
@@ -117,9 +251,10 @@ describe("bounded MFLUX process", () => {
     );
     const rejected = expect(execution).rejects.toThrow(/timed out after 1000ms/i);
 
-    await vi.advanceTimersByTimeAsync(1_000);
+    await vi.advanceTimersByTimeAsync(3_000);
     await rejected;
     expect(child.kill).toHaveBeenCalledWith("SIGTERM");
+    expect(child.kill).toHaveBeenCalledWith("SIGKILL");
   });
 });
 

@@ -42,6 +42,9 @@ describe("local model worker", () => {
       );
       return { status: "ok", operation: "setup" };
     });
+    const modelPath = path.join(root, ".local-models", "mflux", "model", "nested");
+    await mkdir(modelPath, { recursive: true });
+    await writeFile(path.join(modelPath, "weights.bin"), "weights", "utf8");
 
     await runLocalModelWorker(root);
 
@@ -67,6 +70,116 @@ describe("local model worker", () => {
         runtimeVersion: "0.18.0",
       },
     });
+  });
+
+  it("returns without invoking MFLUX when no approved operation is queued", async () => {
+    const root = await projectRoot();
+
+    await runLocalModelWorker(root);
+
+    expect(executeMfluxWorker).not.toHaveBeenCalled();
+  });
+
+  it("runs an approved offline verification with the bounded verify timeout", async () => {
+    const root = await projectRoot();
+    const preparation = await prepareLocalModelOperation(root, {
+      packageId: "mflux-flux2-klein-4b-q4",
+      operation: "verify",
+    });
+    const operation = await executeApprovedLocalModelOperation(root, {
+      runId: preparation.runId,
+      bindingDigest: preparation.bindingDigest,
+      approvedBy: "Studio operator",
+      confirmExecution: true,
+    });
+    vi.mocked(executeMfluxWorker).mockResolvedValue({ status: "ok", operation: "verify" });
+
+    await runLocalModelWorker(root);
+
+    expect(executeMfluxWorker).toHaveBeenCalledWith(
+      root,
+      expect.objectContaining({ operation: "verify" }),
+      60_000,
+    );
+    await expect(readOverview(root)).resolves.toMatchObject({
+      latestOperation: { operationId: operation.operationId, status: "succeeded" },
+    });
+  });
+
+  it("persists approved smoke media and measured timing in worker evidence", async () => {
+    const root = await projectRoot();
+    const preparation = await prepareLocalModelOperation(root, {
+      packageId: "mflux-flux2-klein-4b-q4",
+      operation: "smoke",
+    });
+    await executeApprovedLocalModelOperation(root, {
+      runId: preparation.runId,
+      bindingDigest: preparation.bindingDigest,
+      approvedBy: "Studio operator",
+      confirmExecution: true,
+    });
+    vi.mocked(executeMfluxWorker).mockImplementation(async (_projectRoot, request) => {
+      if (request.operation !== "smoke") throw new Error("Expected smoke request.");
+      await mkdir(path.dirname(request.outputPath), { recursive: true });
+      await writeFile(request.outputPath, "png-bytes", "utf8");
+      return { status: "ok", operation: "smoke", durationMs: 4_321 };
+    });
+
+    await runLocalModelWorker(root);
+
+    const evidence = JSON.parse(
+      await readFile(
+        path.join(root, "runs", preparation.runId, "diagnostics", "local-models", "worker.json"),
+        "utf8",
+      ),
+    ) as Record<string, unknown>;
+    expect(evidence).toMatchObject({
+      status: "succeeded",
+      smoke: {
+        path: "diagnostics/local-models/smoke.png",
+        bytes: 9,
+        durationMs: 4_321,
+        digest: expect.stringMatching(/^[a-f0-9]{64}$/),
+      },
+    });
+    expect(executeMfluxWorker).toHaveBeenCalledWith(
+      root,
+      expect.objectContaining({ operation: "smoke" }),
+      300_000,
+    );
+  });
+
+  it("records a bounded worker failure without reporting false readiness", async () => {
+    const root = await projectRoot();
+    const preparation = await prepareLocalModelOperation(root, {
+      packageId: "mflux-flux2-klein-4b-q4",
+      operation: "verify",
+    });
+    const operation = await executeApprovedLocalModelOperation(root, {
+      runId: preparation.runId,
+      bindingDigest: preparation.bindingDigest,
+      approvedBy: "Studio operator",
+      confirmExecution: true,
+    });
+    vi.mocked(executeMfluxWorker).mockRejectedValue(new Error("offline verification failed"));
+
+    await runLocalModelWorker(root);
+
+    await expect(readOverview(root)).resolves.toMatchObject({
+      readiness: "failed",
+      latestOperation: {
+        operationId: operation.operationId,
+        status: "failed",
+        message: "offline verification failed",
+      },
+    });
+    const evidence = JSON.parse(
+      await readFile(
+        path.join(root, "runs", preparation.runId, "diagnostics", "local-models", "worker.json"),
+        "utf8",
+      ),
+    ) as Record<string, unknown>;
+    expect(evidence).toMatchObject({ status: "failed", diagnostic: "offline verification failed" });
   });
 });
 
