@@ -1,6 +1,30 @@
-import type { StudioLocale } from "@/i18n/locales";
+"use client";
 
-type SoundtrackWorkspaceCopy = Readonly<{
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import type { StudioLocale } from "@/i18n/locales";
+import type {
+  StudioSoundtrackActionBinding,
+  StudioSoundtrackSummary,
+} from "@/lib/runs/soundtrackSummaries";
+import { useState } from "react";
+
+export type SoundtrackExpectedBinding = Readonly<{
+  expectedManifestDigest: string;
+  expectedRevision: number;
+}>;
+
+export type SoundtrackRunAction = (
+  action: StudioSoundtrackActionBinding | null,
+  body: unknown,
+  title: string,
+  success: string,
+) => Promise<void>;
+
+export type SoundtrackWorkspaceCopy = Readonly<{
   advanced: string;
   assetId: string;
   analyze: string;
@@ -17,7 +41,6 @@ type SoundtrackWorkspaceCopy = Readonly<{
   configureHint: string;
   configureSuccess: string;
   decision: string;
-  decisionPending: string;
   digest: string;
   imported: string;
   import: string;
@@ -66,6 +89,136 @@ type SoundtrackWorkspaceCopy = Readonly<{
   voiceOnly: string;
 }>;
 
+type SoundtrackReviewSectionsProps = Readonly<{
+  busy: boolean;
+  copy: SoundtrackWorkspaceCopy;
+  expected: SoundtrackExpectedBinding;
+  runAction: SoundtrackRunAction;
+  runId: string;
+  summary: StudioSoundtrackSummary;
+}>;
+
+export function SoundtrackReviewSections({
+  busy,
+  copy,
+  expected,
+  runAction,
+  runId,
+  summary,
+}: SoundtrackReviewSectionsProps) {
+  const [reviewedBy, setReviewedBy] = useState("");
+  const [notes, setNotes] = useState("");
+  const decisionAction = summary.actions["soundtrack.decide"];
+  const decisionDisabled = busy || !reviewedBy.trim() || !notes.trim() || !decisionAction;
+
+  const decide = (status: "approved" | "rejected") =>
+    runAction(
+      decisionAction,
+      { runId, ...expected, notes: notes.trim(), reviewedBy: reviewedBy.trim(), status },
+      copy.submitBlocked,
+      copy.submitSuccess,
+    );
+
+  return (
+    <>
+      <section className='grid gap-3 rounded-lg border border-(--line) p-4'>
+        <div className='flex flex-wrap items-center justify-between gap-2'>
+          <h3 className='font-semibold'>{copy.analysis}</h3>
+          <Badge variant={summary.analysis ? "secondary" : "outline"}>
+            {summary.analysis ? copy.analysisComplete : copy.analysisPending}
+          </Badge>
+        </div>
+        {summary.analysis ? (
+          <p className='text-muted-foreground text-sm'>{summary.analysis.measuredAt}</p>
+        ) : null}
+        <Button
+          disabled={busy || !summary.actions["soundtrack.analyze"]}
+          onClick={() =>
+            void runAction(
+              summary.actions["soundtrack.analyze"],
+              { runId, ...expected },
+              copy.analyzeBlocked,
+              copy.analyzeSuccess,
+            )
+          }
+        >
+          {copy.analyze}
+        </Button>
+      </section>
+      <section className='grid gap-3 rounded-lg border border-(--line) p-4'>
+        <div className='flex flex-wrap items-center justify-between gap-2'>
+          <h3 className='font-semibold'>{copy.decision}</h3>
+          <Badge variant={summary.decision?.status === "rejected" ? "destructive" : "outline"}>
+            {copy.decisionStatus(summary.decision?.status ?? null)}
+          </Badge>
+        </div>
+        {summary.decision ? (
+          <p className='text-muted-foreground text-sm'>
+            {summary.decision.reviewedBy}: {summary.decision.notes}
+          </p>
+        ) : (
+          <>
+            <Label htmlFor='soundtrack-reviewer'>{copy.reviewer}</Label>
+            <Input
+              id='soundtrack-reviewer'
+              value={reviewedBy}
+              onChange={(event) => setReviewedBy(event.target.value)}
+            />
+            <Label htmlFor='soundtrack-notes'>{copy.notes}</Label>
+            <Textarea
+              id='soundtrack-notes'
+              value={notes}
+              onChange={(event) => setNotes(event.target.value)}
+            />
+            <div className='flex flex-wrap gap-2'>
+              <Button
+                disabled={decisionDisabled || !summary.analysis}
+                onClick={() => void decide("approved")}
+              >
+                {copy.approve}
+              </Button>
+              <Button
+                disabled={decisionDisabled}
+                onClick={() => void decide("rejected")}
+                variant='outline'
+              >
+                {copy.reject}
+              </Button>
+            </div>
+          </>
+        )}
+      </section>
+      <section className='grid gap-3'>
+        <h3 className='font-semibold'>{copy.assets}</h3>
+        {summary.assets.length === 0 ? (
+          <p className='text-muted-foreground text-sm'>{copy.noAssets}</p>
+        ) : (
+          <div className='grid gap-3 md:grid-cols-2'>
+            {summary.assets.map((asset) => (
+              <article
+                className='grid gap-2 rounded-lg border border-(--line) p-3 text-sm'
+                key={asset.assetId}
+              >
+                <div className='flex justify-between gap-2'>
+                  <strong>{asset.assetId}</strong>
+                  <Badge variant='outline'>{asset.role}</Badge>
+                </div>
+                <p>
+                  {copy.imported}: {asset.originalFileName}
+                </p>
+                <p>
+                  {copy.rights}: {asset.rights.basis} — {asset.rights.attestedBy}
+                </p>
+                <p className='text-muted-foreground'>{asset.rights.evidence}</p>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+    </>
+  );
+}
+
 const english: SoundtrackWorkspaceCopy = {
   advanced: "Advanced evidence",
   assetId: "Asset ID",
@@ -84,7 +237,6 @@ const english: SoundtrackWorkspaceCopy = {
     "Every save requires the displayed digest and revision. Changing a mix invalidates its prior analysis and decision.",
   configureSuccess: "The mix configuration was saved as a new soundtrack revision.",
   decision: "Review decision",
-  decisionPending: "No decision recorded",
   digest: "Manifest digest",
   imported: "Imported",
   import: "Import audio asset",
@@ -162,7 +314,6 @@ const turkish: SoundtrackWorkspaceCopy = {
     "Her kayıt gösterilen özet ve revizyonu gerektirir. Miks değişikliği önceki analiz ve kararı geçersizleştirir.",
   configureSuccess: "Miks ayarı yeni bir soundtrack revizyonu olarak kaydedildi.",
   decision: "İnceleme kararı",
-  decisionPending: "Kayıtlı karar yok",
   digest: "Manifest özeti",
   imported: "İçe aktarıldı",
   import: "Ses varlığı içe aktar",
