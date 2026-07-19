@@ -6,13 +6,13 @@ describe("Studio action service status", () => {
     const status = getStudioActionServiceStatus();
 
     expect(status).toMatchObject({
-      actionCount: 45,
+      actionCount: 49,
       cliFallbackCount: 0,
       disabledRouteCount: 2,
       findings: [],
-      readyForCliCount: 43,
+      readyForCliCount: 47,
       riskyExternalCount: 2,
-      webReadyCount: 43,
+      webReadyCount: 47,
       webMutationsEnabled: true,
     });
     expect(status.summaries).toContainEqual(
@@ -90,6 +90,10 @@ describe("Studio action service status", () => {
       "promptProfiles.save",
       "episodes.create",
       "providers.elevenlabs.smoke",
+      "localModels.prepare",
+      "localModels.execute",
+      "visuals.generate-local",
+      "visuals.activate-revision",
     ]) {
       expect(status.summaries).toContainEqual(
         expect.objectContaining({ actionId, availability: "ready-for-cli" }),

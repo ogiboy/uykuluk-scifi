@@ -65,7 +65,7 @@ export const localVisualSourceSchema = z.strictObject({
   quantization: z.literal("q4"),
   seed: z.int().nonnegative().max(2_147_483_647),
   steps: z.int().positive().max(100),
-  guidance: z.number().finite().min(0).max(50),
+  guidance: z.number().min(0).max(50),
   dimensions: z.strictObject({
     width: z.int().min(1024).max(7680),
     height: z.int().min(576).max(4320),

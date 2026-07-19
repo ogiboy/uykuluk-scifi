@@ -48,7 +48,14 @@ const workflowActionStepDefinitions = [
     summary: "Create package artifacts, revise bounded package files, and review render planning.",
   },
   {
-    actionIds: ["estimate.run", "cost.approve", "evidence.run", "readiness.run"],
+    actionIds: [
+      "estimate.run",
+      "cost.approve",
+      "evidence.run",
+      "readiness.run",
+      "localModels.prepare",
+      "localModels.execute",
+    ],
     label: "Proof and readiness",
     summary: "Review exact cost, record approval, and refresh readiness proof before production.",
   },
@@ -73,6 +80,7 @@ const workflowActionStepDefinitions = [
       "voice.run",
       "voice.review",
       "visuals.generate-hosted",
+      "visuals.generate-local",
       "render.approve",
       "render.run",
       "render.review",

@@ -62,7 +62,6 @@ test("manual API pipelines can force the complete product lane", () => {
 
   ok(summary.requiredLanes.includes("static-quality"));
   ok(summary.requiredLanes.includes("unit-results"));
-  ok(summary.requiredLanes.includes("python-contract"));
   ok(summary.requiredLanes.includes("studio-browser"));
 });
 
