@@ -9,6 +9,10 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
+_No unreleased changes yet._
+
+## v0.86.0 (2026-07-19)
+
 ### Documentation
 
 - add the accepted V1 domain and Studio design contracts
