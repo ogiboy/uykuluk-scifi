@@ -131,8 +131,8 @@ await post(decideChannelHandoff, "/actions/decide-channel-handoff", "channel-han
   runId,
   thumbnailCandidateId,
 });
-await post(runEvidence, "/actions/run-evidence", "evidence.run", { runId });
 await post(runReadiness, "/actions/run-readiness", "readiness.run", { runId });
+await post(runEvidence, "/actions/run-evidence", "evidence.run", { runId });
 
 const detail = await getStudioRunDetail(runId);
 assert(detail !== null, "Studio can reload the route-driven run.");
