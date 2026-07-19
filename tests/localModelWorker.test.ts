@@ -42,14 +42,16 @@ describe("local model worker", () => {
     });
     vi.mocked(executeMfluxWorker).mockImplementation(async (_projectRoot, request) => {
       await mkdir(request.runtimePath, { recursive: true });
+      if (!request.modelPath) throw new Error("Expected the curated model path.");
+      await mkdir(request.modelPath, { recursive: true });
       await writeFile(
-        path.join(request.runtimePath, "install-manifest.json"),
+        path.join(request.modelPath, "install-manifest.json"),
         '{"schemaVersion":1}\n',
         "utf8",
       );
       return { status: "ok", operation: "setup" };
     });
-    const modelPath = path.join(root, ".local-models", "mflux", "model", "nested");
+    const modelPath = path.join(root, "models", "visual", "mflux", "flux2-klein-4b-q4", "nested");
     await mkdir(modelPath, { recursive: true });
     await writeFile(path.join(modelPath, "weights.bin"), "weights", "utf8");
 

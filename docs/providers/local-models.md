@@ -138,7 +138,14 @@ pnpm mflux:env:recreate -- --yes
 `sync` verifies the committed lock and creates or updates only the isolated virtual environment.
 `check` is locked, offline, and does not synchronize dependencies. `activate` prints a shell command
 instead of changing the caller's shell. Removal and recreation require `--yes`; they delete only
-`tools/mflux/.venv`, never the separately managed `.local-models/` model cache.
+`tools/mflux/.venv`, never the separately managed model weights under
+`models/visual/mflux/flux2-klein-4b-q4` or the operation state under `.local-models/mflux`.
+
+All durable local model weights follow the repository's shared `models/` convention: language
+models live under `models/llm`, Piper voices under `models/piper`, and MFLUX image weights under
+`models/visual`. The ignored `.local-models/` directory contains only app-managed queue, lock,
+readiness, and recovery state. Older MFLUX installs are migrated from `.local-models/mflux/model`
+to the canonical visual-model directory by the bounded worker before its next approved operation.
 
 The committed VS Code workspace maps Python tooling only to `tools/mflux` and discovers its
 project-local virtual environment. Pylance, Black, and isort are recommended for the worker source.

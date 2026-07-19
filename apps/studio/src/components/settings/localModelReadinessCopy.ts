@@ -58,6 +58,7 @@ export type LocalModelCopy = {
   readonly reviewSmoke: string;
   readonly runtime: string;
   readonly runtimePath: string;
+  readonly modelPath: string;
   readonly title: string;
   readonly verifying: string;
   readonly failedGuidance: string;
@@ -143,6 +144,7 @@ const turkishCopy: LocalModelCopy = {
   reviewSmoke: "Smoke tanı planını incele",
   runtime: "Çalışma zamanı",
   runtimePath: "Yerel çalışma zamanı yolu",
+  modelPath: "Yerel model yolu",
   title: "Yerel Modeller",
   verifying: "Doğrulanıyor",
   failedGuidance:
@@ -219,6 +221,7 @@ const englishCopy: LocalModelCopy = {
   reviewSmoke: "Review smoke diagnostic plan",
   runtime: "Runtime",
   runtimePath: "Local runtime path",
+  modelPath: "Local model path",
   title: "Local Models",
   verifying: "Verifying",
   failedGuidance:

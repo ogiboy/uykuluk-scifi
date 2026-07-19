@@ -224,6 +224,9 @@ export function LocalModelAdvancedDetails({
         <div>
           {copy.runtimePath}: {overview.runtimePath}
         </div>
+        <div>
+          {copy.modelPath}: {overview.modelPath}
+        </div>
         {overview.latestOperation ? (
           <>
             <div>

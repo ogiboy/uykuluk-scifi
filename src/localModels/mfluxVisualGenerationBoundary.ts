@@ -126,6 +126,7 @@ export function createMfluxVisualGenerationBoundary(
             root,
             {
               operation: "generate",
+              modelPath: paths.modelPath,
               outputPath: jobPath.outputPath,
               promptPath: jobPath.promptPath,
               runtimePath: paths.runtimePath,

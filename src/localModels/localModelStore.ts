@@ -21,6 +21,7 @@ const lockSettings = { timeoutMs: 5_000, retryMs: 20 };
 
 export type LocalModelStatePaths = Readonly<{
   runtimePath: string;
+  modelPath: string;
   installManifestPath: string;
   operationsPath: string;
   readyPath: string;
@@ -32,13 +33,16 @@ export type LocalModelStatePaths = Readonly<{
  * Derives filesystem paths for local model runtime state and mutation locking from a project root.
  *
  * @param projectRoot - The project directory from which local model state paths are derived.
- * @returns The runtime, record, preparation pointer, and lock paths.
+ * @returns Separate model storage plus runtime, record, preparation pointer, and lock paths.
  */
 export function localModelStatePaths(projectRoot: string): LocalModelStatePaths {
-  const runtimePath = path.join(path.resolve(projectRoot), ".local-models", "mflux");
+  const root = path.resolve(projectRoot);
+  const runtimePath = path.join(root, ".local-models", "mflux");
+  const modelPath = path.join(root, "models", "visual", "mflux", "flux2-klein-4b-q4");
   return {
     runtimePath,
-    installManifestPath: path.join(runtimePath, "install-manifest.json"),
+    modelPath,
+    installManifestPath: path.join(modelPath, "install-manifest.json"),
     operationsPath: path.join(runtimePath, "operations.json"),
     readyPath: path.join(runtimePath, "ready.json"),
     preparationPointerPath: path.join(runtimePath, "latest-preparation.json"),

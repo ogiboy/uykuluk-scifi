@@ -17,6 +17,7 @@ describe("Studio local visual generation copy", () => {
       recoveryAvailable: false,
       readError: expect.stringMatching(/could not be read safely/i),
       runtimePath: path.resolve(root, ".local-models", "mflux"),
+      modelPath: path.resolve(root, "models", "visual", "mflux", "flux2-klein-4b-q4"),
     });
   });
 

@@ -72,6 +72,7 @@ export async function readOverview(projectRoot: string): Promise<LocalModelOverv
     progress: latestOperation?.progress,
     preparation,
     runtimePath: paths.runtimePath,
+    modelPath: paths.modelPath,
     nextAction: nextActionForLocalModelReadiness(readiness),
   };
 }

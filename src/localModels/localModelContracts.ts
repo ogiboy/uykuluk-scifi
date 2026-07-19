@@ -70,6 +70,7 @@ export type LocalModelOverview = Readonly<{
   progress?: LocalModelProgress;
   preparation?: LocalModelOperationPreparation;
   runtimePath: string;
+  modelPath: string;
   nextAction: string;
 }>;
 

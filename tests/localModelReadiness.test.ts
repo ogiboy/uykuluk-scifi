@@ -309,7 +309,9 @@ describe("local MFLUX readiness", () => {
     const paths = localModelStatePaths(root);
 
     expect(paths.runtimePath).toBe(path.join(root, ".local-models", "mflux"));
+    expect(paths.modelPath).toBe(path.join(root, "models", "visual", "mflux", "flux2-klein-4b-q4"));
     expect(paths.runtimePath.startsWith(path.join(root, "runs"))).toBe(false);
+    expect(paths.modelPath.startsWith(path.join(root, "models"))).toBe(true);
   });
 });
 
@@ -321,6 +323,6 @@ async function projectRoot(): Promise<string> {
 
 async function writeInstallManifestPlaceholder(root: string): Promise<void> {
   const paths = localModelStatePaths(root);
-  await mkdir(paths.runtimePath, { recursive: true });
+  await mkdir(paths.modelPath, { recursive: true });
   await writeFile(paths.installManifestPath, "{}\n", "utf8");
 }
