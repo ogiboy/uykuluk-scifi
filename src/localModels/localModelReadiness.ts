@@ -44,7 +44,16 @@ import {
 export * from "./localModelContracts.js";
 export { localModelStatePaths, type LocalModelStatePaths } from "./localModelStore.js";
 
-/** Reads the filesystem-only, operator-safe local MFLUX readiness overview. */
+/**
+ * Reads the filesystem-backed local model readiness overview for a project.
+ *
+ * The overview includes the model catalog, current readiness and recovery status,
+ * latest operation and progress, pending preparation, runtime path, and the next
+ * operator action.
+ *
+ * @param projectRoot - The project whose local model state should be inspected
+ * @returns The current local model readiness overview
+ */
 export async function readOverview(projectRoot: string): Promise<LocalModelOverview> {
   const paths = localModelStatePaths(projectRoot);
   const [operations, readyMarker, installManifest, preparation] = await Promise.all([
@@ -67,7 +76,13 @@ export async function readOverview(projectRoot: string): Promise<LocalModelOverv
   };
 }
 
-/** Queues a closed, rehydratable local-model intent without starting a heavy process. */
+/**
+ * Queues a local-model operation for later execution without starting it.
+ *
+ * @param projectRoot - The project whose local-model state should be updated
+ * @param intent - The model and operation kind to queue
+ * @returns The queued local-model operation
+ */
 export async function submitIntent(
   projectRoot: string,
   intent: LocalModelIntent,
@@ -77,7 +92,18 @@ export async function submitIntent(
   return withLocalModelLock(paths, async () => queueIntent(paths, intent));
 }
 
-/** Persists a reviewed local-model preparation before setup, verify, or smoke execution. */
+/**
+ * Persists a reviewed local-model preparation for a setup or verification operation.
+ *
+ * The preparation records estimated duration and disk usage, a zero estimated cost,
+ * and a binding digest used to validate subsequent execution approval. Recoverable
+ * interrupted operations are recorded before the preparation is written.
+ *
+ * @param projectRoot - The project whose local-model state is updated
+ * @param input - The package and operation kind being prepared
+ * @returns The persisted preparation record
+ * @throws SafeExitError If another local-model setup or verification operation is active
+ */
 export async function prepareLocalModelOperation(
   projectRoot: string,
   input: Readonly<{ packageId: LocalModelId; operation: LocalModelIntent["kind"] }>,
@@ -112,7 +138,17 @@ export async function prepareLocalModelOperation(
   });
 }
 
-/** Revalidates exact preparation evidence before queueing a confirmed local operation. */
+/**
+ * Executes a confirmed local model operation after validating its preparation evidence.
+ *
+ * Records execution evidence and queues the prepared operation. Clears the preparation
+ * pointer after successful queueing.
+ *
+ * @param projectRoot - The project root containing local model state.
+ * @param input - The preparation identity, approval digest, approver, and execution confirmation.
+ * @returns The queued local model operation.
+ * @throws SafeExitError If the preparation is stale or its binding digest does not match.
+ */
 export async function executeApprovedLocalModelOperation(
   projectRoot: string,
   input: Readonly<{
@@ -154,7 +190,14 @@ export async function executeApprovedLocalModelOperation(
   });
 }
 
-/** Claims exactly one queued operation after a Studio restart or trusted worker reconnect. */
+/**
+ * Claims the next queued local model operation for a worker after a restart or reconnect.
+ *
+ * @param projectRoot - The project root containing local model state.
+ * @param workerId - The identifier of the worker claiming the operation.
+ * @returns The claimed operation, or `undefined` when no queued operation exists.
+ * @throws SafeExitError If another local model operation is already running.
+ */
 export async function claimNextIntent(
   projectRoot: string,
   workerId: string,
@@ -183,7 +226,13 @@ export async function claimNextIntent(
   });
 }
 
-/** Persists truthful worker progress; byte counters are never inferred as a percentage. */
+/**
+ * Records progress for a running local model operation without deriving percentage values from byte counters.
+ *
+ * @param projectRoot - The project whose local model operation state is updated
+ * @param input - The operation identifier and progress state to persist
+ * @returns The updated local model operation
+ */
 export async function updateIntentProgress(
   projectRoot: string,
   input: Readonly<{ operationId: string; progress: LocalModelProgress }>,
@@ -196,7 +245,13 @@ export async function updateIntentProgress(
   }));
 }
 
-/** Completes a running operation and writes the fixed readiness marker after setup succeeds. */
+/**
+ * Completes a running local model operation and updates readiness for setup or verification outcomes.
+ *
+ * @param projectRoot - The project whose local model state is updated
+ * @param input - The operation identifier, outcome status, and optional operator message
+ * @returns The completed local model operation
+ */
 export async function completeIntent(
   projectRoot: string,
   input: Readonly<{ operationId: string; status: "succeeded" | "failed"; message?: string }>,
@@ -227,12 +282,26 @@ export async function completeIntent(
   return operation;
 }
 
-/** Converts stale running operation records into an explicit interrupted state on worker recovery. */
+/**
+ * Marks recoverable local model operations as interrupted during worker recovery.
+ *
+ * @param projectRoot - The project whose local model operation state is recovered
+ * @returns The number of operations marked as interrupted
+ */
 export async function recoverInterruptedIntents(projectRoot: string): Promise<number> {
   const paths = localModelStatePaths(projectRoot);
   return withLocalModelLock(paths, () => recoverInterruptedIntentsWithinLock(projectRoot, paths));
 }
 
+/**
+ * Recovers queued or running local model operations whose worker did not complete.
+ *
+ * Writes recovery evidence for operations with a run ID and marks recoverable
+ * operations as interrupted with an operator-visible resubmission message.
+ *
+ * @param projectRoot - Project root used to store recovery evidence
+ * @returns The number of operations marked as interrupted
+ */
 async function recoverInterruptedIntentsWithinLock(
   projectRoot: string,
   paths: LocalModelStatePaths,

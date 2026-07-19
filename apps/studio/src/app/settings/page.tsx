@@ -21,7 +21,9 @@ import {
 
 export const dynamic = "force-dynamic";
 
-/** Renders persistent Studio settings and prompt profile controls. */
+/**
+ * Renders the Studio settings workspace with current configuration, recent revisions, model status, and localized controls.
+ */
 export default async function SettingsPage() {
   const root = projectRoot();
   const [config, locale, revisions, latestElevenLabsSmoke, localModelOverview] = await Promise.all([

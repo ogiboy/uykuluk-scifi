@@ -172,6 +172,11 @@ export function LocalModelReadinessCard({ locale, overview }: LocalModelReadines
     </Card>
   );
 
+  /**
+   * Submits a local-model preparation operation for the selected workflow stage.
+   *
+   * @param next - The preparation stage to run: setup, smoke review, or runtime verification.
+   */
   async function prepare(next: "setup" | "smoke" | "verify"): Promise<void> {
     await prepareAction.submit({
       actionId: "localModels.prepare",

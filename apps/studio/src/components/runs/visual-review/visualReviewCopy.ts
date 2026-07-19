@@ -98,6 +98,12 @@ export type VisualReviewCopy = Readonly<{
   updated: string;
 }>;
 
+/**
+ * Selects the visual review copy for the requested locale.
+ *
+ * @param locale - The locale used to select the localized copy.
+ * @returns The Turkish copy for `"tr"`; English copy for all other locales.
+ */
 export function visualReviewCopy(locale: StudioLocale): VisualReviewCopy {
   return locale === "tr" ? turkishCopy : englishCopy;
 }

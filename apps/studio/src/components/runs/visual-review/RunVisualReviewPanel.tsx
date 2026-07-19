@@ -21,7 +21,16 @@ type RunVisualReviewPanelProps = Readonly<{
   summary: StudioVisualSummary;
 }>;
 
-/** Renders visual preparation, contact-sheet decisions, and per-beat manual revision controls. */
+/**
+ * Coordinates visual preparation, review decisions, generation, imports, and per-scene revision actions for a run.
+ *
+ * Displays state-specific controls for missing, invalid, and ready visual summaries, while gating actions by
+ * the capabilities reported in the summary and presenting action status and evidence.
+ *
+ * @param locale - Locale used for user-facing labels and messages
+ * @param runId - Identifier of the run being reviewed
+ * @param summary - Current visual summary and available actions for the run
+ */
 export function RunVisualReviewPanel({ locale, runId, summary }: RunVisualReviewPanelProps) {
   const copy = visualReviewCopy(locale);
   const actions = useRunVisualReviewActions(runId, summary, locale);

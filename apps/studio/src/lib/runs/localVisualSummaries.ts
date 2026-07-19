@@ -67,10 +67,22 @@ export async function readStudioLocalVisualSummary(
   };
 }
 
+/**
+ * Determines whether local MFLUX image generation is ready for use.
+ *
+ * @param summary - The local visual generation status to evaluate
+ * @returns `true` if local generation is enabled, uses MFLUX, and is ready; `false` otherwise.
+ */
 export function isStudioLocalVisualReady(summary: StudioLocalVisualSummary): boolean {
   return summary.enabled && summary.mode === "mflux-local" && summary.readiness === "ready";
 }
 
+/**
+ * Provides the user-facing message for the current MFLUX readiness state.
+ *
+ * @param readiness - The current local model readiness state
+ * @returns The message describing the required action or available local generation
+ */
 function localReadinessMessage(readiness: StudioLocalVisualSummary["readiness"]): string {
   if (readiness === "ready") return "MFLUX local image generation is ready for selected scenes.";
   if (readiness === "setup-pending" || readiness === "setup-running") {

@@ -65,6 +65,12 @@ export type LocalModelCopy = {
   readonly verifyRuntime: string;
 };
 
+/**
+ * Selects the localized copy for the specified locale.
+ *
+ * @param locale - The locale used to select the copy.
+ * @returns The Turkish copy for `tr`; English copy for all other locales.
+ */
 export function localModelCopy(locale: StudioLocale): LocalModelCopy {
   return locale === "tr" ? turkishCopy : englishCopy;
 }

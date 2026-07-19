@@ -48,6 +48,12 @@ export async function visualCliArgsForAction(
   return hostedVisualGenerationCliArgs(payload);
 }
 
+/**
+ * Prepares guarded CLI arguments for local visual generation.
+ *
+ * @param payload - The untyped local visual generation mutation payload.
+ * @returns The CLI arguments and cleanup function for the generated expectation snapshot.
+ */
 async function localVisualGenerationCliArgs(payload: unknown): Promise<StudioPreparedCliArgs> {
   const input = parseLocalVisualGenerationPayload(payload);
   const expectationTemp = await writeVisualExpectationSnapshot(input.expectedActiveRevisions);
@@ -66,6 +72,12 @@ async function localVisualGenerationCliArgs(payload: unknown): Promise<StudioPre
   );
 }
 
+/**
+ * Prepares guarded CLI arguments for activating a visual revision.
+ *
+ * @param payload - The untyped activation request payload.
+ * @returns Prepared CLI arguments for the `visuals activate-revision` command, including expectation checks and temporary-file cleanup.
+ */
 async function visualActivationCliArgs(payload: unknown): Promise<StudioPreparedCliArgs> {
   const input = parseVisualActivateRevisionPayload(payload);
   const expectationTemp = await writeVisualExpectationSnapshot(input.expectedActiveRevisions);

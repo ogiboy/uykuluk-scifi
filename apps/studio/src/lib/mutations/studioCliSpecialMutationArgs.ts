@@ -22,6 +22,13 @@ import {
   parseSettingsSavePayload,
 } from "./studioMutationPayloadContracts";
 
+/**
+ * Maps a studio mutation action and payload to prepared CLI arguments.
+ *
+ * @param actionId - The mutation action to prepare
+ * @param payload - The action payload to parse and pass to the CLI
+ * @returns Prepared CLI arguments for supported actions, or `undefined` for unrecognized actions
+ */
 export async function specialCliArgsForAction(
   actionId: StudioCliMutationActionId,
   payload: unknown,

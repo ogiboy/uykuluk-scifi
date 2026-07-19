@@ -16,7 +16,17 @@ import {
 } from "./visualPersistence.js";
 import { requireVisualReviewState } from "./visualReviewState.js";
 
-/** Promotes an existing immutable revision and clears the stale scene decision. */
+/**
+ * Activates an existing visual revision for a scene and reopens the scene for review.
+ *
+ * Requires the run to be in the visual review state and the supplied mutation
+ * expectations to match the stored manifest. Invalidates visual consumers,
+ * persists the updated manifest, and records an artifact revision event.
+ *
+ * @param input - Identifies the run, scene, revision, and expected manifest state.
+ * @returns The updated visual manifest.
+ * @throws SafeExitError If the scene or revision does not exist.
+ */
 export async function activateVisualRevision(
   input: Readonly<{ runId: string; sceneIndex: number; revision: number }> &
     VisualMutationExpectation,

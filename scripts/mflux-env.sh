@@ -8,6 +8,7 @@ VENV_DIR="$PROJECT_DIR/.venv"
 COMMAND="${1:-status}"
 CONFIRMATION="${2:-}"
 
+# require_uv verifies that the uv command is available and exits with an error if it is missing.
 require_uv() {
   if ! command -v uv >/dev/null 2>&1; then
     printf 'uv is required for the managed MFLUX Python environment. Install uv, then retry.\n' >&2
@@ -15,12 +16,14 @@ require_uv() {
   fi
 }
 
+# sync_environment verifies the dependency lockfile and synchronizes the MFLUX environment with Python 3.12.
 sync_environment() {
   require_uv
   uv lock --check --project "$PROJECT_DIR"
   uv sync --locked --project "$PROJECT_DIR" --python 3.12
 }
 
+# remove_environment removes the MFLUX virtual environment after `--yes` confirmation and path verification.
 remove_environment() {
   if [[ "$CONFIRMATION" != "--yes" ]]; then
     printf 'Refusing to remove %s without --yes.\n' "$VENV_DIR" >&2

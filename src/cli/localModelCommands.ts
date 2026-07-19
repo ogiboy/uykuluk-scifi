@@ -18,7 +18,15 @@ type Wrap = <T extends Record<string, unknown>>(
 
 type FileOptions = Readonly<{ file: string; json?: boolean }>;
 
-/** Registers the hidden core commands used by Studio's local-model setup surface. */
+/**
+ * Registers the hidden `local-model` command group for inspecting readiness and operating the managed runtime.
+ *
+ * The `prepare` command persists cost, time, and disk preflight evidence for operator review. The `execute`
+ * command queues only the exact approved operation and starts the local-model worker, while `overview`
+ * reports the current readiness projection without starting runtime work.
+ *
+ * @param program - Commander program to which the `local-model` command group is added.
+ */
 export function registerLocalModelCommands(program: Command, wrap: Wrap): void {
   const localModel = program
     .command("local-model")

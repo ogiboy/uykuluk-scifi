@@ -195,6 +195,12 @@ export async function decideVisuals(input: VisualDecisionInput): Promise<VisualM
   return manifest;
 }
 
+/**
+ * Reads and validates the committed production scenes evidence for a run.
+ *
+ * @param runId - The production run identifier
+ * @returns The validated production scenes from the run artifact
+ */
 async function readProductionScenes(runId: string) {
   const parsed = JSON.parse(await readFile(artifactPath(runId, "production/scenes.json"), "utf8"));
   return z.array(productionSceneSchema).min(1).parse(parsed.scenes);

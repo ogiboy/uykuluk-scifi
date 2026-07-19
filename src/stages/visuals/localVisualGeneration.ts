@@ -72,13 +72,20 @@ export type GenerateLocalVisualsInput = Readonly<{
   VisualMutationExpectation;
 
 /**
- * Generates one local revision per requested scene through an injected ready
- * local-model boundary.
+ * Generates and persists one local visual revision for each requested scene.
  *
- * Calls are intentionally sequential: Apple-Silicon model memory is shared and
- * this layer must never launch competing inference work. The boundary may be a
- * test double, a local worker, or a future service adapter; this function makes
- * no claim that a model was downloaded or inferred by itself.
+ * Requires the run to be in the local visual-generation review state and the
+ * input mutation expectation to match the current manifest. Generation is
+ * performed sequentially through the boundary, then image artifacts and the
+ * updated manifest are committed transactionally, with consumer invalidation
+ * and an artifact-revised ledger event. A changed manifest, invalid scene
+ * selection, or mismatched boundary output causes the operation to fail
+ * without accepting stale results.
+ *
+ * @param input - Run identifier, requested scene indexes, and the expected visual mutation state.
+ * @param boundary - Local-model boundary responsible for preparing and generating each visual.
+ * @returns The updated visual manifest containing the generated revisions.
+ * @throws SafeExitError If no scenes are requested, review state or mutation expectations are invalid, a requested scene is unknown, or generated output does not match the expected scene.
  */
 export async function generateLocalVisuals(
   input: GenerateLocalVisualsInput,

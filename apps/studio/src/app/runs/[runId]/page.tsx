@@ -19,6 +19,16 @@ type RunDetailPageProps = {
   searchParams?: Promise<RunReviewSearchParams>;
 };
 
+/**
+ * Renders the run review workspace for a validated run.
+ *
+ * Uses the requested review tab when valid and otherwise selects the run's default tab.
+ * Renders a not-found page when the run ID is invalid or the run cannot be loaded.
+ *
+ * @param params - Route parameters containing the run ID.
+ * @param searchParams - Optional review navigation parameters.
+ * @returns The rendered run review page.
+ */
 export default async function RunDetailPage({
   params,
   searchParams,

@@ -30,7 +30,13 @@ type RunVisualReviewSelectionControlsProps = Readonly<{
   selectedRejectedCount: number;
 }>;
 
-/** Renders selection, reviewer metadata, and decision controls for the visual contact sheet. */
+/**
+ * Renders localized selection and review controls for the visual contact sheet.
+ *
+ * Decision actions require selected items, a nonblank reviewer name, and nonblank notes.
+ * Regeneration and local generation actions are disabled when unavailable, when their
+ * required selection is empty, or while an operation is busy.
+ */
 export function RunVisualReviewSelectionControls({
   busy,
   localGenerationAvailable,

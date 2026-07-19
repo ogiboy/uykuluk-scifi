@@ -30,9 +30,16 @@ type VisualRevisionGalleryProps = Readonly<{
 }>;
 
 /**
- * Keeps one scene's verified revision history available for side-by-side visual judgment.
- * It is deliberately a review surface: only the explicit activation action can change the
- * canonical revision held by core evidence.
+ * Provides a review surface for comparing a scene's revisions without changing its canonical revision.
+ *
+ * Opening the gallery selects the scene's active revision. Selecting another revision only changes the
+ * preview; canonical revision changes occur through the explicit activation action.
+ *
+ * @param busy - Disables revision activation while an activation is in progress.
+ * @param canActivate - Determines whether non-canonical revisions can be activated.
+ * @param locale - Controls localized labels and revision timestamps.
+ * @param scene - Scene and revision history to display.
+ * @param onActivate - Handles activation of the selected revision.
  */
 export function VisualRevisionGallery({
   busy,
@@ -193,6 +200,13 @@ export function VisualRevisionGallery({
   );
 }
 
+/**
+ * Resolves a requested revision index to a valid revision number.
+ *
+ * @param scene - The scene containing the available revisions and active revision.
+ * @param index - The requested position in the revision list.
+ * @returns The revision number at the bounded index, or the scene's active revision when no revision is available.
+ */
 function revisionAt(scene: StudioVisualSceneSummary, index: number): number {
   const boundedIndex = Math.max(0, Math.min(index, scene.revisions.length - 1));
   return scene.revisions[boundedIndex]?.revision ?? scene.activeRevision;

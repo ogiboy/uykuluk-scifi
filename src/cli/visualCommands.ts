@@ -26,9 +26,9 @@ import {
 type Wrap = <T extends unknown[]>(handler: (...args: T) => Promise<void>) => (...args: T) => void;
 
 /**
- * Registers the `visuals` command group for preparing, importing, approving, rejecting, and regenerating scene visual evidence.
+ * Registers the `visuals` command group for preparing, importing, generating, activating, reviewing, and regenerating scene visual evidence.
  *
- * Hosted generation requires an approved plan, matching digests, and explicit paid-operation confirmation. Mutating commands persist revisions or decisions and report JSON or operator-facing status messages.
+ * Hosted generation requires an approved plan, matching manifest and revision digests, and explicit paid-operation confirmation. Mutating commands persist revisions or review decisions, while failures propagate through `wrap` and results are reported as JSON or operator-facing status messages.
  *
  * @param program - The Commander program to which the `visuals` command group is added.
  * @param wrap - The action-handler wrapper used for command execution and failure propagation.

@@ -14,7 +14,11 @@ import { executeMfluxWorker, type MfluxWorkerResult } from "./mfluxProcess.js";
 const workerSourcePath = fileURLToPath(import.meta.url);
 
 /**
- * Starts one detached, curated MFLUX worker. It accepts no package, prompt, model, or shell input.
+ * Starts a detached curated MFLUX worker for a project.
+ *
+ * @param projectRoot - The project root used as the worker's working directory.
+ * @returns The process ID of the detached worker.
+ * @throws SafeExitError If the worker process cannot be started.
  */
 export function launchLocalModelWorker(projectRoot: string): Readonly<{ pid: number }> {
   const child = spawn(
@@ -27,7 +31,15 @@ export function launchLocalModelWorker(projectRoot: string): Readonly<{ pid: num
   return { pid: child.pid };
 }
 
-/** Runs the fixed local worker once; process restarts rehydrate queued operations through this entrypoint. */
+/**
+ * Runs one queued local model operation and records its outcome.
+ *
+ * Updates operation progress, monitors model downloads for setup operations, executes the
+ * curated MFLUX command, and writes worker evidence. Failures mark the operation as failed
+ * and are recorded in best-effort evidence without being rethrown.
+ *
+ * @param projectRoot - The project root containing the local model state and operation queue.
+ */
 export async function runLocalModelWorker(projectRoot: string): Promise<void> {
   const operation = await claimNextIntent(projectRoot, `studio-${process.pid}`);
   if (!operation) return;
@@ -71,6 +83,13 @@ export async function runLocalModelWorker(projectRoot: string): Promise<void> {
   }
 }
 
+/**
+ * Executes the requested curated MFLUX operation with its configured timeout and runtime path.
+ *
+ * @param operation - The claimed operation to execute, including its kind and optional run identifier.
+ * @returns The worker execution result.
+ * @throws SafeExitError If a smoke operation has no run identifier for its evidence path.
+ */
 async function runCuratedMfluxCommand(
   projectRoot: string,
   operation: Awaited<ReturnType<typeof claimNextIntent>> extends infer Value
@@ -99,6 +118,19 @@ function localModelWorkerTimeout(kind: "setup" | "verify" | "smoke"): number {
   return 300_000;
 }
 
+/**
+ * Records worker evidence for an operation associated with a project run.
+ *
+ * Includes model metadata, timing, outcome, and available install-manifest or smoke-artifact evidence.
+ * Diagnostic text is limited to 1,000 characters; optional artifact reads are ignored when unavailable.
+ *
+ * @param projectRoot - The project root containing the local model state and run data.
+ * @param operation - The claimed operation whose evidence is being recorded.
+ * @param startedAt - The operation start time in ISO 8601 format.
+ * @param status - The operation outcome.
+ * @param diagnostic - Diagnostic text describing the outcome.
+ * @param result - Optional worker result containing smoke duration data.
+ */
 async function writeWorkerEvidence(
   projectRoot: string,
   operation: Exclude<Awaited<ReturnType<typeof claimNextIntent>>, undefined>,

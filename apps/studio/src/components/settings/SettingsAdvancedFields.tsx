@@ -170,6 +170,12 @@ function activeTtsMode(draft: ProducerConfig) {
   return draft.providers.tts.enabled ? draft.providers.tts.mode : "disabled";
 }
 
+/**
+ * Determines the active visual provider mode from the image generation settings.
+ *
+ * @param draft - The current provider configuration.
+ * @returns The configured image generation mode when enabled, or `disabled` otherwise.
+ */
 function activeVisualMode(draft: ProducerConfig) {
   return draft.providers.imageGeneration.enabled
     ? draft.providers.imageGeneration.mode

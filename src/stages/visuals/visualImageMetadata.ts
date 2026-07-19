@@ -7,7 +7,14 @@ const minimumVisualWidth = 1280;
 const minimumVisualHeight = 720;
 const maximumVisualPixels = 40_000_000;
 
-/** Validates and decodes a bounded JPEG or PNG import before returning trusted media facts. */
+/**
+ * Validates and decodes a JPEG or PNG image before returning trusted media facts.
+ *
+ * @param bytes - The raw image data to validate.
+ * @param minimum - Optional minimum required image dimensions; defaults to 1280×720.
+ * @returns The image byte size, format, width, and height.
+ * @throws SafeExitError If the image is empty, exceeds size or pixel limits, cannot be decoded, uses an unsupported format, or is smaller than the required dimensions.
+ */
 export async function inspectVisualImage(
   bytes: Buffer,
   minimum?: Readonly<{ height: number; width: number }>,

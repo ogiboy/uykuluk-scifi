@@ -201,6 +201,11 @@ function visualActionBindings(): Record<StudioVisualActionId, StudioVisualAction
   };
 }
 
+/**
+ * Disables every visual Studio action.
+ *
+ * @returns An action map with each visual action set to `null`
+ */
 function noVisualActions(): Record<StudioVisualActionId, null> {
   return {
     "visuals.activate-revision": null,
@@ -215,12 +220,12 @@ function noVisualActions(): Record<StudioVisualActionId, null> {
 }
 
 /**
- * Determines which visual mutation actions are available for the current workflow state.
+ * Determines which visual mutation actions are enabled for the current workflow state.
  *
  * @param state - The current visual production workflow state.
- * @param actions - Available action bindings keyed by visual action ID.
- * @param rejectedCount - Number of rejected visual scenes.
- * @returns Action bindings enabled for the state, with unavailable actions set to `null`.
+ * @param actions - Routed action bindings keyed by visual action ID.
+ * @param rejectedCount - Number of rejected visual scenes, which controls hosted planning availability.
+ * @returns Action bindings permitted by the workflow state, with unavailable actions set to `null`.
  */
 function visualMutationActions(
   state: string,
@@ -254,12 +259,13 @@ function visualMutationActions(
 }
 
 /**
- * Creates an invalid or missing visual summary with empty scene, decision, and hosted-visual data.
+ * Creates an invalid or missing visual summary with no scene or decision results.
  *
  * @param kind - Indicates whether the visual data is invalid or missing
  * @param message - Explains why the visual summary is unavailable
- * @param actions - Available operator actions for the current workflow state
- * @returns A visual summary containing the provided status, message, and actions with empty result data
+ * @param actions - Operator actions available for the current workflow state
+ * @param local - Current local visual summary
+ * @returns A visual summary containing the provided status, message, actions, and local data
  */
 function visualSummary(
   kind: "invalid" | "missing",
@@ -280,6 +286,15 @@ function visualSummary(
   };
 }
 
+/**
+ * Builds the Studio media URL for a visual scene revision.
+ *
+ * @param runId - The run identifier to encode in the URL
+ * @param sceneIndex - The scene index
+ * @param manifestDigest - The manifest digest used to identify the media version
+ * @param revision - The visual revision number
+ * @returns The URL for the specified scene revision's media
+ */
 function visualMediaUrl(
   runId: string,
   sceneIndex: number,
@@ -290,6 +305,12 @@ function visualMediaUrl(
   return `/runs/${encodeURIComponent(runId)}/visuals/${sceneIndex}?${params.toString()}`;
 }
 
+/**
+ * Builds Studio summaries for a scene's visual revisions, ordered from newest to oldest.
+ *
+ * @param revisions - The visual revisions to summarize.
+ * @returns Revision summaries containing asset metadata, media dimensions, and media URLs.
+ */
 function summarizeVisualRevisions(
   runId: string,
   sceneIndex: number,

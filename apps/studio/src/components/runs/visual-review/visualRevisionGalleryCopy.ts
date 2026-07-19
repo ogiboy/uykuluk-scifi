@@ -17,6 +17,12 @@ export type VisualRevisionGalleryCopy = {
   readonly useRevision: string;
 };
 
+/**
+ * Selects the localized copy for the visual revision gallery.
+ *
+ * @param locale - The locale used to select the copy.
+ * @returns Turkish copy for the `tr` locale; English copy for all other locales.
+ */
 export function visualRevisionGalleryCopy(locale: StudioLocale): VisualRevisionGalleryCopy {
   return locale === "tr" ? turkishCopy : englishCopy;
 }

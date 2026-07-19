@@ -9,6 +9,11 @@ import {
 } from "../apps/studio/src/lib/routeSecurity";
 import { discoverRouteHandlers } from "./studioRouteSecurityHelpers";
 
+/**
+ * Verifies that discovered Studio action route handlers and their security metadata match the expected contract.
+ *
+ * @param appRoot - The root directory of the Studio application
+ */
 export async function expectStudioActionRouteContract(appRoot: string): Promise<void> {
   await expect(discoverRouteHandlers(appRoot)).resolves.toEqual(
     [

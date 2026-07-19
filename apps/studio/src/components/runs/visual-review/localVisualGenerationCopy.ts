@@ -23,10 +23,23 @@ type LocalVisualStatus = Readonly<{
   readiness: string;
 }>;
 
+/**
+ * Selects the localized text for local visual generation.
+ *
+ * @param locale - The locale used to select the copy
+ * @returns The Turkish copy for `tr`; English copy for all other locales
+ */
 export function localVisualGenerationCopy(locale: StudioLocale): LocalVisualGenerationCopy {
   return locale === "tr" ? turkishCopy : englishCopy;
 }
 
+/**
+ * Selects the localized message explaining why local visual generation is unavailable.
+ *
+ * @param locale - The locale used for the message.
+ * @param local - The current local generation status.
+ * @returns A localized blocker message for the current status.
+ */
 export function localVisualGenerationBlocker(
   locale: StudioLocale,
   local: LocalVisualStatus,

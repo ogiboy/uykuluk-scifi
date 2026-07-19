@@ -33,6 +33,12 @@ export async function cliArgsForAction(
   throw new Error(`Unsupported Studio CLI mutation action: ${actionId}`);
 }
 
+/**
+ * Identifies mutation actions handled by the visual CLI workflow.
+ *
+ * @param actionId - The Studio mutation action to classify
+ * @returns `true` if the action is a visual CLI action, `false` otherwise
+ */
 function isVisualCliAction(actionId: StudioCliMutationActionId): actionId is VisualCliActionId {
   return [
     "visuals.import",

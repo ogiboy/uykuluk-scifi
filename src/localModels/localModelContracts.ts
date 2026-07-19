@@ -134,6 +134,12 @@ export const localModelPreparationPointerSchema = z.object({
   runId: z.string().regex(/^run_[A-Za-z0-9][A-Za-z0-9_-]{0,123}$/),
 });
 
+/**
+ * Validates that a local model intent targets a curated model package and supported operation.
+ *
+ * @param intent - The local model operation intent to validate
+ * @throws `SafeExitError` if the model package or intent kind is unsupported
+ */
 export function validateLocalModelIntent(intent: LocalModelIntent): void {
   if (!(intent.modelId in localModelCatalog)) {
     throw new SafeExitError(
@@ -145,6 +151,12 @@ export function validateLocalModelIntent(intent: LocalModelIntent): void {
   }
 }
 
+/**
+ * Validates the operator approval evidence required to execute a prepared local model operation.
+ *
+ * @param input - The preparation run identifier, binding digest, approving operator, and explicit execution confirmation.
+ * @throws SafeExitError If the run identifier, binding digest, or approver is invalid, or execution confirmation is not explicit.
+ */
 export function validateLocalModelApproval(input: {
   runId: string;
   bindingDigest: string;
@@ -167,12 +179,26 @@ export function validateLocalModelApproval(input: {
   );
 }
 
+/**
+ * Validates the identifier format for a local model operation.
+ *
+ * @param operationId - The operation identifier to validate
+ * @throws SafeExitError If `operationId` does not match the required format
+ */
 export function validateLocalModelOperationId(operationId: string): void {
   if (!/^local_model_[a-z0-9_]+$/.test(operationId)) {
     throw new SafeExitError("Local model operation id is invalid.");
   }
 }
 
+/**
+ * Validates operator-provided text for non-empty, bounded, printable content.
+ *
+ * @param value - The text to validate
+ * @param maximum - The maximum permitted length
+ * @param message - The message for the validation error
+ * @throws SafeExitError If the text is empty or whitespace-only, exceeds the maximum length, or contains disallowed control characters
+ */
 export function validateLocalModelText(value: string, maximum: number, message: string): void {
   const safe = [...value].every(
     (character) => (character.codePointAt(0) ?? 0) >= 32 || "\n\r\t".includes(character),
@@ -182,6 +208,12 @@ export function validateLocalModelText(value: string, maximum: number, message: 
   }
 }
 
+/**
+ * Validates progress reported by a local model worker.
+ *
+ * @param progress - Progress data with an active phase and, when provided, consistent byte measurements.
+ * @throws `SafeExitError` if the phase or byte measurements are invalid.
+ */
 export function validateLocalModelProgress(progress: LocalModelProgress): void {
   if (!["setting-up", "downloading-model", "verifying"].includes(progress.phase)) {
     throw new SafeExitError("Local model worker progress phase is invalid.");
@@ -206,6 +238,14 @@ export function validateLocalModelProgress(progress: LocalModelProgress): void {
   }
 }
 
+/**
+ * Replaces an operation at the specified index without mutating the input array.
+ *
+ * @param operations - The operation sequence to copy.
+ * @param index - The index of the operation to replace.
+ * @param operation - The replacement operation.
+ * @returns A new operation array containing the replacement at `index`.
+ */
 export function replaceLocalModelOperation(
   operations: readonly LocalModelOperation[],
   index: number,
@@ -214,10 +254,23 @@ export function replaceLocalModelOperation(
   return [...operations.slice(0, index), operation, ...operations.slice(index + 1)];
 }
 
+/**
+ * Determines the progress phase associated with a local model intent.
+ *
+ * @param kind - The local model intent kind.
+ * @returns `"setting-up"` for setup intents, or `"verifying"` for verification and smoke intents.
+ */
 export function claimedLocalModelPhase(kind: LocalModelIntent["kind"]): LocalModelProgressPhase {
   return kind === "setup" ? "setting-up" : "verifying";
 }
 
+/**
+ * Determines the operator-visible readiness state for a local model.
+ *
+ * @param operation - The latest local model operation, if one exists.
+ * @param ready - Whether the local model has been successfully verified.
+ * @returns The readiness state derived from the operation status and verification result.
+ */
 export function determineLocalModelReadiness(
   operation: LocalModelOperation | undefined,
   ready: boolean,
@@ -230,6 +283,12 @@ export function determineLocalModelReadiness(
   return "absent";
 }
 
+/**
+ * Provides the next operator action for the current local model readiness state.
+ *
+ * @param readiness - The local model readiness state.
+ * @returns An operator-facing instruction for progressing from the specified readiness state.
+ */
 export function nextActionForLocalModelReadiness(readiness: LocalModelReadiness): string {
   return {
     ready: "Local FLUX is ready for a Studio visual generation request.",
@@ -244,22 +303,46 @@ export function nextActionForLocalModelReadiness(readiness: LocalModelReadiness)
   }[readiness];
 }
 
+/**
+ * Estimates the duration of a local model operation in seconds.
+ *
+ * @param operation - The operation kind used to select the estimate.
+ * @returns The estimated duration in seconds.
+ */
 export function estimatedLocalModelDuration(operation: LocalModelIntent["kind"]): number {
   if (operation === "setup") return 600;
   if (operation === "verify") return 30;
   return 180;
 }
 
+/**
+ * Estimates the disk space required for a local model operation.
+ *
+ * @param operation - The operation kind used to select the disk-space estimate.
+ * @returns The estimated disk usage in bytes.
+ */
 export function estimatedLocalModelDiskBytes(operation: LocalModelIntent["kind"]): number {
   if (operation === "setup") return 6_500_000_000;
   if (operation === "verify") return 1_024;
   return 8_388_608;
 }
 
+/**
+ * Determines whether a local model operation is currently active.
+ *
+ * @param operation - The operation to inspect.
+ * @returns `true` if the operation is queued or running, `false` otherwise.
+ */
 export function localModelOperationIsActive(operation: LocalModelOperation): boolean {
   return operation.status === "queued" || operation.status === "running";
 }
 
+/**
+ * Determines whether a local model operation can be recovered.
+ *
+ * @param operation - The operation whose status and worker information are evaluated.
+ * @returns `true` if a running operation's worker is no longer alive or a queued operation is at least 30 seconds old, `false` otherwise.
+ */
 export function localModelOperationIsRecoverable(operation: LocalModelOperation): boolean {
   if (operation.status === "running") return !isRecordedLocalModelWorkerAlive(operation.workerId);
   if (operation.status !== "queued") return false;

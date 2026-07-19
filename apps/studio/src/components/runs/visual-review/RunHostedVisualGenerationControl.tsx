@@ -27,16 +27,10 @@ type Props = Readonly<{
 }>;
 
 /**
- * Provides the Studio-first hosted visual planning, approval, and generation workflow.
+ * Coordinates hosted visual planning, approval, and generation, enforcing selection, attribution, and confirmation requirements.
  *
- * Displays configuration or evidence blocking states, prevents invalid beat selections from being
- * planned, and requires confirmation of the exact approved plan, quote, and execution identity
- * before generation. Rejected-beat regeneration also requires reviewer attribution and revision
- * notes.
- *
- * @param props - Control state, hosted operation data, and workflow callbacks.
- * @returns The hosted visual generation controls, a blocking alert, or `null` when the hosted mode
- * is unsupported.
+ * @param props - Hosted operation state and callbacks for planning, confirmation, and generation.
+ * @returns Hosted controls, a blocking alert when hosted evidence is unavailable, or `null` for unsupported hosted modes.
  */
 export function RunHostedVisualGenerationControl({
   attributionReady,

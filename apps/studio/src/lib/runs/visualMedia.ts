@@ -10,15 +10,15 @@ export type StudioVisualMediaResult =
   | Readonly<{ status: 416 }>;
 
 /**
- * Serves one manifest-listed, integrity-verified visual revision for a scene.
+ * Serves an integrity-verified visual revision listed in a scene manifest.
  *
  * @param root - Project root used to locate the visual run and media asset
  * @param runId - Identifier of the visual run
- * @param sceneIndex - Scene index whose active revision should be served
+ * @param sceneIndex - Scene index containing the requested revision
  * @param expectedManifestDigest - Expected SHA-256 digest of the visual manifest
- * @param expectedRevision - Expected revision number for the scene's persisted revision history
+ * @param expectedRevision - Revision number to serve from the scene's persisted revision history
  * @param rangeHeader - Optional HTTP byte-range request
- * @returns A full or partial media response, `404` when the run, manifest, revision, or asset is unavailable or fails verification, or `416` for an invalid range
+ * @returns A media response with status `200` or `206`, `404` when the run, manifest, revision, or asset is unavailable or fails verification, or `416` for an invalid range
  */
 export async function readStudioVisualMedia(
   root: string,

@@ -31,7 +31,15 @@ export type MfluxWorkerRequest =
 
 type SpawnProcess = typeof spawn;
 
-/** Executes only the pinned MFLUX helper contract with a bounded child-process lifetime. */
+/**
+ * Executes the pinned local MFLUX worker and validates its diagnostic result.
+ *
+ * @param projectRoot - The project root used to locate the MFLUX environment and run the worker.
+ * @param request - The worker operation and its operation-specific inputs.
+ * @param timeoutMs - The maximum allowed worker runtime in milliseconds.
+ * @returns The validated successful worker result.
+ * @throws SafeExitError If the worker times out, fails to start or complete, returns an invalid or failed result, or reports a different operation.
+ */
 export async function executeMfluxWorker(
   projectRoot: string,
   request: MfluxWorkerRequest,
@@ -93,6 +101,16 @@ function buildArguments(projectRoot: string, request: MfluxWorkerRequest): strin
   ];
 }
 
+/**
+ * Runs a child process with bounded output capture and execution time.
+ *
+ * @param command - The executable to run
+ * @param args - Arguments passed to the executable
+ * @param cwd - Working directory for the child process
+ * @param timeoutMs - Maximum execution time in milliseconds
+ * @returns The captured stdout and stderr output
+ * @throws `SafeExitError` if the timeout is outside supported bounds, the process cannot start, times out, or exits unsuccessfully without output
+ */
 function runBoundedProcess(
   command: string,
   args: readonly string[],

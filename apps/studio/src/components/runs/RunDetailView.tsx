@@ -22,7 +22,8 @@ const reviewWorkspaceClass =
 /**
  * Renders a read-only detail view for a run.
  *
- * @param initialTab - The run review tab selected from URL or run-state projection.
+ * @param initialTab - The run review tab selected from the URL or run state.
+ * @param locale - The locale used for visual review content.
  * @param run - The run data to display.
  */
 export function RunDetailView({
