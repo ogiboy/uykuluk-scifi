@@ -17,24 +17,13 @@ export function LocalModelProgress({
 
   return (
     <div className='grid gap-2'>
-      <div
+      <progress
         aria-label={copy.progress}
-        aria-valuemax={hasMeasuredProgress ? 100 : undefined}
-        aria-valuemin={hasMeasuredProgress ? 0 : undefined}
-        aria-valuenow={percent ?? undefined}
         aria-valuetext={hasMeasuredProgress ? `${percent}%` : copy.progressUnknown}
-        className='bg-muted relative h-2 overflow-hidden rounded-full'
-        role='progressbar'
-      >
-        <div
-          className={
-            hasMeasuredProgress
-              ? "h-full rounded-full bg-cyan-400 transition-[width] duration-500 motion-reduce:transition-none"
-              : "h-full w-full animate-pulse rounded-full bg-cyan-400/25 motion-reduce:animate-none"
-          }
-          style={hasMeasuredProgress ? { width: `${percent}%` } : undefined}
-        />
-      </div>
+        className='bg-muted [&::-webkit-progress-bar]:bg-muted h-2 w-full appearance-none overflow-hidden rounded-full accent-cyan-400 [&::-moz-progress-bar]:rounded-full [&::-moz-progress-bar]:bg-cyan-400 [&::-webkit-progress-bar]:rounded-full [&::-webkit-progress-value]:rounded-full [&::-webkit-progress-value]:bg-cyan-400'
+        max={100}
+        value={percent ?? undefined}
+      />
       <p aria-live='polite' className='text-muted-foreground text-xs'>
         {progressDescription}
       </p>

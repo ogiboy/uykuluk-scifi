@@ -81,8 +81,7 @@ async function runCuratedMfluxCommand(
   const outputPath = operation.runId
     ? projectRunPath(projectRoot, operation.runId, "diagnostics", "local-models", "smoke.png")
     : undefined;
-  const timeoutMs =
-    operation.kind === "setup" ? 45 * 60_000 : operation.kind === "verify" ? 60_000 : 300_000;
+  const timeoutMs = localModelWorkerTimeout(operation.kind);
   if (operation.kind === "smoke") {
     if (!outputPath) throw new SafeExitError("Local MFLUX smoke evidence path is missing.");
     return executeMfluxWorker(
@@ -92,6 +91,12 @@ async function runCuratedMfluxCommand(
     );
   }
   return executeMfluxWorker(projectRoot, { operation: operation.kind, runtimePath }, timeoutMs);
+}
+
+function localModelWorkerTimeout(kind: "setup" | "verify" | "smoke"): number {
+  if (kind === "setup") return 45 * 60_000;
+  if (kind === "verify") return 60_000;
+  return 300_000;
 }
 
 async function writeWorkerEvidence(

@@ -14,7 +14,6 @@ export const localModelCatalog = {
 } as const;
 
 export type LocalModelId = keyof typeof localModelCatalog;
-export type LocalModelPackageId = LocalModelId;
 export type LocalModelIntentKind = "setup" | "verify" | "smoke";
 export type LocalModelOperationStatus =
   "queued" | "running" | "succeeded" | "failed" | "interrupted";
@@ -58,7 +57,7 @@ export type LocalModelOperationPreparation = Readonly<{
   estimatedUsdMicros: 0;
   estimatedDurationSeconds: number;
   estimatedDiskBytes: number;
-  packageId: LocalModelPackageId;
+  packageId: LocalModelId;
   operation: LocalModelIntentKind;
   preparedAt: string;
 }>;
@@ -246,11 +245,15 @@ export function nextActionForLocalModelReadiness(readiness: LocalModelReadiness)
 }
 
 export function estimatedLocalModelDuration(operation: LocalModelIntent["kind"]): number {
-  return operation === "setup" ? 600 : operation === "verify" ? 30 : 180;
+  if (operation === "setup") return 600;
+  if (operation === "verify") return 30;
+  return 180;
 }
 
 export function estimatedLocalModelDiskBytes(operation: LocalModelIntent["kind"]): number {
-  return operation === "setup" ? 6_500_000_000 : operation === "verify" ? 1_024 : 8_388_608;
+  if (operation === "setup") return 6_500_000_000;
+  if (operation === "verify") return 1_024;
+  return 8_388_608;
 }
 
 export function localModelOperationIsActive(operation: LocalModelOperation): boolean {

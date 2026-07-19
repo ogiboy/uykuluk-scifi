@@ -221,7 +221,6 @@ function formatCreatedAt(
   value: string,
 ): string {
   const parsed = new Date(value);
-  return Number.isNaN(parsed.valueOf())
-    ? copy.recordedRevision
-    : parsed.toLocaleString(locale === "tr" ? "tr-TR" : "en-US");
+  const localeTag = locale === "tr" ? "tr-TR" : "en-US";
+  return Number.isNaN(parsed.valueOf()) ? copy.recordedRevision : parsed.toLocaleString(localeTag);
 }

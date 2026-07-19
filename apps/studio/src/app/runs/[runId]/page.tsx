@@ -31,10 +31,9 @@ export default async function RunDetailPage({
   if (!run) {
     notFound();
   }
-  const [initialTab, locale] = await Promise.all([
-    runReviewTabFromSearchParams(await searchParams, defaultRunReviewTab(run)),
-    getLocale(),
-  ]);
+  const resolvedSearchParams = await searchParams;
+  const initialTab = runReviewTabFromSearchParams(resolvedSearchParams, defaultRunReviewTab(run));
+  const locale = await getLocale();
 
   return (
     <StudioShell>

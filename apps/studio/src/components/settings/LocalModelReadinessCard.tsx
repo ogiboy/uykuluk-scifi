@@ -26,6 +26,7 @@ import {
 } from "./localModelReadinessPresentation";
 
 const mfluxPackageId = "mflux-flux2-klein-4b-q4";
+type LocalModelReadinessCopy = ReturnType<typeof localModelCopy>;
 
 type LocalModelReadinessCardProps = Readonly<{
   locale: StudioLocale;
@@ -88,19 +89,7 @@ export function LocalModelReadinessCard({ locale, overview }: LocalModelReadines
           <AlertDescription>{copy.requiredDescription}</AlertDescription>
         </Alert>
 
-        <div className='grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-4'>
-          <Fact label={copy.model} value='FLUX.2 Klein 4B · q4' />
-          <Fact label={copy.runtime} value='MFLUX 0.18.0 · Python 3.12' />
-          <Fact
-            label={copy.disk}
-            value={
-              preparation
-                ? formatLocalModelBytes(preparation.estimatedDiskBytes)
-                : copy.diskEstimate
-            }
-          />
-          <Fact label={copy.progress} value={localModelReadinessLabel(copy, overview)} />
-        </div>
+        <LocalModelFacts copy={copy} overview={overview} />
 
         {active ? (
           <LocalModelActivePanel
@@ -172,35 +161,7 @@ export function LocalModelReadinessCard({ locale, overview }: LocalModelReadines
           </div>
         )}
 
-        <details className='text-muted-foreground text-xs'>
-          <summary className='cursor-pointer font-medium'>{copy.advanced}</summary>
-          <dl className='mt-3 grid gap-1 break-all'>
-            <div>
-              {copy.package}: {mfluxPackageId}
-            </div>
-            <div>
-              {copy.runtimePath}: {overview.runtimePath}
-            </div>
-            {overview.latestOperation ? (
-              <>
-                <div>
-                  {copy.latestOperation}: {overview.latestOperation.operationId} ·{" "}
-                  {overview.latestOperation.status}
-                </div>
-                {overview.latestOperation.message ? (
-                  <div>
-                    {copy.latestDiagnostic}: {overview.latestOperation.message}
-                  </div>
-                ) : null}
-              </>
-            ) : null}
-            {preparation ? (
-              <div>
-                {copy.binding}: {preparation.bindingDigest}
-              </div>
-            ) : null}
-          </dl>
-        </details>
+        <LocalModelAdvancedDetails copy={copy} overview={overview} />
 
         {prepareAction.state.kind === "idle" ? null : (
           <LocalModelActionStatus copy={copy} state={prepareAction.state} />
@@ -224,4 +185,59 @@ export function LocalModelReadinessCard({ locale, overview }: LocalModelReadines
       successToastTitle: copy.preflightReady,
     });
   }
+}
+
+function LocalModelFacts({
+  copy,
+  overview,
+}: Readonly<{ copy: LocalModelReadinessCopy; overview: StudioLocalModelOverview }>) {
+  const diskEstimate = overview.preparation
+    ? formatLocalModelBytes(overview.preparation.estimatedDiskBytes)
+    : copy.diskEstimate;
+
+  return (
+    <div className='grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-4'>
+      <Fact label={copy.model} value='FLUX.2 Klein 4B · q4' />
+      <Fact label={copy.runtime} value='MFLUX 0.18.0 · Python 3.12' />
+      <Fact label={copy.disk} value={diskEstimate} />
+      <Fact label={copy.progress} value={localModelReadinessLabel(copy, overview)} />
+    </div>
+  );
+}
+
+function LocalModelAdvancedDetails({
+  copy,
+  overview,
+}: Readonly<{ copy: LocalModelReadinessCopy; overview: StudioLocalModelOverview }>) {
+  return (
+    <details className='text-muted-foreground text-xs'>
+      <summary className='cursor-pointer font-medium'>{copy.advanced}</summary>
+      <dl className='mt-3 grid gap-1 break-all'>
+        <div>
+          {copy.package}: {mfluxPackageId}
+        </div>
+        <div>
+          {copy.runtimePath}: {overview.runtimePath}
+        </div>
+        {overview.latestOperation ? (
+          <>
+            <div>
+              {copy.latestOperation}: {overview.latestOperation.operationId} ·{" "}
+              {overview.latestOperation.status}
+            </div>
+            {overview.latestOperation.message ? (
+              <div>
+                {copy.latestDiagnostic}: {overview.latestOperation.message}
+              </div>
+            ) : null}
+          </>
+        ) : null}
+        {overview.preparation ? (
+          <div>
+            {copy.binding}: {overview.preparation.bindingDigest}
+          </div>
+        ) : null}
+      </dl>
+    </details>
+  );
 }

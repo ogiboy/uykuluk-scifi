@@ -16,11 +16,11 @@ import {
   validateLocalModelOperationId,
   validateLocalModelProgress,
   validateLocalModelText,
+  type LocalModelId,
   type LocalModelIntent,
   type LocalModelOperation,
   type LocalModelOperationPreparation,
   type LocalModelOverview,
-  type LocalModelPackageId,
   type LocalModelProgress,
 } from "./localModelContracts.js";
 import {
@@ -80,7 +80,7 @@ export async function submitIntent(
 /** Persists a reviewed local-model preparation before setup, verify, or smoke execution. */
 export async function prepareLocalModelOperation(
   projectRoot: string,
-  input: Readonly<{ packageId: LocalModelPackageId; operation: LocalModelIntent["kind"] }>,
+  input: Readonly<{ packageId: LocalModelId; operation: LocalModelIntent["kind"] }>,
 ): Promise<LocalModelOperationPreparation> {
   validateLocalModelIntent({ modelId: input.packageId, kind: input.operation });
   const paths = localModelStatePaths(projectRoot);
@@ -126,7 +126,7 @@ export async function executeApprovedLocalModelOperation(
   const paths = localModelStatePaths(projectRoot);
   return withLocalModelLock(paths, async () => {
     const latest = await readLatestLocalModelPreparation(projectRoot, paths.preparationPointerPath);
-    if (!latest || latest.runId !== input.runId) {
+    if (latest?.runId !== input.runId) {
       throw new SafeExitError(
         "Local model operation approval is stale; review the current preparation.",
       );
