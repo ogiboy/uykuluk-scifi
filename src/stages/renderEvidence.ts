@@ -47,5 +47,12 @@ export async function readDraftRenderEvidence(run: RunRecord): Promise<DraftRend
     subtitleTimingMode: manifest.subtitles.timingMode,
     renderApproval: manifest.renderApproval,
     mediaProbe: manifest.mediaProbe,
+    ...(manifest.schemaVersion === 11
+      ? {
+          soundtrackManifestDigest: manifest.soundtrack.manifestDigest,
+          masteringOutputMeasurement: manifest.mastering.outputMeasurement,
+          encoding: manifest.encoding,
+        }
+      : {}),
   };
 }

@@ -1,6 +1,8 @@
 import { z } from "zod";
+import { soundtrackManifestPath } from "../soundtrack/soundtrackManifest.js";
 import { visualMotionPresetSchema } from "../visuals/visualMotionContracts.js";
 import { activeVoiceSubtitleDescriptorSchema } from "../voice/voiceoverSubtitles.js";
+import { audioMasteringEvidencePath, loudnormMeasurementSchema } from "./audioMastering.js";
 import { assetRefSchema, digestSchema } from "./renderPlanSchemas.js";
 import { renderMediaProbeSchema, type RenderMediaProbe } from "./renderProbe.js";
 
@@ -32,6 +34,25 @@ const voiceoverQualitySchema = z.enum([
 const renderApprovalSchema = z.strictObject({
   approvalId: z.string().min(1),
   approvedRef: digestSchema,
+});
+const renderApprovalV4Schema = renderApprovalSchema.extend({ contractVersion: z.literal(4) });
+const renderSoundtrackSchema = z.strictObject({
+  manifestPath: z.literal(soundtrackManifestPath),
+  manifestDigest: digestSchema,
+});
+const renderMasteringSchema = z.strictObject({
+  path: z.literal(audioMasteringEvidencePath),
+  sha256: digestSchema,
+  firstPass: loudnormMeasurementSchema,
+  outputMeasurement: loudnormMeasurementSchema,
+  passed: z.literal(true),
+});
+const renderEncodingSchema = z.strictObject({
+  container: z.literal("mp4"),
+  videoCodec: z.literal("h264"),
+  audioCodec: z.literal("aac"),
+  audioSampleRateHz: z.literal(48_000),
+  audioChannels: z.literal(2),
 });
 const renderTimelineItemSchema = z
   .strictObject({
@@ -131,9 +152,18 @@ const visualDraftRenderManifestSchema = legacyDraftRenderManifestSchema.extend({
   }),
 });
 
+const masteredDraftRenderManifestSchema = visualDraftRenderManifestSchema.extend({
+  schemaVersion: z.literal(11),
+  renderApproval: renderApprovalV4Schema,
+  soundtrack: renderSoundtrackSchema,
+  mastering: renderMasteringSchema,
+  encoding: renderEncodingSchema,
+});
+
 export const draftRenderManifestSchema = z.discriminatedUnion("schemaVersion", [
   legacyDraftRenderManifestSchema,
   visualDraftRenderManifestSchema,
+  masteredDraftRenderManifestSchema,
 ]);
 
 export type DraftRenderManifest = z.infer<typeof draftRenderManifestSchema>;
@@ -161,5 +191,8 @@ export type DraftRenderEvidence =
       subtitleTimingMode: z.infer<typeof activeVoiceSubtitleDescriptorSchema>["timingMode"];
       renderApproval: z.infer<typeof renderApprovalSchema>;
       mediaProbe: RenderMediaProbe;
+      soundtrackManifestDigest?: string;
+      masteringOutputMeasurement?: z.infer<typeof loudnormMeasurementSchema>;
+      encoding?: z.infer<typeof renderEncodingSchema>;
     }
   | { status: "block"; path: string; message: string };

@@ -76,6 +76,7 @@ export function renderDraftReviewMarkdown(manifest: DraftRenderManifest): string
       ],
     ),
     "",
+    ...soundtrackMasteringSection(manifest),
     "## Render Approval",
     "",
     table(
@@ -103,6 +104,20 @@ export function renderDraftReviewMarkdown(manifest: DraftRenderManifest): string
           manifest.subtitles.metadataSha256,
           "validated subtitle timing evidence",
         ],
+        ...(manifest.schemaVersion === 11
+          ? [
+              [
+                manifest.soundtrack.manifestPath,
+                manifest.soundtrack.manifestDigest,
+                "approved music/SFX selection and rights provenance",
+              ],
+              [
+                manifest.mastering.path,
+                manifest.mastering.sha256,
+                "two-pass loudness and post-encode compliance evidence",
+              ],
+            ]
+          : []),
       ],
     ),
     "",
@@ -156,6 +171,32 @@ export function renderDraftReviewMarkdown(manifest: DraftRenderManifest): string
     ...renderDraftDecision(manifest),
   );
   return sections.join("\n");
+}
+
+function soundtrackMasteringSection(manifest: DraftRenderManifest): string[] {
+  if (manifest.schemaVersion !== 11) return [];
+  const output = manifest.mastering.outputMeasurement;
+  return [
+    "## Soundtrack and Mastering",
+    "",
+    table(
+      ["Field", "Value"],
+      [
+        ["Soundtrack manifest", manifest.soundtrack.manifestPath],
+        ["Soundtrack digest", manifest.soundtrack.manifestDigest],
+        ["Mastering evidence", manifest.mastering.path],
+        ["Integrated loudness", `${output.integratedLufs} LUFS`],
+        ["True peak", `${output.truePeakDbtp} dBTP`],
+        ["Loudness range", `${output.loudnessRangeLufs} LU`],
+        [
+          "Encoding",
+          `${manifest.encoding.audioCodec} ${manifest.encoding.audioSampleRateHz}Hz ${manifest.encoding.audioChannels}ch`,
+        ],
+        ["Compliance", manifest.mastering.passed ? "pass" : "block"],
+      ],
+    ),
+    "",
+  ];
 }
 
 function subtitleTimingReviewNote(manifest: DraftRenderManifest): string {

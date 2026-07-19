@@ -47,8 +47,12 @@ describe("draft render", () => {
       artifactPath(runId, "production/render/render_manifest.json"),
     );
     const draftRenderArtifactPath = artifactPath(runId, "production/render/draft.mp4");
-    expect(manifest.schemaVersion).toBe(10);
-    expect(manifest.renderApproval).toEqual({ approvalId: approval.approvalId, approvedRef });
+    expect(manifest.schemaVersion).toBe(11);
+    expect(manifest.renderApproval).toEqual({
+      approvalId: approval.approvalId,
+      approvedRef,
+      contractVersion: 4,
+    });
     expect(manifest.output).toMatchObject({
       path: "production/render/draft.mp4",
       sha256: expect.stringMatching(/^[a-f0-9]{64}$/),
@@ -94,8 +98,30 @@ describe("draft render", () => {
         voiceoverMode: manifest.voiceoverAudio.mode,
         voiceoverProductionVoiceCandidate: manifest.voiceoverAudio.productionVoiceCandidate,
         voiceoverQuality: manifest.voiceoverAudio.quality,
+        soundtrackManifestDigest:
+          manifest.schemaVersion === 11 ? manifest.soundtrack.manifestDigest : "",
       }),
     );
+    if (manifest.schemaVersion !== 11) {
+      throw new Error("Current draft render manifest must include mastering evidence.");
+    }
+    expect(manifest.soundtrack).toMatchObject({
+      manifestPath: "production/audio/soundtrack/manifest.json",
+      manifestDigest: expect.stringMatching(/^[a-f0-9]{64}$/),
+    });
+    expect(manifest.mastering).toMatchObject({
+      path: "production/render/audio_mastering.json",
+      sha256: expect.stringMatching(/^[a-f0-9]{64}$/),
+      passed: true,
+      outputMeasurement: { integratedLufs: -14, truePeakDbtp: -1.2 },
+    });
+    expect(manifest.encoding).toEqual({
+      container: "mp4",
+      videoCodec: "h264",
+      audioCodec: "aac",
+      audioSampleRateHz: 48_000,
+      audioChannels: 2,
+    });
     expect(manifest.timeline.map((item) => item.segment)).toEqual(["intro", "scene", "outro"]);
     expect(manifest.timeline[0]).toMatchObject({
       backgroundAsset: { path: "assets/intro/episode_title_card_1920x1080.jpg" },

@@ -11,6 +11,11 @@ import { renderDraft } from "../src/stages/render";
 import { generateRenderPlan } from "../src/stages/renderPlan";
 import { reviewScript } from "../src/stages/reviewScript";
 import { generateScript } from "../src/stages/script";
+import {
+  analyzeSoundtrackLoudness,
+  decideSoundtrack,
+  prepareVoiceOnlySoundtrack,
+} from "../src/stages/soundtrack";
 import { generateVoiceoverAudio } from "../src/stages/voice";
 import {
   createFakeFfmpeg,
@@ -29,7 +34,35 @@ import { prepareApprovedStaticVisuals } from "./visualTestHelpers";
 export async function prepareVoiceoverReadyRun(): Promise<string> {
   const runId = await prepareReadyRunWithoutVoiceover();
   await generateVoiceoverAudio(runId);
+  await prepareApprovedVoiceOnlySoundtrack(runId);
   return runId;
+}
+
+/** Persists analyzed and operator-approved voice-only soundtrack evidence for render tests. */
+export async function prepareApprovedVoiceOnlySoundtrack(runId: string): Promise<void> {
+  const prepared = await prepareVoiceOnlySoundtrack({ runId });
+  const analyzed = await analyzeSoundtrackLoudness({
+    runId,
+    expectedManifestDigest: prepared.digest,
+    expectedRevision: prepared.manifest.revision,
+    ffmpeg: async () => ({
+      stderr: JSON.stringify({
+        input_i: "-14.2",
+        input_tp: "-1.6",
+        input_lra: "5.1",
+        input_thresh: "-24.2",
+        target_offset: "0.2",
+      }),
+    }),
+  });
+  await decideSoundtrack({
+    runId,
+    expectedManifestDigest: analyzed.digest,
+    expectedRevision: analyzed.manifest.revision,
+    status: "approved",
+    reviewedBy: "Render test operator",
+    notes: "Voice-only fallback loudness analysis accepted for deterministic render testing.",
+  });
 }
 
 /**

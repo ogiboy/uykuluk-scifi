@@ -11,7 +11,19 @@ import { ensureDir } from "../utils/fs.js";
 import { shellCommand } from "../utils/shell.js";
 import { nowIso } from "../utils/time.js";
 import { verifyProductionPackage } from "./production/productionPackageIntegrity.js";
+import {
+  assertMasteringOutput,
+  audioMasteringEvidencePath,
+  audioMasteringEvidenceSchema,
+  secondPassLoudnormFilter,
+  voiceForwardMasteringProfile,
+} from "./render/audioMastering.js";
+import {
+  buildRenderedOutputAnalysisArgs,
+  runLoudnormAnalysis,
+} from "./render/audioMasteringExecution.js";
 import { renderApprovalRef } from "./render/renderApproval.js";
+import { buildRenderAudioGraph } from "./render/renderAudioMix.js";
 import {
   buildDraftRenderChapterDraft,
   renderDraftRenderChaptersMarkdown,
@@ -29,6 +41,7 @@ import { RenderPlan, renderPlanSchema } from "./render/renderPlanSchemas.js";
 import { probeDraftRender } from "./render/renderProbe.js";
 import { renderDraftReviewMarkdown } from "./render/renderReviewMarkdown.js";
 import { buildDraftSubtitleTiming } from "./render/renderSubtitleTiming.js";
+import { soundtrackRenderInputs } from "./render/soundtrackRenderInputs.js";
 import {
   DraftRenderManifest,
   draftRenderChaptersJsonPath,
@@ -39,12 +52,15 @@ import {
   draftRenderReviewPath,
 } from "./renderEvidence.js";
 import { readRenderPlanEvidence } from "./renderPlan.js";
+import { soundtrackManifestPath } from "./soundtrack/soundtrackManifest.js";
+import { requireApprovedSoundtrackManifest } from "./soundtrack/soundtrackService.js";
 import { readVoiceoverAudioEvidence, voiceoverAudioPath } from "./voice/voiceoverEvidence.js";
 
 export { buildDraftRenderTimeline, buildFfmpegArgs } from "./render/renderFfmpegPlan.js";
 
 export type RenderDraftOptions = {
   ffmpegBinary?: string;
+  ffmpegTimeoutMs?: number;
   ffprobeBinary?: string | false;
   maxDurationSeconds?: number;
 };
@@ -77,6 +93,11 @@ export async function renderDraft(
     if (voiceoverAudio.status !== "pass") {
       throw new SafeExitError("Draft render requires valid voiceover audio evidence.");
     }
+    const soundtrack = await requireApprovedSoundtrackManifest(run);
+    const firstPass = soundtrack.manifest.analysis?.firstPass;
+    if (!firstPass) {
+      throw new SafeExitError("Draft render requires current soundtrack loudness analysis.");
+    }
     const approval = run.approvals.find((item) => item.target === "render");
     const currentApprovalRef = renderApprovalRef({
       renderPlanDigest: renderPlanEvidence.digest,
@@ -89,6 +110,7 @@ export async function renderDraft(
       voiceoverMode: voiceoverAudio.mode,
       voiceoverProductionVoiceCandidate: voiceoverAudio.productionVoiceCandidate,
       voiceoverQuality: voiceoverAudio.quality,
+      soundtrackManifestDigest: soundtrack.digest,
     });
     if (approval?.approvedRef !== currentApprovalRef) {
       throw new SafeExitError("Draft render approval is stale for current render inputs.");
@@ -115,7 +137,16 @@ export async function renderDraft(
     await rm(temporaryOutput, { force: true }).catch(() => undefined);
     await rm(output, { force: true }).catch(() => undefined);
     const ffmpegBinary = options.ffmpegBinary ?? "ffmpeg";
+    const ffmpegTimeoutMs = options.ffmpegTimeoutMs ?? 30 * 60_000;
+    const audioGraph = buildRenderAudioGraph({
+      firstAudioInputIndex: ffmpegTimelineInputs.length,
+      masteringFilter: secondPassLoudnormFilter(firstPass),
+      runId: run.runId,
+      soundtrack: soundtrackRenderInputs(soundtrack.manifest),
+      timing,
+    });
     const args = buildFfmpegArgs({
+      audioGraph,
       ffmpegOutputPath: temporaryOutput,
       renderPlan,
       runId: run.runId,
@@ -126,7 +157,7 @@ export async function renderDraft(
       subtitleTiming,
     });
     const reviewArgs = buildFfmpegReviewArgs(output);
-    await runFfmpeg(ffmpegBinary, args);
+    await runFfmpeg(ffmpegBinary, args, ffmpegTimeoutMs);
     const outputInfo = await stat(temporaryOutput);
     if (outputInfo.size <= 0) {
       throw new SafeExitError("FFmpeg produced an empty draft render output.");
@@ -138,12 +169,42 @@ export async function renderDraft(
     if (Math.abs(mediaProbe.durationSeconds - timing.totalDurationSeconds) > 0.1) {
       throw new SafeExitError("FFprobe duration does not match the planned draft timeline.");
     }
+    const outputMeasurement = (
+      await runLoudnormAnalysis(
+        ffmpegBinary,
+        buildRenderedOutputAnalysisArgs(temporaryOutput),
+        ffmpegTimeoutMs,
+      )
+    ).measurement;
+    assertMasteringOutput(outputMeasurement);
+    const masteringEvidence = audioMasteringEvidenceSchema.parse({
+      schemaVersion: 1,
+      algorithm: "ffmpeg-loudnorm-two-pass-v1",
+      createdAt: nowIso(),
+      source: {
+        soundtrackManifestDigest: soundtrack.digest,
+        voiceoverDigest: voiceoverAudio.digest,
+      },
+      target: {
+        profileId: voiceForwardMasteringProfile.id,
+        integratedLufs: voiceForwardMasteringProfile.integratedLufs,
+        toleranceLufs: voiceForwardMasteringProfile.toleranceLufs,
+        normalizationTruePeakDbtp: voiceForwardMasteringProfile.normalizationTruePeakDbtp,
+        maxOutputTruePeakDbtp: voiceForwardMasteringProfile.maxOutputTruePeakDbtp,
+        loudnessRangeLufs: voiceForwardMasteringProfile.loudnessRangeLufs,
+      },
+      firstPass,
+      outputMeasurement,
+      passed: true,
+    });
     await rename(temporaryOutput, output);
     temporaryOutput = undefined;
     const outputBytes = await readFile(output);
     run = await recordRunArtifact(run, "render", draftRenderPath);
+    run = await writeRunJson(run, "render", audioMasteringEvidencePath, masteringEvidence);
+    const masteringBytes = await readFile(artifactPath(run.runId, audioMasteringEvidencePath));
     const manifestBase = {
-      schemaVersion: 10,
+      schemaVersion: 11,
       runId: run.runId,
       createdAt: nowIso(),
       renderPlan: {
@@ -160,7 +221,26 @@ export async function renderDraft(
         quality: voiceoverAudio.quality,
       },
       subtitles: voiceoverAudio.subtitle,
-      renderApproval: { approvalId: approval.approvalId, approvedRef: currentApprovalRef },
+      renderApproval: {
+        approvalId: approval.approvalId,
+        approvedRef: currentApprovalRef,
+        contractVersion: 4,
+      },
+      soundtrack: { manifestPath: soundtrackManifestPath, manifestDigest: soundtrack.digest },
+      mastering: {
+        path: audioMasteringEvidencePath,
+        sha256: createHash("sha256").update(masteringBytes).digest("hex"),
+        firstPass,
+        outputMeasurement,
+        passed: true,
+      },
+      encoding: {
+        container: "mp4",
+        videoCodec: "h264",
+        audioCodec: "aac",
+        audioSampleRateHz: 48_000,
+        audioChannels: 2,
+      },
       timeline,
       timing,
       subtitleTiming,
@@ -238,22 +318,35 @@ async function readRenderPlan(runId: string): Promise<RenderPlan> {
   );
 }
 
-async function runFfmpeg(binary: string, args: string[]): Promise<void> {
+async function runFfmpeg(binary: string, args: string[], timeoutMs: number): Promise<void> {
   await new Promise<void>((resolve, reject) => {
     const child = spawn(binary, args, { stdio: ["ignore", "ignore", "pipe"] });
     let stderr = "";
+    let settled = false;
+    const finish = (callback: () => void) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      callback();
+    };
+    const timer = setTimeout(() => {
+      child.kill("SIGKILL");
+      finish(() => reject(new SafeExitError("FFmpeg render timed out.")));
+    }, timeoutMs);
     child.stderr.on("data", (chunk: Buffer) => {
       stderr = `${stderr}${chunk.toString("utf8")}`.slice(-4_000);
     });
     child.on("error", (error) =>
-      reject(new SafeExitError(`FFmpeg failed to start: ${error.message}`)),
+      finish(() => reject(new SafeExitError(`FFmpeg failed to start: ${error.message}`))),
     );
     child.on("close", (code) => {
-      if (code === 0) {
-        resolve();
-        return;
-      }
-      reject(new SafeExitError(`FFmpeg exited with code ${code}: ${stderr.trim()}`));
+      finish(() => {
+        if (code === 0) {
+          resolve();
+          return;
+        }
+        reject(new SafeExitError(`FFmpeg exited with code ${code}: ${stderr.trim()}`));
+      });
     });
   });
 }

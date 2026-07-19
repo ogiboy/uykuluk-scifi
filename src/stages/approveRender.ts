@@ -8,6 +8,7 @@ import { createId, nowIso } from "../utils/time.js";
 import { verifyProductionPackage } from "./production/productionPackageIntegrity.js";
 import { renderApprovalRef } from "./render/renderApproval.js";
 import { readRenderPlanEvidence } from "./renderPlan.js";
+import { requireApprovedSoundtrackManifest } from "./soundtrack/soundtrackService.js";
 import { readVoiceoverAudioEvidence } from "./voice/voiceoverEvidence.js";
 
 /**
@@ -37,6 +38,7 @@ export async function approveRender(runId: string): Promise<ApprovalRecord> {
     if (voiceoverAudio.status !== "pass") {
       throw new SafeExitError("Cannot approve render without valid voiceover audio evidence.");
     }
+    const soundtrack = await requireApprovedSoundtrackManifest(run);
     const approval: ApprovalRecord = {
       approvalId: createId("approval"),
       runId: run.runId,
@@ -52,6 +54,7 @@ export async function approveRender(runId: string): Promise<ApprovalRecord> {
         voiceoverMode: voiceoverAudio.mode,
         voiceoverProductionVoiceCandidate: voiceoverAudio.productionVoiceCandidate,
         voiceoverQuality: voiceoverAudio.quality,
+        soundtrackManifestDigest: soundtrack.digest,
       }),
       previousState: run.state,
       nextState: "RENDER_APPROVED",
@@ -66,7 +69,8 @@ export async function approveRender(runId: string): Promise<ApprovalRecord> {
       runId: run.runId,
       type: "APPROVAL_RECORDED",
       stage: "approve-render",
-      message: "Render approved for the current visual manifest, render plan, and voiceover audio.",
+      message:
+        "Render approved for the current visual manifest, render plan, voiceover audio, and approved soundtrack manifest.",
       data: approval,
     });
     await setRunState(run, "RENDER_APPROVED", "approve-render");

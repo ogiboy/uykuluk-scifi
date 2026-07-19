@@ -8,7 +8,13 @@ import { pathExists } from "../../utils/fs.js";
 import { readJsonFile } from "../../utils/json.js";
 import { shellCommand } from "../../utils/shell.js";
 import { readRenderPlanEvidence } from "../renderPlan.js";
+import {
+  soundtrackManifestPath,
+  validateSoundtrackManifest,
+} from "../soundtrack/soundtrackManifest.js";
 import { readVoiceoverAudioEvidence } from "../voice/voiceoverEvidence.js";
+import { assertMasteringOutput, audioMasteringEvidenceSchema } from "./audioMastering.js";
+import { renderApprovalRefV4 } from "./renderApproval.js";
 import {
   draftRenderArtifactPaths,
   draftRenderManifestPath,
@@ -96,6 +102,9 @@ export async function readValidatedDraftRenderManifest(
   assertDraftRenderTiming(manifest);
   await assertDraftRenderChapterDrafts(run, manifest);
   await assertDraftRenderInputs(run, manifest);
+  if (manifest.schemaVersion === 11) {
+    await assertDraftRenderMasteringEvidence(run, manifest);
+  }
   return { digest, manifest: trustedReviewManifest(run.runId, manifest) };
 }
 
@@ -167,7 +176,7 @@ async function assertDraftRenderInputs(
     throw new SafeExitError("Draft render was generated from a stale or missing render plan.");
   }
   if (
-    manifest.schemaVersion === 10 &&
+    manifest.schemaVersion >= 10 &&
     renderPlan.visualManifestDigest !== manifest.renderPlan.visualManifestDigest
   ) {
     throw new SafeExitError("Draft render was generated from stale visual manifest evidence.");
@@ -202,6 +211,91 @@ async function assertDraftRenderInputs(
   ) {
     throw new SafeExitError("Draft render approval record changed after render.");
   }
+}
+
+async function assertDraftRenderMasteringEvidence(
+  run: RunRecord,
+  manifest: Extract<DraftRenderManifest, { schemaVersion: 11 }>,
+): Promise<void> {
+  if (!run.artifacts.includes(soundtrackManifestPath)) {
+    throw new SafeExitError(
+      `Draft render soundtrack evidence is not registered: ${soundtrackManifestPath}.`,
+    );
+  }
+  if (!run.artifacts.includes(manifest.mastering.path)) {
+    throw new SafeExitError(
+      `Draft render mastering evidence is not registered: ${manifest.mastering.path}.`,
+    );
+  }
+  const soundtrackBytes = await readFile(artifactPath(run.runId, soundtrackManifestPath));
+  if (
+    createHash("sha256").update(soundtrackBytes).digest("hex") !==
+    manifest.soundtrack.manifestDigest
+  ) {
+    throw new SafeExitError("Draft render soundtrack manifest does not match manifest evidence.");
+  }
+  const soundtrack = await validateSoundtrackManifest(
+    JSON.parse(soundtrackBytes.toString("utf8")),
+    {
+      runId: run.runId,
+      readBytes: (relativePath) => {
+        if (!run.artifacts.includes(relativePath)) {
+          throw new SafeExitError(
+            `Draft render soundtrack asset is not registered: ${relativePath}.`,
+          );
+        }
+        return readFile(artifactPath(run.runId, relativePath));
+      },
+    },
+  );
+  if (soundtrack.decision?.status !== "approved" || !soundtrack.analysis) {
+    throw new SafeExitError("Draft render soundtrack manifest is not approved.");
+  }
+  const expectedApprovalRef = renderApprovalRefV4({
+    renderPlanDigest: manifest.renderPlan.digest,
+    visualManifestDigest: manifest.renderPlan.visualManifestDigest,
+    subtitleDigest: manifest.subtitles.sha256,
+    subtitleMetadataDigest: manifest.subtitles.metadataSha256,
+    subtitleTimingMode: manifest.subtitles.timingMode,
+    voiceMetadataDigest: manifest.voiceoverAudio.metadataDigest,
+    voiceoverAudioDigest: manifest.voiceoverAudio.digest,
+    voiceoverMode: manifest.voiceoverAudio.mode,
+    voiceoverProductionVoiceCandidate: manifest.voiceoverAudio.productionVoiceCandidate,
+    voiceoverQuality: manifest.voiceoverAudio.quality,
+    soundtrackManifestDigest: manifest.soundtrack.manifestDigest,
+  });
+  if (manifest.renderApproval.approvedRef !== expectedApprovalRef) {
+    throw new SafeExitError("Draft render approval does not match current v4 input evidence.");
+  }
+  const masteringBytes = await readFile(artifactPath(run.runId, manifest.mastering.path));
+  if (createHash("sha256").update(masteringBytes).digest("hex") !== manifest.mastering.sha256) {
+    throw new SafeExitError("Draft render mastering evidence does not match manifest.");
+  }
+  const mastering = audioMasteringEvidenceSchema.parse(JSON.parse(masteringBytes.toString("utf8")));
+  if (
+    mastering.source.soundtrackManifestDigest !== manifest.soundtrack.manifestDigest ||
+    mastering.source.voiceoverDigest !== manifest.voiceoverAudio.digest ||
+    !sameJsonValue(soundtrack.analysis.firstPass, manifest.mastering.firstPass) ||
+    !sameJsonValue(mastering.firstPass, manifest.mastering.firstPass) ||
+    !sameJsonValue(mastering.outputMeasurement, manifest.mastering.outputMeasurement) ||
+    mastering.passed !== manifest.mastering.passed
+  ) {
+    throw new SafeExitError("Draft render mastering evidence does not match current inputs.");
+  }
+  assertMasteringOutput(mastering.outputMeasurement);
+  if (
+    !manifest.mediaProbe.formatName?.split(",").includes(manifest.encoding.container) ||
+    manifest.mediaProbe.video.codecName !== manifest.encoding.videoCodec ||
+    manifest.mediaProbe.audio.codecName !== manifest.encoding.audioCodec ||
+    manifest.mediaProbe.audio.sampleRateHz !== manifest.encoding.audioSampleRateHz ||
+    manifest.mediaProbe.audio.channels !== manifest.encoding.audioChannels
+  ) {
+    throw new SafeExitError("Draft render encoding evidence does not match its media probe.");
+  }
+}
+
+function sameJsonValue(left: unknown, right: unknown): boolean {
+  return JSON.stringify(left) === JSON.stringify(right);
 }
 
 function trustedReviewManifest(runId: string, manifest: DraftRenderManifest): DraftRenderManifest {
