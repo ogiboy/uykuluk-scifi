@@ -69,9 +69,9 @@ Studio manages the curated local MFLUX runtime through an exact setup/verify/smo
 approval flow. The detached worker reports durable progress and recovery state; offline verification
 uses the pinned install manifest. Readiness is unavailable until setup or verification succeeds.
 Model weights and their install manifest live under `models/visual/mflux/flux2-klein-4b-q4`; the
-ignored `.local-models/mflux` directory is reserved for operation state and locks.
-Real installation and the bounded 1024x576 smoke remain pending an exact operator-approved run on
-the target machine and are not CI evidence.
+ignored `.local-models/mflux` directory is reserved for operation state and locks. Real installation
+and the bounded 1024x576 smoke remain pending an exact operator-approved run on the target machine
+and are not CI evidence.
 
 When ready, local generation runs sequentially for selected scene indexes and writes revisioned PNG
 media into the existing manifest. Provenance includes MFLUX model/runtime revisions, quantization,

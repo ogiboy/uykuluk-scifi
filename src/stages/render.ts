@@ -2,8 +2,8 @@ import { spawn } from "node:child_process";
 import { createHash, randomUUID } from "node:crypto";
 import { readFile, rename, rm, stat } from "node:fs/promises";
 import path from "node:path";
-import { artifactPath, recordRunArtifact, writeRunJson, writeRunText } from "../core/artifacts.js";
 import { captureRunArtifactRollback } from "../core/artifactRollback.js";
+import { artifactPath, recordRunArtifact, writeRunJson, writeRunText } from "../core/artifacts.js";
 import { SafeExitError } from "../core/errors.js";
 import { appendLedgerEvent } from "../core/ledger.js";
 import { loadRun, setRunState } from "../core/runStore.js";
@@ -45,9 +45,9 @@ import { buildDraftSubtitleTiming } from "./render/renderSubtitleTiming.js";
 import { soundtrackRenderInputs } from "./render/soundtrackRenderInputs.js";
 import {
   DraftRenderManifest,
+  draftRenderArtifactPaths,
   draftRenderChaptersJsonPath,
   draftRenderChaptersMarkdownPath,
-  draftRenderArtifactPaths,
   draftRenderManifestPath,
   draftRenderManifestSchema,
   draftRenderPath,

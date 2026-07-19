@@ -176,7 +176,10 @@ async function post(
 ): Promise<StudioActionPayload> {
   const response = await handler(studioJsonRequest(session, routePath, actionId, body));
   const payload = (await response.json().catch(() => null)) as StudioActionPayload | null;
-  assert(response.status === 200, `${actionId} returned HTTP ${response.status}.`);
+  assert(
+    response.status === 200,
+    `${actionId} returned HTTP ${response.status}: ${payload?.message ?? "no response message"}.`,
+  );
   assert(payload?.status === "ok", payload?.message ?? `${actionId} did not return ok.`);
   assert(payload.actionId === actionId, `${actionId} response action id matches.`);
   return payload;

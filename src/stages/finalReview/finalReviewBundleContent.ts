@@ -1,11 +1,11 @@
 import { productionPackageManifestPath } from "../production/productionPackageIntegrity.js";
-import { soundtrackManifestPath, type SoundtrackManifest } from "../soundtrack/soundtrackManifest.js";
 import { voiceForwardMasteringProfile } from "../render/audioMastering.js";
 import type { DraftRenderManifest } from "../render/renderEvidenceContracts.js";
-import type {
-  CurrentFinalReviewBundle,
-  FinalReviewBundle,
-} from "./finalReviewBundleContracts.js";
+import {
+  soundtrackManifestPath,
+  type SoundtrackManifest,
+} from "../soundtrack/soundtrackManifest.js";
+import type { CurrentFinalReviewBundle, FinalReviewBundle } from "./finalReviewBundleContracts.js";
 import { acceptedFinalReviewNextSafeAction } from "./finalReviewBundleValidation.js";
 
 type FinalReviewArtifact = FinalReviewBundle["artifacts"][number];

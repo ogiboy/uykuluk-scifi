@@ -106,10 +106,7 @@ const finalReviewBundleV3MediaSchema = z.strictObject({
     manifestDigest: digestSchema,
     mode: z.enum(["voice-only", "mixed"]),
     revision: z.int().positive(),
-    decision: z.strictObject({
-      status: z.literal("approved"),
-      decidedAt: z.iso.datetime(),
-    }),
+    decision: z.strictObject({ status: z.literal("approved"), decidedAt: z.iso.datetime() }),
   }),
   rightsProvenance: z.strictObject({
     assetCount: z.int().nonnegative(),

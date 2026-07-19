@@ -15,7 +15,7 @@ import {
   analyzeSoundtrackLoudness,
   decideSoundtrack,
   prepareVoiceOnlySoundtrack,
-} from "../src/stages/soundtrack";
+} from "../src/stages/soundtrack/soundtrackService";
 import { generateVoiceoverAudio } from "../src/stages/voice";
 import {
   createFakeFfmpeg,
