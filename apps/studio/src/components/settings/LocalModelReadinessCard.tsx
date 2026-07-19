@@ -70,7 +70,7 @@ export function LocalModelReadinessCard({ locale, overview }: LocalModelReadines
       <CardHeader className='bg-background/35 border-b border-(--line)'>
         <div className='flex flex-wrap items-start justify-between gap-3'>
           <div className='grid gap-1.5'>
-            <CardTitle className='flex items-center gap-2'>
+            <CardTitle aria-level={2} className='flex items-center gap-2' role='heading'>
               <SparklesIcon aria-hidden='true' className='text-cyan-400' />
               {copy.title}
             </CardTitle>
