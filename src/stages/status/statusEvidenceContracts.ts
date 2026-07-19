@@ -110,7 +110,11 @@ const draftRenderPassSchema = z.looseObject({
   voiceoverMode: z.enum(["deterministic-local", "local-piper", "elevenlabs"]),
   voiceoverProductionVoiceCandidate: z.boolean(),
   voiceoverQuality: z.enum(["deterministic-local-reference", "local-piper", "elevenlabs"]),
-  renderApproval: z.strictObject({ approvalId: z.string().min(1), approvedRef: digestSchema }),
+  renderApproval: z.strictObject({
+    approvalId: z.string().min(1),
+    approvedRef: digestSchema,
+    contractVersion: z.literal(4).optional(),
+  }),
   mediaProbe: mediaProbeSchema,
 });
 
