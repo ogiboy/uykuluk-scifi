@@ -73,11 +73,7 @@ export function passingRenderedEvidence(
         reviewPath: "production/render/draft_review.md",
         reviewChecklist: ["Review local draft only."],
         ffmpegReviewCommand: "ffmpeg -v error -i production/render/draft.mp4 -f null -",
-        renderApproval: {
-          approvalId: "approval_render_status",
-          approvedRef: "d".repeat(64),
-          contractVersion: 4,
-        },
+        renderApproval: { approvalId: "approval_render_status", approvedRef: "d".repeat(64) },
         sourceFrameCount: 4,
         sourceFrameSegments: ["intro:2", "outro:2"],
         sourceFrameCadence: [
