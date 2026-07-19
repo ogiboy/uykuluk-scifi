@@ -9,7 +9,13 @@ future generated release notes can be inserted predictably.
 
 ## Unreleased
 
-_No unreleased changes yet._
+### Fixes
+
+- make local delivery-tool verification reproducible and keep generated agent runtime state ignored
+
+### Documentation
+
+- add the accepted V1 domain and Studio design contracts
 
 ## v0.85.3 (2026-07-18)
 

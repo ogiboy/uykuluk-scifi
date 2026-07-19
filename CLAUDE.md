@@ -5,7 +5,7 @@
 Read `AGENTS.md` and the relevant contracts under `.ai/` before using this generated tool catalog.
 Those files own product architecture, delivery boundaries, and capability routing. The material
 below documents the optional Claude/Ruflo development surface and is never a runtime dependency. The
-verified local CLI baseline is `ruflo 3.32.7` with `claude-flow 3.32.2`; use the installed commands
+verified local CLI baseline is `ruflo 3.32.8` with `claude-flow 3.32.8`; use the installed commands
 directly instead of floating `npx ...@latest` invocations.
 
 Start each task with the relevant `.ai/` product truth, inspect only the `.claude/` tool surface

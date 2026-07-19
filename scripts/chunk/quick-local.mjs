@@ -1,5 +1,7 @@
 import { spawnSync } from "node:child_process";
 
+import { classifyDeliveryFile } from "../qa/delivery-scope.mjs";
+
 const git = (args) => {
   const result = spawnSync("/usr/bin/git", args, { encoding: "utf8" });
   if (result.error) {
@@ -25,10 +27,13 @@ const changedFiles = [
   ...git(["ls-files", "--others", "--exclude-standard"]),
 ];
 const uniqueFiles = [...new Set(changedFiles)];
-const sourceFiles = uniqueFiles.filter((file) => /\.(?:[cm]?js|jsx|tsx?)$/.test(file));
+const reviewableFiles = uniqueFiles.filter(
+  (file) => classifyDeliveryFile(file) !== "generated-tooling",
+);
+const sourceFiles = reviewableFiles.filter((file) => /\.(?:[cm]?js|jsx|tsx?)$/.test(file));
 const studioFiles = sourceFiles.filter((file) => file.startsWith("apps/studio/"));
 const rootFiles = sourceFiles.filter((file) => !file.startsWith("apps/studio/"));
-const formatFiles = uniqueFiles.filter((file) =>
+const formatFiles = reviewableFiles.filter((file) =>
   /\.(?:[cm]?js|jsx|tsx?|json|md|ya?ml|css)$/.test(file),
 );
 

@@ -3,6 +3,11 @@ version: 2.1
 orbs:
   node: circleci/node@7.2.1
 
+parameters:
+  local_config_validation:
+    type: boolean
+    default: false
+
 commands:
   setup-pnpm:
     steps:
@@ -352,8 +357,9 @@ jobs:
 workflows:
   quality:
     when:
-      pipeline.event.name == "api" or pipeline.event.name == "pull_request" or (pipeline.event.name
-      == "push" and pipeline.git.branch == "main")
+      pipeline.parameters.local_config_validation or pipeline.event.name == "api" or
+      pipeline.event.name == "pull_request" or (pipeline.event.name == "push" and
+      pipeline.git.branch == "main")
     jobs:
       - delivery-policy
       - static-quality:

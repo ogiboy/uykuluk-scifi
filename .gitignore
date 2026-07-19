@@ -64,6 +64,8 @@ ruvector.db
 
 # Generated local agent harness state
 .claude-flow/
+.omx/
+.ruflo/
 .claude/.proven-config-version
 .claude/proven-config.json
 
