@@ -10,7 +10,11 @@ import type { StudioGuardedActionSubmitState } from "@/lib/mutations/useStudioGu
 import { RefreshCwIcon, ShieldCheckIcon } from "lucide-react";
 import { LocalModelProgress } from "./LocalModelProgress";
 import type { LocalModelCopy } from "./localModelReadinessCopy";
-import { formatLocalModelBytes, formatLocalModelDuration } from "./localModelReadinessFormatting";
+import {
+  formatLocalModelBytes,
+  formatLocalModelDuration,
+  localModelReadinessLabel,
+} from "./localModelReadinessFormatting";
 
 type Preparation = NonNullable<StudioLocalModelOverview["preparation"]>;
 
@@ -153,6 +157,62 @@ export function Fact({ label, value }: Readonly<{ label: string; value: string }
       <dt className='text-muted-foreground text-xs'>{label}</dt>
       <dd className='font-medium'>{value}</dd>
     </div>
+  );
+}
+
+export function LocalModelFacts({
+  copy,
+  overview,
+}: Readonly<{ copy: LocalModelCopy; overview: StudioLocalModelOverview }>) {
+  const diskEstimate = overview.preparation
+    ? formatLocalModelBytes(overview.preparation.estimatedDiskBytes)
+    : copy.diskEstimate;
+
+  return (
+    <div className='grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-4'>
+      <Fact label={copy.model} value='FLUX.2 Klein 4B · q4' />
+      <Fact label={copy.runtime} value='MFLUX 0.18.0 · Python 3.12' />
+      <Fact label={copy.disk} value={diskEstimate} />
+      <Fact label={copy.progress} value={localModelReadinessLabel(copy, overview)} />
+    </div>
+  );
+}
+
+export function LocalModelAdvancedDetails({
+  copy,
+  overview,
+  packageId,
+}: Readonly<{ copy: LocalModelCopy; overview: StudioLocalModelOverview; packageId: string }>) {
+  return (
+    <details className='text-muted-foreground text-xs'>
+      <summary className='cursor-pointer font-medium'>{copy.advanced}</summary>
+      <dl className='mt-3 grid gap-1 break-all'>
+        <div>
+          {copy.package}: {packageId}
+        </div>
+        <div>
+          {copy.runtimePath}: {overview.runtimePath}
+        </div>
+        {overview.latestOperation ? (
+          <>
+            <div>
+              {copy.latestOperation}: {overview.latestOperation.operationId} ·{" "}
+              {overview.latestOperation.status}
+            </div>
+            {overview.latestOperation.message ? (
+              <div>
+                {copy.latestDiagnostic}: {overview.latestOperation.message}
+              </div>
+            ) : null}
+          </>
+        ) : null}
+        {overview.preparation ? (
+          <div>
+            {copy.binding}: {overview.preparation.bindingDigest}
+          </div>
+        ) : null}
+      </dl>
+    </details>
   );
 }
 
