@@ -52,9 +52,16 @@ evidence, provider uncertainty, or ambiguous paid execution must fail closed.
 - Real commercial ElevenLabs production synthesis remains unverified. The bounded Free-plan v3
   diagnostic was attempted and rejected safely; it did not create production evidence.
 - Private YouTube upload remains unavailable. Public and scheduled publishing remain unreachable.
-- The active local visual slice is Studio-managed MFLUX readiness, resumable setup, local generation
-  provenance, revision audition, and explicit canonical scene selection. Real install and smoke
-  evidence are still pending exact operator approval outside CI.
+- `v0.86.0` released Studio-managed MFLUX readiness and local visual generation. A real, exact
+  no-cost setup approval completed on the target workstation and persisted preparation, execution,
+  worker, install-manifest, and readiness evidence. The installed weights now follow the shared
+  `models/visual/mflux/flux2-klein-4b-q4` convention; `.local-models/mflux` contains only app state.
+  A fresh exact verify and bounded 1024x576 smoke remain pending outside CI.
+- The current branch implements render approval v4, render evidence v11, deterministic soundtrack
+  mixing, two-pass loudness normalization, post-AAC verification, licensed music/SFX provenance,
+  rollback-aware render execution, final-review bundle v3, and guarded Studio soundtrack import,
+  mix, analysis, and decision UX. Focused tests and typechecks pass; PR-ready CircleCI evidence is
+  still pending.
 
 ## Decisions
 
@@ -101,14 +108,13 @@ evidence, provider uncertainty, or ambiguous paid execution must fail closed.
 
 ## Remaining Work
 
-1. Run the real MFLUX setup/verify and bounded 1024x576 smoke on the target machine only after
-   Studio presents the exact no-cost preflight covering estimated cost, time, and disk use
-   (including the 6.5 GB conservative setup estimate) and an identified operator explicitly approves
-   its binding digest. Persist durable QA and security evidence for every attempt under
-   `runs/<run_id>`; keep the real execution outside CI and distinguish it from mocked worker,
-   offline-manifest, and browser/contract evidence.
-2. Finish exact render/media quality: 12-24 accepted scene images, deterministic motion, subtitle
-   readability, mastering, licensed music/SFX provenance, and final thumbnail JPG.
+1. Run a fresh exact MFLUX verify and bounded 1024x576 smoke on the target machine only after Studio
+   presents the no-cost preflight and an identified operator approves its binding digest. The real
+   setup is complete; do not redownload the model. Persist each new attempt under `runs/<run_id>`
+   and keep it distinct from mocked worker, offline-manifest, and browser/contract evidence.
+2. Close exact render/media quality with a final thumbnail JPG renderer and binding, then complete a
+   real Studio episode using 12-24 accepted images, deterministic motion, readable subtitles, the
+   approved soundtrack, two-pass mastering, and post-AAC loudness review.
 3. Add script audition and editorial quality: sequential candidates, side-by-side selection,
    streamlined review, operator-curated source/claim provenance, and the minimum-publishable
    scorecard.
@@ -122,15 +128,14 @@ evidence, provider uncertainty, or ambiguous paid execution must fail closed.
 
 ## Active Resume Hint
 
-- Current todo: execute the exact operator-approved MFLUX setup/verify/smoke outside CI, then record
-  model/runtime identity, install-manifest verification, measured duration, and durable QA/security
-  evidence under `runs/<run_id>`. Preserve static/manual/BFL revisions and do not add another
-  provider, video generation, upload, or public publishing.
-- Current evidence: focused local-model, worker-boundary, visual-generation, and Studio contract
-  tests plus portable JSON verification of the processed CircleCI config. These do not prove a real
-  install or generation smoke.
-- Next verification: target-machine preflight approval, real setup/verify, bounded smoke, and
-  evidence/readiness review; then exact render/media quality and real-episode acceptance.
+- Current todo: make the render-v11 soundtrack/mastering branch PR-ready, then implement final
+  thumbnail JPG generation and exact binding on a fresh branch. Preserve static/manual/BFL visual
+  revisions and do not add another provider, video generation, upload, or public publishing.
+- Current evidence: real MFLUX setup evidence and ready state; focused render-v11, soundtrack,
+  mastering, final-review-v3, Studio-action, local-model, and migration tests. These do not yet
+  prove a real MFLUX smoke or a complete publish-quality episode.
+- Next verification: CircleCI/Sonar for the current branch, then exact verify/smoke approval and the
+  first full Studio episode through final thumbnail, MP4, and final review.
 
 ## Blockers And Risks
 

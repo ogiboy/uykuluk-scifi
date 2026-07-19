@@ -368,6 +368,15 @@
 - Delivery order is local MFLUX and visual audition, exact render/media polish, script audition and
   provenance, resumable private-only YouTube upload, then settings/history polish, documentation
   productization, and real-episode acceptance.
+- A real exact-approved MFLUX setup completed on the target workstation. Model weights and their
+  install manifest now live under `models/visual/mflux/flux2-klein-4b-q4`; `.local-models/mflux`
+  retains only operation/readiness state. Fresh verify and 1024x576 smoke remain separate approved
+  operations and are not CI evidence.
+- The current render-media branch implements soundtrack manifest revisioning, attributable local
+  music/SFX import, exact mix configuration and review, render approval v4, render evidence v11,
+  deterministic audio graphs, two-pass loudnorm, post-AAC loudness verification, and final-review
+  bundle v3. Studio owns the guarded operator forms while CLI/core remains the state owner. Final
+  thumbnail JPG generation and a complete real episode remain pending.
 - Private-only upload is required for v1 controlled distribution. It is not implemented yet. Public
   and scheduled publishing remain unavailable and out of v1 scope.
 
@@ -391,7 +400,8 @@
   evidence. Mocked two-round and combined voice-plus-visual workflows pass.
 - Live ElevenLabs production TTS and BFL image generation remain unverified; keys prove neither
   credit nor entitlement, and Eleven Creative is manual-import only. Local MFLUX now generates
-  sequential revisions; real setup/smoke, mastering, thumbnails, and episode acceptance follow.
+  sequential revisions and its real setup is proven. Fresh verify/smoke, final thumbnail generation,
+  PR-ready mastering evidence, and episode acceptance follow.
 
 ## Current Commands
 

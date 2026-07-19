@@ -44,7 +44,9 @@ assembly? Work in this milestone should prioritize:
   contact-sheet review, per-scene regeneration, provenance, budget enforcement, and deterministic
   motion presets before short clips;
 - exact render approval binding for selected voice, aligned subtitles, visual manifest, render plan,
-  and approved media digests, followed by pacing/audio/subtitle/thumbnail polish;
+  approved soundtrack, and media digests; render v11 now includes deterministic music/SFX mixing,
+  two-pass loudness normalization, post-AAC verification, and guarded Studio review, while final
+  thumbnail JPG generation remains the next media deliverable;
 - resumable private-only YouTube upload bound to the intended channel and exact metadata, thumbnail,
   caption, and media digests, with processing review; public and scheduled publishing remain
   unavailable;
@@ -191,11 +193,12 @@ Remaining Real Production Loop work:
   approving upload or publish. A manual channel handoff package can then bind the accepted final
   review, draft MP4, subtitles, YouTube metadata draft, chapter draft, and tracked thumbnail
   candidates into a local checklist without calling YouTube APIs or approving upload/publish.
-  Current manifest v8 keeps bookends outside the voiceover/subtitle window, records linear
-  source-SRT-to-Piper timing, scopes overlays to scene windows, validates total duration with
-  `ffprobe`, and supports durable rejected-draft archival plus fresh exact render approval;
-  `producer doctor` also warns when local FFmpeg/ffprobe tools are unavailable before operators
-  reach render execution;
+  Current manifest v11 keeps bookends outside the voiceover/subtitle window, records the active
+  subtitle timing descriptor, binds approved soundtrack revision/digests, scopes overlays to scene
+  windows, validates total duration with `ffprobe`, records two-pass loudness and post-AAC evidence,
+  and supports durable rejected-draft archival plus fresh exact render approval; `producer doctor`
+  also warns when local FFmpeg/ffprobe tools are unavailable before operators reach render
+  execution;
 - repeat the complete production loop on additional real episodes and fix only reproducible operator
   or media-quality blockers. A run is not validated merely because mock UAT passes;
 - keep the implemented guarded Studio route for normal rejected-draft revision aligned with
