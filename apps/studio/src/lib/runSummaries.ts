@@ -37,6 +37,10 @@ import {
   safeReaddir,
 } from "./runs/runSummaryFiles";
 import { loadRunSummaryInputs } from "./runs/runSummaryInputs";
+import {
+  readStudioSoundtrackSummary,
+  type StudioSoundtrackSummary,
+} from "./runs/soundtrackSummaries";
 import { readStudioVisualSummary, type StudioVisualSummary } from "./runs/visualSummaries";
 import {
   readStudioVoiceAuditionSummary,
@@ -78,6 +82,7 @@ export type StudioRunDetail = StudioRunSummary & {
   readinessChecks: StudioReadinessCheck[];
   renderDecisionCommands: RenderDecisionCommandTemplate[];
   revisionSources: StudioRevisionSources;
+  soundtrack: StudioSoundtrackSummary;
   visuals: StudioVisualSummary;
   voiceAudition: StudioVoiceAuditionSummary;
   warnings: string[];
@@ -127,19 +132,31 @@ export async function getStudioRunDetail(runId: string): Promise<StudioRunDetail
     inputs.channelHandoff,
     inputs.channelHandoffDecision,
   );
-  const [artifacts, diagnostics, generatedIdeas, revisionSources, visuals, voiceAudition] =
-    await Promise.all([
-      readReviewArtifactPreviews(root, runId),
-      readStudioRunDiagnostics(root, runId, record.artifacts ?? []),
-      readStudioGeneratedIdeas(root, runId),
-      readStudioRevisionSources(root, runId),
-      readStudioVisualSummary(root, runId),
-      readStudioVoiceAuditionSummary(root, {
-        approvals: record.approvals ?? [],
-        artifacts: record.artifacts ?? [],
-        runId: record.runId,
-      }),
-    ]);
+  const [
+    artifacts,
+    diagnostics,
+    generatedIdeas,
+    revisionSources,
+    visuals,
+    voiceAudition,
+    soundtrack,
+  ] = await Promise.all([
+    readReviewArtifactPreviews(root, runId),
+    readStudioRunDiagnostics(root, runId, record.artifacts ?? []),
+    readStudioGeneratedIdeas(root, runId),
+    readStudioRevisionSources(root, runId),
+    readStudioVisualSummary(root, runId),
+    readStudioVoiceAuditionSummary(root, {
+      approvals: record.approvals ?? [],
+      artifacts: record.artifacts ?? [],
+      runId: record.runId,
+    }),
+    readStudioSoundtrackSummary(root, {
+      artifacts: record.artifacts ?? [],
+      runId: record.runId,
+      state: record.state,
+    }),
+  ]);
   return {
     ...summary,
     approvals: record.approvals ?? [],
@@ -159,6 +176,7 @@ export async function getStudioRunDetail(runId: string): Promise<StudioRunDetail
       inputs.renderDecision,
     ),
     revisionSources,
+    soundtrack,
     visuals,
     voiceAudition,
     warnings: record.warnings ?? [],

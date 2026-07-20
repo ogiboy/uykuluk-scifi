@@ -33,23 +33,27 @@ publishing bot. Studio is the operator experience; CLI/core remains the source o
 - Produces aligned Turkish SRT from verified ElevenLabs original character timing.
 - Keeps deterministic-local and Piper as credential-free/offline timing and voice fallbacks.
 - Builds render plans, contact sheets, local FFmpeg MP4 drafts, chapters, and review bundles.
+- Imports attributable local music/SFX, reviews an exact mix in Studio, and renders with two-pass
+  loudness normalization plus post-AAC verification.
 - Fails closed when approval, budget, config, evidence, or provider outcome is unsafe or uncertain.
 
 ## Current Product Status
 
-| Area                             | Status                                                                                                  |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| Local mock workflow              | Available without paid credentials                                                                      |
-| Studio guarded workflow          | Available; normal operator surface                                                                      |
-| Revisioned settings and briefs   | Available in Studio; next operations use pinned snapshots                                               |
-| ElevenLabs v3 contracts          | Implemented: catalog through recovery and settlement                                                    |
-| ElevenLabs diagnostic smoke      | Live Free-plan request attempted; provider rejected safely                                              |
-| ElevenLabs live production proof | Pending; diagnostic output is not commercial production proof                                           |
-| Aligned subtitles                | Implemented and bound into exact render approval                                                        |
-| Voice audition in Studio         | Implemented; real Studio browser UAT passed                                                             |
-| Visual production                | Static/manual, Studio-managed local MFLUX audition, BFL mock-verified; real local install/smoke pending |
-| Private YouTube upload           | Pending v1 controlled-distribution slice                                                                |
-| Public or scheduled publish      | Unavailable and out of v1                                                                               |
+| Area                             | Status                                                                                     |
+| -------------------------------- | ------------------------------------------------------------------------------------------ |
+| Local mock workflow              | Available without paid credentials                                                         |
+| Studio guarded workflow          | Available; normal operator surface                                                         |
+| Revisioned settings and briefs   | Available in Studio; next operations use pinned snapshots                                  |
+| ElevenLabs v3 contracts          | Implemented: catalog through recovery and settlement                                       |
+| ElevenLabs diagnostic smoke      | Live Free-plan request attempted; provider rejected safely                                 |
+| ElevenLabs live production proof | Pending; diagnostic output is not commercial production proof                              |
+| Aligned subtitles                | Implemented and bound into exact render approval                                           |
+| Voice audition in Studio         | Implemented; real Studio browser UAT passed                                                |
+| Visual production                | Static/manual, Studio-managed local MFLUX; real setup complete, fresh verify/smoke pending |
+| Soundtrack and audio mastering   | Studio import/mix/review and render-v11 two-pass mastering implemented; PR gate pending    |
+| Final thumbnail JPG              | Pending next render-media slice                                                            |
+| Private YouTube upload           | Pending v1 controlled-distribution slice                                                   |
+| Public or scheduled publish      | Unavailable and out of v1                                                                  |
 
 ## Screenshots
 
@@ -133,11 +137,11 @@ curated local MFLUX package through exact setup/verify/smoke preflight and appro
 install-manifest verification, a detached worker, readiness state, and recovery. When ready,
 selected scenes generate sequential local revisions with model/runtime revision, prompt/settings
 digests, seed, dimensions, and measured duration; operators audition revisions and explicitly
-activate one canonical scene revision. Real installation and 1024x576 smoke remain pending an exact
-operator-approved run outside CI. Static/manual and BFL revisions remain readable and compatible. A
-configured hosted-provider key reports credential presence only, not commercial entitlement,
-available credit, or production readiness. The bounded ElevenLabs diagnostic writes non-production
-evidence and never enables rendering or publishing.
+activate one canonical scene revision. The completed setup still requires a fresh exact verification
+and a 1024x576 smoke under a new operator-approved run outside CI. Static/manual and BFL revisions
+remain readable and compatible. A configured hosted-provider key reports credential presence only,
+not commercial entitlement, available credit, or production readiness. The bounded ElevenLabs
+diagnostic writes non-production evidence and never enables rendering or publishing.
 
 Read [local model setup](docs/providers/local-models.md) and [voice](docs/providers/voice.md) or
 [visual provider contracts](docs/providers/visuals.md) before changing provider mode.

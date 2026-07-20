@@ -8,7 +8,10 @@ const mediaRequiredArtifacts = [
   "production/audio/voiceover.wav",
   "production/audio/voiceover.meta.json",
   "production/audio/voiceover_review.md",
+  "production/audio/soundtrack/manifest.json",
+  "production/audio/soundtrack/review.md",
   "production/render/draft.mp4",
+  "production/render/audio_mastering.json",
   "production/render/render_manifest.json",
   "production/render/draft_review.md",
   "production/render/youtube_chapters.json",
@@ -91,11 +94,58 @@ export async function runLocalMediaSmoke({ run, pnpm, workdir, runId, assertFile
     ),
     "reference voice review prints exact render approval command",
   );
+  const fakeMediaTools = await createFakeMediaTools(workdir);
+  const preparedSoundtrack = parseSoundtrackEvidence(
+    run([pnpm, "producer", "soundtrack", "prepare", "--run", runId, "--json"], {
+      label: "prepare voice-only soundtrack",
+    }).stdout,
+  );
+  const analyzedSoundtrack = parseSoundtrackEvidence(
+    run(
+      [
+        pnpm,
+        "producer",
+        "soundtrack",
+        "analyze",
+        "--run",
+        runId,
+        "--expected-manifest-digest",
+        preparedSoundtrack.digest,
+        "--expected-revision",
+        String(preparedSoundtrack.revision),
+        "--json",
+      ],
+      {
+        env: { PATH: `${fakeMediaTools.binDir}${path.delimiter}${process.env.PATH ?? ""}` },
+        label: "analyze voice-only soundtrack",
+      },
+    ).stdout,
+  );
+  run(
+    [
+      pnpm,
+      "producer",
+      "soundtrack",
+      "decide",
+      "--run",
+      runId,
+      "--decision",
+      "approved",
+      "--reviewed-by",
+      "usage-smoke",
+      "--notes",
+      "Approved deterministic voice-only soundtrack for usage smoke.",
+      "--expected-manifest-digest",
+      analyzedSoundtrack.digest,
+      "--expected-revision",
+      String(analyzedSoundtrack.revision),
+    ],
+    { label: "approve voice-only soundtrack" },
+  );
   run([pnpm, "producer", "approve", "render", "--run", runId], {
     label: "approve render",
     expectOutput: "Render approval recorded",
   });
-  const fakeMediaTools = await createFakeMediaTools(workdir);
   run([pnpm, "producer", "render", "--run", runId], {
     label: "fake ffmpeg draft render",
     expectOutput: "Draft render available",
@@ -199,7 +249,7 @@ async function assertRenderedEvidence({ workdir, runId, assert }) {
     "render manifest records reference audio classification",
   );
   assert(
-    renderManifest.schemaVersion === 10 &&
+    renderManifest.schemaVersion === 11 &&
       typeof renderManifest.ffmpeg?.reviewCommand === "string" &&
       renderManifest.ffmpeg.reviewCommand.includes("production/render/draft.mp4"),
     "render manifest records final-artifact FFmpeg review command",
@@ -237,8 +287,11 @@ async function createFakeMediaTools(workdir) {
     [
       "#!/usr/bin/env node",
       'import { writeFileSync } from "node:fs";',
-      "const output = process.argv.at(-1);",
-      'writeFileSync(output, Buffer.from(`fake mp4\\n${process.argv.slice(2).join("\\n")}`));',
+      "const args = process.argv.slice(2);",
+      "const output = args.at(-1);",
+      "const loudnorm = JSON.stringify({ input_i: '-14.2', input_tp: '-1.6', input_lra: '5.1', input_thresh: '-24.2', target_offset: '0.2' });",
+      "if (args.some((argument) => argument.includes('loudnorm='))) process.stderr.write(`${loudnorm}\\n`);",
+      'if (output !== "-") writeFileSync(output, Buffer.from(`fake mp4\\n${args.join("\\n")}`));',
     ].join("\n"),
     "utf8",
   );
@@ -246,6 +299,11 @@ async function createFakeMediaTools(workdir) {
   await chmod(ffmpeg, 0o755);
   await chmod(ffprobe, 0o755);
   return { binDir };
+}
+
+function parseSoundtrackEvidence(output) {
+  const parsed = JSON.parse(output);
+  return { digest: parsed.digest, revision: parsed.manifest.revision };
 }
 
 /**

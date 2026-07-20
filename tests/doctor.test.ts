@@ -9,6 +9,7 @@ import {
   formatDoctorConsole,
   runDoctor,
 } from "../src/diagnostics/doctor";
+import { renderToolchainCheck } from "../src/diagnostics/renderToolchainDoctor";
 import { pathExists } from "../src/utils/fs";
 import { readJsonFile } from "../src/utils/json";
 import { useTempProject } from "./helpers";
@@ -136,31 +137,39 @@ describe("producer doctor", () => {
     expect(JSON.stringify(report)).not.toContain("local-secret-response");
   });
 
-  it("passes render toolchain diagnostics when FFmpeg and ffprobe are on PATH", async () => {
+  it("passes render toolchain diagnostics for explicit executable paths", async () => {
     const binDir = await writeFakeRenderTools();
-    vi.stubEnv("PATH", binDir);
 
-    const report = await runDoctor();
+    const check = renderToolchainCheck(renderToolPaths(binDir));
 
-    expect(report.passed).toBe(true);
-    expect(report.checks.find((check) => check.name === "render toolchain")).toMatchObject({
+    expect(check).toMatchObject({
       status: "pass",
-      message: "FFmpeg and ffprobe are available for local draft render.",
+      message: "FFmpeg, ffprobe, and two-pass loudnorm are available for local draft render.",
     });
   });
 
   it("warns when draft-render tools are unavailable", async () => {
     await mkdir("empty-bin", { recursive: true });
-    vi.stubEnv("PATH", path.join(process.cwd(), "empty-bin"));
+    const emptyBin = path.join(process.cwd(), "empty-bin");
 
-    const report = await runDoctor();
+    const check = renderToolchainCheck(renderToolPaths(emptyBin));
 
-    expect(report.passed).toBe(true);
-    expect(report.checks.find((check) => check.name === "render toolchain")).toMatchObject({
+    expect(check).toMatchObject({
       status: "warn",
       message: expect.stringContaining("FFmpeg, ffprobe unavailable"),
       nextAction:
-        "Install FFmpeg/ffprobe, ensure both commands are on PATH, then rerun pnpm producer doctor.",
+        "Install FFmpeg/ffprobe in a standard executable location, then rerun pnpm producer doctor.",
+    });
+  });
+
+  it("warns when FFmpeg lacks the loudnorm mastering filter", async () => {
+    const binDir = await writeFakeRenderTools(false);
+
+    const check = renderToolchainCheck(renderToolPaths(binDir));
+
+    expect(check).toMatchObject({
+      status: "warn",
+      message: expect.stringContaining("loudnorm filter is unavailable"),
     });
   });
 
@@ -235,15 +244,27 @@ async function useOllamaConfig(): Promise<void> {
   );
 }
 
-async function writeFakeRenderTools(): Promise<string> {
+async function writeFakeRenderTools(withLoudnorm = true): Promise<string> {
   const binDir = path.join(process.cwd(), ".tmp", "render-tools", "doctor");
   await mkdir(binDir, { recursive: true });
-  await writeFakeExecutable(path.join(binDir, "ffmpeg"));
+  await writeFakeExecutable(
+    path.join(binDir, "ffmpeg"),
+    withLoudnorm
+      ? "#!/bin/sh\nprintf '%s\\n' '... loudnorm EBU R128 loudness normalization'\n"
+      : "#!/bin/sh\nprintf '%s\\n' 'ffmpeg without mastering filter'\n",
+  );
   await writeFakeExecutable(path.join(binDir, "ffprobe"));
   return binDir;
 }
 
-async function writeFakeExecutable(target: string): Promise<void> {
-  await writeFile(target, "#!/bin/sh\nprintf '%s\\n' fake-tool\n", "utf8");
+function renderToolPaths(binDir: string) {
+  return { ffmpegBinary: path.join(binDir, "ffmpeg"), ffprobeBinary: path.join(binDir, "ffprobe") };
+}
+
+async function writeFakeExecutable(
+  target: string,
+  body = "#!/bin/sh\nprintf '%s\\n' fake-tool\n",
+): Promise<void> {
+  await writeFile(target, body, "utf8");
   await chmod(target, 0o755);
 }

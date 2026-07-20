@@ -2,6 +2,7 @@ import path from "node:path";
 import { artifactPath } from "../../core/artifacts.js";
 import { SafeExitError } from "../../core/errors.js";
 import { voiceoverAudioPath } from "../voice/voiceoverEvidence.js";
+import type { RenderAudioGraph } from "./renderAudioMix.js";
 import {
   buildDraftRenderComposition,
   type DraftRenderComposition,
@@ -37,6 +38,7 @@ export type { DraftRenderTimeline, DraftRenderTiming } from "./renderTimeline.js
  * @throws SafeExitError If the render plan or timeline is empty, or if duration and subtitle timing do not match the timeline.
  */
 export function buildFfmpegArgs(input: {
+  audioGraph?: RenderAudioGraph;
   composition?: DraftRenderComposition;
   durationSeconds: number;
   ffmpegOutputPath: string;
@@ -63,16 +65,16 @@ export function buildFfmpegArgs(input: {
   if (Math.abs(subtitleTiming.sceneDurationSeconds - timing.sceneAudioDurationSeconds) > 0.01) {
     throw new SafeExitError("Draft subtitle timing does not match the scene-audio window.");
   }
-  const audio = artifactPath(input.runId, voiceoverAudioPath);
   const subtitles = artifactPath(input.runId, input.subtitleArtifactPath);
   const audioInputIndex = ffmpegInputs.length;
+  const audioInputCount = input.audioGraph?.inputCount ?? 1;
   const sceneFilters = ffmpegInputs.map((item, index) =>
     sceneInputFilter(item, index, input.renderPlan.format.fps, input.renderPlan.format.resolution),
   );
   const concatInputs = ffmpegInputs.map((_, index) => `[s${index}]`).join("");
   const filter = buildVideoFilter({
     concatInputs,
-    firstOverlayInputIndex: audioInputIndex + 1,
+    firstOverlayInputIndex: audioInputIndex + audioInputCount,
     overlays: composition.overlays,
     renderPlan: input.renderPlan,
     sceneCount: ffmpegInputs.length,
@@ -82,7 +84,7 @@ export function buildFfmpegArgs(input: {
     timing,
     timeline,
   });
-  const audioFilter = buildAudioFilter(audioInputIndex, timing);
+  const audioFilter = input.audioGraph?.filter ?? buildAudioFilter(audioInputIndex, timing);
   const args = ["-y"];
   for (const item of ffmpegInputs) {
     args.push(
@@ -94,7 +96,11 @@ export function buildFfmpegArgs(input: {
       resolveSceneAssetPath(input.runId, item.asset.path),
     );
   }
-  args.push("-i", audio);
+  if (input.audioGraph) {
+    args.push(...input.audioGraph.inputArgs);
+  } else {
+    args.push("-i", artifactPath(input.runId, voiceoverAudioPath));
+  }
   for (const overlay of composition.overlays) {
     args.push("-i", path.join(process.cwd(), overlay.asset.path));
   }
@@ -117,6 +123,12 @@ export function buildFfmpegArgs(input: {
     "yuv420p",
     "-c:a",
     "aac",
+    "-b:a",
+    "192k",
+    "-ar",
+    "48000",
+    "-ac",
+    "2",
     "-movflags",
     "+faststart",
     input.ffmpegOutputPath,

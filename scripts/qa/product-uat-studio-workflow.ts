@@ -18,6 +18,9 @@ import { POST as runRender } from "../../apps/studio/src/app/actions/run-render/
 import { POST as runReviewBundle } from "../../apps/studio/src/app/actions/run-review-bundle/route";
 import { POST as runScript } from "../../apps/studio/src/app/actions/run-script/route";
 import { POST as runVoice } from "../../apps/studio/src/app/actions/run-voice/route";
+import { POST as analyzeSoundtrack } from "../../apps/studio/src/app/actions/soundtrack-analyze/route";
+import { POST as decideSoundtrack } from "../../apps/studio/src/app/actions/soundtrack-decide/route";
+import { POST as prepareSoundtrack } from "../../apps/studio/src/app/actions/soundtrack-prepare/route";
 import { POST as decideVisuals } from "../../apps/studio/src/app/actions/visuals-decide/route";
 import { POST as prepareVisuals } from "../../apps/studio/src/app/actions/visuals-prepare/route";
 import { getStudioRunDetail } from "../../apps/studio/src/lib/runSummaries";
@@ -71,6 +74,37 @@ session = await studioSessionCookie(assert);
 
 await post(runVoice, "/actions/run-voice", "voice.run", { runId });
 await post(reviewVoice, "/actions/review-voice", "voice.review", { runId });
+await post(prepareSoundtrack, "/actions/soundtrack-prepare", "soundtrack.prepare", { runId });
+let soundtrackDetail = await getStudioRunDetail(runId);
+assert(soundtrackDetail !== null, "Studio reloads the prepared soundtrack manifest.");
+assert(soundtrackDetail.soundtrack.kind === "ready", "Studio exposes soundtrack review evidence.");
+await post(analyzeSoundtrack, "/actions/soundtrack-analyze", "soundtrack.analyze", {
+  expectedManifestDigest: soundtrackDetail.soundtrack.digest,
+  expectedRevision: soundtrackDetail.soundtrack.revision,
+  runId,
+});
+soundtrackDetail = await getStudioRunDetail(runId);
+assert(soundtrackDetail !== null, "Studio reloads the analyzed soundtrack manifest.");
+assert(soundtrackDetail.soundtrack.kind === "ready", "Studio keeps soundtrack evidence current.");
+assert(
+  soundtrackDetail.soundtrack.analysis?.status === "complete",
+  "Studio exposes completed soundtrack analysis before review.",
+);
+await post(decideSoundtrack, "/actions/soundtrack-decide", "soundtrack.decide", {
+  expectedManifestDigest: soundtrackDetail.soundtrack.digest,
+  expectedRevision: soundtrackDetail.soundtrack.revision,
+  notes: "Approved voice-only soundtrack in Studio product UAT.",
+  reviewedBy: "studio-workflow-uat",
+  runId,
+  status: "approved",
+});
+soundtrackDetail = await getStudioRunDetail(runId);
+assert(soundtrackDetail !== null, "Studio reloads the reviewed soundtrack manifest.");
+assert(
+  soundtrackDetail.soundtrack.kind === "ready" &&
+    soundtrackDetail.soundtrack.decision?.status === "approved",
+  "Studio exposes the approved soundtrack decision before render approval.",
+);
 await post(approveRender, "/actions/approve-render", "render.approve", { runId });
 await post(runRender, "/actions/run-render", "render.run", { runId });
 await post(reviewRender, "/actions/review-render", "render.review", { runId });
@@ -97,8 +131,8 @@ await post(decideChannelHandoff, "/actions/decide-channel-handoff", "channel-han
   runId,
   thumbnailCandidateId,
 });
-await post(runEvidence, "/actions/run-evidence", "evidence.run", { runId });
 await post(runReadiness, "/actions/run-readiness", "readiness.run", { runId });
+await post(runEvidence, "/actions/run-evidence", "evidence.run", { runId });
 
 const detail = await getStudioRunDetail(runId);
 assert(detail !== null, "Studio can reload the route-driven run.");
@@ -142,7 +176,10 @@ async function post(
 ): Promise<StudioActionPayload> {
   const response = await handler(studioJsonRequest(session, routePath, actionId, body));
   const payload = (await response.json().catch(() => null)) as StudioActionPayload | null;
-  assert(response.status === 200, `${actionId} returned HTTP ${response.status}.`);
+  assert(
+    response.status === 200,
+    `${actionId} returned HTTP ${response.status}: ${payload?.message ?? "no response message"}.`,
+  );
   assert(payload?.status === "ok", payload?.message ?? `${actionId} did not return ok.`);
   assert(payload.actionId === actionId, `${actionId} response action id matches.`);
   return payload;

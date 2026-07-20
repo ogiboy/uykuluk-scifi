@@ -42,6 +42,8 @@ describe("local model worker", () => {
     });
     vi.mocked(executeMfluxWorker).mockImplementation(async (_projectRoot, request) => {
       await mkdir(request.runtimePath, { recursive: true });
+      if (!request.modelPath) throw new Error("Expected the curated model path.");
+      await mkdir(request.modelPath, { recursive: true });
       await writeFile(
         path.join(request.runtimePath, "install-manifest.json"),
         '{"schemaVersion":1}\n',
@@ -49,7 +51,7 @@ describe("local model worker", () => {
       );
       return { status: "ok", operation: "setup" };
     });
-    const modelPath = path.join(root, ".local-models", "mflux", "model", "nested");
+    const modelPath = path.join(root, "models", "visual", "mflux", "flux2-klein-4b-q4", "nested");
     await mkdir(modelPath, { recursive: true });
     await writeFile(path.join(modelPath, "weights.bin"), "weights", "utf8");
 
@@ -186,7 +188,11 @@ describe("local model worker", () => {
         "utf8",
       ),
     ) as Record<string, unknown>;
-    expect(evidence).toMatchObject({ status: "failed", diagnostic: "offline verification failed" });
+    expect(evidence).toMatchObject({
+      operationId: operation.operationId,
+      status: "failed",
+      diagnostic: "offline verification failed",
+    });
   });
 
   it("rejects startup when the child exits before claiming the queued operation", async () => {

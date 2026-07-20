@@ -81,6 +81,11 @@ const workflowActionStepDefinitions = [
       "voice.review",
       "visuals.generate-hosted",
       "visuals.generate-local",
+      "soundtrack.prepare",
+      "soundtrack.import",
+      "soundtrack.configure",
+      "soundtrack.analyze",
+      "soundtrack.decide",
       "render.approve",
       "render.run",
       "render.review",
@@ -88,7 +93,7 @@ const workflowActionStepDefinitions = [
     ],
     label: "Production media review",
     summary:
-      "Generate and review approved voiceover and scene images, then create the local draft render.",
+      "Generate and review approved voiceover and scene images, review soundtrack readiness, then create the local draft render.",
   },
   {
     actionIds: [

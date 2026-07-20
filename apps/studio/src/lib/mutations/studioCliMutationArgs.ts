@@ -8,6 +8,7 @@ import {
 import { specialCliArgsForAction } from "./studioCliSpecialMutationArgs";
 import { isStaticCliAction, staticCliCommand } from "./studioCliStaticCommands";
 import { parseEmptyPayload, parseRunOnlyPayload } from "./studioMutationPayloadContracts";
+import { soundtrackCliArgsForAction } from "./studioSoundtrackCliMutationArgs";
 import { visualCliArgsForAction } from "./studioVisualCliMutationArgs";
 
 export { studioCliMutationActionIds } from "./studioCliMutationArgsContracts";
@@ -26,11 +27,24 @@ export async function cliArgsForAction(
     return prepared([...staticCliCommand(actionId), "--json"]);
   }
   if (isVisualCliAction(actionId)) return visualCliArgsForAction(actionId, payload);
+  if (isSoundtrackCliAction(actionId)) return soundtrackCliArgsForAction(actionId, payload);
 
   const specialArgs = await specialCliArgsForAction(actionId, payload);
   if (specialArgs) return specialArgs;
   if (isRunOnlyCliAction(actionId)) return runOnlyCliArgs(actionId, payload);
   throw new Error(`Unsupported Studio CLI mutation action: ${actionId}`);
+}
+
+function isSoundtrackCliAction(
+  actionId: StudioCliMutationActionId,
+): actionId is SoundtrackCliActionId {
+  return [
+    "soundtrack.prepare",
+    "soundtrack.import",
+    "soundtrack.configure",
+    "soundtrack.analyze",
+    "soundtrack.decide",
+  ].includes(actionId as SoundtrackCliActionId);
 }
 
 /**
@@ -69,4 +83,13 @@ type VisualCliActionId = Extract<
   | "visuals.activate-revision"
   | "visuals.plan-hosted"
   | "visuals.regenerate"
+>;
+
+type SoundtrackCliActionId = Extract<
+  StudioCliMutationActionId,
+  | "soundtrack.prepare"
+  | "soundtrack.import"
+  | "soundtrack.configure"
+  | "soundtrack.analyze"
+  | "soundtrack.decide"
 >;

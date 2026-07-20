@@ -17,6 +17,7 @@ import { generateScript } from "../src/stages/script";
 import { generateVoiceoverAudio } from "../src/stages/voice";
 import { readJsonFile } from "../src/utils/json";
 import { useTempProject } from "./helpers";
+import { prepareApprovedVoiceOnlySoundtrack } from "./renderPipelineHelpers";
 import {
   createFakeFfmpeg,
   createFakeFfprobe,
@@ -125,6 +126,7 @@ describe("media readiness remediation", () => {
 async function prepareVoiceoverReadyRun(): Promise<string> {
   const runId = await prepareReadyRunWithoutVoiceover();
   await generateVoiceoverAudio(runId);
+  await prepareApprovedVoiceOnlySoundtrack(runId);
   return runId;
 }
 

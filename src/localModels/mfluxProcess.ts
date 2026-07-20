@@ -19,10 +19,11 @@ const mfluxWorkerResultSchema = z.discriminatedUnion("status", [
 export type MfluxWorkerResult = Extract<z.infer<typeof mfluxWorkerResultSchema>, { status: "ok" }>;
 
 export type MfluxWorkerRequest =
-  | Readonly<{ operation: "setup" | "verify"; runtimePath: string }>
-  | Readonly<{ operation: "smoke"; outputPath: string; runtimePath: string }>
+  | Readonly<{ operation: "setup" | "verify"; modelPath: string; runtimePath: string }>
+  | Readonly<{ operation: "smoke"; modelPath: string; outputPath: string; runtimePath: string }>
   | Readonly<{
       operation: "generate";
+      modelPath: string;
       outputPath: string;
       promptPath: string;
       runtimePath: string;
@@ -92,6 +93,8 @@ function buildArguments(projectRoot: string, request: MfluxWorkerRequest): strin
     request.operation,
     "--runtime-path",
     request.runtimePath,
+    "--model-path",
+    request.modelPath,
     ...(request.operation === "smoke" || request.operation === "generate"
       ? ["--output-path", request.outputPath]
       : []),

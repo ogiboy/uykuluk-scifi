@@ -23,6 +23,7 @@ import {
   finalReviewBundleJsonPath,
   finalReviewBundleMarkdownPath,
 } from "../stages/finalReview/finalReviewBundleContracts.js";
+import { audioMasteringEvidencePath } from "../stages/render/audioMastering.js";
 import {
   renderDecisionJsonPath,
   renderDecisionMarkdownPath,
@@ -39,6 +40,7 @@ import { blockRenderRevision } from "./renderRevisionGuard.js";
 const requiredRenderRevisionArtifacts = [...draftRenderArtifactPaths] as const;
 
 const derivedRenderRevisionArtifacts = [
+  audioMasteringEvidencePath,
   "evidence_bundle.json",
   "evidence_bundle.md",
   "diagnostics/readiness.json",

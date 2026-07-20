@@ -182,7 +182,7 @@ async function runCuratedMfluxCommand(
     ? Exclude<Value, undefined>
     : never,
 ): ReturnType<typeof executeMfluxWorker> {
-  const runtimePath = localModelStatePaths(projectRoot).runtimePath;
+  const { modelPath, runtimePath } = localModelStatePaths(projectRoot);
   const outputPath = operation.runId
     ? projectRunPath(projectRoot, operation.runId, "diagnostics", "local-models", "smoke.png")
     : undefined;
@@ -191,11 +191,15 @@ async function runCuratedMfluxCommand(
     if (!outputPath) throw new SafeExitError("Local MFLUX smoke evidence path is missing.");
     return executeMfluxWorker(
       projectRoot,
-      { operation: "smoke", outputPath, runtimePath },
+      { operation: "smoke", modelPath, outputPath, runtimePath },
       timeoutMs,
     );
   }
-  return executeMfluxWorker(projectRoot, { operation: operation.kind, runtimePath }, timeoutMs);
+  return executeMfluxWorker(
+    projectRoot,
+    { operation: operation.kind, modelPath, runtimePath },
+    timeoutMs,
+  );
 }
 
 function localModelWorkerTimeout(kind: "setup" | "verify" | "smoke"): number {
@@ -271,7 +275,7 @@ function startDownloadProgressMonitor(
   projectRoot: string,
   operationId: string,
 ): () => Promise<void> {
-  const modelPath = path.join(localModelStatePaths(projectRoot).runtimePath, "model");
+  const modelPath = localModelStatePaths(projectRoot).modelPath;
   let stopped = false;
   let timer: ReturnType<typeof setTimeout> | undefined;
   let current = Promise.resolve();

@@ -1,9 +1,9 @@
 import { createHash } from "node:crypto";
 import { describe, expect, it } from "vitest";
-import { renderApprovalRef } from "../src/stages/render/renderApproval";
+import { renderApprovalRefV3, renderApprovalRefV4 } from "../src/stages/render/renderApproval";
 
 describe("render approval reference", () => {
-  it("binds the versioned voice, subtitle, and visual input contract", () => {
+  it("binds the v4 voice, subtitle, visual, and soundtrack input contract", () => {
     const input = {
       renderPlanDigest: "a".repeat(64),
       visualManifestDigest: "f".repeat(64),
@@ -15,14 +15,15 @@ describe("render approval reference", () => {
       voiceoverMode: "elevenlabs",
       voiceoverProductionVoiceCandidate: true,
       voiceoverQuality: "elevenlabs",
+      soundtrackManifestDigest: "1".repeat(64),
     };
 
-    expect(renderApprovalRef(input)).toBe(
+    expect(renderApprovalRefV4(input)).toBe(
       createHash("sha256")
-        .update(JSON.stringify({ contractVersion: 3, ...input }), "utf8")
+        .update(JSON.stringify({ contractVersion: 4, ...input }), "utf8")
         .digest("hex"),
     );
-    const approvedRef = renderApprovalRef(input);
+    const approvedRef = renderApprovalRefV4(input);
     const changedInputs = [
       { ...input, renderPlanDigest: "f".repeat(64) },
       { ...input, visualManifestDigest: "0".repeat(64) },
@@ -34,13 +35,14 @@ describe("render approval reference", () => {
       { ...input, voiceoverMode: "local-piper" },
       { ...input, voiceoverProductionVoiceCandidate: false },
       { ...input, voiceoverQuality: "local-piper" },
+      { ...input, soundtrackManifestDigest: "2".repeat(64) },
     ];
     for (const changedInput of changedInputs) {
-      expect(renderApprovalRef(changedInput)).not.toBe(approvedRef);
+      expect(renderApprovalRefV4(changedInput)).not.toBe(approvedRef);
     }
   });
 
-  it("uses the v3 approval contract for deterministic-local voice", () => {
+  it("retains the v3 helper for legacy deterministic-local approval verification", () => {
     const input = {
       renderPlanDigest: "a".repeat(64),
       visualManifestDigest: "f".repeat(64),
@@ -54,7 +56,7 @@ describe("render approval reference", () => {
       voiceoverQuality: "deterministic-local-reference",
     };
 
-    expect(renderApprovalRef(input)).toBe(
+    expect(renderApprovalRefV3(input)).toBe(
       createHash("sha256")
         .update(JSON.stringify({ contractVersion: 3, ...input }), "utf8")
         .digest("hex"),

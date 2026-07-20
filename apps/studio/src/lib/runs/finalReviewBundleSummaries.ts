@@ -5,7 +5,9 @@ import {
   finalReviewBundleJsonPath,
   finalReviewBundleMarkdownPath,
   finalReviewBundleSchema,
+  finalReviewBundleV2Schema,
   isLegacyFinalReviewBundle,
+  isV2FinalReviewBundle,
   type FinalReviewBundle,
 } from "../../../../../src/stages/finalReview/finalReviewBundleContracts";
 import {
@@ -66,6 +68,14 @@ export async function readStudioFinalReviewBundleSummary(
     const rawBundle = JSON.parse(await readFile(target, "utf8")) as unknown;
     if (isLegacyFinalReviewBundle(rawBundle)) {
       return staleBundle(runId, "Final review bundle uses legacy schema version 1; regenerate it.");
+    }
+    if (isV2FinalReviewBundle(rawBundle)) {
+      const bundle = finalReviewBundleV2Schema.parse(rawBundle);
+      const staleReason = finalReviewBundleStaleReason(record, evidence, renderDecision, bundle);
+      if (staleReason) {
+        return staleBundle(runId, staleReason);
+      }
+      return staleBundle(runId, "Final review bundle uses legacy schema version 2; regenerate it.");
     }
     const bundle = finalReviewBundleSchema.parse(rawBundle);
     const staleReason = finalReviewBundleStaleReason(record, evidence, renderDecision, bundle);

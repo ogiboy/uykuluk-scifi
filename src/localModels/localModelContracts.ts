@@ -70,6 +70,7 @@ export type LocalModelOverview = Readonly<{
   progress?: LocalModelProgress;
   preparation?: LocalModelOperationPreparation;
   runtimePath: string;
+  modelPath: string;
   nextAction: string;
 }>;
 
@@ -179,12 +180,26 @@ export function validateLocalModelApproval(input: {
   );
 }
 
+/**
+ * Validates the identifier format for a local model operation.
+ *
+ * @param operationId - The operation identifier to validate
+ * @throws SafeExitError If `operationId` does not match the required format
+ */
 export function validateLocalModelOperationId(operationId: string): void {
   if (!/^local_model_[a-z0-9_]+$/.test(operationId)) {
     throw new SafeExitError("Local model operation id is invalid.");
   }
 }
 
+/**
+ * Validates operator-provided text for non-empty, bounded, printable content.
+ *
+ * @param value - The text to validate
+ * @param maximum - The maximum permitted length
+ * @param message - The message for the validation error
+ * @throws SafeExitError If the text is empty or whitespace-only, exceeds the maximum length, or contains disallowed control characters
+ */
 export function validateLocalModelText(value: string, maximum: number, message: string): void {
   const safe = [...value].every(
     (character) => (character.codePointAt(0) ?? 0) >= 32 || "\n\r\t".includes(character),
@@ -224,6 +239,14 @@ export function validateLocalModelProgress(progress: LocalModelProgress): void {
   }
 }
 
+/**
+ * Replaces an operation at the specified index without mutating the input array.
+ *
+ * @param operations - The operation sequence to copy.
+ * @param index - The index of the operation to replace.
+ * @param operation - The replacement operation.
+ * @returns A new operation array containing the replacement at `index`.
+ */
 export function replaceLocalModelOperation(
   operations: readonly LocalModelOperation[],
   index: number,
@@ -232,6 +255,12 @@ export function replaceLocalModelOperation(
   return [...operations.slice(0, index), operation, ...operations.slice(index + 1)];
 }
 
+/**
+ * Determines the progress phase associated with a local model intent.
+ *
+ * @param kind - The local model intent kind.
+ * @returns `"setting-up"` for setup intents, or `"verifying"` for verification and smoke intents.
+ */
 export function claimedLocalModelPhase(kind: LocalModelIntent["kind"]): LocalModelProgressPhase {
   return kind === "setup" ? "setting-up" : "verifying";
 }
@@ -275,18 +304,36 @@ export function nextActionForLocalModelReadiness(readiness: LocalModelReadiness)
   }[readiness];
 }
 
+/**
+ * Estimates the duration of a local model operation in seconds.
+ *
+ * @param operation - The operation kind used to select the estimate.
+ * @returns The estimated duration in seconds.
+ */
 export function estimatedLocalModelDuration(operation: LocalModelIntent["kind"]): number {
   if (operation === "setup") return 600;
   if (operation === "verify") return 30;
   return 180;
 }
 
+/**
+ * Estimates the disk space required for a local model operation.
+ *
+ * @param operation - The operation kind used to select the disk-space estimate.
+ * @returns The estimated disk usage in bytes.
+ */
 export function estimatedLocalModelDiskBytes(operation: LocalModelIntent["kind"]): number {
   if (operation === "setup") return 6_500_000_000;
   if (operation === "verify") return 1_024;
   return 8_388_608;
 }
 
+/**
+ * Determines whether a local model operation is currently active.
+ *
+ * @param operation - The operation to inspect.
+ * @returns `true` if the operation is queued or running, `false` otherwise.
+ */
 export function localModelOperationIsActive(operation: LocalModelOperation): boolean {
   return operation.status === "queued" || operation.status === "running";
 }

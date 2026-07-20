@@ -13,6 +13,7 @@ import { generateScript } from "../src/stages/script";
 import { generateVoiceoverAudio } from "../src/stages/voice";
 import { useTempProject } from "./helpers";
 import { runProducerCliForTest } from "./producerCliTestHelper";
+import { prepareApprovedVoiceOnlySoundtrack } from "./renderPipelineHelpers";
 import { createMinimalRenderAssets, enableDeterministicTts } from "./renderTestHelpers";
 import { prepareApprovedStaticVisuals } from "./visualTestHelpers";
 
@@ -101,5 +102,6 @@ async function prepareVoiceoverReadyRun(): Promise<string> {
   const readiness = await runReadiness(runId);
   expect(readiness.passed).toBe(true);
   await generateVoiceoverAudio(runId);
+  await prepareApprovedVoiceOnlySoundtrack(runId);
   return runId;
 }
