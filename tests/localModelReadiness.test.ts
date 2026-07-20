@@ -323,6 +323,6 @@ async function projectRoot(): Promise<string> {
 
 async function writeInstallManifestPlaceholder(root: string): Promise<void> {
   const paths = localModelStatePaths(root);
-  await mkdir(paths.modelPath, { recursive: true });
+  await mkdir(paths.runtimePath, { recursive: true });
   await writeFile(paths.installManifestPath, "{}\n", "utf8");
 }

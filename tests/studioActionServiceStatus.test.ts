@@ -6,13 +6,13 @@ describe("Studio action service status", () => {
     const status = getStudioActionServiceStatus();
 
     expect(status).toMatchObject({
-      actionCount: 49,
+      actionCount: 54,
       cliFallbackCount: 0,
       disabledRouteCount: 2,
       findings: [],
-      readyForCliCount: 47,
+      readyForCliCount: 52,
       riskyExternalCount: 2,
-      webReadyCount: 47,
+      webReadyCount: 52,
       webMutationsEnabled: true,
     });
     expect(status.summaries).toContainEqual(
@@ -94,6 +94,11 @@ describe("Studio action service status", () => {
       "localModels.execute",
       "visuals.generate-local",
       "visuals.activate-revision",
+      "soundtrack.prepare",
+      "soundtrack.import",
+      "soundtrack.configure",
+      "soundtrack.analyze",
+      "soundtrack.decide",
     ]) {
       expect(status.summaries).toContainEqual(
         expect.objectContaining({ actionId, availability: "ready-for-cli" }),

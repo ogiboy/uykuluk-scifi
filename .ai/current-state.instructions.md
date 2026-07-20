@@ -368,9 +368,9 @@
 - Delivery order is local MFLUX and visual audition, exact render/media polish, script audition and
   provenance, resumable private-only YouTube upload, then settings/history polish, documentation
   productization, and real-episode acceptance.
-- A real exact-approved MFLUX setup completed on the target workstation. Model weights and their
-  install manifest now live under `models/visual/mflux/flux2-klein-4b-q4`; `.local-models/mflux`
-  retains only operation/readiness state. Fresh verify and 1024x576 smoke remain separate approved
+- A real exact-approved MFLUX setup completed on the target workstation. Model weights now live
+  under `models/visual/mflux/flux2-klein-4b-q4`; `.local-models/mflux` retains operation/readiness
+  state and the verified install manifest. Fresh verify and 1024x576 smoke remain separate approved
   operations and are not CI evidence.
 - The current render-media branch implements soundtrack manifest revisioning, attributable local
   music/SFX import, exact mix configuration and review, render approval v4, render evidence v11,

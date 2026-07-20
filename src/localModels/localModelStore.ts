@@ -42,7 +42,7 @@ export function localModelStatePaths(projectRoot: string): LocalModelStatePaths 
   return {
     runtimePath,
     modelPath,
-    installManifestPath: path.join(modelPath, "install-manifest.json"),
+    installManifestPath: path.join(runtimePath, "install-manifest.json"),
     operationsPath: path.join(runtimePath, "operations.json"),
     readyPath: path.join(runtimePath, "ready.json"),
     preparationPointerPath: path.join(runtimePath, "latest-preparation.json"),

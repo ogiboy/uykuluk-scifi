@@ -168,7 +168,7 @@ describe("Studio render decision commands", () => {
     });
   });
 
-  it("keeps v2 final review bundles stale before checking their draft or decision bindings", async () => {
+  it("marks final review bundles stale when draft digest or decision binding changes", async () => {
     const digestRunId = await createRenderedStudioRunFixture();
     await writeStudioFinalReviewBundle(digestRunId);
     await writeEvidence(digestRunId, {
@@ -180,7 +180,7 @@ describe("Studio render decision commands", () => {
 
     expect(digestMismatch?.finalReviewBundle).toMatchObject({
       kind: "stale",
-      message: "Final review bundle uses legacy schema version 2; regenerate it.",
+      message: "Final review bundle was created for a different draft render digest.",
     });
 
     const decisionRunId = await createRenderedStudioRunFixture();
@@ -191,7 +191,7 @@ describe("Studio render decision commands", () => {
 
     expect(decisionMismatch?.finalReviewBundle).toMatchObject({
       kind: "stale",
-      message: "Final review bundle uses legacy schema version 2; regenerate it.",
+      message: "Final review bundle was created for a different render decision outcome.",
     });
   });
 });

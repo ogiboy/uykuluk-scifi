@@ -20,7 +20,9 @@ import { executeMfluxWorker } from "./mfluxProcess.js";
 type MfluxLocalConfig = z.infer<typeof mfluxLocalConfigSchema>;
 type MfluxBoundaryDependencies = Readonly<{
   executeWorker?: typeof executeMfluxWorker;
-  readLocalOverview?: typeof readOverview;
+  readLocalOverview?: (
+    projectRoot: string,
+  ) => Promise<Pick<Awaited<ReturnType<typeof readOverview>>, "readiness">>;
 }>;
 
 const localVisualSpoolSchema = z.strictObject({

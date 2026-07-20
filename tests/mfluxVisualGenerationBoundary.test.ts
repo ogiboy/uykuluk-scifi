@@ -206,7 +206,6 @@ function readyOverview(root: string) {
     readiness: "ready" as const,
     recoveryAvailable: false,
     runtimePath: path.join(root, ".local-models", "mflux"),
-    modelPath: path.join(root, "models", "visual", "mflux", "flux2-klein-4b-q4"),
     nextAction: "Ready.",
   };
 }

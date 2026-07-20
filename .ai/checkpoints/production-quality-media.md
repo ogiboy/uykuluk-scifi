@@ -55,8 +55,9 @@ evidence, provider uncertainty, or ambiguous paid execution must fail closed.
 - `v0.86.0` released Studio-managed MFLUX readiness and local visual generation. A real, exact
   no-cost setup approval completed on the target workstation and persisted preparation, execution,
   worker, install-manifest, and readiness evidence. The installed weights now follow the shared
-  `models/visual/mflux/flux2-klein-4b-q4` convention; `.local-models/mflux` contains only app state.
-  A fresh exact verify and bounded 1024x576 smoke remain pending outside CI.
+  `models/visual/mflux/flux2-klein-4b-q4` convention; `.local-models/mflux` contains app state and
+  the verified install manifest, not model weights. A fresh exact verify and bounded 1024x576 smoke
+  remain pending outside CI.
 - The current branch implements render approval v4, render evidence v11, deterministic soundtrack
   mixing, two-pass loudness normalization, post-AAC verification, licensed music/SFX provenance,
   rollback-aware render execution, final-review bundle v3, and guarded Studio soundtrack import,

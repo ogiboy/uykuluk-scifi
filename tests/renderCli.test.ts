@@ -18,6 +18,7 @@ import { generateVoiceoverAudio } from "../src/stages/voice";
 import { pathExists } from "../src/utils/fs";
 import { useTempProject } from "./helpers";
 import { runProducerCliForTest } from "./producerCliTestHelper";
+import { prepareApprovedVoiceOnlySoundtrack } from "./renderPipelineHelpers";
 import {
   createFakeFfmpeg,
   createFakeFfprobe,
@@ -41,7 +42,7 @@ describe("producer render CLI", () => {
 
     expect(result.status).toBe(0);
     expect(JSON.parse(result.stdout) as unknown).toMatchObject({
-      schemaVersion: 10,
+      schemaVersion: 11,
       runId,
       chapterDraft: {
         jsonPath: "production/render/youtube_chapters.json",
@@ -200,6 +201,7 @@ async function prepareVoiceoverReadyRun(): Promise<string> {
   const readiness = await runReadiness(runId);
   expect(readiness.passed).toBe(true);
   await generateVoiceoverAudio(runId);
+  await prepareApprovedVoiceOnlySoundtrack(runId);
   return runId;
 }
 
