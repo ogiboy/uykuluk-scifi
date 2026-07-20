@@ -1,7 +1,5 @@
 import { describe, expect, it } from "vitest";
 import { draftRenderManifestSchema } from "../src/stages/render/renderEvidenceContracts";
-import { persistedEvidenceStatusSchema } from "../src/stages/status/statusEvidenceContracts";
-import { passingRenderedEvidence } from "./statusOutputEvidenceFixtures";
 
 const digest = "a".repeat(64);
 const createdAt = "2026-07-20T00:00:00.000Z";
@@ -105,17 +103,5 @@ describe("draft render evidence v11 contract", () => {
     const legacyApproval = manifestV11();
     legacyApproval.renderApproval = { approvalId: "approval_render", approvedRef: digest };
     expect(() => draftRenderManifestSchema.parse(legacyApproval)).toThrow();
-  });
-
-  it("keeps v4 render approval identity valid in a rendered status snapshot", () => {
-    const evidence = passingRenderedEvidence("run_render_evidence", ["evidence_bundle.json"]);
-    const draftRender = evidence.draftRender as Record<string, unknown>;
-    draftRender.renderApproval = {
-      approvalId: "approval_render",
-      approvedRef: digest,
-      contractVersion: 4,
-    };
-
-    expect(persistedEvidenceStatusSchema.parse(evidence).draftRender.status).toBe("pass");
   });
 });

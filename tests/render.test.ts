@@ -4,7 +4,7 @@ import { loadRun } from "../src/core/runStore";
 import { approveRender } from "../src/stages/approveRender";
 import { renderDraft } from "../src/stages/render";
 import { renderApprovalRef } from "../src/stages/render/renderApproval";
-import type { DraftRenderManifest } from "../src/stages/renderEvidence";
+import { readDraftRenderEvidence, type DraftRenderManifest } from "../src/stages/renderEvidence";
 import { readJsonFile } from "../src/utils/json";
 import { useTempProject } from "./helpers";
 import { expectDraftRenderEvidence } from "./renderEvidenceAssertions";
@@ -53,6 +53,17 @@ describe("draft render", () => {
       approvedRef,
       contractVersion: 4,
     });
+    const draftRenderEvidence = await readDraftRenderEvidence(run);
+    expect(draftRenderEvidence).toMatchObject({
+      status: "pass",
+      renderApproval: { approvalId: approval.approvalId, approvedRef },
+    });
+    if (draftRenderEvidence.status === "pass") {
+      expect(draftRenderEvidence.renderApproval).toEqual({
+        approvalId: approval.approvalId,
+        approvedRef,
+      });
+    }
     expect(manifest.output).toMatchObject({
       path: "production/render/draft.mp4",
       sha256: expect.stringMatching(/^[a-f0-9]{64}$/),
