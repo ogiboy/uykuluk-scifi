@@ -6,7 +6,7 @@ import type { RenderSoundtrackInputs } from "./renderAudioMix.js";
 export function soundtrackRenderInputs(manifest: SoundtrackManifest): RenderSoundtrackInputs {
   const assets = new Map(manifest.assets.map((asset) => [asset.assetId, asset]));
   const musicAsset = manifest.music ? assets.get(manifest.music.assetId) : undefined;
-  if (manifest.music && (!musicAsset || musicAsset.role !== "music")) {
+  if (manifest.music && musicAsset?.role !== "music") {
     throw new SafeExitError("Soundtrack music selection does not resolve to a music asset.");
   }
   return {
@@ -23,7 +23,7 @@ export function soundtrackRenderInputs(manifest: SoundtrackManifest): RenderSoun
         : undefined,
     sfx: manifest.sfx.map((cue) => {
       const asset = assets.get(cue.assetId);
-      if (!asset || asset.role !== "sfx") {
+      if (asset?.role !== "sfx") {
         throw new SafeExitError(`Soundtrack cue ${cue.cueId} does not resolve to an SFX asset.`);
       }
       return {

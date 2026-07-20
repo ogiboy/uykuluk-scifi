@@ -7,6 +7,7 @@ import { artifactPath, recordRunArtifact, writeRunJson, writeRunText } from "../
 import { SafeExitError } from "../core/errors.js";
 import { appendLedgerEvent } from "../core/ledger.js";
 import { loadRun, setRunState } from "../core/runStore.js";
+import type { RunRecord } from "../core/state.js";
 import { requireApproval, requireState } from "../safeguards/approvalGuard.js";
 import { ensureDir } from "../utils/fs.js";
 import { shellCommand } from "../utils/shell.js";
@@ -84,44 +85,18 @@ export async function renderDraft(
   await requireApproval(run, "render", "render");
   await requireState(run, "RENDER_APPROVED", "render");
   try {
-    await verifyProductionPackage(run);
-    const renderPlanEvidence = await readRenderPlanEvidence(run);
-    if (renderPlanEvidence.status !== "pass") {
-      throw new SafeExitError("Draft render requires valid render-plan evidence.");
-    }
-    if (!renderPlanEvidence.visualManifestDigest) {
-      throw new SafeExitError("Draft render requires visual-manifest-bound render-plan evidence.");
-    }
-    const voiceoverAudio = await readVoiceoverAudioEvidence(run);
-    if (voiceoverAudio.status !== "pass") {
-      throw new SafeExitError("Draft render requires valid voiceover audio evidence.");
-    }
-    const soundtrack = await requireApprovedSoundtrackManifest(run);
-    const firstPass = soundtrack.manifest.analysis?.firstPass;
-    if (!firstPass) {
-      throw new SafeExitError("Draft render requires current soundtrack loudness analysis.");
-    }
+    const {
+      approvalId,
+      currentApprovalRef,
+      firstPass,
+      renderPlanEvidence,
+      soundtrack,
+      voiceoverAudio,
+    } = await requireCurrentRenderInputs(run);
     rollbackArtifacts = await captureRunArtifactRollback(run.runId, "render", [
       ...draftRenderArtifactPaths,
       audioMasteringEvidencePath,
     ]);
-    const approval = run.approvals.find((item) => item.target === "render");
-    const currentApprovalRef = renderApprovalRef({
-      renderPlanDigest: renderPlanEvidence.digest,
-      visualManifestDigest: renderPlanEvidence.visualManifestDigest,
-      subtitleDigest: voiceoverAudio.subtitle.sha256,
-      subtitleMetadataDigest: voiceoverAudio.subtitle.metadataSha256,
-      subtitleTimingMode: voiceoverAudio.subtitle.timingMode,
-      voiceMetadataDigest: voiceoverAudio.metadataDigest,
-      voiceoverAudioDigest: voiceoverAudio.digest,
-      voiceoverMode: voiceoverAudio.mode,
-      voiceoverProductionVoiceCandidate: voiceoverAudio.productionVoiceCandidate,
-      voiceoverQuality: voiceoverAudio.quality,
-      soundtrackManifestDigest: soundtrack.digest,
-    });
-    if (approval?.approvedRef !== currentApprovalRef) {
-      throw new SafeExitError("Draft render approval is stale for current render inputs.");
-    }
 
     const renderPlan = await readRenderPlan(run.runId);
     const durationSeconds = draftRenderTargetDuration(
@@ -228,11 +203,7 @@ export async function renderDraft(
         quality: voiceoverAudio.quality,
       },
       subtitles: voiceoverAudio.subtitle,
-      renderApproval: {
-        approvalId: approval.approvalId,
-        approvedRef: currentApprovalRef,
-        contractVersion: 4,
-      },
+      renderApproval: { approvalId, approvedRef: currentApprovalRef, contractVersion: 4 },
       soundtrack: { manifestPath: soundtrackManifestPath, manifestDigest: soundtrack.digest },
       mastering: {
         path: audioMasteringEvidencePath,
@@ -324,6 +295,51 @@ export async function renderDraft(
     });
     throw error;
   }
+}
+
+async function requireCurrentRenderInputs(run: RunRecord) {
+  await verifyProductionPackage(run);
+  const renderPlanEvidence = await readRenderPlanEvidence(run);
+  if (renderPlanEvidence.status !== "pass") {
+    throw new SafeExitError("Draft render requires valid render-plan evidence.");
+  }
+  if (!renderPlanEvidence.visualManifestDigest) {
+    throw new SafeExitError("Draft render requires visual-manifest-bound render-plan evidence.");
+  }
+  const voiceoverAudio = await readVoiceoverAudioEvidence(run);
+  if (voiceoverAudio.status !== "pass") {
+    throw new SafeExitError("Draft render requires valid voiceover audio evidence.");
+  }
+  const soundtrack = await requireApprovedSoundtrackManifest(run);
+  const firstPass = soundtrack.manifest.analysis?.firstPass;
+  if (!firstPass) {
+    throw new SafeExitError("Draft render requires current soundtrack loudness analysis.");
+  }
+  const currentApprovalRef = renderApprovalRef({
+    renderPlanDigest: renderPlanEvidence.digest,
+    visualManifestDigest: renderPlanEvidence.visualManifestDigest,
+    subtitleDigest: voiceoverAudio.subtitle.sha256,
+    subtitleMetadataDigest: voiceoverAudio.subtitle.metadataSha256,
+    subtitleTimingMode: voiceoverAudio.subtitle.timingMode,
+    voiceMetadataDigest: voiceoverAudio.metadataDigest,
+    voiceoverAudioDigest: voiceoverAudio.digest,
+    voiceoverMode: voiceoverAudio.mode,
+    voiceoverProductionVoiceCandidate: voiceoverAudio.productionVoiceCandidate,
+    voiceoverQuality: voiceoverAudio.quality,
+    soundtrackManifestDigest: soundtrack.digest,
+  });
+  const approval = run.approvals.find((item) => item.target === "render");
+  if (!approval || approval.approvedRef !== currentApprovalRef) {
+    throw new SafeExitError("Draft render approval is stale for current render inputs.");
+  }
+  return {
+    approvalId: approval.approvalId,
+    currentApprovalRef,
+    firstPass,
+    renderPlanEvidence,
+    soundtrack,
+    voiceoverAudio,
+  };
 }
 
 async function readRenderPlan(runId: string): Promise<RenderPlan> {

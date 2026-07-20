@@ -76,8 +76,8 @@ export function buildRenderAudioGraph(input: {
     mixLabels.length === 1
       ? `${mixLabels[0]}anull[mixedAudio]`
       : `${mixLabels.join("")}amix=inputs=${mixLabels.length}:duration=longest:dropout_transition=0:normalize=0[mixedAudio]`;
-  filters.push(mixed);
   filters.push(
+    mixed,
     `[mixedAudio]apad=whole_dur=${totalDuration},atrim=duration=${totalDuration},${input.masteringFilter}[a]`,
   );
   return {

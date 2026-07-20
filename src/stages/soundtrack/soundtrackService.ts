@@ -25,6 +25,7 @@ import { soundtrackRenderInputs } from "../render/soundtrackRenderInputs.js";
 import { readVoiceoverAudioEvidence, voiceoverAudioPath } from "../voice/voiceoverEvidence.js";
 import { probeSoundtrackAudio, type SoundtrackAudioProbe } from "./soundtrackAudioProbe.js";
 import {
+  renderSoundtrackReview,
   soundtrackAssetDigest,
   soundtrackAssetPath,
   soundtrackManifestPath,
@@ -151,7 +152,7 @@ export async function importSoundtrackAudio(
 export async function configureSoundtrackMix(
   input: Readonly<{
     runId: string;
-    music?: SoundtrackManifest["music"];
+    music?: NonNullable<SoundtrackManifest["music"]>;
     sfx: SoundtrackManifest["sfx"];
   }> &
     Expectation,
@@ -452,17 +453,4 @@ function manifestEvidence(manifest: SoundtrackManifest): SoundtrackManifestEvide
       .update(`${JSON.stringify(manifest, null, 2)}\n`, "utf8")
       .digest("hex"),
   };
-}
-
-function renderSoundtrackReview(manifest: SoundtrackManifest): string {
-  return [
-    "# Soundtrack review",
-    "",
-    `- Revision: ${manifest.revision}`,
-    `- Mode: ${manifest.mode}`,
-    `- Voiceover digest: ${manifest.voiceover.digest}`,
-    `- Imported assets: ${manifest.assets.length}`,
-    `- Analysis: ${manifest.analysis ? `pass-one recorded at ${manifest.analysis.measuredAt}` : "pending"}`,
-    `- Decision: ${manifest.decision ? `${manifest.decision.status} for revision ${manifest.decision.revision}` : "pending"}`,
-  ].join("\n");
 }

@@ -166,114 +166,178 @@ export const soundtrackAnalysisSchema = z.strictObject({
   firstPass: loudnormMeasurementSchema,
 });
 
-export const soundtrackManifestSchema = z
-  .strictObject({
-    schemaVersion: z.literal(1),
-    runId: safeIdentifierSchema,
-    revision: z.int().positive(),
-    createdAt: z.iso.datetime(),
-    updatedAt: z.iso.datetime(),
-    voiceover: voiceoverSchema,
-    mode: z.enum(["voice-only", "mixed"]),
-    profile: masteringProfileSchema,
-    assets: z.array(soundtrackAssetSchema).max(256),
-    music: musicSelectionSchema.optional(),
-    sfx: z.array(sfxCueSchema).max(32),
-    analysis: soundtrackAnalysisSchema.optional(),
-    decision: soundtrackDecisionSchema.optional(),
-  })
-  .superRefine((manifest, context) => {
-    const assetsById = new Map(manifest.assets.map((asset) => [asset.assetId, asset]));
-    if (assetsById.size !== manifest.assets.length) {
-      context.addIssue({ code: "custom", path: ["assets"], message: "Asset IDs must be unique." });
-    }
-    const cueIds = manifest.sfx.map((cue) => cue.cueId);
-    if (new Set(cueIds).size !== cueIds.length) {
-      context.addIssue({ code: "custom", path: ["sfx"], message: "SFX cue IDs must be unique." });
-    }
-    if (manifest.mode === "voice-only" && (manifest.music || manifest.sfx.length)) {
+const soundtrackManifestObjectSchema = z.strictObject({
+  schemaVersion: z.literal(1),
+  runId: safeIdentifierSchema,
+  revision: z.int().positive(),
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime(),
+  voiceover: voiceoverSchema,
+  mode: z.enum(["voice-only", "mixed"]),
+  profile: masteringProfileSchema,
+  assets: z.array(soundtrackAssetSchema).max(256),
+  music: musicSelectionSchema.optional(),
+  sfx: z.array(sfxCueSchema).max(32),
+  analysis: soundtrackAnalysisSchema.optional(),
+  decision: soundtrackDecisionSchema.optional(),
+});
+
+type SoundtrackManifestInput = z.infer<typeof soundtrackManifestObjectSchema>;
+type SoundtrackAssetMap = ReadonlyMap<string, SoundtrackManifestInput["assets"][number]>;
+
+export const soundtrackManifestSchema =
+  soundtrackManifestObjectSchema.superRefine(refineSoundtrackManifest);
+
+function refineSoundtrackManifest(
+  manifest: SoundtrackManifestInput,
+  context: z.RefinementCtx<SoundtrackManifestInput>,
+): void {
+  const assetsById = new Map(manifest.assets.map((asset) => [asset.assetId, asset]));
+  refineUniqueIdentifiers(manifest, assetsById, context);
+  refineSoundtrackMode(manifest, context);
+  refineMusicSelection(manifest, assetsById, context);
+  refineSfxCues(manifest, assetsById, context);
+  refineSoundtrackDecision(manifest, context);
+}
+
+function refineUniqueIdentifiers(
+  manifest: SoundtrackManifestInput,
+  assetsById: SoundtrackAssetMap,
+  context: z.RefinementCtx<SoundtrackManifestInput>,
+): void {
+  if (assetsById.size !== manifest.assets.length) {
+    context.addIssue({ code: "custom", path: ["assets"], message: "Asset IDs must be unique." });
+  }
+  const cueIds = manifest.sfx.map((cue) => cue.cueId);
+  if (new Set(cueIds).size !== cueIds.length) {
+    context.addIssue({ code: "custom", path: ["sfx"], message: "SFX cue IDs must be unique." });
+  }
+}
+
+function refineSoundtrackMode(
+  manifest: SoundtrackManifestInput,
+  context: z.RefinementCtx<SoundtrackManifestInput>,
+): void {
+  if (manifest.mode === "voice-only" && (manifest.music || manifest.sfx.length)) {
+    context.addIssue({
+      code: "custom",
+      path: ["mode"],
+      message: "Voice-only mode cannot select music or SFX.",
+    });
+  }
+}
+
+function refineMusicSelection(
+  manifest: SoundtrackManifestInput,
+  assetsById: SoundtrackAssetMap,
+  context: z.RefinementCtx<SoundtrackManifestInput>,
+): void {
+  if (!manifest.music) return;
+  const musicAsset = assetsById.get(manifest.music.assetId);
+  if (musicAsset?.role !== "music") {
+    context.addIssue({
+      code: "custom",
+      path: ["music", "assetId"],
+      message: "Music selection must reference a music asset.",
+    });
+    return;
+  }
+  const remainingDuration = musicAsset.media.durationSeconds - manifest.music.trimStartSeconds;
+  if (remainingDuration <= 0) {
+    context.addIssue({
+      code: "custom",
+      path: ["music", "trimStartSeconds"],
+      message: "Music trim must start before the selected asset ends.",
+    });
+  }
+  if (
+    manifest.music.fadeInSeconds > remainingDuration ||
+    manifest.music.fadeOutSeconds > remainingDuration
+  ) {
+    context.addIssue({
+      code: "custom",
+      path: ["music"],
+      message: "Music fades cannot exceed the remaining selected asset duration.",
+    });
+  }
+}
+
+function refineSfxCues(
+  manifest: SoundtrackManifestInput,
+  assetsById: SoundtrackAssetMap,
+  context: z.RefinementCtx<SoundtrackManifestInput>,
+): void {
+  for (const [index, cue] of manifest.sfx.entries()) {
+    const sfxAsset = assetsById.get(cue.assetId);
+    if (sfxAsset?.role !== "sfx") {
       context.addIssue({
         code: "custom",
-        path: ["mode"],
-        message: "Voice-only mode cannot select music or SFX.",
+        path: ["sfx", index, "assetId"],
+        message: "SFX cue must reference an SFX asset.",
       });
+      continue;
     }
-    if (manifest.music && assetsById.get(manifest.music.assetId)?.role !== "music") {
+    if (cue.trimStartSeconds + cue.durationSeconds > sfxAsset.media.durationSeconds) {
       context.addIssue({
         code: "custom",
-        path: ["music", "assetId"],
-        message: "Music selection must reference a music asset.",
+        path: ["sfx", index, "durationSeconds"],
+        message: "SFX trim and duration must fit within the selected asset.",
       });
     }
-    if (manifest.music) {
-      const musicAsset = assetsById.get(manifest.music.assetId);
-      if (musicAsset?.role === "music") {
-        const remainingDuration =
-          musicAsset.media.durationSeconds - manifest.music.trimStartSeconds;
-        if (remainingDuration <= 0) {
-          context.addIssue({
-            code: "custom",
-            path: ["music", "trimStartSeconds"],
-            message: "Music trim must start before the selected asset ends.",
-          });
-        }
-        if (
-          manifest.music.fadeInSeconds > remainingDuration ||
-          manifest.music.fadeOutSeconds > remainingDuration
-        ) {
-          context.addIssue({
-            code: "custom",
-            path: ["music"],
-            message: "Music fades cannot exceed the remaining selected asset duration.",
-          });
-        }
-      }
-    }
-    for (const [index, cue] of manifest.sfx.entries()) {
-      const sfxAsset = assetsById.get(cue.assetId);
-      if (sfxAsset?.role !== "sfx") {
-        context.addIssue({
-          code: "custom",
-          path: ["sfx", index, "assetId"],
-          message: "SFX cue must reference an SFX asset.",
-        });
-        continue;
-      }
-      if (cue.trimStartSeconds + cue.durationSeconds > sfxAsset.media.durationSeconds) {
-        context.addIssue({
-          code: "custom",
-          path: ["sfx", index, "durationSeconds"],
-          message: "SFX trim and duration must fit within the selected asset.",
-        });
-      }
-      if (cue.fadeInSeconds > cue.durationSeconds || cue.fadeOutSeconds > cue.durationSeconds) {
-        context.addIssue({
-          code: "custom",
-          path: ["sfx", index],
-          message: "SFX fades cannot exceed cue duration.",
-        });
-      }
-    }
-    if (manifest.decision && manifest.decision.revision !== manifest.revision) {
+    if (cue.fadeInSeconds > cue.durationSeconds || cue.fadeOutSeconds > cue.durationSeconds) {
       context.addIssue({
         code: "custom",
-        path: ["decision", "revision"],
-        message: "Soundtrack decision must target the current revision.",
+        path: ["sfx", index],
+        message: "SFX fades cannot exceed cue duration.",
       });
     }
-    if (manifest.decision?.status === "approved" && !manifest.analysis) {
-      context.addIssue({
-        code: "custom",
-        path: ["decision", "status"],
-        message: "Approved soundtrack decisions require current loudness analysis.",
-      });
-    }
-  });
+  }
+}
+
+function refineSoundtrackDecision(
+  manifest: SoundtrackManifestInput,
+  context: z.RefinementCtx<SoundtrackManifestInput>,
+): void {
+  if (manifest.decision && manifest.decision.revision !== manifest.revision) {
+    context.addIssue({
+      code: "custom",
+      path: ["decision", "revision"],
+      message: "Soundtrack decision must target the current revision.",
+    });
+  }
+  if (manifest.decision?.status === "approved" && !manifest.analysis) {
+    context.addIssue({
+      code: "custom",
+      path: ["decision", "status"],
+      message: "Approved soundtrack decisions require current loudness analysis.",
+    });
+  }
+}
 
 export type SoundtrackManifest = z.infer<typeof soundtrackManifestSchema>;
 export type SoundtrackAsset = z.infer<typeof soundtrackAssetSchema>;
 export type SoundtrackDecision = z.infer<typeof soundtrackDecisionSchema>;
 export type SoundtrackAssetBytesReader = (path: string) => Promise<Uint8Array> | Uint8Array;
+
+/** Renders the operator-readable review summary for one exact soundtrack revision. */
+export function renderSoundtrackReview(manifest: SoundtrackManifest): string {
+  const analysisStatus = manifest.analysis
+    ? `pass-one recorded at ${manifest.analysis.measuredAt}`
+    : "pending";
+  const decisionStatus = manifest.decision
+    ? `${manifest.decision.status} for revision ${manifest.decision.revision}`
+    : "pending";
+  return [
+    "# Soundtrack review",
+    "",
+    `- Revision: ${manifest.revision}`,
+    `- Mode: ${manifest.mode}`,
+    `- Voiceover digest: ${manifest.voiceover.digest}`,
+    `- Imported assets: ${manifest.assets.length}`,
+    `- Analysis: ${analysisStatus}`,
+    `- Decision: ${decisionStatus}`,
+  ].join("\n");
+}
 
 /** Builds the only permitted per-run soundtrack asset location. */
 export function soundtrackAssetPath(
