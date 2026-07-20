@@ -131,7 +131,7 @@ function SoundtrackStatus({
       <Badge variant={summary.kind === "invalid" ? "destructive" : "secondary"}>
         {copy.status(summary.kind, summary.mode)}
       </Badge>
-      {summary.revision ? (
+      {summary.revision != null ? (
         <Badge variant='outline'>
           {copy.revision} {summary.revision}
         </Badge>
@@ -179,6 +179,6 @@ function SoundtrackMixSummary({
 function soundtrackExpectedBinding(
   summary: StudioSoundtrackSummary,
 ): SoundtrackExpectedBinding | null {
-  if (!summary.digest || !summary.revision) return null;
+  if (!summary.digest || summary.revision == null) return null;
   return { expectedManifestDigest: summary.digest, expectedRevision: summary.revision };
 }

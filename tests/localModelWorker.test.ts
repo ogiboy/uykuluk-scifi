@@ -45,7 +45,7 @@ describe("local model worker", () => {
       if (!request.modelPath) throw new Error("Expected the curated model path.");
       await mkdir(request.modelPath, { recursive: true });
       await writeFile(
-        path.join(request.modelPath, "install-manifest.json"),
+        path.join(request.runtimePath, "install-manifest.json"),
         '{"schemaVersion":1}\n',
         "utf8",
       );

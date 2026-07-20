@@ -227,7 +227,9 @@ function SoundtrackMixSection(props: SoundtrackMediaSectionsProps) {
 
   async function configureMix(): Promise<void> {
     if (!action) return;
-    if (sfxAssetId && !sfxCueId.trim()) {
+    const trimmedCueId = sfxCueId.trim();
+    const hasDuplicateCueId = summary.mix.sfx.some((cue) => cue.cueId === trimmedCueId);
+    if (sfxAssetId && (!trimmedCueId || hasDuplicateCueId)) {
       reportError({
         actionId: action.actionId,
         message: copy.sfxCueValidation,
@@ -250,7 +252,7 @@ function SoundtrackMixSection(props: SoundtrackMediaSectionsProps) {
           ...summary.mix.sfx,
           {
             assetId: sfxAssetId,
-            cueId: sfxCueId.trim(),
+            cueId: trimmedCueId,
             durationSeconds: Number(sfxDuration),
             fadeInSeconds: Number(sfxFadeIn),
             fadeOutSeconds: Number(sfxFadeOut),
@@ -340,7 +342,7 @@ function SoundtrackMixSection(props: SoundtrackMediaSectionsProps) {
         {sfxAssetId ? (
           <>
             <div className='grid gap-2 sm:col-span-2'>
-              <Label htmlFor='soundtrack-sfx-cue-id'>{copy.assetId}</Label>
+              <Label htmlFor='soundtrack-sfx-cue-id'>{copy.sfxCueId}</Label>
               <Input
                 id='soundtrack-sfx-cue-id'
                 onChange={(event) => setSfxCueId(event.target.value)}

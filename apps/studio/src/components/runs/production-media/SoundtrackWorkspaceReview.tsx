@@ -76,6 +76,7 @@ export type SoundtrackWorkspaceCopy = Readonly<{
   rightsEvidence: string;
   role: string;
   sfxCues: string;
+  sfxCueId: string;
   sfxDuration: string;
   sfxFadeIn: string;
   sfxFadeOut: string;
@@ -274,6 +275,7 @@ const english: SoundtrackWorkspaceCopy = {
   rightsEvidence: "Rights evidence",
   role: "Role",
   sfxCues: "Timed SFX cues",
+  sfxCueId: "Cue ID",
   sfxDuration: "Cue duration (seconds)",
   sfxFadeIn: "SFX fade in (seconds)",
   sfxFadeOut: "SFX fade out (seconds)",
@@ -351,6 +353,7 @@ const turkish: SoundtrackWorkspaceCopy = {
   rightsEvidence: "Hak kanıtı",
   role: "Rol",
   sfxCues: "Zamanlı SFX işaretleri",
+  sfxCueId: "İşaret kimliği",
   sfxDuration: "İşaret süresi (saniye)",
   sfxFadeIn: "SFX giriş geçişi (saniye)",
   sfxFadeOut: "SFX çıkış geçişi (saniye)",

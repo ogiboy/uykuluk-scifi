@@ -59,6 +59,7 @@ describe("draft render approval gates", () => {
     });
 
     await expect(approveRender(runId)).rejects.toThrow(/not currently approved/i);
+    expect((await loadRun(runId)).state).toBe("READY_FOR_MANUAL_PRODUCTION");
   });
 
   it("blocks render approval when the approved soundtrack is stale for voice evidence", async () => {
@@ -72,6 +73,7 @@ describe("draft render approval gates", () => {
     );
 
     await expect(approveRender(runId)).rejects.toThrow(/soundtrack manifest is stale/i);
+    expect((await loadRun(runId)).state).toBe("READY_FOR_MANUAL_PRODUCTION");
   });
 
   it("refuses approval for a readable legacy render plan without visual binding", async () => {

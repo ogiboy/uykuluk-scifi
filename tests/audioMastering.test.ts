@@ -39,13 +39,21 @@ describe("audio mastering", () => {
   });
 
   it("parses the final complete loudnorm object from noisy FFmpeg stderr", () => {
-    const stderr = `frame=1\n{"input_i":"-20.0"}\nnoise\n${JSON.stringify({
+    const earlierMeasurement = {
+      input_i: "-18.0",
+      input_tp: "-2.0",
+      input_lra: "8.0",
+      input_thresh: "-28.0",
+      target_offset: "0.0",
+    };
+    const finalMeasurement = {
       input_i: "-14.2",
       input_tp: "-1.3",
       input_lra: "6.1",
       input_thresh: "-24.4",
       target_offset: "0.2",
-    })}\n`;
+    };
+    const stderr = `frame=1\n${JSON.stringify(earlierMeasurement)}\nnoise\n${JSON.stringify(finalMeasurement)}\n`;
 
     expect(parseLoudnormMeasurement(stderr)).toEqual(validMeasurement);
   });

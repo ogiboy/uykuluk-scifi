@@ -100,6 +100,12 @@ describe("draft render evidence v11 contract", () => {
     delete missingEncoding.encoding;
     expect(() => draftRenderManifestSchema.parse(missingEncoding)).toThrow();
 
+    for (const requiredField of ["soundtrack", "mastering"] as const) {
+      const incomplete = manifestV11();
+      delete incomplete[requiredField];
+      expect(() => draftRenderManifestSchema.parse(incomplete)).toThrow();
+    }
+
     const legacyApproval = manifestV11();
     legacyApproval.renderApproval = { approvalId: "approval_render", approvedRef: digest };
     expect(() => draftRenderManifestSchema.parse(legacyApproval)).toThrow();

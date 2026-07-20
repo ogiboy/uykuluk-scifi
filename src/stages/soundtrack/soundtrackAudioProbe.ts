@@ -30,6 +30,7 @@ export const soundtrackAudioProbeSchema = z.strictObject({
 export type SoundtrackAudioProbe = z.infer<typeof soundtrackAudioProbeSchema>;
 
 const STDOUT_LIMIT_BYTES = 1_000_000;
+const PROBE_TIMEOUT_MS = 30_000;
 
 /** Probes one operator-imported audio file through the bounded FFprobe JSON surface. */
 export async function probeSoundtrackAudio(
@@ -76,10 +77,19 @@ function runFfprobe(binary: string, filePath: string): Promise<string> {
     let stdout = "";
     let stderr = "";
     let settled = false;
+    const timer = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      child.kill("SIGKILL");
+      reject(new SafeExitError("FFprobe soundtrack probe timed out."));
+    }, PROBE_TIMEOUT_MS);
+    timer.unref?.();
     child.stdout.on("data", (chunk: Buffer) => {
+      if (settled) return;
       const next = `${stdout}${chunk.toString("utf8")}`;
       if (Buffer.byteLength(next, "utf8") > STDOUT_LIMIT_BYTES) {
         settled = true;
+        clearTimeout(timer);
         child.kill();
         reject(new SafeExitError("FFprobe soundtrack output exceeded the JSON size limit."));
         return;
@@ -87,14 +97,19 @@ function runFfprobe(binary: string, filePath: string): Promise<string> {
       stdout = next;
     });
     child.stderr.on("data", (chunk: Buffer) => {
+      if (settled) return;
       stderr = `${stderr}${chunk.toString("utf8")}`.slice(-4_000);
     });
     child.on("error", (error) => {
+      if (settled) return;
       settled = true;
+      clearTimeout(timer);
       reject(new SafeExitError(`FFprobe failed to start: ${error.message}`));
     });
     child.on("close", (code) => {
       if (settled) return;
+      settled = true;
+      clearTimeout(timer);
       if (code === 0) {
         resolve(stdout);
         return;

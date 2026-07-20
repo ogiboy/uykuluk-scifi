@@ -137,11 +137,11 @@ curated local MFLUX package through exact setup/verify/smoke preflight and appro
 install-manifest verification, a detached worker, readiness state, and recovery. When ready,
 selected scenes generate sequential local revisions with model/runtime revision, prompt/settings
 digests, seed, dimensions, and measured duration; operators audition revisions and explicitly
-activate one canonical scene revision. Real installation and 1024x576 smoke remain pending an exact
-operator-approved run outside CI. Static/manual and BFL revisions remain readable and compatible. A
-configured hosted-provider key reports credential presence only, not commercial entitlement,
-available credit, or production readiness. The bounded ElevenLabs diagnostic writes non-production
-evidence and never enables rendering or publishing.
+activate one canonical scene revision. The completed setup still requires a fresh exact verification
+and a 1024x576 smoke under a new operator-approved run outside CI. Static/manual and BFL revisions
+remain readable and compatible. A configured hosted-provider key reports credential presence only,
+not commercial entitlement, available credit, or production readiness. The bounded ElevenLabs
+diagnostic writes non-production evidence and never enables rendering or publishing.
 
 Read [local model setup](docs/providers/local-models.md) and [voice](docs/providers/voice.md) or
 [visual provider contracts](docs/providers/visuals.md) before changing provider mode.
