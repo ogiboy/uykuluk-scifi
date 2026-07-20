@@ -14,11 +14,11 @@ export const voiceForwardMasteringProfile = {
 } as const;
 
 export const loudnormMeasurementSchema = z.strictObject({
-  integratedLufs: z.number().finite(),
-  truePeakDbtp: z.number().finite(),
-  loudnessRangeLufs: z.number().finite().nonnegative(),
-  thresholdLufs: z.number().finite(),
-  targetOffsetLufs: z.number().finite(),
+  integratedLufs: z.number(),
+  truePeakDbtp: z.number(),
+  loudnessRangeLufs: z.number().nonnegative(),
+  thresholdLufs: z.number(),
+  targetOffsetLufs: z.number(),
 });
 
 export type LoudnormMeasurement = z.infer<typeof loudnormMeasurementSchema>;

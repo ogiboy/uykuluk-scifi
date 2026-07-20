@@ -36,19 +36,18 @@ export function visualProviderLabel(locale: StudioLocale, providerId: string): s
   return providerId;
 }
 
-type HostedVisualStatus = "approved" | "blocked" | "missing" | "pending" | "ready" | "settled";
-
 export function hostedVisualStatusLabel(locale: StudioLocale, status: string): string {
   if (locale !== "tr") return status;
-  const labels = {
-    approved: "onaylandı",
-    blocked: "engellendi",
-    missing: "eksik",
-    pending: "bekliyor",
-    ready: "hazır",
-    settled: "uzlaştırıldı",
-  } satisfies Readonly<Record<HostedVisualStatus, string>>;
-  return labels[status as HostedVisualStatus] ?? status;
+  return (
+    {
+      approved: "onaylandı",
+      blocked: "engellendi",
+      missing: "eksik",
+      pending: "bekliyor",
+      ready: "hazır",
+      settled: "uzlaştırıldı",
+    }[status] ?? status
+  );
 }
 
 export function hostedVisualPurposeLabel(

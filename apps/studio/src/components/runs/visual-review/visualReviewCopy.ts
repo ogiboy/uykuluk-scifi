@@ -39,16 +39,11 @@ export type VisualReviewCopy = Readonly<{
   hostedIdentity: string;
   hostedMixedSelection: string;
   hostedNeedsAttribution: string;
-  hostedPurposeLabel: (
-    purpose: "initial" | "regenerate-rejected" | null | undefined,
-    fallback: string,
-  ) => string;
   hostedPlanBlocked: string;
   hostedPlanFallback: string;
   hostedPlanReady: string;
   hostedPlanSubmitting: (count: number, revising: boolean) => string;
   hostedSelectionBlocked: string;
-  hostedStatusLabel: (status: string) => string;
   hostedTitle: string;
   imageNotAccepted: string;
   importBlocked: string;
@@ -102,23 +97,9 @@ export type VisualReviewCopy = Readonly<{
   summaryStatus: Readonly<Record<"invalid" | "missing" | "ready", string>>;
   summary: (approved: number, total: number, rejected: number) => string;
   updated: string;
-  visualActionStatusLabel: (
-    kind: "blocked" | "error" | "idle" | "submitting" | "success",
-  ) => string;
 }>;
-
-type VisualReviewTextCopy = Omit<
-  VisualReviewCopy,
-  "hostedPurposeLabel" | "hostedStatusLabel" | "visualActionStatusLabel"
->;
-
-/**
- * Selects the visual review copy for the requested locale.
- *
- * @param locale - The locale used to select the localized copy.
- * @returns The Turkish copy for `"tr"`; English copy for all other locales.
- */
-export function visualReviewCopy(locale: StudioLocale): VisualReviewCopy {
+/** Returns locale-bound visual-review copy and status-label helpers. */
+export function visualReviewCopy(locale: StudioLocale) {
   return {
     ...(locale === "tr" ? turkishCopy : englishCopy),
     hostedPurposeLabel: labels.hostedVisualPurposeLabel.bind(undefined, locale),
@@ -126,7 +107,7 @@ export function visualReviewCopy(locale: StudioLocale): VisualReviewCopy {
     visualActionStatusLabel: labels.visualActionStatusLabel.bind(undefined, locale),
   };
 }
-const englishCopy: VisualReviewTextCopy = {
+const englishCopy: VisualReviewCopy = {
   activateBlocked: "Visual revision selection blocked",
   activateFallback: "Studio could not make this visual revision canonical.",
   activateImpact:
@@ -240,7 +221,7 @@ const englishCopy: VisualReviewTextCopy = {
   updated: "Updated",
 };
 
-const turkishCopy: VisualReviewTextCopy = {
+const turkishCopy: VisualReviewCopy = {
   ...englishCopy,
   activateBlocked: "Görsel revizyon seçimi engellendi",
   activateFallback: "Studio bu görsel revizyonu kanonik yapamadı.",

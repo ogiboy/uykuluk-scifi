@@ -130,9 +130,9 @@ const finalReviewBundleV3MediaSchema = z.strictObject({
       loudnessRangeLufs: z.literal(11),
     }),
     output: z.strictObject({
-      integratedLufs: z.number().finite(),
-      truePeakDbtp: z.number().finite(),
-      loudnessRangeLufs: z.number().finite().nonnegative(),
+      integratedLufs: z.number(),
+      truePeakDbtp: z.number(),
+      loudnessRangeLufs: z.number().nonnegative(),
     }),
     passed: z.literal(true),
   }),

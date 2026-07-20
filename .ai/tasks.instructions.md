@@ -111,14 +111,11 @@
 - Maintain the implemented Studio-managed local MFLUX slice: exact setup/verify/smoke preflight and
   approval, detached worker recovery, offline install-manifest verification, sequential generation,
   provenance, revision audition, and explicit canonical activation. Keep the conservative 6.5 GB
-  setup estimate and truthful readiness boundary. The real target-machine setup is complete and the
-  model lives under `models/visual`; fresh verify and 1024x576 smoke still require exact approval
-  outside CI. Static/manual and BFL revisions remain compatible.
-- Finish the implemented render-v11 soundtrack/mastering slice through PR gates. It binds an exact
-  approved soundtrack manifest into render approval, mixes deterministic music/SFX, performs
-  two-pass loudness normalization and post-AAC verification, and exposes guarded Studio import,
-  configuration, analysis, and review. The next media deliverable is final thumbnail JPG generation
-  and exact final-review binding, followed by a real 12-24-scene episode acceptance run.
+  setup estimate and truthful readiness boundary. Real install and 1024x576 smoke remain outside CI
+  until an operator approves the exact preflight on the target machine; static/manual and BFL
+  revisions remain compatible.
+- Then harden exact render/media quality: pacing and motion, subtitle readability, popup density,
+  audio mastering, licensed music/SFX evidence, and final thumbnail JPG.
 - Then add sequential multi-model script audition and editorial quality: immutable shared brief and
   prompt/settings snapshots, side-by-side selection, retained alternatives, inline review, operator-
   curated source/claim provenance, and a minimum-publishable scorecard.
