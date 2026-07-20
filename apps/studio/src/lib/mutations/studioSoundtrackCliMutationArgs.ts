@@ -1,7 +1,7 @@
 import {
   prepared,
-  type StudioCliMutationActionId,
   type StudioPreparedCliArgs,
+  type SoundtrackCliActionId,
 } from "./studioCliMutationArgsContracts";
 import {
   writeTemporaryBinaryInputFile,
@@ -15,18 +15,9 @@ import {
   parseSoundtrackPreparePayload,
 } from "./studioMutationPayloadContracts";
 
-type SoundtrackActionId = Extract<
-  StudioCliMutationActionId,
-  | "soundtrack.prepare"
-  | "soundtrack.import"
-  | "soundtrack.configure"
-  | "soundtrack.analyze"
-  | "soundtrack.decide"
->;
-
 /** Builds whitelisted, expectation-bound CLI arguments for local soundtrack mutations. */
 export async function soundtrackCliArgsForAction(
-  actionId: SoundtrackActionId,
+  actionId: SoundtrackCliActionId,
   payload: unknown,
 ): Promise<StudioPreparedCliArgs> {
   if (actionId === "soundtrack.prepare") {
@@ -134,7 +125,13 @@ function expectationArgs(
 
 function combineCleanups(...cleanups: readonly (() => Promise<void>)[]): () => Promise<void> {
   return async () => {
-    for (const cleanup of cleanups) await cleanup();
+    for (const cleanup of cleanups) {
+      try {
+        await cleanup();
+      } catch {
+        // Best-effort: continue attempting remaining cleanups even if one fails
+      }
+    }
   };
 }
 

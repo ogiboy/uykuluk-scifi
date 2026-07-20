@@ -153,7 +153,7 @@ describe("local final review bundle", () => {
     await writeFile(artifactPath(runId, "production/audio/soundtrack/manifest.json"), "{}", "utf8");
 
     await expect(createFinalReviewBundle(runId)).rejects.toThrow(
-      /soundtrack manifest does not match manifest evidence/i,
+      /soundtrack manifest is malformed or invalid/i,
     );
   });
 

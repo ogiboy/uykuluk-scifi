@@ -1,4 +1,3 @@
-import { spawn } from "node:child_process";
 import { createHash, randomUUID } from "node:crypto";
 import { readFile, rename, rm, stat } from "node:fs/promises";
 import path from "node:path";
@@ -24,6 +23,7 @@ import {
   buildRenderedOutputAnalysisArgs,
   runLoudnormAnalysis,
 } from "./render/audioMasteringExecution.js";
+import { runBoundedProcess } from "./render/boundedProcess.js";
 import { renderApprovalRef } from "./render/renderApproval.js";
 import { buildRenderAudioGraph } from "./render/renderAudioMix.js";
 import {
@@ -349,34 +349,15 @@ async function readRenderPlan(runId: string): Promise<RenderPlan> {
 }
 
 async function runFfmpeg(binary: string, args: string[], timeoutMs: number): Promise<void> {
-  await new Promise<void>((resolve, reject) => {
-    const child = spawn(binary, args, { stdio: ["ignore", "ignore", "pipe"] });
-    let stderr = "";
-    let settled = false;
-    const finish = (callback: () => void) => {
-      if (settled) return;
-      settled = true;
-      clearTimeout(timer);
-      callback();
-    };
-    const timer = setTimeout(() => {
-      child.kill("SIGKILL");
-      finish(() => reject(new SafeExitError("FFmpeg render timed out.")));
-    }, timeoutMs);
-    child.stderr.on("data", (chunk: Buffer) => {
-      stderr = `${stderr}${chunk.toString("utf8")}`.slice(-4_000);
-    });
-    child.on("error", (error) =>
-      finish(() => reject(new SafeExitError(`FFmpeg failed to start: ${error.message}`))),
-    );
-    child.on("close", (code) => {
-      finish(() => {
-        if (code === 0) {
-          resolve();
-          return;
-        }
-        reject(new SafeExitError(`FFmpeg exited with code ${code}: ${stderr.trim()}`));
-      });
-    });
+  if (!Number.isSafeInteger(timeoutMs) || timeoutMs <= 0) {
+    throw new SafeExitError("FFmpeg render requires a positive timeout.");
+  }
+  await runBoundedProcess({
+    command: binary,
+    args,
+    timeoutMs,
+    killSignal: "SIGKILL",
+    maxOutputBytes: 4_000,
+    errorContext: "FFmpeg",
   });
 }

@@ -23,6 +23,7 @@ export type LocalModelStatePaths = Readonly<{
   runtimePath: string;
   modelPath: string;
   installManifestPath: string;
+  legacyInstallManifestPath: string;
   operationsPath: string;
   readyPath: string;
   preparationPointerPath: string;
@@ -42,7 +43,8 @@ export function localModelStatePaths(projectRoot: string): LocalModelStatePaths 
   return {
     runtimePath,
     modelPath,
-    installManifestPath: path.join(runtimePath, "install-manifest.json"),
+    installManifestPath: path.join(modelPath, "install-manifest.json"),
+    legacyInstallManifestPath: path.join(runtimePath, "install-manifest.json"),
     operationsPath: path.join(runtimePath, "operations.json"),
     readyPath: path.join(runtimePath, "ready.json"),
     preparationPointerPath: path.join(runtimePath, "latest-preparation.json"),

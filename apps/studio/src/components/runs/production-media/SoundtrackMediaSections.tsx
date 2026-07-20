@@ -238,13 +238,62 @@ function SoundtrackMixSection(props: SoundtrackMediaSectionsProps) {
       });
       return;
     }
+    const musicFadeInNum = Number(musicFadeIn);
+    const musicFadeOutNum = Number(musicFadeOut);
+    const musicGainDbNum = Number(musicGainDb);
+    const musicTrimStartNum = Number(musicTrimStart);
+    const sfxDurationNum = Number(sfxDuration);
+    const sfxFadeInNum = Number(sfxFadeIn);
+    const sfxFadeOutNum = Number(sfxFadeOut);
+    const sfxGainDbNum = Number(sfxGainDb);
+    const sfxStartNum = Number(sfxStart);
+    if (
+      musicAssetId &&
+      (!musicFadeIn.trim() ||
+        !musicFadeOut.trim() ||
+        !musicGainDb.trim() ||
+        !musicTrimStart.trim() ||
+        !Number.isFinite(musicFadeInNum) ||
+        !Number.isFinite(musicFadeOutNum) ||
+        !Number.isFinite(musicGainDbNum) ||
+        !Number.isFinite(musicTrimStartNum))
+    ) {
+      reportError({
+        actionId: action.actionId,
+        message: copy.importValidation,
+        routePath: action.routePath,
+        toastTitle: copy.configureBlocked,
+      });
+      return;
+    }
+    if (
+      sfxAssetId &&
+      (!sfxDuration.trim() ||
+        !sfxFadeIn.trim() ||
+        !sfxFadeOut.trim() ||
+        !sfxGainDb.trim() ||
+        !sfxStart.trim() ||
+        !Number.isFinite(sfxDurationNum) ||
+        !Number.isFinite(sfxFadeInNum) ||
+        !Number.isFinite(sfxFadeOutNum) ||
+        !Number.isFinite(sfxGainDbNum) ||
+        !Number.isFinite(sfxStartNum))
+    ) {
+      reportError({
+        actionId: action.actionId,
+        message: copy.importValidation,
+        routePath: action.routePath,
+        toastTitle: copy.configureBlocked,
+      });
+      return;
+    }
     const music = musicAssetId
       ? {
           assetId: musicAssetId,
-          fadeInSeconds: Number(musicFadeIn),
-          fadeOutSeconds: Number(musicFadeOut),
-          gainDb: Number(musicGainDb),
-          trimStartSeconds: Number(musicTrimStart),
+          fadeInSeconds: musicFadeInNum,
+          fadeOutSeconds: musicFadeOutNum,
+          gainDb: musicGainDbNum,
+          trimStartSeconds: musicTrimStartNum,
         }
       : undefined;
     const sfx = sfxAssetId
@@ -253,11 +302,11 @@ function SoundtrackMixSection(props: SoundtrackMediaSectionsProps) {
           {
             assetId: sfxAssetId,
             cueId: trimmedCueId,
-            durationSeconds: Number(sfxDuration),
-            fadeInSeconds: Number(sfxFadeIn),
-            fadeOutSeconds: Number(sfxFadeOut),
-            gainDb: Number(sfxGainDb),
-            startSeconds: Number(sfxStart),
+            durationSeconds: sfxDurationNum,
+            fadeInSeconds: sfxFadeInNum,
+            fadeOutSeconds: sfxFadeOutNum,
+            gainDb: sfxGainDbNum,
+            startSeconds: sfxStartNum,
             trimStartSeconds: 0,
           },
         ]

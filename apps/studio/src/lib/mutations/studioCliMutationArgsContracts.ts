@@ -60,6 +60,15 @@ export const studioCliMutationActionIds = [
 
 export type StudioCliMutationActionId = (typeof studioCliMutationActionIds)[number];
 
+export type SoundtrackCliActionId = Extract<
+  StudioCliMutationActionId,
+  | "soundtrack.prepare"
+  | "soundtrack.import"
+  | "soundtrack.configure"
+  | "soundtrack.analyze"
+  | "soundtrack.decide"
+>;
+
 export type RunOnlyCliActionId = Exclude<
   StudioCliMutationActionId,
   | "channel-handoff.decide"

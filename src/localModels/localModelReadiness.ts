@@ -56,14 +56,19 @@ export { localModelStatePaths, type LocalModelStatePaths } from "./localModelSto
  */
 export async function readOverview(projectRoot: string): Promise<LocalModelOverview> {
   const paths = localModelStatePaths(projectRoot);
-  const [operations, readyMarker, installManifest, preparation] = await Promise.all([
-    readLocalModelOperations(paths.operationsPath),
-    readLocalModelReady(paths.readyPath),
-    pathExists(paths.installManifestPath),
-    readLatestLocalModelPreparation(projectRoot, paths.preparationPointerPath),
-  ]);
+  const [operations, readyMarker, installManifest, legacyInstallManifest, preparation] =
+    await Promise.all([
+      readLocalModelOperations(paths.operationsPath),
+      readLocalModelReady(paths.readyPath),
+      pathExists(paths.installManifestPath),
+      pathExists(paths.legacyInstallManifestPath),
+      readLatestLocalModelPreparation(projectRoot, paths.preparationPointerPath),
+    ]);
   const latestOperation = operations.at(-1);
-  const readiness = determineLocalModelReadiness(latestOperation, readyMarker && installManifest);
+  const readiness = determineLocalModelReadiness(
+    latestOperation,
+    readyMarker && (installManifest || legacyInstallManifest),
+  );
   return {
     catalog: Object.values(localModelCatalog),
     readiness,

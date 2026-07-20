@@ -1,11 +1,10 @@
-import { spawn } from "node:child_process";
-
 import { SafeExitError } from "../../core/errors.js";
 import {
   firstPassLoudnormFilter,
   parseLoudnormMeasurement,
   type LoudnormMeasurement,
 } from "./audioMastering.js";
+import { runBoundedProcess } from "./boundedProcess.js";
 import type { RenderAudioGraph } from "./renderAudioMix.js";
 
 const maximumDiagnosticBytes = 128 * 1024;
@@ -57,44 +56,17 @@ export async function runLoudnormAnalysis(
   if (!Number.isSafeInteger(timeoutMs) || timeoutMs <= 0) {
     throw new SafeExitError("FFmpeg loudness analysis requires a positive timeout.");
   }
-  return new Promise<LoudnormExecutionResult>((resolve, reject) => {
-    const child = spawn(binary, [...args], { stdio: ["ignore", "ignore", "pipe"] });
-    let stderr = "";
-    let settled = false;
-    const finish = (callback: () => void) => {
-      if (settled) return;
-      settled = true;
-      clearTimeout(timer);
-      callback();
-    };
-    const timer = setTimeout(() => {
-      child.kill("SIGKILL");
-      finish(() => reject(new SafeExitError("FFmpeg loudness analysis timed out.")));
-    }, timeoutMs);
-    child.stderr.on("data", (chunk: Buffer) => {
-      stderr = `${stderr}${chunk.toString("utf8")}`.slice(-maximumDiagnosticBytes);
-    });
-    child.on("error", (error) => {
-      finish(() =>
-        reject(new SafeExitError(`FFmpeg loudness analysis failed to start: ${error.message}`)),
-      );
-    });
-    child.on("close", (code) => {
-      finish(() => {
-        if (code !== 0) {
-          reject(
-            new SafeExitError(
-              `FFmpeg loudness analysis exited with code ${code}: ${stderr.trim()}`,
-            ),
-          );
-          return;
-        }
-        try {
-          resolve({ measurement: parseLoudnormMeasurement(stderr), stderr });
-        } catch (error) {
-          reject(error);
-        }
-      });
-    });
+  const stderr = await runBoundedProcess({
+    command: binary,
+    args,
+    timeoutMs,
+    killSignal: "SIGKILL",
+    maxOutputBytes: maximumDiagnosticBytes,
+    errorContext: "FFmpeg loudness analysis",
   });
+  try {
+    return { measurement: parseLoudnormMeasurement(stderr), stderr };
+  } catch (error) {
+    throw error;
+  }
 }

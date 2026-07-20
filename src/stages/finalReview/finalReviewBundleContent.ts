@@ -1,3 +1,4 @@
+import { SafeExitError } from "../../core/errors.js";
 import { productionPackageManifestPath } from "../production/productionPackageIntegrity.js";
 import { voiceForwardMasteringProfile } from "../render/audioMastering.js";
 import type { DraftRenderManifest } from "../render/renderEvidenceContracts.js";
@@ -195,7 +196,7 @@ export function finalReviewMediaSummary(
   }
   const decision = soundtrack.decision;
   if (decision?.status !== "approved") {
-    throw new Error("Validated v11 render manifest requires an approved soundtrack decision.");
+    throw new SafeExitError("Validated v11 render manifest requires an approved soundtrack decision.");
   }
   return {
     soundtrack: {
