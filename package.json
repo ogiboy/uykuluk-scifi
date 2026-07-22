@@ -73,7 +73,7 @@
     "@elevenlabs/elevenlabs-js": "^2.58.0",
     "commander": "^15.0.0",
     "ink": "^7.1.1",
-    "react": "^19.2.7",
+    "react": "^19.2.8",
     "sharp": "^0.34.5",
     "zod": "^4.4.3"
   },
