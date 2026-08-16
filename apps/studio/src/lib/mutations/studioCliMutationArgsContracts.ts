@@ -34,6 +34,11 @@ export const studioCliMutationActionIds = [
   "script.revise",
   "script.run",
   "settings.save",
+  "soundtrack.prepare",
+  "soundtrack.import",
+  "soundtrack.configure",
+  "soundtrack.analyze",
+  "soundtrack.decide",
   "visuals.decide",
   "visuals.import",
   "visuals.plan-hosted",
@@ -55,6 +60,15 @@ export const studioCliMutationActionIds = [
 
 export type StudioCliMutationActionId = (typeof studioCliMutationActionIds)[number];
 
+export type SoundtrackCliActionId = Extract<
+  StudioCliMutationActionId,
+  | "soundtrack.prepare"
+  | "soundtrack.import"
+  | "soundtrack.configure"
+  | "soundtrack.analyze"
+  | "soundtrack.decide"
+>;
+
 export type RunOnlyCliActionId = Exclude<
   StudioCliMutationActionId,
   | "channel-handoff.decide"
@@ -75,6 +89,11 @@ export type RunOnlyCliActionId = Exclude<
   | "script.approve"
   | "script.revise"
   | "settings.save"
+  | "soundtrack.prepare"
+  | "soundtrack.import"
+  | "soundtrack.configure"
+  | "soundtrack.analyze"
+  | "soundtrack.decide"
   | "visuals.decide"
   | "visuals.import"
   | "visuals.plan-hosted"

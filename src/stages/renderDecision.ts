@@ -70,7 +70,10 @@ export async function recordRenderDecision(
     },
     nextSafeAction: renderDecisionNextSafeAction(parsed.decision, run.runId),
     notes: parsed.notes,
-    renderApproval: manifest.renderApproval,
+    renderApproval: {
+      approvalId: manifest.renderApproval.approvalId,
+      approvedRef: manifest.renderApproval.approvedRef,
+    },
     reviewedBy: parsed.reviewedBy,
     runId: run.runId,
     schemaVersion: 1,

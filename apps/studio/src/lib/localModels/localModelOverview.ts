@@ -29,6 +29,7 @@ export function unavailableStudioLocalModelOverview(projectRoot: string): Studio
     readiness: "failed",
     recoveryAvailable: false,
     runtimePath: localModelStatePaths(projectRoot).runtimePath,
+    modelPath: localModelStatePaths(projectRoot).modelPath,
     nextAction: readError,
     readError,
   };

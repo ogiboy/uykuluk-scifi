@@ -21,7 +21,11 @@ describe("bounded MFLUX process", () => {
     await expect(
       executeMfluxWorker(
         "/project",
-        { operation: "verify", runtimePath: "/project/.local-models/mflux" },
+        {
+          operation: "verify",
+          runtimePath: "/project/.local-models/mflux",
+          modelPath: "/project/models/visual/mflux/flux2-klein-4b-q4",
+        },
         2_000,
         spawnProcess,
       ),
@@ -44,7 +48,11 @@ describe("bounded MFLUX process", () => {
     await expect(
       executeMfluxWorker(
         "/project",
-        { operation: "setup", runtimePath: "/project/.local-models/mflux" },
+        {
+          operation: "setup",
+          runtimePath: "/project/.local-models/mflux",
+          modelPath: "/project/models/visual/mflux/flux2-klein-4b-q4",
+        },
         2_000,
         spawnProcess,
       ),
@@ -70,7 +78,11 @@ describe("bounded MFLUX process", () => {
     try {
       await executeMfluxWorker(
         "/project",
-        { operation: "verify", runtimePath: "/project/.local-models/mflux" },
+        {
+          operation: "verify",
+          runtimePath: "/project/.local-models/mflux",
+          modelPath: "/project/models/visual/mflux/flux2-klein-4b-q4",
+        },
         2_000,
         spawnProcess,
       );
@@ -94,7 +106,11 @@ describe("bounded MFLUX process", () => {
     await expect(
       executeMfluxWorker(
         "/project",
-        { operation: "verify", runtimePath: "/project/.local-models/mflux" },
+        {
+          operation: "verify",
+          runtimePath: "/project/.local-models/mflux",
+          modelPath: "/project/models/visual/mflux/flux2-klein-4b-q4",
+        },
         2_000,
         spawnProcess,
       ),
@@ -112,7 +128,11 @@ describe("bounded MFLUX process", () => {
     await expect(
       executeMfluxWorker(
         "/project",
-        { operation: "verify", runtimePath: "/project/.local-models/mflux" },
+        {
+          operation: "verify",
+          runtimePath: "/project/.local-models/mflux",
+          modelPath: "/project/models/visual/mflux/flux2-klein-4b-q4",
+        },
         2_000,
         invalidSpawn,
       ),
@@ -128,7 +148,11 @@ describe("bounded MFLUX process", () => {
     await expect(
       executeMfluxWorker(
         "/project",
-        { operation: "verify", runtimePath: "/project/.local-models/mflux" },
+        {
+          operation: "verify",
+          runtimePath: "/project/.local-models/mflux",
+          modelPath: "/project/models/visual/mflux/flux2-klein-4b-q4",
+        },
         2_000,
         mismatchSpawn,
       ),
@@ -146,7 +170,11 @@ describe("bounded MFLUX process", () => {
     await expect(
       executeMfluxWorker(
         "/project",
-        { operation: "verify", runtimePath: "/project/.local-models/mflux" },
+        {
+          operation: "verify",
+          runtimePath: "/project/.local-models/mflux",
+          modelPath: "/project/models/visual/mflux/flux2-klein-4b-q4",
+        },
         2_000,
         startupSpawn,
       ),
@@ -159,7 +187,11 @@ describe("bounded MFLUX process", () => {
     await expect(
       executeMfluxWorker(
         "/project",
-        { operation: "verify", runtimePath: "/project/.local-models/mflux" },
+        {
+          operation: "verify",
+          runtimePath: "/project/.local-models/mflux",
+          modelPath: "/project/models/visual/mflux/flux2-klein-4b-q4",
+        },
         2_000,
         exitSpawn,
       ),
@@ -187,6 +219,7 @@ describe("bounded MFLUX process", () => {
             outputPath: "/project/output.png",
             promptPath: "/project/prompt.txt",
             runtimePath: "/project/.local-models/mflux",
+            modelPath: "/project/models/visual/mflux/flux2-klein-4b-q4",
             seed: 42,
           },
           2_000,
@@ -219,7 +252,11 @@ describe("bounded MFLUX process", () => {
     await expect(
       executeMfluxWorker(
         "/project",
-        { operation: "verify", runtimePath: "/project/.local-models/mflux" },
+        {
+          operation: "verify",
+          runtimePath: "/project/.local-models/mflux",
+          modelPath: "/project/models/visual/mflux/flux2-klein-4b-q4",
+        },
         999,
         spawnProcess,
       ),
@@ -227,7 +264,11 @@ describe("bounded MFLUX process", () => {
     await expect(
       executeMfluxWorker(
         "/project",
-        { operation: "verify", runtimePath: "/project/.local-models/mflux" },
+        {
+          operation: "verify",
+          runtimePath: "/project/.local-models/mflux",
+          modelPath: "/project/models/visual/mflux/flux2-klein-4b-q4",
+        },
         3_600_001,
         spawnProcess,
       ),
@@ -245,7 +286,11 @@ describe("bounded MFLUX process", () => {
     const spawnProcess = vi.fn(() => child) as unknown as typeof spawn;
     const execution = executeMfluxWorker(
       "/project",
-      { operation: "verify", runtimePath: "/project/.local-models/mflux" },
+      {
+        operation: "verify",
+        runtimePath: "/project/.local-models/mflux",
+        modelPath: "/project/models/visual/mflux/flux2-klein-4b-q4",
+      },
       1_000,
       spawnProcess,
     );

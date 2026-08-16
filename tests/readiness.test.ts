@@ -18,6 +18,7 @@ import { generateScript } from "../src/stages/script";
 import { generateVoiceoverAudio } from "../src/stages/voice";
 import { readJsonFile } from "../src/utils/json";
 import { useTempProject } from "./helpers";
+import { prepareApprovedVoiceOnlySoundtrack } from "./renderPipelineHelpers";
 import { createMinimalRenderAssets, enableDeterministicTts } from "./renderTestHelpers";
 import { prepareApprovedStaticVisuals } from "./visualTestHelpers";
 
@@ -137,6 +138,7 @@ describe("readiness and disabled public actions", () => {
 
     expect(approvalOutput).toContain(`Next action: pnpm producer review voice --run ${runId}`);
 
+    await prepareApprovedVoiceOnlySoundtrack(runId);
     await approveRender(runId);
     const renderOutput = formatReadinessConsole(runId, await runReadiness(runId));
 

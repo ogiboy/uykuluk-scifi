@@ -21,18 +21,30 @@ const lockSettings = { timeoutMs: 5_000, retryMs: 20 };
 
 export type LocalModelStatePaths = Readonly<{
   runtimePath: string;
+  modelPath: string;
   installManifestPath: string;
+  legacyInstallManifestPath: string;
   operationsPath: string;
   readyPath: string;
   preparationPointerPath: string;
   lockPath: string;
 }>;
 
+/**
+ * Derives filesystem paths for local model runtime state and mutation locking from a project root.
+ *
+ * @param projectRoot - The project directory from which local model state paths are derived.
+ * @returns Separate model storage plus runtime, record, preparation pointer, and lock paths.
+ */
 export function localModelStatePaths(projectRoot: string): LocalModelStatePaths {
-  const runtimePath = path.join(path.resolve(projectRoot), ".local-models", "mflux");
+  const root = path.resolve(projectRoot);
+  const runtimePath = path.join(root, ".local-models", "mflux");
+  const modelPath = path.join(root, "models", "visual", "mflux", "flux2-klein-4b-q4");
   return {
     runtimePath,
-    installManifestPath: path.join(runtimePath, "install-manifest.json"),
+    modelPath,
+    installManifestPath: path.join(modelPath, "install-manifest.json"),
+    legacyInstallManifestPath: path.join(runtimePath, "install-manifest.json"),
     operationsPath: path.join(runtimePath, "operations.json"),
     readyPath: path.join(runtimePath, "ready.json"),
     preparationPointerPath: path.join(runtimePath, "latest-preparation.json"),
@@ -40,7 +52,13 @@ export function localModelStatePaths(projectRoot: string): LocalModelStatePaths 
   };
 }
 
-/** Serializes local-model state mutations behind the shared filesystem lock. */
+/**
+ * Executes a local model operation while holding the shared mutation lock.
+ *
+ * @param paths - Filesystem paths containing the lock location.
+ * @param task - Operation to execute exclusively.
+ * @returns The result produced by `task`.
+ */
 export async function withLocalModelLock<T>(
   paths: LocalModelStatePaths,
   task: () => Promise<T>,
@@ -54,6 +72,13 @@ export async function withLocalModelLock<T>(
   }
 }
 
+/**
+ * Reads the persisted local model operation records.
+ *
+ * @param target - Path to the operations record
+ * @returns The stored operations, or an empty array when the record does not exist
+ * @throws SafeExitError if the record contains invalid JSON or does not match the expected schema
+ */
 export async function readLocalModelOperations(target: string): Promise<LocalModelOperation[]> {
   if (!(await pathExists(target))) return [];
   try {
@@ -63,6 +88,12 @@ export async function readLocalModelOperations(target: string): Promise<LocalMod
   }
 }
 
+/**
+ * Persists local model operations as a versioned JSON record.
+ *
+ * @param target - Path of the operations file to write
+ * @param operations - Operations to persist
+ */
 export async function writeLocalModelOperations(
   target: string,
   operations: readonly LocalModelOperation[],
@@ -70,6 +101,13 @@ export async function writeLocalModelOperations(
   await writeFileAtomic(target, `${JSON.stringify({ schemaVersion: 1, operations }, null, 2)}\n`);
 }
 
+/**
+ * Checks whether the local MFLUX readiness marker is present and valid.
+ *
+ * @param target - Path to the readiness marker
+ * @returns `true` if the marker is valid, `false` if it is absent
+ * @throws SafeExitError if the marker contains invalid JSON or does not match the expected schema
+ */
 export async function readLocalModelReady(target: string): Promise<boolean> {
   if (!(await pathExists(target))) return false;
   try {
@@ -80,6 +118,11 @@ export async function readLocalModelReady(target: string): Promise<boolean> {
   }
 }
 
+/**
+ * Writes a readiness marker for the configured local model.
+ *
+ * @param target - Path of the readiness marker to write.
+ */
 export async function writeLocalModelReady(target: string): Promise<void> {
   const model = localModelCatalog["mflux-flux2-klein-4b-q4"];
   await writeFileAtomic(
@@ -99,10 +142,21 @@ export async function writeLocalModelReady(target: string): Promise<void> {
   );
 }
 
+/**
+ * Clears the local model readiness marker at the specified path.
+ *
+ * @param target - Path to the readiness marker to remove
+ */
 export async function clearLocalModelReady(target: string): Promise<void> {
   await rm(target, { force: true });
 }
 
+/**
+ * Persists a local model operation preparation record and marks it as the latest preparation.
+ *
+ * @param projectRoot - The project root containing the preparation and latest-preparation records.
+ * @param preparation - The preparation record to persist.
+ */
 export async function writeLocalModelPreparation(
   projectRoot: string,
   preparation: LocalModelOperationPreparation,
@@ -117,6 +171,14 @@ export async function writeLocalModelPreparation(
   );
 }
 
+/**
+ * Reads and verifies a local model operation preparation record.
+ *
+ * @param projectRoot - The project root containing the preparation record
+ * @param runId - The operation run identifier
+ * @returns The validated preparation record
+ * @throws SafeExitError If the record is missing, invalid, or its binding digest does not match its contents
+ */
 export async function readLocalModelPreparation(
   projectRoot: string,
   runId: string,
@@ -141,6 +203,14 @@ export async function readLocalModelPreparation(
   }
 }
 
+/**
+ * Loads the preparation record referenced by the latest-preparation pointer.
+ *
+ * @param projectRoot - Project root used to locate the referenced preparation record
+ * @param pointerPath - Path to the latest-preparation pointer file
+ * @returns The referenced preparation record, or `undefined` if the pointer file does not exist
+ * @throws SafeExitError if the pointer or referenced preparation is invalid or unavailable
+ */
 export async function readLatestLocalModelPreparation(
   projectRoot: string,
   pointerPath: string,
@@ -157,6 +227,13 @@ export async function readLatestLocalModelPreparation(
   }
 }
 
+/**
+ * Removes the latest local model preparation pointer when it references the specified run.
+ *
+ * @param pointerPath - Path to the latest preparation pointer
+ * @param runId - Run identifier that must match the pointer before it is removed
+ * @throws SafeExitError if the pointer contains invalid JSON or fails schema validation
+ */
 export async function clearLocalModelPreparationIfMatches(
   pointerPath: string,
   runId: string,
@@ -172,6 +249,12 @@ export async function clearLocalModelPreparationIfMatches(
   }
 }
 
+/**
+ * Computes the canonical integrity digest for a local model preparation record.
+ *
+ * @param preparation - The preparation record without its existing binding digest.
+ * @returns The canonical digest of the preparation record.
+ */
 export function localModelPreparationDigest(
   preparation: Omit<LocalModelOperationPreparation, "bindingDigest">,
 ): string {
@@ -181,6 +264,13 @@ export function localModelPreparationDigest(
   });
 }
 
+/**
+ * Persists execution evidence for an approved local model operation.
+ *
+ * @param projectRoot - The project root containing the run diagnostics
+ * @param runId - The run identifier associated with the evidence
+ * @param evidence - The approval binding and execution details to record
+ */
 export async function writeLocalModelExecutionEvidence(
   projectRoot: string,
   runId: string,
@@ -198,6 +288,13 @@ export async function writeLocalModelExecutionEvidence(
   );
 }
 
+/**
+ * Records worker execution evidence for a local model operation.
+ *
+ * @param projectRoot - The project root containing the run diagnostics.
+ * @param runId - The run identifier associated with the evidence.
+ * @param evidence - Worker status, model details, diagnostics, and optional installation or smoke-test evidence.
+ */
 export async function writeLocalModelWorkerEvidence(
   projectRoot: string,
   runId: string,
@@ -231,6 +328,13 @@ export async function writeLocalModelWorkerEvidence(
   );
 }
 
+/**
+ * Records operator-visible evidence that a local model operation was recovered after its worker stopped running.
+ *
+ * @param projectRoot - The project root containing the operation run.
+ * @param runId - The identifier of the operation run.
+ * @param evidence - Recovery status, timestamp, reason, and operation identifier to record.
+ */
 export async function writeLocalModelRecoveryEvidence(
   projectRoot: string,
   runId: string,

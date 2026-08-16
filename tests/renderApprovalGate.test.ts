@@ -5,6 +5,11 @@ import { loadRun } from "../src/core/runStore";
 import { approveRender } from "../src/stages/approveRender";
 import { generateEvidenceBundle } from "../src/stages/evidence";
 import { renderDraft } from "../src/stages/render";
+import {
+  decideSoundtrack,
+  requireApprovedSoundtrackManifest,
+} from "../src/stages/soundtrack/soundtrackService";
+import { generateVoiceoverAudio } from "../src/stages/voice";
 import { pathExists } from "../src/utils/fs";
 import { useTempProject } from "./helpers";
 import { prepareReadyRunWithoutVoiceover, prepareVoiceoverReadyRun } from "./renderPipelineHelpers";
@@ -30,6 +35,44 @@ describe("draft render approval gates", () => {
     const runId = await prepareReadyRunWithoutVoiceover();
 
     await expect(approveRender(runId)).rejects.toThrow(/voiceover/i);
+    expect((await loadRun(runId)).state).toBe("READY_FOR_MANUAL_PRODUCTION");
+  });
+
+  it("blocks render approval without an approved soundtrack manifest", async () => {
+    const runId = await prepareReadyRunWithoutVoiceover();
+    await generateVoiceoverAudio(runId);
+
+    await expect(approveRender(runId)).rejects.toThrow(/soundtrack manifest is missing/i);
+    expect((await loadRun(runId)).state).toBe("READY_FOR_MANUAL_PRODUCTION");
+  });
+
+  it("blocks render approval when the soundtrack decision is rejected", async () => {
+    const runId = await prepareVoiceoverReadyRun();
+    const current = await requireApprovedSoundtrackManifest(await loadRun(runId));
+    await decideSoundtrack({
+      runId,
+      expectedManifestDigest: current.digest,
+      expectedRevision: current.manifest.revision,
+      status: "rejected",
+      reviewedBy: "Render test operator",
+      notes: "Soundtrack must be revised before render approval.",
+    });
+
+    await expect(approveRender(runId)).rejects.toThrow(/not currently approved/i);
+    expect((await loadRun(runId)).state).toBe("READY_FOR_MANUAL_PRODUCTION");
+  });
+
+  it("blocks render approval when the approved soundtrack is stale for voice evidence", async () => {
+    const runId = await prepareVoiceoverReadyRun();
+    const metadataPath = artifactPath(runId, "production/audio/voiceover.meta.json");
+    const metadata = JSON.parse(await readFile(metadataPath, "utf8")) as Record<string, unknown>;
+    await writeFile(
+      metadataPath,
+      `${JSON.stringify({ ...metadata, createdAt: "2026-07-20T00:00:00.000Z" }, null, 2)}\n`,
+      "utf8",
+    );
+
+    await expect(approveRender(runId)).rejects.toThrow(/soundtrack manifest is stale/i);
     expect((await loadRun(runId)).state).toBe("READY_FOR_MANUAL_PRODUCTION");
   });
 

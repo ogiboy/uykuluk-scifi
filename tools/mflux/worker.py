@@ -1,6 +1,7 @@
 import argparse
 import json
 import os
+import shutil
 import sys
 import time
 from pathlib import Path
@@ -31,20 +32,25 @@ def parse_args():
         "--operation", choices=("setup", "verify", "smoke", "generate"), required=True
     )
     parser.add_argument("--runtime-path", required=True)
+    parser.add_argument("--model-path", required=True)
     parser.add_argument("--output-path")
     parser.add_argument("--prompt-path")
     parser.add_argument("--seed", type=int)
     return parser.parse_args()
 
 
-def install_manifest_path(runtime_path: Path) -> Path:
-    return runtime_path / INSTALL_MANIFEST_NAME
+def install_manifest_path(model_path: Path) -> Path:
+    return model_path / INSTALL_MANIFEST_NAME
 
 
 def model_inventory(model_path: Path):
     files = []
     for candidate in sorted(model_path.rglob("*")):
-        if not candidate.is_file() or ".cache" in candidate.parts:
+        if (
+            not candidate.is_file()
+            or ".cache" in candidate.parts
+            or candidate.name == INSTALL_MANIFEST_NAME
+        ):
             continue
         resolved = candidate.resolve()
         if not resolved.is_relative_to(model_path.resolve()):
@@ -60,7 +66,7 @@ def model_inventory(model_path: Path):
     return files
 
 
-def write_install_manifest(runtime_path: Path, model_path: Path):
+def write_install_manifest(model_path: Path):
     manifest = {
         "schemaVersion": 1,
         "runtimeVersion": RUNTIME_VERSION,
@@ -68,16 +74,16 @@ def write_install_manifest(runtime_path: Path, model_path: Path):
         "modelRevision": MODEL_REVISION,
         "files": model_inventory(model_path),
     }
-    target = install_manifest_path(runtime_path)
+    target = install_manifest_path(model_path)
     temporary = target.with_name(f".{target.name}.{os.getpid()}.tmp")
     temporary.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     temporary.replace(target)
 
 
-def verify_model(runtime_path: Path, model_path: Path):
+def verify_model(model_path: Path):
     if not model_path.is_dir():
         raise WorkerFailure("model-directory-missing")
-    target = install_manifest_path(runtime_path)
+    target = install_manifest_path(model_path)
     if not target.is_file():
         raise WorkerFailure("install-manifest-missing")
     try:
@@ -124,11 +130,28 @@ def generation_prompt(args):
     return prompt
 
 
+def migrate_legacy_model(runtime_path: Path, model_path: Path):
+    legacy_model_path = runtime_path / "model"
+    legacy_manifest_path = runtime_path / INSTALL_MANIFEST_NAME
+    if model_path.exists() or not legacy_model_path.is_dir():
+        return
+    model_path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        shutil.move(str(legacy_model_path), str(model_path))
+        if legacy_manifest_path.is_file():
+            shutil.move(
+                str(legacy_manifest_path), str(install_manifest_path(model_path))
+            )
+    except OSError as error:
+        raise WorkerFailure("legacy-model-migration-failed") from error
+
+
 def execute():
     args = parse_args()
     runtime_path = Path(args.runtime_path).resolve()
-    model_path = runtime_path / "model"
+    model_path = Path(args.model_path).resolve()
     runtime_path.mkdir(parents=True, exist_ok=True)
+    migrate_legacy_model(runtime_path, model_path)
 
     if args.operation == "setup":
         snapshot_download(
@@ -136,11 +159,11 @@ def execute():
             revision=MODEL_REVISION,
             local_dir=str(model_path),
         )
-        write_install_manifest(runtime_path, model_path)
-        verify_model(runtime_path, model_path)
+        write_install_manifest(model_path)
+        verify_model(model_path)
         return {"status": "ok", "operation": "setup"}
 
-    verify_model(runtime_path, model_path)
+    verify_model(model_path)
     if args.operation == "verify":
         return {"status": "ok", "operation": "verify"}
     if not args.output_path:

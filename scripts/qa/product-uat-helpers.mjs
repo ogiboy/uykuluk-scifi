@@ -85,8 +85,11 @@ export async function createFakeMediaTools({ workdir }) {
     [
       "#!/usr/bin/env node",
       'import { writeFileSync } from "node:fs";',
-      "const output = process.argv.at(-1);",
-      'writeFileSync(output, Buffer.from(`fake mp4\\n${process.argv.slice(2).join("\\n")}`));',
+      "const args = process.argv.slice(2);",
+      "const output = args.at(-1);",
+      "const loudnorm = JSON.stringify({ input_i: '-14.2', input_tp: '-1.6', input_lra: '5.1', input_thresh: '-24.2', target_offset: '0.2' });",
+      "if (args.some((argument) => argument.includes('loudnorm='))) process.stderr.write(`${loudnorm}\\n`);",
+      'if (output !== "-") writeFileSync(output, Buffer.from(`fake mp4\\n${args.join("\\n")}`));',
     ].join("\n"),
     "utf8",
   );

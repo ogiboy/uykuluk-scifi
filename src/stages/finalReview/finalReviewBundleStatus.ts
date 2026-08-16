@@ -9,7 +9,8 @@ import {
   finalReviewBundleMarkdownPath,
   finalReviewBundleSchema,
   isLegacyFinalReviewBundle,
-  type FinalReviewBundle,
+  isV2FinalReviewBundle,
+  type CurrentFinalReviewBundle,
 } from "./finalReviewBundleContracts.js";
 import {
   finalReviewBundleDecisionStaleReason,
@@ -25,7 +26,7 @@ export type FinalReviewBundleStatus =
   | { kind: "invalid"; message: string; nextAction: string }
   | { kind: "stale"; message: string; nextAction: string }
   | {
-      bundle: FinalReviewBundle;
+      bundle: CurrentFinalReviewBundle;
       kind: "present";
       message: string;
       nextAction: string;
@@ -42,13 +43,16 @@ export async function readFinalReviewBundleStatus(
   run: RunRecord,
 ): Promise<FinalReviewBundleStatus> {
   const nextAction = run.state === "RENDERED" ? finalReviewBundleCommand(run.runId) : null;
-  let bundle: FinalReviewBundle;
+  let bundle: CurrentFinalReviewBundle;
   try {
     const rawBundle = await readJsonFile<unknown>(
       artifactPath(run.runId, finalReviewBundleJsonPath),
     );
     if (isLegacyFinalReviewBundle(rawBundle)) {
       return stale("Final review bundle uses legacy schema version 1; regenerate it.", run.runId);
+    }
+    if (isV2FinalReviewBundle(rawBundle)) {
+      return stale("Final review bundle uses legacy schema version 2; regenerate it.", run.runId);
     }
     bundle = finalReviewBundleSchema.parse(rawBundle);
   } catch (error) {
@@ -88,7 +92,7 @@ export async function readFinalReviewBundleStatus(
 
 async function finalReviewBundleStaleReason(
   run: RunRecord,
-  bundle: FinalReviewBundle,
+  bundle: CurrentFinalReviewBundle,
 ): Promise<string | null> {
   const runMismatch = finalReviewBundleRunIdStaleReason(bundle.runId, run.runId);
   if (runMismatch) return runMismatch;

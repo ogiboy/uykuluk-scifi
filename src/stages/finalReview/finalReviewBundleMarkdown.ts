@@ -1,5 +1,5 @@
 import { bulletList, table } from "../../utils/markdown.js";
-import type { FinalReviewBundle } from "./finalReviewBundleContracts.js";
+import type { CurrentFinalReviewBundle } from "./finalReviewBundleContracts.js";
 
 /**
  * Renders the local final review bundle as operator Markdown.
@@ -7,7 +7,7 @@ import type { FinalReviewBundle } from "./finalReviewBundleContracts.js";
  * @param bundle - The final review bundle to render.
  * @returns The Markdown handoff document.
  */
-export function renderFinalReviewBundleMarkdown(bundle: FinalReviewBundle): string {
+export function renderFinalReviewBundleMarkdown(bundle: CurrentFinalReviewBundle): string {
   return [
     "# Local Final Review Handoff",
     "",
@@ -60,6 +60,33 @@ export function renderFinalReviewBundleMarkdown(bundle: FinalReviewBundle): stri
       ],
     ),
     "",
+    "## Soundtrack, Rights, and Mastering",
+    "",
+    table(
+      ["Field", "Value"],
+      [
+        ["Soundtrack manifest", bundle.media.soundtrack.manifestPath],
+        ["Soundtrack SHA-256", bundle.media.soundtrack.manifestDigest],
+        [
+          "Soundtrack mode/revision",
+          `${bundle.media.soundtrack.mode} / ${bundle.media.soundtrack.revision}`,
+        ],
+        [
+          "Soundtrack decision",
+          `${bundle.media.soundtrack.decision.status} at ${bundle.media.soundtrack.decision.decidedAt}`,
+        ],
+        ["Rights/provenance", rightsProvenanceSummary(bundle)],
+        ["Mastering target", masteringTargetSummary(bundle)],
+        ["Mastered output", masteringOutputSummary(bundle)],
+        ["Mastering pass", String(bundle.media.mastering.passed)],
+        ["Encoding evidence", encodingSummary(bundle)],
+        [
+          "Render approval",
+          `v${bundle.media.renderApproval.contractVersion} (${bundle.media.renderApproval.approvedRef})`,
+        ],
+      ],
+    ),
+    "",
     "## Render Plan",
     "",
     table(
@@ -87,12 +114,37 @@ export function renderFinalReviewBundleMarkdown(bundle: FinalReviewBundle): stri
   ].join("\n");
 }
 
-function mediaSummary(bundle: FinalReviewBundle): string {
+function rightsProvenanceSummary(bundle: CurrentFinalReviewBundle): string {
+  const { rightsProvenance } = bundle.media;
+  const bases = rightsProvenance.rightsBases
+    .map(({ basis, assetCount }) => `${basis}: ${assetCount}`)
+    .join(", ");
+  return `${rightsProvenance.assetCount} tracked assets (${rightsProvenance.musicAssetCount} music, ${rightsProvenance.sfxAssetCount} SFX); ${bases || "no imported soundtrack assets"}`;
+}
+
+function masteringTargetSummary(bundle: CurrentFinalReviewBundle): string {
+  const { target } = bundle.media.mastering;
+  return `${target.integratedLufs} LUFS ±${target.toleranceLufs}; max true peak ${target.maxOutputTruePeakDbtp} dBTP; LRA ≤${target.loudnessRangeLufs} LU`;
+}
+
+function masteringOutputSummary(bundle: CurrentFinalReviewBundle): string {
+  const { output } = bundle.media.mastering;
+  return `${output.integratedLufs} LUFS; ${output.truePeakDbtp} dBTP true peak; ${output.loudnessRangeLufs} LU LRA`;
+}
+
+function encodingSummary(bundle: CurrentFinalReviewBundle): string {
+  const { encoding } = bundle.media;
+  return `${encoding.container}; ${encoding.videoCodec} video + ${encoding.audioCodec} audio; ${encoding.audioSampleRateHz} Hz; ${encoding.audioChannels} channels`;
+}
+
+function mediaSummary(bundle: CurrentFinalReviewBundle): string {
   const { media } = bundle.draftRender;
   return `${media.width}x${media.height} ${media.videoCodec} + ${media.audioCodec}`;
 }
 
-function renderDecisionMarkdownLines(decision: FinalReviewBundle["renderDecision"]): string[] {
+function renderDecisionMarkdownLines(
+  decision: CurrentFinalReviewBundle["renderDecision"],
+): string[] {
   if (decision.kind === "present") {
     return [
       `Decision: ${decision.decision}`,

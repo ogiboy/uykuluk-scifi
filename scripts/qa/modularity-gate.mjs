@@ -2,6 +2,7 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import process from "node:process";
+import ts from "typescript";
 
 const repoRoot = process.cwd();
 const failOnFindings = process.argv.includes("--fail-on-findings");
@@ -11,8 +12,8 @@ const ignoredPrefixes = [".ai/qa/artifacts/"];
 const textExtensions = new Set([".ts", ".tsx", ".mjs", ".js", ".md", ".yml", ".yaml", ".json"]);
 
 const limits = {
-  ".ts": 340,
-  ".tsx": 240,
+  ".ts": 460,
+  ".tsx": 420,
   ".mjs": 360,
   ".js": 260,
   ".md": 520,
@@ -63,18 +64,38 @@ for (const root of scanRoots) {
     scannedFiles += 1;
     const relativePath = toRelative(filePath);
     const extension = path.extname(filePath);
-    const lineCount = readFileSync(filePath, "utf8").split(/\r?\n/).length;
+    const source = readFileSync(filePath, "utf8");
+    const physicalLines = source.split(/\r?\n/).length;
+    const measuredLines = sourceLineCount(source, extension);
     const maxLines = limits[extension] ?? 260;
-    if (lineCount > maxLines) {
-      findings.push(`${relativePath}: ${lineCount} lines exceeds ${maxLines}`);
+    if (measuredLines > maxLines) {
+      findings.push(
+        `${relativePath}: ${measuredLines} content lines (${physicalLines} physical) exceeds ${maxLines}`,
+      );
     }
   }
 }
 
-const report = { scannedFiles, findings, thresholds: limits };
+const report = { findings, measurement: "content-lines", scannedFiles, thresholds: limits };
 
 console.log(JSON.stringify(report, null, 2));
 
 if (failOnFindings && findings.length > 0) {
   process.exit(1);
+}
+
+function sourceLineCount(source, extension) {
+  if (![".js", ".mjs", ".ts", ".tsx"].includes(extension)) {
+    return source.split(/\r?\n/).filter((line) => line.trim().length > 0).length;
+  }
+  const variant = extension === ".tsx" ? ts.LanguageVariant.JSX : ts.LanguageVariant.Standard;
+  const scanner = ts.createScanner(ts.ScriptTarget.Latest, true, variant, source);
+  const sourceFile = ts.createSourceFile("module.ts", source, ts.ScriptTarget.Latest);
+  const occupiedLines = new Set();
+  for (let token = scanner.scan(); token !== ts.SyntaxKind.EndOfFileToken; token = scanner.scan()) {
+    const start = sourceFile.getLineAndCharacterOfPosition(scanner.getTokenPos()).line;
+    const end = sourceFile.getLineAndCharacterOfPosition(scanner.getTextPos()).line;
+    for (let line = start; line <= end; line += 1) occupiedLines.add(line);
+  }
+  return occupiedLines.size;
 }

@@ -71,7 +71,7 @@ describe("render revision recovery", () => {
       maxDurationSeconds: 8,
     });
     const rerenderedManifest = manifest as DraftRenderManifest;
-    expect(rerenderedManifest.schemaVersion).toBe(10);
+    expect(rerenderedManifest.schemaVersion).toBe(11);
     expect(rerenderedManifest.voiceoverAudio.metadataDigest).toMatch(/^[a-f0-9]{64}$/);
     expect(rerenderedManifest.subtitles).toMatchObject({
       timingMode: "linear-fallback",
@@ -89,6 +89,7 @@ describe("render revision recovery", () => {
     expect(rerenderedManifest.renderApproval).toEqual({
       approvalId: freshApproval.approvalId,
       approvedRef: freshApproval.approvedRef,
+      contractVersion: 4,
     });
     await expect(loadRun(runId)).resolves.toMatchObject({ state: "RENDERED" });
     await expect(

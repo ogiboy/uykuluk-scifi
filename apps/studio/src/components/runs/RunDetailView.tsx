@@ -3,6 +3,7 @@ import type { StudioLocale } from "@/i18n/locales";
 import { defaultRunReviewTab, type RunReviewTab } from "@/lib/runs/runReviewNavigation";
 import type { StudioRunDetail } from "@/lib/runSummaries";
 import { RunProductionMediaPanel } from "./production-media/RunProductionMediaPanel";
+import { RunSoundtrackWorkspace } from "./production-media/RunSoundtrackWorkspace";
 import { RunArtifactPreviewsPanel } from "./RunArtifactPreviewsPanel";
 import { RunChannelHandoffPanel } from "./RunChannelHandoffPanel";
 import { RunFinalReviewBundlePanel } from "./RunFinalReviewBundlePanel";
@@ -55,6 +56,7 @@ export function RunDetailView({
                 productionMedia={run.productionMedia}
                 runId={run.runId}
               />
+              <RunSoundtrackWorkspace locale={locale} runId={run.runId} summary={run.soundtrack} />
             </div>
           </TabsContent>
           <TabsContent value='visuals'>

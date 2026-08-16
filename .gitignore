@@ -31,11 +31,13 @@ runs/*
 # Local model downloads and smoke configs are machine-specific.
 /models/llm/*.gguf
 /models/piper/*/*
+/models/visual/**
+!/models/visual/.gitkeep
 /models/piper-smoke.config.json
 /prompts/local/*
 !/prompts/local/.gitkeep
 
-# App-managed optional MFLUX environment, package cache, and model downloads.
+# App-managed MFLUX operation state, locks, and recovery pointers.
 /.local-models/
 tools/mflux/__pycache__/
 tools/mflux/.venv/

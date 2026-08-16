@@ -5,6 +5,7 @@ import { nowIso } from "../utils/time.js";
 import {
   finalReviewArtifacts,
   finalReviewBlockedActions,
+  finalReviewMediaSummary,
   finalReviewNextSafeAction,
   finalReviewStatus,
   finalReviewSummary,
@@ -13,7 +14,7 @@ import {
   finalReviewBundleJsonPath,
   finalReviewBundleMarkdownPath,
   finalReviewBundleSchema,
-  type FinalReviewBundle,
+  type CurrentFinalReviewBundle,
 } from "./finalReview/finalReviewBundleContracts.js";
 import { renderFinalReviewBundleMarkdown } from "./finalReview/finalReviewBundleMarkdown.js";
 import { renderDecisionCommandTemplates } from "./render/renderDecisionCommands.js";
@@ -21,13 +22,15 @@ import { readRenderDecisionStatus } from "./render/renderDecisionStatus.js";
 import { reviewDraftRender } from "./reviewRender.js";
 import { reviewRenderPlan } from "./reviewRenderPlan.js";
 import { reviewVoiceover } from "./reviewVoiceover.js";
+import { requireApprovedSoundtrackManifest } from "./soundtrack/soundtrackService.js";
 
 export {
   finalReviewBundleJsonPath,
   finalReviewBundleMarkdownPath,
   finalReviewBundleSchema,
-  type FinalReviewBundle,
+  type CurrentFinalReviewBundle,
 } from "./finalReview/finalReviewBundleContracts.js";
+export type { FinalReviewBundle } from "./finalReview/finalReviewBundleContracts.js";
 export { renderFinalReviewBundleMarkdown } from "./finalReview/finalReviewBundleMarkdown.js";
 
 /**
@@ -40,7 +43,7 @@ export { renderFinalReviewBundleMarkdown } from "./finalReview/finalReviewBundle
  * @param runId - The rendered run to bundle for local review.
  * @returns The persisted final review bundle.
  */
-export async function createFinalReviewBundle(runId: string): Promise<FinalReviewBundle> {
+export async function createFinalReviewBundle(runId: string): Promise<CurrentFinalReviewBundle> {
   let run = await loadRun(runId);
   if (run.state !== "RENDERED") {
     throw new SafeExitError("Final review bundle requires state RENDERED.");
@@ -49,8 +52,17 @@ export async function createFinalReviewBundle(runId: string): Promise<FinalRevie
   const voiceover = await reviewVoiceover(run.runId);
   const draftRender = await reviewDraftRender(run.runId);
   const renderDecision = await finalReviewDecision(run);
+  if (draftRender.schemaVersion !== 11) {
+    throw new SafeExitError("Final review bundle v3 requires a current v11 draft render manifest.");
+  }
+  const soundtrack = await requireApprovedSoundtrackManifest(run);
+  if (draftRender.soundtrack.manifestDigest !== soundtrack.digest) {
+    throw new SafeExitError(
+      "Final review bundle requires the approved soundtrack bound to the v11 render evidence.",
+    );
+  }
   const bundle = finalReviewBundleSchema.parse({
-    schemaVersion: 2,
+    schemaVersion: 3,
     runId: run.runId,
     createdAt: nowIso(),
     status: finalReviewStatus(renderDecision),
@@ -62,6 +74,7 @@ export async function createFinalReviewBundle(runId: string): Promise<FinalRevie
       sceneCount: renderPlan.sceneCount,
       estimatedDraftDurationSeconds: renderPlan.estimatedDraftDurationSeconds,
     },
+    media: finalReviewMediaSummary(draftRender, soundtrack.manifest),
     voiceover: {
       path: voiceover.audioPath,
       mode: voiceover.mode,
@@ -103,7 +116,7 @@ export async function createFinalReviewBundle(runId: string): Promise<FinalRevie
 
 async function finalReviewDecision(
   run: Awaited<ReturnType<typeof loadRun>>,
-): Promise<FinalReviewBundle["renderDecision"]> {
+): Promise<CurrentFinalReviewBundle["renderDecision"]> {
   const status = await readRenderDecisionStatus(run);
   if (status.kind === "present") {
     return {

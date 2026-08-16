@@ -29,19 +29,17 @@ export const dynamic = "force-dynamic";
  */
 export default async function SettingsPage() {
   const root = projectRoot();
-  const [config, locale, revisions, latestElevenLabsSmoke, localModelResult] = await Promise.all([
+  const localModelResultPromise = Promise.allSettled([readStudioLocalModelOverview(root)]);
+  const [config, locale, revisions, latestElevenLabsSmoke] = await Promise.all([
     loadConfigAtProjectRoot(root),
     getLocale(),
     listSettingsRevisions(root),
     readLatestElevenLabsSmoke(root),
-    readStudioLocalModelOverview(root).then(
-      (overview) => ({ status: "fulfilled" as const, overview }),
-      () => ({ status: "rejected" as const }),
-    ),
   ]);
+  const [localModelResult] = await localModelResultPromise;
   const localModelOverview =
     localModelResult.status === "fulfilled"
-      ? localModelResult.overview
+      ? localModelResult.value
       : unavailableStudioLocalModelOverview(root);
   const studioLocale = normalizeStudioLocale(locale);
   const revisionSummaries: StudioSettingsRevisionSummary[] = revisions

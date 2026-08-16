@@ -68,8 +68,10 @@ execution, quote, credential, or entitlement status inside Producer.
 Studio manages the curated local MFLUX runtime through an exact setup/verify/smoke preflight and
 approval flow. The detached worker reports durable progress and recovery state; offline verification
 uses the pinned install manifest. Readiness is unavailable until setup or verification succeeds.
-Real installation and the bounded 1024x576 smoke remain pending an exact operator-approved run on
-the target machine and are not CI evidence.
+Model weights live under `models/visual/mflux/flux2-klein-4b-q4`; the ignored `.local-models/mflux`
+directory stores operation state, locks, and the verified install manifest. Real installation and
+the bounded 1024x576 smoke remain pending an exact operator-approved run on the target machine and
+are not CI evidence.
 
 When ready, local generation runs sequentially for selected scene indexes and writes revisioned PNG
 media into the existing manifest. Provenance includes MFLUX model/runtime revisions, quantization,

@@ -1,5 +1,12 @@
+import { SafeExitError } from "../../core/errors.js";
 import { productionPackageManifestPath } from "../production/productionPackageIntegrity.js";
-import type { FinalReviewBundle } from "./finalReviewBundleContracts.js";
+import { voiceForwardMasteringProfile } from "../render/audioMastering.js";
+import type { DraftRenderManifest } from "../render/renderEvidenceContracts.js";
+import {
+  soundtrackManifestPath,
+  type SoundtrackManifest,
+} from "../soundtrack/soundtrackManifest.js";
+import type { CurrentFinalReviewBundle, FinalReviewBundle } from "./finalReviewBundleContracts.js";
 import { acceptedFinalReviewNextSafeAction } from "./finalReviewBundleValidation.js";
 
 type FinalReviewArtifact = FinalReviewBundle["artifacts"][number];
@@ -169,6 +176,62 @@ export function finalReviewArtifacts(
     );
   }
   return artifacts;
+}
+
+/**
+ * Projects validated v11 render evidence into the non-sensitive media-review summary.
+ * Source manifest paths remain relative; operator identities and free-form provenance text stay out.
+ */
+export function finalReviewMediaSummary(
+  manifest: Extract<DraftRenderManifest, { schemaVersion: 11 }>,
+  soundtrack: SoundtrackManifest,
+): CurrentFinalReviewBundle["media"] {
+  const rightsBases = new Map<
+    CurrentFinalReviewBundle["media"]["rightsProvenance"]["rightsBases"][number]["basis"],
+    number
+  >();
+  for (const asset of soundtrack.assets) {
+    const basis = asset.provenance.rights.basis;
+    rightsBases.set(basis, (rightsBases.get(basis) ?? 0) + 1);
+  }
+  const decision = soundtrack.decision;
+  if (decision?.status !== "approved") {
+    throw new SafeExitError("Validated v11 render manifest requires an approved soundtrack decision.");
+  }
+  return {
+    soundtrack: {
+      manifestPath: soundtrackManifestPath,
+      manifestDigest: manifest.soundtrack.manifestDigest,
+      mode: soundtrack.mode,
+      revision: soundtrack.revision,
+      decision: { status: decision.status, decidedAt: decision.decidedAt },
+    },
+    rightsProvenance: {
+      assetCount: soundtrack.assets.length,
+      musicAssetCount: soundtrack.assets.filter((asset) => asset.role === "music").length,
+      sfxAssetCount: soundtrack.assets.filter((asset) => asset.role === "sfx").length,
+      rightsBases: [...rightsBases.entries()].map(([basis, assetCount]) => ({ basis, assetCount })),
+    },
+    mastering: {
+      evidencePath: manifest.mastering.path,
+      evidenceSha256: manifest.mastering.sha256,
+      target: {
+        integratedLufs: voiceForwardMasteringProfile.integratedLufs,
+        toleranceLufs: voiceForwardMasteringProfile.toleranceLufs,
+        normalizationTruePeakDbtp: voiceForwardMasteringProfile.normalizationTruePeakDbtp,
+        maxOutputTruePeakDbtp: voiceForwardMasteringProfile.maxOutputTruePeakDbtp,
+        loudnessRangeLufs: voiceForwardMasteringProfile.loudnessRangeLufs,
+      },
+      output: {
+        integratedLufs: manifest.mastering.outputMeasurement.integratedLufs,
+        truePeakDbtp: manifest.mastering.outputMeasurement.truePeakDbtp,
+        loudnessRangeLufs: manifest.mastering.outputMeasurement.loudnessRangeLufs,
+      },
+      passed: manifest.mastering.passed,
+    },
+    encoding: manifest.encoding,
+    renderApproval: manifest.renderApproval,
+  };
 }
 
 function artifact(

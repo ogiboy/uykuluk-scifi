@@ -44,10 +44,23 @@ describe("draft render review validation", () => {
     const manifest = await readJsonFile<DraftRenderManifest>(manifestPath);
     const legacyRenderPlan: Record<string, unknown> = { ...manifest.renderPlan };
     delete legacyRenderPlan.visualManifestDigest;
+    const legacyRenderApproval = {
+      approvalId: manifest.renderApproval.approvalId,
+      approvedRef: manifest.renderApproval.approvedRef,
+    };
+    const legacyManifest = { ...manifest } as Record<string, unknown>;
+    delete legacyManifest.encoding;
+    delete legacyManifest.mastering;
+    delete legacyManifest.soundtrack;
     await writeFile(
       manifestPath,
       `${JSON.stringify(
-        { ...manifest, schemaVersion: 9, renderPlan: legacyRenderPlan },
+        {
+          ...legacyManifest,
+          schemaVersion: 9,
+          renderApproval: legacyRenderApproval,
+          renderPlan: legacyRenderPlan,
+        },
         null,
         2,
       )}\n`,

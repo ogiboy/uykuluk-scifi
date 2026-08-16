@@ -1,6 +1,6 @@
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { extractRunId, productFileExists } from "./product-uat-helpers.mjs";
+import { createFakeMediaTools, extractRunId, productFileExists } from "./product-uat-helpers.mjs";
 import { prepareAndApproveVisuals } from "./visual-uat-helpers.mjs";
 
 /**
@@ -94,7 +94,62 @@ export async function createVoiceReadyRun({ assertCondition, pnpm, run, scenario
     "voiceover review prints exact render approval command",
     scenario,
   );
+  const mediaTools = await createFakeMediaTools({ workdir });
+  const preparedSoundtrack = parseSoundtrackEvidence(
+    run([pnpm, "producer", "soundtrack", "prepare", "--run", runId, "--json"], {
+      label: "prepare voice-only soundtrack",
+      scenario,
+    }).stdout,
+  );
+  const analyzedSoundtrack = parseSoundtrackEvidence(
+    run(
+      [
+        pnpm,
+        "producer",
+        "soundtrack",
+        "analyze",
+        "--run",
+        runId,
+        "--expected-manifest-digest",
+        preparedSoundtrack.digest,
+        "--expected-revision",
+        String(preparedSoundtrack.revision),
+        "--json",
+      ],
+      {
+        env: { PATH: `${mediaTools.binDir}${path.delimiter}${process.env.PATH ?? ""}` },
+        label: "analyze voice-only soundtrack",
+        scenario,
+      },
+    ).stdout,
+  );
+  run(
+    [
+      pnpm,
+      "producer",
+      "soundtrack",
+      "decide",
+      "--run",
+      runId,
+      "--decision",
+      "approved",
+      "--reviewed-by",
+      "product-uat",
+      "--notes",
+      "Approved deterministic voice-only soundtrack for product UAT.",
+      "--expected-manifest-digest",
+      analyzedSoundtrack.digest,
+      "--expected-revision",
+      String(analyzedSoundtrack.revision),
+    ],
+    { label: "approve voice-only soundtrack", scenario },
+  );
   return runId;
+}
+
+function parseSoundtrackEvidence(output) {
+  const parsed = JSON.parse(output);
+  return { digest: parsed.digest, revision: parsed.manifest.revision };
 }
 
 /**
