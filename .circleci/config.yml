@@ -306,7 +306,7 @@ jobs:
       - halt-unless-lane-required:
           lane: studio-browser
       - node/install:
-          node-version: "22.23.0"
+          node-version: "26.7.0"
           use-nvm-cache: false
       - run:
           name: Verify Node 22.23.x
